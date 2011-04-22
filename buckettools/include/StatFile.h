@@ -25,9 +25,16 @@ namespace buckettools
   protected:
     
     /// name of the file
-    std::string _name;
+    std::string name_;
     /// the file itself
-    std::ofstream _file;
+    std::ofstream file_;
+    
+    void header_constants();
+    
+    void constant_tag(const std::string name, 
+                      const std::string type, 
+                      const std::string value);
+    
   };
   
 }

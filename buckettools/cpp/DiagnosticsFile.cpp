@@ -1,6 +1,5 @@
 
 #include "DiagnosticsFile.h"
-#include "hgid.h"
 #include <cstdio>
 #include <string>
 #include <fstream>
@@ -15,9 +14,9 @@ DiagnosticsFile::DiagnosticsFile(const std::string name) : StatFile(name)
 
 void DiagnosticsFile::write_header()
 {
-  _file << "<header>" << std::endl;
-  _file << "<constant name=\"HGChangesetId\" type=\"string\" value=\""<<__HG_ID__<<"\" />" << std::endl;
-  _file << "</header>" << std::endl;
+  file_ << "<header>" << std::endl;
+  (*this).header_constants();
+  file_ << "</header>" << std::endl;
 }
 
 
