@@ -1,6 +1,6 @@
 
 #include "StatFile.h"
-#include "hgid.h"
+#include "confdefs.h"
 #include <cstdio>
 #include <stdlib.h>
 #include <string>
