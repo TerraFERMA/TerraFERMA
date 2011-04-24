@@ -25,12 +25,6 @@ template_filename = argv[1]
 # the output ufl file name
 ufl_filename = argv[2]
 
-# for now let's require the output file to be called .ufl
-if argv[2][-4:]!=".ufl":
-    sys.stderr.write("UFL filename must end in .ufl\n")
-    optparser.print_help()
-    sys.exit(1)
-
 # load the options using element tree
 tree = etree.parse(options_filename)
 
@@ -51,6 +45,9 @@ for placeholder in placeholders:
     if child.tag in spud_reserved:
       value = child.text
       break
+  if value == None:
+    print 'ERROR: no value for placeholder id:', index
+    sys.exit(1)
   listing.append((index, value))
 
 dictionary = dict(listing)
