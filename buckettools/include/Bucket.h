@@ -10,14 +10,27 @@ namespace buckettools
 {
   
   typedef boost::shared_ptr< dolfin::GenericFunction > GenericFunction_ptr;
+  typedef boost::shared_ptr< dolfin::Mesh > Mesh_ptr;
+  typedef boost::shared_ptr< dolfin::MeshFunction< dolfin::uint > > MeshFunction_uint_ptr;
+  typedef boost::shared_ptr< dolfin::FunctionSpace > FunctionSpace_ptr;
+  typedef boost::shared_ptr< dolfin::DirichletBC > DirichletBC_ptr;
   
   class Bucket
   {
   private:
     
-    std::vector< Detectors_ptr > detectors_;
+    std::map<std::string, Mesh_ptr> meshes_;
     
-    std::vector< GenericFunction_ptr > functions_;
+    std::map< std::string, MeshFunction_uint_ptr > meshfunctions_;
+    
+    std::map< std::string, FunctionSpace_ptr > functionspaces_;
+    
+    std::map< std::string, DirichletBC_ptr > dirichletbcs_;
+    
+    std::map< std::string, GenericFunction_ptr > functions_;
+    
+    std::map< std::string, Detectors_ptr > detectors_;
+    
     
     void clean_();
     
@@ -27,25 +40,43 @@ namespace buckettools
     
     ~Bucket();
     
-    void register_detector(Detectors_ptr detector);
+    void register_mesh(Mesh_ptr mesh, std::string name);
     
-    void register_function(GenericFunction_ptr function);
+    void register_meshfunction(MeshFunction_uint_ptr meshfunction, std::string name);
     
-    std::vector< Detectors_ptr >::iterator detectors_begin();
+    void register_functionspace(FunctionSpace_ptr functionspace, std::string name);
     
-    std::vector< Detectors_ptr >::const_iterator detectors_begin() const;
+    void register_dirichletbc(DirichletBC_ptr dirichletbc, std::string name);
     
-    std::vector< Detectors_ptr >::iterator detectors_end();
+    void register_detector(Detectors_ptr detector, std::string name);
     
-    std::vector< Detectors_ptr >::const_iterator detectors_end() const;
+    void register_function(GenericFunction_ptr function, std::string name);
     
-    std::vector< GenericFunction_ptr >::iterator functions_begin();
+    Mesh_ptr fetch_mesh(const std::string name);
     
-    std::vector< GenericFunction_ptr >::const_iterator functions_begin() const;
+    MeshFunction_uint_ptr fetch_meshfunction(const std::string name);
     
-    std::vector< GenericFunction_ptr >::iterator functions_end();
+    FunctionSpace_ptr fetch_functionspace(const std::string name);
     
-    std::vector< GenericFunction_ptr >::const_iterator functions_end() const;
+    GenericFunction_ptr fetch_function(const std::string name);
+    
+    Detectors_ptr fetch_detector(const std::string name);
+    
+    std::map< std::string, Detectors_ptr >::iterator detectors_begin();
+    
+    std::map< std::string, Detectors_ptr >::const_iterator detectors_begin() const;
+    
+    std::map< std::string, Detectors_ptr >::iterator detectors_end();
+    
+    std::map< std::string, Detectors_ptr >::const_iterator detectors_end() const;
+    
+    std::map< std::string, GenericFunction_ptr >::iterator functions_begin();
+    
+    std::map< std::string, GenericFunction_ptr >::const_iterator functions_begin() const;
+    
+    std::map< std::string, GenericFunction_ptr >::iterator functions_end();
+    
+    std::map< std::string, GenericFunction_ptr >::const_iterator functions_end() const;
     
   };
 }

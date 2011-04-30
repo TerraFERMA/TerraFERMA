@@ -6,6 +6,11 @@
 
 using namespace buckettools;
 
+PointDetectors::PointDetectors() : Detectors()
+{
+  // Do nothing
+}
+
 PointDetectors::PointDetectors(Array_double_ptr point, std::string name) : Detectors(1, (*point).size(), name)
 {
   init_(point);

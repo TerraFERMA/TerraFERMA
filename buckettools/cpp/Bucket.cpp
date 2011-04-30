@@ -17,64 +17,117 @@ Bucket::~Bucket()
   // Do nothing
 }
 
-void Bucket::register_detector(Detectors_ptr detector)
+void Bucket::register_mesh(Mesh_ptr mesh, std::string name)
 {
-  detectors_.push_back(detector);
+  meshes_.insert(std::pair<std::string, Mesh_ptr>(name, mesh));
 }
 
-void Bucket::register_function(GenericFunction_ptr function)
+void Bucket::register_meshfunction(MeshFunction_uint_ptr meshfunction, std::string name)
 {
-  functions_.push_back(function);
+  meshfunctions_.insert(std::pair<std::string, MeshFunction_uint_ptr>(name, meshfunction));
 }
 
-std::vector< Detectors_ptr >::iterator Bucket::detectors_begin()
+void Bucket::register_functionspace(FunctionSpace_ptr functionspace, std::string name)
+{
+  functionspaces_.insert(std::pair<std::string, FunctionSpace_ptr>(name, functionspace));
+}
+
+void Bucket::register_dirichletbc(DirichletBC_ptr dirichletbc, std::string name)
+{
+  dirichletbcs_.insert(std::pair<std::string, DirichletBC_ptr>(name, dirichletbc));
+}
+
+void Bucket::register_detector(Detectors_ptr detector, std::string name)
+{
+  detectors_.insert(std::pair<std::string, Detectors_ptr>(name, detector));
+}
+
+void Bucket::register_function(GenericFunction_ptr function, std::string name)
+{
+  functions_.insert(std::pair<std::string, GenericFunction_ptr>(name, function));
+}
+
+Mesh_ptr Bucket::fetch_mesh(const std::string name)
+{
+  std::map< std::string, Mesh_ptr >::iterator it;
+  it = meshes_.find(name);
+  return (*it).second;
+}
+
+MeshFunction_uint_ptr Bucket::fetch_meshfunction(const std::string name)
+{
+  std::map< std::string, MeshFunction_uint_ptr >::iterator it;
+  it = meshfunctions_.find(name);
+  return (*it).second;
+}
+
+FunctionSpace_ptr Bucket::fetch_functionspace(const std::string name)
+{
+  std::map< std::string, FunctionSpace_ptr >::iterator it;
+  it = functionspaces_.find(name);
+  return (*it).second;
+}
+
+Detectors_ptr Bucket::fetch_detector(const std::string name)
+{
+  std::map< std::string, Detectors_ptr >::iterator it;
+  it = detectors_.find(name);
+  return (*it).second;
+}
+
+GenericFunction_ptr Bucket::fetch_function(const std::string name)
+{
+  std::map< std::string, GenericFunction_ptr >::iterator it;
+  it = functions_.find(name);
+  return (*it).second;
+}
+
+std::map< std::string, Detectors_ptr >::iterator Bucket::detectors_begin()
 {
   return detectors_.begin();
 }
 
-std::vector< Detectors_ptr >::const_iterator Bucket::detectors_begin() const
+std::map< std::string, Detectors_ptr >::const_iterator Bucket::detectors_begin() const
 {
   return detectors_.begin();
 }
 
-std::vector< Detectors_ptr >::iterator Bucket::detectors_end()
+std::map< std::string, Detectors_ptr >::iterator Bucket::detectors_end()
 {
   return detectors_.end();
 }
 
-std::vector< Detectors_ptr >::const_iterator Bucket::detectors_end() const
+std::map< std::string, Detectors_ptr >::const_iterator Bucket::detectors_end() const
 {
   return detectors_.end();
 }
 
-std::vector< GenericFunction_ptr >::iterator Bucket::functions_begin()
+std::map< std::string, GenericFunction_ptr >::iterator Bucket::functions_begin()
 {
   return functions_.begin();
 }
 
-std::vector< GenericFunction_ptr >::const_iterator Bucket::functions_begin() const
+std::map< std::string, GenericFunction_ptr >::const_iterator Bucket::functions_begin() const
 {
   return functions_.begin();
 }
 
-std::vector< GenericFunction_ptr >::iterator Bucket::functions_end()
+std::map< std::string, GenericFunction_ptr >::iterator Bucket::functions_end()
 {
   return functions_.end();
 }
 
-std::vector< GenericFunction_ptr >::const_iterator Bucket::functions_end() const
+std::map< std::string, GenericFunction_ptr >::const_iterator Bucket::functions_end() const
 {
   return functions_.end();
 }
 
 void Bucket::clean_()
 {
-  while (!detectors_.empty())
-  {
-    detectors_.pop_back();
-  }
-  while (!functions_.empty())
-  {
-    functions_.pop_back();
-  }
+  
+  meshes_.clear();
+  meshfunctions_.clear();
+  detectors_.clear();
+  functions_.clear();
+  
 }

@@ -17,7 +17,7 @@ namespace buckettools
     void init_(std::vector<double> *point);
     
   public:
-    // no default constructor for now
+    PointDetectors();
     
     // Constructor
     PointDetectors(Array_double_ptr point, std::string name);

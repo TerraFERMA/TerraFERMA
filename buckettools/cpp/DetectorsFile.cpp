@@ -42,47 +42,51 @@ void DetectorsFile::header_bucket_(Bucket &bucket, uint &column)
   std::stringstream buffer;
 
   // the detector positions
-  for ( std::vector< Detectors_ptr >::iterator det = bucket.detectors_begin(); 
-                                           det < bucket.detectors_end(); det++)
+  for ( std::map< std::string, Detectors_ptr >::iterator det = bucket.detectors_begin(); 
+                                           det != bucket.detectors_end(); det++)
   {
-    for (uint dim = 0; dim<(**det).dim(); dim++)
+    for (uint dim = 0; dim<(*((*det).second)).dim(); dim++)
     {
       buffer.str("");
       buffer << "position_" << dim;
-      tag_((**det).name(), column++, buffer.str(), (**det).size());
+      tag_((*((*det).second)).name(), column, buffer.str(), (*((*det).second)).size());
+      column+=(*((*det).second)).size();
     }
   }
   
   // the functions interacting with the detectors
-  for ( std::vector< GenericFunction_ptr >::iterator func = bucket.functions_begin(); 
-                                                func < bucket.functions_end(); func++)
+  for ( std::map< std::string, GenericFunction_ptr >::iterator func = bucket.functions_begin(); 
+                                                func != bucket.functions_end(); func++)
   {
     
-    for ( std::vector< Detectors_ptr >::iterator det = bucket.detectors_begin(); 
-                                            det < bucket.detectors_end(); det++)
+    for ( std::map< std::string, Detectors_ptr >::iterator det = bucket.detectors_begin(); 
+                                            det != bucket.detectors_end(); det++)
     {
-      if ((**func).value_rank()==0)
+      if ((*((*func).second)).value_rank()==0)
       {
-        tag_((**func).name(), column++, (**det).name(), (**det).size());
+        tag_((*((*func).second)).name(), column, (*((*det).second)).name(), (*((*det).second)).size());
+        column+=(*((*det).second)).size();
       }
-      else if ((**func).value_rank()==1)
+      else if ((*((*func).second)).value_rank()==1)
       {
-        for (uint dim = 0; dim<(**func).value_size(); dim++)
+        for (uint dim = 0; dim<(*((*func).second)).value_size(); dim++)
         {
           buffer.str("");
-          buffer << (**func).name() << "_" << dim;
-          tag_(buffer.str(), column++, (**det).name(), (**det).size());
+          buffer << (*((*func).second)).name() << "_" << dim;
+          tag_(buffer.str(), column, (*((*det).second)).name(), (*((*det).second)).size());
+          column+=(*((*det).second)).size();
         }
       }
-      else if ((**func).value_rank()==2)
+      else if ((*((*func).second)).value_rank()==2)
       {
-        for (uint dim0 = 0; dim0<(**func).value_dimension(0); dim0++)
+        for (uint dim0 = 0; dim0<(*((*func).second)).value_dimension(0); dim0++)
         {
-          for (uint dim1 = 0; dim1<(**func).value_dimension(1); dim1++)
+          for (uint dim1 = 0; dim1<(*((*func).second)).value_dimension(1); dim1++)
           {
             buffer.str("");
-            buffer << (**func).name() << "_" << dim0 << "_" << dim1;
-            tag_(buffer.str(), column++, (**det).name(), (**det).size());
+            buffer << (*((*func).second)).name() << "_" << dim0 << "_" << dim1;
+            tag_(buffer.str(), column, (*((*det).second)).name(), (*((*det).second)).size());
+            column+=(*((*det).second)).size();
           }
         }
       }
@@ -140,13 +144,13 @@ void DetectorsFile::data_bucket_(Bucket &bucket)
   file_.precision(10);
   
   // the detector positions
-  for ( std::vector< Detectors_ptr >::iterator det = bucket.detectors_begin(); 
-                                           det < bucket.detectors_end(); det++)
+  for ( std::map< std::string, Detectors_ptr >::iterator det = bucket.detectors_begin(); 
+                                           det != bucket.detectors_end(); det++)
   {
-    for (uint dim = 0; dim<(**det).dim(); dim++)
+    for (uint dim = 0; dim<(*((*det).second)).dim(); dim++)
     {
-      for (std::vector< Array_double_ptr >::iterator pos = (**det).begin();
-                                                pos < (**det).end(); pos++)
+      for (std::vector< Array_double_ptr >::iterator pos = (*((*det).second)).begin();
+                                                pos < (*((*det).second)).end(); pos++)
       {   
         file_ << (**pos)[dim] << " ";
       }
@@ -154,18 +158,18 @@ void DetectorsFile::data_bucket_(Bucket &bucket)
   }
   
   // the functions interacting with the detectors
-  for ( std::vector< GenericFunction_ptr >::iterator func = bucket.functions_begin(); 
-                                                func < bucket.functions_end(); func++)
+  for ( std::map< std::string, GenericFunction_ptr >::iterator func = bucket.functions_begin(); 
+                                                func != bucket.functions_end(); func++)
   {
     
-    for ( std::vector< Detectors_ptr >::iterator det = bucket.detectors_begin(); 
-                                            det < bucket.detectors_end(); det++)
+    for ( std::map< std::string, Detectors_ptr >::iterator det = bucket.detectors_begin(); 
+                                            det != bucket.detectors_end(); det++)
     {
       std::vector< Array_double_ptr > values;
       
-      (**det).eval(values, **func);
+      (*((*det).second)).eval(values, *((*func).second));
       
-      for (uint dim = 0; dim<(**func).value_size(); dim++)
+      for (uint dim = 0; dim<(*((*func).second)).value_size(); dim++)
       {
         for(std::vector< Array_double_ptr >::iterator val = values.begin();
                                               val < values.end(); val++)
