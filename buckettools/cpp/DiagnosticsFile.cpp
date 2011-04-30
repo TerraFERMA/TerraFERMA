@@ -15,7 +15,7 @@ DiagnosticsFile::DiagnosticsFile(const std::string name) : StatFile(name)
 void DiagnosticsFile::write_header()
 {
   file_ << "<header>" << std::endl;
-  (*this).header_constants();
+  header_constants_();
   file_ << "</header>" << std::endl;
 }
 

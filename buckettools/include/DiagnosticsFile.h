@@ -10,7 +10,7 @@
 namespace buckettools
 {
 
-  class DiagnosticsFile : StatFile
+  class DiagnosticsFile : public StatFile
   {
   public:
     

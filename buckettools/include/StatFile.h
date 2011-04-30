@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <fstream>
 #include <string>
+#include <dolfin.h>
 
 namespace buckettools
 {
@@ -29,11 +30,23 @@ namespace buckettools
     /// the file itself
     std::ofstream file_;
     
-    void header_constants();
+    void header_constants_();
     
-    void constant_tag(const std::string name, 
-                      const std::string type, 
-                      const std::string value);
+    void constant_tag_(const std::string name, 
+                       const std::string type, 
+                       const std::string value);
+    
+    void tag_(const std::string name,
+              const uint column,
+              const std::string statistic)
+    {
+      tag_(name, column, statistic, 0);
+    }
+    
+    void tag_(const std::string name,
+              const uint column,
+              const std::string statistic,
+              const uint components);
     
   };
   

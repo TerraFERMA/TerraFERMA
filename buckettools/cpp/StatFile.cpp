@@ -30,41 +30,64 @@ StatFile::~StatFile()
   }
 }
 
-void StatFile::header_constants()
+void StatFile::header_constants_()
 {
   std::string buffer;
   char * cbuffer;
   time_t rawtime;
   
-  (*this).constant_tag("HGChangesetId", "string", __HG_ID__);
+  constant_tag_("HGChangesetId", "string", __HG_ID__);
+  
   buffer  = __DATE__;
   buffer += " ";
   buffer += __TIME__;
-  (*this).constant_tag("CompileTime", "string", buffer);
-  cbuffer = ctime(&rawtime);
+  constant_tag_("CompileTime", "string", buffer);
+  
+//   cbuffer = ctime(&rawtime);
 //   if((*cbuffer+sizeof(&cbuffer)-1)=='\n')
 //   {
 //     (*cbuffer+sizeof(&cbuffer)-1) = '\0';
 //   }
 //   buffer = static_cast<std::string>(cbuffer);
-  (*this).constant_tag("StartTime", "string", cbuffer);
-  cbuffer = getenv("HOSTNAME");
-  if(cbuffer==NULL)
-  {
-    
-  }
+//   constant_tag_("StartTime", "string", cbuffer);
+  
+//   cbuffer = getenv("HOSTNAME");
+//   if(cbuffer==NULL)
+//   {
+//     
+//   }
 //   buffer = static_cast<std::string>(cbuffer);
-//   (*this).constant_tag("HostName", "string", cbuffer);
+//   constant_tag_("HostName", "string", cbuffer);
 }
 
-void StatFile::constant_tag(const std::string name, 
-                            const std::string type, 
-                            const std::string value)
+void StatFile::constant_tag_(const std::string name, 
+                             const std::string type, 
+                             const std::string value)
 {
-  file_ << "<constant name=\""<<name
-        <<"\" type=\""<<type
-        <<"\" value=\""<<value<<"\" />" 
-        << std::endl;
+  
+  file_ << "<constant name=\"" << name
+        << "\" type=\"" << type
+        << "\" value=\"" << value << "\" />" 
+        << std::endl << std::flush;
+
+}
+
+void StatFile::tag_(const std::string name,
+                    const uint column,
+                    const std::string statistic,
+                    const uint components)
+{
+  
+  file_ << "<field column=\"" << column
+        << "\" name=\"" << name
+        << "\" statistic=\"" << statistic << "\"";
+  if (components > 0)
+  {
+    file_ << " components=\"" << components << "\"";
+  }
+  file_ << " />" << std::endl << std::flush;
+
+  
 }
 
 
