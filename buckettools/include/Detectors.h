@@ -3,8 +3,6 @@
 #define __DETECTORS_H
 
 #include <dolfin.h>
-#include "Python.h"
-#include "PythonInstance.h"
 
 namespace buckettools
 {

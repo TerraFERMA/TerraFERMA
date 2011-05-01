@@ -4,7 +4,6 @@
 
 #include "Detectors.h"
 #include <dolfin.h>
-#include "Python.h"
 #include "PythonInstance.h"
 
 namespace buckettools
