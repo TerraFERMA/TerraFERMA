@@ -13,6 +13,7 @@ namespace buckettools
   typedef boost::shared_ptr< dolfin::Mesh > Mesh_ptr;
   typedef boost::shared_ptr< dolfin::MeshFunction< dolfin::uint > > MeshFunction_uint_ptr;
   typedef boost::shared_ptr< dolfin::FunctionSpace > FunctionSpace_ptr;
+  typedef boost::shared_ptr< dolfin::Function > Function_ptr;
   typedef boost::shared_ptr< dolfin::DirichletBC > DirichletBC_ptr;
   
   class Bucket
@@ -29,7 +30,7 @@ namespace buckettools
     
     std::vector< GenericFunction_ptr > bcexps_;
     
-    std::map< std::string, GenericFunction_ptr > functions_;
+    std::map< std::string, Function_ptr > functions_;
     
     std::map< std::string, Detectors_ptr > detectors_;
     
@@ -52,7 +53,7 @@ namespace buckettools
     
     void register_detector(Detectors_ptr detector, std::string name);
     
-    void register_function(GenericFunction_ptr function, std::string name);
+    void register_function(Function_ptr function, std::string name);
     
     Mesh_ptr fetch_mesh(const std::string name);
     
@@ -60,7 +61,9 @@ namespace buckettools
     
     FunctionSpace_ptr fetch_functionspace(const std::string name);
     
-    GenericFunction_ptr fetch_function(const std::string name);
+//     Function_ptr fetch_function(const std::string name);
+    
+    Function_ptr fetch_function(const std::string name);
     
     Detectors_ptr fetch_detector(const std::string name);
     
@@ -80,13 +83,13 @@ namespace buckettools
     
     std::map< std::string, DirichletBC_ptr >::const_iterator dirichletbcs_end() const;
     
-    std::map< std::string, GenericFunction_ptr >::iterator functions_begin();
+    std::map< std::string, Function_ptr >::iterator functions_begin();
     
-    std::map< std::string, GenericFunction_ptr >::const_iterator functions_begin() const;
+    std::map< std::string, Function_ptr >::const_iterator functions_begin() const;
     
-    std::map< std::string, GenericFunction_ptr >::iterator functions_end();
+    std::map< std::string, Function_ptr >::iterator functions_end();
     
-    std::map< std::string, GenericFunction_ptr >::const_iterator functions_end() const;
+    std::map< std::string, Function_ptr >::const_iterator functions_end() const;
     
   protected:
     

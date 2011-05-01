@@ -42,9 +42,9 @@ void Bucket::register_detector(Detectors_ptr detector, std::string name)
   detectors_.insert(std::pair<std::string, Detectors_ptr>(name, detector));
 }
 
-void Bucket::register_function(GenericFunction_ptr function, std::string name)
+void Bucket::register_function(Function_ptr function, std::string name)
 {
-  functions_.insert(std::pair<std::string, GenericFunction_ptr>(name, function));
+  functions_.insert(std::pair<std::string, Function_ptr>(name, function));
 }
 
 void Bucket::register_bcexp(GenericFunction_ptr bcexp)
@@ -80,9 +80,9 @@ Detectors_ptr Bucket::fetch_detector(const std::string name)
   return (*it).second;
 }
 
-GenericFunction_ptr Bucket::fetch_function(const std::string name)
+Function_ptr Bucket::fetch_function(const std::string name)
 {
-  std::map< std::string, GenericFunction_ptr >::iterator it;
+  std::map< std::string, Function_ptr >::iterator it;
   it = functions_.find(name);
   return (*it).second;
 }
@@ -127,22 +127,22 @@ std::map< std::string, DirichletBC_ptr >::const_iterator Bucket::dirichletbcs_en
   return dirichletbcs_.end();
 }
 
-std::map< std::string, GenericFunction_ptr >::iterator Bucket::functions_begin()
+std::map< std::string, Function_ptr >::iterator Bucket::functions_begin()
 {
   return functions_.begin();
 }
 
-std::map< std::string, GenericFunction_ptr >::const_iterator Bucket::functions_begin() const
+std::map< std::string, Function_ptr >::const_iterator Bucket::functions_begin() const
 {
   return functions_.begin();
 }
 
-std::map< std::string, GenericFunction_ptr >::iterator Bucket::functions_end()
+std::map< std::string, Function_ptr >::iterator Bucket::functions_end()
 {
   return functions_.end();
 }
 
-std::map< std::string, GenericFunction_ptr >::const_iterator Bucket::functions_end() const
+std::map< std::string, Function_ptr >::const_iterator Bucket::functions_end() const
 {
   return functions_.end();
 }

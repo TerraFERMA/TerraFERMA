@@ -55,7 +55,7 @@ void DetectorsFile::header_bucket_(Bucket &bucket, uint &column)
   }
   
   // the functions interacting with the detectors
-  for ( std::map< std::string, GenericFunction_ptr >::iterator func = bucket.functions_begin(); 
+  for ( std::map< std::string, Function_ptr >::iterator func = bucket.functions_begin(); 
                                                 func != bucket.functions_end(); func++)
   {
     
@@ -158,7 +158,7 @@ void DetectorsFile::data_bucket_(Bucket &bucket)
   }
   
   // the functions interacting with the detectors
-  for ( std::map< std::string, GenericFunction_ptr >::iterator func = bucket.functions_begin(); 
+  for ( std::map< std::string, Function_ptr >::iterator func = bucket.functions_begin(); 
                                                 func != bucket.functions_end(); func++)
   {
     
