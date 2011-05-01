@@ -27,6 +27,8 @@ namespace buckettools
     
     std::map< std::string, DirichletBC_ptr > dirichletbcs_;
     
+    std::vector< GenericFunction_ptr > bcexps_;
+    
     std::map< std::string, GenericFunction_ptr > functions_;
     
     std::map< std::string, Detectors_ptr > detectors_;
@@ -70,6 +72,14 @@ namespace buckettools
     
     std::map< std::string, Detectors_ptr >::const_iterator detectors_end() const;
     
+    std::map< std::string, DirichletBC_ptr >::iterator dirichletbcs_begin();
+    
+    std::map< std::string, DirichletBC_ptr >::const_iterator dirichletbcs_begin() const;
+    
+    std::map< std::string, DirichletBC_ptr >::iterator dirichletbcs_end();
+    
+    std::map< std::string, DirichletBC_ptr >::const_iterator dirichletbcs_end() const;
+    
     std::map< std::string, GenericFunction_ptr >::iterator functions_begin();
     
     std::map< std::string, GenericFunction_ptr >::const_iterator functions_begin() const;
@@ -77,6 +87,10 @@ namespace buckettools
     std::map< std::string, GenericFunction_ptr >::iterator functions_end();
     
     std::map< std::string, GenericFunction_ptr >::const_iterator functions_end() const;
+    
+  protected:
+    
+    void register_bcexp(GenericFunction_ptr bcexp);
     
   };
 }

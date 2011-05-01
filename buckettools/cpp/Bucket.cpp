@@ -47,6 +47,11 @@ void Bucket::register_function(GenericFunction_ptr function, std::string name)
   functions_.insert(std::pair<std::string, GenericFunction_ptr>(name, function));
 }
 
+void Bucket::register_bcexp(GenericFunction_ptr bcexp)
+{
+  bcexps_.push_back(bcexp);
+}
+
 Mesh_ptr Bucket::fetch_mesh(const std::string name)
 {
   std::map< std::string, Mesh_ptr >::iterator it;
@@ -100,6 +105,26 @@ std::map< std::string, Detectors_ptr >::iterator Bucket::detectors_end()
 std::map< std::string, Detectors_ptr >::const_iterator Bucket::detectors_end() const
 {
   return detectors_.end();
+}
+
+std::map< std::string, DirichletBC_ptr >::iterator Bucket::dirichletbcs_begin()
+{
+  return dirichletbcs_.begin();
+}
+
+std::map< std::string, DirichletBC_ptr >::const_iterator Bucket::dirichletbcs_begin() const
+{
+  return dirichletbcs_.begin();
+}
+
+std::map< std::string, DirichletBC_ptr >::iterator Bucket::dirichletbcs_end()
+{
+  return dirichletbcs_.end();
+}
+
+std::map< std::string, DirichletBC_ptr >::const_iterator Bucket::dirichletbcs_end() const
+{
+  return dirichletbcs_.end();
 }
 
 std::map< std::string, GenericFunction_ptr >::iterator Bucket::functions_begin()
