@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0">
+  <!--
+    ALL dependencies need to be specified here
+    always included when using with spud package:
+  -->
+  <include href="spud_base.rng"/>
+  <!-- direct dependencies of this file -->
+  <include href="geometry.rng"/>
+  <include href="io.rng"/>
+  <include href="system.rng"/>
+  <!-- indirect dependencies of the direct dependencies: -->
+  <include href="spud_extension.rng"/>
+  <include href="function.rng"/>
+  <include href="element.rng"/>
+  <include href="solvers.rng"/>
+  <include href="ufl.rng"/>
+  <start>
+    <element name="bucket_options">
+      <a:documentation>The root node of the options dictionary.</a:documentation>
+      <!-- in geometry.rnc -->
+      <ref name="geometry"/>
+      <!-- in io.rnc -->
+      <ref name="io"/>
+      <oneOrMore>
+        <!-- in system.rnc -->
+        <ref name="system"/>
+      </oneOrMore>
+    </element>
+  </start>
+</grammar>

@@ -1,6 +1,6 @@
 
 #include "SpudBucket.h"
-#include "Detectors.h"
+#include "GenericDetectors.h"
 #include "PointDetectors.h"
 #include "PythonDetectors.h"
 #include "PythonExpression.h"
@@ -12,66 +12,102 @@
 
 using namespace buckettools;
 
-SpudBucket::SpudBucket() : Bucket()
+// Default constructor for spudbucket derived class
+SpudBucket::SpudBucket(std::string name, std::string option_path) : Bucket(name, option_path)
 {
   // Do nothing
 }
 
+// Default destructor for spudbucket derived class
 SpudBucket::~SpudBucket()
 {
   // Do nothing
 }
 
+// Fill the bucket with stuff based on options tree provided by Spud
 void SpudBucket::fill()
 {
+  // Put meshes into the bucket  
+  int nmeshes = Spud::option_count("/geometry/mesh");
+  for (uint i = 0; i<nmeshes; i++)
+  {
+    meshes_fill_(i);
+  }
   
-  meshes_fill_();
-  
+  // Put systems into the bucket
   int nsystems = Spud::option_count("/system");
   for (uint i = 0; i<nsystems; i++)
   {
     system_fill_(i);
   }
   
+  // Put detectors in the bucket
   detectors_fill_();
-  
 }
 
-void SpudBucket::meshes_fill_()
+// Insert a mesh (with xml index meshindex) into the bucket
+void SpudBucket::meshes_fill_(const uint &meshindex)
 {
-  
-  std::string filename;
-  
-  Spud::get_option("/geometry/mesh/file", filename);
-  
-  Mesh_ptr mesh(new dolfin::Mesh(filename));
-  (*mesh).init();
-  register_mesh(mesh, "Mesh");
-  
-  Spud::get_option("/geometry/mesh/edges_file", filename);
-  
-  MeshFunction_uint_ptr meshfunc(new dolfin::MeshFunction<dolfin::uint>(*mesh, filename));
-  register_meshfunction(meshfunc, "EdgeIDs");
-  
-  Spud::get_option("/geometry/mesh/cells_file", filename);
-  
-  meshfunc.reset(new dolfin::MeshFunction<dolfin::uint>(*mesh, filename));
-  register_meshfunction(meshfunc, "CellIDs");
-  
-}
-
-void SpudBucket::system_fill_(const uint &sysindex)
-{
+  // A buffer to put option paths in
   std::stringstream buffer;
   
+  // Get the name of the mesh
+  std::string meshname;
+  buffer.str(""); buffer << "/geometry/mesh[" << meshindex << "]/name";
+  Spud::get_option(buffer.str(), meshname);
+  
+  // Get the name of the mesh file
+  std::string basename;
+  buffer.str(""); buffer << "/geometry/mesh[" << meshindex << "]/file";
+  Spud::get_option(buffer.str(), basename);
+  
+  // Use DOLFIN to read in the mesh
+  std::stringstream filename;
+  filename.str(""); filename << basename << ".xml";
+  Mesh_ptr mesh(new dolfin::Mesh(filename.str()));
+  (*mesh).init();
+
+  // Register the mesh functions (in dolfin::MeshData associated with the mesh - saves us having a separate set of mesh functions in
+  // the Bucket, which would need to be associated with a particular mesh in the case of multiple meshes!):
+  // - for the edge ids
+  MeshFunction_uint_ptr edgeids = (*mesh).data().create_mesh_function("EdgeIDs");
+  filename.str(""); filename << basename << "_edge_subdomain.xml";
+  edgeids.reset(new dolfin::MeshFunction<dolfin::uint>(*mesh, filename.str()));
+
+  // - for the cell ids
+  MeshFunction_uint_ptr cellids = (*mesh).data().create_mesh_function("CellIDs");
+  filename.str(""); filename << basename << "_cell_subdomain.xml";
+  cellids.reset(new dolfin::MeshFunction<dolfin::uint>(*mesh, filename.str()));
+
+  // Put the mesh into the bucket
+  register_mesh(mesh, meshname);
+}
+
+// Insert a system (with xml index meshindex) into the bucket
+void SpudBucket::system_fill_(const uint &sysindex)
+{
+  // Set up the base option path for the system
+  std::stringstream systempath;
+  sydtempath.str(""); systempath << "/system[" << sysindex << "]";
+
+  // A string buffer for option paths
+  std::stringstream buffer;
+  
+  // Get the system name
   std::string sysname;
-  buffer.str(""); buffer << "/system[" << sysindex << "]/name";
+  buffer.str(systempath.str()); buffer << "/name";
   Spud::get_option(buffer.str(), sysname);
   
+  // Get the dimension of the problem (only one dimension assumed currently)
   int dimension;
   Spud::get_option("/geometry/dimension", dimension);
   
-  Mesh_ptr mesh = fetch_mesh("Mesh");
+  // Get the name of the mesh this system is defined on
+  std::string meshname;
+  buffer.str(systempath.str()); buffer << "/mesh/name";
+  Spud::get_option(buffer,str(), meshname);
+  // and then extract the mesh from the bucket we're filling
+  Mesh_ptr mesh = fetch_mesh(meshname);
   
   FunctionSpace_ptr sysspace(new System::FunctionSpace(mesh));
   buffer.str(""); buffer << sysname << "::Space";
@@ -290,41 +326,65 @@ GenericFunction_ptr SpudBucket::init_exp_(const std::string path, const int dime
 
 void SpudBucket::detectors_fill_()
 {
-  int dimension;
-  Spud::get_option("/geometry/dimension", dimension);
-
-  Detectors_ptr det(new Detectors());
+  // Initialise a pointer to a generic detector - so that it can be reset in the loops
+  GenericDetectors_ptr det(new GenericDetectors());
+  // A string buffer for option paths
   std::stringstream buffer;
   
-  int ndets;
-  ndets = Spud::option_count("/io/detectors/point");
-  for (uint i=0; i<ndets; i++)
+  // Find out how many point detectors there are
+  int npdets = Spud::option_count("/io/detectors/point");
+  // and loop over them
+  for (uint i=0; i<npdets; i++)
   {
-    std::vector<double> point;
-    std::string detname;
+    // Set up the base path for a point detector
+    std::stringstream detectorpath;
+    detectorpath.str(""); detectorpath << "/io/detectors/point[" << i << "]";
     
-    buffer.str(""); buffer << "/io/detectors/point[" << i << "]/name";
+    // Get the name of the detector
+    std::string detname;
+    buffer.str(detectorpath.str()); buffer << "/name";
     Spud::get_option(buffer.str(), detname);
-    buffer.str(""); buffer << "/io/detectors/point[" << i << "]";
+
+    // Get the location of the detector
+    std::vector<double> point;
+    buffer.str(detectorpath.str());
     Spud::get_option(buffer.str(), point);
     
+    // Initialise and register the point detector
     det.reset(new PointDetectors(&point, detname));
     register_detector(det, detname);
   }
   
-  ndets = Spud::option_count("/io/detectors/array");
-  for (uint i=0; i<ndets; i++)
+  // Find out how many detector arrays there are
+  int nadets = Spud::option_count("/io/detectors/array");
+  // and loop over them
+  for (uint i=0; i<nadets; i++)
   {
-    int no_det;
-    std::string detname, function;
+    // Set up the base path for a detector array
+    std::stringstream detectorpath;
+    detectorpath.str(""); detectorpath << "/io/detectors/array[" << i << "]";
     
-    buffer.str(""); buffer << "/io/detectors/array[" << i << "]/number_of_detectors";
+    // Get the number of points in this array
+    int no_det;
+    buffer.str(detectorpath.str()); buffer << "/number_of_detectors";
     Spud::get_option(buffer.str(), no_det);
-    buffer.str(""); buffer << "/io/detectors/array[" << i << "]/name";
+
+    // Get the detector array name
+    std::string detname;
+    buffer.str(detectorpath.str()); buffer << "/name";
     Spud::get_option(buffer.str(), detname);
-    buffer.str(""); buffer << "/io/detectors/array[" << i << "]/python";
+
+    // Get the python function that describes the positions of the detectors
+    std::string function;
+    buffer.str(detectorpath.str()); buffer << "/python";
     Spud::get_option(buffer.str(), function);
     
+    // Get the dimension of this problem
+    // - here we assume that there is only one dimension in this problem
+    int dimension;
+    Spud::get_option("/geometry/dimension", dimension);
+
+    // Create the detector and register it in the bucket
     det.reset(new PythonDetectors(no_det, dimension, function, detname));
     register_detector(det, detname);
   }  

@@ -4,11 +4,12 @@
 
 #include "Bucket.h"
 #include "SpudBucket.h"
+#include "SystemBucket.h"
 #include "StatFile.h"
 #include "DiagnosticsFile.h"
 #include "DetectorsFile.h"
 #include "PythonExpression.h"
-#include "Detectors.h"
+#include "GenericDetectors.h"
 #include "PointDetectors.h"
 #include "PythonDetectors.h"
 

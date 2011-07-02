@@ -12,11 +12,11 @@ namespace buckettools
   {
   private:
     
-    void meshes_fill_();
-    
-    void detectors_fill_();
+    void meshes_fill_(const uint &meshindex);
     
     void system_fill_(const uint &sysindex);
+    
+    void detectors_fill_();
     
     void bc_fill_(const std::string bcpath, 
                   const int funci,
@@ -29,7 +29,10 @@ namespace buckettools
     
   public:
     
-    SpudBucket();
+    SpudBucket()
+    { SpudBucket("uninitialised_name", "uninitialised_path"); }
+    
+    SpudBucket(std::string name, std::string option_path);
     
     virtual ~SpudBucket();
     

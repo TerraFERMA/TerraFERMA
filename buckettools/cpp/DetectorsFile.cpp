@@ -1,6 +1,6 @@
 
 #include "DetectorsFile.h"
-#include "Detectors.h"
+#include "GenericDetectors.h"
 #include <cstdio>
 #include <string>
 #include <fstream>
@@ -42,7 +42,7 @@ void DetectorsFile::header_bucket_(Bucket &bucket, uint &column)
   std::stringstream buffer;
 
   // the detector positions
-  for ( std::map< std::string, Detectors_ptr >::iterator det = bucket.detectors_begin(); 
+  for ( std::map< std::string, GenericDetectors_ptr >::iterator det = bucket.detectors_begin(); 
                                            det != bucket.detectors_end(); det++)
   {
     for (uint dim = 0; dim<(*((*det).second)).dim(); dim++)
@@ -59,7 +59,7 @@ void DetectorsFile::header_bucket_(Bucket &bucket, uint &column)
                                                 func != bucket.functions_end(); func++)
   {
     
-    for ( std::map< std::string, Detectors_ptr >::iterator det = bucket.detectors_begin(); 
+    for ( std::map< std::string, GenericDetectors_ptr >::iterator det = bucket.detectors_begin(); 
                                             det != bucket.detectors_end(); det++)
     {
       if ((*((*func).second)).value_rank()==0)
@@ -144,7 +144,7 @@ void DetectorsFile::data_bucket_(Bucket &bucket)
   file_.precision(10);
   
   // the detector positions
-  for ( std::map< std::string, Detectors_ptr >::iterator det = bucket.detectors_begin(); 
+  for ( std::map< std::string, GenericDetectors_ptr >::iterator det = bucket.detectors_begin(); 
                                            det != bucket.detectors_end(); det++)
   {
     for (uint dim = 0; dim<(*((*det).second)).dim(); dim++)
@@ -162,7 +162,7 @@ void DetectorsFile::data_bucket_(Bucket &bucket)
                                                 func != bucket.functions_end(); func++)
   {
     
-    for ( std::map< std::string, Detectors_ptr >::iterator det = bucket.detectors_begin(); 
+    for ( std::map< std::string, GenericDetectors_ptr >::iterator det = bucket.detectors_begin(); 
                                             det != bucket.detectors_end(); det++)
     {
       std::vector< Array_double_ptr > values;

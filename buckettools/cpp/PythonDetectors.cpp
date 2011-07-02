@@ -1,6 +1,6 @@
 
 #include "PythonDetectors.h"
-#include "Detectors.h"
+#include "GenericDetectors.h"
 #include <dolfin.h>
 #include "Python.h"
 #include <string>
@@ -11,7 +11,7 @@ using namespace buckettools;
 PythonDetectors::PythonDetectors(dolfin::uint number_detectors, 
                                  dolfin::uint meshdim, 
                                  std::string function, 
-                                 std::string name) : Detectors(number_detectors, meshdim, name), pyinst_(function)
+                                 std::string name) : GenericDetectors(number_detectors, meshdim, name), pyinst_(function)
 {
   init_();
 }
@@ -23,17 +23,16 @@ PythonDetectors::~PythonDetectors()
 
 void PythonDetectors::init_()
 {
+  if(!positions_.empty())
+  {
+    dolfin::error("In PythonDetectors::init_ intializing already initialized detectors.");
+  }
+  
   PyObject         *pArgs, 
                    *px, 
                    *pResult, 
                    *pResultItem;
   Array_double_ptr point(new dolfin::Array<double>(meshdim_));
-  
-  if(!positions_.empty())
-  {
-    dolfin::warning("In PythonDetectors::init_ intializing already initialized detectors.");
-    clean_();
-  }
   
   pArgs = PyTuple_New(0);
   
@@ -82,7 +81,7 @@ std::string PythonDetectors::str() const
   
   s << pyinst_.function() << std::endl;
   
-  s << Detectors::str();
+  s << GenericDetectors::str();
   
   return s.str();
 }
