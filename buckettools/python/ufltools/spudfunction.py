@@ -57,3 +57,6 @@ class SpudFunction(ufltools.function.Function):
       if libspud.have_option(newoptionpath+"/type/rank/element/symmetry"):
         self.symmetry = True
 
+    self.functionals = []
+    
+

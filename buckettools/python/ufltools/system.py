@@ -9,8 +9,8 @@ class System:
     self.mesh_name = None
     self.name = None
     self.symbol = None
-    self.fields = []
-    self.coeffs = []
+    self.fields = None
+    self.coeffs = None
 
   def functions_ufl(self):
     """Write an array of ufl strings describing all the functions (fields and coefficients) within a system."""

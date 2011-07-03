@@ -17,6 +17,7 @@ class Function:
     self.symmetry = None
     self.type = None
     self.system = None
+    self.functionals = None
   
   def element_ufl(self):
     """Write an array of ufl strings describing the function (field or coefficient) element."""

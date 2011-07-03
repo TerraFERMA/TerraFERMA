@@ -42,6 +42,8 @@ for i in range(libspud.option_count("/system")):
       functional = ufltools.spud.SpudFunctional()
       # get all the information about this functional from the options dictionary
       functional.fill(functional_optionpath, field)
+      # let the field know about this functional
+      field.functionals.append(functional)
       # write some ufl to disk
       functional.write_ufl()
       # done with this functional
@@ -64,6 +66,8 @@ for i in range(libspud.option_count("/system")):
       functional = ufltools.spud.SpudFunctional()
       # get all the information about this functional from the options dictionary
       functional.fill(functional_optionpath, coeff)
+      # let the coefficient know about this functional
+      coeff.functionals.append(functional)
       # write some ufl to disk
       functional.write_ufl()
       # done with this functional
