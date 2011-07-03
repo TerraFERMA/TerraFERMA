@@ -1,47 +1,67 @@
 import sys
+from ufltools.comments import *
 
 def element_ufl(function, cell):
-  ufl = function["symbol"]+"_e = "
+  ufl = []
+  ufl.append(declaration_comment("Element", function["name"]))
+  ufl_line = function["symbol"]+"_e = "
   if function["rank"] == "Scalar":
-    ufl += "FiniteElement("
+    ufl_line += "FiniteElement("
   elif function["rank"] == "Vector":
-    ufl += "VectorElement("
+    ufl_line += "VectorElement("
   elif function["rank"] == "Tensor":
-    ufl += "TensorElement("
+    ufl_line += "TensorElement("
   else:
     print function["rank"]
     print "Unknown rank."
     sys.exit(1)
-  ufl += "\""+function["family"] +"\", " \
+  ufl_line += "\""+function["family"] +"\", " \
              +cell+", " \
              +`function["degree"]`
   if function["rank"] == "Vector":
-    if function["size"]: ufl += ", size="+`function["size"]`
+    if function["size"]: ufl_line += ", size="+`function["size"]`
   elif function["rank"] == "Tensor":
-    if function["shape"]: ufl += ", shape=("+`function["shape"][0]`+","+`function["shape"][1]`+")"
-    if function["symmetry"]: ufl += ", symmetry=True"
-  ufl +=")\n"
+    if function["shape"]: ufl_line += ", shape=("+`function["shape"][0]`+","+`function["shape"][1]`+")"
+    if function["symmetry"]: ufl_line += ", symmetry=True"
+  ufl_line +=")\n"
+  ufl.append(ufl_line)
+  ufl.append("\n")
   return ufl
 
 def systemelement_ufl(symbol, field_symbols):
-  ufl = symbol+"_e = "
-  ufl += "MixedElement(["
-  for s in range(len(field_symbols)-1):
-    ufl += field_symbols[s]+"_e, "
-  ufl += field_symbols[-1]+"_e"
-  ufl += "])\n"
+  ufl = []
+  if len(field_symbols)==1:
+    ufl.append(symbols_equal(symbol, field_symbols[0], suffix="_e"))
+  else:
+    ufl = symbol+"_e = "
+    ufl += "MixedElement(["
+    for s in range(len(field_symbols)-1):
+      ufl += field_symbols[s]+"_e, "
+    ufl += field_symbols[-1]+"_e"
+    ufl += "])\n"
   return ufl
+
+def symbols_equal(symbol_a, symbol_b, suffix=""):
+  return symbol_a+suffix+" = "+symbol_b+suffix
 
 def systemtest_ufl(symbol, field_symbols):
   ufl = []
-  ufl.append(testfunction_ufl(symbol))
-  ufl.append(split_ufl(symbol, field_symbols, "_t"))
+  if len(field_symbols)==1:
+    ufl.append(testfunction_ufl(symbol))
+    ufl.append(testfunction_ufl(field_symbols[0]))
+  else:
+    ufl.append(testfunction_ufl(symbol))
+    ufl.append(split_ufl(symbol, field_symbols, "_t"))
   return ufl
 
 def systemtrial_ufl(symbol, field_symbols):
   ufl = []
-  ufl.append(trialfunction_ufl(symbol))
-  ufl.append(split_ufl(symbol, field_symbols, "_a"))
+  if len(field_symbols)==1:
+    ufl.append(trialfunction_ufl(symbol))
+    ufl.append(trialfunction_ufl(field_symbols[0]))
+  else:
+    ufl.append(trialfunction_ufl(symbol))
+    ufl.append(split_ufl(symbol, field_symbols, "_a"))
   return ufl
 
 def testfunction_ufl(symbol):
@@ -60,14 +80,22 @@ def split_ufl(symbol, field_symbols, suffix=""):
   
 def systemiterate_ufl(symbol, field_symbols):
   ufl = []
-  ufl.append(coefficient_ufl(symbol, suffix="_i"))
-  ufl.append(split_ufl(symbol, field_symbols, suffix="_i"))
+  if len(field_symbols)==1:
+    ufl.append(coefficient_ufl(symbol, suffix="_i"))
+    ufl.append(coefficient_ufl(field_symbols[0], suffix="_i"))
+  else:
+    ufl.append(coefficient_ufl(symbol, suffix="_i"))
+    ufl.append(split_ufl(symbol, field_symbols, suffix="_i"))
   return ufl
 
 def systemold_ufl(symbol, field_symbols):
   ufl = []
-  ufl.append(coefficient_ufl(symbol, suffix="_n"))
-  ufl.append(split_ufl(symbol, field_symbols, suffix="_n"))
+  if len(field_symbols)==1:
+    ufl.append(coefficient_ufl(symbol, suffix="_n"))
+    ufl.append(coefficient_ufl(field_symbols[0], suffix="_n"))
+  else:
+    ufl.append(coefficient_ufl(symbol, suffix="_n"))
+    ufl.append(split_ufl(symbol, field_symbols, suffix="_n"))
   return ufl
 
 def coefficient_ufl(symbol, suffix=""):
@@ -84,15 +112,6 @@ def forms_ufl(form_symbols):
   ufl += "]\n"
   return ufl
 
-def add_element_ufl(function, system_cell):
-  ufl = []
-  if function["type"] != "Constant":
-    # Constants don't have elements - just cells in their declarations
-    ufl.append(declaration_comment("Element", function["name"]))
-    ufl.append(usage_comment(function["name"], function["type"]))
-    ufl.append(element_ufl(function, system_cell))
-  return ufl
-  
 def write_diagnosticfunctional_ufl(functional, function, system_name, system_cell):
   ufl = []
   if function["type"]=="Constant":
@@ -100,7 +119,7 @@ def write_diagnosticfunctional_ufl(functional, function, system_name, system_cel
     ufl.append(constant_ufl(function["symbol"], system_cell))
   else:
     ufl.append(declaration_comment("Element", function["name"]))
-    ufl.append(element_ufl(function, system_cell))
+    ufl += element_ufl(function, system_cell)
     ufl.append("\n")
     ufl.append(declaration_comment("Coefficient", function["name"]))
     ufl.append(coefficient_ufl(function["symbol"]))
