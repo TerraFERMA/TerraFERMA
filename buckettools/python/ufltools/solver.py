@@ -14,16 +14,17 @@ class Solver:
     ufl = []
     ufl += self.system.functions_ufl()
     if self.preamble:
-      ufl.append(generic_comment("Form preamble"))
+      ufl.append(comment("Form preamble"))
       ufl.append(self.preamble+"\n")
 
     assert(len(self.forms)==len(self.form_names))
     for i in range(len(self.forms)):
-      ufl.append(declaration_comment("Form", self.form_names[i]))
+      ufl.append(declaration_comment("Form", "form", self.form_names[i]))
       ufl.append(self.forms[i]+"\n")
 
     ufl.append("\n")
     assert(len(self.forms)==len(self.form_symbols))
+    ufl.append(comment("Declare potentially non-default form names to be accessible"))
     ufl.append(forms_ufl(self.form_symbols))
     ufl.append("\n")
     ufl.append(produced_comment())

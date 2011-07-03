@@ -1,22 +1,14 @@
 import sys
 
 # Functions used to provide comments in ufls
-def generic_comment(comment):
-  return "# "+comment+"\n"
+def comment(string):
+  return "# "+string+"\n"
 
-def declaration_comment(type, name):
-  return generic_comment(type+" declaration for "+name)
-
-def usage_comment(name, usage):
-  lvowels = ['a', 'i', 'e', 'o', 'u']
-  uvowels = [l.upper() for l in lvowels] 
-  if usage[0] in lvowels or usage[0] in uvowels:
-    return generic_comment(name+" will be used as an "+usage)
-  else:
-    return generic_comment(name+" will be used as a "+usage)
+def declaration_comment(thing, type, name):
+  return comment(thing+" declaration for "+type+": "+name)
 
 def produced_comment():
-  return generic_comment("Produced by: "+" ".join(sys.argv))
+  return comment("Produced by: "+" ".join(sys.argv))
 
 def equal_ufl(symbol_a, symbol_b, suffix=""):
   return symbol_a+suffix+" = "+symbol_b+suffix

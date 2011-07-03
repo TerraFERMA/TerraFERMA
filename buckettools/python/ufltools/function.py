@@ -16,6 +16,7 @@ class Function:
   
   def element_ufl(self):
     ufl = []
+    ufl.append(declaration_comment("Element", self.type, self.name))
     ufl_line = self.symbol+"_e = "
     if self.rank == "Scalar":
       ufl_line += "FiniteElement("
