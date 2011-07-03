@@ -29,7 +29,6 @@ case_form_0        = ""
 case_form_1        = ""
 case_form_2        = ""
 
-
 libspud.load_options(options_filename)
 
 for i in range(libspud.option_count("/system")):
