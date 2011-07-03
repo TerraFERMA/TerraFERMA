@@ -3,7 +3,12 @@ import libspud
 import ufltools.function
 
 class SpudFunction(ufltools.function.Function):
+  """A class that stores all the information necessary to write the ufl for a function (field or coefficient) 
+     plus all the information necessary to populate that class using libspud.
+     Note that the class has limited ufl production because much of this is system dependent."""
+
   def fill(self, optionpath, system):
+    """Fill a function class with data describing that function using libspud, the given optionpath and the system its based on."""
     self.name       = libspud.get_option(optionpath+"/name")
     self.symbol     = libspud.get_option(optionpath+"/ufl_symbol")
     self.system     = system

@@ -1,7 +1,10 @@
 from ufltools.base import *
 
 class Solver:
+  """A class that stores all the information necessary to write the ufl for a system of forms (i.e. linear or bilinear) associated with a solver."""
+
   def __init__(self):
+    """Define the expected members of the solver class."""
     self.name = None
     self.type = None
     self.preamble = None
@@ -11,6 +14,7 @@ class Solver:
     self.system = None
 
   def write_ufl(self):
+    """Write the system of forms to a ufl file."""
     ufl = []
     ufl += self.system.functions_ufl()
     if self.preamble:

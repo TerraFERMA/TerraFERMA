@@ -1,8 +1,12 @@
+import sys
 from ufltools.base import *
 
 class Function:
+  """A class that stores all the information necessary to write the ufl for a function (field or coefficient).
+     Note that the class has limited ufl production because much of this is system dependent."""
 
   def __init__(self):
+    """Define the expected members of the function class."""
     self.degree = None
     self.family = None
     self.name = None
@@ -15,6 +19,7 @@ class Function:
     self.system = None
   
   def element_ufl(self):
+    """Write an array of ufl strings describing the function (field or coefficient) element."""
     ufl = []
     ufl.append(declaration_comment("Element", self.type, self.name))
     ufl_line = self.symbol+"_e = "

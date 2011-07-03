@@ -1,7 +1,10 @@
 from ufltools.base import *
 
 class System:
+  """A class that stores all the information necessary to write the ufl for a system (i.e. mixed function space)."""
+
   def __init__(self):
+    """Define the expected members of the system class."""
     self.cell = None
     self.mesh_name = None
     self.name = None
@@ -10,6 +13,7 @@ class System:
     self.coeffs = []
 
   def functions_ufl(self):
+    """Write an array of ufl strings describing all the functions (fields and coefficients) within a system."""
     ufl = []
     ufl.append(declaration_comment("Function elements", "System", self.name))
     for field in self.fields:
@@ -36,6 +40,7 @@ class System:
     return ufl
 
   def element_ufl(self):
+    """Write an array of ufl strings describing the (potentially mixed) element of a system."""
     ufl = []
     if len(self.fields)==1:
       ufl.append(comment("System element is not mixed"))
@@ -52,6 +57,7 @@ class System:
     return ufl
 
   def test_ufl(self):
+    """Write an array of ufl strings describing the (potentially mixed) test space of a system."""
     ufl = []
     if len(self.fields)==1:
       ufl.append(declaration_comment("Test space", "System", self.name))
@@ -66,6 +72,7 @@ class System:
     return ufl
 
   def trial_ufl(self):
+    """Write an array of ufl strings describing the (potentially mixed) trial space of a system."""
     ufl = []
     if len(self.fields)==1:
       ufl.append(declaration_comment("Trial space", "System", self.name))
@@ -80,6 +87,7 @@ class System:
     return ufl
 
   def iterate_ufl(self):
+    """Write an array of ufl strings describing the (potentially mixed) iterated field values of a system."""
     ufl = []
     if len(self.fields)==1:
       ufl.append(declaration_comment("Last iteration value", "System", self.name))
@@ -94,6 +102,7 @@ class System:
     return ufl
 
   def old_ufl(self):
+    """Write an array of ufl strings describing the (potentially mixed) old field values of a system."""
     ufl = []
     if len(self.fields)==1:
       ufl.append(declaration_comment("Previous time-level value", "System", self.name))
@@ -108,6 +117,7 @@ class System:
     return ufl
 
   def split_ufl(self, suffix=""):
+    """Write an array of ufl strings splitting a mixed function or element into components for its constitutive fields."""
     ufl = []
     for s in range(len(self.fields)):
       ufl.append(comment(" - "+self.fields[s].name))

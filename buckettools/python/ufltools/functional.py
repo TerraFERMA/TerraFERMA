@@ -1,13 +1,17 @@
 from ufltools.base import *
 
 class Functional:
+  """A class that stores all the information necessary to write the ufl for a functional (i.e. scalar valued returning ufl)."""
+
   def __init__(self):
+    """Define the expected members of the functional class."""
     self.form = None
     self.function = None
     self.name = None
     self.symbol = None
   
   def write_ufl(self):
+    """Write the functional to a ufl file."""
     ufl = []
     if self.function.type=="Constant":
       ufl.append(declaration_comment("Coefficient", self.function.type, self.function.name))
