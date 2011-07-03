@@ -21,67 +21,6 @@ options_filename  = argv[0]
 
 libspud.load_options(options_filename)
 
-def get_function_details(optionpath, system_cell):
-  function = {}
-  function["name"]   = libspud.get_option(optionpath+"/name")
-  function["symbol"] = libspud.get_option(optionpath+"/ufl_symbol")
-  function["type"]   = libspud.get_option(optionpath+"/type/name")
-  if function["type"] == "Aliased":
-    aliasedsystem_name   = libspud.get_option(optionpath+"/type/system")
-    aliasedfunction_name = libspud.get_option(optionpath+"/type/generic_function")
-    
-    aliasedsystem_optionpath = "/system::"+aliasedsystem_name
-    if libspud.have_option(aliasedsystem_optionpath+"/field::"+aliasedfunction_name):
-      aliasedfunction_optionpath = aliasedsystem_optionpath+"/field::"+aliasedfunction_name
-    elif libspud.have_option(aliasedsystem_optionpath+"/coefficient::"+aliasedfunction_name):
-      aliasedfunction_optionpath = aliasedsystem_optionpath+"/coefficient::"+aliasedfunction_name
-    else:
-      print "Unable to find aliased generic_function as either a field or a coefficient."
-      sys.exit(1)
-    function["type"] = libspud.get_option(aliasedfunction_optionpath+"/type/name")
-    if function["type"]=="Aliased":
-      print "Can't alias to an aliased function."
-      sys.exit(1)
-     
-    # Perform a check that the meshes at least have the same cell (a necessary but not sufficient check)
-    aliasedsystemmesh_name       = libspud.get_option(aliasedsystem_optionpath+"/mesh/name")
-    aliasedsystemmesh_optionpath = "/geometry/mesh::"+aliasedsystemmesh_name
-    aliasedsystem_cell           = libspud.get_option(aliasedsystemmesh_optionpath+"/cell")
-    assert(aliasedsystem_cell == system_cell)
-    
-    newoptionpath = aliasedfunction_optionpath
-  else:
-    newoptionpath = optionpath
-
-  function["optionpath"] = optionpath
-  function["rank"]   = libspud.get_option(newoptionpath+"/type/rank/name")
-  function["family"]   = None
-  function["degree"] = None
-  if function["type"] != "Constant":
-    function["family"] = libspud.get_option(newoptionpath+"/type/rank/element/family")
-    function["degree"] = libspud.get_option(newoptionpath+"/type/rank/element/degree")
-  
-  function["size"]     = None
-  function["shape"]    = None
-  function["symmetry"] = None
-  if function["rank"] == "Vector":
-    if libspud.have_option(newoptionpath+"/type/rank/element/size"):
-      function["size"] = libspud.get_option(newoptionpath+"/type/rank/element/size")
-  elif function["rank"] == "Tensor":
-    if libspud.have_option(newoptionpath+"/type/rank/element/shape"):
-      function["shape"] = libspud.get_option(newoptionpath+"/type/rank/element/shape")
-    if libspud.have_option(newoptionpath+"/type/rank/element/symmetry"):
-      function["symmetry"] = True
-
-  return function
-
-def get_diagnosticfunctional_details(optionpath):
-  functional = {}
-  functional["name"]   = libspud.get_option(optionpath+"/name")
-  functional["symbol"] = libspud.get_option(optionpath+"/ufl_symbol")
-  functional["form"]   = libspud.get_option(optionpath)+"\n"
-  return functional
-  
 for i in range(libspud.option_count("/system")):
   system_optionpath = "/system["+`i`+"]"
   system_name       = libspud.get_option(system_optionpath+"/name")
@@ -110,25 +49,6 @@ for i in range(libspud.option_count("/system")):
       functional_details = get_diagnosticfunctional_details(functional_optionpath)
       write_diagnosticfunctional_ufl(functional_details, field_details, system_name, system_cell)
 
-  for j in range(libspud.option_count(system_optionpath+"/coefficient")):
-    coeff_optionpath = system_optionpath+"/coefficient["+`j`+"]"
-
-    coeff_details = get_function_details(coeff_optionpath, system_cell)
-
-    system_ufl += add_element_ufl(coeff_details, system_cell)
-
-    if coeff_details["type"]=="Constant":
-      systemconst_symbols.append(coeff_details["symbol"])
-    else:
-      systemcoeff_symbols.append(coeff_details["symbol"])
-    
-    for k in range(libspud.option_count(coeff_optionpath+"/type/output/include_in_diagnostics/functional")):
-      # Aliased coefficients don't get in here because we're not using the aliased optionpath above
-      functional_optionpath = coeff_optionpath+"/type/output/include_in_diagnostics/functional["+`k`+"]"
-      functional_details = get_diagnosticfunctional_details(functional_optionpath)
-      write_diagnosticfunctional_ufl(functional_details, coeff_details, system_name, system_cell)
-  
-
   system_ufl.append("\n")
   system_ufl.append(declaration_comment("Element", system_name))
   system_ufl.append(systemelement_ufl(system_symbol, systemfield_symbols))
@@ -140,16 +60,52 @@ for i in range(libspud.option_count("/system")):
   system_ufl += systemiterate_ufl(system_symbol, systemfield_symbols)
   system_ufl.append("\n")
   system_ufl += systemold_ufl(system_symbol, systemfield_symbols)
+  system_ufl.append("\n")
 
-  filename = system_name+".ufl"
-  filehandle = file(filename, 'w')
-  filehandle.writelines(system_ufl)
-  filehandle.close()
+  for j in range(libspud.option_count(system_optionpath+"/coefficient")):
+    coeff_optionpath = system_optionpath+"/coefficient["+`j`+"]"
 
-  #for j in range(libspud.option_count("/system["+`i`+"]/nonlinear_solver")):
-  #  solver_optionpath = system_optionpath+"/nonlinear_solver["+`j`+"]"
-  #  solver_name       = libspud.get_option(solver_optionpath+"/name")
-  #  solver_type       = libspud.get_option(solver_optionpath+"/type/name")
-  #  solver_optionpath += 
+    coeff_details = get_function_details(coeff_optionpath, system_cell)
+
+    if coeff_details["type"] == "Constant":
+      system_ufl.append(usage_comment(coeff_details["name"], coeff_details["type"]))
+      system_ufl.append(constant_ufl(coeff_details["symbol"], system_cell))
+    else:
+      system_ufl += add_element_ufl(coeff_details, system_cell)
+      system_ufl.append(coefficient_ufl(coeff_details["symbol"]))
+    system_ufl.append("\n")
+
+    for k in range(libspud.option_count(coeff_optionpath+"/type/output/include_in_diagnostics/functional")):
+      # Aliased coefficients don't get in here because we're not using the aliased optionpath above
+      functional_optionpath = coeff_optionpath+"/type/output/include_in_diagnostics/functional["+`k`+"]"
+      functional_details = get_diagnosticfunctional_details(functional_optionpath)
+      write_diagnosticfunctional_ufl(functional_details, coeff_details, system_name, system_cell)
   
+  for j in range(libspud.option_count(system_optionpath+"/nonlinear_solver")):
+    solver_optionpath = system_optionpath+"/nonlinear_solver["+`j`+"]"
+    solver_name       = libspud.get_option(solver_optionpath+"/name")
+    solvertype_optionpath = solver_optionpath+"/type"
+    solver_type           = libspud.get_option(solvertype_optionpath+"/name")
+
+    solver_ufl = []
+    solver_ufl += system_ufl
+    if libspud.have_option(solvertype_optionpath+"/preamble"):
+      solver_ufl.append(libspud.get_option(solvertype_optionpath+"/preamble")+"\n")
+
+    solverform_symbols = []
+    for k in range(libspud.option_count(solvertype_optionpath+"/form")):
+      form_optionpath = solvertype_optionpath+"/form["+`k`+"]"
+      solver_ufl.append(libspud.get_option(form_optionpath)+"\n")
+      solverform_symbols.append(libspud.get_option(form_optionpath+"/ufl_symbol"))
+
+    solver_ufl.append("\n")
+    solver_ufl.append(forms_ufl(solverform_symbols))
+    solver_ufl.append("\n")
+    solver_ufl.append(produced_comment())
+
+    filename = system_name+solver_name+".ufl"
+    filehandle = file(filename, 'w')
+    filehandle.writelines(solver_ufl)
+    filehandle.close()
+
 # and we're done
