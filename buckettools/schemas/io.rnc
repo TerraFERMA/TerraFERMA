@@ -1,0 +1,54 @@
+include "spud_base.rnc"
+
+io = 
+  (
+    ## Input/Output options
+    element io {
+      output_file_options,
+      detectors_options
+    }
+  )
+
+output_file_options = 
+  (
+    ## Base name for files output by the model
+    element output_base_name {
+      anystring
+    }
+  )
+
+detectors_options =
+  (
+    ## Detectors
+    element detectors {
+      (
+        ## Set up point detectors
+        element point {
+          attribute name { xsd:string },
+          real_dim_vector
+        }|
+        ## Set up an array of detectors
+        element array {
+          attribute name { xsd:string },
+          ## The number of detectors returned by
+          ## the python function (below)
+          element number_of_detectors {
+            integer
+          },
+          ## Python function prescribing detector positions.
+          ##
+          ## Functions should be of the form:
+          ##
+          ##  def val():
+          ##     # Function code
+          ##     return # Return value
+          ##
+          ## The return value must have length number_of_detectors.
+          element python {
+            python_code
+          }
+        }
+      )*
+    }
+  )
+

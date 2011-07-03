@@ -1,0 +1,33 @@
+include "spud_base.rnc"
+
+ufl_symbol =
+  (
+    ## - trial (ansatz) function = symbol_a
+    ##
+    ## - test function           = symbol_t
+    ##
+    ## - iterated function       = symbol_i
+    ##
+    ## - old function            = symbol_n
+    ##
+    element ufl_symbol {
+      anystring
+    }
+  )
+
+form =
+  (
+    ufl_w_symbol
+  )
+
+ufl =
+  (
+    python_code
+  )
+
+ufl_w_symbol =
+  (
+    python_code,
+    ufl_symbol
+  )
+

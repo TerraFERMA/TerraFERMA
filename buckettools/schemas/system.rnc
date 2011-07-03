@@ -1,0 +1,33 @@
+include "spud_base.rnc"
+include "solvers.rnc"
+include "function.rnc"
+include "ufl.rnc"
+
+system = 
+  (
+    element system {
+      attribute name { xsd:string },
+      mesh_choice,
+      ufl_symbol,
+      field_options+,
+      coefficient_options*,
+      nonlinear_solver_options+
+    }
+  )
+
+mesh_choice =
+  (
+    (
+      ## What mesh is this system on?
+      element mesh {
+        attribute name { xsd:string },
+        empty
+      }|
+      ## What mesh is this system on?
+      element mesh {
+        attribute name { "Mesh" },
+        empty
+      }
+    )
+  )
+

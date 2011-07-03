@@ -1,0 +1,203 @@
+include "spud_base.rnc"
+
+generic_element_family = 
+  (
+     ## Element family
+     element family {
+        # a hard coded string_value
+        element string_value {
+          ( "CG" | "DG" )
+        }
+     }
+  )
+
+cg_element_family = 
+  (
+     ## Element family
+     element family {
+        # a hard coded string_value
+        element string_value {
+          ( "CG" )
+        }
+     }
+  )
+
+dg_element_family = 
+  (
+     ## Element family
+     element family {
+        # a hard coded string_value
+        element string_value {
+          ( "DG" )
+        }
+     }
+  )
+
+generic_element_degree =
+  (
+     ## Element degree
+     element degree {
+       integer
+     }
+  )
+
+p0_element_degree =
+  (
+     ## Element degree
+     element degree {
+       element integer_value {
+          attribute rank {"0"},
+          ( "0" )
+       }
+     }
+  )
+
+p1_element_degree =
+  (
+     ## Element degree
+     element degree {
+       element integer_value {
+          attribute rank {"0"},
+          ( "1" )
+       }
+     }
+  )
+
+p2_element_degree =
+  (
+     ## Element degree
+     element degree {
+       element integer_value {
+          attribute rank {"0"},
+          ( "2" )
+       }
+     }
+  )
+
+generic_element =
+  (
+     generic_element_family,
+     generic_element_degree
+  )
+
+p0_element =
+  (
+     dg_element_family,
+     p0_element_degree
+  )
+
+p1_element =
+  (
+     cg_element_family,
+     p1_element_degree
+  )
+
+p2_element =
+  (
+     cg_element_family,
+     p2_element_degree
+  )
+
+vector_element_options =
+  (
+    element size {
+      integer
+    }?
+  )
+
+tensor_element_options =
+  (
+    element shape {
+      integer_2_vector
+    }?,
+    element symmetric {
+      empty
+    }?
+  )
+
+element_options_scalar =
+  (
+     (
+       ## Options describing the finite element
+       element element {
+         attribute name { "UserDefined" },
+         generic_element
+       }|
+       ## Options describing the finite element
+       element element {
+         attribute name { "P0" },
+         p0_element
+       }|
+       ## Options describing the finite element
+       element element {
+         attribute name { "P1" },
+         p1_element
+       }|
+       ## Options describing the finite element
+       element element {
+         attribute name { "P2" },
+         p2_element
+       }
+     )
+  )
+
+element_options_vector =
+  (
+     (
+       ## Options describing the finite element
+       element element {
+         attribute name { "UserDefined" },
+         generic_element,
+         vector_element_options
+       }|
+       ## Options describing the finite element
+       element element {
+         attribute name { "P0" },
+         p0_element,
+         vector_element_options
+       }|
+       ## Options describing the finite element
+       element element {
+         attribute name { "P1" },
+         p1_element,
+         vector_element_options
+       }|
+       ## Options describing the finite element
+       element element {
+         attribute name { "P2" },
+         p2_element,
+         vector_element_options
+       }
+     )
+  )
+
+element_options_tensor =
+  (
+     (
+       ## Options describing the finite element
+       element element {
+         attribute name { "UserDefined" },
+         generic_element,
+         tensor_element_options
+       }|
+       ## Options describing the finite element
+       element element {
+         attribute name { "P0" },
+         p0_element,
+         tensor_element_options
+       }|
+       ## Options describing the finite element
+       element element {
+         attribute name { "P1" },
+         p1_element,
+         tensor_element_options
+       }|
+       ## Options describing the finite element
+       element element {
+         attribute name { "P2" },
+         p2_element,
+         tensor_element_options
+       }
+     )
+  )
+

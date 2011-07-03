@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+  <include href="spud_base.rng"/>
+  <define name="integer_2_vector">
+    <element name="integer_value">
+      <attribute name="rank">
+        <value>1</value>
+      </attribute>
+      <attribute name="dim1">
+        <value>2</value>
+      </attribute>
+      <attribute name="shape">
+        <data type="integer"/>
+      </attribute>
+      <list>
+        <oneOrMore>
+          <data type="integer"/>
+        </oneOrMore>
+      </list>
+    </element>
+    <ref name="comment"/>
+  </define>
+</grammar>

@@ -1,0 +1,13 @@
+include "spud_base.rnc"
+
+integer_2_vector =
+  (
+    element integer_value {
+      attribute rank { "1" },
+      attribute dim1 { "2" },
+      attribute shape { xsd:integer },
+      list { xsd:integer+ }
+    },
+    comment
+  )
+

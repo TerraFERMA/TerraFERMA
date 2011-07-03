@@ -1,0 +1,675 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+  <include href="spud_base.rng"/>
+  <include href="element.rng"/>
+  <include href="ufl.rng"/>
+  <define name="field_options">
+    <element name="field">
+      <a:documentation>Options describing a function in this system</a:documentation>
+      <ref name="generic_function_header_options"/>
+      <element name="type">
+        <attribute name="name">
+          <value>Function</value>
+        </attribute>
+        <choice>
+          <element name="rank">
+            <attribute name="name">
+              <value>Scalar</value>
+            </attribute>
+            <ref name="scalar_field_function_options"/>
+          </element>
+          <element name="rank">
+            <attribute name="name">
+              <value>Vector</value>
+            </attribute>
+            <ref name="vector_field_function_options"/>
+          </element>
+          <element name="rank">
+            <attribute name="name">
+              <value>Tensor</value>
+            </attribute>
+            <ref name="tensor_field_function_options"/>
+          </element>
+        </choice>
+        <ref name="generic_function_output_options"/>
+      </element>
+    </element>
+  </define>
+  <define name="coefficient_options">
+    <element name="coefficient">
+      <a:documentation>Options describing a function in this system</a:documentation>
+      <ref name="generic_function_header_options"/>
+      <choice>
+        <element name="type">
+          <attribute name="name">
+            <value>Function</value>
+          </attribute>
+          <choice>
+            <element name="rank">
+              <attribute name="name">
+                <value>Scalar</value>
+              </attribute>
+              <ref name="scalar_coefficient_function_expression_options"/>
+            </element>
+            <element name="rank">
+              <attribute name="name">
+                <value>Vector</value>
+              </attribute>
+              <ref name="vector_coefficient_function_expression_options"/>
+            </element>
+            <element name="rank">
+              <attribute name="name">
+                <value>Tensor</value>
+              </attribute>
+              <ref name="tensor_coefficient_function_expression_options"/>
+            </element>
+          </choice>
+          <ref name="generic_function_output_options"/>
+        </element>
+        <element name="type">
+          <attribute name="name">
+            <value>Expression</value>
+          </attribute>
+          <choice>
+            <element name="rank">
+              <attribute name="name">
+                <value>Scalar</value>
+              </attribute>
+              <ref name="scalar_coefficient_function_expression_options"/>
+            </element>
+            <element name="rank">
+              <attribute name="name">
+                <value>Vector</value>
+              </attribute>
+              <ref name="vector_coefficient_function_expression_options"/>
+            </element>
+            <element name="rank">
+              <attribute name="name">
+                <value>Tensor</value>
+              </attribute>
+              <ref name="tensor_coefficient_function_expression_options"/>
+            </element>
+          </choice>
+          <ref name="generic_function_output_options"/>
+        </element>
+        <element name="type">
+          <attribute name="name">
+            <value>Constant</value>
+          </attribute>
+          <choice>
+            <element name="rank">
+              <attribute name="name">
+                <value>Scalar</value>
+              </attribute>
+              <ref name="scalar_coefficient_constant_options"/>
+            </element>
+            <element name="rank">
+              <attribute name="name">
+                <value>Vector</value>
+              </attribute>
+              <ref name="vector_coefficient_constant_options"/>
+            </element>
+            <element name="rank">
+              <attribute name="name">
+                <value>Tensor</value>
+              </attribute>
+              <ref name="tensor_coefficient_constant_options"/>
+            </element>
+          </choice>
+          <ref name="generic_function_output_options"/>
+        </element>
+        <element name="type">
+          <attribute name="name">
+            <value>Aliased</value>
+          </attribute>
+          <ref name="coefficient_aliased_options"/>
+        </element>
+      </choice>
+    </element>
+  </define>
+  <define name="scalar_field_function_options">
+    <attribute name="rank">
+      <value>0</value>
+    </attribute>
+    <ref name="element_options_scalar">
+      <a:documentation>Options describing the finite element</a:documentation>
+    </ref>
+    <oneOrMore>
+      <ref name="initial_condition_scalar"/>
+    </oneOrMore>
+    <zeroOrMore>
+      <ref name="boundary_condition_scalar"/>
+    </zeroOrMore>
+  </define>
+  <define name="vector_field_function_options">
+    <attribute name="rank">
+      <value>1</value>
+    </attribute>
+    <ref name="element_options_vector">
+      <a:documentation>Options describing the finite element</a:documentation>
+    </ref>
+    <oneOrMore>
+      <ref name="initial_condition_vector"/>
+    </oneOrMore>
+    <zeroOrMore>
+      <ref name="boundary_condition_vector"/>
+    </zeroOrMore>
+  </define>
+  <define name="tensor_field_function_options">
+    <attribute name="rank">
+      <value>2</value>
+    </attribute>
+    <ref name="element_options_tensor">
+      <a:documentation>Options describing the finite element</a:documentation>
+    </ref>
+    <oneOrMore>
+      <ref name="initial_condition_tensor"/>
+    </oneOrMore>
+    <zeroOrMore>
+      <ref name="boundary_condition_tensor"/>
+    </zeroOrMore>
+  </define>
+  <define name="scalar_coefficient_function_expression_options">
+    <attribute name="rank">
+      <value>0</value>
+    </attribute>
+    <ref name="element_options_scalar">
+      <a:documentation>Options describing the finite element</a:documentation>
+    </ref>
+    <oneOrMore>
+      <ref name="prescribed_expression_scalar"/>
+    </oneOrMore>
+  </define>
+  <define name="vector_coefficient_function_expression_options">
+    <attribute name="rank">
+      <value>1</value>
+    </attribute>
+    <ref name="element_options_vector">
+      <a:documentation>Options describing the finite element</a:documentation>
+    </ref>
+    <oneOrMore>
+      <ref name="prescribed_expression_vector"/>
+    </oneOrMore>
+  </define>
+  <define name="tensor_coefficient_function_expression_options">
+    <attribute name="rank">
+      <value>2</value>
+    </attribute>
+    <ref name="element_options_tensor">
+      <a:documentation>Options describing the finite element</a:documentation>
+    </ref>
+    <oneOrMore>
+      <ref name="prescribed_expression_tensor"/>
+    </oneOrMore>
+  </define>
+  <define name="scalar_coefficient_constant_options">
+    <attribute name="rank">
+      <value>0</value>
+    </attribute>
+    <ref name="prescribed_constant_scalar"/>
+  </define>
+  <define name="vector_coefficient_constant_options">
+    <attribute name="rank">
+      <value>1</value>
+    </attribute>
+    <ref name="prescribed_constant_vector"/>
+  </define>
+  <define name="tensor_coefficient_constant_options">
+    <attribute name="rank">
+      <value>2</value>
+    </attribute>
+    <ref name="prescribed_constant_tensor"/>
+  </define>
+  <define name="generic_function_header_options">
+    <attribute name="name">
+      <data type="string"/>
+    </attribute>
+    <ref name="ufl_symbol"/>
+  </define>
+  <define name="generic_function_output_options">
+    <element name="output">
+      <optional>
+        <element name="include_in_diagnostics">
+          <zeroOrMore>
+            <ref name="functional_options"/>
+          </zeroOrMore>
+        </element>
+      </optional>
+      <optional>
+        <element name="include_in_detectors">
+          <empty/>
+        </element>
+      </optional>
+    </element>
+  </define>
+  <define name="functional_options">
+    <choice>
+      <element name="functional">
+        <attribute name="name">
+          <data type="string"/>
+        </attribute>
+        <ref name="form"/>
+      </element>
+      <element name="functional">
+        <attribute name="name">
+          <value>L2Norm</value>
+        </attribute>
+        <ref name="form"/>
+      </element>
+      <element name="functional">
+        <attribute name="name">
+          <value>Integral</value>
+        </attribute>
+        <ref name="form"/>
+      </element>
+      <element name="functional">
+        <attribute name="name">
+          <value>SurfaceIntegral</value>
+        </attribute>
+        <ref name="form"/>
+      </element>
+    </choice>
+  </define>
+  <define name="coefficient_aliased_options">
+    <element name="system">
+      <ref name="anystring"/>
+    </element>
+    <element name="generic_function">
+      <ref name="anystring"/>
+    </element>
+  </define>
+  <define name="initial_condition_scalar">
+    <choice>
+      <element name="initial_condition">
+        <a:documentation>Options for the description of the initial condition over the domain</a:documentation>
+        <attribute name="name">
+          <value>WholeMesh</value>
+        </attribute>
+        <ref name="prescribed_scalar"/>
+      </element>
+      <element name="initial_condition">
+        <attribute name="name">
+          <data type="string"/>
+        </attribute>
+        <element name="region_ids">
+          <a:documentation>A list of the region ids (physical ids in gmsh) that this  condition applies to</a:documentation>
+          <ref name="integer_vector"/>
+        </element>
+        <ref name="prescribed_scalar"/>
+      </element>
+    </choice>
+  </define>
+  <define name="initial_condition_vector">
+    <choice>
+      <element name="initial_condition">
+        <a:documentation>Options for the description of the initial condition over the domain</a:documentation>
+        <attribute name="name">
+          <value>WholeMesh</value>
+        </attribute>
+        <ref name="prescribed_vector"/>
+      </element>
+      <element name="initial_condition">
+        <a:documentation>Options for the description of the initial condition over regions</a:documentation>
+        <attribute name="name">
+          <data type="string"/>
+        </attribute>
+        <element name="region_ids">
+          <a:documentation>A list of the region ids (physical ids in gmsh) that this condition applies to</a:documentation>
+          <ref name="integer_vector"/>
+        </element>
+        <ref name="prescribed_vector"/>
+      </element>
+    </choice>
+  </define>
+  <define name="initial_condition_tensor">
+    <choice>
+      <element name="initial_condition">
+        <a:documentation>Options for the description of the initial condition over the domain</a:documentation>
+        <attribute name="name">
+          <value>WholeMesh</value>
+        </attribute>
+        <ref name="prescribed_tensor"/>
+      </element>
+      <element name="initial_condition">
+        <a:documentation>Options for the description of the initial condition over regions</a:documentation>
+        <attribute name="name">
+          <data type="string"/>
+        </attribute>
+        <element name="region_ids">
+          <a:documentation>A list of the region ids (physical ids in gmsh) that this condition applies to</a:documentation>
+          <ref name="integer_vector"/>
+        </element>
+        <ref name="prescribed_tensor"/>
+      </element>
+    </choice>
+  </define>
+  <define name="boundary_condition_scalar">
+    <element name="boundary_condition">
+      <a:documentation>Options for the description of a boundary condition</a:documentation>
+      <attribute name="name">
+        <data type="string"/>
+      </attribute>
+      <element name="boundary_ids">
+        <a:documentation>A list of the boundary ids (physical ids in gmsh) that this condition applies to  </a:documentation>
+        <ref name="integer_vector"/>
+      </element>
+      <element name="sub_components">
+        <a:documentation>There are no sub components to a scalar so this is just a dummy tree level for consistency with a vector function</a:documentation>
+        <attribute name="name">
+          <value>All</value>
+        </attribute>
+        <element name="type">
+          <attribute name="name">
+            <value>Dirichlet</value>
+          </attribute>
+          <ref name="prescribed_scalar"/>
+        </element>
+      </element>
+    </element>
+  </define>
+  <define name="boundary_condition_vector">
+    <element name="boundary_condition">
+      <a:documentation>Options for the description of a boundary condition</a:documentation>
+      <attribute name="name">
+        <data type="string"/>
+      </attribute>
+      <element name="boundary_ids">
+        <a:documentation>A list of the boundary ids (physical ids in gmsh) that this condition applies to  </a:documentation>
+        <ref name="integer_vector"/>
+      </element>
+      <oneOrMore>
+        <choice>
+          <element name="sub_components">
+            <a:documentation>Apply this boundary condition to all the vector components on this boundary_id</a:documentation>
+            <attribute name="name">
+              <value>All</value>
+            </attribute>
+            <element name="type">
+              <attribute name="name">
+                <value>Dirichlet</value>
+              </attribute>
+              <ref name="prescribed_vector"/>
+            </element>
+          </element>
+          <element name="sub_components">
+            <a:documentation>Apply this boundary condition to a subset of the vector components on this boundary_id</a:documentation>
+            <attribute name="name">
+              <data type="string"/>
+            </attribute>
+            <element name="components">
+              <a:documentation>A list of the vector components to which this boundary condition applies (indexes from 0)</a:documentation>
+              <ref name="integer_vector"/>
+            </element>
+            <element name="type">
+              <attribute name="name">
+                <value>Dirichlet</value>
+              </attribute>
+              <ref name="prescribed_scalar"/>
+            </element>
+          </element>
+        </choice>
+      </oneOrMore>
+    </element>
+  </define>
+  <define name="boundary_condition_tensor">
+    <element name="boundary_condition">
+      <a:documentation>Options for the description of a boundary condition</a:documentation>
+      <attribute name="name">
+        <data type="string"/>
+      </attribute>
+      <element name="boundary_ids">
+        <a:documentation>A list of the boundary ids (physical ids in gmsh) that this condition applies to  </a:documentation>
+        <ref name="integer_vector"/>
+      </element>
+      <oneOrMore>
+        <choice>
+          <element name="sub_components">
+            <a:documentation>Apply this boundary condition to all the tensor components on this boundary_id</a:documentation>
+            <attribute name="name">
+              <value>All</value>
+            </attribute>
+            <element name="type">
+              <attribute name="name">
+                <value>Dirichlet</value>
+              </attribute>
+              <ref name="prescribed_tensor"/>
+            </element>
+          </element>
+          <element name="sub_components">
+            <a:documentation>Apply this boundary condition to a subset of the tensor components on this boundary_id</a:documentation>
+            <attribute name="name">
+              <data type="string"/>
+            </attribute>
+            <element name="components">
+              <element name="number_of_components">
+                <a:documentation>The number of components returned by
+the python function (below)</a:documentation>
+                <ref name="integer"/>
+              </element>
+              <element name="python">
+                <a:documentation>Python function listing the tensor components.
+
+Functions should be of the form:
+
+ def val():
+    # Function code
+    return [[...,...],[...,...],...] # Return integer list of lists
+
+The return value must have length number_of_components.</a:documentation>
+                <ref name="python_code"/>
+              </element>
+            </element>
+            <element name="type">
+              <attribute name="name">
+                <value>Dirichlet</value>
+              </attribute>
+              <ref name="prescribed_scalar"/>
+            </element>
+          </element>
+        </choice>
+      </oneOrMore>
+    </element>
+  </define>
+  <define name="prescribed_constant_scalar">
+    <element name="value">
+      <a:documentation>Options for the description of an expression over the domain</a:documentation>
+      <attribute name="name">
+        <value>WholeMesh</value>
+      </attribute>
+      <ref name="prescribed_scalar_constant"/>
+    </element>
+  </define>
+  <define name="prescribed_constant_vector">
+    <element name="value">
+      <a:documentation>Options for the description of an expression over the domain</a:documentation>
+      <attribute name="name">
+        <value>WholeMesh</value>
+      </attribute>
+      <ref name="prescribed_vector_constant"/>
+    </element>
+  </define>
+  <define name="prescribed_constant_tensor">
+    <element name="value">
+      <a:documentation>Options for the description of an expression over the domain</a:documentation>
+      <attribute name="name">
+        <value>WholeMesh</value>
+      </attribute>
+      <ref name="prescribed_tensor_constant"/>
+    </element>
+  </define>
+  <define name="prescribed_expression_scalar">
+    <choice>
+      <element name="value">
+        <a:documentation>Options for the description of an expression over the domain</a:documentation>
+        <attribute name="name">
+          <value>WholeMesh</value>
+        </attribute>
+        <ref name="prescribed_scalar"/>
+      </element>
+      <element name="value">
+        <a:documentation>Options for the description of an expression over regions</a:documentation>
+        <attribute name="name">
+          <data type="string"/>
+        </attribute>
+        <element name="region_ids">
+          <a:documentation>A list of the region ids (physical ids in gmsh) that this expression applies to</a:documentation>
+          <ref name="integer_vector"/>
+        </element>
+        <ref name="prescribed_scalar"/>
+      </element>
+    </choice>
+  </define>
+  <define name="prescribed_expression_vector">
+    <choice>
+      <element name="value">
+        <a:documentation>Options for the description of an expression over the domain</a:documentation>
+        <attribute name="name">
+          <value>WholeMesh</value>
+        </attribute>
+        <ref name="prescribed_vector"/>
+      </element>
+      <element name="value">
+        <a:documentation>Options for the description of an expression over regions</a:documentation>
+        <attribute name="name">
+          <data type="string"/>
+        </attribute>
+        <element name="region_ids">
+          <a:documentation>A list of the region ids (physical ids in gmsh) that this expression applies to</a:documentation>
+          <ref name="integer_vector"/>
+        </element>
+        <ref name="prescribed_vector"/>
+      </element>
+    </choice>
+  </define>
+  <define name="prescribed_expression_tensor">
+    <choice>
+      <element name="value">
+        <a:documentation>Options for the description of an expression over the domain</a:documentation>
+        <attribute name="name">
+          <value>WholeMesh</value>
+        </attribute>
+        <ref name="prescribed_tensor"/>
+      </element>
+      <element name="value">
+        <a:documentation>Options for the description of an expression over regions</a:documentation>
+        <attribute name="name">
+          <data type="string"/>
+        </attribute>
+        <element name="region_ids">
+          <a:documentation>A list of the region ids (physical ids in gmsh) that this expression applies to</a:documentation>
+          <ref name="integer_vector"/>
+        </element>
+        <ref name="prescribed_tensor"/>
+      </element>
+    </choice>
+  </define>
+  <define name="prescribed_scalar_constant">
+    <element name="constant">
+      <a:documentation>A constant scalar</a:documentation>
+      <ref name="real"/>
+    </element>
+  </define>
+  <define name="prescribed_vector_constant">
+    <choice>
+      <element name="constant">
+        <a:documentation>A constant vector</a:documentation>
+        <attribute name="name">
+          <value>dim</value>
+        </attribute>
+        <ref name="real_dim_vector"/>
+      </element>
+      <element name="constant">
+        <attribute name="name">
+          <value>arbitrary</value>
+        </attribute>
+        <ref name="real_vector"/>
+      </element>
+    </choice>
+  </define>
+  <define name="prescribed_tensor_constant">
+    <choice>
+      <element name="constant">
+        <a:documentation>A constant tensor</a:documentation>
+        <attribute name="name">
+          <value>dim</value>
+        </attribute>
+        <ref name="real_dim_tensor"/>
+      </element>
+      <element name="constant">
+        <attribute name="name">
+          <value>arbitrary</value>
+        </attribute>
+        <ref name="real_tensor"/>
+      </element>
+    </choice>
+  </define>
+  <define name="prescribed_scalar_python">
+    <element name="python">
+      <a:documentation>A scalar described by a python function.
+
+Functions should be of the form:
+
+ def val(x):
+    # Function code
+    return ... # Return value
+
+The return value should be scalar.</a:documentation>
+      <attribute name="rank">
+        <value>0</value>
+      </attribute>
+      <ref name="python_code"/>
+    </element>
+  </define>
+  <define name="prescribed_vector_python">
+    <element name="python">
+      <a:documentation>A vector described by a python function.
+
+Functions should be of the form:
+
+ def val(x):
+    # Function code
+    return [..., ...] # Return value
+
+The return value must have the same size as the vector element.</a:documentation>
+      <attribute name="rank">
+        <value>1</value>
+      </attribute>
+      <ref name="python_code"/>
+    </element>
+  </define>
+  <define name="prescribed_tensor_python">
+    <element name="python">
+      <a:documentation>A tensor described by a python function.
+
+Functions should be of the form:
+
+ def val(x):
+    # Function code
+    return [[..., ...],[..., ...],...] # Return value
+
+The return value must have the same shape as the tensor element.</a:documentation>
+      <attribute name="rank">
+        <value>2</value>
+      </attribute>
+      <ref name="python_code"/>
+    </element>
+  </define>
+  <define name="prescribed_scalar">
+    <ref name="prescribed_scalar_python"/>
+  </define>
+  <define name="prescribed_scalar" combine="choice">
+    <ref name="prescribed_scalar_constant"/>
+  </define>
+  <define name="prescribed_vector">
+    <ref name="prescribed_vector_python"/>
+  </define>
+  <define name="prescribed_vector" combine="choice">
+    <ref name="prescribed_vector_constant"/>
+  </define>
+  <define name="prescribed_tensor">
+    <ref name="prescribed_tensor_python"/>
+  </define>
+  <define name="prescribed_tensor" combine="choice">
+    <ref name="prescribed_tensor_constant"/>
+  </define>
+</grammar>

@@ -1,0 +1,45 @@
+include "spud_base.rnc"
+
+geometry = 
+   (
+      ## Options dealing with the specification of geometry
+      element geometry {
+         ## Dimension of the problem.
+         ## <b>This can only be set once</b>
+         element dimension {
+            # a hard coded integer_value
+            element integer_value {
+               attribute rank {"0"},
+               ( "1" | "2" | "3" )
+            }
+         },
+         (
+           ## Options for describing the mesh
+           element mesh {
+             attribute name { xsd:string },
+             mesh_options
+           }|
+           ## Options for describing the mesh
+           element mesh {
+             attribute name { "Mesh" },
+             mesh_options
+           }
+         )+
+      }
+   )
+
+mesh_options =
+  (
+     ## Input the basename (i.e. without the .xml) of a DOLFIN format mesh
+     element file {
+       filename
+     },
+     ## Choose the type of ufl cell
+     element cell {
+       # a hard coded string_value
+       element string_value {
+         ( "interval" | "triangle" | "tetrahedron" )
+       }
+     }
+  )
+

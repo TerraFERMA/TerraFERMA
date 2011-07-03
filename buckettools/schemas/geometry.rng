@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+  <include href="spud_base.rng"/>
+  <define name="geometry">
+    <element name="geometry">
+      <a:documentation>Options dealing with the specification of geometry</a:documentation>
+      <element name="dimension">
+        <a:documentation>Dimension of the problem.
+&lt;b&gt;This can only be set once&lt;/b&gt;</a:documentation>
+        <!-- a hard coded integer_value -->
+        <element name="integer_value">
+          <attribute name="rank">
+            <value>0</value>
+          </attribute>
+          <choice>
+            <value>1</value>
+            <value>2</value>
+            <value>3</value>
+          </choice>
+        </element>
+      </element>
+      <oneOrMore>
+        <choice>
+          <element name="mesh">
+            <a:documentation>Options for describing the mesh</a:documentation>
+            <attribute name="name">
+              <data type="string"/>
+            </attribute>
+            <ref name="mesh_options"/>
+          </element>
+          <element name="mesh">
+            <a:documentation>Options for describing the mesh</a:documentation>
+            <attribute name="name">
+              <value>Mesh</value>
+            </attribute>
+            <ref name="mesh_options"/>
+          </element>
+        </choice>
+      </oneOrMore>
+    </element>
+  </define>
+  <define name="mesh_options">
+    <element name="file">
+      <a:documentation>Input the basename (i.e. without the .xml) of a DOLFIN format mesh</a:documentation>
+      <ref name="filename"/>
+    </element>
+    <element name="cell">
+      <a:documentation>Choose the type of ufl cell</a:documentation>
+      <!-- a hard coded string_value -->
+      <element name="string_value">
+        <choice>
+          <value>interval</value>
+          <value>triangle</value>
+          <value>tetrahedron</value>
+        </choice>
+      </element>
+    </element>
+  </define>
+</grammar>

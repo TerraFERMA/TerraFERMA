@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+  <include href="spud_base.rng"/>
+  <include href="solvers.rng"/>
+  <include href="function.rng"/>
+  <include href="ufl.rng"/>
+  <define name="system">
+    <element name="system">
+      <attribute name="name">
+        <data type="string"/>
+      </attribute>
+      <ref name="mesh_choice"/>
+      <ref name="ufl_symbol"/>
+      <oneOrMore>
+        <ref name="field_options"/>
+      </oneOrMore>
+      <zeroOrMore>
+        <ref name="coefficient_options"/>
+      </zeroOrMore>
+      <oneOrMore>
+        <ref name="nonlinear_solver_options"/>
+      </oneOrMore>
+    </element>
+  </define>
+  <define name="mesh_choice">
+    <choice>
+      <element name="mesh">
+        <a:documentation>What mesh is this system on?</a:documentation>
+        <attribute name="name">
+          <data type="string"/>
+        </attribute>
+        <empty/>
+      </element>
+      <element name="mesh">
+        <a:documentation>What mesh is this system on?</a:documentation>
+        <attribute name="name">
+          <value>Mesh</value>
+        </attribute>
+        <empty/>
+      </element>
+    </choice>
+  </define>
+</grammar>

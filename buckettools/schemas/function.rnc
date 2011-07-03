@@ -1,0 +1,553 @@
+include "spud_base.rnc"
+include "element.rnc"
+include "ufl.rnc"
+
+field_options =
+  (
+    ## Options describing a function in this system
+    element field {
+      generic_function_header_options,
+      (
+        element type {
+          attribute name { "Function" },
+          (
+            element rank {
+              attribute name { "Scalar" },
+              scalar_field_function_options
+            }|
+            element rank {
+              attribute name { "Vector" },
+              vector_field_function_options
+            }|
+            element rank {
+              attribute name { "Tensor" },
+              tensor_field_function_options
+            }
+          ),
+          generic_function_output_options
+        }
+      )
+    }
+  )
+
+
+coefficient_options =
+  (
+    ## Options describing a function in this system
+    element coefficient {
+      generic_function_header_options,
+      (
+        element type {
+          attribute name { "Function" },
+          (
+            element rank {
+              attribute name { "Scalar" },
+              scalar_coefficient_function_expression_options
+            }|
+            element rank {
+              attribute name { "Vector" },
+              vector_coefficient_function_expression_options
+            }|
+            element rank {
+              attribute name { "Tensor" },
+              tensor_coefficient_function_expression_options
+            }
+          ),
+          generic_function_output_options
+        }|
+        element type {
+          attribute name { "Expression" },
+          (
+            element rank {
+              attribute name { "Scalar" },
+              scalar_coefficient_function_expression_options
+            }|
+            element rank {
+              attribute name { "Vector" },
+              vector_coefficient_function_expression_options
+            }|
+            element rank {
+              attribute name { "Tensor" },
+              tensor_coefficient_function_expression_options
+            }
+          ),
+          generic_function_output_options
+        }|
+        element type {
+          attribute name { "Constant" },
+          (
+            element rank {
+              attribute name { "Scalar" },
+              scalar_coefficient_constant_options
+            }|
+            element rank {
+              attribute name { "Vector" },
+              vector_coefficient_constant_options
+            }|
+            element rank {
+              attribute name { "Tensor" },
+              tensor_coefficient_constant_options
+            }
+          ),
+          generic_function_output_options
+        }|
+        element type {
+          attribute name { "Aliased" },
+          coefficient_aliased_options
+        }
+      )
+    }
+  )
+
+scalar_field_function_options =
+  (
+    attribute rank { "0" },
+    ## Options describing the finite element
+    element_options_scalar,
+    initial_condition_scalar+,
+    boundary_condition_scalar*
+  )
+
+vector_field_function_options =
+  (
+    attribute rank { "1" },
+    ## Options describing the finite element
+    element_options_vector,
+    initial_condition_vector+,
+    boundary_condition_vector*
+  )
+
+tensor_field_function_options =
+  (
+    attribute rank { "2" },
+    ## Options describing the finite element
+    element_options_tensor,
+    initial_condition_tensor+,
+    boundary_condition_tensor*
+  )
+
+scalar_coefficient_function_expression_options =
+  (
+    attribute rank { "0" },
+    ## Options describing the finite element
+    element_options_scalar,
+    prescribed_expression_scalar+
+  )
+
+vector_coefficient_function_expression_options =
+  (
+    attribute rank { "1" },
+    ## Options describing the finite element
+    element_options_vector,
+    prescribed_expression_vector+
+  )
+
+tensor_coefficient_function_expression_options =
+  (
+    attribute rank { "2" },
+    ## Options describing the finite element
+    element_options_tensor,
+    prescribed_expression_tensor+
+  )
+
+scalar_coefficient_constant_options =
+  (
+    attribute rank { "0" },
+    prescribed_constant_scalar
+  )
+
+vector_coefficient_constant_options =
+  (
+    attribute rank { "1" },
+    prescribed_constant_vector
+  )
+
+tensor_coefficient_constant_options =
+  (
+    attribute rank { "2" },
+    prescribed_constant_tensor
+  )
+
+generic_function_header_options =
+  (
+    attribute name { xsd:string },
+    ufl_symbol
+  )
+
+generic_function_output_options = 
+  (
+    element output {
+      element include_in_diagnostics {
+        functional_options*
+      }?,
+      element include_in_detectors {
+        empty
+      }?
+    }
+  )
+
+functional_options = 
+  (
+    (
+      element functional {
+        attribute name { xsd:string },
+        form
+      }|
+      element functional {
+        attribute name { "L2Norm" },
+        form
+      }|
+      element functional {
+        attribute name { "Integral" },
+        form
+      }|
+      element functional {
+        attribute name { "SurfaceIntegral" },
+        form
+      }
+    )
+  )
+
+coefficient_aliased_options = 
+  (
+    element system {
+      anystring
+    },
+    element generic_function {
+      anystring
+    }
+  )
+
+initial_condition_scalar = 
+  (
+    ## Options for the description of the initial condition over the domain
+    element initial_condition {
+      attribute name {"WholeMesh"},
+      prescribed_scalar
+    }|
+    element initial_condition {
+      attribute name { xsd:string },
+      ## A list of the region ids (physical ids in gmsh) that this  condition applies to
+      element region_ids {
+        integer_vector
+      },
+      prescribed_scalar
+    }
+  )
+
+initial_condition_vector = 
+  (
+    ## Options for the description of the initial condition over the domain
+    element initial_condition {
+      attribute name {"WholeMesh"},
+      prescribed_vector
+    }|
+    ## Options for the description of the initial condition over regions
+    element initial_condition {
+      attribute name { xsd:string },
+      ## A list of the region ids (physical ids in gmsh) that this condition applies to
+      element region_ids {
+        integer_vector
+      },
+      prescribed_vector
+    }
+  )
+
+initial_condition_tensor = 
+  (
+    ## Options for the description of the initial condition over the domain
+    element initial_condition {
+      attribute name {"WholeMesh"},
+      prescribed_tensor
+    }|
+    ## Options for the description of the initial condition over regions
+    element initial_condition {
+      attribute name { xsd:string },
+      ## A list of the region ids (physical ids in gmsh) that this condition applies to
+      element region_ids {
+        integer_vector
+      },
+      prescribed_tensor
+    }
+  )
+
+boundary_condition_scalar = 
+  (
+    ## Options for the description of a boundary condition
+    element boundary_condition {
+      attribute name { xsd:string },
+      ## A list of the boundary ids (physical ids in gmsh) that this condition applies to  
+      element boundary_ids {
+        integer_vector
+      },
+      ## There are no sub components to a scalar so this is just a dummy tree level for consistency with a vector function
+      element sub_components {
+        attribute name { "All"},
+        element type {
+          attribute name {"Dirichlet"},
+          prescribed_scalar
+        }
+      }
+    }
+  )
+
+boundary_condition_vector = 
+  (
+    ## Options for the description of a boundary condition
+    element boundary_condition {
+      attribute name { xsd:string },
+      ## A list of the boundary ids (physical ids in gmsh) that this condition applies to  
+      element boundary_ids {
+        integer_vector
+      },
+      (
+        ## Apply this boundary condition to all the vector components on this boundary_id
+        element sub_components {
+          attribute name {"All"},
+          element type {
+            attribute name {"Dirichlet"},
+            prescribed_vector
+          }
+        }|
+        ## Apply this boundary condition to a subset of the vector components on this boundary_id
+        element sub_components {
+          attribute name { xsd:string },
+          ## A list of the vector components to which this boundary condition applies (indexes from 0)
+          element components {
+            integer_vector
+          },
+          element type {
+            attribute name {"Dirichlet"},
+            prescribed_scalar
+          }
+        }
+      )+
+    }
+  )
+
+boundary_condition_tensor = 
+  (
+    ## Options for the description of a boundary condition
+    element boundary_condition {
+      attribute name { xsd:string },
+      ## A list of the boundary ids (physical ids in gmsh) that this condition applies to  
+      element boundary_ids {
+        integer_vector
+      },
+      (
+        ## Apply this boundary condition to all the tensor components on this boundary_id
+        element sub_components {
+          attribute name {"All"},
+          element type {
+            attribute name {"Dirichlet"},
+            prescribed_tensor
+          }
+        }|
+        ## Apply this boundary condition to a subset of the tensor components on this boundary_id
+        element sub_components {
+          attribute name { xsd:string },
+          element components {
+            ## The number of components returned by
+            ## the python function (below)
+            element number_of_components {
+              integer
+            },
+            ## Python function listing the tensor components.
+            ##
+            ## Functions should be of the form:
+            ##
+            ##  def val():
+            ##     # Function code
+            ##     return [[...,...],[...,...],...] # Return integer list of lists
+            ##
+            ## The return value must have length number_of_components.
+            element python {
+              python_code
+            }
+          },
+          element type {
+            attribute name {"Dirichlet"},
+            prescribed_scalar
+          }
+        }
+      )+
+    }
+  )
+
+prescribed_constant_scalar = 
+  (
+    ## Options for the description of an expression over the domain
+    element value {
+      attribute name {"WholeMesh"},
+      prescribed_scalar_constant
+    }
+  )
+
+prescribed_constant_vector = 
+  (
+    ## Options for the description of an expression over the domain
+    element value {
+      attribute name {"WholeMesh"},
+      prescribed_vector_constant
+    }
+  )
+
+prescribed_constant_tensor = 
+  (
+    ## Options for the description of an expression over the domain
+    element value {
+      attribute name {"WholeMesh"},
+      prescribed_tensor_constant
+    }
+  )
+
+prescribed_expression_scalar = 
+  (
+    ## Options for the description of an expression over the domain
+    element value {
+      attribute name {"WholeMesh"},
+      prescribed_scalar
+    }|
+    ## Options for the description of an expression over regions
+    element value {
+      attribute name { xsd:string },
+      ## A list of the region ids (physical ids in gmsh) that this expression applies to
+      element region_ids {
+        integer_vector
+      },
+      prescribed_scalar
+    }
+  )
+
+prescribed_expression_vector = 
+  (
+    ## Options for the description of an expression over the domain
+    element value {
+      attribute name {"WholeMesh"},
+      prescribed_vector
+    }|
+    ## Options for the description of an expression over regions
+    element value {
+      attribute name { xsd:string },
+      ## A list of the region ids (physical ids in gmsh) that this expression applies to
+      element region_ids {
+        integer_vector
+      },
+      prescribed_vector
+    }
+  )
+
+prescribed_expression_tensor = 
+  (
+    ## Options for the description of an expression over the domain
+    element value {
+      attribute name {"WholeMesh"},
+      prescribed_tensor
+    }|
+    ## Options for the description of an expression over regions
+    element value {
+      attribute name { xsd:string },
+      ## A list of the region ids (physical ids in gmsh) that this expression applies to
+      element region_ids {
+        integer_vector
+      },
+      prescribed_tensor
+    }
+  )
+
+prescribed_scalar_constant =
+  (
+    ## A constant scalar
+    element constant {
+      real
+    }
+  )
+
+
+prescribed_vector_constant = 
+  (
+    ## A constant vector
+    element constant {
+      attribute name { "dim" },
+      real_dim_vector
+    }|
+    element constant {
+      attribute name { "arbitrary" },
+      real_vector
+    }
+  )
+
+prescribed_tensor_constant = 
+  (
+    ## A constant tensor
+    element constant {
+      attribute name { "dim" },
+      real_dim_tensor
+    }|
+    element constant {
+      attribute name { "arbitrary" },
+      real_tensor
+    }
+  )
+
+prescribed_scalar_python =
+  (
+    ## A scalar described by a python function.
+    ##
+    ## Functions should be of the form:
+    ##
+    ##  def val(x):
+    ##     # Function code
+    ##     return ... # Return value
+    ##
+    ## The return value should be scalar.
+    element python {
+      attribute rank { "0" },
+      python_code
+    }
+  )
+
+
+prescribed_vector_python = 
+  (
+    ## A vector described by a python function.
+    ##
+    ## Functions should be of the form:
+    ##
+    ##  def val(x):
+    ##     # Function code
+    ##     return [..., ...] # Return value
+    ##
+    ## The return value must have the same size as the vector element.
+    element python {
+      attribute rank { "1" },
+      python_code
+    }
+  )
+
+prescribed_tensor_python = 
+  (
+    ## A tensor described by a python function.
+    ##
+    ## Functions should be of the form:
+    ##
+    ##  def val(x):
+    ##     # Function code
+    ##     return [[..., ...],[..., ...],...] # Return value
+    ##
+    ## The return value must have the same shape as the tensor element.
+    element python {
+      attribute rank { "2" },
+      python_code
+    }
+  )
+
+prescribed_scalar = prescribed_scalar_python
+prescribed_scalar |= prescribed_scalar_constant
+
+prescribed_vector = prescribed_vector_python
+prescribed_vector |= prescribed_vector_constant
+
+prescribed_tensor = prescribed_tensor_python
+prescribed_tensor |= prescribed_tensor_constant
+

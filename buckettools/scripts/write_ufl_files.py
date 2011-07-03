@@ -2,7 +2,9 @@
 from optparse import OptionParser
 import sys
 import libspud
-from ufltools import *
+from ufltools.comments import *
+from ufltools.declarations import *
+from ufltools.spud import *
 
 # Let's start by parsing the options
 optparser=OptionParser(usage='usage: %prog <options-file>',

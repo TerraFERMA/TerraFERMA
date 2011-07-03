@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+  <include href="spud_base.rng"/>
+  <define name="io">
+    <element name="io">
+      <a:documentation>Input/Output options</a:documentation>
+      <ref name="output_file_options"/>
+      <ref name="detectors_options"/>
+    </element>
+  </define>
+  <define name="output_file_options">
+    <element name="output_base_name">
+      <a:documentation>Base name for files output by the model</a:documentation>
+      <ref name="anystring"/>
+    </element>
+  </define>
+  <define name="detectors_options">
+    <element name="detectors">
+      <a:documentation>Detectors</a:documentation>
+      <zeroOrMore>
+        <choice>
+          <element name="point">
+            <a:documentation>Set up point detectors</a:documentation>
+            <attribute name="name">
+              <data type="string"/>
+            </attribute>
+            <ref name="real_dim_vector"/>
+          </element>
+          <element name="array">
+            <a:documentation>Set up an array of detectors</a:documentation>
+            <attribute name="name">
+              <data type="string"/>
+            </attribute>
+            <element name="number_of_detectors">
+              <a:documentation>The number of detectors returned by
+the python function (below)</a:documentation>
+              <ref name="integer"/>
+            </element>
+            <element name="python">
+              <a:documentation>Python function prescribing detector positions.
+
+Functions should be of the form:
+
+ def val():
+    # Function code
+    return # Return value
+
+The return value must have length number_of_detectors.</a:documentation>
+              <ref name="python_code"/>
+            </element>
+          </element>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+</grammar>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0">
+  <include href="spud_base.rng"/>
+  <define name="ufl_symbol">
+    <element name="ufl_symbol">
+      <a:documentation>- trial (ansatz) function = symbol_a
+
+- test function           = symbol_t
+
+- iterated function       = symbol_i
+
+- old function            = symbol_n
+</a:documentation>
+      <ref name="anystring"/>
+    </element>
+  </define>
+  <define name="form">
+    <ref name="ufl_w_symbol"/>
+  </define>
+  <define name="ufl">
+    <ref name="python_code"/>
+  </define>
+  <define name="ufl_w_symbol">
+    <ref name="python_code"/>
+    <ref name="ufl_symbol"/>
+  </define>
+</grammar>

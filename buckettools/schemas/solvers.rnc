@@ -1,0 +1,440 @@
+include "spud_base.rnc"
+include "ufl.rnc"
+
+nonlinear_solver_options =
+  (
+    (
+      element nonlinear_solver {
+        attribute name { xsd:string },
+        (
+          element type {
+            snes
+          }|
+          element type {
+            picard
+          }
+        )
+      }|
+      element nonlinear_solver {
+        attribute name { "SNES" },
+        element type {
+          snes
+        }
+      }|
+      element nonlinear_solver {
+        attribute name { "Picard" },
+        element type {
+          picard
+        }
+      }
+    )
+  )
+
+picard =
+  (
+    attribute name { "Picard" },
+    element preamble {
+      ufl 
+    }?,
+    element form {
+      attribute name { "Bilinear" },
+      form
+    },
+    element form {
+      attribute name { "BilinearPC" },
+      form
+    }?,
+    element form {
+      attribute name { "Linear" },
+      form
+    },
+    element form {
+      attribute name { "Residual" },
+      form
+    },
+    element relative_error {
+      real
+    },
+    element absolute_error {
+      real
+    }?,
+    element max_iterations {
+      integer
+    },
+    element linear_solver {
+      linear_solver_options
+    }
+  )
+
+snes =
+  (
+    attribute name { "SNES" },
+    element preamble {
+      ufl 
+    }?,
+    element form {
+      attribute name { "Residual" },
+      form
+    },
+    element form {
+      attribute name { "Jacobian" },
+      form
+    },
+    element form {
+      attribute name { "JacobianPC" },
+      form
+    }?,
+    element linear_solver {
+      linear_solver_options
+    }
+  )
+
+
+linear_solver_options =
+   (
+      ## Iterative (Krylov) method to solve the linear discretised equation
+      ## Given are the most frequently used methods. The solution is done
+      ## by the PETSc library. Many more methods are provided.
+      ##
+      (
+         kspgmres_options|
+         kspfgmres_options|
+         kspcg_options|
+         ksppreonly_options|
+         ksprichardson_options|
+         kspother_options
+      ),
+      ## Preconditioner to be used in combination with the iterative method.
+      (
+         pcsor_options|
+         pceisenstat_options|
+         pcfieldsplit_options+|
+         pcilu_options|
+         pclu_options|
+         pcprometheus_options|
+         pchypre_options|
+         pcbjacobi_options|
+         pcasm_options|
+         pcksp_options|
+         pcother_options
+      ),
+      generic_solver_options
+   )
+
+# ####################################################################
+#
+# options for the different iterative ksp methods
+#
+# ####################################################################
+
+kspgmres_options =
+   (
+      ## GMRES
+      ##
+      ## Your safest bet for non-symmetric systems.
+      element iterative_method {
+         attribute name { "gmres" },
+         ## Restart value for gmres iteration
+         ## Higher values give better convergence but require more memory.
+         ## Suggested value: 30
+         element restart {
+            integer
+         },
+         iterative_solver_options
+      }
+   )
+   
+kspfgmres_options =
+   (
+      ## FGMRES
+      element iterative_method {
+         attribute name { "fgmres" },
+         ## Restart value for fgmres iteration
+         ## Higher values give better convergence but require more memory.
+         ## Suggested value: 30
+         element restart {
+            integer
+         },
+         iterative_solver_options
+      }
+   )
+   
+kspcg_options =
+   (
+      ## Conjugate gradient method
+      ##
+      ## Only works for symmetric systems.
+      element iterative_method {
+         attribute name { "cg" },
+         iterative_solver_options
+      }
+   )
+
+ksppreonly_options =
+   (
+      ## Direct method
+      ##
+      ## This is for non-iterative methods
+      ## Only makes sense in combination with preconditioners that do a complete solve, e.g. lu.
+      element iterative_method {
+         attribute name { "preonly" }
+      }
+   )
+   
+ksprichardson_options =
+   (
+      ## Richardson iteration
+      ##
+      ## Only apply preconditioner each iteration, no krylov acceleration
+      element iterative_method {
+         attribute name { "richardson" },
+         iterative_solver_options
+      }
+   )
+   
+kspother_options =
+   (
+      ## Other methods
+      ##
+      ## Any method provided by the PETSc library
+      ## http://www-unix.mcs.anl.gov/petsc/petsc-2/snapshots/petsc-dev/docs/manualpages/KSP/KSPType.html
+      ## (available methods may depend on the PETSc library installed on your system)
+      element iterative_method {
+         attribute name { xsd:string },
+         iterative_solver_options
+      }
+   )
+   
+# ####################################################################
+#
+# options for the different preconditioners
+#
+# ####################################################################
+
+pcsor_options =
+   (
+      ## Succesive Over-Relaxation
+      ##
+      ## This includes SSOR (symmetric sor)
+      element preconditioner {
+         attribute name { "sor" }
+      }
+   )
+   
+pceisenstat_options =
+   (
+      ## The Eisenstat method
+      ##
+      ## This preconditioner is equivalent to SOR but only uses
+      ## half the number of flops,
+      ## i.e. same convergence rate but twice as fast per
+      ## iteration. Because it computes
+      ## a different preconditioned residual the convergence in
+      ## practice may be quite different though.
+      element preconditioner {
+         attribute name { "eisenstat" }
+      }
+   )
+   
+pcilu_options = 
+   (
+      ## Incomplete LU decomposition
+      element preconditioner {
+         attribute name { "ilu" }
+      }
+   )
+   
+pcicc_options =
+   (
+      ## Incomplete Cholesky decomposition (only works for symmetric matrices)
+      element preconditioner {
+         attribute name { "icc" }
+      }
+   )
+   
+pclu_options =
+   (
+      ## LU direct solver
+      ##
+      ## This performs a complete, direct solve of the equation and should only be used in combination with preonly as iterative method.
+      element preconditioner {
+         attribute name { "lu" }
+     }
+   )
+
+pcprometheus_options =
+   (
+      ## Prometheus multigrid method
+      element preconditioner {
+         attribute name { "prometheus" }
+      }
+   )
+
+pchypre_options =
+   (
+      ## Hypre preconditioners (includes boomeramg)
+      element preconditioner {
+         attribute name { "hypre" },
+         (
+            ## BoomerAMG multigrid method
+            element hypre_type {
+               attribute name { "boomeramg" }
+            }|
+            ## Other Hypre preconditioners
+            element hypre_type {
+               attribute name { string }
+            }
+         )
+      }
+   )
+
+pcbjacobi_options =
+   (
+      ## Block Jacobi
+      ##
+      ## This option is for parallel runs. A preconditioner is applied
+      ## locally within each domain. This means within the domain you can
+      ## choose whatever preconditioner you would choose in serial. Because
+      ## there is no coupling between the domains in the preconditioning
+      ## the performance may be less than in serial and degrade with 
+      ## increasing number of processors/decreasing local domain size.
+      element preconditioner {
+         attribute name { "bjacobi" },
+         subpc_options
+      }
+   )
+
+pcasm_options =
+   (
+      ## Additive Schwartz Method
+      ##
+      ## This option is for parallel runs. A preconditioner is applied
+      ## locally within each domain (like bjacobi) only the local domains
+      ## are extended a bit to overlap. This increases the coupling between
+      ## the domain and thus improves the convergence. This does of course
+      ## increase the communication cost, so iterations may be more expensive
+      ## than with bjacobi.
+      element preconditioner {
+         attribute name { "asm" },
+         subpc_options
+      }
+   )
+
+# sub preconditioner to choose for bjacobi or asm
+subpc_options =
+   (
+      ## Preconditioner to apply within the local domains
+      (
+         pcsor_options|
+         pceisenstat_options|
+         pcilu_options|
+         pcicc_options|
+         pclu_options|
+         pcmg_options|
+         pcprometheus_options|
+         pchypre_options|
+         pcother_options
+      )
+   )
+   
+pcother_options =
+   (
+      ## Other preconditioners
+      ##
+      ## Any preconditioner provided by the PETSc library
+      ## http://www-unix.mcs.anl.gov/petsc/petsc-2/snapshots/petsc-dev/docs/manualpages/PC/PCType.html
+      ## (available preconditiors may depend on the PETSc library installed on your system)
+      element preconditioner {
+         attribute name { string }
+      }
+   )
+   
+pcksp_options =
+   (
+      ## This only makes sense for solves where a different approximated preconditioner
+      ## matrix is provided.
+      ##
+      ## NOTE: If you are using a krylov method (cg/gmres) for this preconditioner 
+      ## solve you either need to set your tolerances much stricter for it
+      ## than in the outer solve (so that the preconditioner is close to an
+      ## exact matrix inversion), or use fgmres in the outer solve.
+      element preconditioner {
+         attribute name { "ksp" },
+         ## Solver options for the full solve done by this preconditioner
+         element linear_solver {
+            linear_solver_options
+         }
+      }
+   )
+
+pcfieldsplit_options =
+   (
+      element preconditioner {
+         attribute name { "fieldsplit" },
+         element fieldsplit {
+            attribute name { xsd:string },
+            (
+               element fieldsplit_by_function {
+                element generic_function {
+                   anystring
+                 }+
+               }|
+               element fieldsplit_by_region {
+                 ## A list of the region ids (physical ids in gmsh) 
+                 element region_ids {
+                   integer_vector
+                 }
+               }
+             ),
+             ## Solver options for the full solve done by this preconditioner
+             element linear_solver {
+                linear_solver_options
+             }
+         }+
+      }
+   )
+
+# ####################################################################
+#
+# all the other solver options
+#
+# ####################################################################
+
+iterative_solver_options =
+   (
+      ## Relative error
+      ##
+      ## The solver finishes if the preconditioned error becomes smaller than the original preconditioned error times this value.
+      ## Suggested value: 1.0e-7
+      element relative_error {
+         real
+      },
+      ## Absolute error bound
+      ##
+      ## The solver finishes if the preconditioned error becomes smaller than this value.
+      element absolute_error {
+         real
+      }?,
+      ## Maximum number of iterations allowed in the linear solver
+      ## before giving up.
+      element max_iterations {
+         integer
+      }
+   )
+
+generic_solver_options =
+   (
+      ## Switch on to not use an initial guess from a previous solve but
+      ## start with a zero vector. Note that some of the solves always
+      ## start at zero in which case this switch will have no effect (see the log output).
+      element start_from_zero {
+         empty
+      }?,
+      ## Remove Null-space from residual after applying preconditioner.
+      ## This often leads to better convergence rates, when compared to
+      ## imposing a reference_node to pin the solution.
+      element remove_null_space {
+         empty
+      }?
+   )
+
