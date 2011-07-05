@@ -12,25 +12,30 @@ namespace buckettools
   {
   private:
     
+    std::string optionpath_;
+
     void meshes_fill_(const std::string &optionpath);
     
-    void system_fill_(const std::string &optionpath);
-    
-    void detectors_fill_();
-    
-    void bc_fill_(const std::string bcpath, 
-                  const int funci,
-                  const int dimension,
-                  FunctionSpace_ptr subsysspace,
-                  const std::string sysname,
-                  const std::string funcname);
-    
-    GenericFunction_ptr init_exp_(const std::string path, const int dimension);
+    //void system_fill_(const std::string &optionpath);
+    //
+    //void detectors_fill_();
+    //
+    //void bc_fill_(const std::string bcpath, 
+    //              const int funci,
+    //              const int dimension,
+    //              FunctionSpace_ptr subsysspace,
+    //              const std::string sysname,
+    //              const std::string funcname);
+    //
+    //GenericFunction_ptr init_exp_(const std::string path, const int dimension);
     
   public:
     
     SpudBucket()
-    { SpudBucket("uninitialised_name", "uninitialised_path"); }
+    { SpudBucket("uninitialised_name", ""); }
+    
+    SpudBucket(std::string name)
+    { SpudBucket(name, ""); }
     
     SpudBucket(std::string name, std::string option_path);
     

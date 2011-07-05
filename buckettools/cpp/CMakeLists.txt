@@ -37,10 +37,11 @@ include_directories("${BucketTools_SOURCE_DIR}/include" ${BucketTools_BINARY_DIR
 include_directories(${PYTHON_INCLUDE_PATH})
 include_directories("${PROJECT_BINARY_DIR}/../ufl") # UGLY HACK... FIXME! by moving SpudBucket somewhere more sensible!
 #link_directories("${BucketTools_BINARY_DIR}/ufl")
-add_library(BucketTools Bucket.cpp SystemBucket.cpp SpudBucket.cpp
-                        StatFile.cpp DiagnosticsFile.cpp DetectorsFile.cpp
-                        PythonExpression.cpp InitialConditionExpression.cpp PythonInstance.cpp 
-                        GenericDetectors.cpp PointDetectors.cpp PythonDetectors.cpp)
+add_library(BucketTools Bucket.cpp SpudBucket.cpp SpudMesh.cpp)
+#add_library(BucketTools Bucket.cpp SystemBucket.cpp SpudBucket.cpp
+#                        StatFile.cpp DiagnosticsFile.cpp DetectorsFile.cpp
+#                        PythonExpression.cpp InitialConditionExpression.cpp PythonInstance.cpp 
+#                        GenericDetectors.cpp PointDetectors.cpp PythonDetectors.cpp)
 add_dependencies(BucketTools confdefs)
 #target_link_libraries(BucketTools BucketUFCFiles ${PYTHON_LIBRARIES})
 target_link_libraries(BucketTools ${PYTHON_LIBRARIES})
