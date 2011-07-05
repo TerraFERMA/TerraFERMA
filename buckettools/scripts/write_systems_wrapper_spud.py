@@ -53,54 +53,12 @@ functional_cpp.append("  {\n")
 functional_cpp.append("    switch(systemname)\n")
 functional_cpp.append("    {\n")
 
-picard_bilinearform_cpp   = []
-picard_bilinearform_cpp.append("  // A function to return a bilinear form for a Picard solver from a system-function set given a functionspace and a solvername.\n")
-picard_bilinearform_cpp.append("  Form_ptr fetch_picard_bilinearform(std::string systemname, std::string functionname, std::string solvername, FunctionSpace_ptr functionspace)\n")
-picard_bilinearform_cpp.append("  {\n")
-picard_bilinearform_cpp.append("    switch(systemname)\n")
-picard_bilinearform_cpp.append("    {\n")
-
-picard_bilinearpcform_cpp = []
-picard_bilinearpcform_cpp.append("  // A function to return a biliear pc form for a Picard solver from a system-function set given a functionspace and a solvername.\n")
-picard_bilinearpcform_cpp.append("  Form_ptr fetch_picard_bilinearpcform(std::string systemname, std::string functionname, std::string solvername, FunctionSpace_ptr functionspace)\n")
-picard_bilinearpcform_cpp.append("  {\n")
-picard_bilinearpcform_cpp.append("    switch(systemname)\n")
-picard_bilinearpcform_cpp.append("    {\n")
-
-picard_linearform_cpp     = []
-picard_linearform_cpp.append("  // A function to return a linear pc form for a Picard solver from a system-function set given a functionspace and a solvername.\n")
-picard_linearform_cpp.append("  Form_ptr fetch_picard_linearform(std::string systemname, std::string functionname, std::string solvername, FunctionSpace_ptr functionspace)\n")
-picard_linearform_cpp.append("  {\n")
-picard_linearform_cpp.append("    switch(systemname)\n")
-picard_linearform_cpp.append("    {\n")
-
-picard_residualform_cpp   = []
-picard_residualform_cpp.append("  // A function to return a linear residual form for a Picard solver from a system-function set given a functionspace and a solvername.\n")
-picard_residualform_cpp.append("  Form_ptr fetch_picard_residualform(std::string systemname, std::string functionname, std::string solvername, FunctionSpace_ptr functionspace)\n")
-picard_residualform_cpp.append("  {\n")
-picard_residualform_cpp.append("    switch(systemname)\n")
-picard_residualform_cpp.append("    {\n")
-
-snes_residualform_cpp     = []
-snes_residualform_cpp.append("  // A function to return a linear residual form for a SNES solver from a system-function set given a functionspace and a solvername.\n")
-snes_residualform_cpp.append("  Form_ptr fetch_snes_residualform(std::string systemname, std::string functionname, std::string solvername, FunctionSpace_ptr functionspace)\n")
-snes_residualform_cpp.append("  {\n")
-snes_residualform_cpp.append("    switch(systemname)\n")
-snes_residualform_cpp.append("    {\n")
-
-snes_jacobianform_cpp     = []
-snes_jacobianform_cpp.append("  // A function to return a bilinear Jacobian form for a SNES solver from a system-function set given a functionspace and a solvername.\n")
-snes_jacobianform_cpp.append("  Form_ptr fetch_snes_jacobianform(std::string systemname, std::string functionname, std::string solvername, FunctionSpace_ptr functionspace)\n")
-snes_jacobianform_cpp.append("  {\n")
-snes_jacobianform_cpp.append("    switch(systemname)\n")
-snes_jacobianform_cpp.append("    {\n")
-
-snes_jacobianpcform_cpp   = []
-snes_jacobianpcform_cpp.append("  // A function to return a bilinear Jacobian pc form for a SNES solver from a system-function set given a functionspace and a solvername.\n")
-snes_jacobianpcform_cpp.append("  Form_ptr fetch_snes_jacobianpcform(std::string systemname, std::string functionname, std::string solvername, FunctionSpace_ptr functionspace)\n")
-snes_jacobianpcform_cpp.append("  {\n")
-snes_jacobianpcform_cpp.append("    switch(systemname)\n")
-snes_jacobianpcform_cpp.append("    {\n")
+form_cpp = []
+form_cpp.append("  // A function to return a form for a solver from a system given a functionspace, a solvername, a solvertype and a formname.\n")
+form_cpp.append("  Form_ptr fetch_form(std::string systemname, std::string solvername, std::string solvertype, std::string formname, FunctionSpace_ptr functionspace)\n")
+form_cpp.append("  {\n")
+form_cpp.append("    switch(systemname)\n")
+form_cpp.append("    {\n")
 
 # loop over the systems in the options tree
 for i in range(libspud.option_count("/system")):
@@ -158,6 +116,7 @@ for i in range(libspud.option_count("/system")):
   functionspace_cpp += system.functionspace_cpp()
   coefficientspace_cpp += system.coefficientspace_cpp()
   functional_cpp += system.functional_cpp()
+  form_cpp += system.form_cpp()
   # done with this system
   del system
 
@@ -179,6 +138,12 @@ functional_cpp.append("    }\n")
 functional_cpp.append("    return functional;\n")
 functional_cpp.append("  }\n")
 
+form_cpp.append("      default:\n")
+form_cpp.append("        dolfin::error(\"Unknown systemname in fetch_form\");\n")
+form_cpp.append("    }\n")
+form_cpp.append("    return form;\n")
+form_cpp.append("  }\n")
+
 cpp += include_cpp
 cpp.append("\n")
 cpp.append("namespace buckettools\n")
@@ -186,6 +151,8 @@ cpp.append("{\n")
 cpp += functionspace_cpp
 cpp.append("\n")
 cpp += coefficientspace_cpp
+cpp.append("\n")
+cpp += form_cpp
 cpp.append("\n")
 cpp += functional_cpp
 cpp.append("}\n")

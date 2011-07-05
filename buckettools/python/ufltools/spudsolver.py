@@ -17,11 +17,13 @@ class SpudSolver(ufltools.solver.Solver):
     self.form_names = []
     self.forms = []
     self.form_symbols = []
+    self.form_ranks = []
     for i in range(libspud.option_count(newoptionpath+"/form")):
       form_optionpath = newoptionpath+"/form["+`i`+"]"
       self.form_names.append(libspud.get_option(form_optionpath+"/name"))
       self.forms.append(libspud.get_option(form_optionpath)+"\n")
       self.form_symbols.append(libspud.get_option(form_optionpath+"/ufl_symbol"))
+      self.form_ranks.append(int(libspud.get_option(form_optionpath+"/rank")))
     
     self.system = system
 

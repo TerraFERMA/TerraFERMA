@@ -38,18 +38,22 @@ picard =
     }?,
     element form {
       attribute name { "Bilinear" },
+      attribute rank { "1" },
       form
     },
     element form {
       attribute name { "BilinearPC" },
+      attribute rank { "1" },
       form
     }?,
     element form {
       attribute name { "Linear" },
+      attribute rank { "0" },
       form
     },
     element form {
       attribute name { "Residual" },
+      attribute rank { "0" },
       form
     },
     element relative_error {
@@ -74,14 +78,17 @@ snes =
     }?,
     element form {
       attribute name { "Residual" },
+      attribute rank { "0" },
       form
     },
     element form {
       attribute name { "Jacobian" },
+      attribute rank { "1" },
       form
     },
     element form {
       attribute name { "JacobianPC" },
+      attribute rank { "1" },
       form
     }?,
     element linear_solver {

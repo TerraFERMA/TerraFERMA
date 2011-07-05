@@ -48,12 +48,18 @@
       <attribute name="name">
         <value>Bilinear</value>
       </attribute>
+      <attribute name="rank">
+        <value>1</value>
+      </attribute>
       <ref name="form"/>
     </element>
     <optional>
       <element name="form">
         <attribute name="name">
           <value>BilinearPC</value>
+        </attribute>
+        <attribute name="rank">
+          <value>1</value>
         </attribute>
         <ref name="form"/>
       </element>
@@ -62,11 +68,17 @@
       <attribute name="name">
         <value>Linear</value>
       </attribute>
+      <attribute name="rank">
+        <value>0</value>
+      </attribute>
       <ref name="form"/>
     </element>
     <element name="form">
       <attribute name="name">
         <value>Residual</value>
+      </attribute>
+      <attribute name="rank">
+        <value>0</value>
       </attribute>
       <ref name="form"/>
     </element>
@@ -98,11 +110,17 @@
       <attribute name="name">
         <value>Residual</value>
       </attribute>
+      <attribute name="rank">
+        <value>0</value>
+      </attribute>
       <ref name="form"/>
     </element>
     <element name="form">
       <attribute name="name">
         <value>Jacobian</value>
+      </attribute>
+      <attribute name="rank">
+        <value>1</value>
       </attribute>
       <ref name="form"/>
     </element>
@@ -110,6 +128,9 @@
       <element name="form">
         <attribute name="name">
           <value>JacobianPC</value>
+        </attribute>
+        <attribute name="rank">
+          <value>1</value>
         </attribute>
         <ref name="form"/>
       </element>

@@ -145,6 +145,7 @@ class System:
     """Write an array of cpp strings describing the namespace of the functionspaces in the ufls."""
     cpp = []  
     cpp.append("      case \""+self.name+"\":\n")
+    cpp.append("        // All solvers within a system should return the same functionspace\n")
     cpp.append("        switch(solvername)\n")
     cpp.append("        {\n")
     for solver in self.solvers:
@@ -162,18 +163,44 @@ class System:
     cpp.append("        switch(solvername)\n")
     cpp.append("        {\n")
     for solver in self.solvers:
-      cpp.append("        case \""+solver.name+"\":\n")
-      cpp.append("          switch(functionname)\n")
-      cpp.append("          {\n")
+      cpp.append("          case \""+solver.name+"\":\n")
+      cpp.append("            switch(functionname)\n")
+      cpp.append("            {\n")
       form_symbols = [symbol for form in solver.forms for symbol in re.findall(r"\b[a-z_]+\b", form, re.I) if symbol not in ufl_reserved()]
       if solver.preamble: form_symbols += [symbol for symbol in re.findall(r"\b[a-z_]+\b", solver.preamble, re.I) if symbol not in ufl_reserved()]
       for coeff in self.coeffs:
         if coeff.symbol in form_symbols: cpp += coeff.coefficientspace_cpp(solver.name)
-      cpp.append("            default:\n")
-      cpp.append("              dolfin::error(\"Unknown functionname in fetch_coefficientspace\");\n")
-      cpp.append("          }\n")
+      cpp.append("              default:\n")
+      cpp.append("                dolfin::error(\"Unknown functionname in fetch_coefficientspace\");\n")
+      cpp.append("            }\n")
     cpp.append("          default:\n")
     cpp.append("            dolfin::error(\"Unknown solvername in fetch_coefficientspace\");\n")
+    cpp.append("        }\n")
+    cpp.append("        break;\n")
+    return cpp
+
+  def form_cpp(self):
+    """Write an array of cpp strings describing the namespace of the forms in the ufls."""
+    cpp = []  
+    cpp.append("      case \""+self.name+"\":\n")
+    cpp.append("        switch(solvername)\n")
+    cpp.append("        {\n")
+    for solver in self.solvers:
+      cpp.append("          case \""+solver.name+"\":\n")
+      cpp.append("            switch(solvertype)\n")
+      cpp.append("            {\n")
+      cpp.append("              case \""+solver.type+"\"\n")
+      cpp.append("                switch(formname)\n")
+      cpp.append("                {\n")
+      cpp += solver.form_cpp()
+      cpp.append("                  default:\n")
+      cpp.append("                    dolfin::error(\"Unknown formname in fetch_form\");\n")
+      cpp.append("                }\n")
+      cpp.append("              default:\n")
+      cpp.append("                dolfin::error(\"Unknown solvertype in fetch_form\");\n")
+      cpp.append("            }\n")
+    cpp.append("          default:\n")
+    cpp.append("            dolfin::error(\"Unknown solvername in fetch_form\");\n")
     cpp.append("        }\n")
     cpp.append("        break;\n")
     return cpp
