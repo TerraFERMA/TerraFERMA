@@ -1,4 +1,5 @@
 
+from ufltools.spudbucket import *
 from ufltools.spudsystem import *
 from ufltools.spudfunction import *
 from ufltools.spudfunctional import *
