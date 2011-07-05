@@ -1,4 +1,5 @@
 from ufltools.base import *
+import re
 
 class System:
   """A class that stores all the information necessary to write the ufl for a system (i.e. mixed function space)."""
@@ -164,13 +165,10 @@ class System:
       cpp.append("        case \""+solver.name+"\":\n")
       cpp.append("          switch(functionname)\n")
       cpp.append("          {\n")
+      form_symbols = [symbol for form in solver.forms for symbol in re.findall(r"\b[a-z_]+\b", form, re.I) if symbol not in ufl_reserved()]
+      if solver.preamble: form_symbols += [symbol for symbol in re.findall(r"\b[a-z_]+\b", solver.preamble, re.I) if symbol not in ufl_reserved()]
       for coeff in self.coeffs:
-        if solver.preamble:
-          coeff_present = any([coeff.symbol in form for form in solver.forms]+[coeff.symbol in solver.preamble])
-        else:
-          coeff_present = any([coeff.symbol in form for form in solver.forms])
-        if coeff_present:
-          cpp += coeff.coefficientspace_cpp(solver.name)
+        if coeff.symbol in form_symbols: cpp += coeff.coefficientspace_cpp(solver.name)
       cpp.append("            default:\n")
       cpp.append("              dolfin::error(\"Unknown functionname in fetch_coefficientspace\");\n")
       cpp.append("          }\n")

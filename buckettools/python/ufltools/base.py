@@ -46,3 +46,7 @@ def trialfunction_ufl(symbol):
   """Returns a ufl string declaring a trial function on an element."""
   return symbol+"_a = TrialFunction("+symbol+"_e)\n"
 
+def ufl_reserved():
+  """Returns an (incomplete) array of ufl symbols that are considered reserved."""
+  return ['rhs', 'lhs', 'action', 'dx', 'ds', 'dS', 'inner', 'dot', 'grad', 'div', 'sym', 'derivative']
+
