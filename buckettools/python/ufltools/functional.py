@@ -35,3 +35,10 @@ class Functional:
     filehandle.writelines(ufl)
     filehandle.close()
 
+  def cpp(self):
+    cpp = [] 
+    cpp.append("              case \""+self.name+"\":\n")
+    cpp.append("                Form_ptr functional(new "+self.function.system.name+self.function.name+self.name+"::Form_0(*functionspace));\n")
+    cpp.append("                break;\n")
+    return cpp
+

@@ -402,6 +402,21 @@ F = FT + Fv + Fp</string_value>
         </generic_function>
       </type>
     </coefficient>
+    <coefficient name="Random">
+      <ufl_symbol>
+        <string_value lines="1">r</string_value>
+      </ufl_symbol>
+      <type name="Constant">
+        <rank name="Scalar" rank="0">
+          <value name="WholeMesh">
+            <constant>
+              <real_value rank="0">1.0</real_value>
+            </constant>
+          </value>
+        </rank>
+        <output/>
+      </type>
+    </coefficient>
     <nonlinear_solver name="Picard">
       <type name="Picard">
         <preamble>

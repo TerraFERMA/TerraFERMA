@@ -47,3 +47,10 @@ class Function:
     ufl.append("\n")
     return ufl
 
+  def coefficientspace_cpp(self, solvername):
+    cpp = [] 
+    cpp.append("            case \""+self.name+"\":\n")
+    cpp.append("              Form_ptr coefficientspace(new "+self.system.name+solvername+"::CoefficientSpace_"+self.symbol+"(*mesh));\n")
+    cpp.append("              break;\n")
+    return cpp
+

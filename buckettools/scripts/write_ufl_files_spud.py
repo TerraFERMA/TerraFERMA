@@ -83,6 +83,8 @@ for i in range(libspud.option_count("/system")):
     solver.fill(solver_optionpath, system)
     # write some ufl to disk
     solver.write_ufl()
+    # let the system know about this solver
+    system.solvers.append(solver)
     # done with this nonlinear solver
     del solver
 

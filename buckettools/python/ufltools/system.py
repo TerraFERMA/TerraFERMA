@@ -11,6 +11,7 @@ class System:
     self.symbol = None
     self.fields = None
     self.coeffs = None
+    self.solvers = None
 
   def functions_ufl(self):
     """Write an array of ufl strings describing all the functions (fields and coefficients) within a system."""
@@ -31,7 +32,7 @@ class System:
     for coeff in self.coeffs:
       if coeff.type == "Constant":
         ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
-        ufl.append(constant_ufl(coeff.symbol, coeff.system.cell))
+        ufl.append(constant_ufl(coeff.symbol, self.cell))
       else:
         ufl += coeff.element_ufl()
         ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
@@ -128,4 +129,86 @@ class System:
     ufl_line += ") = split("+self.symbol+suffix+")\n"
     ufl.append(ufl_line)
     return ufl
+
+  def include_cpp(self):
+    """Write an array of cpp strings including the namespaces of the system ufls."""
+    cpp = []
+    for field in self.fields:
+      for functional in field.functionals:
+        cpp.append("#include \""+self.name+field.name+functional.name+".h\"\n")
+    for solver in self.solvers:
+      cpp.append("#include \""+self.name+solver.name+".h\"\n")
+    return cpp
+
+  def functionspace_cpp(self):
+    """Write an array of cpp strings describing the namespace of the functionspaces in the ufls."""
+    cpp = []  
+    cpp.append("      case \""+self.name+"\":\n")
+    cpp.append("        switch(solvername)\n")
+    cpp.append("        {\n")
+    for solver in self.solvers:
+      cpp += solver.functionspace_cpp()
+    cpp.append("          default:\n")
+    cpp.append("            dolfin::error(\"Unknown solvername in fetch_functionspace\");\n")
+    cpp.append("        }\n")
+    cpp.append("        break;\n")
+    return cpp
+
+  def coefficientspace_cpp(self):
+    """Write an array of cpp strings describing the namespace of the coefficientspaces in the ufls."""
+    cpp = []  
+    cpp.append("      case \""+self.name+"\":\n")
+    cpp.append("        switch(solvername)\n")
+    cpp.append("        {\n")
+    for solver in self.solvers:
+      cpp.append("        case \""+solver.name+"\":\n")
+      cpp.append("          switch(functionname)\n")
+      cpp.append("          {\n")
+      for coeff in self.coeffs:
+        if solver.preamble:
+          coeff_present = any([coeff.symbol in form for form in solver.forms]+[coeff.symbol in solver.preamble])
+        else:
+          coeff_present = any([coeff.symbol in form for form in solver.forms])
+        if coeff_present:
+          cpp += coeff.coefficientspace_cpp(solver.name)
+      cpp.append("            default:\n")
+      cpp.append("              dolfin::error(\"Unknown functionname in fetch_coefficientspace\");\n")
+      cpp.append("          }\n")
+    cpp.append("          default:\n")
+    cpp.append("            dolfin::error(\"Unknown solvername in fetch_coefficientspace\");\n")
+    cpp.append("        }\n")
+    cpp.append("        break;\n")
+    return cpp
+
+  def functional_cpp(self):
+    """Write an array of cpp strings describing the namespace of the functional ufls."""
+    cpp = []  
+    cpp.append("      case \""+self.name+"\":\n")
+    cpp.append("        switch(functionname)\n")
+    cpp.append("        {\n")
+    for field in self.fields:
+      cpp.append("          case \""+field.name+"\":\n")
+      cpp.append("            switch(functionalname)\n")
+      cpp.append("            {\n")
+      for functional in field.functionals:
+        cpp += functional.cpp()
+      cpp.append("              default:\n")
+      cpp.append("                dolfin::error(\"Unknown functionalname in fetch_functional\");\n")
+      cpp.append("            }\n")
+      cpp.append("            break;\n")
+    for coeff in self.coeffs:
+      cpp.append("          case \""+coeff.name+"\":\n")
+      cpp.append("            switch(functionalname)\n")
+      cpp.append("            {\n")
+      for functional in coeff.functionals:
+        cpp += functional.cpp()
+      cpp.append("              default:\n")
+      cpp.append("                dolfin::error(\"Unknown functionalname in fetch_functional\");\n")
+      cpp.append("            }\n")
+      cpp.append("            break;\n")
+    cpp.append("          default:\n")
+    cpp.append("            dolfin::error(\"Unknown functionname in fetch_functional\");\n")
+    cpp.append("        }\n")
+    cpp.append("        break;\n")
+    return cpp
 

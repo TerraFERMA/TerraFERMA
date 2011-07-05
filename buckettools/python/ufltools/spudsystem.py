@@ -17,5 +17,6 @@ class SpudSystem(ufltools.system.System):
 
     self.fields = []
     self.coeffs = []
+    self.solvers = []
     
  

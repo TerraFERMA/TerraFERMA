@@ -38,3 +38,10 @@ class Solver:
     filehandle.writelines(ufl)
     filehandle.close()
     
+  def functionspace_cpp(self):
+    cpp = [] 
+    cpp.append("          case \""+self.name+"\":\n")
+    cpp.append("            Form_ptr functionspace(new "+self.system.name+self.name+"::FunctionSpace(*mesh));\n")
+    cpp.append("            break;\n")
+    return cpp
+
