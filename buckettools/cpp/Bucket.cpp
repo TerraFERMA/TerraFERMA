@@ -38,7 +38,7 @@ void Bucket::register_mesh(Mesh_ptr mesh, std::string name, std::string option_p
 }
 
 // Create a system bucket in this bucket
-void Bucket::create_system(std::string name, std::string option_path)
+void Bucket::register_system(std::string name, std::string option_path)
 {
   // First check if a system with this name already exists
   SystemBucket_it s_it = systembuckets_.find(name);

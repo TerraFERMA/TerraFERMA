@@ -27,44 +27,49 @@ SpudBucket::~SpudBucket()
 // Fill the bucket with stuff based on options tree provided by Spud
 void SpudBucket::fill()
 {
-  // Put meshes into the bucket  
-  int nmeshes = Spud::option_count("/geometry/mesh");
+  // A buffer to put option paths in
+  std::stringstream buffer;
+  
+  // Put meshes into the bucket
+  buffer.str(""); buffer << "/geometry/mesh";  
+  int nmeshes = Spud::option_count(buffer.str());
   for (uint i = 0; i<nmeshes; i++)
   {
-    meshes_fill_(i);
+    buffer << "[" << i << "]";
+    meshes_fill_(buffer.str());
   }
   
-  // Put systems into the bucket
-  int nsystems = Spud::option_count("/system");
-  for (uint i = 0; i<nsystems; i++)
-  {
-    system_fill_(i);
-  }
+  //// Put systems into the bucket
+  //int nsystems = Spud::option_count("/system");
+  //for (uint i = 0; i<nsystems; i++)
+  //{
+  //  system_fill_(i);
+  //}
   
   // Put detectors in the bucket
   detectors_fill_();
 }
 
-// Insert a mesh (with xml index meshindex) into the bucket
-void SpudBucket::meshes_fill_(const uint &meshindex)
+// Insert a mesh (with given optionpath) into the bucket
+void SpudBucket::meshes_fill_(const std::string &optionpath)
 {
   // A buffer to put option paths in
   std::stringstream buffer;
   
   // Get the name of the mesh
   std::string meshname;
-  buffer.str(""); buffer << "/geometry/mesh[" << meshindex << "]/name";
+  buffer.str(""); buffer << optionpath << "/name";
   Spud::get_option(buffer.str(), meshname);
   
   // Get the name of the mesh file
   std::string basename;
-  buffer.str(""); buffer << "/geometry/mesh[" << meshindex << "]/file";
+  buffer.str(""); buffer << optionpath << "/file";
   Spud::get_option(buffer.str(), basename);
   
   // Use DOLFIN to read in the mesh
   std::stringstream filename;
   filename.str(""); filename << basename << ".xml";
-  Mesh_ptr mesh(new dolfin::Mesh(filename.str()));
+  SpudMesh_ptr mesh(new SpudMesh(meshname, optionpath, filename.str()));
   (*mesh).init();
 
   // Register the mesh functions (in dolfin::MeshData associated with the mesh - saves us having a separate set of mesh functions in

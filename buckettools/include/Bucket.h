@@ -4,14 +4,16 @@
 
 #include "GenericDetectors.h"
 #include "PythonDetectors.h"
-#include "SystemBucket.h"
+#include "System.h"
+#include "SpudMesh.h"
 #include <dolfin.h>
 
 namespace buckettools
 {
   
   // Define boost shared_ptr types for lots of useful things
-  typedef boost::shared_ptr< SystemBucket >                         SystemBucket_ptr;
+  typedef boost::shared_ptr< System >                               System_ptr;
+  typedef boost::shared_ptr< Solver >                               Solver_ptr;
   typedef boost::shared_ptr< dolfin::GenericFunction >              GenericFunction_ptr;
   typedef boost::shared_ptr< dolfin::Mesh >                         Mesh_ptr;
   typedef boost::shared_ptr< dolfin::MeshFunction< dolfin::uint > > MeshFunction_uint_ptr;
@@ -37,10 +39,9 @@ namespace buckettools
     std::string name_;
     
     std::map< std::string, Mesh_ptr >         meshes_;
-    std::map< std::string, std::string >      mesh_optionpaths_;
 
-    std::map< std::string, SystemBucket_ptr > systembuckets_;
-    std::map< std::string, std::String >      systembucket_optionpaths_;
+    //std::map< std::string, SystemBucket_ptr > systembuckets_;
+    //std::map< std::string, std::String >      systembucket_optionpaths_;
 
     std::map< std::string, GenericDetectors_ptr >    detectors_;
     std::map< std::string, std::string >      detector_optionpaths_;
@@ -50,7 +51,10 @@ namespace buckettools
   public:
     
     Bucket()
-    { Bucket("uninitialised_name", "uninitialised_path"); }
+    { Bucket("uninitialised_name", ""); }
+
+    Bucket(std::string name)
+    { Bucket(name, ""); }
 
     Bucket(std::string name, std::string option_path)
     
@@ -61,10 +65,10 @@ namespace buckettools
     
     void register_mesh(Mesh_ptr mesh, std::string name, std::string option_path);
     
-    void create_system(std::string name)
+    void register_system(System_ptr std::string name)
     { register_system(name, "uninitialised_path"); }
 
-    void create_system(std::string name, std::string option_path);
+    void register_system(std::string name, std::string option_path);
 
     void register_detector(GenericDetectors_ptr detector, std::string name)
     { register_detector(detector, name, "uninitialised_path"); }

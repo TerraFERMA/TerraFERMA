@@ -12,9 +12,9 @@ namespace buckettools
   {
   private:
     
-    void meshes_fill_(const uint &meshindex);
+    void meshes_fill_(const std::string &optionpath);
     
-    void system_fill_(const uint &sysindex);
+    void system_fill_(const std::string &optionpath);
     
     void detectors_fill_();
     
