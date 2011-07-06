@@ -1,7 +1,6 @@
 #ifndef __SPUD_MESH_H
 #define __SPUD_MESH_H
 
-#include "Bucket.h"
 #include <dolfin.h>
 
 namespace buckettools
@@ -25,6 +24,9 @@ namespace buckettools
     SpudMesh(std::string name, std::string optionpath, std::string filename);
     
     virtual ~SpudMesh();
+
+    std::string name() const
+    { return name_; }
     
   };
 

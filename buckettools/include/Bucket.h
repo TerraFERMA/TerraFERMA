@@ -57,6 +57,13 @@ namespace buckettools
     ~Bucket();
 
     void register_mesh(Mesh_ptr mesh, std::string name);
+
+    std::string str() const;
+    
+    std::string meshes_str() const;
+
+    std::string name() const
+    { return name_; }
     
     //void register_system(System_ptr std::string name)
     //{ register_system(name, "uninitialised_path"); }
@@ -85,6 +92,15 @@ namespace buckettools
     //
     //GenericDetectors_ptr fetch_detector(const std::string name);
     //
+
+    Mesh_it meshes_begin();
+
+    Mesh_const_it meshes_begin() const;
+
+    Mesh_it meshes_end();
+
+    Mesh_const_it meshes_end() const;
+ 
     //std::map< std::string, GenericDetectors_ptr >::iterator detectors_begin();
     //
     //std::map< std::string, GenericDetectors_ptr >::const_iterator detectors_begin() const;

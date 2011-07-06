@@ -130,6 +130,26 @@ Mesh_ptr Bucket::fetch_mesh(const std::string name)
 //  return (*it).second;
 //}
 //
+Mesh_it Bucket::meshes_begin()
+{
+  return meshes_.begin();
+}
+
+Mesh_const_it Bucket::meshes_begin() const
+{
+  return meshes_.begin();
+}
+
+Mesh_it Bucket::meshes_end()
+{
+  return meshes_.begin();
+}
+
+Mesh_const_it Bucket::meshes_end() const
+{
+  return meshes_.end();
+}
+//
 //std::map< std::string, GenericDetectors_ptr >::iterator Bucket::detectors_begin()
 //{
 //  return detectors_.begin();
@@ -189,6 +209,29 @@ Mesh_ptr Bucket::fetch_mesh(const std::string name)
 //{
 //  return functions_.end();
 //}
+
+std::string Bucket::meshes_str() const
+{
+  std::stringstream s;
+
+  for ( Mesh_const_it m_it = meshes_begin(); m_it != meshes_end(); m_it++ )
+  {
+    s << "Mesh " << (*m_it).first << std::endl;
+  }
+
+  return s.str();
+}
+
+std::string Bucket::str() const
+{
+  std::stringstream s;
+
+  s << "Bucket " << name() << " contains:" << std::endl;
+
+  s << meshes_str();
+  
+  return s.str();
+}
 
 void Bucket::empty_()
 {
