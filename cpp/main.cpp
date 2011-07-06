@@ -12,6 +12,9 @@ int main(int argc, char* argv[])
   Spud::load_options(options_filename);
 
   buckettools::SpudBucket bucket("PoissonBucket", "");
+  bucket.fill();
+
+  std::cout << bucket.str();
 
   return 0;
   

@@ -6,7 +6,7 @@
     </dimension>
     <mesh name="Mesh">
       <file>
-        <string_value lines="1" type="filename">example</string_value>
+        <string_value lines="1" type="filename">../mesh/square</string_value>
       </file>
       <cell>
         <string_value>triangle</string_value>
