@@ -1,6 +1,7 @@
 #ifndef __SPUD_MESH_H
 #define __SPUD_MESH_H
 
+#include "Bucket.h"
 #include <dolfin.h>
 
 namespace buckettools
@@ -14,14 +15,14 @@ namespace buckettools
     // A name (not really spud specific but a nice feature)
     std::string name_;
     // The option path for this mesh in the spud dictionary
-    std::string option_path_;
+    std::string optionpath_;
     
   public:
     
     SpudMesh(std::string filename)
     { SpudMesh("uninitialised_name", "uninitialised_path", filename); }
     
-    SpudMesh(std::string name, std::string option_path, filename);
+    SpudMesh(std::string name, std::string optionpath, std::string filename);
     
     virtual ~SpudMesh();
     

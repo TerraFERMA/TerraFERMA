@@ -1,5 +1,6 @@
 
 #include "SpudBucket.h"
+#include "SpudMesh.h"
 //#include "GenericDetectors.h"
 //#include "PointDetectors.h"
 //#include "PythonDetectors.h"
@@ -13,7 +14,7 @@
 using namespace buckettools;
 
 // Default constructor for spudbucket derived class
-SpudBucket::SpudBucket(std::string name, std::string option_path) : option_path_(option_path), Bucket(name)
+SpudBucket::SpudBucket(std::string name, std::string optionpath) : optionpath_(optionpath), Bucket(name)
 {
   // Do nothing
 }
@@ -394,5 +395,5 @@ void SpudBucket::meshes_fill_(const std::string &optionpath)
 //    det.reset(new PythonDetectors(no_det, dimension, function, detname));
 //    register_detector(det, detname);
 //  }  
-  
-}
+//  
+//}

@@ -2,16 +2,16 @@
 #ifndef __BUCKET_H
 #define __BUCKET_H
 
-//#include "GenericDetectors.h"
-//#include "PythonDetectors.h"
-#include "System.h"
+// #include "GenericDetectors.h"
+// #include "PythonDetectors.h"
+// #include "System.h"
 #include <dolfin.h>
 
 namespace buckettools
 {
   
   // Define boost shared_ptr types for lots of useful things
-  typedef boost::shared_ptr< System >                               System_ptr;
+  // typedef boost::shared_ptr< System >                               System_ptr;
   // typedef boost::shared_ptr< Solver >                               Solver_ptr;
   typedef boost::shared_ptr< dolfin::GenericFunction >              GenericFunction_ptr;
   typedef boost::shared_ptr< dolfin::Mesh >                         Mesh_ptr;
@@ -22,14 +22,14 @@ namespace buckettools
   typedef boost::shared_ptr< dolfin::Form >                         Form_ptr;
 
   // Some iterators
-  typedef std::map< std::string, SystemBucket_ptr >::iterator           SystemBucket_it;
-  typedef std::map< std::string, SystemBucket_ptr >::const_iterator     SystemBucket_const_it;
+  // typedef std::map< std::string, SystemBucket_ptr >::iterator           SystemBucket_it;
+  // typedef std::map< std::string, SystemBucket_ptr >::const_iterator     SystemBucket_const_it;
   typedef std::map< std::string, Mesh_ptr >::iterator                   Mesh_it;
   typedef std::map< std::string, Mesh_ptr >::const_iterator             Mesh_const_it;
   typedef std::map< std::string, std::string >::iterator                string_it;
   typedef std::map< std::string, std::string >::const_iterator          string_const_it;
-  typedef std::map< std::string, GenericDetectors_ptr >::iterator       GenericDetectors_it;
-  typedef std::map< std::string, GenericDetectors_ptr >::const_iterator GenericDetectors_const_it;
+  // typedef std::map< std::string, GenericDetectors_ptr >::iterator       GenericDetectors_it;
+  // typedef std::map< std::string, GenericDetectors_ptr >::const_iterator GenericDetectors_const_it;
   
   class Bucket
   {

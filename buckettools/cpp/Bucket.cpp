@@ -1,7 +1,7 @@
 
 #include "Bucket.h"
-#include "GenericDetectors.h"
-#include "PythonDetectors.h"
+// #include "GenericDetectors.h"
+// #include "PythonDetectors.h"
 #include <dolfin.h>
 #include <string>
 

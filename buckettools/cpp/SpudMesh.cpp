@@ -1,10 +1,11 @@
 #include <dolfin.h>
 #include <string>
+#include "SpudMesh.h"
 
 using namespace buckettools;
 
 // Default constructor for spudbucket derived class
-SpudMesh::SpudMesh(std::string name, std::string option_path, std::string filename) : name_(name), option_path_(option_path), dolfin::Mesh(filename)
+SpudMesh::SpudMesh(std::string name, std::string optionpath, std::string filename) : name_(name), optionpath_(optionpath), dolfin::Mesh(filename)
 {
   // Do nothing
 }
