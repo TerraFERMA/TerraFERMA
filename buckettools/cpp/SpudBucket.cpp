@@ -1,6 +1,5 @@
 
 #include "SpudBucket.h"
-#include "SpudMesh.h"
 //#include "GenericDetectors.h"
 //#include "PointDetectors.h"
 //#include "PythonDetectors.h"
@@ -71,7 +70,7 @@ void SpudBucket::meshes_fill_(const std::string &optionpath)
   // Use DOLFIN to read in the mesh
   std::stringstream filename;
   filename.str(""); filename << basename << ".xml";
-  SpudMesh_ptr mesh(new SpudMesh(meshname, optionpath, filename.str()));
+  Mesh_ptr mesh(new dolfin::Mesh(filename.str()));
   (*mesh).init();
 
   // Register the mesh functions (in dolfin::MeshData associated with the mesh - saves us having a separate set of mesh functions in
@@ -87,9 +86,73 @@ void SpudBucket::meshes_fill_(const std::string &optionpath)
   cellids.reset(new dolfin::MeshFunction<dolfin::uint>(*mesh, filename.str()));
 
   // Put the mesh into the bucket
-  register_mesh(mesh, meshname);
+  register_mesh(mesh, meshname, optionpath);
 }
 
+void SpudBucket::register_mesh(Mesh_ptr mesh, std::string name, std::string optionpath)
+{
+  // First check if a mesh with this name already exists
+  Mesh_it m_it = meshes_.find(name);
+  if (m_it != meshes_.end())
+  {
+    // if it does, issue an error
+    dolfin::error("Mesh named \"%s\" already exists in spudbucket.", name.c_str());
+  }
+  else
+  {
+    // if not then insert it into the maps
+    meshes_[name]           = mesh;
+    mesh_optionpaths_[name] = optionpath;
+  }
+}
+
+std::string SpudBucket::fetch_mesh_optionpath(const std::string name)
+{
+  // Check if the mesh exists in the bucket
+  string_it s_it = mesh_optionpaths_.find(name);
+  if (s_it == mesh_optionpaths_.end())
+  {
+    // if it doesn't then throw an error
+    dolfin::error("Mesh named \"%s\" does not exist in spudbucket.", name.c_str());
+  }
+  else
+  {
+    // if it does then return the pointer to the mesh
+    return (*s_it).second;
+  }
+}
+
+std::string SpudBucket::meshes_str() const
+{
+  std::stringstream s;
+
+  for ( string_const_it s_it = mesh_optionpaths_begin(); s_it != mesh_optionpaths_end(); s_it++ )
+  {
+    s << "Mesh " << (*s_it).first << ": " << (*s_it).second  << std::endl;
+  }
+
+  return s.str();
+}
+
+string_it SpudBucket::mesh_optionpaths_begin()
+{
+  return mesh_optionpaths_.begin();
+}
+
+string_const_it SpudBucket::mesh_optionpaths_begin() const
+{
+  return mesh_optionpaths_.begin();
+}
+
+string_it SpudBucket::mesh_optionpaths_end()
+{
+  return mesh_optionpaths_.end();
+}
+
+string_const_it SpudBucket::mesh_optionpaths_end() const
+{
+  return mesh_optionpaths_.end();
+}
 //// Insert a system (with xml index meshindex) into the bucket
 //void SpudBucket::system_fill_(const uint &sysindex)
 //{

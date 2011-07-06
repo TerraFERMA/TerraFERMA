@@ -14,6 +14,8 @@ namespace buckettools
     
     std::string optionpath_;
 
+    std::map< std::string, std::string > mesh_optionpaths_;
+
     void meshes_fill_(const std::string &optionpath);
     
     //void system_fill_(const std::string &optionpath);
@@ -39,10 +41,24 @@ namespace buckettools
     
     SpudBucket(std::string name, std::string option_path);
     
+    void register_mesh(Mesh_ptr mesh, std::string name, std::string optionpath);
+
+    std::string fetch_mesh_optionpath(const std::string name);
+
+    std::string meshes_str() const;
+
     virtual ~SpudBucket();
     
     void fill();
     
+    string_it mesh_optionpaths_begin();
+
+    string_const_it mesh_optionpaths_begin() const;
+
+    string_it mesh_optionpaths_end();
+
+    string_const_it mesh_optionpaths_end() const;
+ 
   };
 }
 #endif

@@ -37,6 +37,10 @@ namespace buckettools
 
     std::string name_;
     
+    void empty_();
+
+  protected:    
+
     std::map< std::string, Mesh_ptr >         meshes_;
 
     //std::map< std::string, SystemBucket_ptr > systembuckets_;
@@ -44,8 +48,6 @@ namespace buckettools
 
     //std::map< std::string, GenericDetectors_ptr >    detectors_;
     //std::map< std::string, std::string >      detector_optionpaths_;
-    
-    void empty_();
     
   public:
     
@@ -60,7 +62,7 @@ namespace buckettools
 
     std::string str() const;
     
-    std::string meshes_str() const;
+    virtual std::string meshes_str() const;
 
     std::string name() const
     { return name_; }

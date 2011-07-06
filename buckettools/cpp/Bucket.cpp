@@ -142,7 +142,7 @@ Mesh_const_it Bucket::meshes_begin() const
 
 Mesh_it Bucket::meshes_end()
 {
-  return meshes_.begin();
+  return meshes_.end();
 }
 
 Mesh_const_it Bucket::meshes_end() const
@@ -216,7 +216,7 @@ std::string Bucket::meshes_str() const
 
   for ( Mesh_const_it m_it = meshes_begin(); m_it != meshes_end(); m_it++ )
   {
-    s << "Mesh " << (*m_it).first << std::endl;
+    s << "Mesh " << (*m_it).first  << std::endl;
   }
 
   return s.str();

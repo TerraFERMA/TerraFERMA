@@ -28,6 +28,9 @@ namespace buckettools
     std::string name() const
     { return name_; }
     
+    std::string optionpath() const
+    { return optionpath_; }
+    
   };
 
   // Define a boost shared_ptr for the SpudMesh class
