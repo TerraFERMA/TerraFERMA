@@ -4,9 +4,9 @@
     <dimension>
       <integer_value rank="0">2</integer_value>
     </dimension>
-    <mesh name="Mesh">
+    <mesh name="Frank">
       <file>
-        <string_value lines="1" type="filename">../mesh/square</string_value>
+        <string_value type="filename" lines="1">../mesh/square</string_value>
       </file>
       <cell>
         <string_value>triangle</string_value>
