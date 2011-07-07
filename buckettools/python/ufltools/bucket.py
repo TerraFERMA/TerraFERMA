@@ -7,6 +7,18 @@ class Bucket:
     """Define the expected members of the bucket class - only one really."""
     self.systems = None
 
+  def write_ufc(self, suffix=None):
+    """Write all ufl files described by the bucket."""
+    for system in self.systems:
+      for field in system.fields:
+        for functional in field.functionals:
+          functional.write_ufc(suffix=suffix)
+      for coeff in system.coeffs:
+        for functional in coeff.functionals:
+          functional.write_ufc(suffix=suffix)
+      for solver in system.solvers:
+        solver.write_ufc(suffix=suffix)
+
   def write_ufl(self, suffix=None):
     """Write all ufl files described by the bucket."""
     for system in self.systems:
