@@ -46,9 +46,9 @@ class Bucket:
 
     functionspace_cpp         = []
     functionspace_cpp.append("  // A function to return a functionspace from a system given a mesh (defaults to first solver in system as they should all be the same).\n")
-    functionspace_cpp.append("  boost::shared_ptr< dolfin::FunctionSpace > fetch_functionspace(std::string systemname, Mesh_ptr mesh)\n")
+    functionspace_cpp.append("  FunctionSpace_ptr fetch_functionspace(std::string systemname, Mesh_ptr mesh)\n")
     functionspace_cpp.append("  {\n")
-    functionspace_cpp.append("    boost::shared_ptr< dolfin::FunctionSpace > functionspace;\n")
+    functionspace_cpp.append("    FunctionSpace_ptr functionspace;\n")
 
     solverfunctionspace_cpp         = []
     solverfunctionspace_cpp.append("  // A function to return a functionspace from a system given a mesh and a solvername.\n")
