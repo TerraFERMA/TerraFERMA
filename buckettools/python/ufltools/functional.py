@@ -1,4 +1,5 @@
 from ufltools.base import *
+import subprocess
 
 class Functional:
   """A class that stores all the information necessary to write the ufl for a functional (i.e. scalar valued returning ufl)."""
@@ -41,6 +42,18 @@ class Functional:
     filehandle = file(filename, 'w')
     filehandle.writelines(ufl)
     filehandle.close()
+
+  def write_ufc(self, suffix=None):
+    """Write the functional to a ufl file."""
+    ufl = self.ufl()
+
+    filename   = self.function.system.name+self.function.name+self.name+".ufl"
+    if suffix: filename += "."+suffix
+    filehandle = file(filename, 'w')
+    filehandle.writelines(ufl)
+    filehandle.close()
+
+    subprocess.call(["ffc", "-l", "dolfin", filename])
 
   def cpp(self):
     cpp = [] 

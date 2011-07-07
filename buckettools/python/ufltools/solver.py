@@ -1,5 +1,6 @@
 from ufltools.base import *
 import sys
+import subprocess
 
 class Solver:
   """A class that stores all the information necessary to write the ufl for a system of forms (i.e. linear or bilinear) associated with a solver."""
@@ -46,6 +47,18 @@ class Solver:
     filehandle = file(filename, 'w')
     filehandle.writelines(ufl)
     filehandle.close()
+    
+  def write_ufc(self, suffix=None):
+    """Write the system of forms to a ufl file."""
+    ufl = self.ufl()
+    
+    filename = self.system.name+self.name+".ufl"
+    if suffix: filename += "."+suffix
+    filehandle = file(filename, 'w')
+    filehandle.writelines(ufl)
+    filehandle.close()
+
+    subprocess.call(["ffc", "-l", "dolfin", filename])
     
   def functionspace_cpp(self):
     cpp = [] 
