@@ -47,10 +47,9 @@ if (NOT EXISTS ${OPTIONSFILE})
   message(FATAL_ERROR "Could not find OPTIONSFILE ${OPTIONSFILE}")
 endif(NOT EXISTS ${OPTIONSFILE})
 
-add_subdirectory(${BUCKETTOOLS_DIR} "buckettools")
+add_subdirectory(${BUCKETTOOLS_DIR} "BucketTools")
 
-#include_directories("${PROJECT_BINARY_DIR}/buckettools/ufl")
-
+include_directories("${PROJECT_BINARY_DIR}/buckettools/ufl")
 include_directories("${BUCKETTOOLS_DIR}/include")
 
 find_package(PythonLibs)

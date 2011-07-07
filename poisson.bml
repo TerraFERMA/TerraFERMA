@@ -6,7 +6,7 @@
     </dimension>
     <mesh name="Frank">
       <file>
-        <string_value type="filename" lines="1">../mesh/square</string_value>
+        <string_value lines="1" type="filename">../mesh/square</string_value>
       </file>
       <cell>
         <string_value>triangle</string_value>
@@ -33,7 +33,7 @@
     </detectors>
   </io>
   <system name="Poisson">
-    <mesh name="Mesh"/>
+    <mesh name="Frank"/>
     <ufl_symbol>
       <string_value lines="1">u</string_value>
     </ufl_symbol>
