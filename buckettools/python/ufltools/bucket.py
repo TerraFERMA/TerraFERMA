@@ -58,9 +58,9 @@ class Bucket:
 
     coefficientspace_cpp         = []
     coefficientspace_cpp.append("  // A function to return a functionspace (for a coefficient) from a system given a mesh, a solvername and a functionname.\n")
-    coefficientspace_cpp.append("  FunctionSpace_ptr fetch_coefficientspace(std::string systemname, std::string solvername, std::string functionname, Mesh_ptr mesh)\n")
+    coefficientspace_cpp.append("  FunctionSpace_ptr fetch_coefficientspace(std::string systemname, std::string solvername, std::string coefficientname, Mesh_ptr mesh)\n")
     coefficientspace_cpp.append("  {\n")
-    coefficientspace_cpp.append("    FunctionSpace_ptr functionspace;\n")
+    coefficientspace_cpp.append("    FunctionSpace_ptr coefficientspace;\n")
 
     functional_cpp            = []
     functional_cpp.append("  // A function to return a functional from a system-function set given a mesh and a functionalname.\n")
@@ -80,7 +80,7 @@ class Bucket:
       include_cpp    += self.systems[s].include_cpp()
       functionspace_cpp += self.systems[s].functionspace_cpp(index=s)
       solverfunctionspace_cpp += self.systems[s].solverfunctionspace_cpp(index=s)
-      #coefficientspace_cpp += self.systems[s].coefficientspace_cpp()
+      coefficientspace_cpp += self.systems[s].coefficientspace_cpp(index=s)
       #functional_cpp += self.systems[s].functional_cpp()
       #form_cpp += self.systems[s].form_cpp()
 
@@ -102,7 +102,7 @@ class Bucket:
     coefficientspace_cpp.append("    {\n")
     coefficientspace_cpp.append("      dolfin::error(\"Unknown systemname in fetch_functionspace\");\n")
     coefficientspace_cpp.append("    }\n")
-    coefficientspace_cpp.append("    return functionspace;\n")
+    coefficientspace_cpp.append("    return coefficientspace;\n")
     coefficientspace_cpp.append("  }\n")
 
     functional_cpp.append("      default:\n")
@@ -124,8 +124,8 @@ class Bucket:
     cpp += functionspace_cpp
     cpp.append("\n")
     cpp += solverfunctionspace_cpp
-    #cpp.append("\n")
-    #cpp += coefficientspace_cpp
+    cpp.append("\n")
+    cpp += coefficientspace_cpp
     #cpp.append("\n")
     #cpp += form_cpp
     #cpp.append("\n")

@@ -172,27 +172,29 @@ class System:
     cpp.append("    }\n")
     return cpp
 
-  def coefficientspace_cpp(self):
+  def coefficientspace_cpp(self, index=0):
     """Write an array of cpp strings describing the namespace of the coefficientspaces in the ufls."""
     cpp = []  
-    cpp.append("      case \""+self.name+"\":\n")
-    cpp.append("        switch(solvername)\n")
-    cpp.append("        {\n")
-    for solver in self.solvers:
-      cpp.append("          case \""+solver.name+"\":\n")
-      cpp.append("            switch(functionname)\n")
-      cpp.append("            {\n")
-      form_symbols = [symbol for form in solver.forms for symbol in re.findall(r"\b[a-z_]+\b", form, re.I) if symbol not in ufl_reserved()]
-      if solver.preamble: form_symbols += [symbol for symbol in re.findall(r"\b[a-z_]+\b", solver.preamble, re.I) if symbol not in ufl_reserved()]
-      for coeff in self.coeffs:
-        if coeff.symbol in form_symbols: cpp += coeff.coefficientspace_cpp(solver.name)
-      cpp.append("              default:\n")
-      cpp.append("                dolfin::error(\"Unknown functionname in fetch_coefficientspace\");\n")
-      cpp.append("            }\n")
-    cpp.append("          default:\n")
-    cpp.append("            dolfin::error(\"Unknown solvername in fetch_coefficientspace\");\n")
-    cpp.append("        }\n")
-    cpp.append("        break;\n")
+    if index == 0:
+      cpp.append("    if (systemname ==  \""+self.name+"\")\n")
+    else:
+      cpp.append("    else if (systemname ==  \""+self.name+"\")\n")
+    cpp.append("    {\n")
+    for s in range(len(self.solvers)):
+      form_symbols = [symbol for form in self.solvers[s].forms for symbol in re.findall(r"\b[a-z_]+\b", form, re.I) if symbol not in ufl_reserved()]
+      if self.solvers[s].preamble: form_symbols += [symbol for symbol in re.findall(r"\b[a-z_]+\b", self.solvers[s].preamble, re.I) if symbol not in ufl_reserved()]
+      for c in range(len(self.coeffs)):
+        if self.coeffs[c].symbol in form_symbols: cpp += self.coeffs[c].coefficientspace_cpp(self.solvers[s].name, solver_index=s, coeff_index=c)
+      cpp.append("        else\n")
+      cpp.append("        {\n")
+      cpp.append("          dolfin::error(\"Unknown coefficientname in fetch_coefficientspace\");\n")
+      cpp.append("        }\n")
+      cpp.append("      }\n")
+    cpp.append("      else\n")
+    cpp.append("      {\n")
+    cpp.append("        dolfin::error(\"Unknown solvername in fetch_functionspace\");\n")
+    cpp.append("      }\n")
+    cpp.append("    }\n")
     return cpp
 
   def form_cpp(self):
