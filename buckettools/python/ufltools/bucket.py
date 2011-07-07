@@ -48,8 +48,7 @@ class Bucket:
     functionspace_cpp.append("  // A function to return a functionspace from a system given a mesh (defaults to first solver in system as they should all be the same).\n")
     functionspace_cpp.append("  FunctionSpace_ptr fetch_functionspace(std::string systemname, Mesh_ptr mesh)\n")
     functionspace_cpp.append("  {\n")
-    functionspace_cpp.append("    switch(systemname)\n")
-    functionspace_cpp.append("    {\n")
+    functionspace_cpp.append("    FunctionSpace_ptr functionspace( new "+self.systems[0].solvers[0].namespace()+"::FunctionSpace(*mesh) );\n")
 
     solverfunctionspace_cpp         = []
     solverfunctionspace_cpp.append("  // A function to return a functionspace from a system given a mesh and a solvername.\n")
@@ -79,16 +78,17 @@ class Bucket:
     form_cpp.append("    switch(systemname)\n")
     form_cpp.append("    {\n")
  
-    for system in self.systems:
-      include_cpp    += system.include_cpp()
-      functionspace_cpp += system.functionspace_cpp()
-      solverfunctionspace_cpp += system.solverfunctionspace_cpp()
-      coefficientspace_cpp += system.coefficientspace_cpp()
-      functional_cpp += system.functional_cpp()
-      form_cpp += system.form_cpp()
+    for s in range(len(self.systems)):
+      include_cpp    += self.systems[s].include_cpp()
+      functionspace_cpp += self.systems[s].functionspace_cpp(index=s)
+      #solverfunctionspace_cpp += self.systems[s].solverfunctionspace_cpp()
+      #coefficientspace_cpp += self.systems[s].coefficientspace_cpp()
+      #functional_cpp += self.systems[s].functional_cpp()
+      #form_cpp += self.systems[s].form_cpp()
 
-    functionspace_cpp.append("      default:\n")
-    functionspace_cpp.append("        dolfin::error(\"Unknown systemname in fetch_functionspace\");\n")
+    functionspace_cpp.append("    else\n")
+    functionspace_cpp.append("    {\n")
+    functionspace_cpp.append("      dolfin::error(\"Unknown systemname in fetch_functionspace\");\n")
     functionspace_cpp.append("    }\n")
     functionspace_cpp.append("    return functionspace;\n")
     functionspace_cpp.append("  }\n")
@@ -122,14 +122,14 @@ class Bucket:
     cpp.append("namespace buckettools\n")
     cpp.append("{\n")
     cpp += functionspace_cpp
-    cpp.append("\n")
-    cpp += solverfunctionspace_cpp
-    cpp.append("\n")
-    cpp += coefficientspace_cpp
-    cpp.append("\n")
-    cpp += form_cpp
-    cpp.append("\n")
-    cpp += functional_cpp
+    #cpp.append("\n")
+    #cpp += solverfunctionspace_cpp
+    #cpp.append("\n")
+    #cpp += coefficientspace_cpp
+    #cpp.append("\n")
+    #cpp += form_cpp
+    #cpp.append("\n")
+    #cpp += functional_cpp
     cpp.append("}\n")
     cpp.append("\n")
     cpp.append("#endif\n")

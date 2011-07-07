@@ -156,13 +156,18 @@ class System:
     cpp.append("        break;\n")
     return cpp
 
-  def functionspace_cpp(self):
+  def functionspace_cpp(self, index=0):
     """Write an array of cpp strings describing the namespace of the functionspaces in the ufls (assuming a single solver)."""
     cpp = []  
-    cpp.append("      case \""+self.name+"\":\n")
-    cpp.append("        // All solvers within a system should return the same functionspace so just take the first one\n")
-    cpp.append(self.solvers[0].functionspace_cpp_no_case())
-    cpp.append("        break;\n")
+    if index == 0:
+      cpp.append("    if (systemname ==  \""+self.name+"\")\n")
+    else:
+      cpp.append("    else if (systemname ==  \""+self.name+"\")\n")
+    cpp.append("    {\n")
+
+    cpp.append("      // All solvers within a system should return the same functionspace so just take the first one\n")
+    cpp.append(self.solvers[0].functionspace_cpp_no_if())
+    cpp.append("    }\n")
     return cpp
 
   def coefficientspace_cpp(self):
