@@ -4,6 +4,7 @@
 
 #include "DolfinBoostTypes.h"
 #include "System.h"
+#include "SystemsWrapper.h"
 #include <dolfin.h>
 
 namespace buckettools

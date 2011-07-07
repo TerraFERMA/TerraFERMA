@@ -37,7 +37,7 @@ add_custom_target(
 
 add_subdirectory("ufl")
 
-include_directories("${BucketTools_SOURCE_DIR}/include" ${BucketTools_BINARY_DIR})
+include_directories("${BucketTools_SOURCE_DIR}/include" ${BucketTools_BINARY_DIR} ${BucketTools_BINARY_DIR}/ufl)
 include_directories(${PYTHON_INCLUDE_PATH})
 add_library(BucketTools cpp/Bucket.cpp cpp/SpudBucket.cpp cpp/System.cpp cpp/SpudSystem.cpp)
 set_source_files_properties(${BucketTools_BINARY_DIR}/ufl/SystemsWrapper.h PROPERTIES GENERATED 1)

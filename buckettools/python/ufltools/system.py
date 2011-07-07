@@ -160,8 +160,9 @@ class System:
     """Write an array of cpp strings describing the namespace of the functionspaces in the ufls (assuming a single solver)."""
     cpp = []  
     cpp.append("      case \""+self.name+"\":\n")
-    cpp.append("          // All solvers within a system should return the same functionspace so just take the first one\n")
-    cpp += self.solvers[0].functionspace_cpp()
+    cpp.append("        // All solvers within a system should return the same functionspace so just take the first one\n")
+    cpp.append(self.solvers[0].functionspace_cpp_no_case())
+    cpp.append("        break;\n")
     return cpp
 
   def coefficientspace_cpp(self):

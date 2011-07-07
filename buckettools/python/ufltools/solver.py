@@ -60,6 +60,9 @@ class Solver:
 
     subprocess.call(["ffc", "-l", "dolfin", filename])
     
+  def functionspace_cpp_no_case(self):
+    return "        FunctionSpace_ptr functionspace(new "+self.system.name+self.name+"::FunctionSpace(*mesh));\n"
+
   def functionspace_cpp(self):
     cpp = [] 
     cpp.append("          case \""+self.name+"\":\n")
