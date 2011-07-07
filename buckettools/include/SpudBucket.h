@@ -3,6 +3,7 @@
 #define __SPUD_BUCKET_H
 
 #include "Bucket.h"
+#include "DolfinBoostTypes.h"
 #include <dolfin.h>
 
 namespace buckettools
@@ -16,9 +17,14 @@ namespace buckettools
 
     std::map< std::string, std::string > mesh_optionpaths_;
 
+    std::map< std::string, std::string > system_optionpaths_;
+
     void meshes_fill_(const std::string &optionpath);
     
-    //void system_fill_(const std::string &optionpath);
+    void system_fill_(const std::string &optionpath);
+ 
+    std::string optionpath()
+    { return optionpath_; }
     //
     //void detectors_fill_();
     //

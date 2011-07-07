@@ -12,6 +12,10 @@ optparser=OptionParser(usage='usage: %prog <options-file>',
                        """It also provides a cpp header file wrapping the namespaces of the ufc """ +
                        """corresponding to these ufl files.""" )
 
+optparser.add_option("--suffix", "-s",
+                  help="Add a suffix to the normal .ufl and .h filenames (i.e. *.ufl.suffix and SystemsWrapper.h.suffix)",
+                  action="store", type="string", dest="suffix", default=None)
+
 (options, argv) = optparser.parse_args()
 
 if len(argv)<1:
@@ -21,6 +25,9 @@ if len(argv)<1:
 # the options file name
 options_filename  = argv[0]
 
+# the suffix for the files (if it exists)
+suffix = options.suffix
+
 # load the options tree
 libspud.load_options(options_filename)
 
@@ -28,9 +35,9 @@ bucket = ufltools.spud.SpudBucket()
 # populate the bucket based on the options file loaded above
 bucket.fill()
 # write out the ufl files described by the options tree
-bucket.write_ufl()
+bucket.write_ufl(suffix=suffix)
 # write a cpp header file to wrap the namespaces of the corresponding ufc
-bucket.write_cpp()
+bucket.write_cpp(suffix=suffix)
 
 # and we're done
 

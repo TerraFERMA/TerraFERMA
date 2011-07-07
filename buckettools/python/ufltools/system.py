@@ -141,7 +141,7 @@ class System:
       cpp.append("#include \""+self.name+solver.name+".h\"\n")
     return cpp
 
-  def functionspace_cpp(self):
+  def solverfunctionspace_cpp(self):
     """Write an array of cpp strings describing the namespace of the functionspaces in the ufls."""
     cpp = []  
     cpp.append("      case \""+self.name+"\":\n")
@@ -154,6 +154,14 @@ class System:
     cpp.append("            dolfin::error(\"Unknown solvername in fetch_functionspace\");\n")
     cpp.append("        }\n")
     cpp.append("        break;\n")
+    return cpp
+
+  def functionspace_cpp(self):
+    """Write an array of cpp strings describing the namespace of the functionspaces in the ufls (assuming a single solver)."""
+    cpp = []  
+    cpp.append("      case \""+self.name+"\":\n")
+    cpp.append("          // All solvers within a system should return the same functionspace so just take the first one\n")
+    cpp += self.solvers[0].functionspace_cpp()
     return cpp
 
   def coefficientspace_cpp(self):

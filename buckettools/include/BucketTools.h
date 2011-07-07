@@ -4,7 +4,9 @@
 
 #include "Bucket.h"
 #include "SpudBucket.h"
-//#include "SystemBucket.h"
+#include "System.h"
+#include "SpudSystem.h"
+#include "DolfinBoostTypes.h"
 //#include "StatFile.h"
 //#include "DiagnosticsFile.h"
 //#include "DetectorsFile.h"

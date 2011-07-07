@@ -10,7 +10,7 @@ class Functional:
     self.name = None
     self.symbol = None
   
-  def write_ufl(self):
+  def write_ufl(self, suffix=None):
     """Write the functional to a ufl file."""
     ufl = []
     if self.function.type=="Constant":
@@ -31,6 +31,7 @@ class Functional:
     ufl.append(produced_comment())
 
     filename   = self.function.system.name+self.function.name+self.name+".ufl"
+    if suffix: filename += "."+suffix
     filehandle = file(filename, 'w')
     filehandle.writelines(ufl)
     filehandle.close()

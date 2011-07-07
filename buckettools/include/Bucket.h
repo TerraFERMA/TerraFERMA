@@ -4,26 +4,16 @@
 
 // #include "GenericDetectors.h"
 // #include "PythonDetectors.h"
-// #include "System.h"
+#include "DolfinBoostTypes.h"
+#include "System.h"
 #include <dolfin.h>
 
 namespace buckettools
 {
   
-  // Define boost shared_ptr types for lots of useful things
-  // typedef boost::shared_ptr< System >                               System_ptr;
-  // typedef boost::shared_ptr< Solver >                               Solver_ptr;
-  typedef boost::shared_ptr< dolfin::GenericFunction >              GenericFunction_ptr;
-  typedef boost::shared_ptr< dolfin::Mesh >                         Mesh_ptr;
-  typedef boost::shared_ptr< dolfin::MeshFunction< dolfin::uint > > MeshFunction_uint_ptr;
-  typedef boost::shared_ptr< dolfin::FunctionSpace >                FunctionSpace_ptr;
-  typedef boost::shared_ptr< dolfin::Function >                     Function_ptr;
-  typedef boost::shared_ptr< dolfin::DirichletBC >                  DirichletBC_ptr;
-  typedef boost::shared_ptr< dolfin::Form >                         Form_ptr;
-
   // Some iterators
-  // typedef std::map< std::string, SystemBucket_ptr >::iterator           SystemBucket_it;
-  // typedef std::map< std::string, SystemBucket_ptr >::const_iterator     SystemBucket_const_it;
+  typedef std::map< std::string, System_ptr >::iterator                 System_it;
+  typedef std::map< std::string, System_ptr >::const_iterator           System_const_it;
   typedef std::map< std::string, Mesh_ptr >::iterator                   Mesh_it;
   typedef std::map< std::string, Mesh_ptr >::const_iterator             Mesh_const_it;
   typedef std::map< std::string, std::string >::iterator                string_it;
@@ -43,8 +33,7 @@ namespace buckettools
 
     std::map< std::string, Mesh_ptr >         meshes_;
 
-    //std::map< std::string, SystemBucket_ptr > systembuckets_;
-    //std::map< std::string, std::String >      systembucket_optionpaths_;
+    std::map< std::string, System_ptr >       systems_;
 
     //std::map< std::string, GenericDetectors_ptr >    detectors_;
     //std::map< std::string, std::string >      detector_optionpaths_;
@@ -132,5 +121,8 @@ namespace buckettools
     //void register_bcexp(GenericFunction_ptr bcexp, std::string systemname);
     
   };
+
+  typedef boost::shared_ptr< Bucket > Bucket_ptr;
+
 }
 #endif

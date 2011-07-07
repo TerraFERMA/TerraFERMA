@@ -1,11 +1,12 @@
 
 #include "SpudBucket.h"
+#include "SpudSystem.h"
+#include "DolfinBoostTypes.h"
 //#include "GenericDetectors.h"
 //#include "PointDetectors.h"
 //#include "PythonDetectors.h"
 //#include "PythonExpression.h"
 //#include "InitialConditionExpression.h"
-//#include "System.h"
 #include <dolfin.h>
 #include <string>
 #include <spud.h>
@@ -39,12 +40,14 @@ void SpudBucket::fill()
     meshes_fill_(buffer.str());
   }
   
-  //// Put systems into the bucket
-  //int nsystems = Spud::option_count("/system");
-  //for (uint i = 0; i<nsystems; i++)
-  //{
-  //  system_fill_(i);
-  //}
+  // Put systems into the bucket
+  buffer.str(""); buffer << "/system";
+  int nsystems = Spud::option_count(buffer.str());
+  for (uint i = 0; i<nsystems; i++)
+  {
+    buffer << "[" << i << "]";
+    system_fill_(buffer.str());
+  }
   
   //// Put detectors in the bucket
   //detectors_fill_();
@@ -153,31 +156,31 @@ string_const_it SpudBucket::mesh_optionpaths_end() const
 {
   return mesh_optionpaths_.end();
 }
-//// Insert a system (with xml index meshindex) into the bucket
-//void SpudBucket::system_fill_(const uint &sysindex)
-//{
-//  // Set up the base option path for the system
-//  std::stringstream systempath;
-//  sydtempath.str(""); systempath << "/system[" << sysindex << "]";
-//
-//  // A string buffer for option paths
-//  std::stringstream buffer;
-//  
-//  // Get the system name
-//  std::string sysname;
-//  buffer.str(systempath.str()); buffer << "/name";
-//  Spud::get_option(buffer.str(), sysname);
+// Insert a system (with optionpath) into the bucket
+void SpudBucket::system_fill_(const std::string &optionpath)
+{
+  // A string buffer for option paths
+  std::stringstream buffer;
+
+  // Get the system name
+  std::string sysname;
+  buffer.str(""); buffer << optionpath << "/name";
+  Spud::get_option(buffer.str(), sysname);
+
+  // Get the name of the mesh this system is defined on
+  std::string meshname;
+  buffer.str(""); buffer << optionpath << "/mesh/name";
+  Spud::get_option(buffer.str(), meshname);
+  // and then extract the mesh from the bucket we're filling
+  Mesh_ptr mesh = fetch_mesh(meshname);
+
+  SpudSystem_ptr system( new SpudSystem(sysname, optionpath, mesh) );
+
+  (*system).fill();
 //  
 //  // Get the dimension of the problem (only one dimension assumed currently)
 //  int dimension;
 //  Spud::get_option("/geometry/dimension", dimension);
-//  
-//  // Get the name of the mesh this system is defined on
-//  std::string meshname;
-//  buffer.str(systempath.str()); buffer << "/mesh/name";
-//  Spud::get_option(buffer,str(), meshname);
-//  // and then extract the mesh from the bucket we're filling
-//  Mesh_ptr mesh = fetch_mesh(meshname);
 //  
 //  FunctionSpace_ptr sysspace(new System::FunctionSpace(mesh));
 //  buffer.str(""); buffer << sysname << "::Space";
@@ -257,7 +260,7 @@ string_const_it SpudBucket::mesh_optionpaths_end() const
 //    (*((*bc).second)).apply((*sysfunc).vector());
 //  }
 //  
-//}
+}
 //
 //void SpudBucket::bc_fill_(const std::string bcpath, 
 //                          const int funci, 
