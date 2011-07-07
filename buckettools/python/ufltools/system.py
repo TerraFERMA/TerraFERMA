@@ -136,9 +136,9 @@ class System:
     cpp = []
     for field in self.fields:
       for functional in field.functionals:
-        cpp.append("#include \""+self.name+field.name+functional.name+".h\"\n")
+        cpp.append("#include \""+functional.namespace()+".h\"\n")
     for solver in self.solvers:
-      cpp.append("#include \""+self.name+solver.name+".h\"\n")
+      cpp.append("#include \""+solver.namespace()+".h\"\n")
     return cpp
 
   def solverfunctionspace_cpp(self):
@@ -164,7 +164,6 @@ class System:
     else:
       cpp.append("    else if (systemname ==  \""+self.name+"\")\n")
     cpp.append("    {\n")
-
     cpp.append("      // All solvers within a system should return the same functionspace so just take the first one\n")
     cpp.append(self.solvers[0].functionspace_cpp_no_if())
     cpp.append("    }\n")

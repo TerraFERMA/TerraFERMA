@@ -37,7 +37,7 @@ class Functional:
     """Write the functional to a ufl file."""
     ufl = self.ufl()
 
-    filename   = self.function.system.name+self.function.name+self.name+".ufl"
+    filename   = self.namespace()+".ufl"
     if suffix: filename += "."+suffix
     filehandle = file(filename, 'w')
     filehandle.writelines(ufl)
@@ -47,7 +47,7 @@ class Functional:
     """Write the functional to a ufl file."""
     ufl = self.ufl()
 
-    filename   = self.function.system.name+self.function.name+self.name+".ufl"
+    filename   = self.namespace()+".ufl"
     if suffix: filename += "."+suffix
     filehandle = file(filename, 'w')
     filehandle.writelines(ufl)
@@ -55,10 +55,13 @@ class Functional:
 
     subprocess.call(["ffc", "-l", "dolfin", filename])
 
+  def namespace(self):
+    return self.function.system.name+self.function.name+self.name
+
   def cpp(self):
     cpp = [] 
     cpp.append("              case \""+self.name+"\":\n")
-    cpp.append("                Form_ptr functional(new "+self.function.system.name+self.function.name+self.name+"::Form_0(*functionspace));\n")
+    cpp.append("                Form_ptr functional(new "+self.namespace()+"::Form_0(*functionspace));\n")
     cpp.append("                break;\n")
     return cpp
 

@@ -46,21 +46,21 @@ class Bucket:
 
     functionspace_cpp         = []
     functionspace_cpp.append("  // A function to return a functionspace from a system given a mesh (defaults to first solver in system as they should all be the same).\n")
-    functionspace_cpp.append("  FunctionSpace_ptr fetch_functionspace(std::string systemname, Mesh_ptr mesh)\n")
+    functionspace_cpp.append("  boost::shared_ptr< dolfin::FunctionSpace > fetch_functionspace(std::string systemname, Mesh_ptr mesh)\n")
     functionspace_cpp.append("  {\n")
-    functionspace_cpp.append("    FunctionSpace_ptr functionspace( new "+self.systems[0].solvers[0].namespace()+"::FunctionSpace(*mesh) );\n")
+    functionspace_cpp.append("    boost::shared_ptr< dolfin::FunctionSpace > functionspace;\n")
 
     solverfunctionspace_cpp         = []
     solverfunctionspace_cpp.append("  // A function to return a functionspace from a system given a mesh and a solvername.\n")
     solverfunctionspace_cpp.append("  FunctionSpace_ptr fetch_functionspace(std::string systemname, std::string solvername, Mesh_ptr mesh)\n")
     solverfunctionspace_cpp.append("  {\n")
-    solverfunctionspace_cpp.append("    switch(systemname)\n")
-    solverfunctionspace_cpp.append("    {\n")
+    solverfunctionspace_cpp.append("    FunctionSpace_ptr functionspace( new "+self.systems[0].solvers[0].namespace()+"::FunctionSpace(*mesh) );\n")
 
     coefficientspace_cpp         = []
     coefficientspace_cpp.append("  // A function to return a functionspace (for a coefficient) from a system given a mesh, a solvername and a functionname.\n")
     coefficientspace_cpp.append("  FunctionSpace_ptr fetch_coefficientspace(std::string systemname, std::string solvername, std::string functionname, Mesh_ptr mesh)\n")
     coefficientspace_cpp.append("  {\n")
+    coefficientspace_cpp.append("    FunctionSpace_ptr functionspace( new "+self.systems[0].solvers[0].namespace()+"::FunctionSpace(*mesh) );\n")
     coefficientspace_cpp.append("    switch(systemname)\n")
     coefficientspace_cpp.append("    {\n")
 
