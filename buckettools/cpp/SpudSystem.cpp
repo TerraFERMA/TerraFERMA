@@ -2,6 +2,7 @@
 #include "DolfinBoostTypes.h"
 #include "SpudSystem.h"
 #include "System.h"
+#include "SystemsWrapper.h"
 #include <dolfin.h>
 #include <string>
 #include <spud.h>
