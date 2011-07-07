@@ -38,11 +38,14 @@ class Solver:
 
     return ufl
     
+  def namespace(self):
+    return self.system.name+self.name
+
   def write_ufl(self, suffix=None):
     """Write the system of forms to a ufl file."""
     ufl = self.ufl()
     
-    filename = self.system.name+self.name+".ufl"
+    filename = self.namespace()+".ufl"
     if suffix: filename += "."+suffix
     filehandle = file(filename, 'w')
     filehandle.writelines(ufl)
@@ -52,7 +55,7 @@ class Solver:
     """Write the system of forms to a ufl file."""
     ufl = self.ufl()
     
-    filename = self.system.name+self.name+".ufl"
+    filename = self.namespace()+".ufl"
     if suffix: filename += "."+suffix
     filehandle = file(filename, 'w')
     filehandle.writelines(ufl)
@@ -60,8 +63,8 @@ class Solver:
 
     subprocess.call(["ffc", "-l", "dolfin", filename])
     
-  def functionspace_cpp_no_case(self):
-    return "        FunctionSpace_ptr functionspace(new "+self.system.name+self.name+"::FunctionSpace(*mesh));\n"
+  def functionspace_cpp_no_if(self):
+    return "      functionspace.reset( new "+self.namespace()+"::FunctionSpace(*mesh) );\n"
 
   def functionspace_cpp(self):
     cpp = [] 
