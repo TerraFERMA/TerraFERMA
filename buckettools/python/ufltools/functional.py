@@ -10,8 +10,8 @@ class Functional:
     self.name = None
     self.symbol = None
   
-  def write_ufl(self, suffix=None):
-    """Write the functional to a ufl file."""
+  def ufl(self):
+    """Write the functional to an array of ufl strings."""
     ufl = []
     if self.function.type=="Constant":
       ufl.append(declaration_comment("Coefficient", self.function.type, self.function.name))
@@ -29,6 +29,12 @@ class Functional:
     ufl.append(forms_ufl([self.symbol]))
     ufl.append("\n")
     ufl.append(produced_comment())
+
+    return ufl
+
+  def write_ufl(self, suffix=None):
+    """Write the functional to a ufl file."""
+    ufl = self.ufl()
 
     filename   = self.function.system.name+self.function.name+self.name+".ufl"
     if suffix: filename += "."+suffix

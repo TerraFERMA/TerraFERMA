@@ -15,8 +15,8 @@ class Solver:
     self.form_ranks = None
     self.system = None
 
-  def write_ufl(self, suffix=None):
-    """Write the system of forms to a ufl file."""
+  def ufl(self):
+    """Write the system of forms to an array."""
     ufl = []
     ufl += self.system.functions_ufl()
     if self.preamble:
@@ -35,6 +35,12 @@ class Solver:
     ufl.append("\n")
     ufl.append(produced_comment())
 
+    return ufl
+    
+  def write_ufl(self, suffix=None):
+    """Write the system of forms to a ufl file."""
+    ufl = self.ufl()
+    
     filename = self.system.name+self.name+".ufl"
     if suffix: filename += "."+suffix
     filehandle = file(filename, 'w')

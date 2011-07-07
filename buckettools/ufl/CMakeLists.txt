@@ -18,7 +18,7 @@ macro (compile_ufl ufl)
     COMMAND ${CMAKE_COMMAND}
     ARGS -E copy_if_different ${BucketTools_BINARY_DIR}/ufl/${ufl}.ufl.temp ${BucketTools_BINARY_DIR}/ufl/${ufl}.ufl
     WORKING_DIRECTORY ${BucketTools_BINARY_DIR}/ufl
-    DEPENDS generateufl
+    DEPENDS ${ufl}.ufl.temp
     )
 
   add_custom_command(
@@ -26,7 +26,7 @@ macro (compile_ufl ufl)
     COMMAND ffc 
     ARGS -l dolfin -O -f split ${ufl}.ufl
     WORKING_DIRECTORY ${BucketTools_BINARY_DIR}/ufl
-    DEPENDS generateufl
+    DEPENDS ${ufl}.ufl
     )
 
   set (FFC_SOURCE ${FFC_SOURCE} ${ufl}.h)
