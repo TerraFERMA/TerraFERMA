@@ -223,35 +223,52 @@ class System:
     cpp.append("        break;\n")
     return cpp
 
-  def functional_cpp(self):
+  def functional_cpp(self, index=0):
     """Write an array of cpp strings describing the namespace of the functional ufls."""
     cpp = []  
-    cpp.append("      case \""+self.name+"\":\n")
-    cpp.append("        switch(functionname)\n")
-    cpp.append("        {\n")
-    for field in self.fields:
-      cpp.append("          case \""+field.name+"\":\n")
-      cpp.append("            switch(functionalname)\n")
-      cpp.append("            {\n")
-      for functional in field.functionals:
-        cpp += functional.cpp()
-      cpp.append("              default:\n")
-      cpp.append("                dolfin::error(\"Unknown functionalname in fetch_functional\");\n")
-      cpp.append("            }\n")
-      cpp.append("            break;\n")
-    for coeff in self.coeffs:
-      cpp.append("          case \""+coeff.name+"\":\n")
-      cpp.append("            switch(functionalname)\n")
-      cpp.append("            {\n")
-      for functional in coeff.functionals:
-        cpp += functional.cpp()
-      cpp.append("              default:\n")
-      cpp.append("                dolfin::error(\"Unknown functionalname in fetch_functional\");\n")
-      cpp.append("            }\n")
-      cpp.append("            break;\n")
-    cpp.append("          default:\n")
-    cpp.append("            dolfin::error(\"Unknown functionname in fetch_functional\");\n")
-    cpp.append("        }\n")
-    cpp.append("        break;\n")
+    if index == 0:
+      cpp.append("    if (systemname ==  \""+self.name+"\")\n")
+    else:
+      cpp.append("    else if (systemname ==  \""+self.name+"\")\n")
+    cpp.append("    {\n")
+    for f in range(len(self.fields)):
+      if f == 0:
+        cpp.append("      if (functionname ==  \""+self.fields[f].name+"\")\n")
+      else:
+        cpp.append("      else if (functionname ==  \""+self.fields[f].name+"\")\n")
+      cpp.append("      {\n")
+      for a in range(len(self.fields[f].functionals)):
+        cpp += self.fields[f].functionals[a].cpp(index=a)
+      if len(self.fields[f].functionals)==0:
+        cpp.append("        dolfin::error(\"Unknown functionalname in fetch_functional\");\n")
+        cpp.append("      }\n")
+      else:
+        cpp.append("        else\n")
+        cpp.append("        {\n")
+        cpp.append("          dolfin::error(\"Unknown functionalname in fetch_functional\");\n")
+        cpp.append("        }\n")
+        cpp.append("      }\n")
+    for c in range(len(self.coeffs)):
+      if c+len(self.fields) == 0:
+        cpp.append("      if (functionname ==  \""+self.coeffs[c].name+"\")\n")
+      else:
+        cpp.append("      else if (functionname ==  \""+self.coeffs[c].name+"\")\n")
+      cpp.append("      {\n")
+      for a in range(len(self.coeffs[c].functionals)):
+        cpp += self.coeffs[c].functionals[a].cpp(index=a)
+      if len(self.coeffs[c].functionals)==0:
+        cpp.append("        dolfin::error(\"Unknown functionalname in fetch_functional\");\n")
+        cpp.append("      }\n")
+      else:
+        cpp.append("        else\n")
+        cpp.append("        {\n")
+        cpp.append("          dolfin::error(\"Unknown functionalname in fetch_functional\");\n")
+        cpp.append("        }\n")
+        cpp.append("      }\n")
+    cpp.append("      else\n")
+    cpp.append("      {\n")
+    cpp.append("        dolfin::error(\"Unknown functionname in fetch_functional\");\n")
+    cpp.append("      }\n")
+    cpp.append("    }\n")
     return cpp
 

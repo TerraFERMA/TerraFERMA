@@ -66,22 +66,20 @@ class Bucket:
     functional_cpp.append("  // A function to return a functional from a system-function set given a mesh and a functionalname.\n")
     functional_cpp.append("  Form_ptr fetch_functional(std::string systemname, std::string functionname, std::string functionalname, Mesh_ptr mesh)\n")
     functional_cpp.append("  {\n")
-    functional_cpp.append("    switch(systemname)\n")
-    functional_cpp.append("    {\n")
+    functional_cpp.append("    Form_ptr functional;\n")
 
     form_cpp = []
     form_cpp.append("  // A function to return a form for a solver from a system given a functionspace, a solvername, a solvertype and a formname.\n")
     form_cpp.append("  Form_ptr fetch_form(std::string systemname, std::string solvername, std::string solvertype, std::string formname, FunctionSpace_ptr functionspace)\n")
     form_cpp.append("  {\n")
-    form_cpp.append("    switch(systemname)\n")
-    form_cpp.append("    {\n")
+    form_cpp.append("    Form_ptr form;\n")
  
     for s in range(len(self.systems)):
       include_cpp    += self.systems[s].include_cpp()
       functionspace_cpp += self.systems[s].functionspace_cpp(index=s)
       solverfunctionspace_cpp += self.systems[s].solverfunctionspace_cpp(index=s)
       coefficientspace_cpp += self.systems[s].coefficientspace_cpp(index=s)
-      #functional_cpp += self.systems[s].functional_cpp()
+      functional_cpp += self.systems[s].functional_cpp(index=s)
       #form_cpp += self.systems[s].form_cpp()
 
     functionspace_cpp.append("    else\n")
@@ -105,8 +103,9 @@ class Bucket:
     coefficientspace_cpp.append("    return coefficientspace;\n")
     coefficientspace_cpp.append("  }\n")
 
-    functional_cpp.append("      default:\n")
-    functional_cpp.append("        dolfin::error(\"Unknown systemname in fetch_functional\");\n")
+    functional_cpp.append("    else\n")
+    functional_cpp.append("    {\n")
+    functional_cpp.append("      dolfin::error(\"Unknown systemname in fetch_functionspace\");\n")
     functional_cpp.append("    }\n")
     functional_cpp.append("    return functional;\n")
     functional_cpp.append("  }\n")
@@ -128,8 +127,8 @@ class Bucket:
     cpp += coefficientspace_cpp
     #cpp.append("\n")
     #cpp += form_cpp
-    #cpp.append("\n")
-    #cpp += functional_cpp
+    cpp.append("\n")
+    cpp += functional_cpp
     cpp.append("}\n")
     cpp.append("\n")
     cpp.append("#endif\n")

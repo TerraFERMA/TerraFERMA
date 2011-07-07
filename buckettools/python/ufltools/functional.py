@@ -58,10 +58,13 @@ class Functional:
   def namespace(self):
     return self.function.system.name+self.function.name+self.name
 
-  def cpp(self):
-    cpp = [] 
-    cpp.append("              case \""+self.name+"\":\n")
-    cpp.append("                Form_ptr functional(new "+self.namespace()+"::Form_0(*functionspace));\n")
-    cpp.append("                break;\n")
+  def cpp(self, index=0):
+    if index == 0:
+      cpp.append("        if (functionalname ==  \""+self.name+"\")\n")
+    else:
+      cpp.append("        else if (functionalname ==  \""+self.name+"\")\n")
+    cpp.append("        {\n")
+    cpp.append("          functional.reset(new "+self.namespace()+"::Form_0(*functionspace));\n")
+    cpp.append("        }\n")
     return cpp
 
