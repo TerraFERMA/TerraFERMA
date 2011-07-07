@@ -49,7 +49,6 @@ endif(NOT EXISTS ${OPTIONSFILE})
 
 add_subdirectory(${BUCKETTOOLS_DIR} "BucketTools")
 
-include_directories("${PROJECT_BINARY_DIR}/buckettools/ufl")
 include_directories("${BUCKETTOOLS_DIR}/include")
 
 find_package(PythonLibs)
