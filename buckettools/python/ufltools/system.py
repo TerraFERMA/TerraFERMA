@@ -141,21 +141,6 @@ class System:
       cpp.append("#include \""+solver.namespace()+".h\"\n")
     return cpp
 
-  def solverfunctionspace_cpp(self):
-    """Write an array of cpp strings describing the namespace of the functionspaces in the ufls."""
-    cpp = []  
-    cpp.append("      case \""+self.name+"\":\n")
-    cpp.append("        // All solvers within a system should return the same functionspace\n")
-    cpp.append("        switch(solvername)\n")
-    cpp.append("        {\n")
-    for solver in self.solvers:
-      cpp += solver.functionspace_cpp()
-    cpp.append("          default:\n")
-    cpp.append("            dolfin::error(\"Unknown solvername in fetch_functionspace\");\n")
-    cpp.append("        }\n")
-    cpp.append("        break;\n")
-    return cpp
-
   def functionspace_cpp(self, index=0):
     """Write an array of cpp strings describing the namespace of the functionspaces in the ufls (assuming a single solver)."""
     cpp = []  
@@ -166,6 +151,24 @@ class System:
     cpp.append("    {\n")
     cpp.append("      // All solvers within a system should return the same functionspace so just take the first one\n")
     cpp.append(self.solvers[0].functionspace_cpp_no_if())
+    cpp.append("    }\n")
+    return cpp
+
+  def solverfunctionspace_cpp(self, index=0):
+    """Write an array of cpp strings describing the namespace of the functionspaces in the ufls."""
+    cpp = []  
+    if index == 0:
+      cpp.append("    if (systemname ==  \""+self.name+"\")\n")
+    else:
+      cpp.append("    else if (systemname ==  \""+self.name+"\")\n")
+    cpp.append("    {\n")
+    cpp.append("      // All solvers within a system should return the same functionspace\n")
+    for s in range(len(self.solvers)):
+      cpp += self.solvers[s].functionspace_cpp(index=s)
+    cpp.append("      else\n")
+    cpp.append("      {\n")
+    cpp.append("        dolfin::error(\"Unknown solvername in fetch_functionspace\");\n")
+    cpp.append("      }\n")
     cpp.append("    }\n")
     return cpp
 

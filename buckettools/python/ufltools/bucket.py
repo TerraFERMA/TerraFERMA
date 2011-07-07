@@ -54,15 +54,13 @@ class Bucket:
     solverfunctionspace_cpp.append("  // A function to return a functionspace from a system given a mesh and a solvername.\n")
     solverfunctionspace_cpp.append("  FunctionSpace_ptr fetch_functionspace(std::string systemname, std::string solvername, Mesh_ptr mesh)\n")
     solverfunctionspace_cpp.append("  {\n")
-    solverfunctionspace_cpp.append("    FunctionSpace_ptr functionspace( new "+self.systems[0].solvers[0].namespace()+"::FunctionSpace(*mesh) );\n")
+    solverfunctionspace_cpp.append("    FunctionSpace_ptr functionspace;\n")
 
     coefficientspace_cpp         = []
     coefficientspace_cpp.append("  // A function to return a functionspace (for a coefficient) from a system given a mesh, a solvername and a functionname.\n")
     coefficientspace_cpp.append("  FunctionSpace_ptr fetch_coefficientspace(std::string systemname, std::string solvername, std::string functionname, Mesh_ptr mesh)\n")
     coefficientspace_cpp.append("  {\n")
-    coefficientspace_cpp.append("    FunctionSpace_ptr functionspace( new "+self.systems[0].solvers[0].namespace()+"::FunctionSpace(*mesh) );\n")
-    coefficientspace_cpp.append("    switch(systemname)\n")
-    coefficientspace_cpp.append("    {\n")
+    coefficientspace_cpp.append("    FunctionSpace_ptr functionspace;\n")
 
     functional_cpp            = []
     functional_cpp.append("  // A function to return a functional from a system-function set given a mesh and a functionalname.\n")
@@ -81,7 +79,7 @@ class Bucket:
     for s in range(len(self.systems)):
       include_cpp    += self.systems[s].include_cpp()
       functionspace_cpp += self.systems[s].functionspace_cpp(index=s)
-      #solverfunctionspace_cpp += self.systems[s].solverfunctionspace_cpp()
+      solverfunctionspace_cpp += self.systems[s].solverfunctionspace_cpp(index=s)
       #coefficientspace_cpp += self.systems[s].coefficientspace_cpp()
       #functional_cpp += self.systems[s].functional_cpp()
       #form_cpp += self.systems[s].form_cpp()
@@ -93,16 +91,18 @@ class Bucket:
     functionspace_cpp.append("    return functionspace;\n")
     functionspace_cpp.append("  }\n")
 
-    solverfunctionspace_cpp.append("      default:\n")
-    solverfunctionspace_cpp.append("        dolfin::error(\"Unknown systemname in fetch_functionspace\");\n")
+    solverfunctionspace_cpp.append("    else\n")
+    solverfunctionspace_cpp.append("    {\n")
+    solverfunctionspace_cpp.append("      dolfin::error(\"Unknown systemname in fetch_functionspace\");\n")
     solverfunctionspace_cpp.append("    }\n")
     solverfunctionspace_cpp.append("    return functionspace;\n")
     solverfunctionspace_cpp.append("  }\n")
 
-    coefficientspace_cpp.append("      default:\n")
-    coefficientspace_cpp.append("        dolfin::error(\"Unknown systemname in fetch_coefficientspace\");\n")
+    coefficientspace_cpp.append("    else\n")
+    coefficientspace_cpp.append("    {\n")
+    coefficientspace_cpp.append("      dolfin::error(\"Unknown systemname in fetch_functionspace\");\n")
     coefficientspace_cpp.append("    }\n")
-    coefficientspace_cpp.append("    return coefficientspace;\n")
+    coefficientspace_cpp.append("    return functionspace;\n")
     coefficientspace_cpp.append("  }\n")
 
     functional_cpp.append("      default:\n")
@@ -122,8 +122,8 @@ class Bucket:
     cpp.append("namespace buckettools\n")
     cpp.append("{\n")
     cpp += functionspace_cpp
-    #cpp.append("\n")
-    #cpp += solverfunctionspace_cpp
+    cpp.append("\n")
+    cpp += solverfunctionspace_cpp
     #cpp.append("\n")
     #cpp += coefficientspace_cpp
     #cpp.append("\n")

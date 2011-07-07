@@ -66,11 +66,15 @@ class Solver:
   def functionspace_cpp_no_if(self):
     return "      functionspace.reset( new "+self.namespace()+"::FunctionSpace(*mesh) );\n"
 
-  def functionspace_cpp(self):
+  def functionspace_cpp(self, index=0):
     cpp = [] 
-    cpp.append("          case \""+self.name+"\":\n")
-    cpp.append("            FunctionSpace_ptr functionspace(new "+self.system.name+self.name+"::FunctionSpace(*mesh));\n")
-    cpp.append("            break;\n")
+    if index == 0:
+      cpp.append("      if (solvername ==  \""+self.name+"\")\n")
+    else:
+      cpp.append("      else if (solvername ==  \""+self.name+"\")\n")
+    cpp.append("      {\n")
+    cpp.append("        functionspace.reset(new "+self.namespace()+"::FunctionSpace(*mesh));\n")
+    cpp.append("      }\n")
     return cpp
 
   def form_cpp(self):
