@@ -14,10 +14,6 @@ namespace buckettools
 
     std::string name_;
 
-    Mesh_ptr mesh_;
-
-    FunctionSpace_ptr functionspace_;
-
   public:
     
     System(Mesh_ptr mesh)
@@ -26,9 +22,15 @@ namespace buckettools
     System(std::string name, Mesh_ptr mesh);
     
     ~System();
-    
+
+    std::string name()
+    { return name_; }
+
   protected:
     
+    Mesh_ptr mesh_;
+
+    FunctionSpace_ptr functionspace_;
     
   };
 

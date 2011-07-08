@@ -25,5 +25,7 @@ void SpudSystem::fill()
   // A buffer to put option paths in
   std::stringstream buffer;
 
+  functionspace_ = buckettools::fetch_functionspace(name(), mesh_);
+
 }
 
