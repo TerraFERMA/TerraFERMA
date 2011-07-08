@@ -181,15 +181,24 @@ class System:
       cpp.append("    else if (systemname ==  \""+self.name+"\")\n")
     cpp.append("    {\n")
     for s in range(len(self.solvers)):
-      form_symbols = [symbol for form in self.solvers[s].forms for symbol in re.findall(r"\b[a-z_]+\b", form, re.I) if symbol not in ufl_reserved()]
-      if self.solvers[s].preamble: form_symbols += [symbol for symbol in re.findall(r"\b[a-z_]+\b", self.solvers[s].preamble, re.I) if symbol not in ufl_reserved()]
-      for c in range(len(self.coeffs)):
-        if self.coeffs[c].symbol in form_symbols: cpp += self.coeffs[c].coefficientspace_cpp(self.solvers[s].name, solver_index=s, coeff_index=c)
-      cpp.append("        else\n")
-      cpp.append("        {\n")
-      cpp.append("          dolfin::error(\"Unknown coefficientname in fetch_coefficientspace\");\n")
-      cpp.append("        }\n")
-      cpp.append("      }\n")
+      if s == 0:
+        cpp.append("      if (solvername ==  \""+self.solvers[s].name+"\")\n")
+      else:
+        cpp.append("      else if (solvername ==  \""+self.solvers[s].name+"\")\n")
+      cpp.append("      {\n")
+      if len(self.coeffs)==0:
+        cpp.append("        dolfin::error(\"Unknown coefficientname in fetch_coefficientspace\");\n")
+        cpp.append("      }\n")
+      else:
+        form_symbols = [symbol for form in self.solvers[s].forms for symbol in re.findall(r"\b[a-z_]+\b", form, re.I) if symbol not in ufl_reserved()]
+        if self.solvers[s].preamble: form_symbols += [symbol for symbol in re.findall(r"\b[a-z_]+\b", self.solvers[s].preamble, re.I) if symbol not in ufl_reserved()]
+        for c in range(len(self.coeffs)):
+          if self.coeffs[c].symbol in form_symbols: cpp += self.coeffs[c].coefficientspace_cpp(self.solvers[s].name, index=c)
+        cpp.append("        else\n")
+        cpp.append("        {\n")
+        cpp.append("          dolfin::error(\"Unknown coefficientname in fetch_coefficientspace\");\n")
+        cpp.append("        }\n")
+        cpp.append("      }\n")
     cpp.append("      else\n")
     cpp.append("      {\n")
     cpp.append("        dolfin::error(\"Unknown solvername in fetch_functionspace\");\n")

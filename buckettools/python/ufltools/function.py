@@ -47,14 +47,9 @@ class Function:
     ufl.append("\n")
     return ufl
 
-  def coefficientspace_cpp(self, solvername, solver_index=0, coeff_index=0):
+  def coefficientspace_cpp(self, solvername, index=0):
     cpp = [] 
-    if solver_index == 0:
-      cpp.append("      if (solvername ==  \""+solvername+"\")\n")
-    else:
-      cpp.append("      else if (solvername ==  \""+solvername+"\")\n")
-    cpp.append("      {\n")
-    if coeff_index == 0:
+    if index == 0:
       cpp.append("        if (coefficientname ==  \""+self.name+"\")\n")
     else:
       cpp.append("        else if (coefficientname ==  \""+self.name+"\")\n")
