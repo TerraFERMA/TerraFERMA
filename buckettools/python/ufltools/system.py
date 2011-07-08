@@ -206,30 +206,38 @@ class System:
     cpp.append("    }\n")
     return cpp
 
-  def form_cpp(self):
+  def form_cpp(self, index=0):
     """Write an array of cpp strings describing the namespace of the forms in the ufls."""
     cpp = []  
-    cpp.append("      case \""+self.name+"\":\n")
-    cpp.append("        switch(solvername)\n")
-    cpp.append("        {\n")
-    for solver in self.solvers:
-      cpp.append("          case \""+solver.name+"\":\n")
-      cpp.append("            switch(solvertype)\n")
-      cpp.append("            {\n")
-      cpp.append("              case \""+solver.type+"\"\n")
-      cpp.append("                switch(formname)\n")
-      cpp.append("                {\n")
-      cpp += solver.form_cpp()
-      cpp.append("                  default:\n")
-      cpp.append("                    dolfin::error(\"Unknown formname in fetch_form\");\n")
-      cpp.append("                }\n")
-      cpp.append("              default:\n")
-      cpp.append("                dolfin::error(\"Unknown solvertype in fetch_form\");\n")
-      cpp.append("            }\n")
-    cpp.append("          default:\n")
-    cpp.append("            dolfin::error(\"Unknown solvername in fetch_form\");\n")
-    cpp.append("        }\n")
-    cpp.append("        break;\n")
+    if index == 0:
+      cpp.append("    if (systemname ==  \""+self.name+"\")\n")
+    else:
+      cpp.append("    else if (systemname ==  \""+self.name+"\")\n")
+    cpp.append("    {\n")
+    for s in range(len(self.solvers)):
+      if s == 0:
+        cpp.append("      if (solvername ==  \""+self.solvers[s].name+"\")\n")
+      else:
+        cpp.append("      else if (solvername ==  \""+self.solvers[s].name+"\")\n")
+      cpp.append("      {\n")
+      cpp.append("        if (solvertype == \""+self.solvers[s].type+"\")\n")
+      cpp.append("        {\n")
+      cpp += self.solvers[s].form_cpp()
+      cpp.append("          else\n")
+      cpp.append("          {\n")
+      cpp.append("            dolfin::error(\"Unknown formname in fetch_form\");\n")
+      cpp.append("          }\n")
+      cpp.append("        }\n")
+      cpp.append("        else\n")
+      cpp.append("        {\n")
+      cpp.append("          dolfin::error(\"Unknown solvertype in fetch_form\");\n")
+      cpp.append("        }\n")
+      cpp.append("      }\n")
+    cpp.append("      else\n")
+    cpp.append("      {\n")
+    cpp.append("        dolfin::error(\"Unknown systemname in fetch_form\");\n")
+    cpp.append("      }\n")
+    cpp.append("    }\n")
     return cpp
 
   def functional_cpp(self, index=0):

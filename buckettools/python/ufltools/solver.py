@@ -80,15 +80,19 @@ class Solver:
   def form_cpp(self):
     cpp = []
     for f in range(len(self.forms)):
-      cpp.append("                  case \""+self.form_names[f]+"\":\n")
+      if f == 0:
+        cpp.append("          if (formname == \""+self.form_names[f]+"\")\n")
+      else:
+        cpp.append("          else if (formname == \""+self.form_names[f]+"\")\n")
+      cpp.append("          {\n")
       if self.form_ranks[f]==0:
-        cpp.append("                    Form_ptr form(new "+self.system.name+self.name+"::Form_"+`f`+"(*functionspace));\n")
+        cpp.append("            form.reset(new "+self.system.name+self.name+"::Form_"+`f`+"(*functionspace));\n")
       elif self.form_ranks[f]==1:
-        cpp.append("                    Form_ptr form(new "+self.system.name+self.name+"::Form_"+`f`+"(*functionspace, *functionspace));\n")
+        cpp.append("            form.reset(new "+self.system.name+self.name+"::Form_"+`f`+"(*functionspace, *functionspace));\n")
       else:
         print "Unknwon form rank."
         sys.exit(1)
-      cpp.append("                    break;\n")
+      cpp.append("          }\n")
     return cpp
       
 

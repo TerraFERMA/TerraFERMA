@@ -80,7 +80,7 @@ class Bucket:
       solverfunctionspace_cpp += self.systems[s].solverfunctionspace_cpp(index=s)
       coefficientspace_cpp += self.systems[s].coefficientspace_cpp(index=s)
       functional_cpp += self.systems[s].functional_cpp(index=s)
-      #form_cpp += self.systems[s].form_cpp()
+      form_cpp += self.systems[s].form_cpp(index=s)
 
     functionspace_cpp.append("    else\n")
     functionspace_cpp.append("    {\n")
@@ -110,8 +110,9 @@ class Bucket:
     functional_cpp.append("    return functional;\n")
     functional_cpp.append("  }\n")
 
-    form_cpp.append("      default:\n")
-    form_cpp.append("        dolfin::error(\"Unknown systemname in fetch_form\");\n")
+    form_cpp.append("    else\n")
+    form_cpp.append("    {\n")
+    form_cpp.append("      dolfin::error(\"Unknown systemname in fetch_form\");\n")
     form_cpp.append("    }\n")
     form_cpp.append("    return form;\n")
     form_cpp.append("  }\n")
@@ -125,8 +126,8 @@ class Bucket:
     cpp += solverfunctionspace_cpp
     cpp.append("\n")
     cpp += coefficientspace_cpp
-    #cpp.append("\n")
-    #cpp += form_cpp
+    cpp.append("\n")
+    cpp += form_cpp
     cpp.append("\n")
     cpp += functional_cpp
     cpp.append("}\n")
