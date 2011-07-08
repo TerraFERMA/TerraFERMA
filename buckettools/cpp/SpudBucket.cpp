@@ -46,7 +46,7 @@ void SpudBucket::fill()
   for (uint i = 0; i<nsystems; i++)
   {
     buffer << "[" << i << "]";
-    system_fill_(buffer.str());
+    systems_fill_(buffer.str());
   }
   
   //// Put detectors in the bucket
@@ -157,7 +157,7 @@ string_const_it SpudBucket::mesh_optionpaths_end() const
   return mesh_optionpaths_.end();
 }
 // Insert a system (with optionpath) into the bucket
-void SpudBucket::system_fill_(const std::string &optionpath)
+void SpudBucket::systems_fill_(const std::string &optionpath)
 {
   // A string buffer for option paths
   std::stringstream buffer;
@@ -181,84 +181,6 @@ void SpudBucket::system_fill_(const std::string &optionpath)
 //  // Get the dimension of the problem (only one dimension assumed currently)
 //  int dimension;
 //  Spud::get_option("/geometry/dimension", dimension);
-//  
-//  FunctionSpace_ptr sysspace(new System::FunctionSpace(mesh));
-//  buffer.str(""); buffer << sysname << "::Space";
-//  register_functionspace(sysspace, buffer.str());
-//  
-//  Function_ptr sysfunc(new dolfin::Function(*sysspace));
-//  buffer.str(""); buffer << sysname << "::Function";
-//  (*sysfunc).rename(buffer.str(), buffer.str());
-//  register_function(sysfunc, buffer.str());
-//  Function_ptr sysresid(new dolfin::Function(*sysspace));
-//  buffer.str(""); buffer << sysname << "::Residual";
-//  (*sysresid).rename(buffer.str(), buffer.str());
-//  register_function(sysresid, buffer.str());
-//  
-//  std::map< uint, GenericFunction_ptr > icexprs;
-//  uint component = 0;
-//  
-//  buffer.str("");  buffer << "/system[" << sysindex << "]/function";
-//  int nfunctions = Spud::option_count(buffer.str());
-//  for (uint funci = 0; funci < nfunctions; funci++)
-//  {
-//    std::stringstream funcbuffer;
-//    funcbuffer.str(""); funcbuffer << "/system[" << sysindex << "]/function[" << funci << "]";
-//    
-//    std::string funcname;
-//    buffer.str(""); buffer << funcbuffer.str() << "/name";
-//    Spud::get_option(buffer.str(), funcname);
-//    
-//    buffer.str(""); buffer << sysname << "::" << funcname << "::Function";
-//    (*sysfunc)[funci].rename(buffer.str(), buffer.str());
-//    
-//    buffer.str(""); buffer << sysname << "::" << funcname << "::Residual";
-//    (*sysresid)[funci].rename(buffer.str(), buffer.str());
-//    
-//    FunctionSpace_ptr subsysspace(new dolfin::SubSpace(*sysspace, funci));
-//    buffer.str(""); buffer << sysname << "::" << funcname << "::Space";
-//    register_functionspace(subsysspace, buffer.str());
-//    
-//    buffer.str(""); buffer << funcbuffer.str() << "/boundary_condition";
-//    int nbcs = Spud::option_count(buffer.str());
-//    for (uint bci = 0; bci < nbcs; bci++)
-//    {
-//      std::stringstream bcpathstream;
-//      bcpathstream.str(""); bcpathstream << funcbuffer.str() << "/boundary_condition[" << bci << "]";
-//      
-//      bc_fill_(bcpathstream.str(), funci, dimension, subsysspace, sysname, funcname);
-//    }
-//    
-//    buffer.str(""); buffer << funcbuffer.str() << "/initial_condition";
-//    int nics = Spud::option_count(buffer.str());
-//    if (nics > 1)
-//    {
-//      dolfin::error("Haven't thought about ics over regions.");
-//    }
-////     for (uint ici = 0; ici < nics; ici++)
-////     {
-//      uint ici = 0;
-//      
-//      std::stringstream icpathstream;
-//      icpathstream.str(""); icpathstream << funcbuffer.str() << "/initial_condition[" << ici << "]";
-//      
-//      GenericFunction_ptr icexpr = init_exp_(icpathstream.str(), dimension);
-//      
-//      icexprs.insert(std::pair< uint, GenericFunction_ptr >(component, icexpr));
-//      
-//      component += (*icexpr).value_size();
-////     }
-//    
-//  }
-//  
-//  InitialConditionExpression sysicexpr(component, icexprs);
-//  (*sysfunc).interpolate(sysicexpr);
-//  for(std::map< std::string, DirichletBC_ptr >::iterator
-//            bc = dirichletbcs_begin(); 
-//            bc != dirichletbcs_end(); bc++)
-//  {
-//    (*((*bc).second)).apply((*sysfunc).vector());
-//  }
 //  
 }
 //

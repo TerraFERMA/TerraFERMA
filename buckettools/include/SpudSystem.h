@@ -14,6 +14,8 @@ namespace buckettools
   private:
 
     std::string optionpath_;
+
+    void fields_fill_(const std::string &optionpath);
     
   public:
     

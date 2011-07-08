@@ -31,6 +31,8 @@ namespace buckettools
     Mesh_ptr mesh_;
 
     FunctionSpace_ptr functionspace_;
+
+    Function_ptr function_, oldfunction_, iteratedfunction_;
     
   };
 
