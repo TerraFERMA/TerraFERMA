@@ -27,15 +27,8 @@ namespace buckettools
     { return optionpath_; }
     //
     //void detectors_fill_();
-    //
-    //void bc_fill_(const std::string bcpath, 
-    //              const int funci,
-    //              const int dimension,
-    //              FunctionSpace_ptr subsysspace,
-    //              const std::string sysname,
-    //              const std::string funcname);
-    //
-    //GenericFunction_ptr init_exp_(const std::string path, const int dimension);
+    
+    Expression_ptr initialize_expression(const std::string &optionpath, const int &dimension);
     
   public:
     

@@ -15,7 +15,13 @@ namespace buckettools
 
     std::string optionpath_;
 
-    void fields_fill_(const std::string &optionpath);
+    void fields_fill_(const std::string &optionpath, const int &field_i);
+
+    void bc_fill_(const std::string &optionpath, 
+                  const int &field_i,
+                  const int dimension,
+                  FunctionSpace_ptr subsysspace,
+                  const std::string &fieldname);
     
   public:
     
@@ -29,7 +35,6 @@ namespace buckettools
     
     ~SpudSystem();
 
-    //void fill(Bucket_ptr bucket);
     void fill();
 
     std::string optionpath()

@@ -11,11 +11,11 @@ PythonExpression::PythonExpression(std::string function) : dolfin::Expression(),
 {
   // Do nothing
 }
-PythonExpression::PythonExpression(uint dim, std::string function) : dolfin::Expression(dim), pyinst_(function)
+PythonExpression::PythonExpression(const uint &dim, std::string function) : dolfin::Expression(dim), pyinst_(function)
 {
   // Do nothing
 }
-PythonExpression::PythonExpression(uint dim0, uint dim1, std::string function) : dolfin::Expression(dim0, dim1), pyinst_(function)
+PythonExpression::PythonExpression(const uint &dim0, const uint &dim1, std::string function) : dolfin::Expression(dim0, dim1), pyinst_(function)
 {
   // Do nothing
 }
@@ -93,3 +93,4 @@ void PythonExpression::eval(dolfin::Array<double>& values, const dolfin::Array<d
   Py_DECREF(pArgs);
   
 }
+

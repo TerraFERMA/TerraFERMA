@@ -59,3 +59,4 @@ PyObject* PythonInstance::call(PyObject *pArgs) const
 {
   return PyObject_CallObject(pFunc_, pArgs);
 }
+

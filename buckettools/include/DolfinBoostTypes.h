@@ -8,6 +8,7 @@ namespace buckettools {
 
   // Define boost shared_ptr types for lots of useful things
   typedef boost::shared_ptr< dolfin::GenericFunction >              GenericFunction_ptr;
+  typedef boost::shared_ptr< dolfin::Expression >                   Expression_ptr;
   typedef boost::shared_ptr< dolfin::Mesh >                         Mesh_ptr;
   typedef boost::shared_ptr< dolfin::MeshFunction< dolfin::uint > > MeshFunction_uint_ptr;
   typedef boost::shared_ptr< dolfin::FunctionSpace >                FunctionSpace_ptr;
