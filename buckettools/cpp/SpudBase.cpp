@@ -6,16 +6,20 @@
 
 using namespace buckettools;
 
+// initialize an expression using spud
 Expression_ptr initialize_expression(const std::string &optionpath, const uint &dimension)
 {
+  // declare the pointer we'll be returning
   Expression_ptr expression;
   
   std::stringstream constbuffer, pybuffer;
   constbuffer.str(""); constbuffer << optionpath << "/constant";
   pybuffer.str(""); pybuffer << optionpath << "/python";
   
+  // Are we constant or python (or something else we don't know about yet)?
   if (Spud::have_option(constbuffer.str()))
   {
+    // constant
     int rank;
     Spud::get_option_rank(constbuffer.str(), rank);
     if(rank==0)
@@ -51,6 +55,7 @@ Expression_ptr initialize_expression(const std::string &optionpath, const uint &
   } 
   else if (Spud::have_option(pybuffer.str()))
   {
+    // python
     std::string pyfunction;
     Spud::get_option(pybuffer.str(), pyfunction);
     
@@ -78,7 +83,7 @@ Expression_ptr initialize_expression(const std::string &optionpath, const uint &
   }
   else
   {
-    dolfin::error("Unknown way of specifying bc expression.");
+    dolfin::error("Unknown way of specifying expression.");
   }
   
   return expression;
