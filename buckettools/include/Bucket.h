@@ -11,7 +11,7 @@
 namespace buckettools
 {
   
-  // Some iterators
+  // Define iterator types for things accessed in the bucket maps (defined below)
   typedef std::map< std::string, System_ptr >::iterator                 System_it;
   typedef std::map< std::string, System_ptr >::const_iterator           System_const_it;
   typedef std::map< std::string, Mesh_ptr >::iterator                   Mesh_it;
@@ -21,107 +21,132 @@ namespace buckettools
   // typedef std::map< std::string, GenericDetectors_ptr >::iterator       GenericDetectors_it;
   // typedef std::map< std::string, GenericDetectors_ptr >::const_iterator GenericDetectors_const_it;
   
+  // The Bucket is a class that describes a collection of meshes, systems and point diagnostics (detectors).
+  // The base class contains data structures and mechanisms for accessing those structures.
+  // Derived classes are designed for specific options systems and are capable of populating those data
+  // structures and may be extended to incorporate the ability to run entire models.
   class Bucket
   {
+  // only accessible to memebers of this class
   private:
 
+    // The name of the bucket
     std::string name_;
     
+    // Destroy the data in the bucket
     void empty_();
 
+  // accessible to derived classes
   protected:    
 
+    // A map from mesh name to mesh pointer
+    // The mesh format is assumed to be DOLFIN
     std::map< std::string, Mesh_ptr >         meshes_;
 
+    // A map from system name to system pointer
+    // Systems describe function spaces and the solvers that operate on them
     std::map< std::string, System_ptr >       systems_;
 
-    //std::map< std::string, GenericDetectors_ptr >    detectors_;
-    //std::map< std::string, std::string >      detector_optionpaths_;
+//    // A map from detector set name to detectors
+//    std::map< std::string, GenericDetectors_ptr >    detectors_;
     
+  // accessible to everyone
   public:
     
+    // Default constructor (the name really isn't all that necessary)
     Bucket()
     { Bucket("uninitialised_name"); }
 
+    // Optional constructor specifying the name
     Bucket(std::string name);
     
+    // Default destructor
     ~Bucket();
 
-    void register_mesh(Mesh_ptr mesh, std::string name);
-
+    // Print a description of the bucket contents
     std::string str() const;
     
+    // Print a description of the meshes contained in the bucket
     virtual std::string meshes_str() const;
 
+    // Print the name of the bucket
     std::string name() const
     { return name_; }
     
-    //void register_system(System_ptr std::string name)
-    //{ register_system(name, "uninitialised_path"); }
+    // Tools for manipulating the base bucket class data structures:
+    // Register a mesh in the bucket (i.e. put it into the meshes_ map)
+    void register_mesh(Mesh_ptr mesh, std::string name);
 
-    //void register_system(std::string name, std::string option_path);
-
-    //void register_detector(GenericDetectors_ptr detector, std::string name)
-    //{ register_detector(detector, name, "uninitialised_path"); }
-    //
-    //void register_detector(GenericDetectors_ptr detector, std::string name, std::string option_path);
-    //
-    //void register_functionspace(FunctionSpace_ptr functionspace, std::string systemname, std::string name);
-    //
-    //void register_dirichletbc(DirichletBC_ptr dirichletbc, std::string systemname, std::string name);
-    //
-    //void register_function(Function_ptr function, std::string systemname, std::string name)
-    //{ register_function(function, systemname, name, "uninitialised_path"); }
-    //
-    //void register_function(Function_ptr function, std::string systemname, std::string name, std::string option_path);
-    
+    // Return a mesh point from the meshes_ map, given its name
     Mesh_ptr fetch_mesh(const std::string name);
     
-    //FunctionSpace_ptr fetch_functionspace(const std::string systemname, const std::string name);
-    //
-    //Function_ptr fetch_function(const std::string systemname, const std::string name);
-    //
-    //GenericDetectors_ptr fetch_detector(const std::string name);
-    //
-
+    // Return the iterator to the beginning of the meshes_ map
     Mesh_it meshes_begin();
 
+    // Return the const iterator to the beginning of the meshes_ map
     Mesh_const_it meshes_begin() const;
 
+    // Return the iterator to the end of the meshes_ map
     Mesh_it meshes_end();
 
+    // Return the const iterator to the end of the meshes_ map
     Mesh_const_it meshes_end() const;
  
-    //std::map< std::string, GenericDetectors_ptr >::iterator detectors_begin();
-    //
-    //std::map< std::string, GenericDetectors_ptr >::const_iterator detectors_begin() const;
-    //
-    //std::map< std::string, GenericDetectors_ptr >::iterator detectors_end();
-    //
-    //std::map< std::string, GenericDetectors_ptr >::const_iterator detectors_end() const;
-    //
-    //std::map< std::string, DirichletBC_ptr >::iterator dirichletbcs_begin();
-    //
-    //std::map< std::string, DirichletBC_ptr >::const_iterator dirichletbcs_begin() const;
-    //
-    //std::map< std::string, DirichletBC_ptr >::iterator dirichletbcs_end();
-    //
-    //std::map< std::string, DirichletBC_ptr >::const_iterator dirichletbcs_end() const;
-    //
-    //std::map< std::string, Function_ptr >::iterator functions_begin();
-    //
-    //std::map< std::string, Function_ptr >::const_iterator functions_begin() const;
-    //
-    //std::map< std::string, Function_ptr >::iterator functions_end();
-    //
-    //std::map< std::string, Function_ptr >::const_iterator functions_end() const;
-    
-  protected:
-    
-    //void register_bcexp(GenericFunction_ptr bcexp, std::string systemname);
+//    void register_system(System_ptr std::string name)
+//    { register_system(name, "uninitialised_path"); }
+//
+//    void register_system(std::string name, std::string option_path);
+//
+//    void register_detector(GenericDetectors_ptr detector, std::string name)
+//    { register_detector(detector, name, "uninitialised_path"); }
+//    
+//    void register_detector(GenericDetectors_ptr detector, std::string name, std::string option_path);
+//    
+//    void register_functionspace(FunctionSpace_ptr functionspace, std::string systemname, std::string name);
+//    
+//    void register_dirichletbc(DirichletBC_ptr dirichletbc, std::string systemname, std::string name);
+//    
+//    void register_function(Function_ptr function, std::string systemname, std::string name)
+//    { register_function(function, systemname, name, "uninitialised_path"); }
+//    
+//    void register_function(Function_ptr function, std::string systemname, std::string name, std::string option_path);
+//    
+//    FunctionSpace_ptr fetch_functionspace(const std::string systemname, const std::string name);
+//    
+//    Function_ptr fetch_function(const std::string systemname, const std::string name);
+//    
+//    GenericDetectors_ptr fetch_detector(const std::string name);
+//    
+//
+//    std::map< std::string, GenericDetectors_ptr >::iterator detectors_begin();
+//    
+//    std::map< std::string, GenericDetectors_ptr >::const_iterator detectors_begin() const;
+//    
+//    std::map< std::string, GenericDetectors_ptr >::iterator detectors_end();
+//    
+//    std::map< std::string, GenericDetectors_ptr >::const_iterator detectors_end() const;
+//    
+//    std::map< std::string, DirichletBC_ptr >::iterator dirichletbcs_begin();
+//    
+//    std::map< std::string, DirichletBC_ptr >::const_iterator dirichletbcs_begin() const;
+//    
+//    std::map< std::string, DirichletBC_ptr >::iterator dirichletbcs_end();
+//    
+//    std::map< std::string, DirichletBC_ptr >::const_iterator dirichletbcs_end() const;
+//    
+//    std::map< std::string, Function_ptr >::iterator functions_begin();
+//    
+//    std::map< std::string, Function_ptr >::const_iterator functions_begin() const;
+//    
+//    std::map< std::string, Function_ptr >::iterator functions_end();
+//    
+//    std::map< std::string, Function_ptr >::const_iterator functions_end() const;
+//    
+//    void register_bcexp(GenericFunction_ptr bcexp, std::string systemname);
     
   };
 
+  // Define a boost shared ptr type for the class
   typedef boost::shared_ptr< Bucket > Bucket_ptr;
 
 }
