@@ -16,7 +16,27 @@ Bucket::Bucket(std::string name) : name_(name)
 // Default destructor
 Bucket::~Bucket()
 {
-  // Do nothing
+  empty_()
+}
+
+// Return a string describing the contents of the bucket
+std::string Bucket::str() const
+{
+  std::stringstream s;
+  s << "Bucket " << name() << " contains:" << std::endl;
+  s << meshes_str();
+  return s.str();
+}
+
+// Return a string describing the contents of meshes_
+std::string Bucket::meshes_str() const
+{
+  std::stringstream s;
+  for ( Mesh_const_it m_it = meshes_begin(); m_it != meshes_end(); m_it++ )
+  {
+    s << "Mesh " << (*m_it).first  << std::endl;
+  }
+  return s.str();
 }
 
 // Register a pointer to a DOLFIN mesh
@@ -75,6 +95,13 @@ Mesh_it Bucket::meshes_end()
 Mesh_const_it Bucket::meshes_end() const
 {
   return meshes_.end();
+}
+
+// Empty the bucket
+void Bucket::empty_()
+{
+  meshes_.clear();
+//  detectors_.clear();
 }
 
 //// Create a system bucket in this bucket
@@ -216,33 +243,3 @@ Mesh_const_it Bucket::meshes_end() const
 //  return functions_.end();
 //}
 
-std::string Bucket::meshes_str() const
-{
-  std::stringstream s;
-
-  for ( Mesh_const_it m_it = meshes_begin(); m_it != meshes_end(); m_it++ )
-  {
-    s << "Mesh " << (*m_it).first  << std::endl;
-  }
-
-  return s.str();
-}
-
-std::string Bucket::str() const
-{
-  std::stringstream s;
-
-  s << "Bucket " << name() << " contains:" << std::endl;
-
-  s << meshes_str();
-  
-  return s.str();
-}
-
-void Bucket::empty_()
-{
-  
-  meshes_.clear();
-  //detectors_.clear();
-
-}
