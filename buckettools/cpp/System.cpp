@@ -6,17 +6,19 @@
 
 using namespace buckettools;
 
+// Specific constructor
 System::System(std::string name, Mesh_ptr mesh) : name_(name), mesh_(mesh)
 {
   // Do nothing
 }
 
+// Default destructor
 System::~System()
 {
   // Do nothing
 }
 
-// Register a dolfin subfunctionspace
+// Register a dolfin subfunctionspace in the system
 void System::register_subfunctionspace(FunctionSpace_ptr subfunctionspace, std::string name)
 {
   // First check if a mesh with this name already exists

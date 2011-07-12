@@ -18,8 +18,8 @@ namespace buckettools
   typedef std::map< std::string, Mesh_ptr >::const_iterator             Mesh_const_it;
   typedef std::map< std::string, std::string >::iterator                string_it;
   typedef std::map< std::string, std::string >::const_iterator          string_const_it;
-  // typedef std::map< std::string, GenericDetectors_ptr >::iterator       GenericDetectors_it;
-  // typedef std::map< std::string, GenericDetectors_ptr >::const_iterator GenericDetectors_const_it;
+//  typedef std::map< std::string, GenericDetectors_ptr >::iterator       GenericDetectors_it;
+//  typedef std::map< std::string, GenericDetectors_ptr >::const_iterator GenericDetectors_const_it;
   
   // The Bucket is a class that describes a collection of meshes, systems and point diagnostics (detectors).
   // The base class contains data structures and mechanisms for accessing those structures.
