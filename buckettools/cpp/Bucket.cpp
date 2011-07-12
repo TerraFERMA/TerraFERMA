@@ -16,7 +16,7 @@ Bucket::Bucket(std::string name) : name_(name)
 // Default destructor
 Bucket::~Bucket()
 {
-  empty_()
+  empty_();
 }
 
 // Return a string describing the contents of the bucket
