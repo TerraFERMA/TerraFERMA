@@ -1,12 +1,12 @@
-project(BucketTools)
+project(buckettools)
 
 file(
-    WRITE ${BucketTools_BINARY_DIR}/confdefs.h.in
+    WRITE ${buckettools_BINARY_DIR}/confdefs.h.in
     "#define __HG_ID__ \"@HG_ID@\"\n"
     )
 
 file(
-    WRITE ${BucketTools_BINARY_DIR}/confdefs.cmake
+    WRITE ${buckettools_BINARY_DIR}/confdefs.cmake
     "find_program(HAVE_HG hg)
     if(HAVE_HG)
         execute_process (
@@ -29,21 +29,21 @@ file(
 
 add_custom_target(
     confdefs
-    ${CMAKE_COMMAND} -D SRC="${BucketTools_BINARY_DIR}/confdefs.h.in"
-                     -D DST="${BucketTools_BINARY_DIR}/confdefs.h"
+    ${CMAKE_COMMAND} -D SRC="${buckettools_BINARY_DIR}/confdefs.h.in"
+                     -D DST="${buckettools_BINARY_DIR}/confdefs.h"
                      -D DIR="${PROJECT_SOURCE_DIR}"
-                     -P "${BucketTools_BINARY_DIR}/confdefs.cmake"
+                     -P "${buckettools_BINARY_DIR}/confdefs.cmake"
     )
 
 add_subdirectory("ufl")
 
-include_directories("${BucketTools_SOURCE_DIR}/include" ${BucketTools_BINARY_DIR} ${BucketTools_BINARY_DIR}/ufl)
+include_directories("${buckettools_SOURCE_DIR}/include" ${buckettools_BINARY_DIR} ${buckettools_BINARY_DIR}/ufl)
 include_directories(${PYTHON_INCLUDE_PATH})
-add_library(BucketTools cpp/Bucket.cpp cpp/SpudBucket.cpp cpp/System.cpp cpp/SpudSystem.cpp)
-set_source_files_properties(${BucketTools_BINARY_DIR}/ufl/SystemsWrapper.h PROPERTIES GENERATED 1)
-add_dependencies(BucketTools generate_ufl)
+add_library(buckettools cpp/Bucket.cpp cpp/SpudBucket.cpp cpp/System.cpp cpp/SpudSystem.cpp)
+set_source_files_properties(${buckettools_BINARY_DIR}/ufl/SystemsWrapper.h PROPERTIES GENERATED 1)
+add_dependencies(buckettools generate_ufl)
 set_source_files_properties(confdefs.h PROPERTIES GENERATED 1)
-add_dependencies(BucketTools confdefs)
-target_link_libraries(BucketTools ${PYTHON_LIBRARIES})
+add_dependencies(buckettools confdefs)
+target_link_libraries(buckettools ${PYTHON_LIBRARIES})
 
 

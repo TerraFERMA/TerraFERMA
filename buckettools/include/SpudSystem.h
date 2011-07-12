@@ -15,13 +15,13 @@ namespace buckettools
 
     std::string optionpath_;
 
-    void fields_fill_(const std::string &optionpath, const int &field_i);
+    void fields_fill_(const std::string &optionpath, const uint &field_i, const uint &nfields);
 
-    void bc_fill_(const std::string &optionpath, 
-                  const int &field_i,
-                  const int dimension,
-                  FunctionSpace_ptr subsysspace,
-                  const std::string &fieldname);
+//    void bc_fill_(const std::string &optionpath, 
+//                  const int &field_i,
+//                  const int dimension,
+//                  FunctionSpace_ptr subsysspace,
+//                  const std::string &fieldname);
     
   public:
     

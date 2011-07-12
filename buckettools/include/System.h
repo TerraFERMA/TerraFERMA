@@ -7,6 +7,9 @@
 
 namespace buckettools
 {
+
+  typedef std::map< std::string, FunctionSpace_ptr >::iterator        FunctionSpace_it;
+  typedef std::map< std::string, FunctionSpace_ptr >::const_iterator  FunctionSpace_const_it;
   
   class System
   {
@@ -26,6 +29,8 @@ namespace buckettools
     std::string name()
     { return name_; }
 
+    void register_subfunctionspace(FunctionSpace_ptr subfunctionspace, std::string name);
+
   protected:
     
     Mesh_ptr mesh_;
@@ -33,6 +38,8 @@ namespace buckettools
     FunctionSpace_ptr functionspace_;
 
     Function_ptr function_, oldfunction_, iteratedfunction_;
+
+    std::map< std::string, FunctionSpace_ptr > subfunctionspaces_;
     
   };
 
