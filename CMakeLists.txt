@@ -25,13 +25,13 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${DOLFIN_CXX_FLAGS}")
 # Include directories
 include_directories(${DOLFIN_INCLUDE_DIRS} ${DOLFIN_3RD_PARTY_INCLUDE_DIRS})
 
-project(PoissonBucket)
+project(poissonbucket)
 
-set(EXECUTABLE "PoissonBucket" CACHE STRING
+set(EXECUTABLE "poissonbucket" CACHE STRING
      "The name of the executable" FORCE)
 
-set(BUCKETTOOLS_DIR "${PROJECT_SOURCE_DIR}/BucketTools" CACHE PATH
-     "Location of BucketTools." FORCE)
+set(BUCKETTOOLS_DIR "${PROJECT_SOURCE_DIR}/buckettools" CACHE PATH
+     "Location of buckettools." FORCE)
 
 set(OPTIONSFILE CACHE FILEPATH "Choose the input file.")
 
@@ -47,7 +47,7 @@ if (NOT EXISTS ${OPTIONSFILE})
   message(FATAL_ERROR "Could not find OPTIONSFILE ${OPTIONSFILE}")
 endif(NOT EXISTS ${OPTIONSFILE})
 
-add_subdirectory(${BUCKETTOOLS_DIR} "BucketTools")
+add_subdirectory(${BUCKETTOOLS_DIR} "buckettools")
 
 include_directories("${BUCKETTOOLS_DIR}/include")
 
@@ -61,7 +61,7 @@ include_directories(${PYTHON_INCLUDE_PATH})
 
 add_executable(${EXECUTABLE} "${PROJECT_SOURCE_DIR}/cpp/main.cpp")
 
-set (EXTRA_LIBS ${EXTRA_LIBS} BucketTools)
+set (EXTRA_LIBS ${EXTRA_LIBS} buckettools)
 
 target_link_libraries(${EXECUTABLE} ${DOLFIN_LIBRARIES} ${DOLFIN_3RD_PARTY_LIBRARIES} ${EXTRA_LIBS} /usr/lib/libspud.a ${PYTHON_LIBRARIES})
 
