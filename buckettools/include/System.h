@@ -9,8 +9,12 @@ namespace buckettools
 {
 
   // Define iterator types for things accessed in the system maps (defined below)
-  typedef std::map< std::string, FunctionSpace_ptr >::iterator        FunctionSpace_it;
-  typedef std::map< std::string, FunctionSpace_ptr >::const_iterator  FunctionSpace_const_it;
+  typedef std::map< std::string, FunctionSpace_ptr >::iterator       FunctionSpace_it;
+  typedef std::map< std::string, FunctionSpace_ptr >::const_iterator FunctionSpace_const_it;
+  typedef std::map< std::string, Expression_ptr >::iterator          Expression_it;
+  typedef std::map< std::string, Expression_ptr >::const_iterator    Expression_const_it;
+  typedef std::map< std::string, DirichletBC_ptr >::iterator         DirichletBC_it;
+  typedef std::map< std::string, DirichletBC_ptr >::const_iterator   DirichletBC_const_it;
   
   // The System class describes a functionspace and a set of solvers that act on the fields
   // contained in that (potentially mixed) functionspace.
@@ -41,6 +45,12 @@ namespace buckettools
     // a map from field names to the subfunctionspaces they are described on
     std::map< std::string, FunctionSpace_ptr > subfunctionspaces_;
     
+    // a map from field::bc names to the subfunctionspaces they are described on
+    std::map< std::string, Expression_ptr > bcexpressions_;
+    
+    // a map from field::bc::id names to dirichlet boundary conditions
+    std::map< std::string, DirichletBC_ptr > dirichletbcs_;
+    
   public:
 
     // No default constructor - always require a mesh pointer
@@ -61,6 +71,12 @@ namespace buckettools
 
     // Register a subfunctionspace in the system
     void register_subfunctionspace(FunctionSpace_ptr subfunctionspace, std::string name);
+
+    // Register a bc expression in the system
+    void register_bcexpression(Expression_ptr bcexpression, std::string name);
+
+    // Register a bc expression in the system
+    void register_dirichletbc(DirichletBC_ptr bc, std::string name);
 
   };
 

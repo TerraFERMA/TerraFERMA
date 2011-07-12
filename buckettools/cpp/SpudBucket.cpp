@@ -31,6 +31,14 @@ void SpudBucket::fill()
   // A buffer to put option paths in
   std::stringstream buffer;
   
+  // Get the dimension to pass it down to all systems
+  // (we currently assume this is the length of some
+  //  of things, which may need to be generalized in the
+  //  future)
+  int dimension;
+  buffer.str(""); buffer << "/geometry/dimension";  
+  Spud::get_option(buffer.str(), dimension);
+
   // Put meshes into the bucket
   buffer.str(""); buffer << "/geometry/mesh";  
   int nmeshes = Spud::option_count(buffer.str());
@@ -46,7 +54,7 @@ void SpudBucket::fill()
   for (uint i = 0; i<nsystems; i++)
   {
     buffer << "[" << i << "]";
-    systems_fill_(buffer.str());
+    systems_fill_(buffer.str(), dimension);
   }
   
 //  // Put detectors in the bucket
@@ -93,7 +101,8 @@ void SpudBucket::meshes_fill_(const std::string &optionpath)
 }
 
 // Insert a system (with optionpath) into the bucket
-void SpudBucket::systems_fill_(const std::string &optionpath)
+void SpudBucket::systems_fill_(const std::string &optionpath,
+                               const uint &dimension)
 {
   // A string buffer for option paths
   std::stringstream buffer;
@@ -112,7 +121,7 @@ void SpudBucket::systems_fill_(const std::string &optionpath)
 
   SpudSystem_ptr system( new SpudSystem(sysname, optionpath, mesh) );
 
-  (*system).fill();
+  (*system).fill(dimension);
 }
 
 // Register a pointer to a DOLFIN mesh (and an optionpath)

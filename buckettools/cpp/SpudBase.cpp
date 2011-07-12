@@ -8,7 +8,7 @@
 using namespace buckettools;
 
 // initialize an expression using spud
-Expression_ptr initialize_expression(const std::string &optionpath, const uint &dimension)
+Expression_ptr buckettools::initialize_expression(const std::string &optionpath, const int &size, const std::vector<int> &shape)
 {
   // declare the pointer we'll be returning
   Expression_ptr expression;
@@ -33,6 +33,7 @@ Expression_ptr initialize_expression(const std::string &optionpath, const uint &
     {
       std::vector<double> values;
       Spud::get_option(constbuffer.str(), values);
+      assert(values.size()==size);
       expression.reset(new dolfin::Constant(values));
     }
 //    else if (rank==2)
@@ -75,7 +76,7 @@ Expression_ptr initialize_expression(const std::string &optionpath, const uint &
     }
     else if (rank==1)
     {
-      expression.reset(new buckettools::PythonExpression(dimension, pyfunction));
+      expression.reset(new buckettools::PythonExpression(size, pyfunction));
     }
     else
     {

@@ -21,13 +21,28 @@ namespace buckettools
     std::string optionpath_;
 
     // fill in data about the fields
-    void fields_fill_(const std::string &optionpath, const uint &field_i, const uint &nfields);
+    void fields_fill_(const std::string &optionpath, 
+                      const uint &field_i, 
+                      const uint &nfields,
+                      const uint &dimension);
 
-//    void bc_fill_(const std::string &optionpath, 
-//                  const int &field_i,
-//                  const int dimension,
-//                  FunctionSpace_ptr subsysspace,
-//                  const std::string &fieldname);
+    // fill in data about the bcs
+    void bc_fill_(const std::string &optionpath,
+                  const std::string &fieldname,
+                  const int &size,
+                  const std::vector<int> &shape,
+                  const FunctionSpace_ptr &subfunctionspace, 
+                  const MeshFunction_uint_ptr &edgeidmeshfunction);
+
+    // fill in data about a bc component
+    void bc_component_fill_(const std::string &optionpath,
+                            const std::string &fieldname,
+                            const std::string &bcname,
+                            const int &size,
+                            const std::vector<int> &shape,
+                            const std::vector<int> &bcids,
+                            const FunctionSpace_ptr &subfunctionspace,
+                            const MeshFunction_uint_ptr &edgeidmeshfunction);
 
   public:
     
@@ -48,7 +63,7 @@ namespace buckettools
     virtual ~SpudSystem();
 
     // Fill the system assuming the buckettools schema
-    void fill();
+    void fill(const uint &dimension);
 
     // Return the base optionpath for this system
     std::string optionpath()

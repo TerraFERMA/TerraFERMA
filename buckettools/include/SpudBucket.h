@@ -31,7 +31,7 @@ namespace buckettools
     void meshes_fill_(const std::string &optionpath);
     
     // populate the systems_ data structure
-    void systems_fill_(const std::string &optionpath);
+    void systems_fill_(const std::string &optionpath, const uint &dimension);
 
 //    // populate the detectors_ data structure
 //    void detectors_fill_();
