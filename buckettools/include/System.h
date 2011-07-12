@@ -24,6 +24,9 @@ namespace buckettools
     // the system name
     std::string name_;
 
+    // Empty the data structures of the system
+    void empty_();
+
   protected:
     
     // a pointer to the mesh which this system is on

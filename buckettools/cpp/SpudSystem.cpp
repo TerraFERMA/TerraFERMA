@@ -9,33 +9,95 @@
 
 using namespace buckettools;
 
+// Specific constructor
 SpudSystem::SpudSystem(std::string name, std::string optionpath, Mesh_ptr mesh) : optionpath_(optionpath), System(name, mesh)
 {
   // Do nothing
 }
 
+// Default destructor (declared as virtual so will call base class destructor)
 SpudSystem::~SpudSystem()
 {
   // Do nothing
 }
 
-void SpudSystem::fields_fill_(const std::string &optionpath, const uint &field_i, const uint &nfields)
+// Fill the system using spud and assuming a buckettools schema structure
+void SpudSystem::fill()
 {
+  // A buffer to put option paths (and strings) in
   std::stringstream buffer;
 
+  // Here's where the automatically generated magic happens... this is fetching
+  // the functionspace from ufl
+  functionspace_ = buckettools::fetch_functionspace(name(), mesh_);
+
+  // Declare a series of functions on this functionspace:
+  // Current
+  function_.reset( new dolfin::Function(*functionspace_) );
+  buffer.str(""); buffer << name() << "::Function";
+  (*function_).rename( buffer.str(), buffer.str() );
+
+  // Old
+  oldfunction_.reset( new dolfin::Function(*functionspace_) );
+  buffer.str(""); buffer << name() << "::OldFunction";
+  (*oldfunction_).rename( buffer.str(), buffer.str() );
+
+  // Iterated
+  iteratedfunction_.reset( new dolfin::Function(*functionspace_) );
+  buffer.str(""); buffer << name() << "::IteratedFunction";
+  (*iteratedfunction_).rename( buffer.str(), buffer.str() );
+
+  buffer.str("");  buffer << optionpath() << "/field";
+  int nfields = Spud::option_count(buffer.str());
+  // Loop over the fields (which are subfunctions of this functionspace)
+  // and register them in the system
+  for (uint i = 0; i < nfields; i++)
+  {
+    buffer << "[" << i << "]";
+    fields_fill_(buffer.str(), i, nfields); 
+  }
+
+//  
+//  std::map< uint, GenericFunction_ptr > icexprs;
+//  uint component = 0;
+//  
+//  InitialConditionExpression sysicexpr(component, icexprs);
+//  (*sysfunc).interpolate(sysicexpr);
+//  for(std::map< std::string, DirichletBC_ptr >::iterator
+//            bc = dirichletbcs_begin(); 
+//            bc != dirichletbcs_end(); bc++)
+//  {
+//    (*((*bc).second)).apply((*sysfunc).vector());
+//  }
+//  
+}
+
+// Fill out the information regarding the each subfunction (or field)
+void SpudSystem::fields_fill_(const std::string &optionpath, const uint &field_i, const uint &nfields)
+{
+  // A buffer to put option paths in
+  std::stringstream buffer;
+
+  // What is this field called?
   std::string fieldname;
   buffer.str(""); buffer << optionpath << "/name";
   Spud::get_option(buffer.str(), fieldname);
 
+  // Is this a mixed functionspace or not?
   FunctionSpace_ptr subfunctionspace;
   if (nfields == 1)
   {
+    // no... the subfunctionspace for this field is identical to the system's
+    // luckily for us these are just pointers so grab a reference to it
     subfunctionspace = functionspace_;
   }
   else
   {
+    // yes... use DOLFIN to extract that subspace so we can declare things on it (ics, bcs etc.)
     subfunctionspace.reset( new dolfin::SubSpace(*functionspace_, field_i) );
   }
+  // register a pointer to the subfunctionspace in the system so it remains in memory for other
+  // objects that take a reference
   register_subfunctionspace(subfunctionspace, fieldname);
 
 //  buffer.str(""); buffer << optionpath << "/boundary_condition";
@@ -137,45 +199,4 @@ void SpudSystem::fields_fill_(const std::string &optionpath, const uint &field_i
 //    }
 //  }
 //}
-
-void SpudSystem::fill()
-{
-  // A buffer to put option paths in
-  std::stringstream buffer;
-
-  functionspace_ = buckettools::fetch_functionspace(name(), mesh_);
-
-  function_.reset( new dolfin::Function(*functionspace_) );
-  buffer.str(""); buffer << name() << "::Function";
-  (*function_).rename( buffer.str(), buffer.str() );
-
-  oldfunction_.reset( new dolfin::Function(*functionspace_) );
-  buffer.str(""); buffer << name() << "::OldFunction";
-  (*oldfunction_).rename( buffer.str(), buffer.str() );
-
-  iteratedfunction_.reset( new dolfin::Function(*functionspace_) );
-  buffer.str(""); buffer << name() << "::IteratedFunction";
-  (*iteratedfunction_).rename( buffer.str(), buffer.str() );
-
-//  std::map< uint, GenericFunction_ptr > icexprs;
-//  uint component = 0;
-//  
-  buffer.str("");  buffer << optionpath() << "/field";
-  int nfields = Spud::option_count(buffer.str());
-  for (uint i = 0; i < nfields; i++)
-  {
-    buffer << "[" << i << "]";
-    fields_fill_(buffer.str(), i, nfields); 
-  }
-//  
-//  InitialConditionExpression sysicexpr(component, icexprs);
-//  (*sysfunc).interpolate(sysicexpr);
-//  for(std::map< std::string, DirichletBC_ptr >::iterator
-//            bc = dirichletbcs_begin(); 
-//            bc != dirichletbcs_end(); bc++)
-//  {
-//    (*((*bc).second)).apply((*sysfunc).vector());
-//  }
-//  
-}
 

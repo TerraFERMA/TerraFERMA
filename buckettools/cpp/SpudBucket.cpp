@@ -25,13 +25,6 @@ SpudBucket::~SpudBucket()
   empty_();
 }
 
-// Empty the spudbucket
-void SpudBucket::empty_()
-{
-  mesh_optionpaths_.clear();
-  system_optionpaths_.clear();
-}
-
 // Fill the bucket with stuff based on options tree provided by Spud
 void SpudBucket::fill()
 {
@@ -192,6 +185,13 @@ std::string SpudBucket::meshes_str() const
   }
 
   return s.str();
+}
+
+// Empty the spudbucket
+void SpudBucket::empty_()
+{
+  mesh_optionpaths_.clear();
+  system_optionpaths_.clear();
 }
 
 //void SpudBucket::detectors_fill_()

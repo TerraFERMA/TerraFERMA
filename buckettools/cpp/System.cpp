@@ -15,7 +15,7 @@ System::System(std::string name, Mesh_ptr mesh) : name_(name), mesh_(mesh)
 // Default destructor
 System::~System()
 {
-  // Do nothing
+  empty_();
 }
 
 // Register a dolfin subfunctionspace in the system
@@ -33,5 +33,11 @@ void System::register_subfunctionspace(FunctionSpace_ptr subfunctionspace, std::
     // if not then insert it into the maps
     subfunctionspaces_[name] = subfunctionspace;
   }
+}
+
+// Empty the spudbucket
+void System::empty_()
+{
+  subfunctionspaces_.clear();
 }
 
