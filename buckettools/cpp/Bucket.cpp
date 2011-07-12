@@ -19,12 +19,12 @@ Bucket::~Bucket()
   // Do nothing
 }
 
-// Register a dolfin mesh
+// Register a pointer to a DOLFIN mesh
 void Bucket::register_mesh(Mesh_ptr mesh, std::string name)
 {
   // First check if a mesh with this name already exists
   Mesh_it m_it = meshes_.find(name);
-  if (m_it != meshes_.end())
+  if (m_it != meshes_end())
   {
     // if it does, issue an error
     dolfin::error("Mesh named \"%s\" already exists in bucket.", name.c_str());
@@ -34,6 +34,47 @@ void Bucket::register_mesh(Mesh_ptr mesh, std::string name)
     // if not then insert it into the maps
     meshes_[name] = mesh;
   }
+}
+
+// Fetch a pointer to a DOLFIN mesh
+Mesh_ptr Bucket::fetch_mesh(const std::string name)
+{
+  // Check if the mesh exists in the bucket
+  Mesh_it m_it = meshes_.find(name);
+  if (m_it == meshes_end())
+  {
+    // if it doesn't then throw an error
+    dolfin::error("Mesh named \"%s\" does not exist in bucket.", name.c_str());
+  }
+  else
+  {
+    // if it does then return the pointer to the mesh
+    return (*m_it).second;
+  }
+}
+
+// Public iterator access
+Mesh_it Bucket::meshes_begin()
+{
+  return meshes_.begin();
+}
+
+// Public iterator access
+Mesh_const_it Bucket::meshes_begin() const
+{
+  return meshes_.begin();
+}
+
+// Public iterator access
+Mesh_it Bucket::meshes_end()
+{
+  return meshes_.end();
+}
+
+// Public iterator access
+Mesh_const_it Bucket::meshes_end() const
+{
+  return meshes_.end();
 }
 
 //// Create a system bucket in this bucket
@@ -93,22 +134,6 @@ void Bucket::register_mesh(Mesh_ptr mesh, std::string name)
 //  bcexps_.push_back(bcexp);
 //}
 
-Mesh_ptr Bucket::fetch_mesh(const std::string name)
-{
-  // Check if the mesh exists in the bucket
-  Mesh_it m_it = meshes_.find(name);
-  if (m_it == meshes_.end())
-  {
-    // if it doesn't then throw an error
-    dolfin::error("Mesh named \"%s\" does not exist in bucket.", name.c_str());
-  }
-  else
-  {
-    // if it does then return the pointer to the mesh
-    return (*m_it).second;
-  }
-}
-
 //FunctionSpace_ptr Bucket::fetch_functionspace(const std::string name)
 //{
 //  std::map< std::string, FunctionSpace_ptr >::iterator it;
@@ -130,25 +155,6 @@ Mesh_ptr Bucket::fetch_mesh(const std::string name)
 //  return (*it).second;
 //}
 //
-Mesh_it Bucket::meshes_begin()
-{
-  return meshes_.begin();
-}
-
-Mesh_const_it Bucket::meshes_begin() const
-{
-  return meshes_.begin();
-}
-
-Mesh_it Bucket::meshes_end()
-{
-  return meshes_.end();
-}
-
-Mesh_const_it Bucket::meshes_end() const
-{
-  return meshes_.end();
-}
 //
 //std::map< std::string, GenericDetectors_ptr >::iterator Bucket::detectors_begin()
 //{
