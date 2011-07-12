@@ -6,16 +6,19 @@
 
 using namespace buckettools;
 
-PythonInstance::PythonInstance(std::string function) : function_(function)
+// Specific constructor
+PythonInstance::PythonInstance(const std::string &function) : function_(function)
 {
   init_();
 }
 
+// Default destructor
 PythonInstance::~PythonInstance()
 {
   clean_();
 }
 
+// Initialize the python objects contained in the python instance
 void PythonInstance::init_()
 {
   if(not Py_IsInitialized())
@@ -39,6 +42,7 @@ void PythonInstance::init_()
   
 }
 
+// Remove references to the contained python objects
 void PythonInstance::clean_()
 {
   Py_DECREF(pLocals_);
@@ -50,11 +54,7 @@ void PythonInstance::clean_()
   }
 }
 
-std::string PythonInstance::function() const
-{
-  return function_;
-}
-
+// Call the python function object and return the result
 PyObject* PythonInstance::call(PyObject *pArgs) const
 {
   return PyObject_CallObject(pFunc_, pArgs);

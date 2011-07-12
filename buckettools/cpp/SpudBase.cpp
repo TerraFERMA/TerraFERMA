@@ -1,5 +1,6 @@
 #include "DolfinBoostTypes.h"
 #include "SpudBase.h"
+#include "PythonExpression.h"
 #include <dolfin.h>
 #include <string>
 #include <spud.h>

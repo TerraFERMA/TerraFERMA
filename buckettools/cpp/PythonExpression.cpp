@@ -7,37 +7,50 @@
 
 using namespace buckettools;
 
-PythonExpression::PythonExpression(std::string function) : dolfin::Expression(), pyinst_(function)
+// Specific constructor
+PythonExpression::PythonExpression(const std::string &function) : dolfin::Expression(), pyinst_(function)
 {
   // Do nothing
 }
-PythonExpression::PythonExpression(const uint &dim, std::string function) : dolfin::Expression(dim), pyinst_(function)
+
+// Specific constructor (vector)
+PythonExpression::PythonExpression(const uint &dim, const std::string &function) : dolfin::Expression(dim), pyinst_(function)
 {
   // Do nothing
 }
-PythonExpression::PythonExpression(const uint &dim0, const uint &dim1, std::string function) : dolfin::Expression(dim0, dim1), pyinst_(function)
+
+// Specific constructor (tensor)
+PythonExpression::PythonExpression(const uint &dim0, const uint &dim1, const std::string &function) : dolfin::Expression(dim0, dim1), pyinst_(function)
 {
   // Do nothing
 }
-PythonExpression::PythonExpression(std::vector<uint> value_shape, std::string function) : dolfin::Expression(value_shape), pyinst_(function)
+
+// Specific constructor (alternative tensor)
+PythonExpression::PythonExpression(const std::vector<uint> &value_shape, const std::string &function) : dolfin::Expression(value_shape), pyinst_(function)
 {
   // Do nothing
 }
+
+// Default destructor
 PythonExpression::~PythonExpression()
 {
   // should all be automatic from pyinst_ destructor
 }
 
+// Overload dolfin eval
 void PythonExpression::eval(dolfin::Array<double>& values, const dolfin::Array<double>& x) const
 {
   PyObject *pArgs, *pPos, *px, *pResult;
   dolfin::uint meshdim, valdim;
   
+  // the size of the value space (sadly doesn't tell us about shape so tensors not quite supported yet)
   valdim = values.size();
   
+  // the mesh dimension
   meshdim = x.size();
   pPos=PyTuple_New(meshdim);
   
+  // set up the arguments to the val function (only x so far)
   pArgs = PyTuple_New(1);
   PyTuple_SetItem(pArgs, 0, pPos);
   
@@ -61,8 +74,10 @@ void PythonExpression::eval(dolfin::Array<double>& values, const dolfin::Array<d
     dolfin::error("In PythonExpression::eval evaluating pResult");
   }
     
+  // Is the result a sequence (assumed vector for now)?
   if (PySequence_Check(pResult))
   {
+    // yes, then loop over valdim filling in values
     for (dolfin::uint i = 0; i<valdim; i++)
     {
       px = PySequence_GetItem(pResult, i);
@@ -79,6 +94,7 @@ void PythonExpression::eval(dolfin::Array<double>& values, const dolfin::Array<d
   }
   else
   {
+    // no, just get the scalar value back then
     values[0] = PyFloat_AsDouble(pResult);
     
     // Check for errors in executing user code.
