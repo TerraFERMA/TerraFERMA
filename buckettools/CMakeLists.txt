@@ -1,10 +1,19 @@
+# The name of the project...
 project(buckettools)
 
+# Write a template header file to disk at configuration time
+# (this holds the template for the mercurial id information that will
+#  be replaced at build time by a suitable variable - using the script
+#  below)
 file(
     WRITE ${buckettools_BINARY_DIR}/confdefs.h.in
     "#define __HG_ID__ \"@HG_ID@\"\n"
     )
 
+# Write a cmake script to disk at configuration time
+# (this will run hg - at compile time - and record the id info
+#  to an environment variable which can be used to write a
+#  header file for the build)
 file(
     WRITE ${buckettools_BINARY_DIR}/confdefs.cmake
     "find_program(HAVE_HG hg)
@@ -27,6 +36,8 @@ file(
     "
     )
 
+# add a target that runs the above cmake script and creates the header
+# file containing the hg id information
 add_custom_target(
     confdefs
     ${CMAKE_COMMAND} -D SRC="${buckettools_BINARY_DIR}/confdefs.h.in"
@@ -35,15 +46,41 @@ add_custom_target(
                      -P "${buckettools_BINARY_DIR}/confdefs.cmake"
     )
 
-add_subdirectory("ufl")
 
-include_directories("${buckettools_SOURCE_DIR}/include" ${buckettools_BINARY_DIR} ${buckettools_BINARY_DIR}/ufl)
+# add a command that runs the ufl generation script if the options file
+# or the (main file of the) script has changed
+# FIXME: this should be changed to only update if certain options 
+#        (which ufl depends on) have changed!
+add_custom_command(
+    OUTPUT ${buckettools_BINARY_DIR}/SystemsWrapper.h
+    COMMAND python
+    ARGS ${buckettools_SOURCE_DIR}/scripts/ufl_from_options.py ${OPTIONSFILE}
+    WORKING_DIRECTORY ${buckettools_BINARY_DIR}
+    DEPENDS ${OPTIONSFILE}
+    DEPENDS ${buckettools_SOURCE_DIR}/scripts/ufl_from_options.py
+    )
+ 
+# create a custom target so we can make the project depend on this
+add_custom_target(
+   genufl
+   DEPENDS ${buckettools_BINARY_DIR}/SystemsWrapper.h
+   )
+
+# include the buckettools include directory and the binary directory (for confdefs and the systemswrapper)
+include_directories("${buckettools_SOURCE_DIR}/include" ${buckettools_BINARY_DIR})
+# include python
 include_directories(${PYTHON_INCLUDE_PATH})
+# generate a library - really the main point of this whole process
 add_library(buckettools cpp/Bucket.cpp cpp/SpudBucket.cpp cpp/System.cpp cpp/SpudSystem.cpp)
-set_source_files_properties(${buckettools_BINARY_DIR}/ufl/SystemsWrapper.h PROPERTIES GENERATED 1)
-add_dependencies(buckettools generate_ufl)
+# tell cmake that this file doesn't exist until build time
+set_source_files_properties(${buckettools_BINARY_DIR}/SystemsWrapper.h PROPERTIES GENERATED 1)
+# the project depends on this target
+add_dependencies(buckettools genufl)
+# tell cmake that this file doesn't exist until build time
 set_source_files_properties(confdefs.h PROPERTIES GENERATED 1)
+# the project depends on this target
 add_dependencies(buckettools confdefs)
+# link to python
 target_link_libraries(buckettools ${PYTHON_LIBRARIES})
 
 
