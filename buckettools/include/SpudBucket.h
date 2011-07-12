@@ -36,10 +36,10 @@ namespace buckettools
 //    // populate the detectors_ data structure
 //    void detectors_fill_();
  
-    // return the optionpath for this bucket
-    std::string optionpath()
-    { return optionpath_; }
+    // Destroy the data in the bucket
+    void empty_();
 
+  // accessible to anyone
   public:
     
     // Default constructor
@@ -66,9 +66,6 @@ namespace buckettools
     // Return the optionpath to a named mesh
     std::string fetch_mesh_optionpath(const std::string name);
 
-    // Describe the meshes in the spudbucket (including optionpaths)
-    std::string meshes_str() const;
-
     // Return the iterator to the beginning of the mesh_optionpaths_ map
     string_it mesh_optionpaths_begin();
 
@@ -81,6 +78,13 @@ namespace buckettools
     // Return the const iterator to the end of the mesh_optionpaths_ map
     string_const_it mesh_optionpaths_end() const;
  
+    // Describe the meshes in the spudbucket (including optionpaths)
+    std::string meshes_str() const;
+
+    // return the optionpath for this bucket
+    std::string optionpath()
+    { return optionpath_; }
+
   };
 }
 #endif

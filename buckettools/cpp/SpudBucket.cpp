@@ -22,7 +22,14 @@ SpudBucket::SpudBucket(std::string name, std::string optionpath) : optionpath_(o
 // Default destructor for spudbucket derived class
 SpudBucket::~SpudBucket()
 {
-  // Do nothing
+  empty_()
+}
+
+// Empty the spudbucket
+void SpudBucket::empty_()
+{
+  mesh_optionpaths_.clear();
+  system_optionpaths_.clear();
 }
 
 // Fill the bucket with stuff based on options tree provided by Spud
@@ -49,8 +56,8 @@ void SpudBucket::fill()
     systems_fill_(buffer.str());
   }
   
-  //// Put detectors in the bucket
-  //detectors_fill_();
+//  // Put detectors in the bucket
+//  detectors_fill_();
 
 }
 
@@ -92,70 +99,6 @@ void SpudBucket::meshes_fill_(const std::string &optionpath)
   register_mesh(mesh, meshname, optionpath);
 }
 
-void SpudBucket::register_mesh(Mesh_ptr mesh, std::string name, std::string optionpath)
-{
-  // First check if a mesh with this name already exists
-  Mesh_it m_it = meshes_.find(name);
-  if (m_it != meshes_.end())
-  {
-    // if it does, issue an error
-    dolfin::error("Mesh named \"%s\" already exists in spudbucket.", name.c_str());
-  }
-  else
-  {
-    // if not then insert it into the maps
-    meshes_[name]           = mesh;
-    mesh_optionpaths_[name] = optionpath;
-  }
-}
-
-std::string SpudBucket::fetch_mesh_optionpath(const std::string name)
-{
-  // Check if the mesh exists in the bucket
-  string_it s_it = mesh_optionpaths_.find(name);
-  if (s_it == mesh_optionpaths_.end())
-  {
-    // if it doesn't then throw an error
-    dolfin::error("Mesh named \"%s\" does not exist in spudbucket.", name.c_str());
-  }
-  else
-  {
-    // if it does then return the pointer to the mesh
-    return (*s_it).second;
-  }
-}
-
-std::string SpudBucket::meshes_str() const
-{
-  std::stringstream s;
-
-  for ( string_const_it s_it = mesh_optionpaths_begin(); s_it != mesh_optionpaths_end(); s_it++ )
-  {
-    s << "Mesh " << (*s_it).first << ": " << (*s_it).second  << std::endl;
-  }
-
-  return s.str();
-}
-
-string_it SpudBucket::mesh_optionpaths_begin()
-{
-  return mesh_optionpaths_.begin();
-}
-
-string_const_it SpudBucket::mesh_optionpaths_begin() const
-{
-  return mesh_optionpaths_.begin();
-}
-
-string_it SpudBucket::mesh_optionpaths_end()
-{
-  return mesh_optionpaths_.end();
-}
-
-string_const_it SpudBucket::mesh_optionpaths_end() const
-{
-  return mesh_optionpaths_.end();
-}
 // Insert a system (with optionpath) into the bucket
 void SpudBucket::systems_fill_(const std::string &optionpath)
 {
@@ -178,9 +121,79 @@ void SpudBucket::systems_fill_(const std::string &optionpath)
 
   (*system).fill();
 }
-//
-//
-//
+
+// Register a pointer to a DOLFIN mesh (and an optionpath)
+void SpudBucket::register_mesh(Mesh_ptr mesh, std::string name, std::string optionpath)
+{
+  // First check if a mesh with this name already exists
+  Mesh_it m_it = meshes_.find(name);
+  if (m_it != meshes_.end())
+  {
+    // if it does, issue an error
+    dolfin::error("Mesh named \"%s\" already exists in spudbucket.", name.c_str());
+  }
+  else
+  {
+    // if not then insert it into the maps
+    meshes_[name]           = mesh;
+    mesh_optionpaths_[name] = optionpath;
+  }
+}
+
+// Fetch the option path for a mesh
+std::string SpudBucket::fetch_mesh_optionpath(const std::string name)
+{
+  // Check if the mesh exists in the bucket
+  string_it s_it = mesh_optionpaths_.find(name);
+  if (s_it == mesh_optionpaths_.end())
+  {
+    // if it doesn't then throw an error
+    dolfin::error("Mesh named \"%s\" does not exist in spudbucket.", name.c_str());
+  }
+  else
+  {
+    // if it does then return the pointer to the mesh
+    return (*s_it).second;
+  }
+}
+
+// Public iterator access
+string_it SpudBucket::mesh_optionpaths_begin()
+{
+  return mesh_optionpaths_.begin();
+}
+
+// Public iterator access
+string_const_it SpudBucket::mesh_optionpaths_begin() const
+{
+  return mesh_optionpaths_.begin();
+}
+
+// Public iterator access
+string_it SpudBucket::mesh_optionpaths_end()
+{
+  return mesh_optionpaths_.end();
+}
+
+// Public iterator access
+string_const_it SpudBucket::mesh_optionpaths_end() const
+{
+  return mesh_optionpaths_.end();
+}
+
+// Describe the contents of the mesh_optionpaths_ map
+std::string SpudBucket::meshes_str() const
+{
+  std::stringstream s;
+
+  for ( string_const_it s_it = mesh_optionpaths_begin(); s_it != mesh_optionpaths_end(); s_it++ )
+  {
+    s << "Mesh " << (*s_it).first << ": " << (*s_it).second  << std::endl;
+  }
+
+  return s.str();
+}
+
 //void SpudBucket::detectors_fill_()
 //{
 //  // Initialise a pointer to a generic detector - so that it can be reset in the loops
