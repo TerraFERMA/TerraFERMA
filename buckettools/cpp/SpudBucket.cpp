@@ -22,7 +22,7 @@ SpudBucket::SpudBucket(std::string name, std::string optionpath) : optionpath_(o
 // Default destructor for spudbucket derived class
 SpudBucket::~SpudBucket()
 {
-  empty_()
+  empty_();
 }
 
 // Empty the spudbucket
