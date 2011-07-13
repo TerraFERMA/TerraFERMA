@@ -59,6 +59,7 @@ class Functional:
     return self.function.system.name+self.function.name+self.name
 
   def cpp(self, index=0):
+    cpp = []
     if index == 0:
       cpp.append("        if (functionalname ==  \""+self.name+"\")\n")
     else:
