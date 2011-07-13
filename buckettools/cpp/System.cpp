@@ -35,6 +35,31 @@ void System::register_subfunctionspace(FunctionSpace_ptr subfunctionspace, std::
   }
 }
 
+// Return whether a subfunctionspace with the given name is in the system
+bool System::contains_subfunctionspace(std::string name)
+{
+  // First check if a subfunctionspace with this name already exists
+  FunctionSpace_it f_it = subfunctionspaces_.find(name);
+  return f_it != subfunctionspaces_.end();
+}
+
+// Return a pointer to a dolfin subfunctionspace with the given name
+FunctionSpace_ptr System::fetch_subfunctionspace(std::string name)
+{
+  // First check if a subfunctionspace with this name already exists
+  FunctionSpace_it f_it = subfunctionspaces_.find(name);
+  if (f_it == subfunctionspaces_.end())
+  {
+    // if it doesn't, issue an error
+    dolfin::error("Subfunctionspace named \"%s\" does not exist in system.", name.c_str());
+  }
+  else
+  {
+    // if not then return it
+    return (*f_it).second;
+  }
+}
+
 // Register a dolfin expression for a bc in the system
 void System::register_bcexpression(Expression_ptr bcexpression, std::string name)
 {

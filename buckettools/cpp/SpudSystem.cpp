@@ -200,25 +200,34 @@ void SpudSystem::bc_component_fill_(const std::string &optionpath,
     std::vector<int> subcompids;
     Spud::get_option(buffer.str(), subcompids);
     
-    for (std::vector<int>::iterator subcompid = subcompids.begin(); subcompid < subcompids.end(); subcompid++)
+    for (std::vector<int>::const_iterator subcompid = subcompids.begin(); subcompid < subcompids.end(); subcompid++)
     {
-//        
-//        FunctionSpace_ptr subsubsysspace( new dolfin::SubSpace(*subsysspace, *subcompid) );
-//        buffer.str(""); buffer << sysname << "::" << funcname << "::Space_" << *subcompid;
-//        register_functionspace(subsubsysspace, buffer.str());
-//        
-//        buffer.str(""); buffer << subcompbuffer.str() << "/type::Dirichlet";
-//        GenericFunction_ptr bcexp = initialize_expression(buffer.str(), dimension);
-//        
-//        register_bcexp(bcexp);
-//        
-//        for (std::vector<int>::iterator bcid = bcids.begin(); bcid < bcids.end(); bcid++)
-//        {
-//          DirichletBC_ptr bc(new dolfin::DirichletBC(*subsubsysspace, *bcexp, *edge_subdomain, *bcid));
-//          buffer.str(""); buffer << bcname << "_" << *bcid << "_" << *subcompid;
-//          register_dirichletbc(bc, buffer.str());
-//        }
-//        
+
+       FunctionSpace_ptr subsubfunctionspace;
+       namebuffer.str(""); buffer << fieldname << "::" << *subcompid;
+       if (contains_subfunctionspace(namebuffer.str()))
+       {
+         subsubfunctionspace = fetch_subfunctionspace(namebuffer.str());
+       }
+       else
+       {
+         subsubfunctionspace.reset( new dolfin::SubSpace(*subfunctionspace, *subcompid) );
+         register_subfunctionspace(subsubfunctionspace, buffer.str());
+       }
+       
+       buffer.str(""); buffer << optionpath << "/type::Dirichlet";
+       Expression_ptr bcexp = initialize_expression(buffer.str(), size, shape);
+       
+       namebuffer.str(""); namebuffer << fieldname << "::" << *subcompid << "::" << bcname;
+       register_bcexpression(bcexp, namebuffer.str());
+       
+       for (std::vector<int>::const_iterator bcid = bcids.begin(); bcid < bcids.end(); bcid++)
+       {
+         DirichletBC_ptr bc(new dolfin::DirichletBC(*subsubfunctionspace, *bcexp, *edgeidmeshfunction, *bcid));
+         namebuffer.str(""); namebuffer << fieldname << "::" << *subcompid << "::" << bcname << "::" << *bcid;
+         register_dirichletbc(bc, namebuffer.str());
+       }
+       
     }
   }
   else

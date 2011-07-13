@@ -72,6 +72,12 @@ namespace buckettools
     // Register a subfunctionspace in the system
     void register_subfunctionspace(FunctionSpace_ptr subfunctionspace, std::string name);
 
+    // Return whether a subfunctionspace with the given name is in the system
+    bool contains_subfunctionspace(std::string name);
+
+    // Return a pointer to a dolfin subfunctionspace with the given name
+    FunctionSpace_ptr fetch_subfunctionspace(std::string name);
+
     // Register a bc expression in the system
     void register_bcexpression(Expression_ptr bcexpression, std::string name);
 
