@@ -5,6 +5,7 @@
 #include "System.h"
 #include "SystemsWrapper.h"
 #include "SpudBase.h"
+#include "SpudFunctionBucket.h"
 #include <dolfin.h>
 #include <string>
 #include <spud.h>
@@ -93,6 +94,12 @@ void SpudSystem::fields_fill_(const std::string &optionpath,
                               const uint &dimension,
                               uint &component)
 {
+  // Fields are strange because lots of their data actually belongs
+  // to the system we do a lot of the population of the data structures
+  // at a system level rather than at the function class level.
+  // The function class (which will also get populated from here)
+  // mostly exists to map the functionals for the stat output.
+
   // A buffer to put option paths in
   std::stringstream buffer;
 
@@ -123,7 +130,7 @@ void SpudSystem::fields_fill_(const std::string &optionpath,
 
   // Is this a mixed functionspace or not?
   FunctionSpace_ptr subfunctionspace;
-  Function_ptr field;
+  Function_ptr function;
   if (nfields == 1)
   {
     // no... the subfunctionspace for this field is identical to the system's
@@ -131,7 +138,7 @@ void SpudSystem::fields_fill_(const std::string &optionpath,
     subfunctionspace = functionspace_;
 
     // not sure quite what this will do (in the nfields==1 case) but let's try to register the field
-    field.reset( new dolfin::Function( (*function_) ) );
+    function.reset( new dolfin::Function( (*function_) ) );
   }
   else
   {
@@ -139,14 +146,15 @@ void SpudSystem::fields_fill_(const std::string &optionpath,
     subfunctionspace.reset( new dolfin::SubSpace(*functionspace_, field_i) );
 
     // not sure quite what this will do (in the nfields==1 case) but let's try to register the field
-    field.reset( new dolfin::Function( (*function_)[field_i] ) );
+    function.reset( new dolfin::Function( (*function_)[field_i] ) );
   }
   // register a pointer to the subfunctionspace in the system so it remains in memory for other
   // objects that take a reference
   register_subfunctionspace(subfunctionspace, fieldname);
   // register a pointer to the field as well (first give it a sensible name and label)
   buffer.str(""); buffer << name() << "::" << fieldname;
-  (*field).rename(buffer.str(), buffer.str());
+  (*function).rename(buffer.str(), buffer.str());
+  FunctionBucket_ptr field( new SpudFunctionBucket( name(), optionpath, function ) );
   register_field(field, fieldname, optionpath);
 
   buffer.str(""); buffer << optionpath << "/type/rank/boundary_condition";
@@ -284,10 +292,10 @@ void SpudSystem::ic_fill_(const std::string &optionpath,
 }
 
 // Register a dolfin function as a field in the system
-void SpudSystem::register_field(Function_ptr field, std::string name, std::string optionpath)
+void SpudSystem::register_field(FunctionBucket_ptr field, std::string name, std::string optionpath)
 {
   // First check if a field with this name already exists
-  Function_it f_it = fields_.find(name);
+  FunctionBucket_it f_it = fields_.find(name);
   if (f_it != fields_.end())
   {
     // if it does, issue an error
@@ -301,7 +309,7 @@ void SpudSystem::register_field(Function_ptr field, std::string name, std::strin
   }
 }
 
-// Return a string describing the contents of the bucket
+// Return a string describing the contents of the system
 std::string SpudSystem::str(int indent) const
 {
   std::stringstream s;

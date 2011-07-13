@@ -3,22 +3,25 @@
 #define __SYSTEM_H
 
 #include "DolfinBoostTypes.h"
+#include "FunctionBucket.h"
 #include <dolfin.h>
 
 namespace buckettools
 {
 
   // Define iterator types for things accessed in the system maps (defined below)
-  typedef std::map< std::string, FunctionSpace_ptr >::iterator       FunctionSpace_it;
-  typedef std::map< std::string, FunctionSpace_ptr >::const_iterator FunctionSpace_const_it;
-  typedef std::map< std::string, Function_ptr >::iterator            Function_it;
-  typedef std::map< std::string, Function_ptr >::const_iterator      Function_const_it;
-  typedef std::map< std::string, Expression_ptr >::iterator          Expression_it;
-  typedef std::map< std::string, Expression_ptr >::const_iterator    Expression_const_it;
-  typedef std::map< std::string, DirichletBC_ptr >::iterator         DirichletBC_it;
-  typedef std::map< std::string, DirichletBC_ptr >::const_iterator   DirichletBC_const_it;
-  typedef std::map< uint, Expression_ptr >::iterator                 uint_Expression_it;
-  typedef std::map< uint, Expression_ptr >::const_iterator           uint_Expression_const_it;
+  typedef std::map< std::string, FunctionSpace_ptr >::iterator        FunctionSpace_it;
+  typedef std::map< std::string, FunctionSpace_ptr >::const_iterator  FunctionSpace_const_it;
+  typedef std::map< std::string, FunctionBucket_ptr >::iterator       FunctionBucket_it;
+  typedef std::map< std::string, FunctionBucket_ptr >::const_iterator FunctionBucket_const_it;
+  typedef std::map< std::string, Function_ptr >::iterator             Function_it;
+  typedef std::map< std::string, Function_ptr >::const_iterator       Function_const_it;
+  typedef std::map< std::string, Expression_ptr >::iterator           Expression_it;
+  typedef std::map< std::string, Expression_ptr >::const_iterator     Expression_const_it;
+  typedef std::map< std::string, DirichletBC_ptr >::iterator          DirichletBC_it;
+  typedef std::map< std::string, DirichletBC_ptr >::const_iterator    DirichletBC_const_it;
+  typedef std::map< uint, Expression_ptr >::iterator                  uint_Expression_it;
+  typedef std::map< uint, Expression_ptr >::const_iterator            uint_Expression_const_it;
   
   // The System class describes a functionspace and a set of solvers that act on the fields
   // contained in that (potentially mixed) functionspace.
@@ -50,7 +53,7 @@ namespace buckettools
     std::map< std::string, FunctionSpace_ptr > subfunctionspaces_;
     
     // a map from field names to the fields (subfunctions)
-    std::map< std::string, Function_ptr > fields_;
+    std::map< std::string, FunctionBucket_ptr > fields_;
     
     // a map from field::bc names to the subfunctionspaces they are described on
     std::map< std::string, Expression_ptr > bcexpressions_;
@@ -85,7 +88,7 @@ namespace buckettools
     FunctionSpace_ptr fetch_subfunctionspace(std::string name);
 
     // Register a field (subfunction) in the system
-    void register_field(Function_ptr field, std::string name);
+    void register_field(FunctionBucket_ptr field, std::string name);
 
     // Register a bc expression in the system
     void register_bcexpression(Expression_ptr bcexpression, std::string name);

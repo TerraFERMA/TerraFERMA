@@ -61,10 +61,10 @@ FunctionSpace_ptr System::fetch_subfunctionspace(std::string name)
 }
 
 // Register a dolfin function as a field in the system
-void System::register_field(Function_ptr field, std::string name)
+void System::register_field(FunctionBucket_ptr field, std::string name)
 {
   // First check if a field with this name already exists
-  Function_it f_it = fields_.find(name);
+  FunctionBucket_it f_it = fields_.find(name);
   if (f_it != fields_.end())
   {
     // if it does, issue an error
@@ -128,7 +128,7 @@ void System::register_icexpression(Expression_ptr ic, uint component)
   }
 }
 
-// Return a string describing the contents of the bucket
+// Return a string describing the contents of the system
 std::string System::str(int indent) const
 {
   std::stringstream s;
@@ -157,14 +157,14 @@ std::string System::fields_str(int indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
-  for ( Function_const_it f_it = fields_.begin(); f_it != fields_.end(); f_it++ )
+  for ( FunctionBucket_const_it f_it = fields_.begin(); f_it != fields_.end(); f_it++ )
   {
     s << indentation << "Field " << (*f_it).first  << std::endl;
   }
   return s.str();
 }
 
-// Empty the spudbucket
+// Empty the system
 void System::empty_()
 {
   subfunctionspaces_.clear();

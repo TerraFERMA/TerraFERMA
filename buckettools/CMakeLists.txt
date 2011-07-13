@@ -72,6 +72,7 @@ include_directories("${buckettools_SOURCE_DIR}/include" ${buckettools_BINARY_DIR
 include_directories(${PYTHON_INCLUDE_PATH})
 # generate a library - really the main point of this whole process
 add_library(buckettools cpp/Bucket.cpp cpp/SpudBucket.cpp cpp/System.cpp cpp/SpudSystem.cpp
+                        cpp/FunctionBucket.cpp cpp/SpudFunctionBucket.cpp
                         cpp/SpudBase.cpp cpp/PythonExpression.cpp cpp/PythonInstance.cpp
                         cpp/InitialConditionExpression.cpp)
 # tell cmake that this file doesn't exist until build time
