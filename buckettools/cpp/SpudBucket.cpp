@@ -124,6 +124,8 @@ void SpudBucket::systems_fill_(const std::string &optionpath,
   SpudSystem_ptr system( new SpudSystem(sysname, optionpath, mesh) );
 
   (*system).fill(dimension);
+
+  register_system(system, sysname, optionpath);
 }
 
 // Register a pointer to a DOLFIN mesh (and an optionpath)
@@ -131,7 +133,7 @@ void SpudBucket::register_mesh(Mesh_ptr mesh, std::string name, std::string opti
 {
   // First check if a mesh with this name already exists
   Mesh_it m_it = meshes_.find(name);
-  if (m_it != meshes_.end())
+  if (m_it != meshes_end())
   {
     // if it does, issue an error
     dolfin::error("Mesh named \"%s\" already exists in spudbucket.", name.c_str());
@@ -149,7 +151,7 @@ std::string SpudBucket::fetch_mesh_optionpath(const std::string name)
 {
   // Check if the mesh exists in the bucket
   string_it s_it = mesh_optionpaths_.find(name);
-  if (s_it == mesh_optionpaths_.end())
+  if (s_it == mesh_optionpaths_end())
   {
     // if it doesn't then throw an error
     dolfin::error("Mesh named \"%s\" does not exist in spudbucket.", name.c_str());
@@ -185,6 +187,65 @@ string_const_it SpudBucket::mesh_optionpaths_end() const
   return mesh_optionpaths_.end();
 }
 
+// Register a pointer to a system (and an optionpath)
+void SpudBucket::register_system(System_ptr system, std::string name, std::string optionpath)
+{
+  // First check if a system with this name already exists
+  System_it s_it = systems_.find(name);
+  if (s_it != systems_end())
+  {
+    // if it does, issue an error
+    dolfin::error("System named \"%s\" already exists in spudbucket.", name.c_str());
+  }
+  else
+  {
+    // if not then insert it into the maps
+    systems_[name]            = system;
+    system_optionpaths_[name] = optionpath;
+  }
+}
+
+// Fetch the option path for a system
+std::string SpudBucket::fetch_system_optionpath(const std::string name)
+{
+  // Check if the system exists in the bucket
+  string_it s_it = system_optionpaths_.find(name);
+  if (s_it == system_optionpaths_end())
+  {
+    // if it doesn't then throw an error
+    dolfin::error("System named \"%s\" does not exist in spudbucket.", name.c_str());
+  }
+  else
+  {
+    // if it does then return the pointer to the system
+    return (*s_it).second;
+  }
+}
+
+// Public iterator access
+string_it SpudBucket::system_optionpaths_begin()
+{
+  return system_optionpaths_.begin();
+}
+
+// Public iterator access
+string_const_it SpudBucket::system_optionpaths_begin() const
+{
+  return system_optionpaths_.begin();
+}
+
+// Public iterator access
+string_it SpudBucket::system_optionpaths_end()
+{
+  return system_optionpaths_.end();
+}
+
+// Public iterator access
+string_const_it SpudBucket::system_optionpaths_end() const
+{
+  return system_optionpaths_.end();
+}
+
 // Describe the contents of the mesh_optionpaths_ map
 std::string SpudBucket::meshes_str() const
 {
@@ -193,6 +254,19 @@ std::string SpudBucket::meshes_str() const
   for ( string_const_it s_it = mesh_optionpaths_begin(); s_it != mesh_optionpaths_end(); s_it++ )
   {
     s << "Mesh " << (*s_it).first << ": " << (*s_it).second  << std::endl;
+  }
+
+  return s.str();
+}
+
+// Describe the contents of the system_optionpaths_ map
+std::string SpudBucket::systems_str() const
+{
+  std::stringstream s;
+
+  for ( string_const_it s_it = system_optionpaths_begin(); s_it != system_optionpaths_end(); s_it++ )
+  {
+    s << "System " << (*s_it).first << ": " << (*s_it).second  << std::endl;
   }
 
   return s.str();

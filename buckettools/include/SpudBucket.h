@@ -78,8 +78,29 @@ namespace buckettools
     // Return the const iterator to the end of the mesh_optionpaths_ map
     string_const_it mesh_optionpaths_end() const;
  
+    // Register a system in the bucket with an optionpath in the derived class
+    void register_system(System_ptr system, std::string name, std::string optionpath);
+
+    // Return the optionpath to a named system
+    std::string fetch_system_optionpath(const std::string name);
+
+    // Return the iterator to the beginning of the system_optionpaths_ map
+    string_it system_optionpaths_begin();
+
+    // Return the const iterator to the beginning of the system_optionpaths_ map
+    string_const_it system_optionpaths_begin() const;
+
+    // Return the iterator to the end of the system_optionpaths_ map
+    string_it system_optionpaths_end();
+
+    // Return the const iterator to the end of the system_optionpaths_ map
+    string_const_it system_optionpaths_end() const;
+ 
     // Describe the meshes in the spudbucket (including optionpaths)
     std::string meshes_str() const;
+
+    // Describe the systems in the spudbucket (including optionpaths)
+    std::string systems_str() const;
 
     // return the optionpath for this bucket
     std::string optionpath()

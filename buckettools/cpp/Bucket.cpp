@@ -25,6 +25,7 @@ std::string Bucket::str() const
   std::stringstream s;
   s << "Bucket " << name() << " contains:" << std::endl;
   s << meshes_str();
+  s << systems_str();
   return s.str();
 }
 
@@ -35,6 +36,17 @@ std::string Bucket::meshes_str() const
   for ( Mesh_const_it m_it = meshes_begin(); m_it != meshes_end(); m_it++ )
   {
     s << "Mesh " << (*m_it).first  << std::endl;
+  }
+  return s.str();
+}
+
+// Return a string describing the contents of systems_
+std::string Bucket::systems_str() const
+{
+  std::stringstream s;
+  for ( System_const_it s_it = systems_begin(); s_it != systems_end(); s_it++ )
+  {
+    s << "System " << (*s_it).first  << std::endl;
   }
   return s.str();
 }
@@ -97,10 +109,69 @@ Mesh_const_it Bucket::meshes_end() const
   return meshes_.end();
 }
 
+// Register a pointer to a DOLFIN mesh
+void Bucket::register_system(System_ptr system, std::string name)
+{
+  // First check if a system with this name already exists
+  System_it s_it = systems_.find(name);
+  if (s_it != systems_end())
+  {
+    // if it does, issue an error
+    dolfin::error("System named \"%s\" already exists in bucket.", name.c_str());
+  }
+  else
+  {
+    // if not then insert it into the maps
+    systems_[name] = system;
+  }
+}
+
+// Fetch a pointer to a DOLFIN mesh
+System_ptr Bucket::fetch_system(const std::string name)
+{
+  // Check if the system exists in the bucket
+  System_it s_it = systems_.find(name);
+  if (s_it == systems_end())
+  {
+    // if it doesn't then throw an error
+    dolfin::error("System named \"%s\" does not exist in bucket.", name.c_str());
+  }
+  else
+  {
+    // if it does then return the pointer to the mesh
+    return (*s_it).second;
+  }
+}
+
+// Public iterator access
+System_it Bucket::systems_begin()
+{
+  return systems_.begin();
+}
+
+// Public iterator access
+System_const_it Bucket::systems_begin() const
+{
+  return systems_.begin();
+}
+
+// Public iterator access
+System_it Bucket::systems_end()
+{
+  return systems_.end();
+}
+
+// Public iterator access
+System_const_it Bucket::systems_end() const
+{
+  return systems_.end();
+}
+
 // Empty the bucket
 void Bucket::empty_()
 {
   meshes_.clear();
+  systems_.clear();
 //  detectors_.clear();
 }
 

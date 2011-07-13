@@ -69,6 +69,9 @@ namespace buckettools
     // Print a description of the meshes contained in the bucket
     virtual std::string meshes_str() const;
 
+    // Print a description of the systems contained in the bucket
+    virtual std::string systems_str() const;
+
     // Print the name of the bucket
     std::string name() const
     { return name_; }
@@ -77,7 +80,7 @@ namespace buckettools
     // Register a mesh in the bucket (i.e. put it into the meshes_ map)
     void register_mesh(Mesh_ptr mesh, std::string name);
 
-    // Return a mesh point from the meshes_ map, given its name
+    // Return a mesh pointer from the meshes_ map, given its name
     Mesh_ptr fetch_mesh(const std::string name);
     
     // Return the iterator to the beginning of the meshes_ map
@@ -91,6 +94,24 @@ namespace buckettools
 
     // Return the const iterator to the end of the meshes_ map
     Mesh_const_it meshes_end() const;
+ 
+    // Register a system in the bucket (i.e. put it into the systems_ map)
+    void register_system(System_ptr system, std::string name);
+
+    // Return a system pointer from the systems_ map, given its name
+    System_ptr fetch_system(const std::string name);
+    
+    // Return the iterator to the beginning of the systems_ map
+    System_it systems_begin();
+
+    // Return the const iterator to the beginning of the systems_ map
+    System_const_it systems_begin() const;
+
+    // Return the iterator to the end of the systems_ map
+    System_it systems_end();
+
+    // Return the const iterator to the end of the systems_ map
+    System_const_it systems_end() const;
  
 //    void register_system(System_ptr std::string name)
 //    { register_system(name, "uninitialised_path"); }
