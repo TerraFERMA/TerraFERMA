@@ -38,9 +38,9 @@ class Bucket:
     cpp.append("#ifndef __SYSTEMS_WRAPPER_H\n")
     cpp.append("#define __SYSTEMS_WRAPPER_H\n")
     cpp.append("\n")
-    cpp.append("#include \"Bucket.h\"\n")
+    cpp.append("#include \"SystemsWrapper.h\"\n")
+    cpp.append("#include \"DolfinBoostTypes.h\"\n")
     cpp.append("#include <dolfin.h>\n")
-    cpp.append("\n")
 
     include_cpp = []
 
@@ -134,7 +134,7 @@ class Bucket:
     cpp.append("\n")
     cpp.append("#endif\n")
 
-    filename = "SystemsWrapper.h"
+    filename = "SystemsWrapper.cpp"
     if suffix: filename += "."+suffix
     filehandle = file(filename, 'w')
     filehandle.writelines(cpp)
