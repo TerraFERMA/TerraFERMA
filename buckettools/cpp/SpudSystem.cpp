@@ -49,6 +49,8 @@ void SpudSystem::fill(const uint &dimension)
   buffer.str(""); buffer << name() << "::IteratedFunction";
   (*iteratedfunction_).rename( buffer.str(), buffer.str() );
 
+  // A counter for the components in this system (allows the ic to be generalized)
+  uint component = 0;
   buffer.str("");  buffer << optionpath() << "/field";
   int nfields = Spud::option_count(buffer.str());
   // Loop over the fields (which are subfunctions of this functionspace)
@@ -56,7 +58,7 @@ void SpudSystem::fill(const uint &dimension)
   for (uint i = 0; i < nfields; i++)
   {
     buffer << "[" << i << "]";
-    fields_fill_(buffer.str(), i, nfields, dimension); 
+    fields_fill_(buffer.str(), i, nfields, dimension, component); 
   }
 
   // While filling the fields we should have set up a map from
@@ -88,7 +90,8 @@ void SpudSystem::fill(const uint &dimension)
 void SpudSystem::fields_fill_(const std::string &optionpath, 
                               const uint &field_i, 
                               const uint &nfields, 
-                              const uint &dimension)
+                              const uint &dimension,
+                              uint &component)
 {
   // A buffer to put option paths in
   std::stringstream buffer;
@@ -120,20 +123,31 @@ void SpudSystem::fields_fill_(const std::string &optionpath,
 
   // Is this a mixed functionspace or not?
   FunctionSpace_ptr subfunctionspace;
+  Function_ptr field;
   if (nfields == 1)
   {
     // no... the subfunctionspace for this field is identical to the system's
     // luckily for us these are just pointers so grab a reference to it
     subfunctionspace = functionspace_;
+
+    // not sure quite what this will do (in the nfields==1 case) but let's try to register the field
+    field.reset( new dolfin::Function( (*function_) ) );
   }
   else
   {
     // yes... use DOLFIN to extract that subspace so we can declare things on it (ics, bcs etc.)
     subfunctionspace.reset( new dolfin::SubSpace(*functionspace_, field_i) );
+
+    // not sure quite what this will do (in the nfields==1 case) but let's try to register the field
+    field.reset( new dolfin::Function( (*function_)[field_i] ) );
   }
   // register a pointer to the subfunctionspace in the system so it remains in memory for other
   // objects that take a reference
   register_subfunctionspace(subfunctionspace, fieldname);
+  // register a pointer to the field as well (first give it a sensible name and label)
+  buffer.str(""); buffer << name() << "::" << fieldname;
+  (*field).rename(buffer.str(), buffer.str());
+  register_field(field, fieldname, optionpath);
 
   buffer.str(""); buffer << optionpath << "/type/rank/boundary_condition";
   int nbcs = Spud::option_count(buffer.str());
@@ -156,7 +170,6 @@ void SpudSystem::fields_fill_(const std::string &optionpath,
     dolfin::error("Haven't thought about ics over regions.");
   }
 
-  uint component = 0;
   for (uint i = 0; i < nics; i++)
   {
     buffer << "[" << i << "]";
@@ -268,5 +281,23 @@ void SpudSystem::ic_fill_(const std::string &optionpath,
    register_icexpression(icexp, component);
 
    component += (*icexp).value_size();
+}
+
+// Register a dolfin function as a field in the system
+void SpudSystem::register_field(Function_ptr field, std::string name, std::string optionpath)
+{
+  // First check if a field with this name already exists
+  Function_it f_it = fields_.find(name);
+  if (f_it != fields_.end())
+  {
+    // if it does, issue an error
+    dolfin::error("Field named \"%s\" already exists in system.", name.c_str());
+  }
+  else
+  {
+    // if not then insert it into the maps
+    fields_[name]            = field;
+    field_optionpaths_[name] = optionpath;
+  }
 }
 

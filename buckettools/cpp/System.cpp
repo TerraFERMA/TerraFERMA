@@ -60,6 +60,23 @@ FunctionSpace_ptr System::fetch_subfunctionspace(std::string name)
   }
 }
 
+// Register a dolfin function as a field in the system
+void System::register_field(Function_ptr field, std::string name)
+{
+  // First check if a field with this name already exists
+  Function_it f_it = fields_.find(name);
+  if (f_it != fields_.end())
+  {
+    // if it does, issue an error
+    dolfin::error("Field named \"%s\" already exists in system.", name.c_str());
+  }
+  else
+  {
+    // if not then insert it into the maps
+    fields_[name] = field;
+  }
+}
+
 // Register a dolfin expression for a bc in the system
 void System::register_bcexpression(Expression_ptr bcexpression, std::string name)
 {

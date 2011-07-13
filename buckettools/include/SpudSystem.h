@@ -20,11 +20,15 @@ namespace buckettools
     // supplement the base class with an optionpath
     std::string optionpath_;
 
+    // supplementary to the system base data store the optionpaths for the fields_
+    std::map< std::string, std::string > field_optionpaths_;
+
     // fill in data about the fields
     void fields_fill_(const std::string &optionpath, 
                       const uint &field_i, 
                       const uint &nfields,
-                      const uint &dimension);
+                      const uint &dimension,
+                      uint &component);
 
     // fill in data about the bcs
     void bc_fill_(const std::string &optionpath,
@@ -70,6 +74,9 @@ namespace buckettools
 
     // Fill the system assuming the buckettools schema
     void fill(const uint &dimension);
+
+    // Register a dolfin function as a field in the system (with a spud optionpath)
+    void register_field(Function_ptr field, std::string name, std::string optionpath);
 
     // Return the base optionpath for this system
     std::string optionpath()
