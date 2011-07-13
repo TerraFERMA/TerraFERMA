@@ -44,6 +44,12 @@ namespace buckettools
                             const FunctionSpace_ptr &subfunctionspace,
                             const MeshFunction_uint_ptr &edgeidmeshfunction);
 
+    // fill in data about an individual field's ic
+    void ic_fill_(const std::string &optionpath,
+                  const int &size,
+                  const std::vector<int> &shape,
+                  uint &component);
+
   public:
     
     // FIXME: don't know why this constructor doesn't override base class constructor

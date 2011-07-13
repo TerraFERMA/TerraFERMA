@@ -1,5 +1,6 @@
 
 #include "DolfinBoostTypes.h"
+#include "InitialConditionExpression.h"
 #include "SpudSystem.h"
 #include "System.h"
 #include "SystemsWrapper.h"
@@ -58,12 +59,22 @@ void SpudSystem::fill(const uint &dimension)
     fields_fill_(buffer.str(), i, nfields, dimension); 
   }
 
-//  
-//  std::map< uint, GenericFunction_ptr > icexprs;
-//  uint component = 0;
-//  
-//  InitialConditionExpression sysicexpr(component, icexprs);
-//  (*sysfunc).interpolate(sysicexpr);
+  // While filling the fields we should have set up a map from
+  // components to initial condition expressions... use this
+  // now to initialize the whole system function to that
+  // ic
+  Expression_ptr ic;
+  if (icexpressions_.size()==1)
+  {
+    ic.reset( new InitialConditionExpression(icexpressions_) );
+  }
+  else
+  {
+    ic.reset( new InitialConditionExpression(icexpressions_.size(), icexpressions_));
+  }
+  (*oldfunction_).interpolate(*ic);
+  *iteratedfunction_ = *oldfunction_;
+  *function_ = *oldfunction_;
 //  for(std::map< std::string, DirichletBC_ptr >::iterator
 //            bc = dirichletbcs_begin(); 
 //            bc != dirichletbcs_end(); bc++)
@@ -94,6 +105,13 @@ void SpudSystem::fields_fill_(const std::string &optionpath,
   std::vector< int > default_shape(2, dimension);
   buffer.str(""); buffer << optionpath << "/type/rank/element/shape";
   Spud::get_option(buffer.str(), shape, default_shape);
+
+  // Most of what is below is broken for tensors so let's just die here with an error message
+  buffer.str(""); buffer << optionpath << "/type/rank::Tensor";
+  if (Spud::have_option(buffer.str()))
+  {
+    dolfin::error("Tensor fields not hooked up yet, sorry.");
+  }
 
   // What is this field called?
   std::string fieldname;
@@ -130,28 +148,21 @@ void SpudSystem::fields_fill_(const std::string &optionpath,
       bc_fill_(buffer.str(), fieldname, size, shape, subfunctionspace, edgeidmeshfunction);
     }
   }
-//    
-//    buffer.str(""); buffer << funcbuffer.str() << "/initial_condition";
-//    int nics = Spud::option_count(buffer.str());
-//    if (nics > 1)
-//    {
-//      dolfin::error("Haven't thought about ics over regions.");
-//    }
-////     for (uint ici = 0; ici < nics; ici++)
-////     {
-//      uint ici = 0;
-//      
-//      std::stringstream icpathstream;
-//      icpathstream.str(""); icpathstream << funcbuffer.str() << "/initial_condition[" << ici << "]";
-//      
-//      GenericFunction_ptr icexpr = initialize_expression(icpathstream.str(), dimension);
-//      
-//      icexprs.insert(std::pair< uint, GenericFunction_ptr >(component, icexpr));
-//      
-//      component += (*icexpr).value_size();
-////     }
-//    
+    
+  buffer.str(""); buffer << optionpath << "/type/rank/initial_condition";
+  int nics = Spud::option_count(buffer.str());
+  if (nics > 1)
+  {
+    dolfin::error("Haven't thought about ics over regions.");
+  }
 
+  uint component = 0;
+  for (uint i = 0; i < nics; i++)
+  {
+    buffer << "[" << i << "]";
+    ic_fill_(buffer.str(), size, shape, component);
+  }
+   
 }
 
 void SpudSystem::bc_fill_(const std::string &optionpath,
@@ -245,5 +256,17 @@ void SpudSystem::bc_component_fill_(const std::string &optionpath,
       register_dirichletbc(bc, namebuffer.str());
     }
   }
+}
+
+void SpudSystem::ic_fill_(const std::string &optionpath,
+                          const int &size,
+                          const std::vector<int> &shape,
+                          uint &component)
+{
+   Expression_ptr icexp = initialize_expression(optionpath, size, shape);
+
+   register_icexpression(icexp, component);
+
+   component += (*icexp).value_size();
 }
 

@@ -15,6 +15,8 @@ namespace buckettools
   typedef std::map< std::string, Expression_ptr >::const_iterator    Expression_const_it;
   typedef std::map< std::string, DirichletBC_ptr >::iterator         DirichletBC_it;
   typedef std::map< std::string, DirichletBC_ptr >::const_iterator   DirichletBC_const_it;
+  typedef std::map< uint, Expression_ptr >::iterator                 uint_Expression_it;
+  typedef std::map< uint, Expression_ptr >::const_iterator           uint_Expression_const_it;
   
   // The System class describes a functionspace and a set of solvers that act on the fields
   // contained in that (potentially mixed) functionspace.
@@ -51,6 +53,9 @@ namespace buckettools
     // a map from field::bc::id names to dirichlet boundary conditions
     std::map< std::string, DirichletBC_ptr > dirichletbcs_;
     
+    // a map from component integer index to initial condition expression
+    std::map< uint, Expression_ptr > icexpressions_;
+    
   public:
 
     // No default constructor - always require a mesh pointer
@@ -83,6 +88,9 @@ namespace buckettools
 
     // Register a bc expression in the system
     void register_dirichletbc(DirichletBC_ptr bc, std::string name);
+
+    // Register an initial condition expression
+    void register_icexpression(Expression_ptr ic, uint component);
 
   };
 

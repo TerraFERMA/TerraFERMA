@@ -94,6 +94,23 @@ void System::register_dirichletbc(DirichletBC_ptr bc, std::string name)
   }
 }
 
+// Register a dolfin expression for an ic in the system
+void System::register_icexpression(Expression_ptr ic, uint component)
+{
+  // First check if an ic with this component index already exists
+  uint_Expression_it ic_it = icexpressions_.find(component);
+  if (ic_it != icexpressions_.end())
+  {
+    // if it does, issue an error
+    dolfin::error("ICExpression with component index \"%d\" already exists in system.", component);
+  }
+  else
+  {
+    // if not then insert it into the maps
+    icexpressions_[component] = ic;
+  }
+}
+
 // Empty the spudbucket
 void System::empty_()
 {
