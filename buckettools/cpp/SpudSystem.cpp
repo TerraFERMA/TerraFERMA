@@ -301,3 +301,15 @@ void SpudSystem::register_field(Function_ptr field, std::string name, std::strin
   }
 }
 
+// Return a string describing the contents of the bucket
+std::string SpudSystem::str(int indent) const
+{
+  std::stringstream s;
+  std::string indentation (indent*2, ' ');
+  s << indentation << "System " << name() << " (" << optionpath() << ")" << std::endl;
+  indent++;
+  s << fields_str(indent);
+  s << bcexpressions_str(indent);
+  return s.str();
+}
+

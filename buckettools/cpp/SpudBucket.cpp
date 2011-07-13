@@ -247,26 +247,28 @@ string_const_it SpudBucket::system_optionpaths_end() const
 }
 
 // Describe the contents of the mesh_optionpaths_ map
-std::string SpudBucket::meshes_str() const
+std::string SpudBucket::meshes_str(int indent) const
 {
   std::stringstream s;
+  std::string indentation (indent*2, ' ');
 
   for ( string_const_it s_it = mesh_optionpaths_begin(); s_it != mesh_optionpaths_end(); s_it++ )
   {
-    s << "Mesh " << (*s_it).first << ": " << (*s_it).second  << std::endl;
+    s << indentation << "Mesh " << (*s_it).first << " (" << (*s_it).second  << ")" << std::endl;
   }
 
   return s.str();
 }
 
 // Describe the contents of the system_optionpaths_ map
-std::string SpudBucket::system_optionpaths_str() const
+std::string SpudBucket::system_optionpaths_str(int indent) const
 {
   std::stringstream s;
+  std::string indentation (indent*2, ' ');
 
   for ( string_const_it s_it = system_optionpaths_begin(); s_it != system_optionpaths_end(); s_it++ )
   {
-    s << "System " << (*s_it).first << ": " << (*s_it).second  << std::endl;
+    s << indentation << "System " << (*s_it).first << ": " << (*s_it).second  << std::endl;
   }
 
   return s.str();

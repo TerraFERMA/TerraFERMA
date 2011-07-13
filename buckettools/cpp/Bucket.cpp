@@ -23,31 +23,32 @@ Bucket::~Bucket()
 std::string Bucket::str() const
 {
   std::stringstream s;
-  s << "Bucket " << name() << " contains:" << std::endl;
-  s << meshes_str();
-  s << systems_str();
+  int indent = 1;
+  s << "Bucket " << name() << std::endl;
+  s << meshes_str(indent);
+  s << systems_str(indent);
   return s.str();
 }
 
 // Return a string describing the contents of meshes_
-std::string Bucket::meshes_str() const
+std::string Bucket::meshes_str(int indent) const
 {
   std::stringstream s;
+  std::string indentation (indent*2, ' ');
   for ( Mesh_const_it m_it = meshes_begin(); m_it != meshes_end(); m_it++ )
   {
-    s << "Mesh " << (*m_it).first  << std::endl;
+    s << indentation << "Mesh " << (*m_it).first  << std::endl;
   }
   return s.str();
 }
 
 // Return a string describing the contents of systems_
-std::string Bucket::systems_str() const
+std::string Bucket::systems_str(int indent) const
 {
   std::stringstream s;
   for ( System_const_it s_it = systems_begin(); s_it != systems_end(); s_it++ )
   {
-    s << "System " << (*s_it).first  << std::endl;
-    s << (*(*s_it).second).str();
+    s << (*(*s_it).second).str(indent);
   }
   return s.str();
 }

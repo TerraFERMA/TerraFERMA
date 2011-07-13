@@ -78,8 +78,15 @@ namespace buckettools
     // Register a dolfin function as a field in the system (with a spud optionpath)
     void register_field(Function_ptr field, std::string name, std::string optionpath);
 
+    // Return a string object describing the system
+    std::string str() const
+    { str(0); }
+
+    // Return a string object describing the system
+    std::string str(int indent) const;
+
     // Return the base optionpath for this system
-    std::string optionpath()
+    std::string optionpath() const
     { return optionpath_; }
     
   };

@@ -97,13 +97,25 @@ namespace buckettools
     void register_icexpression(Expression_ptr ic, uint component);
 
     // Return a string describing the contents of the system
-    std::string str() const;
+    virtual std::string str() const
+    { str(0); }
+
+    // Return a string describing the contents of the system
+    virtual std::string str(int indent) const;
 
     // Print a description of the fields contained in the system
-    virtual std::string fields_str() const;
+    virtual std::string fields_str() const
+    { fields_str(0); }
+
+    // Print a description of the fields contained in the system
+    virtual std::string fields_str(int indent) const;
 
     // Print a description of the bcexpressions contained in the system
-    virtual std::string bcexpressions_str() const;
+    virtual std::string bcexpressions_str() const
+    { bcexpressions_str(0); }
+
+    // Print a description of the bcexpressions contained in the system
+    virtual std::string bcexpressions_str(int indent) const;
 
     // Return the system name
     std::string name() const
