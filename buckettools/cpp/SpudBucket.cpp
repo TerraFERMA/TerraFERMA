@@ -87,14 +87,16 @@ void SpudBucket::meshes_fill_(const std::string &optionpath)
   // Register the mesh functions (in dolfin::MeshData associated with the mesh - saves us having a separate set of mesh functions in
   // the Bucket, which would need to be associated with a particular mesh in the case of multiple meshes!):
   // - for the edge ids
-  MeshFunction_uint_ptr edgeids = (*mesh).data().create_mesh_function("EdgeIDs");
+  MeshFunction_uint_ptr meshfuncedgeids = (*mesh).data().create_mesh_function("EdgeIDs");
   filename.str(""); filename << basename << "_edge_subdomain.xml";
-  edgeids.reset(new dolfin::MeshFunction<dolfin::uint>(*mesh, filename.str()));
+  dolfin::MeshFunction<dolfin::uint> edgeids(*mesh, filename.str());
+  *meshfuncedgeids = edgeids;
 
   // - for the cell ids
-  MeshFunction_uint_ptr cellids = (*mesh).data().create_mesh_function("CellIDs");
+  MeshFunction_uint_ptr meshfunccellids = (*mesh).data().create_mesh_function("CellIDs");
   filename.str(""); filename << basename << "_cell_subdomain.xml";
-  cellids.reset(new dolfin::MeshFunction<dolfin::uint>(*mesh, filename.str()));
+  dolfin::MeshFunction<dolfin::uint> cellids(*mesh, filename.str());
+  *meshfunccellids = cellids;
 
   // Put the mesh into the bucket
   register_mesh(mesh, meshname, optionpath);
