@@ -47,6 +47,7 @@ std::string Bucket::systems_str() const
   for ( System_const_it s_it = systems_begin(); s_it != systems_end(); s_it++ )
   {
     s << "System " << (*s_it).first  << std::endl;
+    s << (*(*s_it).second).str();
   }
   return s.str();
 }

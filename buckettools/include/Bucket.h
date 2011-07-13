@@ -70,7 +70,7 @@ namespace buckettools
     virtual std::string meshes_str() const;
 
     // Print a description of the systems contained in the bucket
-    virtual std::string systems_str() const;
+    std::string systems_str() const;
 
     // Print the name of the bucket
     std::string name() const

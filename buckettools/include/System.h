@@ -75,10 +75,6 @@ namespace buckettools
     // Default destructor
     ~System();
 
-    // Return the system name
-    std::string name()
-    { return name_; }
-
     // Register a subfunctionspace in the system
     void register_subfunctionspace(FunctionSpace_ptr subfunctionspace, std::string name);
 
@@ -99,6 +95,19 @@ namespace buckettools
 
     // Register an initial condition expression
     void register_icexpression(Expression_ptr ic, uint component);
+
+    // Return a string describing the contents of the system
+    std::string str() const;
+
+    // Print a description of the fields contained in the system
+    virtual std::string fields_str() const;
+
+    // Print a description of the bcexpressions contained in the system
+    virtual std::string bcexpressions_str() const;
+
+    // Return the system name
+    std::string name() const
+    { return name_; }
 
   };
 

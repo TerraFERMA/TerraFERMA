@@ -100,7 +100,7 @@ namespace buckettools
     std::string meshes_str() const;
 
     // Describe the systems in the spudbucket (including optionpaths)
-    std::string systems_str() const;
+    std::string system_optionpaths_str() const;
 
     // return the optionpath for this bucket
     std::string optionpath()

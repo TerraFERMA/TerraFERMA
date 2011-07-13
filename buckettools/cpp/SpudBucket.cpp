@@ -260,7 +260,7 @@ std::string SpudBucket::meshes_str() const
 }
 
 // Describe the contents of the system_optionpaths_ map
-std::string SpudBucket::systems_str() const
+std::string SpudBucket::system_optionpaths_str() const
 {
   std::stringstream s;
 

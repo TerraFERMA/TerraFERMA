@@ -128,6 +128,38 @@ void System::register_icexpression(Expression_ptr ic, uint component)
   }
 }
 
+// Return a string describing the contents of the bucket
+std::string System::str() const
+{
+  std::stringstream s;
+  s << "System " << name() << " contains:" << std::endl;
+  s << fields_str();
+  s << bcexpressions_str();
+  return s.str();
+}
+
+// Return a string describing the contents of bcexpressions_
+std::string System::bcexpressions_str() const
+{
+  std::stringstream s;
+  for ( Expression_const_it e_it = bcexpressions_.begin(); e_it != bcexpressions_.end(); e_it++ )
+  {
+    s << "BCExpression " << (*e_it).first  << std::endl;
+  }
+  return s.str();
+}
+
+// Return a string describing the contents of fields_
+std::string System::fields_str() const
+{
+  std::stringstream s;
+  for ( Function_const_it f_it = fields_.begin(); f_it != fields_.end(); f_it++ )
+  {
+    s << "Field " << (*f_it).first  << std::endl;
+  }
+  return s.str();
+}
+
 // Empty the spudbucket
 void System::empty_()
 {
