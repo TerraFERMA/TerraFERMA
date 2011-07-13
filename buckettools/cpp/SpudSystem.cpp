@@ -57,7 +57,7 @@ void SpudSystem::fill(const uint &dimension)
   // and register them in the system
   for (uint i = 0; i < nfields; i++)
   {
-    buffer << "[" << i << "]";
+    buffer.str(""); buffer << optionpath() << "/field[" << i << "]";
     fields_fill_(buffer.str(), i, nfields, dimension, component); 
   }
 
@@ -158,7 +158,7 @@ void SpudSystem::fields_fill_(const std::string &optionpath,
 
     for (uint i = 0; i < nbcs; i++)
     {
-      buffer << "[" << i << "]";
+      buffer.str(""); buffer << optionpath << "/type/rank/boundary_condition[" << i << "]";
       bc_fill_(buffer.str(), fieldname, size, shape, subfunctionspace, edgeidmeshfunction);
     }
   }
@@ -172,7 +172,7 @@ void SpudSystem::fields_fill_(const std::string &optionpath,
 
   for (uint i = 0; i < nics; i++)
   {
-    buffer << "[" << i << "]";
+    buffer.str(""); buffer << optionpath << "/type/rank/initial_condition[" << i << "]";
     ic_fill_(buffer.str(), size, shape, component);
   }
    
@@ -199,7 +199,7 @@ void SpudSystem::bc_fill_(const std::string &optionpath,
   int nsubcomp = Spud::option_count(buffer.str());
   for (uint i = 0; i < nsubcomp; i++)
   {
-    buffer << "[" << i << "]";
+    buffer.str(""); buffer << optionpath << "/sub_components[" << i << "]";
     bc_component_fill_(buffer.str(), fieldname, bcname, size, shape, bcids, subfunctionspace, edgeidmeshfunction);
   }
 }

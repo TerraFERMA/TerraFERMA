@@ -44,7 +44,7 @@ void SpudBucket::fill()
   int nmeshes = Spud::option_count(buffer.str());
   for (uint i = 0; i<nmeshes; i++)
   {
-    buffer << "[" << i << "]";
+    buffer.str(""); buffer << "/geometry/mesh[" << i << "]";
     meshes_fill_(buffer.str());
   }
   
@@ -53,7 +53,7 @@ void SpudBucket::fill()
   int nsystems = Spud::option_count(buffer.str());
   for (uint i = 0; i<nsystems; i++)
   {
-    buffer << "[" << i << "]";
+    buffer.str(""); buffer << "/system[" << i << "]";
     systems_fill_(buffer.str(), dimension);
   }
   
