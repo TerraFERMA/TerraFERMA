@@ -52,7 +52,7 @@ add_custom_target(
 # FIXME: this should be changed to only update if certain options 
 #        (which ufl depends on) have changed!
 add_custom_command(
-    OUTPUT ${buckettools_BINARY_DIR}/SystemsWrapper.h
+    OUTPUT ${buckettools_BINARY_DIR}/SystemsWrapper.cpp
     COMMAND python
     ARGS ${buckettools_SOURCE_DIR}/scripts/ufl_from_options.py ${OPTIONSFILE}
     WORKING_DIRECTORY ${buckettools_BINARY_DIR}
@@ -63,7 +63,7 @@ add_custom_command(
 # create a custom target so we can make the project depend on this
 add_custom_target(
    genufl
-   DEPENDS ${buckettools_BINARY_DIR}/SystemsWrapper.h
+   DEPENDS ${buckettools_BINARY_DIR}/SystemsWrapper.cpp
    )
 
 # include the buckettools include directory and the binary directory (for confdefs and the systemswrapper)
@@ -74,9 +74,10 @@ include_directories(${PYTHON_INCLUDE_PATH})
 add_library(buckettools cpp/Bucket.cpp cpp/SpudBucket.cpp cpp/System.cpp cpp/SpudSystem.cpp
                         cpp/FunctionBucket.cpp cpp/SpudFunctionBucket.cpp
                         cpp/SpudBase.cpp cpp/PythonExpression.cpp cpp/PythonInstance.cpp
-                        cpp/InitialConditionExpression.cpp)
+                        cpp/InitialConditionExpression.cpp
+                        ${buckettools_BINARY_DIR}/SystemsWrapper.cpp )
 # tell cmake that this file doesn't exist until build time
-set_source_files_properties(${buckettools_BINARY_DIR}/SystemsWrapper.h PROPERTIES GENERATED 1)
+set_source_files_properties(${buckettools_BINARY_DIR}/SystemsWrapper.cpp PROPERTIES GENERATED 1)
 # the project depends on this target
 add_dependencies(buckettools genufl)
 # tell cmake that this file doesn't exist until build time
