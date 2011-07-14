@@ -5,11 +5,14 @@
 #include <string>
 #include <spud.h>
 #include "SystemsWrapper.h"
+#include "System.h"
 
 using namespace buckettools;
 
 // Specific constructor
-SpudFunctionBucket::SpudFunctionBucket(std::string name, std::string optionpath, GenericFunction_ptr function) : optionpath_(optionpath), FunctionBucket(name, function)
+SpudFunctionBucket::SpudFunctionBucket(std::string name, std::string optionpath, 
+                                       GenericFunction_ptr function, System* system) : 
+                                       optionpath_(optionpath), FunctionBucket(name, function, system)
 {
   // Do nothing
 }
@@ -27,6 +30,25 @@ void SpudFunctionBucket::fill()
   std::stringstream buffer;
 
   buffer.str(""); buffer << optionpath() << "/type/output/include_in_diagnostics/functional";
+  int nfuncs = Spud::option_count(buffer.str());
+  for (uint i = 0; i < nfuncs; i++)
+  {
+    buffer.str(""); buffer << optionpath() << "/type/output/include_in_diagnostics/functional[" << i << "]";
+    functionals_fill_(buffer.str());
+  }
+
+}
+
+void SpudFunctionBucket::functionals_fill_(const std::string &optionpath)
+{
+  // A buffer to put option paths (and strings) in
+  std::stringstream buffer;
+   
+  std::string funcname;
+  buffer.str(""); buffer << optionpath << "/name";
+  Spud::get_option(buffer.str(), funcname);
+
+  Form_ptr functional = ffc_fetch_functional((*system_).name(), name(), funcname, (*system_).mesh());
 
 }
 

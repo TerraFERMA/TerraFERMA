@@ -13,7 +13,7 @@
 using namespace buckettools;
 
 // Specific constructor
-SpudSystem::SpudSystem(std::string name, std::string optionpath, Mesh_ptr mesh) : optionpath_(optionpath), System(name, mesh)
+SpudSystem::SpudSystem(std::string name, std::string optionpath, Mesh_ptr mesh, Bucket* bucket) : optionpath_(optionpath), System(name, mesh, bucket)
 {
   // Do nothing
 }
@@ -32,7 +32,7 @@ void SpudSystem::fill(const uint &dimension)
 
   // Here's where the automatically generated magic happens... this is fetching
   // the functionspace from ufl
-  functionspace_ = buckettools::fetch_functionspace(name(), mesh_);
+  functionspace_ = ffc_fetch_functionspace(name(), mesh_);
 
   // Declare a series of functions on this functionspace:
   // Current
@@ -154,7 +154,7 @@ void SpudSystem::fields_fill_(const std::string &optionpath,
   // register a pointer to the field as well (first give it a sensible name and label)
   buffer.str(""); buffer << name() << "::" << fieldname;
   (*function).rename(buffer.str(), buffer.str());
-  FunctionBucket_ptr field( new SpudFunctionBucket( name(), optionpath, function ) );
+  FunctionBucket_ptr field( new SpudFunctionBucket( name(), optionpath, function, this ) );
   register_field(field, fieldname, optionpath);
 
   buffer.str(""); buffer << optionpath << "/type/rank/boundary_condition";

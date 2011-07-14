@@ -121,7 +121,7 @@ void SpudBucket::systems_fill_(const std::string &optionpath,
   // and then extract the mesh from the bucket we're filling
   Mesh_ptr mesh = fetch_mesh(meshname);
 
-  SpudSystem_ptr system( new SpudSystem(sysname, optionpath, mesh) );
+  SpudSystem_ptr system( new SpudSystem(sysname, optionpath, mesh, this) );
 
   (*system).fill(dimension);
 

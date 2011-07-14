@@ -7,7 +7,7 @@
 using namespace buckettools;
 
 // Specific constructor
-FunctionBucket::FunctionBucket(std::string name, GenericFunction_ptr function) : name_(name), function_(function)
+FunctionBucket::FunctionBucket(std::string name, GenericFunction_ptr function, System* system) : name_(name), function_(function), system_(system)
 {
   // Do nothing
 }

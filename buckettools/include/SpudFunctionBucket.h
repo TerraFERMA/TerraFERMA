@@ -22,11 +22,14 @@ namespace buckettools
 
     // supplementary to the function base data store the optionpaths for the functionals_
     std::map< std::string, std::string > functional_optionpaths_;
+    
+    // fill in the information related to the functionals of this function
+    void functionals_fill_(const std::string &optionpath);
 
   public:
     
     // Specific constructor
-    SpudFunctionBucket(std::string name, std::string optionpath, GenericFunction_ptr function);
+    SpudFunctionBucket(std::string name, std::string optionpath, GenericFunction_ptr function, System* system);
     
     // Default destructor (virtual so it calls base class as well)
     virtual ~SpudFunctionBucket();

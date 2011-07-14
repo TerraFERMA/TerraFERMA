@@ -7,7 +7,7 @@
 using namespace buckettools;
 
 // Specific constructor
-System::System(std::string name, Mesh_ptr mesh) : name_(name), mesh_(mesh)
+System::System(std::string name, Mesh_ptr mesh, Bucket* bucket) : name_(name), mesh_(mesh), bucket_(bucket)
 {
   // Do nothing
 }

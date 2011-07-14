@@ -12,6 +12,9 @@ namespace buckettools
   typedef std::map< std::string, Form_ptr >::iterator       Form_it;
   typedef std::map< std::string, Form_ptr >::const_iterator Form_const_it;
   
+  // Predeclaration of parent classes to allow two-way dependencies
+  class System;
+  
   // The FunctionBucket class describes system functions and coefficients and provides data types
   // to the underlying functionals.
   class FunctionBucket
@@ -27,6 +30,9 @@ namespace buckettools
 
   protected:
     
+    // the system to which this function belongs
+    System* system_;
+
     // the function
     GenericFunction_ptr function_;
 
@@ -38,11 +44,11 @@ namespace buckettools
     // No default constructor - always require a function pointer
 
     // Specific constructor with an uninitialised name
-    FunctionBucket(GenericFunction_ptr function)
-    { FunctionBucket("uninitialised_name", function); }
+    FunctionBucket(GenericFunction_ptr function, System* system)
+    { FunctionBucket("uninitialised_name", function, system); }
 
     // Specific constructor
-    FunctionBucket(std::string name, GenericFunction_ptr function);
+    FunctionBucket(std::string name, GenericFunction_ptr function, System* system);
     
     // Default destructor
     ~FunctionBucket();

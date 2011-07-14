@@ -115,5 +115,9 @@ namespace buckettools
     { return optionpath_; }
 
   };
+
+  // Define a boost shared ptr type for the class
+  typedef boost::shared_ptr< SpudBucket > SpudBucket_ptr;
+
 }
 #endif

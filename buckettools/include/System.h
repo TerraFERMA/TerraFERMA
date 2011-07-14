@@ -22,6 +22,9 @@ namespace buckettools
   typedef std::map< std::string, DirichletBC_ptr >::const_iterator    DirichletBC_const_it;
   typedef std::map< uint, Expression_ptr >::iterator                  uint_Expression_it;
   typedef std::map< uint, Expression_ptr >::const_iterator            uint_Expression_const_it;
+
+  // Predeclaration of parent classes to allow two-way dependencies
+  class Bucket;
   
   // The System class describes a functionspace and a set of solvers that act on the fields
   // contained in that (potentially mixed) functionspace.
@@ -39,7 +42,10 @@ namespace buckettools
     void empty_();
 
   protected:
-    
+
+    // a pointer to the parent bucket of this system
+    Bucket* bucket_;
+
     // a pointer to the mesh which this system is on
     Mesh_ptr mesh_;
 
@@ -69,11 +75,11 @@ namespace buckettools
     // No default constructor - always require a mesh pointer
 
     // Specific constructor with an uninitialised name
-    System(Mesh_ptr mesh)
-    { System("uninitialised_name", mesh); }
+    System(Mesh_ptr mesh, Bucket* bucket)
+    { System("uninitialised_name", mesh, bucket); }
 
     // Specific constructor
-    System(std::string name, Mesh_ptr mesh);
+    System(std::string name, Mesh_ptr mesh, Bucket* bucket);
     
     // Default destructor
     ~System();
@@ -123,6 +129,10 @@ namespace buckettools
     // Return the system name
     std::string name() const
     { return name_; }
+
+    // Return a pointer to the system mesh
+    Mesh_ptr mesh() const
+    { return mesh_; }
 
   };
 

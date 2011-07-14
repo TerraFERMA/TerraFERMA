@@ -67,7 +67,7 @@ namespace buckettools
     //{ SpudSystem(name, "uninitialised_path", mesh); }
 
     // Specific constructor
-    SpudSystem(std::string name, std::string optionpath, Mesh_ptr mesh);
+    SpudSystem(std::string name, std::string optionpath, Mesh_ptr mesh, Bucket* bucket);
     
     // Default destructor (virtual so it calls base class as well)
     virtual ~SpudSystem();
