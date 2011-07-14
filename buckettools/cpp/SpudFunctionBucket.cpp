@@ -4,6 +4,7 @@
 #include <dolfin.h>
 #include <string>
 #include <spud.h>
+#include "SystemsWrapper.h"
 
 using namespace buckettools;
 
