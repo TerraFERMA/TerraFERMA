@@ -3,7 +3,7 @@
 #include "PythonExpression.h"
 #include <dolfin.h>
 #include <string>
-#include <spud.h>
+#include <spud>
 
 using namespace buckettools;
 
