@@ -26,6 +26,8 @@ void SpudFunctionBucket::fill()
   // A buffer to put option paths (and strings) in
   std::stringstream buffer;
 
+  buffer.str(""); buffer << optionpath() << "/type/output/include_in_diagnostics/functional";
+
 }
 
 // Register a functional in the function
