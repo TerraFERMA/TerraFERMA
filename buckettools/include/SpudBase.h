@@ -2,7 +2,7 @@
 #ifndef __SPUD_BASE_H
 #define __SPUD_BASE_H
 
-#include "DolfinBoostTypes.h"
+#include "BoostTypes.h"
 #include <dolfin.h>
 
 namespace buckettools

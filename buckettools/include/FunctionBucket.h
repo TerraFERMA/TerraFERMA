@@ -2,16 +2,12 @@
 #ifndef __FUNCTIONBUCKET_H
 #define __FUNCTIONBUCKET_H
 
-#include "DolfinBoostTypes.h"
+#include "BoostTypes.h"
 #include <dolfin.h>
 
 namespace buckettools
 {
 
-  // Define iterator types for things accessed in the function maps (defined below)
-  typedef std::map< std::string, Form_ptr >::iterator       Form_it;
-  typedef std::map< std::string, Form_ptr >::const_iterator Form_const_it;
-  
   // Predeclaration of parent classes to allow two-way dependencies
   class System;
   

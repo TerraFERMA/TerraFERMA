@@ -2,7 +2,7 @@
 #ifndef __SPUD_FUNCTIONBUCKET_H
 #define __SPUD_FUNCTIONBUCKET_H
 
-#include "DolfinBoostTypes.h"
+#include "BoostTypes.h"
 #include "FunctionBucket.h"
 #include <dolfin.h>
 
@@ -46,6 +46,13 @@ namespace buckettools
 
     // Return a string object describing the function
     std::string str(int indent) const;
+
+    // Return a string object describing the functionals
+    std::string functionals_str() const
+    { str(0); }
+
+    // Return a string object describing the functionals
+    std::string functionals_str(int indent) const;
 
     // Return the base optionpath for this function
     std::string optionpath() const

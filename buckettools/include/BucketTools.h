@@ -6,7 +6,7 @@
 #include "SpudBucket.h"
 #include "System.h"
 #include "SpudSystem.h"
-#include "DolfinBoostTypes.h"
+#include "BoostTypes.h"
 //#include "StatFile.h"
 //#include "DiagnosticsFile.h"
 //#include "DetectorsFile.h"

@@ -1,6 +1,6 @@
 
 #include "InitialConditionExpression.h"
-#include "DolfinBoostTypes.h"
+#include "BoostTypes.h"
 #include <dolfin.h>
 #include <string>
 

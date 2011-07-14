@@ -2,7 +2,7 @@
 #ifndef __SPUD_SYSTEM_H
 #define __SPUD_SYSTEM_H
 
-#include "DolfinBoostTypes.h"
+#include "BoostTypes.h"
 #include "System.h"
 #include <dolfin.h>
 
@@ -53,6 +53,12 @@ namespace buckettools
                   const int &size,
                   const std::vector<int> &shape,
                   uint &component);
+
+    // fill in data about an ic for a field without ics
+    void dummy_ic_fill_(const std::string &rank,
+                        const int &size,
+                        const std::vector<int> &shape,
+                        uint &component);
 
   public:
     

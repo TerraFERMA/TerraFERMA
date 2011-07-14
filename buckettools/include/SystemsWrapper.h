@@ -1,7 +1,7 @@
 #ifndef __SYSTEMS_WRAPPER_H
 #define __SYSTEMS_WRAPPER_H
 
-#include "DolfinBoostTypes.h"
+#include "BoostTypes.h"
 
 namespace buckettools
 {
