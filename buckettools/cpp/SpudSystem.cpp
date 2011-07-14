@@ -327,7 +327,7 @@ void SpudSystem::dummy_ic_fill_(const std::string &rank,
 //   }
    else
    {
-     dolfin::error("Unknown rank in dummy_ic_fill_")
+     dolfin::error("Unknown rank in dummy_ic_fill_");
    }
 
    register_icexpression(icexp, component);
