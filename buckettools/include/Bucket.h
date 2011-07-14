@@ -29,6 +29,9 @@ namespace buckettools
   // accessible to derived classes
   protected:    
 
+    // Geometry dimension (assumed size of various objects that don't state their own size explicitly)
+    int dimension_;
+
     // A map from mesh name to mesh pointer
     // The mesh format is assumed to be DOLFIN
     std::map< std::string, Mesh_ptr >         meshes_;
@@ -110,6 +113,10 @@ namespace buckettools
 
     // Return the const iterator to the end of the systems_ map
     System_const_it systems_end() const;
+
+    // Return the geometry dimension
+    int dimension() const
+    { return dimension_; }
  
 //    void register_system(System_ptr std::string name)
 //    { register_system(name, "uninitialised_path"); }

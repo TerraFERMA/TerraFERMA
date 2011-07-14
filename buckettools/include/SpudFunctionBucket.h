@@ -28,8 +28,14 @@ namespace buckettools
 
   public:
     
+    // Specific constructor - with no iterated or old functions
+    SpudFunctionBucket(std::string name, std::string optionpath, 
+                       GenericFunction_ptr function, System* system);
+    
     // Specific constructor
-    SpudFunctionBucket(std::string name, std::string optionpath, GenericFunction_ptr function, System* system);
+    SpudFunctionBucket(std::string name, std::string optionpath, 
+                       GenericFunction_ptr function, GenericFunction_ptr oldfunction,
+                       GenericFunction_ptr iteratedfunction, System* system);
     
     // Default destructor (virtual so it calls base class as well)
     virtual ~SpudFunctionBucket();

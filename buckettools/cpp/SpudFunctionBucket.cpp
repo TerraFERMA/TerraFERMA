@@ -17,6 +17,15 @@ SpudFunctionBucket::SpudFunctionBucket(std::string name, std::string optionpath,
   // Do nothing
 }
 
+// Specific constructor
+SpudFunctionBucket::SpudFunctionBucket(std::string name, std::string optionpath, 
+                                       GenericFunction_ptr function, GenericFunction_ptr oldfunction, 
+                                       GenericFunction_ptr iteratedfunction, System* system) : 
+                                       optionpath_(optionpath), FunctionBucket(name, function, oldfunction, iteratedfunction, system)
+{
+  // Do nothing
+}
+
 // Default destructor (declared as virtual so will call base class destructor)
 SpudFunctionBucket::~SpudFunctionBucket()
 {
@@ -50,6 +59,9 @@ void SpudFunctionBucket::functionals_fill_(const std::string &optionpath)
 
   Form_ptr functional = ufc_fetch_functional((*system_).name(), name(), funcname, (*system_).mesh());
   register_functional(functional, funcname, optionpath);
+
+  // Can't populate the functional yet as we want it to be able to depend on any member of the system
+  // (most of which don't exist yet!)
 
 //  uint ncoeff = (*functional).num_coefficients();
 //  for (uint i = 0; i < ncoeff; i++)

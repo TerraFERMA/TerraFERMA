@@ -27,8 +27,10 @@ namespace buckettools
     void fields_fill_(const std::string &optionpath, 
                       const uint &field_i, 
                       const uint &nfields,
-                      const uint &dimension,
                       uint &component);
+
+    // fill in data about the coefficients
+    void coeffs_fill_(const std::string &optionpath);
 
     // fill in data about the bcs
     void bc_fill_(const std::string &optionpath,
@@ -47,6 +49,12 @@ namespace buckettools
                             const std::vector<int> &bcids,
                             const FunctionSpace_ptr &subfunctionspace,
                             const MeshFunction_uint_ptr &edgeidmeshfunction);
+
+    // fill in data about a components data structure
+    void coeff_exp_fill_(const std::string &optionpath,
+                  const int &size,
+                  const std::vector<int> &shape,
+                  const std::string &coeffname);
 
     // fill in data about an individual field's ic
     void ic_fill_(const std::string &optionpath,
@@ -79,7 +87,7 @@ namespace buckettools
     virtual ~SpudSystem();
 
     // Fill the system assuming the buckettools schema
-    void fill(const uint &dimension);
+    void fill();
 
     // Register a dolfin function as a field in the system (with a spud optionpath)
     void register_field(FunctionBucket_ptr field, std::string name, std::string optionpath);

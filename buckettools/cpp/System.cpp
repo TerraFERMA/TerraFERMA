@@ -60,7 +60,7 @@ FunctionSpace_ptr System::fetch_subfunctionspace(std::string name)
   }
 }
 
-// Register a dolfin function as a field in the system
+// Register a functionbucket as a field in the system
 void System::register_field(FunctionBucket_ptr field, std::string name)
 {
   // First check if a field with this name already exists
@@ -74,6 +74,23 @@ void System::register_field(FunctionBucket_ptr field, std::string name)
   {
     // if not then insert it into the maps
     fields_[name] = field;
+  }
+}
+
+// Register a functionbucket as a coefficient in the system
+void System::register_coeff(FunctionBucket_ptr coeff, std::string name)
+{
+  // First check if a field with this name already exists
+  FunctionBucket_it f_it = coeffs_.find(name);
+  if (f_it != coeffs_.end())
+  {
+    // if it does, issue an error
+    dolfin::error("Coefficient named \"%s\" already exists in system.", name.c_str());
+  }
+  else
+  {
+    // if not then insert it into the maps
+    coeffs_[name] = coeff;
   }
 }
 
@@ -125,6 +142,23 @@ void System::register_icexpression(Expression_ptr ic, uint component)
   {
     // if not then insert it into the maps
     icexpressions_[component] = ic;
+  }
+}
+
+// Register a ufl symbol-function name pair
+void System::register_uflname(std::string name, std::string uflsymbol)
+{
+  // First check if a bc with this name already exists
+  string_it s_it = uflnames_.find(uflsymbol);
+  if (s_it != uflnames_.end())
+  {
+    // if it does, issue an error
+    dolfin::error("Name with ufl symbol \"%s\" already exists in system.", uflsymbol.c_str());
+  }
+  else
+  {
+    // if not then insert it into the maps
+    uflnames_[uflsymbol] = name;
   }
 }
 

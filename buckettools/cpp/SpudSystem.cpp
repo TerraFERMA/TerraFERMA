@@ -25,7 +25,7 @@ SpudSystem::~SpudSystem()
 }
 
 // Fill the system using spud and assuming a buckettools schema structure
-void SpudSystem::fill(const uint &dimension)
+void SpudSystem::fill()
 {
   // A buffer to put option paths (and strings) in
   std::stringstream buffer;
@@ -59,7 +59,7 @@ void SpudSystem::fill(const uint &dimension)
   for (uint i = 0; i < nfields; i++)
   {
     buffer.str(""); buffer << optionpath() << "/field[" << i << "]";
-    fields_fill_(buffer.str(), i, nfields, dimension, component); 
+    fields_fill_(buffer.str(), i, nfields, component); 
   }
 
   // While filling the fields we should have set up a map from
@@ -85,34 +85,54 @@ void SpudSystem::fill(const uint &dimension)
 //    (*((*bc).second)).apply((*sysfunc).vector());
 //  }
 //  
+
+  buffer.str("");  buffer << optionpath() << "/coefficient";
+  int ncoeffs = Spud::option_count(buffer.str());
+  // Loop over the coefficients and register those that are expressions or constants
+  // Can't do anything with the functions because they depend on solvers
+  // Aliased coefficients depend on all the other systems being populated first
+  for (uint i = 0; i < ncoeffs; i++)
+  {
+    buffer.str(""); buffer << optionpath() << "/coefficient[" << i << "]";
+    coeffs_fill_(buffer.str()); 
+  }
+
 }
 
 // Fill out the information regarding the each subfunction (or field)
 void SpudSystem::fields_fill_(const std::string &optionpath, 
                               const uint &field_i, 
                               const uint &nfields, 
-                              const uint &dimension,
                               uint &component)
 {
   // Fields are strange because lots of their data actually belongs
-  // to the system we do a lot of the population of the data structures
+  // to the system so we do a lot of the population of the data structures
   // at a system level rather than at the function class level.
   // The function class (which will also get populated from here)
-  // mostly exists to map the functionals for the stat output.
+  // mostly exists to map the functionals for the stat output but these
+  // don't get completed until later since they can depend on anything
+  // in the system.
 
   // A buffer to put option paths in
   std::stringstream buffer;
+
+  // Get the field type
+  std::string type;
+  buffer.str(""); buffer << optionpath << "/type/name";
+  Spud::get_option(buffer.str(), type);
+  // we only know how to deal with Functions at the moment but this may change
+  assert(type=="Function");
 
   // What is the field size (if it's a vector)
   // Would it be possible to get this from the subfunctionspace below?
   int size;
   buffer.str(""); buffer << optionpath << "/type/rank/element/size";
-  Spud::get_option(buffer.str(), size, dimension);
+  Spud::get_option(buffer.str(), size, (*bucket_).dimension());
 
   // What is the field shape (if it's a tensor)
   // Would it be possible to get this from the subfunctionspace below?
   std::vector< int > shape;
-  std::vector< int > default_shape(2, dimension);
+  std::vector< int > default_shape(2, (*bucket_).dimension());
   buffer.str(""); buffer << optionpath << "/type/rank/element/shape";
   Spud::get_option(buffer.str(), shape, default_shape);
 
@@ -123,14 +143,22 @@ void SpudSystem::fields_fill_(const std::string &optionpath,
     dolfin::error("Tensor fields not hooked up yet, sorry.");
   }
   
+  // Get the coeff ufl symbol (necessary to register the field name)
+  std::string uflsymbol;
+  buffer.str(""); buffer << optionpath << "/ufl_symbol";
+  Spud::get_option(buffer.str(), uflsymbol);
+
   // What is this field called?
   std::string fieldname;
   buffer.str(""); buffer << optionpath << "/name";
   Spud::get_option(buffer.str(), fieldname);
 
+  // Register this fielname with the unique (on a system level) uflsymbol
+  register_uflname(fieldname, uflsymbol);
+
   // Is this a mixed functionspace or not?
   FunctionSpace_ptr subfunctionspace;
-  Function_ptr function;
+  Function_ptr function, oldfunction, iteratedfunction;
   if (nfields == 1)
   {
     // no... the subfunctionspace for this field is identical to the system's
@@ -139,6 +167,8 @@ void SpudSystem::fields_fill_(const std::string &optionpath,
 
     // not sure quite what this will do (in the nfields==1 case) but let's try to register the field
     function.reset( new dolfin::Function( (*function_) ) );
+    oldfunction.reset( new dolfin::Function( (*oldfunction_) ) );
+    iteratedfunction.reset( new dolfin::Function( (*iteratedfunction_) ) );
   }
   else
   {
@@ -147,6 +177,8 @@ void SpudSystem::fields_fill_(const std::string &optionpath,
 
     // not sure quite what this will do (in the nfields==1 case) but let's try to register the field
     function.reset( new dolfin::Function( (*function_)[field_i] ) );
+    oldfunction.reset( new dolfin::Function( (*oldfunction_)[field_i] ) );
+    iteratedfunction.reset( new dolfin::Function( (*iteratedfunction_)[field_i] ) );
   }
   // register a pointer to the subfunctionspace in the system so it remains in memory for other
   // objects that take a reference
@@ -154,7 +186,7 @@ void SpudSystem::fields_fill_(const std::string &optionpath,
   // register a pointer to the field as well (first give it a sensible name and label)
   buffer.str(""); buffer << name() << "::" << fieldname;
   (*function).rename(buffer.str(), buffer.str());
-  SpudFunctionBucket_ptr field( new SpudFunctionBucket( fieldname, optionpath, function, this ) );
+  SpudFunctionBucket_ptr field( new SpudFunctionBucket( fieldname, optionpath, function, oldfunction, iteratedfunction, this ) );
   (*field).fill();
   register_field(field, fieldname, optionpath);
 
@@ -199,6 +231,94 @@ void SpudSystem::fields_fill_(const std::string &optionpath,
     }
   }
    
+}
+
+// Fill out the information regarding the each subfunction (or field)
+void SpudSystem::coeffs_fill_(const std::string &optionpath)
+{
+  // A buffer to put option paths in
+  std::stringstream buffer;
+
+  // Get the coeff type
+  std::string type;
+  buffer.str(""); buffer << optionpath << "/type/name";
+  Spud::get_option(buffer.str(), type);
+
+  if (type=="Function" || type=="Aliased")
+  {
+    // These don't get handled here
+  }
+  else if (type=="Expression" || type=="Constant")
+  {
+
+    // Get the coeff ufl symbol (necessary for all sorts of things below)
+    std::string uflsymbol;
+    buffer.str(""); buffer << optionpath << "/ufl_symbol";
+    Spud::get_option(buffer.str(), uflsymbol);
+
+    // What is this coeff called?
+    std::string coeffname;
+    buffer.str(""); buffer << optionpath << "/name";
+    Spud::get_option(buffer.str(), coeffname);
+
+    register_uflname(coeffname, uflsymbol);
+
+    // Most of what is below is broken for tensors so let's just die here with an error message
+    std::string rank;
+    buffer.str(""); buffer << optionpath << "/type/rank/name";
+    Spud::get_option(buffer.str(), rank);
+    if (rank=="Tensor")
+    {
+      dolfin::error("Tensor coefficients not hooked up yet, sorry.");
+    }
+  
+    // What is the field size (if it's a vector)
+    int size;
+    buffer.str(""); buffer << optionpath << "/type/rank/element/size";
+    Spud::get_option(buffer.str(), size, (*bucket_).dimension());
+
+    // What is the field shape (if it's a tensor)
+    std::vector< int > shape;
+    std::vector< int > default_shape(2, (*bucket_).dimension());
+    buffer.str(""); buffer << optionpath << "/type/rank/element/shape";
+    Spud::get_option(buffer.str(), shape, default_shape);
+    if (type=="Constant")
+    {
+      // These will have just been set to defaults in this case, which may not be right
+      buffer.str(""); buffer << optionpath << "/type/value/constant";
+      if (rank=="Vector")
+      {
+        std::vector< int > constant_shape;
+        Spud::get_option_shape(buffer.str(), constant_shape);
+        size = constant_shape[0];
+      }
+      if (rank=="Tensor")
+      {
+        Spud::get_option_shape(buffer.str(), shape);
+      }
+    }
+
+    buffer.str(""); buffer << optionpath << "/type/rank/value";
+    int nvs = Spud::option_count(buffer.str());
+    if (nvs > 1)
+    {
+      dolfin::error("Haven't thought about values over regions.");
+    }
+    else
+    {
+//      for (uint i = 0; i < nvs; i++)
+//      {
+        uint i = 0;
+        buffer.str(""); buffer << optionpath << "/type/rank/value[" << i << "]";
+        coeff_exp_fill_(buffer.str(), size, shape, coeffname);
+//      }
+    }
+  }
+  else
+  {
+    dolfin::error("Unknown coeff type in coeffs_fill_.");
+  }
+
 }
 
 void SpudSystem::bc_fill_(const std::string &optionpath,
@@ -294,16 +414,33 @@ void SpudSystem::bc_component_fill_(const std::string &optionpath,
   }
 }
 
+void SpudSystem::coeff_exp_fill_(const std::string &optionpath,
+                                 const int &size,
+                                 const std::vector<int> &shape,
+                                 const std::string &coeffname)
+{
+  // This will get more complicated when we support looping over regions
+  // Loop will probably have to move in here!
+  Expression_ptr exp = initialize_expression(optionpath, size, shape);
+
+  SpudFunctionBucket_ptr coeff( new SpudFunctionBucket( coeffname, optionpath, exp, this ) );
+  (*coeff).fill();
+
+  register_coeff(coeff, coeffname);
+}
+
 void SpudSystem::ic_fill_(const std::string &optionpath,
                           const int &size,
                           const std::vector<int> &shape,
                           uint &component)
 {
-   Expression_ptr icexp = initialize_expression(optionpath, size, shape);
+  // This will get more complicated when we support looping over regions
+  // Loop will probably have to move in here!
+  Expression_ptr icexp = initialize_expression(optionpath, size, shape);
 
-   register_icexpression(icexp, component);
+  register_icexpression(icexp, component);
 
-   component += (*icexp).value_size();
+  component += (*icexp).value_size();
 }
 
 void SpudSystem::dummy_ic_fill_(const std::string &rank,
@@ -311,28 +448,28 @@ void SpudSystem::dummy_ic_fill_(const std::string &rank,
                                 const std::vector<int> &shape,
                                 uint &component)
 {
-   Expression_ptr icexp;
-   if (rank == "Scalar")
-   {
-     icexp.reset( new dolfin::Constant(0.0) );
-   }
-   else if (rank == "Vector")
-   {
-     std::vector< double > values (size, 0.0);
-     icexp.reset( new dolfin::Constant(values) );
-   }
+  Expression_ptr icexp;
+  if (rank == "Scalar")
+  {
+    icexp.reset( new dolfin::Constant(0.0) );
+  }
+  else if (rank == "Vector")
+  {
+    std::vector< double > values (size, 0.0);
+    icexp.reset( new dolfin::Constant(values) );
+  }
 //   else if (rank == "Tensor")
 //   {
 //
 //   }
-   else
-   {
-     dolfin::error("Unknown rank in dummy_ic_fill_");
-   }
+  else
+  {
+    dolfin::error("Unknown rank in dummy_ic_fill_");
+  }
 
-   register_icexpression(icexp, component);
+  register_icexpression(icexp, component);
 
-   component += (*icexp).value_size();
+  component += (*icexp).value_size();
 }
 
 // Register a dolfin function as a field in the system

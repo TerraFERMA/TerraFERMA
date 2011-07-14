@@ -30,7 +30,7 @@ namespace buckettools
     System* system_;
 
     // the function
-    GenericFunction_ptr function_;
+    GenericFunction_ptr function_, oldfunction_, iteratedfunction_;
 
     // a map from functional names to the forms (the real point of this class)
     std::map< std::string, Form_ptr > functionals_;
@@ -39,12 +39,20 @@ namespace buckettools
 
     // No default constructor - always require a function pointer
 
-    // Specific constructor with an uninitialised name
+    // Specific constructor with no old or iterated functions
     FunctionBucket(GenericFunction_ptr function, System* system)
-    { FunctionBucket("uninitialised_name", function, system); }
+    { FunctionBucket("uninitialised_name", function, function, function, system); }
+
+    // Specific constructor with an uninitialised name
+    FunctionBucket(GenericFunction_ptr function, GenericFunction_ptr oldfunction, GenericFunction_ptr iteratedfunction, System* system)
+    { FunctionBucket("uninitialised_name", function, oldfunction, iteratedfunction, system); }
+
+    // Specific constructor with no old or iterated functions
+    FunctionBucket(std::string name, GenericFunction_ptr function, System* system)
+    { FunctionBucket(name, function, function, function, system); }
 
     // Specific constructor
-    FunctionBucket(std::string name, GenericFunction_ptr function, System* system);
+    FunctionBucket(std::string name, GenericFunction_ptr function, GenericFunction_ptr oldfunction, GenericFunction_ptr iteratedfunction, System* system);
     
     // Default destructor
     ~FunctionBucket();

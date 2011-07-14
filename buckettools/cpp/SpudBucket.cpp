@@ -35,26 +35,25 @@ void SpudBucket::fill()
   // (we currently assume this is the length of some
   //  of things, which may need to be generalized in the
   //  future)
-  int dimension;
-  buffer.str(""); buffer << "/geometry/dimension";  
-  Spud::get_option(buffer.str(), dimension);
+  buffer.str(""); buffer << optionpath() << "/geometry/dimension";  
+  Spud::get_option(buffer.str(), dimension_);
 
   // Put meshes into the bucket
-  buffer.str(""); buffer << "/geometry/mesh";  
+  buffer.str(""); buffer << optionpath() << "/geometry/mesh";  
   int nmeshes = Spud::option_count(buffer.str());
   for (uint i = 0; i<nmeshes; i++)
   {
-    buffer.str(""); buffer << "/geometry/mesh[" << i << "]";
+    buffer.str(""); buffer << optionpath() << "/geometry/mesh[" << i << "]";
     meshes_fill_(buffer.str());
   }
   
   // Put systems into the bucket
-  buffer.str(""); buffer << "/system";
+  buffer.str(""); buffer << optionpath() << "/system";
   int nsystems = Spud::option_count(buffer.str());
   for (uint i = 0; i<nsystems; i++)
   {
-    buffer.str(""); buffer << "/system[" << i << "]";
-    systems_fill_(buffer.str(), dimension);
+    buffer.str(""); buffer << optionpath() << "/system[" << i << "]";
+    systems_fill_(buffer.str());
   }
   
 //  // Put detectors in the bucket
@@ -103,8 +102,7 @@ void SpudBucket::meshes_fill_(const std::string &optionpath)
 }
 
 // Insert a system (with optionpath) into the bucket
-void SpudBucket::systems_fill_(const std::string &optionpath,
-                               const uint &dimension)
+void SpudBucket::systems_fill_(const std::string &optionpath)
 {
   // A string buffer for option paths
   std::stringstream buffer;
@@ -123,7 +121,7 @@ void SpudBucket::systems_fill_(const std::string &optionpath,
 
   SpudSystem_ptr system( new SpudSystem(sysname, optionpath, mesh, this) );
 
-  (*system).fill(dimension);
+  (*system).fill();
 
   register_system(system, sysname, optionpath);
 }

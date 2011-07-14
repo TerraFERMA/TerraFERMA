@@ -44,8 +44,11 @@ namespace buckettools
     // a map from field names to the subfunctionspaces they are described on
     std::map< std::string, FunctionSpace_ptr > subfunctionspaces_;
     
-    // a map from field names to the fields (subfunctions)
+    // a map from field names to the functionbuckets of fields (subfunctions)
     std::map< std::string, FunctionBucket_ptr > fields_;
+    
+    // a map from coefficient names to the functionbuckets of coefficients
+    std::map< std::string, FunctionBucket_ptr > coeffs_;
     
     // a map from field::bc names to the subfunctionspaces they are described on
     std::map< std::string, Expression_ptr > bcexpressions_;
@@ -55,6 +58,9 @@ namespace buckettools
     
     // a map from component integer index to initial condition expression
     std::map< uint, Expression_ptr > icexpressions_;
+
+    // a map from ufl symbols to field and coefficient names
+    std::map< std::string, std::string > uflnames_;
     
   public:
 
@@ -82,6 +88,9 @@ namespace buckettools
     // Register a field (subfunction) in the system
     void register_field(FunctionBucket_ptr field, std::string name);
 
+    // Register a coefficient (expression or function) in the system
+    void register_coeff(FunctionBucket_ptr coeff, std::string name);
+
     // Register a bc expression in the system
     void register_bcexpression(Expression_ptr bcexpression, std::string name);
 
@@ -90,6 +99,9 @@ namespace buckettools
 
     // Register an initial condition expression
     void register_icexpression(Expression_ptr ic, uint component);
+
+    // Register a bc expression in the system
+    void register_uflname(std::string name, std::string uflsymbol);
 
     // Return a string describing the contents of the system
     virtual std::string str() const
