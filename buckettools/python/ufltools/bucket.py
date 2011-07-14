@@ -46,31 +46,31 @@ class Bucket:
 
     functionspace_cpp         = []
     functionspace_cpp.append("  // A function to return a functionspace from a system given a mesh (defaults to first solver in system as they should all be the same).\n")
-    functionspace_cpp.append("  FunctionSpace_ptr ffc_fetch_functionspace(std::string systemname, Mesh_ptr mesh)\n")
+    functionspace_cpp.append("  FunctionSpace_ptr ufc_fetch_functionspace(std::string systemname, Mesh_ptr mesh)\n")
     functionspace_cpp.append("  {\n")
     functionspace_cpp.append("    FunctionSpace_ptr functionspace;\n")
 
     solverfunctionspace_cpp         = []
     solverfunctionspace_cpp.append("  // A function to return a functionspace from a system given a mesh and a solvername.\n")
-    solverfunctionspace_cpp.append("  FunctionSpace_ptr ffc_fetch_functionspace(std::string systemname, std::string solvername, Mesh_ptr mesh)\n")
+    solverfunctionspace_cpp.append("  FunctionSpace_ptr ufc_fetch_functionspace(std::string systemname, std::string solvername, Mesh_ptr mesh)\n")
     solverfunctionspace_cpp.append("  {\n")
     solverfunctionspace_cpp.append("    FunctionSpace_ptr functionspace;\n")
 
     coefficientspace_cpp         = []
     coefficientspace_cpp.append("  // A function to return a functionspace (for a coefficient) from a system given a mesh, a solvername and a functionname.\n")
-    coefficientspace_cpp.append("  FunctionSpace_ptr ffc_fetch_coefficientspace(std::string systemname, std::string solvername, std::string coefficientname, Mesh_ptr mesh)\n")
+    coefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace(std::string systemname, std::string solvername, std::string coefficientname, Mesh_ptr mesh)\n")
     coefficientspace_cpp.append("  {\n")
     coefficientspace_cpp.append("    FunctionSpace_ptr coefficientspace;\n")
 
     functional_cpp            = []
     functional_cpp.append("  // A function to return a functional from a system-function set given a mesh and a functionalname.\n")
-    functional_cpp.append("  Form_ptr ffc_fetch_functional(std::string systemname, std::string functionname, std::string functionalname, Mesh_ptr mesh)\n")
+    functional_cpp.append("  Form_ptr ufc_fetch_functional(std::string systemname, std::string functionname, std::string functionalname, Mesh_ptr mesh)\n")
     functional_cpp.append("  {\n")
     functional_cpp.append("    Form_ptr functional;\n")
 
     form_cpp = []
     form_cpp.append("  // A function to return a form for a solver from a system given a functionspace, a solvername, a solvertype and a formname.\n")
-    form_cpp.append("  Form_ptr ffc_fetch_form(std::string systemname, std::string solvername, std::string solvertype, std::string formname, FunctionSpace_ptr functionspace)\n")
+    form_cpp.append("  Form_ptr ufc_fetch_form(std::string systemname, std::string solvername, std::string solvertype, std::string formname, FunctionSpace_ptr functionspace)\n")
     form_cpp.append("  {\n")
     form_cpp.append("    Form_ptr form;\n")
  

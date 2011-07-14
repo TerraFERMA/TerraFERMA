@@ -48,7 +48,7 @@ void SpudFunctionBucket::functionals_fill_(const std::string &optionpath)
   buffer.str(""); buffer << optionpath << "/name";
   Spud::get_option(buffer.str(), funcname);
 
-  Form_ptr functional = ffc_fetch_functional((*system_).name(), name(), funcname, (*system_).mesh());
+  Form_ptr functional = ufc_fetch_functional((*system_).name(), name(), funcname, (*system_).mesh());
 
 }
 

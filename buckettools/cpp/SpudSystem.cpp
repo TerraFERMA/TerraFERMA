@@ -32,7 +32,7 @@ void SpudSystem::fill(const uint &dimension)
 
   // Here's where the automatically generated magic happens... this is fetching
   // the functionspace from ufl
-  functionspace_ = ffc_fetch_functionspace(name(), mesh_);
+  functionspace_ = ufc_fetch_functionspace(name(), mesh_);
 
   // Declare a series of functions on this functionspace:
   // Current
