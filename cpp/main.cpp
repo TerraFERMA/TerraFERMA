@@ -1,5 +1,5 @@
 #include <dolfin.h>
-#include <spud.h>
+#include <spud>
 #include "BucketTools.h"
 #include "Python.h"
 
