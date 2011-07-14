@@ -1,4 +1,4 @@
-#include "DolfinBoostTypes.h"
+#include "BoostTypes.h"
 #include "SpudBase.h"
 #include "PythonExpression.h"
 #include <dolfin.h>

@@ -1,5 +1,5 @@
 
-#include "DolfinBoostTypes.h"
+#include "BoostTypes.h"
 #include "SpudFunctionBucket.h"
 #include <dolfin.h>
 #include <string>
@@ -49,6 +49,13 @@ void SpudFunctionBucket::functionals_fill_(const std::string &optionpath)
   Spud::get_option(buffer.str(), funcname);
 
   Form_ptr functional = ufc_fetch_functional((*system_).name(), name(), funcname, (*system_).mesh());
+  register_functional(functional, funcname, optionpath);
+
+//  uint ncoeff = (*functional).num_coefficients();
+//  for (uint i = 0; i < ncoeff; i++)
+//  {
+//    std::cout << "Funtional has coefficient " << (*functional).coefficient_name(i) << std::endl;
+//  }
 
 }
 
@@ -78,6 +85,20 @@ std::string SpudFunctionBucket::str(int indent) const
   s << indentation << "FunctionBucket " << name() << " (" << optionpath() << ")" << std::endl;
   indent++;
   s << functionals_str(indent);
+  return s.str();
+}
+
+// Describe the contents of the functional_optionpaths_ map
+std::string SpudFunctionBucket::functionals_str(int indent) const
+{
+  std::stringstream s;
+  std::string indentation (indent*2, ' ');
+
+  for ( string_const_it s_it = functional_optionpaths_.begin(); s_it != functional_optionpaths_.end(); s_it++ )
+  {
+    s << indentation << "Functional " << (*s_it).first << " (" << (*s_it).second  << ")" << std::endl;
+  }
+
   return s.str();
 }
 

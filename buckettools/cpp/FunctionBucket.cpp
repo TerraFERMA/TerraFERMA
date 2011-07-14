@@ -1,5 +1,5 @@
 
-#include "DolfinBoostTypes.h"
+#include "BoostTypes.h"
 #include "FunctionBucket.h"
 #include <dolfin.h>
 #include <string>

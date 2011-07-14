@@ -3,7 +3,7 @@
 #define __SPUD_BUCKET_H
 
 #include "Bucket.h"
-#include "DolfinBoostTypes.h"
+#include "BoostTypes.h"
 #include <dolfin.h>
 
 namespace buckettools

@@ -1,5 +1,5 @@
 
-#include "DolfinBoostTypes.h"
+#include "BoostTypes.h"
 #include "System.h"
 #include <dolfin.h>
 #include <string>
@@ -159,7 +159,7 @@ std::string System::fields_str(int indent) const
   std::string indentation (indent*2, ' ');
   for ( FunctionBucket_const_it f_it = fields_.begin(); f_it != fields_.end(); f_it++ )
   {
-    s << indentation << "Field " << (*f_it).first  << std::endl;
+    s << (*(*f_it).second).str(indent);
   }
   return s.str();
 }

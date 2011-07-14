@@ -3,7 +3,7 @@
 #define __INITIAL_CONDITION_EXPRESSION_H
 
 #include <dolfin.h>
-#include "DolfinBoostTypes.h"
+#include "BoostTypes.h"
 #include "Bucket.h"
 
 namespace buckettools

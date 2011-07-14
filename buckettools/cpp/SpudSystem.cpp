@@ -1,5 +1,5 @@
 
-#include "DolfinBoostTypes.h"
+#include "BoostTypes.h"
 #include "InitialConditionExpression.h"
 #include "SpudSystem.h"
 #include "System.h"
@@ -67,13 +67,13 @@ void SpudSystem::fill(const uint &dimension)
   // now to initialize the whole system function to that
   // ic
   Expression_ptr ic;
-  if (icexpressions_.size()==1)
+  if (component==1)
   {
     ic.reset( new InitialConditionExpression(icexpressions_) );
   }
   else
   {
-    ic.reset( new InitialConditionExpression(icexpressions_.size(), icexpressions_));
+    ic.reset( new InitialConditionExpression(component, icexpressions_));
   }
   (*oldfunction_).interpolate(*ic);
   *iteratedfunction_ = *oldfunction_;
@@ -122,7 +122,7 @@ void SpudSystem::fields_fill_(const std::string &optionpath,
   {
     dolfin::error("Tensor fields not hooked up yet, sorry.");
   }
-
+  
   // What is this field called?
   std::string fieldname;
   buffer.str(""); buffer << optionpath << "/name";
@@ -154,7 +154,8 @@ void SpudSystem::fields_fill_(const std::string &optionpath,
   // register a pointer to the field as well (first give it a sensible name and label)
   buffer.str(""); buffer << name() << "::" << fieldname;
   (*function).rename(buffer.str(), buffer.str());
-  FunctionBucket_ptr field( new SpudFunctionBucket( name(), optionpath, function, this ) );
+  SpudFunctionBucket_ptr field( new SpudFunctionBucket( fieldname, optionpath, function, this ) );
+  (*field).fill();
   register_field(field, fieldname, optionpath);
 
   buffer.str(""); buffer << optionpath << "/type/rank/boundary_condition";
@@ -173,15 +174,29 @@ void SpudSystem::fields_fill_(const std::string &optionpath,
     
   buffer.str(""); buffer << optionpath << "/type/rank/initial_condition";
   int nics = Spud::option_count(buffer.str());
-  if (nics > 1)
+  if (nics == 0)
+  {
+    // We don't have any initial conditions so set up a dummy constant expression
+    // to interpolate to the system function.
+  
+    // Get the rank of the field
+    std::string rank;
+    buffer.str(""); buffer << optionpath << "/type/rank/name";
+    Spud::get_option(buffer.str(), rank);
+
+    dummy_ic_fill_(rank, size, shape, component);
+  }
+  else if (nics > 1)
   {
     dolfin::error("Haven't thought about ics over regions.");
   }
-
-  for (uint i = 0; i < nics; i++)
+  else
   {
-    buffer.str(""); buffer << optionpath << "/type/rank/initial_condition[" << i << "]";
-    ic_fill_(buffer.str(), size, shape, component);
+    for (uint i = 0; i < nics; i++)
+    {
+      buffer.str(""); buffer << optionpath << "/type/rank/initial_condition[" << i << "]";
+      ic_fill_(buffer.str(), size, shape, component);
+    }
   }
    
 }
@@ -285,6 +300,35 @@ void SpudSystem::ic_fill_(const std::string &optionpath,
                           uint &component)
 {
    Expression_ptr icexp = initialize_expression(optionpath, size, shape);
+
+   register_icexpression(icexp, component);
+
+   component += (*icexp).value_size();
+}
+
+void SpudSystem::dummy_ic_fill_(const std::string &rank,
+                                const int &size,
+                                const std::vector<int> &shape,
+                                uint &component)
+{
+   Expression_ptr icexp;
+   if (rank == "Scalar")
+   {
+     icexp.reset( new dolfin::Constant(0.0) );
+   }
+   else if (rank == "Vector")
+   {
+     std::vector< double > values (size, 0.0);
+     icexp.reset( new dolfin::Constant(values) );
+   }
+//   else if (rank == "Tensor")
+//   {
+//
+//   }
+   else
+   {
+     dolfin::error("Unknown rank in dummy_ic_fill_")
+   }
 
    register_icexpression(icexp, component);
 

@@ -1,7 +1,7 @@
 
 #include "SpudBucket.h"
 #include "SpudSystem.h"
-#include "DolfinBoostTypes.h"
+#include "BoostTypes.h"
 //#include "GenericDetectors.h"
 //#include "PointDetectors.h"
 //#include "PythonDetectors.h"
