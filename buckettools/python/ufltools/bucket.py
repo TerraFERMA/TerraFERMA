@@ -39,7 +39,7 @@ class Bucket:
     cpp.append("#define __SYSTEMS_WRAPPER_H\n")
     cpp.append("\n")
     cpp.append("#include \"SystemsWrapper.h\"\n")
-    cpp.append("#include \"DolfinBoostTypes.h\"\n")
+    cpp.append("#include \"BoostTypes.h\"\n")
     cpp.append("#include <dolfin.h>\n")
 
     include_cpp = []
