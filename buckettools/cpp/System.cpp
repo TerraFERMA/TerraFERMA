@@ -170,7 +170,9 @@ std::string System::str(int indent) const
   s << indentation << "System " << name() << std::endl;
   indent++;
   s << fields_str(indent);
+  s << coeffs_str(indent);
   s << bcexpressions_str(indent);
+  s << icexpressions_str(indent);
   return s.str();
 }
 
@@ -186,12 +188,33 @@ std::string System::bcexpressions_str(int indent) const
   return s.str();
 }
 
+// Return a string describing the contents of icexpressions_
+std::string System::icexpressions_str(int indent) const
+{
+  std::stringstream s;
+  std::string indentation (indent*2, ' ');
+  s << indentation << icexpressions_.size() << " ICExpressions" << std::endl;
+  return s.str();
+}
+
 // Return a string describing the contents of fields_
 std::string System::fields_str(int indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
   for ( FunctionBucket_const_it f_it = fields_.begin(); f_it != fields_.end(); f_it++ )
+  {
+    s << (*(*f_it).second).str(indent);
+  }
+  return s.str();
+}
+
+// Return a string describing the contents of fields_
+std::string System::coeffs_str(int indent) const
+{
+  std::stringstream s;
+  std::string indentation (indent*2, ' ');
+  for ( FunctionBucket_const_it f_it = coeffs_.begin(); f_it != coeffs_.end(); f_it++ )
   {
     s << (*(*f_it).second).str(indent);
   }

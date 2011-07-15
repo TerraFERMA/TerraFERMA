@@ -206,29 +206,18 @@ void SpudSystem::fields_fill_(const std::string &optionpath,
     
   buffer.str(""); buffer << optionpath << "/type/rank/initial_condition";
   int nics = Spud::option_count(buffer.str());
-  if (nics == 0)
-  {
-    // We don't have any initial conditions so set up a dummy constant expression
-    // to interpolate to the system function.
-  
-    // Get the rank of the field
-    std::string rank;
-    buffer.str(""); buffer << optionpath << "/type/rank/name";
-    Spud::get_option(buffer.str(), rank);
-
-    dummy_ic_fill_(rank, size, shape, component);
-  }
-  else if (nics > 1)
+  if (nics > 1)
   {
     dolfin::error("Haven't thought about ics over regions.");
   }
   else
   {
-    for (uint i = 0; i < nics; i++)
-    {
+//    for (uint i = 0; i < nics; i++)
+//    {
+      uint i = 0;
       buffer.str(""); buffer << optionpath << "/type/rank/initial_condition[" << i << "]";
       ic_fill_(buffer.str(), size, shape, component);
-    }
+//    }
   }
    
 }
@@ -443,35 +432,6 @@ void SpudSystem::ic_fill_(const std::string &optionpath,
   component += (*icexp).value_size();
 }
 
-void SpudSystem::dummy_ic_fill_(const std::string &rank,
-                                const int &size,
-                                const std::vector<int> &shape,
-                                uint &component)
-{
-  Expression_ptr icexp;
-  if (rank == "Scalar")
-  {
-    icexp.reset( new dolfin::Constant(0.0) );
-  }
-  else if (rank == "Vector")
-  {
-    std::vector< double > values (size, 0.0);
-    icexp.reset( new dolfin::Constant(values) );
-  }
-//   else if (rank == "Tensor")
-//   {
-//
-//   }
-  else
-  {
-    dolfin::error("Unknown rank in dummy_ic_fill_");
-  }
-
-  register_icexpression(icexp, component);
-
-  component += (*icexp).value_size();
-}
-
 // Register a dolfin function as a field in the system
 void SpudSystem::register_field(FunctionBucket_ptr field, std::string name, std::string optionpath)
 {
@@ -498,7 +458,9 @@ std::string SpudSystem::str(int indent) const
   s << indentation << "System " << name() << " (" << optionpath() << ")" << std::endl;
   indent++;
   s << fields_str(indent);
+  s << coeffs_str(indent);
   s << bcexpressions_str(indent);
+  s << icexpressions_str(indent);
   return s.str();
 }
 

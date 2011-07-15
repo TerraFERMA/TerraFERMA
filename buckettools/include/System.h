@@ -117,12 +117,26 @@ namespace buckettools
     // Print a description of the fields contained in the system
     virtual std::string fields_str(int indent) const;
 
+    // Print a description of the coefficients contained in the system
+    virtual std::string coeffs_str() const
+    { coeffs_str(0); }
+
+    // Print a description of the coefficients contained in the system
+    virtual std::string coeffs_str(int indent) const;
+
     // Print a description of the bcexpressions contained in the system
     virtual std::string bcexpressions_str() const
     { bcexpressions_str(0); }
 
     // Print a description of the bcexpressions contained in the system
     virtual std::string bcexpressions_str(int indent) const;
+
+    // Print a description of the icexpressions contained in the system
+    virtual std::string icexpressions_str() const
+    { icexpressions_str(0); }
+
+    // Print a description of the icexpressions contained in the system
+    virtual std::string icexpressions_str(int indent) const;
 
     // Return the system name
     std::string name() const

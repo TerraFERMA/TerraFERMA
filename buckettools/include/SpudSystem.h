@@ -62,12 +62,6 @@ namespace buckettools
                   const std::vector<int> &shape,
                   uint &component);
 
-    // fill in data about an ic for a field without ics
-    void dummy_ic_fill_(const std::string &rank,
-                        const int &size,
-                        const std::vector<int> &shape,
-                        uint &component);
-
   public:
     
     // FIXME: don't know why this constructor doesn't override base class constructor
