@@ -39,17 +39,9 @@ namespace buckettools
 
     // No default constructor - always require a function pointer
 
-    // Specific constructor with no old or iterated functions
-    FunctionBucket(GenericFunction_ptr function, System* system)
-    { FunctionBucket("uninitialised_name", function, function, function, system); }
-
     // Specific constructor with an uninitialised name
     FunctionBucket(GenericFunction_ptr function, GenericFunction_ptr oldfunction, GenericFunction_ptr iteratedfunction, System* system)
     { FunctionBucket("uninitialised_name", function, oldfunction, iteratedfunction, system); }
-
-    // Specific constructor with no old or iterated functions
-    FunctionBucket(std::string name, GenericFunction_ptr function, System* system)
-    { FunctionBucket(name, function, function, function, system); }
 
     // Specific constructor
     FunctionBucket(std::string name, GenericFunction_ptr function, GenericFunction_ptr oldfunction, GenericFunction_ptr iteratedfunction, System* system);

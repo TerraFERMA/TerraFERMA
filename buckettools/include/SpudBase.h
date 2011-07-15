@@ -4,6 +4,7 @@
 
 #include "BoostTypes.h"
 #include <dolfin.h>
+#include <spud>
 
 namespace buckettools
 {
@@ -12,6 +13,8 @@ namespace buckettools
 
   // Initialize an expression based on a optionpath (and size and shape for vectors and tensors)
   Expression_ptr initialize_expression(const std::string &optionpath, const int &size, const std::vector<int> &shape);
+
+  void spud_err(const std::string &optionpath, const Spud::OptionError &error);
 
 }
 

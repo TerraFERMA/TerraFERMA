@@ -115,11 +115,12 @@ void SpudSystem::fields_fill_(const std::string &optionpath,
 
   // A buffer to put option paths in
   std::stringstream buffer;
+  Spud::OptionError serr;
 
   // Get the field type
   std::string type;
   buffer.str(""); buffer << optionpath << "/type/name";
-  Spud::get_option(buffer.str(), type);
+  serr = Spud::get_option(buffer.str(), type); spud_err(buffer.str(), serr);
   // we only know how to deal with Functions at the moment but this may change
   assert(type=="Function");
 
@@ -127,14 +128,14 @@ void SpudSystem::fields_fill_(const std::string &optionpath,
   // Would it be possible to get this from the subfunctionspace below?
   int size;
   buffer.str(""); buffer << optionpath << "/type/rank/element/size";
-  Spud::get_option(buffer.str(), size, (*bucket_).dimension());
+  serr = Spud::get_option(buffer.str(), size, (*bucket_).dimension()); spud_err(buffer.str(), serr);
 
   // What is the field shape (if it's a tensor)
   // Would it be possible to get this from the subfunctionspace below?
   std::vector< int > shape;
   std::vector< int > default_shape(2, (*bucket_).dimension());
   buffer.str(""); buffer << optionpath << "/type/rank/element/shape";
-  Spud::get_option(buffer.str(), shape, default_shape);
+  serr = Spud::get_option(buffer.str(), shape, default_shape); spud_err(buffer.str(), serr);
 
   // Most of what is below is broken for tensors so let's just die here with an error message
   buffer.str(""); buffer << optionpath << "/type/rank::Tensor";
@@ -146,12 +147,12 @@ void SpudSystem::fields_fill_(const std::string &optionpath,
   // Get the coeff ufl symbol (necessary to register the field name)
   std::string uflsymbol;
   buffer.str(""); buffer << optionpath << "/ufl_symbol";
-  Spud::get_option(buffer.str(), uflsymbol);
+  serr = Spud::get_option(buffer.str(), uflsymbol); spud_err(buffer.str(), serr);
 
   // What is this field called?
   std::string fieldname;
   buffer.str(""); buffer << optionpath << "/name";
-  Spud::get_option(buffer.str(), fieldname);
+  serr = Spud::get_option(buffer.str(), fieldname); spud_err(buffer.str(), serr);
 
   // Register this fielname with the unique (on a system level) uflsymbol
   register_uflname(fieldname, uflsymbol);
@@ -227,11 +228,12 @@ void SpudSystem::coeffs_fill_(const std::string &optionpath)
 {
   // A buffer to put option paths in
   std::stringstream buffer;
+  Spud::OptionError serr;
 
   // Get the coeff type
   std::string type;
   buffer.str(""); buffer << optionpath << "/type/name";
-  Spud::get_option(buffer.str(), type);
+  serr = Spud::get_option(buffer.str(), type); spud_err(buffer.str(), serr);
 
   if (type=="Function" || type=="Aliased")
   {
@@ -243,19 +245,19 @@ void SpudSystem::coeffs_fill_(const std::string &optionpath)
     // Get the coeff ufl symbol (necessary for all sorts of things below)
     std::string uflsymbol;
     buffer.str(""); buffer << optionpath << "/ufl_symbol";
-    Spud::get_option(buffer.str(), uflsymbol);
+    serr = Spud::get_option(buffer.str(), uflsymbol); spud_err(buffer.str(), serr);
 
     // What is this coeff called?
     std::string coeffname;
     buffer.str(""); buffer << optionpath << "/name";
-    Spud::get_option(buffer.str(), coeffname);
+    serr = Spud::get_option(buffer.str(), coeffname); spud_err(buffer.str(), serr);
 
     register_uflname(coeffname, uflsymbol);
 
     // Most of what is below is broken for tensors so let's just die here with an error message
     std::string rank;
     buffer.str(""); buffer << optionpath << "/type/rank/name";
-    Spud::get_option(buffer.str(), rank);
+    serr = Spud::get_option(buffer.str(), rank); spud_err(buffer.str(), serr);
     if (rank=="Tensor")
     {
       dolfin::error("Tensor coefficients not hooked up yet, sorry.");
@@ -264,13 +266,13 @@ void SpudSystem::coeffs_fill_(const std::string &optionpath)
     // What is the field size (if it's a vector)
     int size;
     buffer.str(""); buffer << optionpath << "/type/rank/element/size";
-    Spud::get_option(buffer.str(), size, (*bucket_).dimension());
+    serr = Spud::get_option(buffer.str(), size, (*bucket_).dimension()); spud_err(buffer.str(), serr);
 
     // What is the field shape (if it's a tensor)
     std::vector< int > shape;
     std::vector< int > default_shape(2, (*bucket_).dimension());
     buffer.str(""); buffer << optionpath << "/type/rank/element/shape";
-    Spud::get_option(buffer.str(), shape, default_shape);
+    serr = Spud::get_option(buffer.str(), shape, default_shape); spud_err(buffer.str(), serr);
     if (type=="Constant")
     {
       // These will have just been set to defaults in this case, which may not be right
@@ -278,12 +280,12 @@ void SpudSystem::coeffs_fill_(const std::string &optionpath)
       if (rank=="Vector")
       {
         std::vector< int > constant_shape;
-        Spud::get_option_shape(buffer.str(), constant_shape);
+        serr = Spud::get_option_shape(buffer.str(), constant_shape); spud_err(buffer.str(), serr);
         size = constant_shape[0];
       }
       if (rank=="Tensor")
       {
-        Spud::get_option_shape(buffer.str(), shape);
+        serr = Spud::get_option_shape(buffer.str(), shape); spud_err(buffer.str(), serr);
       }
     }
 
@@ -299,7 +301,13 @@ void SpudSystem::coeffs_fill_(const std::string &optionpath)
 //      {
         uint i = 0;
         buffer.str(""); buffer << optionpath << "/type/rank/value[" << i << "]";
-        coeff_exp_fill_(buffer.str(), size, shape, coeffname);
+
+        Expression_ptr exp = initialize_expression(buffer.str(), size, shape);
+
+        SpudFunctionBucket_ptr coeff( new SpudFunctionBucket( coeffname, optionpath, exp, this ) );
+        (*coeff).fill();
+
+        register_coeff(coeff, coeffname);
 //      }
     }
   }
@@ -318,14 +326,15 @@ void SpudSystem::bc_fill_(const std::string &optionpath,
                           const MeshFunction_uint_ptr &edgeidmeshfunction)
 {
   std::stringstream buffer;
+  Spud::OptionError serr;
   
   std::string bcname;
   buffer.str(""); buffer << optionpath << "/name";
-  Spud::get_option(buffer.str(), bcname);
+  serr = Spud::get_option(buffer.str(), bcname); spud_err(buffer.str(), serr);
   
   std::vector<int> bcids;
   buffer.str(""); buffer << optionpath << "/boundary_ids";
-  Spud::get_option(buffer.str(), bcids);
+  serr = Spud::get_option(buffer.str(), bcids); spud_err(buffer.str(), serr);
   
   buffer.str(""); buffer << optionpath << "/sub_components";
   int nsubcomp = Spud::option_count(buffer.str());
@@ -347,6 +356,7 @@ void SpudSystem::bc_component_fill_(const std::string &optionpath,
 {
   std::stringstream buffer;
   std::stringstream namebuffer;
+  Spud::OptionError serr;
 
   buffer.str(""); buffer << optionpath << "/components";
   if (Spud::have_option(buffer.str()))
@@ -354,7 +364,7 @@ void SpudSystem::bc_component_fill_(const std::string &optionpath,
     // FIXME: tensor support needs to go in here, so another switch between a list and a python function
     //        to return the components!
     std::vector<int> subcompids;
-    Spud::get_option(buffer.str(), subcompids);
+    serr = Spud::get_option(buffer.str(), subcompids); spud_err(buffer.str(), serr);
     
     for (std::vector<int>::const_iterator subcompid = subcompids.begin(); subcompid < subcompids.end(); subcompid++)
     {
@@ -401,21 +411,6 @@ void SpudSystem::bc_component_fill_(const std::string &optionpath,
       register_dirichletbc(bc, namebuffer.str());
     }
   }
-}
-
-void SpudSystem::coeff_exp_fill_(const std::string &optionpath,
-                                 const int &size,
-                                 const std::vector<int> &shape,
-                                 const std::string &coeffname)
-{
-  // This will get more complicated when we support looping over regions
-  // Loop will probably have to move in here!
-  Expression_ptr exp = initialize_expression(optionpath, size, shape);
-
-  SpudFunctionBucket_ptr coeff( new SpudFunctionBucket( coeffname, optionpath, exp, this ) );
-  (*coeff).fill();
-
-  register_coeff(coeff, coeffname);
 }
 
 void SpudSystem::ic_fill_(const std::string &optionpath,

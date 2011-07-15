@@ -1,6 +1,7 @@
 
 #include "SpudBucket.h"
 #include "SpudSystem.h"
+#include "SpudBase.h"
 #include "BoostTypes.h"
 //#include "GenericDetectors.h"
 //#include "PointDetectors.h"
@@ -30,13 +31,14 @@ void SpudBucket::fill()
 {
   // A buffer to put option paths in
   std::stringstream buffer;
+  Spud::OptionError serr;
   
   // Get the dimension to pass it down to all systems
   // (we currently assume this is the length of some
   //  of things, which may need to be generalized in the
   //  future)
   buffer.str(""); buffer << optionpath() << "/geometry/dimension";  
-  Spud::get_option(buffer.str(), dimension_);
+  serr = Spud::get_option(buffer.str(), dimension_); spud_err(buffer.str(), serr);
 
   // Put meshes into the bucket
   buffer.str(""); buffer << optionpath() << "/geometry/mesh";  
@@ -66,16 +68,17 @@ void SpudBucket::meshes_fill_(const std::string &optionpath)
 {
   // A buffer to put option paths in
   std::stringstream buffer;
+  Spud::OptionError serr;
   
   // Get the name of the mesh
   std::string meshname;
   buffer.str(""); buffer << optionpath << "/name";
-  Spud::get_option(buffer.str(), meshname);
+  serr = Spud::get_option(buffer.str(), meshname); spud_err(buffer.str(), serr);
   
   // Get the name of the mesh file
   std::string basename;
   buffer.str(""); buffer << optionpath << "/file";
-  Spud::get_option(buffer.str(), basename);
+  serr = Spud::get_option(buffer.str(), basename); spud_err(buffer.str(), serr);
   
   // Use DOLFIN to read in the mesh
   std::stringstream filename;
@@ -106,16 +109,17 @@ void SpudBucket::systems_fill_(const std::string &optionpath)
 {
   // A string buffer for option paths
   std::stringstream buffer;
+  Spud::OptionError serr;
 
   // Get the system name
   std::string sysname;
   buffer.str(""); buffer << optionpath << "/name";
-  Spud::get_option(buffer.str(), sysname);
+  serr = Spud::get_option(buffer.str(), sysname); spud_err(buffer.str(), serr);
 
   // Get the name of the mesh this system is defined on
   std::string meshname;
   buffer.str(""); buffer << optionpath << "/mesh/name";
-  Spud::get_option(buffer.str(), meshname);
+  serr = Spud::get_option(buffer.str(), meshname); spud_err(buffer.str(), serr);
   // and then extract the mesh from the bucket we're filling
   Mesh_ptr mesh = fetch_mesh(meshname);
 

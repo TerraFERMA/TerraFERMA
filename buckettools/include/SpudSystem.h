@@ -50,12 +50,6 @@ namespace buckettools
                             const FunctionSpace_ptr &subfunctionspace,
                             const MeshFunction_uint_ptr &edgeidmeshfunction);
 
-    // fill in data about a components data structure
-    void coeff_exp_fill_(const std::string &optionpath,
-                  const int &size,
-                  const std::vector<int> &shape,
-                  const std::string &coeffname);
-
     // fill in data about an individual field's ic
     void ic_fill_(const std::string &optionpath,
                   const int &size,
