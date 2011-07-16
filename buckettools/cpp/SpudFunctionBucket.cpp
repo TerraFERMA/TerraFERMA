@@ -62,12 +62,13 @@ void SpudFunctionBucket::functionals_fill_(const std::string &optionpath)
   Form_ptr functional = ufc_fetch_functional((*system_).name(), name(), funcname, (*system_).mesh());
   register_functional(functional, funcname, optionpath);
 
+  // Loop over the functions requested by the form and hook up (potentially currently null) pointers
   uint ncoeff = (*functional).num_coefficients();
   for (uint i = 0; i < ncoeff; i++)
   {
-    std::string coeffname = (*functional).coefficient_name(i);
-    GenericFunction_ptr coefffunc = (*system_).fetch_uflsymbol(coeffname);
-    (*functional).set_coefficient(coeffname, coefffunc);
+    std::string uflsymbol = (*functional).coefficient_name(i);
+    GenericFunction_ptr function = (*system_).fetch_uflsymbol(uflsymbol);
+    (*functional).set_coefficient(uflsymbol, function);
   }
 
 }
