@@ -156,6 +156,9 @@ class System:
     for field in self.fields:
       for functional in field.functionals:
         cpp.append("#include \""+functional.namespace()+".h\"\n")
+    for coeff in self.coeffs:
+      for functional in coeff.functionals:
+        cpp.append("#include \""+functional.namespace()+".h\"\n")
     for solver in self.solvers:
       cpp.append("#include \""+solver.namespace()+".h\"\n")
     return cpp
@@ -231,6 +234,7 @@ class System:
             cpp.append("          {\n")
             cpp.append("            dolfin::error(\"Unknown coefficientname in ufc_fetch_coefficientspace\");\n")
             cpp.append("          }\n")
+            cpp.append("        }\n")
         cpp.append("        else\n")
         cpp.append("        {\n")
         cpp.append("          dolfin::error(\"Unknown functionalname in ufc_fetch_coefficientspace\");\n")
@@ -265,7 +269,7 @@ class System:
             cpp.append("          {\n")
             cpp.append("            dolfin::error(\"Unknown coefficientname in ufc_fetch_coefficientspace\");\n")
             cpp.append("          }\n")
-        cpp.append("        }\n")
+            cpp.append("        }\n")
         cpp.append("        else\n")
         cpp.append("        {\n")
         cpp.append("          dolfin::error(\"Unknown functionalname in ufc_fetch_coefficientspace\");\n")
