@@ -33,15 +33,6 @@ class Functional:
         ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
         ufl.append(coefficient_ufl(coeff.symbol))
       ufl.append("\n\n")
-    
-#    if self.function.type=="Constant":
-#      ufl.append(declaration_comment("Coefficient", self.function.type, self.function.name))
-#      ufl.append(constant_ufl(self.function.symbol, self.function.system.cell))
-#    else:
-#      ufl += self.function.element_ufl()
-#      ufl.append("\n")
-#      ufl.append(declaration_comment("Coefficient", self.function.type, self.function.name))
-#      ufl.append(coefficient_ufl(self.function.symbol))
     ufl.append("\n")
     ufl.append(declaration_comment("Form", "form", self.name))
     ufl.append(self.form)
@@ -87,5 +78,16 @@ class Functional:
     cpp.append("        {\n")
     cpp.append("          functional.reset(new "+self.namespace()+"::Form_0(*mesh));\n")
     cpp.append("        }\n")
+    return cpp
+
+  def functionalcoefficientspace_cpp(self, coeffname, coeffsymbol, index=0):
+    cpp = [] 
+    if index == 0:
+      cpp.append("          if (coefficientname ==  \""+coeffname+"\")\n")
+    else:
+      cpp.append("          else if (coefficientname ==  \""+coeffname+"\")\n")
+    cpp.append("          {\n")
+    cpp.append("            coefficientspace.reset(new "+self.namespace()+"::CoefficientSpace_"+coeffsymbol+"(*mesh));\n")
+    cpp.append("          }\n")
     return cpp
 
