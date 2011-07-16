@@ -26,6 +26,8 @@ class System:
     ufl.append("\n")
     ufl += self.trial_ufl()
     ufl.append("\n")
+    ufl += self.function_ufl()
+    ufl.append("\n")
     ufl += self.iterate_ufl()
     ufl.append("\n")
     ufl += self.old_ufl()
@@ -86,6 +88,21 @@ class System:
       ufl.append(trialfunction_ufl(self.symbol))
       ufl.append(declaration_comment("Trial spaces", "functions", ""))
       ufl += self.split_ufl(suffix="_a")
+    return ufl
+
+  def function_ufl(self):
+    """Write an array of ufl strings describing the (potentially mixed) field values of a system."""
+    ufl = []
+    if len(self.fields)==1:
+      ufl.append(declaration_comment("Value", "System", self.name))
+      ufl.append(coefficient_ufl(self.symbol))
+      ufl.append(declaration_comment("Value", self.fields[0].type, self.fields[0].name))
+      ufl.append(coefficient_ufl(self.fields[0].symbol))
+    else:
+      ufl.append(declaration_comment("Value", "System", self.name))
+      ufl.append(coefficient_ufl(self.symbol))
+      ufl.append(declaration_comment("Values", "functions", ""))
+      ufl += self.split_ufl()
     return ufl
 
   def iterate_ufl(self):

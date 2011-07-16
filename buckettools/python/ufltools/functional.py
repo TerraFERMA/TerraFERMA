@@ -14,14 +14,34 @@ class Functional:
   def ufl(self):
     """Write the functional to an array of ufl strings."""
     ufl = []
-    if self.function.type=="Constant":
-      ufl.append(declaration_comment("Coefficient", self.function.type, self.function.name))
-      ufl.append(constant_ufl(self.function.symbol, self.function.system.cell))
-    else:
-      ufl += self.function.element_ufl()
-      ufl.append("\n")
-      ufl.append(declaration_comment("Coefficient", self.function.type, self.function.name))
-      ufl.append(coefficient_ufl(self.function.symbol))
+    for field in self.function.system.fields:
+      ufl += field.element_ufl()
+    ufl += self.function.system.element_ufl()
+    ufl.append("\n")
+    ufl += self.function.system.function_ufl()
+    ufl.append("\n")
+    ufl += self.function.system.iterate_ufl()
+    ufl.append("\n")
+    ufl += self.function.system.old_ufl()
+    ufl.append("\n")
+    for coeff in self.function.system.coeffs:
+      if coeff.type=="Constant":
+        ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
+        ufl.append(constant_ufl(coeff.symbol, coeff.system.cell))
+      else:
+        ufl += coeff.element_ufl()
+        ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
+        ufl.append(coefficient_ufl(coeff.symbol))
+      ufl.append("\n\n")
+    
+#    if self.function.type=="Constant":
+#      ufl.append(declaration_comment("Coefficient", self.function.type, self.function.name))
+#      ufl.append(constant_ufl(self.function.symbol, self.function.system.cell))
+#    else:
+#      ufl += self.function.element_ufl()
+#      ufl.append("\n")
+#      ufl.append(declaration_comment("Coefficient", self.function.type, self.function.name))
+#      ufl.append(coefficient_ufl(self.function.symbol))
     ufl.append("\n")
     ufl.append(declaration_comment("Form", "form", self.name))
     ufl.append(self.form)
