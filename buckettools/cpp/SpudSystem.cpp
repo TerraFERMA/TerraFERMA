@@ -59,6 +59,10 @@ void SpudSystem::fill()
   (*iteratedfunction_).rename( buffer.str(), buffer.str() );
   register_uflsymbol(iteratedfunction_, uflsymbol+"_i");
 
+  // Having just registered the system uflsymbols, quickly loop through
+  // the rest of the fields recording their symbol and a null pointer
+  uflsymbols_fill_();
+
   // A counter for the components in this system (allows the ic to be generalized)
   uint component = 0;
   buffer.str("");  buffer << optionpath() << "/field";
@@ -106,6 +110,38 @@ void SpudSystem::fill()
     coeffs_fill_(buffer.str()); 
   }
 
+}
+
+void SpudSystem::uflsymbols_fill_()
+{
+  std::stringstream buffer;
+  Spud::OptionError serr;
+  std::string uflsymbol;
+
+  buffer.str("");  buffer << optionpath() << "/field";
+  int nfields = Spud::option_count(buffer.str());
+  // Loop over the fields (which are subfunctions of this functionspace)
+  // and register their uflsymbols in the system
+  for (uint i = 0; i < nfields; i++)
+  {
+    buffer.str(""); buffer << optionpath() << "/field[" << i << "]/ufl_symbol";
+    serr = Spud::get_option(buffer.str(), uflsymbol); spud_err(buffer.str(), serr);
+    create_uflsymbol(uflsymbol);
+    create_uflsymbol(uflsymbol+"_i");
+    create_uflsymbol(uflsymbol+"_n");
+  }
+
+  buffer.str("");  buffer << optionpath() << "/coefficient";
+  int ncoeffs = Spud::option_count(buffer.str());
+  // Loop over the coefficients and register their ufsymbols
+  for (uint i = 0; i < ncoeffs; i++)
+  {
+    buffer.str(""); buffer << optionpath() << "/coefficient[" << i << "]/ufl_symbol";
+    serr = Spud::get_option(buffer.str(), uflsymbol); spud_err(buffer.str(), serr);
+    create_uflsymbol(uflsymbol);
+    create_uflsymbol(uflsymbol+"_i");
+    create_uflsymbol(uflsymbol+"_n");
+  }
 }
 
 // Fill out the information regarding the each subfunction (or field)
@@ -461,6 +497,7 @@ std::string SpudSystem::str(int indent) const
   std::string indentation (indent*2, ' ');
   s << indentation << "System " << name() << " (" << optionpath() << ")" << std::endl;
   indent++;
+  s << uflsymbols_str(indent);
   s << fields_str(indent);
   s << coeffs_str(indent);
   s << bcexpressions_str(indent);

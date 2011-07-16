@@ -123,6 +123,13 @@ namespace buckettools
     virtual std::string str(int indent) const;
 
     // Print a description of the fields contained in the system
+    virtual std::string uflsymbols_str() const
+    { fields_str(0); }
+
+    // Print a description of the fields contained in the system
+    virtual std::string uflsymbols_str(int indent) const;
+
+    // Print a description of the fields contained in the system
     virtual std::string fields_str() const
     { fields_str(0); }
 

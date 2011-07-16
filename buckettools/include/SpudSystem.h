@@ -23,6 +23,9 @@ namespace buckettools
     // supplementary to the system base data store the optionpaths for the fields_
     std::map< std::string, std::string > field_optionpaths_;
 
+    // fill in the uflsymbols
+    void uflsymbols_fill_();
+
     // fill in data about the fields
     void fields_fill_(const std::string &optionpath, 
                       const uint &field_i, 

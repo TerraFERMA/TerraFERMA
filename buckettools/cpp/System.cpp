@@ -221,6 +221,7 @@ std::string System::str(int indent) const
   std::string indentation (indent*2, ' ');
   s << indentation << "System " << name() << std::endl;
   indent++;
+  s << uflsymbols_str(indent);
   s << fields_str(indent);
   s << coeffs_str(indent);
   s << bcexpressions_str(indent);
@@ -246,6 +247,18 @@ std::string System::icexpressions_str(int indent) const
   std::stringstream s;
   std::string indentation (indent*2, ' ');
   s << indentation << icexpressions_.size() << " ICExpressions" << std::endl;
+  return s.str();
+}
+
+// Return a string describing the contents of uflsymbols_
+std::string System::uflsymbols_str(int indent) const
+{
+  std::stringstream s;
+  std::string indentation (indent*2, ' ');
+  for ( GenericFunction_const_it g_it = uflsymbols_.begin(); g_it != uflsymbols_.end(); g_it++ )
+  {
+    s << indentation << "UFLSymbol " << (*g_it).first << std::endl;
+  }
   return s.str();
 }
 
