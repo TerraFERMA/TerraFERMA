@@ -31,33 +31,8 @@ void SpudSystem::fill()
   std::stringstream buffer;
   Spud::OptionError serr;
 
-  // Here's where the automatically generated magic happens... this is fetching
-  // the functionspace from ufl
-  functionspace_ = ufc_fetch_functionspace(name(), mesh_);
-
-  // Get the coeff ufl symbol (necessary to register the field name)
-  std::string uflsymbol;
-  buffer.str(""); buffer << optionpath() << "/ufl_symbol";
-  serr = Spud::get_option(buffer.str(), uflsymbol); spud_err(buffer.str(), serr);
-
-  // Declare a series of functions on this functionspace:
-  // Current
-  function_.reset( new dolfin::Function(*functionspace_) );
-  buffer.str(""); buffer << name() << "::Function";
-  (*function_).rename( buffer.str(), buffer.str() );
-  register_uflsymbol(function_, uflsymbol);
-
-  // Old
-  oldfunction_.reset( new dolfin::Function(*functionspace_) );
-  buffer.str(""); buffer << name() << "::OldFunction";
-  (*oldfunction_).rename( buffer.str(), buffer.str() );
-  register_uflsymbol(oldfunction_, uflsymbol+"_n");
-
-  // Iterated
-  iteratedfunction_.reset( new dolfin::Function(*functionspace_) );
-  buffer.str(""); buffer << name() << "::IteratedFunction";
-  (*iteratedfunction_).rename( buffer.str(), buffer.str() );
-  register_uflsymbol(iteratedfunction_, uflsymbol+"_i");
+  // register the functionspace and (mixed?) functions associated with this system
+  systemfunction_fill_();
 
   // Having just registered the system uflsymbols, quickly loop through
   // the rest of the fields recording their symbol and a null pointer
@@ -109,6 +84,42 @@ void SpudSystem::fill()
     buffer.str(""); buffer << optionpath() << "/coefficient[" << i << "]";
     coeffs_fill_(buffer.str()); 
   }
+
+}
+
+void SpudSystem::systemfunction_fill_()
+{
+  // A buffer to put option paths (and strings) in
+  std::stringstream buffer;
+  Spud::OptionError serr;
+
+  // Here's where the automatically generated magic happens... this is fetching
+  // the functionspace from ufl
+  functionspace_ = ufc_fetch_functionspace(name(), mesh_);
+
+  // Get the coeff ufl symbol (necessary to register the field name)
+  std::string uflsymbol;
+  buffer.str(""); buffer << optionpath() << "/ufl_symbol";
+  serr = Spud::get_option(buffer.str(), uflsymbol); spud_err(buffer.str(), serr);
+
+  // Declare a series of functions on this functionspace:
+  // Current
+  function_.reset( new dolfin::Function(*functionspace_) );
+  buffer.str(""); buffer << name() << "::Function";
+  (*function_).rename( buffer.str(), buffer.str() );
+  register_uflsymbol(function_, uflsymbol);
+
+  // Old
+  oldfunction_.reset( new dolfin::Function(*functionspace_) );
+  buffer.str(""); buffer << name() << "::OldFunction";
+  (*oldfunction_).rename( buffer.str(), buffer.str() );
+  register_uflsymbol(oldfunction_, uflsymbol+"_n");
+
+  // Iterated
+  iteratedfunction_.reset( new dolfin::Function(*functionspace_) );
+  buffer.str(""); buffer << name() << "::IteratedFunction";
+  (*iteratedfunction_).rename( buffer.str(), buffer.str() );
+  register_uflsymbol(iteratedfunction_, uflsymbol+"_i");
 
 }
 

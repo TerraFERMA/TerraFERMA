@@ -55,12 +55,12 @@ void SpudFunctionBucket::functionals_fill_(const std::string &optionpath)
   std::stringstream buffer;
   Spud::OptionError serr;
    
-  std::string funcname;
+  std::string functionalname;
   buffer.str(""); buffer << optionpath << "/name";
-  serr = Spud::get_option(buffer.str(), funcname); spud_err(buffer.str(), serr);
+  serr = Spud::get_option(buffer.str(), functionalname); spud_err(buffer.str(), serr);
 
-  Form_ptr functional = ufc_fetch_functional((*system_).name(), name(), funcname, (*system_).mesh());
-  register_functional(functional, funcname, optionpath);
+  Form_ptr functional = ufc_fetch_functional((*system_).name(), name(), functionalname, (*system_).mesh());
+  register_functional(functional, functionalname, optionpath);
 
   // Loop over the functions requested by the form and hook up (potentially currently null) pointers
   uint ncoeff = (*functional).num_coefficients();

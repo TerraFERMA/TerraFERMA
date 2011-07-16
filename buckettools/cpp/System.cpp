@@ -274,7 +274,14 @@ std::string System::uflsymbols_str(int indent) const
   std::string indentation (indent*2, ' ');
   for ( GenericFunction_const_it g_it = uflsymbols_.begin(); g_it != uflsymbols_.end(); g_it++ )
   {
-    s << indentation << "UFLSymbol " << (*g_it).first << std::endl;
+    if ((*g_it).second)
+    {
+      s << indentation << "UFLSymbol " << (*g_it).first << " associated" << std::endl;
+    }
+    else
+    {
+      s << indentation << "UFLSymbol " << (*g_it).first << " not associated" << std::endl;
+    }
   }
   return s.str();
 }
