@@ -219,11 +219,14 @@ class System:
             if self.coeffs[c2].symbol in form_symbols: 
               cpp += self.fields[c].functionals[f].functionalcoefficientspace_cpp(self.coeffs[c2].name, self.coeffs[c2].symbol, index=c2)
               symbols_found =+ 1
-          if symbols_found != 0:
+          if symbols_found == 0:
+            cpp.append("          dolfin::error(\"Unknown coefficientname in ufc_fetch_coefficientspace\");\n")
+            cpp.append("        }\n")
+          else:
             cpp.append("        else\n")
             cpp.append("        {\n")
-          cpp.append("          dolfin::error(\"Unknown coefficientname in ufc_fetch_coefficientspace\");\n")
-          cpp.append("        }\n")
+            cpp.append("          dolfin::error(\"Unknown coefficientname in ufc_fetch_coefficientspace\");\n")
+            cpp.append("        }\n")
         cpp.append("        else\n")
         cpp.append("        {\n")
         cpp.append("          dolfin::error(\"Unknown functionalname in ufc_fetch_coefficientspace\");\n")
@@ -243,8 +246,19 @@ class System:
             cpp.append("        else if (functionalname ==  \""+self.coeffs[c].functionals[f].name+"\")\n")
           cpp.append("        {\n")
           form_symbols = [symbol for symbol in re.findall(r"\b[a-z_]+\b", self.coeffs[c].functionals[f].form, re.I) if symbol not in ufl_reserved()]
+          symbols_found = 0
           for c2 in range(len(self.coeffs)):
-            if self.coeffs[c2].symbol in form_symbols: cpp += self.coeffs[c].functionals[f].functionalcoefficientspace_cpp(self.coeffs[c2].name, self.coeffs[c2].symbol, index=c2)
+            if self.coeffs[c2].symbol in form_symbols: 
+              cpp += self.coeffs[c].functionals[f].functionalcoefficientspace_cpp(self.coeffs[c2].name, self.coeffs[c2].symbol, index=c2)
+              symbols_found =+ 1
+          if symbols_found == 0:
+            cpp.append("          dolfin::error(\"Unknown coefficientname in ufc_fetch_coefficientspace\");\n")
+            cpp.append("        }\n")
+          else:
+            cpp.append("        else\n")
+            cpp.append("        {\n")
+            cpp.append("          dolfin::error(\"Unknown coefficientname in ufc_fetch_coefficientspace\");\n")
+            cpp.append("        }\n")
         cpp.append("          else\n")
         cpp.append("          {\n")
         cpp.append("            dolfin::error(\"Unknown coefficientname in ufc_fetch_coefficientspace\");\n")
@@ -282,13 +296,20 @@ class System:
       else:
         form_symbols = [symbol for form in self.solvers[s].forms for symbol in re.findall(r"\b[a-z_]+\b", form, re.I) if symbol not in ufl_reserved()]
         if self.solvers[s].preamble: form_symbols += [symbol for symbol in re.findall(r"\b[a-z_]+\b", self.solvers[s].preamble, re.I) if symbol not in ufl_reserved()]
+        symbols_found = 0
         for c in range(len(self.coeffs)):
-          if self.coeffs[c].symbol in form_symbols: cpp += self.coeffs[c].coefficientspace_cpp(self.solvers[s].name, index=c)
-        cpp.append("        else\n")
-        cpp.append("        {\n")
-        cpp.append("          dolfin::error(\"Unknown coefficientname in ufc_fetch_coefficientspace\");\n")
-        cpp.append("        }\n")
-        cpp.append("      }\n")
+          if self.coeffs[c].symbol in form_symbols: 
+            cpp += self.coeffs[c].coefficientspace_cpp(self.solvers[s].name, index=c)
+            symbols_found =+ 1
+        if symbols_found == 0:
+          cpp.append("        dolfin::error(\"Unknown coefficientname in ufc_fetch_coefficientspace\");\n")
+          cpp.append("      }\n")
+        else:
+          cpp.append("        else\n")
+          cpp.append("        {\n")
+          cpp.append("          dolfin::error(\"Unknown coefficientname in ufc_fetch_coefficientspace\");\n")
+          cpp.append("        }\n")
+          cpp.append("      }\n")
     cpp.append("      else\n")
     cpp.append("      {\n")
     cpp.append("        dolfin::error(\"Unknown solvername in ufc_fetch_functionspace\");\n")

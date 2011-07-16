@@ -216,12 +216,12 @@ dx_slab  = dx(32)
 # Variational problem
 FT_plate = inner(grad(T_t), kappa*grad(T_a))*dx_plate
 FT_wedge = T_t*inner(v_i, grad(T_a))*dx_wedge + inner(grad(T_t), kappa*grad(T_a))*dx_wedge
-FT_slab  = T_t*inner(vp, grad(T_a))*dx_slab + inner(grad(T_t), kappa*grad(T_a))*dx_slab
+FT_slab  = T_t*inner(vp_i, grad(T_a))*dx_slab + inner(grad(T_t), kappa*grad(T_a))*dx_slab
 FT = FT_plate + FT_wedge + FT_slab
 
 Fv_plate = inner(v_t, v_a)*dx_plate
 Fv_wedge = inner(sym(grad(v_t)), 2*eta*sym(grad(v_a)))*dx_wedge - div(v_t)*p_a*dx_wedge
-Fv_slab  = inner(v_t, (v_a-vp))*dx_slab
+Fv_slab  = inner(v_t, (v_a-vp_i))*dx_slab
 Fv = Fv_plate + Fv_wedge + Fv_slab
 
 Fp_wedge = p_t*div(v_a)*dx_wedge
@@ -272,12 +272,12 @@ dx_slab  = dx(32)
 # Variational problem
 FT_plate = inner(grad(T_t), kappa*grad(T_i))*dx_plate
 FT_wedge = T_t*inner(v_i, grad(T_i))*dx_wedge + inner(grad(T_t), kappa*grad(T_i))*dx_wedge
-FT_slab  = T_t*inner(vp, grad(T_i))*dx_slab + inner(grad(T_t), kappa*grad(T_i))*dx_slab
+FT_slab  = T_t*inner(vp_i, grad(T_i))*dx_slab + inner(grad(T_t), kappa*grad(T_i))*dx_slab
 FT = FT_plate + FT_wedge + FT_slab
 
 Fv_plate = inner(v_t, v_i)*dx_plate
 Fv_wedge = inner(sym(grad(v_t)), 2*eta*sym(grad(v_i)))*dx_wedge - div(v_t)*p_i*dx_wedge
-Fv_slab  = inner(v_t, (v_i-vp))*dx_slab
+Fv_slab  = inner(v_t, (v_i-vp_i))*dx_slab
 Fv = Fv_plate + Fv_wedge + Fv_slab
 
 Fp_wedge = p_t*div(v_i)*dx_wedge
