@@ -14,6 +14,9 @@ namespace buckettools
   // A function to return a functionspace (for a coefficient) from a system given a mesh, a solvername and a functionname.
   FunctionSpace_ptr ufc_fetch_coefficientspace(std::string systemname, std::string solvername, std::string coefficientname, Mesh_ptr mesh);
 
+  // A function to return a functionspace (for a coefficient) from a system given a mesh, a solvername and a functionname.
+  FunctionSpace_ptr ufc_fetch_coefficientspace(std::string systemname, std::string functionname, std::string funcionalname, std::string coefficientname, Mesh_ptr mesh);
+
   // A function to return a form for a solver from a system given a functionspace, a solvername, a solvertype and a formname.
   Form_ptr ufc_fetch_form(std::string systemname, std::string solvername, std::string solvertype, std::string formname, FunctionSpace_ptr functionspace);
 
