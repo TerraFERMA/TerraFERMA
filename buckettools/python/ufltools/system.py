@@ -35,11 +35,13 @@ class System:
     for coeff in self.coeffs:
       if coeff.type == "Constant":
         ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
-        ufl.append(constant_ufl(coeff.symbol, self.cell))
+        for suffix in uflsymbol_suffixes():
+          ufl.append(constant_ufl(coeff.symbol, self.cell, suffix=suffix))
       else:
         ufl += coeff.element_ufl()
         ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
-        ufl.append(coefficient_ufl(coeff.symbol))
+        for suffix in uflsymbol_suffixes():
+          ufl.append(coefficient_ufl(coeff.symbol, suffix=suffix))
     ufl.append("\n")
     return ufl
 
