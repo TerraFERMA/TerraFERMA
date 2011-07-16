@@ -214,6 +214,23 @@ void System::reset_uflsymbol(GenericFunction_ptr function, std::string uflsymbol
   }
 }
 
+// Return a pointer to a dolfin GenericFunction with the given uflsymbol
+GenericFunction_ptr System::fetch_uflsymbol(std::string uflsymbol)
+{
+  // First check if a subfunctionspace with this name already exists
+  GenericFunction_it g_it = uflsymbols_.find(uflsymbol);
+  if (g_it == uflsymbols_.end())
+  {
+    // if it doesn't, issue an error
+    dolfin::error("GenericFunction with uflsymbol \"%s\" does not exist in system.", uflsymbol.c_str());
+  }
+  else
+  {
+    // if not then return it
+    return (*g_it).second;
+  }
+}
+
 // Return a string describing the contents of the system
 std::string System::str(int indent) const
 {

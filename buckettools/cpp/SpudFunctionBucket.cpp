@@ -62,14 +62,13 @@ void SpudFunctionBucket::functionals_fill_(const std::string &optionpath)
   Form_ptr functional = ufc_fetch_functional((*system_).name(), name(), funcname, (*system_).mesh());
   register_functional(functional, funcname, optionpath);
 
-  // Can't populate the functional yet as we want it to be able to depend on any member of the system
-  // (most of which don't exist yet!)
-
-//  uint ncoeff = (*functional).num_coefficients();
-//  for (uint i = 0; i < ncoeff; i++)
-//  {
-//    std::cout << "Funtional has coefficient " << (*functional).coefficient_name(i) << std::endl;
-//  }
+  uint ncoeff = (*functional).num_coefficients();
+  for (uint i = 0; i < ncoeff; i++)
+  {
+    std::string coeffname = (*functional).coefficient_name(i);
+    GenericFunction_ptr coefffunc = (*system_).fetch_uflsymbol(coeffname);
+    (*functional).set_coefficient(coeffname, coefffunc);
+  }
 
 }
 

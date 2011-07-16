@@ -115,6 +115,9 @@ namespace buckettools
     // Reset a function associated with a ufl system
     void reset_uflsymbol(GenericFunction_ptr function, std::string uflsymbol);
 
+    // Return a pointer to a dolfin GenericFunction with the given uflsymbol
+    GenericFunction_ptr fetch_uflsymbol(std::string uflsymbol);
+
     // Return a string describing the contents of the system
     virtual std::string str() const
     { str(0); }
