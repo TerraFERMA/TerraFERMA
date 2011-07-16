@@ -216,17 +216,19 @@ class System:
           form_symbols = [symbol for symbol in re.findall(r"\b[a-z_]+\b", self.fields[c].functionals[f].form, re.I) if symbol not in ufl_reserved()]
           symbols_found = 0
           for c2 in range(len(self.coeffs)):
-            if self.coeffs[c2].symbol in form_symbols: 
-              cpp += self.fields[c].functionals[f].functionalcoefficientspace_cpp(self.coeffs[c2].name, self.coeffs[c2].symbol, index=c2)
-              symbols_found =+ 1
+            for suffix in uflsymbol_suffixes():
+              if self.coeffs[c2].symbol+suffix in form_symbols: 
+                cpp += self.fields[c].functionals[f].coefficientspace_cpp(self.coeffs[c2], index=symbols_found, suffix=suffix)
+                symbols_found =+ 1
+                break
           if symbols_found == 0:
             cpp.append("          dolfin::error(\"Unknown coefficientname in ufc_fetch_coefficientspace\");\n")
             cpp.append("        }\n")
           else:
-            cpp.append("        else\n")
-            cpp.append("        {\n")
-            cpp.append("          dolfin::error(\"Unknown coefficientname in ufc_fetch_coefficientspace\");\n")
-            cpp.append("        }\n")
+            cpp.append("          else\n")
+            cpp.append("          {\n")
+            cpp.append("            dolfin::error(\"Unknown coefficientname in ufc_fetch_coefficientspace\");\n")
+            cpp.append("          }\n")
         cpp.append("        else\n")
         cpp.append("        {\n")
         cpp.append("          dolfin::error(\"Unknown functionalname in ufc_fetch_coefficientspace\");\n")
@@ -248,21 +250,19 @@ class System:
           form_symbols = [symbol for symbol in re.findall(r"\b[a-z_]+\b", self.coeffs[c].functionals[f].form, re.I) if symbol not in ufl_reserved()]
           symbols_found = 0
           for c2 in range(len(self.coeffs)):
-            if self.coeffs[c2].symbol in form_symbols: 
-              cpp += self.coeffs[c].functionals[f].functionalcoefficientspace_cpp(self.coeffs[c2].name, self.coeffs[c2].symbol, index=c2)
-              symbols_found =+ 1
+            for suffix in uflsymbol_suffixes():
+              if self.coeffs[c2].symbol+suffix in form_symbols: 
+                cpp += self.coeffs[c].functionals[f].coefficientspace_cpp(self.coeffs[c2], index=symbols_found, suffix=suffix)
+                symbols_found =+ 1
+                break
           if symbols_found == 0:
             cpp.append("          dolfin::error(\"Unknown coefficientname in ufc_fetch_coefficientspace\");\n")
             cpp.append("        }\n")
           else:
-            cpp.append("        else\n")
-            cpp.append("        {\n")
-            cpp.append("          dolfin::error(\"Unknown coefficientname in ufc_fetch_coefficientspace\");\n")
-            cpp.append("        }\n")
-        cpp.append("          else\n")
-        cpp.append("          {\n")
-        cpp.append("            dolfin::error(\"Unknown coefficientname in ufc_fetch_coefficientspace\");\n")
-        cpp.append("          }\n")
+            cpp.append("          else\n")
+            cpp.append("          {\n")
+            cpp.append("            dolfin::error(\"Unknown coefficientname in ufc_fetch_coefficientspace\");\n")
+            cpp.append("          }\n")
         cpp.append("        }\n")
         cpp.append("        else\n")
         cpp.append("        {\n")
@@ -276,7 +276,7 @@ class System:
     cpp.append("    }\n")
     return cpp
 
-  def coefficientspace_cpp(self, index=0):
+  def solvercoefficientspace_cpp(self, index=0):
     """Write an array of cpp strings describing the namespace of the coefficientspaces in the ufls."""
     cpp = []  
     if index == 0:
@@ -298,9 +298,11 @@ class System:
         if self.solvers[s].preamble: form_symbols += [symbol for symbol in re.findall(r"\b[a-z_]+\b", self.solvers[s].preamble, re.I) if symbol not in ufl_reserved()]
         symbols_found = 0
         for c in range(len(self.coeffs)):
-          if self.coeffs[c].symbol in form_symbols: 
-            cpp += self.coeffs[c].coefficientspace_cpp(self.solvers[s].name, index=c)
-            symbols_found =+ 1
+          for suffix in uflsymbol_suffixes():
+            if self.coeffs[c].symbol+suffix in form_symbols: 
+              cpp += self.coeffs[c].solvercoefficientspace_cpp(self.solvers[s].name, index=symbols_found, suffix=suffix)
+              symbols_found =+ 1
+              break
         if symbols_found == 0:
           cpp.append("        dolfin::error(\"Unknown coefficientname in ufc_fetch_coefficientspace\");\n")
           cpp.append("      }\n")
