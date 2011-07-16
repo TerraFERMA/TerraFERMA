@@ -184,7 +184,80 @@ class System:
       cpp += self.solvers[s].functionspace_cpp(index=s)
     cpp.append("      else\n")
     cpp.append("      {\n")
-    cpp.append("        dolfin::error(\"Unknown solvername in fetch_functionspace\");\n")
+    cpp.append("        dolfin::error(\"Unknown solvername in ufc_fetch_functionspace\");\n")
+    cpp.append("      }\n")
+    cpp.append("    }\n")
+    return cpp
+
+  def functionalcoefficientspace_cpp(self, index=0):
+    """Write an array of cpp strings describing the namespace of the coefficientspaces in the functional ufls."""
+    cpp = []  
+    if index == 0:
+      cpp.append("    if (systemname ==  \""+self.name+"\")\n")
+    else:
+      cpp.append("    else if (systemname ==  \""+self.name+"\")\n")
+    cpp.append("    {\n")
+    for c in range(len(self.fields)):
+      if c == 0:
+        cpp.append("      if (functionname ==  \""+self.fields[c].name+"\")\n")
+      else:
+        cpp.append("      else if (functionname ==  \""+self.fields[c].name+"\")\n")
+      cpp.append("      {\n")
+      if len(self.fields[c].functionals)==0:
+        cpp.append("        dolfin::error(\"Unknown functionalname in ufc_fetch_coefficientspace\");\n")
+        cpp.append("      }\n")
+      else:
+        for f in range(len(self.fields[c].functionals)):
+          if f == 0:
+            cpp.append("        if (functionalname ==  \""+self.fields[c].functionals[f].name+"\")\n")
+          else:
+            cpp.append("        else if (functionalname ==  \""+self.fields[c].functionals[f].name+"\")\n")
+          cpp.append("        {\n")
+          form_symbols = [symbol for symbol in re.findall(r"\b[a-z_]+\b", self.fields[c].functionals[f].form, re.I) if symbol not in ufl_reserved()]
+          symbols_found = 0
+          for c2 in range(len(self.coeffs)):
+            if self.coeffs[c2].symbol in form_symbols: 
+              cpp += self.fields[c].functionals[f].functionalcoefficientspace_cpp(self.coeffs[c2].name, self.coeffs[c2].symbol, index=c2)
+              symbols_found =+ 1
+          if symbols_found != 0:
+            cpp.append("        else\n")
+            cpp.append("        {\n")
+          cpp.append("          dolfin::error(\"Unknown coefficientname in ufc_fetch_coefficientspace\");\n")
+          cpp.append("        }\n")
+        cpp.append("        else\n")
+        cpp.append("        {\n")
+        cpp.append("          dolfin::error(\"Unknown functionalname in ufc_fetch_coefficientspace\");\n")
+        cpp.append("        }\n")
+        cpp.append("      }\n")
+    for c in range(len(self.coeffs)):
+      cpp.append("      else if (functionname ==  \""+self.coeffs[c].name+"\")\n")
+      cpp.append("      {\n")
+      if len(self.coeffs[c].functionals)==0:
+        cpp.append("        dolfin::error(\"Unknown functionalname in ufc_fetch_coefficientspace\");\n")
+        cpp.append("      }\n")
+      else:
+        for f in range(len(self.coeffs[c].functionals)):
+          if f == 0:
+            cpp.append("        if (functionalname ==  \""+self.coeffs[c].functionals[f].name+"\")\n")
+          else:
+            cpp.append("        else if (functionalname ==  \""+self.coeffs[c].functionals[f].name+"\")\n")
+          cpp.append("        {\n")
+          form_symbols = [symbol for symbol in re.findall(r"\b[a-z_]+\b", self.coeffs[c].functionals[f].form, re.I) if symbol not in ufl_reserved()]
+          for c2 in range(len(self.coeffs)):
+            if self.coeffs[c2].symbol in form_symbols: cpp += self.coeffs[c].functionals[f].functionalcoefficientspace_cpp(self.coeffs[c2].name, self.coeffs[c2].symbol, index=c2)
+        cpp.append("          else\n")
+        cpp.append("          {\n")
+        cpp.append("            dolfin::error(\"Unknown coefficientname in ufc_fetch_coefficientspace\");\n")
+        cpp.append("          }\n")
+        cpp.append("        }\n")
+        cpp.append("        else\n")
+        cpp.append("        {\n")
+        cpp.append("          dolfin::error(\"Unknown functionalname in ufc_fetch_coefficientspace\");\n")
+        cpp.append("        }\n")
+        cpp.append("      }\n")
+    cpp.append("      else\n")
+    cpp.append("      {\n")
+    cpp.append("        dolfin::error(\"Unknown functionname in ufc_fetch_coefficientspace\");\n")
     cpp.append("      }\n")
     cpp.append("    }\n")
     return cpp
@@ -204,7 +277,7 @@ class System:
         cpp.append("      else if (solvername ==  \""+self.solvers[s].name+"\")\n")
       cpp.append("      {\n")
       if len(self.coeffs)==0:
-        cpp.append("        dolfin::error(\"Unknown coefficientname in fetch_coefficientspace\");\n")
+        cpp.append("        dolfin::error(\"Unknown coefficientname in ufc_fetch_coefficientspace\");\n")
         cpp.append("      }\n")
       else:
         form_symbols = [symbol for form in self.solvers[s].forms for symbol in re.findall(r"\b[a-z_]+\b", form, re.I) if symbol not in ufl_reserved()]
@@ -213,12 +286,12 @@ class System:
           if self.coeffs[c].symbol in form_symbols: cpp += self.coeffs[c].coefficientspace_cpp(self.solvers[s].name, index=c)
         cpp.append("        else\n")
         cpp.append("        {\n")
-        cpp.append("          dolfin::error(\"Unknown coefficientname in fetch_coefficientspace\");\n")
+        cpp.append("          dolfin::error(\"Unknown coefficientname in ufc_fetch_coefficientspace\");\n")
         cpp.append("        }\n")
         cpp.append("      }\n")
     cpp.append("      else\n")
     cpp.append("      {\n")
-    cpp.append("        dolfin::error(\"Unknown solvername in fetch_functionspace\");\n")
+    cpp.append("        dolfin::error(\"Unknown solvername in ufc_fetch_functionspace\");\n")
     cpp.append("      }\n")
     cpp.append("    }\n")
     return cpp
@@ -242,17 +315,17 @@ class System:
       cpp += self.solvers[s].form_cpp()
       cpp.append("          else\n")
       cpp.append("          {\n")
-      cpp.append("            dolfin::error(\"Unknown formname in fetch_form\");\n")
+      cpp.append("            dolfin::error(\"Unknown formname in ufc_fetch_form\");\n")
       cpp.append("          }\n")
       cpp.append("        }\n")
       cpp.append("        else\n")
       cpp.append("        {\n")
-      cpp.append("          dolfin::error(\"Unknown solvertype in fetch_form\");\n")
+      cpp.append("          dolfin::error(\"Unknown solvertype in ufc_fetch_form\");\n")
       cpp.append("        }\n")
       cpp.append("      }\n")
     cpp.append("      else\n")
     cpp.append("      {\n")
-    cpp.append("        dolfin::error(\"Unknown systemname in fetch_form\");\n")
+    cpp.append("        dolfin::error(\"Unknown systemname in ufc_fetch_form\");\n")
     cpp.append("      }\n")
     cpp.append("    }\n")
     return cpp
@@ -274,12 +347,12 @@ class System:
       for a in range(len(self.fields[f].functionals)):
         cpp += self.fields[f].functionals[a].cpp(index=a)
       if len(self.fields[f].functionals)==0:
-        cpp.append("        dolfin::error(\"Unknown functionalname in fetch_functional\");\n")
+        cpp.append("        dolfin::error(\"Unknown functionalname in ufc_fetch_functional\");\n")
         cpp.append("      }\n")
       else:
         cpp.append("        else\n")
         cpp.append("        {\n")
-        cpp.append("          dolfin::error(\"Unknown functionalname in fetch_functional\");\n")
+        cpp.append("          dolfin::error(\"Unknown functionalname in ufc_fetch_functional\");\n")
         cpp.append("        }\n")
         cpp.append("      }\n")
     for c in range(len(self.coeffs)):
@@ -291,17 +364,17 @@ class System:
       for a in range(len(self.coeffs[c].functionals)):
         cpp += self.coeffs[c].functionals[a].cpp(index=a)
       if len(self.coeffs[c].functionals)==0:
-        cpp.append("        dolfin::error(\"Unknown functionalname in fetch_functional\");\n")
+        cpp.append("        dolfin::error(\"Unknown functionalname in ufc_fetch_functional\");\n")
         cpp.append("      }\n")
       else:
         cpp.append("        else\n")
         cpp.append("        {\n")
-        cpp.append("          dolfin::error(\"Unknown functionalname in fetch_functional\");\n")
+        cpp.append("          dolfin::error(\"Unknown functionalname in ufc_fetch_functional\");\n")
         cpp.append("        }\n")
         cpp.append("      }\n")
     cpp.append("      else\n")
     cpp.append("      {\n")
-    cpp.append("        dolfin::error(\"Unknown functionname in fetch_functional\");\n")
+    cpp.append("        dolfin::error(\"Unknown functionname in ufc_fetch_functional\");\n")
     cpp.append("      }\n")
     cpp.append("    }\n")
     return cpp
