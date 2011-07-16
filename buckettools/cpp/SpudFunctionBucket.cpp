@@ -5,24 +5,24 @@
 #include <string>
 #include <spud>
 #include "SystemsWrapper.h"
-#include "System.h"
+#include "SpudSystem.h"
 #include "SpudBase.h"
 
 using namespace buckettools;
 
 // Specific constructor
-SpudFunctionBucket::SpudFunctionBucket(std::string name, std::string optionpath, 
+SpudFunctionBucket::SpudFunctionBucket(std::string name, std::string uflsymbol, std::string optionpath, 
                                        GenericFunction_ptr function, System* system) : 
-                                       optionpath_(optionpath), FunctionBucket(name, function, function, function, system)
+                                       optionpath_(optionpath), FunctionBucket(name, uflsymbol, function, function, function, system)
 {
   // Do nothing
 }
 
 // Specific constructor
-SpudFunctionBucket::SpudFunctionBucket(std::string name, std::string optionpath, 
+SpudFunctionBucket::SpudFunctionBucket(std::string name, std::string uflsymbol, std::string optionpath, 
                                        GenericFunction_ptr function, GenericFunction_ptr oldfunction, 
                                        GenericFunction_ptr iteratedfunction, System* system) : 
-                                       optionpath_(optionpath), FunctionBucket(name, function, oldfunction, iteratedfunction, system)
+                                       optionpath_(optionpath), FunctionBucket(name, uflsymbol, function, oldfunction, iteratedfunction, system)
 {
   // Do nothing
 }
@@ -55,12 +55,14 @@ void SpudFunctionBucket::functionals_fill_(const std::string &optionpath)
   std::stringstream buffer;
   Spud::OptionError serr;
    
-  std::string funcname;
+  std::string functionalname;
   buffer.str(""); buffer << optionpath << "/name";
-  serr = Spud::get_option(buffer.str(), funcname); spud_err(buffer.str(), serr);
+  serr = Spud::get_option(buffer.str(), functionalname); spud_err(buffer.str(), serr);
+  std::cout << "function name " << name() << std::endl;
+  std::cout << "functional name " << functionalname << std::endl;
 
-  Form_ptr functional = ufc_fetch_functional((*system_).name(), name(), funcname, (*system_).mesh());
-  register_functional(functional, funcname, optionpath);
+  Form_ptr functional = ufc_fetch_functional((*system_).name(), name(), functionalname, (*system_).mesh());
+  register_functional(functional, functionalname, optionpath);
 
   // Loop over the functions requested by the form and hook up (potentially currently null) pointers
   uint ncoeff = (*functional).num_coefficients();
@@ -68,6 +70,27 @@ void SpudFunctionBucket::functionals_fill_(const std::string &optionpath)
   {
     std::string uflsymbol = (*functional).coefficient_name(i);
     GenericFunction_ptr function = (*system_).fetch_uflsymbol(uflsymbol);
+    if (!function)
+    {
+      std::string functionname = (*system_).fetch_uflname(uflsymbol);
+      std::cout << "  requesting coefficient " << uflsymbol << ", " << functionname << std::endl; 
+      std::cout << "  function not initialised" << std::endl;
+      if (Spud::have_option((*dynamic_cast<SpudSystem*>(system_)).optionpath()+"/coefficient::"+functionname+"/type::Function"))
+      {
+        std::cout << "  but it is a function" << std::endl;
+      }
+      else
+      {
+        std::cout << "  and it is NOT a function" << std::endl;
+      }
+
+    }
+    else
+    {
+      std::cout << "  requesting coefficient " << uflsymbol << std::endl; 
+      std::cout << "  function is initialised" << std::endl;
+    }
+
     (*functional).set_coefficient(uflsymbol, function);
   }
 

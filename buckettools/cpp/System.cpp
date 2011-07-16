@@ -162,6 +162,23 @@ void System::register_uflname(std::string name, std::string uflsymbol)
   }
 }
 
+// Return a pointer to a dolfin GenericFunction with the given uflsymbol
+std::string System::fetch_uflname(std::string uflsymbol)
+{
+  // First check if a subfunctionspace with this name already exists
+  string_it s_it = uflnames_.find(uflsymbol);
+  if (s_it == uflnames_.end())
+  {
+    // if it doesn't, issue an error
+    dolfin::error("Name with uflsymbol \"%s\" does not exist in system.", uflsymbol.c_str());
+  }
+  else
+  {
+    // if not then return it
+    return (*s_it).second;
+  }
+}
+
 // Register a ufl symbol-function name pair
 void System::register_uflsymbol(GenericFunction_ptr function, std::string uflsymbol)
 {
@@ -274,7 +291,14 @@ std::string System::uflsymbols_str(int indent) const
   std::string indentation (indent*2, ' ');
   for ( GenericFunction_const_it g_it = uflsymbols_.begin(); g_it != uflsymbols_.end(); g_it++ )
   {
-    s << indentation << "UFLSymbol " << (*g_it).first << std::endl;
+    if ((*g_it).second)
+    {
+      s << indentation << "UFLSymbol " << (*g_it).first << " associated" << std::endl;
+    }
+    else
+    {
+      s << indentation << "UFLSymbol " << (*g_it).first << " not associated" << std::endl;
+    }
   }
   return s.str();
 }

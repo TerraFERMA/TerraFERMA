@@ -21,6 +21,9 @@ namespace buckettools
     // the function name
     std::string name_;
 
+    // ufl symbol
+    std::string uflsymbol_;
+
     // Empty the data structures of the function
     void empty_();
 
@@ -41,10 +44,10 @@ namespace buckettools
 
     // Specific constructor with an uninitialised name
     FunctionBucket(GenericFunction_ptr function, GenericFunction_ptr oldfunction, GenericFunction_ptr iteratedfunction, System* system)
-    { FunctionBucket("uninitialised_name", function, oldfunction, iteratedfunction, system); }
+    { FunctionBucket("uninitialised_name", "uninitialised_symbol", function, oldfunction, iteratedfunction, system); }
 
     // Specific constructor
-    FunctionBucket(std::string name, GenericFunction_ptr function, GenericFunction_ptr oldfunction, GenericFunction_ptr iteratedfunction, System* system);
+    FunctionBucket(std::string name, std::string uflsymbol, GenericFunction_ptr function, GenericFunction_ptr oldfunction, GenericFunction_ptr iteratedfunction, System* system);
     
     // Default destructor
     ~FunctionBucket();
