@@ -50,3 +50,7 @@ def ufl_reserved():
   """Returns an (incomplete) array of ufl symbols that are considered reserved."""
   return ['rhs', 'lhs', 'action', 'dx', 'ds', 'dS', 'inner', 'dot', 'grad', 'div', 'sym', 'derivative']
 
+def uflsymbol_suffixes():
+  """Returns an array of available function symbols in the ufl."""
+  return ["", "_i", "_n"]
+

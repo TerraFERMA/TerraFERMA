@@ -47,14 +47,14 @@ class Function:
     ufl.append("\n")
     return ufl
 
-  def coefficientspace_cpp(self, solvername, index=0):
+  def solvercoefficientspace_cpp(self, solvername, index=0, suffix=""):
     cpp = [] 
     if index == 0:
       cpp.append("        if (coefficientname ==  \""+self.name+"\")\n")
     else:
       cpp.append("        else if (coefficientname ==  \""+self.name+"\")\n")
     cpp.append("        {\n")
-    cpp.append("          coefficientspace.reset(new "+self.system.name+solvername+"::CoefficientSpace_"+self.symbol+"(*mesh));\n")
+    cpp.append("          coefficientspace.reset(new "+self.system.name+solvername+"::CoefficientSpace_"+self.symbol+suffix+"(*mesh));\n")
     cpp.append("        }\n")
     return cpp
 

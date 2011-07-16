@@ -80,14 +80,14 @@ class Functional:
     cpp.append("        }\n")
     return cpp
 
-  def functionalcoefficientspace_cpp(self, coeffname, coeffsymbol, index=0):
+  def coefficientspace_cpp(self, coeff, index=0, suffix=""):
     cpp = [] 
     if index == 0:
-      cpp.append("          if (coefficientname ==  \""+coeffname+"\")\n")
+      cpp.append("          if (coefficientname ==  \""+coeff.name+"\")\n")
     else:
-      cpp.append("          else if (coefficientname ==  \""+coeffname+"\")\n")
+      cpp.append("          else if (coefficientname ==  \""+coeff.name+"\")\n")
     cpp.append("          {\n")
-    cpp.append("            coefficientspace.reset(new "+self.namespace()+"::CoefficientSpace_"+coeffsymbol+"(*mesh));\n")
+    cpp.append("            coefficientspace.reset(new "+self.namespace()+"::CoefficientSpace_"+coeff.symbol+suffix+"(*mesh));\n")
     cpp.append("          }\n")
     return cpp
 
