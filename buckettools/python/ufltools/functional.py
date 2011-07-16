@@ -27,11 +27,13 @@ class Functional:
     for coeff in self.function.system.coeffs:
       if coeff.type=="Constant":
         ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
-        ufl.append(constant_ufl(coeff.symbol, coeff.system.cell))
+        for suffix in function_suffixes():
+          ufl.append(constant_ufl(coeff.symbol, coeff.system.cell, suffix=suffix))
       else:
         ufl += coeff.element_ufl()
         ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
-        ufl.append(coefficient_ufl(coeff.symbol))
+        for suffix in function_suffixes():
+          ufl.append(coefficient_ufl(coeff.symbol, suffix=suffix))
       ufl.append("\n\n")
     ufl.append("\n")
     ufl.append(declaration_comment("Form", "form", self.name))
