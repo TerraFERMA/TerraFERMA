@@ -41,7 +41,7 @@ namespace buckettools
     // the function (at several time-levels) on the above functionspace_
     Function_ptr function_, oldfunction_, iteratedfunction_;
 
-    // a map from field names to the subfunctionspaces they are described on
+    // a map from field names to the (sub)functionspaces they are described on
     std::map< std::string, FunctionSpace_ptr > subfunctionspaces_;
     
     // a map from field names to the functionbuckets of fields (subfunctions)
@@ -108,6 +108,9 @@ namespace buckettools
 
     // Register a ufl system and function pointer in the system
     void register_uflsymbol(GenericFunction_ptr function, std::string uflsymbol);
+
+    // Return the name of a function with uflsymbol
+    std::string fetch_uflname(std::string uflsymbol);
 
     // Create a ufl system pointing at a null function pointer
     void create_uflsymbol(std::string uflsymbol);
