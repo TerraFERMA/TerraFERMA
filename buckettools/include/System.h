@@ -62,6 +62,9 @@ namespace buckettools
     // a map from ufl symbols to field and coefficient names
     std::map< std::string, std::string > uflnames_;
     
+    // a map from ufl symbols to pointers to functions
+    std::map< std::string, GenericFunction_ptr > uflsymbols_;
+    
   public:
 
     // No default constructor - always require a mesh pointer
@@ -100,8 +103,17 @@ namespace buckettools
     // Register an initial condition expression
     void register_icexpression(Expression_ptr ic, uint component);
 
-    // Register a bc expression in the system
+    // Register a ufl name
     void register_uflname(std::string name, std::string uflsymbol);
+
+    // Register a ufl system and function pointer in the system
+    void register_uflsymbol(GenericFunction_ptr function, std::string uflsymbol);
+
+    // Create a ufl system pointing at a null function pointer
+    void create_uflsymbol(std::string uflsymbol);
+
+    // Reset a function associated with a ufl system
+    void reset_uflsymbol(GenericFunction_ptr function, std::string uflsymbol);
 
     // Return a string describing the contents of the system
     virtual std::string str() const

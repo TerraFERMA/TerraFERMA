@@ -148,7 +148,7 @@ void System::register_icexpression(Expression_ptr ic, uint component)
 // Register a ufl symbol-function name pair
 void System::register_uflname(std::string name, std::string uflsymbol)
 {
-  // First check if a bc with this name already exists
+  // First check if a name with this symbol already exists
   string_it s_it = uflnames_.find(uflsymbol);
   if (s_it != uflnames_.end())
   {
@@ -159,6 +159,58 @@ void System::register_uflname(std::string name, std::string uflsymbol)
   {
     // if not then insert it into the maps
     uflnames_[uflsymbol] = name;
+  }
+}
+
+// Register a ufl symbol-function name pair
+void System::register_uflsymbol(GenericFunction_ptr function, std::string uflsymbol)
+{
+  // First check if a function with this symbol already exists
+  GenericFunction_it g_it = uflsymbols_.find(uflsymbol);
+  if (g_it != uflsymbols_.end())
+  {
+    // if it does, issue an error
+    dolfin::error("GenericFunction with ufl symbol \"%s\" already exists in system.", uflsymbol.c_str());
+  }
+  else
+  {
+    // if not then insert it into the maps
+    uflsymbols_[uflsymbol] = function;
+  }
+}
+
+// Create a ufl symbol-function name pair
+void System::create_uflsymbol(std::string uflsymbol)
+{
+  // First check if a function with this symbol already exists
+  GenericFunction_it g_it = uflsymbols_.find(uflsymbol);
+  if (g_it != uflsymbols_.end())
+  {
+    // if it does, issue an error
+    dolfin::error("GenericFunction with ufl symbol \"%s\" already exists in system.", uflsymbol.c_str());
+  }
+  else
+  {
+    // if not then insert it into the maps
+    GenericFunction_ptr function;
+    uflsymbols_[uflsymbol] = function;
+  }
+}
+
+// Reset a ufl symbol-function name pair
+void System::reset_uflsymbol(GenericFunction_ptr function, std::string uflsymbol)
+{
+  // First check if a function with this symbol already exists
+  GenericFunction_it g_it = uflsymbols_.find(uflsymbol);
+  if (g_it == uflsymbols_.end())
+  {
+    // if it doesn't, issue an error
+    dolfin::error("GenericFunction with ufl symbol \"%s\" doesn't exist in system.", uflsymbol.c_str());
+  }
+  else
+  {
+    // if not then insert it into the maps
+    (*g_it).second = function;
   }
 }
 
