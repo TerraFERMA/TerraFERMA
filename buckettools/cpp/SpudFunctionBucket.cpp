@@ -353,23 +353,21 @@ void SpudFunctionBucket::functionals_fill_()
       GenericFunction_ptr function = (*system_).fetch_uflsymbol(uflsymbol);
       if (!function)
       {
+        // the function is into initialised so either we haven't reached it yet or
+        // we got to it but weren't able to initialise it because we didn't have its
+        // function space available yet... let's see if it's a function
         std::string functionname = (*system_).fetch_uflname(uflsymbol);
-        std::cout << "  requesting coefficient " << uflsymbol << ", " << functionname << std::endl; 
-        std::cout << "  function not initialised" << std::endl;
         if (Spud::have_option((*dynamic_cast<SpudSystem*>(system_)).optionpath()+"/coefficient::"+functionname+"/type::Function"))
         {
-          std::cout << "  but it is a function" << std::endl;
+          // yes, it's a coefficient function... so let's take this opportunity to register
+          // its functionspace
+          if (!(*system_).contains_coefficientspace(functionname))
+          {
+            FunctionSpace_ptr coefficientspace;
+            coefficientspace = ufc_fetch_coefficientspace((*system_).name(), name(), functionalname, functionname, (*system_).mesh());
+            (*system_).register_coefficientspace(coefficientspace, functionname);
+          }
         }
-        else
-        {
-          std::cout << "  and it is NOT a function" << std::endl;
-        }
-
-      }
-      else
-      {
-        std::cout << "  requesting coefficient " << uflsymbol << std::endl; 
-        std::cout << "  function is initialised" << std::endl;
       }
 
       (*functional).set_coefficient(uflsymbol, function);

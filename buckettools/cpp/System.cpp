@@ -161,6 +161,31 @@ GenericFunction_ptr System::fetch_uflsymbol(std::string uflsymbol)
   }
 }
 
+// Register a coefficientspace in the system
+void System::register_coefficientspace(FunctionSpace_ptr coefficientspace, std::string name)
+{
+  // First check if a field with this name already exists
+  FunctionSpace_it f_it = coefficientspaces_.find(name);
+  if (f_it != coefficientspaces_.end())
+  {
+    // if it does, issue an error
+    dolfin::error("FunctionSpace named \"%s\" already exists in system coefficientspaces.", name.c_str());
+  }
+  else
+  {
+    // if not then insert it into the maps
+    coefficientspaces_[name] = coefficientspace;
+  }
+}
+
+// Check if the system contains a coefficientspace with the given name
+bool System::contains_coefficientspace(std::string name)
+{
+  // First check if a field with this name already exists
+  FunctionSpace_it f_it = coefficientspaces_.find(name);
+  return f_it != coefficientspaces_.end();
+}
+
 // Return a string describing the contents of the system
 std::string System::str(int indent) const
 {

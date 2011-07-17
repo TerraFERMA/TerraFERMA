@@ -55,6 +55,8 @@ namespace buckettools
     
     // a map from ufl symbols to pointers to functions
     std::map< std::string, GenericFunction_ptr > uflsymbols_;
+
+    std::map< std::string, FunctionSpace_ptr > coefficientspaces_;
     
   public:
 
@@ -90,6 +92,10 @@ namespace buckettools
 
     // Return a pointer to a dolfin GenericFunction with the given uflsymbol
     GenericFunction_ptr fetch_uflsymbol(std::string uflsymbol);
+
+    void register_coefficientspace(FunctionSpace_ptr coefficientspace, std::string name);
+
+    bool contains_coefficientspace(std::string name);
 
     // Return a string describing the contents of the system
     virtual std::string str() const
