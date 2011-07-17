@@ -47,8 +47,7 @@ namespace buckettools
   public:
     
     // Default constructor (the name really isn't all that necessary)
-    Bucket()
-    { Bucket("uninitialised_name"); }
+    Bucket();
 
     // Optional constructor specifying the name
     Bucket(std::string name);

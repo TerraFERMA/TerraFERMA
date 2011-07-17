@@ -7,6 +7,12 @@
 
 using namespace buckettools;
 
+// Default constructor
+Bucket::Bucket()
+{
+  // Do nothing
+}
+
 // Specific constructor
 Bucket::Bucket(std::string name) : name_(name)
 {

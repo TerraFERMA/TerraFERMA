@@ -21,13 +21,16 @@ namespace buckettools
   // only accessible by this class
   private:
 
-    // the system name
-    std::string name_;
-
     // Empty the data structures of the system
     void empty_();
 
   protected:
+
+    // the system name
+    std::string name_;
+
+    // the system uflsymbol
+    std::string uflsymbol_;
 
     // a pointer to the parent bucket of this system
     Bucket* bucket_;
@@ -41,24 +44,12 @@ namespace buckettools
     // the function (at several time-levels) on the above functionspace_
     Function_ptr function_, oldfunction_, iteratedfunction_;
 
-    // a map from field names to the (sub)functionspaces they are described on
-    std::map< std::string, FunctionSpace_ptr > subfunctionspaces_;
-    
     // a map from field names to the functionbuckets of fields (subfunctions)
     std::map< std::string, FunctionBucket_ptr > fields_;
     
     // a map from coefficient names to the functionbuckets of coefficients
     std::map< std::string, FunctionBucket_ptr > coeffs_;
     
-    // a map from field::bc names to the subfunctionspaces they are described on
-    std::map< std::string, Expression_ptr > bcexpressions_;
-    
-    // a map from field::bc::id names to dirichlet boundary conditions
-    std::map< std::string, DirichletBC_ptr > dirichletbcs_;
-    
-    // a map from component integer index to initial condition expression
-    std::map< uint, Expression_ptr > icexpressions_;
-
     // a map from ufl symbols to field and coefficient names
     std::map< std::string, std::string > uflnames_;
     
@@ -67,41 +58,20 @@ namespace buckettools
     
   public:
 
-    // No default constructor - always require a mesh pointer
-
-    // Specific constructor with an uninitialised name
-    System(Mesh_ptr mesh, Bucket* bucket)
-    { System("uninitialised_name", mesh, bucket); }
+    // Default constructor
+    System();
 
     // Specific constructor
-    System(std::string name, Mesh_ptr mesh, Bucket* bucket);
+    System(Bucket* bucket);
     
     // Default destructor
     ~System();
-
-    // Register a subfunctionspace in the system
-    void register_subfunctionspace(FunctionSpace_ptr subfunctionspace, std::string name);
-
-    // Return whether a subfunctionspace with the given name is in the system
-    bool contains_subfunctionspace(std::string name);
-
-    // Return a pointer to a dolfin subfunctionspace with the given name
-    FunctionSpace_ptr fetch_subfunctionspace(std::string name);
 
     // Register a field (subfunction) in the system
     void register_field(FunctionBucket_ptr field, std::string name);
 
     // Register a coefficient (expression or function) in the system
     void register_coeff(FunctionBucket_ptr coeff, std::string name);
-
-    // Register a bc expression in the system
-    void register_bcexpression(Expression_ptr bcexpression, std::string name);
-
-    // Register a bc expression in the system
-    void register_dirichletbc(DirichletBC_ptr bc, std::string name);
-
-    // Register an initial condition expression
-    void register_icexpression(Expression_ptr ic, uint component);
 
     // Register a ufl name
     void register_uflname(std::string name, std::string uflsymbol);
@@ -149,27 +119,32 @@ namespace buckettools
     // Print a description of the coefficients contained in the system
     virtual std::string coeffs_str(int indent) const;
 
-    // Print a description of the bcexpressions contained in the system
-    virtual std::string bcexpressions_str() const
-    { bcexpressions_str(0); }
-
-    // Print a description of the bcexpressions contained in the system
-    virtual std::string bcexpressions_str(int indent) const;
-
-    // Print a description of the icexpressions contained in the system
-    virtual std::string icexpressions_str() const
-    { icexpressions_str(0); }
-
-    // Print a description of the icexpressions contained in the system
-    virtual std::string icexpressions_str(int indent) const;
-
     // Return the system name
     std::string name() const
     { return name_; }
 
+    // Return the system uflsymbol
+    std::string uflsymbol() const
+    { return uflsymbol_; }
+
     // Return a pointer to the system mesh
     Mesh_ptr mesh() const
     { return mesh_; }
+
+    FunctionSpace_ptr functionspace() const
+    { return functionspace_; }
+
+    Function_ptr function() const
+    { return function_; }
+
+    Function_ptr oldfunction() const
+    { return oldfunction_; }
+
+    Function_ptr iteratedfunction() const
+    { return iteratedfunction_; }
+
+    Bucket* bucket() const
+    { return bucket_; }
 
   };
 

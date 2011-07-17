@@ -15,6 +15,18 @@
 using namespace buckettools;
 
 // Default constructor for spudbucket derived class
+SpudBucket::SpudBucket() : Bucket()
+{
+  // Do nothing
+}
+
+// Default constructor for spudbucket derived class
+SpudBucket::SpudBucket(std::string name) : Bucket(name)
+{
+  // Do nothing
+}
+
+// Default constructor for spudbucket derived class
 SpudBucket::SpudBucket(std::string name, std::string optionpath) : optionpath_(optionpath), Bucket(name)
 {
   // Do nothing
@@ -107,27 +119,11 @@ void SpudBucket::meshes_fill_(const std::string &optionpath)
 // Insert a system (with optionpath) into the bucket
 void SpudBucket::systems_fill_(const std::string &optionpath)
 {
-  // A string buffer for option paths
-  std::stringstream buffer;
-  Spud::OptionError serr;
-
-  // Get the system name
-  std::string sysname;
-  buffer.str(""); buffer << optionpath << "/name";
-  serr = Spud::get_option(buffer.str(), sysname); spud_err(buffer.str(), serr);
-
-  // Get the name of the mesh this system is defined on
-  std::string meshname;
-  buffer.str(""); buffer << optionpath << "/mesh/name";
-  serr = Spud::get_option(buffer.str(), meshname); spud_err(buffer.str(), serr);
-  // and then extract the mesh from the bucket we're filling
-  Mesh_ptr mesh = fetch_mesh(meshname);
-
-  SpudSystem_ptr system( new SpudSystem(sysname, optionpath, mesh, this) );
+  SpudSystem_ptr system( new SpudSystem(optionpath, this) );
 
   (*system).fill();
 
-  register_system(system, sysname, optionpath);
+  register_system(system, (*system).name());
 }
 
 // Register a pointer to a DOLFIN mesh (and an optionpath)
@@ -189,65 +185,6 @@ string_const_it SpudBucket::mesh_optionpaths_end() const
   return mesh_optionpaths_.end();
 }
 
-// Register a pointer to a system (and an optionpath)
-void SpudBucket::register_system(System_ptr system, std::string name, std::string optionpath)
-{
-  // First check if a system with this name already exists
-  System_it s_it = systems_.find(name);
-  if (s_it != systems_end())
-  {
-    // if it does, issue an error
-    dolfin::error("System named \"%s\" already exists in spudbucket.", name.c_str());
-  }
-  else
-  {
-    // if not then insert it into the maps
-    systems_[name]            = system;
-    system_optionpaths_[name] = optionpath;
-  }
-}
-
-// Fetch the option path for a system
-std::string SpudBucket::fetch_system_optionpath(const std::string name)
-{
-  // Check if the system exists in the bucket
-  string_it s_it = system_optionpaths_.find(name);
-  if (s_it == system_optionpaths_end())
-  {
-    // if it doesn't then throw an error
-    dolfin::error("System named \"%s\" does not exist in spudbucket.", name.c_str());
-  }
-  else
-  {
-    // if it does then return the pointer to the system
-    return (*s_it).second;
-  }
-}
-
-// Public iterator access
-string_it SpudBucket::system_optionpaths_begin()
-{
-  return system_optionpaths_.begin();
-}
-
-// Public iterator access
-string_const_it SpudBucket::system_optionpaths_begin() const
-{
-  return system_optionpaths_.begin();
-}
-
-// Public iterator access
-string_it SpudBucket::system_optionpaths_end()
-{
-  return system_optionpaths_.end();
-}
-
-// Public iterator access
-string_const_it SpudBucket::system_optionpaths_end() const
-{
-  return system_optionpaths_.end();
-}
-
 // Describe the contents of the mesh_optionpaths_ map
 std::string SpudBucket::meshes_str(int indent) const
 {
@@ -262,25 +199,10 @@ std::string SpudBucket::meshes_str(int indent) const
   return s.str();
 }
 
-// Describe the contents of the system_optionpaths_ map
-std::string SpudBucket::system_optionpaths_str(int indent) const
-{
-  std::stringstream s;
-  std::string indentation (indent*2, ' ');
-
-  for ( string_const_it s_it = system_optionpaths_begin(); s_it != system_optionpaths_end(); s_it++ )
-  {
-    s << indentation << "System " << (*s_it).first << ": " << (*s_it).second  << std::endl;
-  }
-
-  return s.str();
-}
-
 // Empty the spudbucket
 void SpudBucket::empty_()
 {
   mesh_optionpaths_.clear();
-  system_optionpaths_.clear();
 }
 
 //void SpudBucket::detectors_fill_()

@@ -23,10 +23,6 @@ namespace buckettools
     // supplementary to the bucket base data store the optionpaths for the meshes_
     std::map< std::string, std::string > mesh_optionpaths_;
 
-    // supplementary to the bucket base data store the optionpaths for the systems_
-    // (superfluous? as each spudsystem derived class can also store this info, unlike meshes)
-    std::map< std::string, std::string > system_optionpaths_;
-
     // populate the meshes_ data structure
     void meshes_fill_(const std::string &optionpath);
     
@@ -43,12 +39,10 @@ namespace buckettools
   public:
     
     // Default constructor
-    SpudBucket()
-    { SpudBucket("uninitialised_name", ""); }
+    SpudBucket();
     
     // Specific constructor (assume string is a name and optionpath is empty)
-    SpudBucket(std::string name)
-    { SpudBucket(name, ""); }
+    SpudBucket(std::string name);
     
     // Specific constructor
     SpudBucket(std::string name, std::string option_path);
@@ -78,37 +72,12 @@ namespace buckettools
     // Return the const iterator to the end of the mesh_optionpaths_ map
     string_const_it mesh_optionpaths_end() const;
  
-    // Register a system in the bucket with an optionpath in the derived class
-    void register_system(System_ptr system, std::string name, std::string optionpath);
-
-    // Return the optionpath to a named system
-    std::string fetch_system_optionpath(const std::string name);
-
-    // Return the iterator to the beginning of the system_optionpaths_ map
-    string_it system_optionpaths_begin();
-
-    // Return the const iterator to the beginning of the system_optionpaths_ map
-    string_const_it system_optionpaths_begin() const;
-
-    // Return the iterator to the end of the system_optionpaths_ map
-    string_it system_optionpaths_end();
-
-    // Return the const iterator to the end of the system_optionpaths_ map
-    string_const_it system_optionpaths_end() const;
- 
     // Describe the meshes in the spudbucket (including optionpaths)
     std::string meshes_str() const
     { meshes_str(0); }
 
     // Describe the meshes in the spudbucket (including optionpaths)
     std::string meshes_str(int indent) const;
-
-    // Describe the systems in the spudbucket (including optionpaths)
-    std::string system_optionpaths_str() const
-    { system_optionpaths_str(0); }
-
-    // Describe the systems in the spudbucket (including optionpaths)
-    std::string system_optionpaths_str(int indent) const;
 
     // return the optionpath for this bucket
     std::string optionpath()

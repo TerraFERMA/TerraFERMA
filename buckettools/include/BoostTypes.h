@@ -47,6 +47,8 @@ namespace buckettools {
   typedef std::map< std::string, DirichletBC_ptr >::const_iterator     DirichletBC_const_it;
   typedef std::map< uint, Expression_ptr >::iterator                   uint_Expression_it;
   typedef std::map< uint, Expression_ptr >::const_iterator             uint_Expression_const_it;
+  typedef std::map< int, FunctionSpace_ptr >::iterator                 int_FunctionSpace_it;
+  typedef std::map< int, FunctionSpace_ptr >::const_iterator           int_FunctionSpace_const_it;
 
   // Define iterator types for things accessed in the function maps (defined below)
   typedef std::map< std::string, Form_ptr >::iterator       Form_it;

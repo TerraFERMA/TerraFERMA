@@ -23,25 +23,40 @@ namespace buckettools
     // supplementary to the function base data store the optionpaths for the functionals_
     std::map< std::string, std::string > functional_optionpaths_;
     
+    // fill in the base data
+    void base_fill_(const uint &index, const uint &component);
+ 
+    void field_fill_();
+
+    void coeff_fill_();
+
+    void ic_fill_(const std::string &optionpath);
+
+    void bc_component_fill_(const std::string &optionpath,
+                            const std::string &bcname,
+                            const std::vector<int> &bcids,
+                            const MeshFunction_uint_ptr &edgeidmeshfunction);
+
+    void bc_fill_(const std::string &optionpath,
+                  const MeshFunction_uint_ptr &edgeidmeshfunction);
+
     // fill in the information related to the functionals of this function
     void functionals_fill_(const std::string &optionpath);
 
   public:
     
-    // Specific constructor - with no iterated or old functions
-    SpudFunctionBucket(std::string name, std::string uflsymbol, std::string optionpath, 
-                       GenericFunction_ptr function, System* system);
-    
     // Specific constructor
-    SpudFunctionBucket(std::string name, std::string uflsymbol, std::string optionpath, 
-                       GenericFunction_ptr function, GenericFunction_ptr oldfunction,
-                       GenericFunction_ptr iteratedfunction, System* system);
+    SpudFunctionBucket(std::string optionpath, System* system);
     
     // Default destructor (virtual so it calls base class as well)
     virtual ~SpudFunctionBucket();
 
     // Fill the function assuming the buckettools schema
-    void fill();
+    void fill(const uint &index)
+    { fill(index, -1); }
+
+    // Fill the function assuming the buckettools schema
+    void fill(const uint &index, const uint &component);
 
     // Register a functional in the function (with a spud optionpath)
     void register_functional(Form_ptr functional, std::string name, std::string optionpath);
