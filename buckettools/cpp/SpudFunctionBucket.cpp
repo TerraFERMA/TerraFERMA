@@ -299,7 +299,8 @@ void SpudFunctionBucket::fill(const uint &index, const uint &component)
 
   base_fill_(index, component);
 
-  if (Spud::have_option((*dynamic_cast<SpudSystem*>(system_)).optionpath()+"/field::"+name()) && Spud::have_option((*dynamic_cast<SpudSystem*>(system_)).optionpath()+"/coefficient::"+name()))
+  if (Spud::have_option((*dynamic_cast<SpudSystem*>(system_)).optionpath()+"/field::"+name()) 
+      && Spud::have_option((*dynamic_cast<SpudSystem*>(system_)).optionpath()+"/coefficient::"+name()))
   {
     dolfin::error("Nonunique names between a field and a coefficient, can't tell which is which.");
   }
