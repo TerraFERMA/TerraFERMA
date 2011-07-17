@@ -41,7 +41,7 @@ namespace buckettools
                   const MeshFunction_uint_ptr &edgeidmeshfunction);
 
     // fill in the information related to the functionals of this function
-    void functionals_fill_(const std::string &optionpath);
+    void functionals_fill_();
 
   public:
     

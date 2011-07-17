@@ -319,59 +319,61 @@ void SpudFunctionBucket::fill(const uint &index, const uint &component)
     dolfin::error("Unknown function type.");
   }
 
-  buffer.str(""); buffer << optionpath() << "/type/output/include_in_diagnostics/functional";
-  int nfuncs = Spud::option_count(buffer.str());
-  for (uint i = 0; i < nfuncs; i++)
-  {
-    buffer.str(""); buffer << optionpath() << "/type/output/include_in_diagnostics/functional[" << i << "]";
-    functionals_fill_(buffer.str());
-  }
+  functionals_fill_();
 
 }
 
-void SpudFunctionBucket::functionals_fill_(const std::string &optionpath)
+void SpudFunctionBucket::functionals_fill_()
 {
   // A buffer to put option paths (and strings) in
   std::stringstream buffer;
   Spud::OptionError serr;
    
-  std::string functionalname;
-  buffer.str(""); buffer << optionpath << "/name";
-  serr = Spud::get_option(buffer.str(), functionalname); spud_err(buffer.str(), serr);
-  std::cout << "function name " << name() << std::endl;
-  std::cout << "functional name " << functionalname << std::endl;
-
-  Form_ptr functional = ufc_fetch_functional((*system_).name(), name(), functionalname, (*system_).mesh());
-  register_functional(functional, functionalname, optionpath);
-
-  // Loop over the functions requested by the form and hook up (potentially currently null) pointers
-  uint ncoeff = (*functional).num_coefficients();
-  for (uint i = 0; i < ncoeff; i++)
+  buffer.str(""); buffer << optionpath() << "/type/output/include_in_diagnostics/functional";
+  int nfuncs = Spud::option_count(buffer.str());
+  for (uint i = 0; i < nfuncs; i++)
   {
-    std::string uflsymbol = (*functional).coefficient_name(i);
-    GenericFunction_ptr function = (*system_).fetch_uflsymbol(uflsymbol);
-    if (!function)
+    buffer.str(""); buffer << optionpath() << "/type/output/include_in_diagnostics/functional[" << i << "]";
+    std::string functionaloptionpath = buffer.str();
+
+    std::string functionalname;
+    buffer.str(""); buffer << functionaloptionpath << "/name";
+    serr = Spud::get_option(buffer.str(), functionalname); spud_err(buffer.str(), serr);
+    std::cout << "function name " << name() << std::endl;
+    std::cout << "functional name " << functionalname << std::endl;
+
+    Form_ptr functional = ufc_fetch_functional((*system_).name(), name(), functionalname, (*system_).mesh());
+    register_functional(functional, functionalname, functionaloptionpath);
+
+    // Loop over the functions requested by the form and hook up (potentially currently null) pointers
+    uint ncoeff = (*functional).num_coefficients();
+    for (uint i = 0; i < ncoeff; i++)
     {
-      std::string functionname = (*system_).fetch_uflname(uflsymbol);
-      std::cout << "  requesting coefficient " << uflsymbol << ", " << functionname << std::endl; 
-      std::cout << "  function not initialised" << std::endl;
-      if (Spud::have_option((*dynamic_cast<SpudSystem*>(system_)).optionpath()+"/coefficient::"+functionname+"/type::Function"))
+      std::string uflsymbol = (*functional).coefficient_name(i);
+      GenericFunction_ptr function = (*system_).fetch_uflsymbol(uflsymbol);
+      if (!function)
       {
-        std::cout << "  but it is a function" << std::endl;
+        std::string functionname = (*system_).fetch_uflname(uflsymbol);
+        std::cout << "  requesting coefficient " << uflsymbol << ", " << functionname << std::endl; 
+        std::cout << "  function not initialised" << std::endl;
+        if (Spud::have_option((*dynamic_cast<SpudSystem*>(system_)).optionpath()+"/coefficient::"+functionname+"/type::Function"))
+        {
+          std::cout << "  but it is a function" << std::endl;
+        }
+        else
+        {
+          std::cout << "  and it is NOT a function" << std::endl;
+        }
+
       }
       else
       {
-        std::cout << "  and it is NOT a function" << std::endl;
+        std::cout << "  requesting coefficient " << uflsymbol << std::endl; 
+        std::cout << "  function is initialised" << std::endl;
       }
 
+      (*functional).set_coefficient(uflsymbol, function);
     }
-    else
-    {
-      std::cout << "  requesting coefficient " << uflsymbol << std::endl; 
-      std::cout << "  function is initialised" << std::endl;
-    }
-
-    (*functional).set_coefficient(uflsymbol, function);
   }
 
 }
