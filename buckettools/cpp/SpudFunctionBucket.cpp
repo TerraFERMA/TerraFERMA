@@ -267,9 +267,9 @@ void SpudFunctionBucket::bc_fill_(const std::string &optionpath,
 }
 
 void SpudFunctionBucket::bc_component_fill_(const std::string &optionpath,
-                        const std::string &bcname,
-                        const std::vector<int> &bcids,
-                        const MeshFunction_uint_ptr &edgeidmeshfunction)
+                                            const std::string &bcname,
+                                            const std::vector<int> &bcids,
+                                            const MeshFunction_uint_ptr &edgeidmeshfunction)
 {
   std::stringstream buffer;
   std::stringstream namebuffer;
