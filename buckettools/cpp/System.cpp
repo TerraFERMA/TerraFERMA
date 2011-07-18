@@ -186,6 +186,22 @@ bool System::contains_coefficientspace(std::string name)
   return f_it != coefficientspaces_.end();
 }
 
+FunctionSpace_ptr System::fetch_coefficientspace(std::string name)
+{
+  // First check if a functionspace with this name already exists
+  FunctionSpace_it f_it = coefficientspaces_.find(name);
+  if (f_it == coefficientspaces_.end())
+  {
+    // if it doesn't, issue an error
+    dolfin::error("FunctionSpace named \"%s\" doesn't exist in system coefficientspaces.", name.c_str());
+  }
+  else
+  {
+    // if it does return it
+    return (*f_it).second;
+  }
+}
+
 // Return a string describing the contents of the system
 std::string System::str(int indent) const
 {

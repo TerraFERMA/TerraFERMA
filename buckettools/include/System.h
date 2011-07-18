@@ -97,6 +97,8 @@ namespace buckettools
 
     bool contains_coefficientspace(std::string name);
 
+    FunctionSpace_ptr fetch_coefficientspace(std::string name);
+
     // Return a string describing the contents of the system
     virtual std::string str() const
     { str(0); }
