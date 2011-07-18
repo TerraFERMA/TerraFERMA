@@ -3,6 +3,7 @@
 #define __DOLFIN_BOOST_TYPES_H
 
 #include <dolfin.h>
+#include "petscsnes.h"
 
 namespace buckettools {
 
@@ -23,6 +24,10 @@ namespace buckettools {
   typedef boost::shared_ptr< dolfin::Function >                     Function_ptr;
   typedef boost::shared_ptr< dolfin::DirichletBC >                  DirichletBC_ptr;
   typedef boost::shared_ptr< dolfin::Form >                         Form_ptr;
+
+  typedef boost::shared_ptr< KSP > KSP_ptr;
+  typedef boost::shared_ptr< PC >  PC_ptr;
+  typedef boost::shared_ptr< IS >  IS_ptr;
 
   // Define iterator types for things accessed in the bucket maps (defined below)
   typedef std::map< std::string, System_ptr >::iterator                 System_it;

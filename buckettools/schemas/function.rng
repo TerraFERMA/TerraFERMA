@@ -440,25 +440,14 @@
             <attribute name="name">
               <data type="string"/>
             </attribute>
-            <element name="components">
-              <element name="number_of_components">
-                <a:documentation>The number of components returned by
-the python function (below)</a:documentation>
-                <ref name="integer"/>
+            <oneOrMore>
+              <element name="component">
+                <attribute name="name">
+                  <data type="string"/>
+                </attribute>
+                <ref name="integer_2_vector"/>
               </element>
-              <element name="python">
-                <a:documentation>Python function listing the tensor components.
-
-Functions should be of the form:
-
- def val():
-    # Function code
-    return [[...,...],[...,...],...] # Return integer list of lists
-
-The return value must have length number_of_components.</a:documentation>
-                <ref name="python_code"/>
-              </element>
-            </element>
+            </oneOrMore>
             <element name="type">
               <attribute name="name">
                 <value>Dirichlet</value>

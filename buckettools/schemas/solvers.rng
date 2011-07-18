@@ -156,9 +156,7 @@ by the PETSc library. Many more methods are provided.
       <a:documentation>Preconditioner to be used in combination with the iterative method.</a:documentation>
       <ref name="pcsor_options"/>
       <ref name="pceisenstat_options"/>
-      <oneOrMore>
-        <ref name="pcfieldsplit_options"/>
-      </oneOrMore>
+      <ref name="pcfieldsplit_options"/>
       <ref name="pcilu_options"/>
       <ref name="pclu_options"/>
       <ref name="pcprometheus_options"/>
@@ -433,7 +431,7 @@ exact matrix inversion), or use fgmres in the outer solve.</a:documentation>
           <choice>
             <element name="fieldsplit_by_function">
               <oneOrMore>
-                <element name="generic_function">
+                <element name="field">
                   <ref name="anystring"/>
                 </element>
               </oneOrMore>

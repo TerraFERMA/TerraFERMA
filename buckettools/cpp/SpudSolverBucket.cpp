@@ -48,25 +48,73 @@ void SpudSolverBucket::fill()
     buffer.str(""); buffer << name() << "_";
     perr = SNESSetOptionsPrefix(snes_, buffer.str().c_str()); CHKERRV(perr);
 
-    // we always have at least one ksp and pc
+    // we always have at least one ksp
     perr = SNESGetKSP(snes_, &ksp_); CHKERRV(perr);
-    perr = KSPGetPC(ksp_, &pc_); CHKERRV(perr);
-
-    std::string iterative_method;
-    buffer.str(""); buffer << optionpath() << "/type/linear_solver/iterative_method/name";
-    serr = Spud::get_option(buffer.str(), iterative_method); spud_err(buffer.str(), serr);
-
-    perr = KSPSetType(ksp_, iterative_method.c_str()); CHKERRV(perr);
-
+    
+    buffer.str(""); buffer << optionpath() << "/type/linear_solver";
+    ksp_fill_(buffer.str(), ksp_);
   }
   else if (type()=="Picard")
   {
-
+;
   }
   else
   {
     dolfin::error("Unknown solver type.");
   }
+
+}
+
+void SpudSolverBucket::ksp_fill_(const std::string &optionpath, KSP &ksp)
+{
+  std::stringstream buffer;
+  PetscErrorCode perr;
+  Spud::OptionError serr;
+
+  std::string iterative_method;
+  buffer.str(""); buffer << optionpath << "/iterative_method/name";
+  serr = Spud::get_option(buffer.str(), iterative_method); spud_err(buffer.str(), serr);
+
+  perr = KSPSetType(ksp, iterative_method.c_str()); CHKERRV(perr);
+
+  std::string preconditioner;
+  buffer.str(""); buffer << optionpath << "/preconditioner/name";
+  serr = Spud::get_option(buffer.str(), preconditioner); spud_err(buffer.str(), serr);
+
+  PC_ptr pc( new PC );
+  perr = KSPGetPC(ksp, &(*pc)); CHKERRV(perr);
+  perr = PCSetType(*pc, preconditioner.c_str()); CHKERRV(perr);
+
+  pcs_.push_back(pc);
+
+  if (preconditioner=="ksp")
+  {
+
+    buffer.str(""); buffer << optionpath << "/preconditioner/linear_solver";
+    KSP_ptr subksp;
+    perr = PCKSPGetKSP(*pc, &(*subksp)); CHKERRV(perr);
+    ksp_fill_(buffer.str(), *subksp);
+    subksps_.push_back(subksp);
+
+  }
+  else if (preconditioner=="fieldsplit")
+  {
+
+    perr = PCFieldSplitSetType(*pc, PC_COMPOSITE_MULTIPLICATIVE); CHKERRV(perr);
+
+    buffer.str(""); buffer << optionpath << "/preconditioner/fieldsplit";
+    int nsplits = Spud::option_count(buffer.str());
+    for (uint i = 0; i < nsplits; i++)
+    {
+      buffer.str(""); buffer << optionpath << "/preconditioner/fieldsplit[" << i << "]";
+       
+      buffer.str(""); buffer << optionpath << "/preconditioner/fieldsplit[" << i << "]/linear_solver";
+    }
+
+
+
+  }  
+
 
 }
 

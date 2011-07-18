@@ -28,11 +28,11 @@ namespace buckettools
 
     KSP ksp_;
 
-    PC pc_;
+    std::vector< KSP_ptr > subksps_;
 
-    std::vector< KSP* > subksps_;
+    std::vector< PC_ptr > pcs_;
 
-    std::vector< PC > subpcs_;
+    std::vector< IS_ptr > iss_;
 
     // the function name
     std::string name_;

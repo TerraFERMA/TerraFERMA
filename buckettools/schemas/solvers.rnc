@@ -115,7 +115,7 @@ linear_solver_options =
       (
          pcsor_options|
          pceisenstat_options|
-         pcfieldsplit_options+|
+         pcfieldsplit_options|
          pcilu_options|
          pclu_options|
          pcprometheus_options|
@@ -382,7 +382,7 @@ pcfieldsplit_options =
             attribute name { xsd:string },
             (
                element fieldsplit_by_function {
-                element generic_function {
+                element field {
                    anystring
                  }+
                }|

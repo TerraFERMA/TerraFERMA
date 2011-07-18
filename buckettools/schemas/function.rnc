@@ -346,25 +346,10 @@ boundary_condition_tensor =
         ## Apply this boundary condition to a subset of the tensor components on this boundary_id
         element sub_components {
           attribute name { xsd:string },
-          element components {
-            ## The number of components returned by
-            ## the python function (below)
-            element number_of_components {
-              integer
-            },
-            ## Python function listing the tensor components.
-            ##
-            ## Functions should be of the form:
-            ##
-            ##  def val():
-            ##     # Function code
-            ##     return [[...,...],[...,...],...] # Return integer list of lists
-            ##
-            ## The return value must have length number_of_components.
-            element python {
-              python_code
-            }
-          },
+          element component {
+            attribute name { xsd:string },
+            integer_2_vector
+          }+,
           element type {
             attribute name {"Dirichlet"},
             prescribed_scalar

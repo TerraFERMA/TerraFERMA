@@ -29,6 +29,8 @@ namespace buckettools
     // fill in the information related to the forms of this solver
     void forms_fill_();
 
+    void ksp_fill_(const std::string &optionpath, KSP &ksp);
+
   public:
     
     // Specific constructor
