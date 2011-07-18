@@ -37,6 +37,9 @@ namespace buckettools
     // fill in data about the coefficients
     void coeffs_fill_();
 
+    // fill in data about the solvers
+    void solvers_fill_();
+
   public:
     
     // Specific constructor

@@ -1,6 +1,6 @@
 
-#ifndef __SPUD_FUNCTIONBUCKET_H
-#define __SPUD_FUNCTIONBUCKET_H
+#ifndef __SPUD_SOLVERBUCKET_H
+#define __SPUD_SOLVERBUCKET_H
 
 #include "BoostTypes.h"
 #include "SolverBucket.h"
@@ -52,7 +52,7 @@ namespace buckettools
 
     // Return a string object describing the forms
     std::string forms_str() const
-    { str(0); }
+    { forms_str(0); }
 
     // Return a string object describing the forms
     std::string forms_str(int indent) const;

@@ -57,6 +57,8 @@ namespace buckettools
     std::map< std::string, GenericFunction_ptr > uflsymbols_;
 
     std::map< std::string, FunctionSpace_ptr > coefficientspaces_;
+
+    std::map< std::string, SolverBucket_ptr > solvers_;
     
   public:
 
@@ -99,6 +101,8 @@ namespace buckettools
 
     FunctionSpace_ptr fetch_coefficientspace(std::string name);
 
+    void register_solver(SolverBucket_ptr solver, std::string name);
+
     // Return a string describing the contents of the system
     virtual std::string str() const
     { str(0); }
@@ -126,6 +130,13 @@ namespace buckettools
 
     // Print a description of the coefficients contained in the system
     virtual std::string coeffs_str(int indent) const;
+
+    // Print a description of the solvers contained in the system
+    virtual std::string solvers_str() const
+    { coeffs_str(0); }
+
+    // Print a description of the solvers contained in the system
+    virtual std::string solvers_str(int indent) const;
 
     // Return the system name
     std::string name() const

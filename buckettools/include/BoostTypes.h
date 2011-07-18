@@ -11,6 +11,8 @@ namespace buckettools {
   typedef boost::shared_ptr< System > System_ptr;
   class FunctionBucket;
   typedef boost::shared_ptr< FunctionBucket > FunctionBucket_ptr;
+  class SolverBucket;
+  typedef boost::shared_ptr< SolverBucket > SolverBucket_ptr;
 
   // Define boost shared_ptr types for lots of useful things from DOLFIN
   typedef boost::shared_ptr< dolfin::GenericFunction >              GenericFunction_ptr;
@@ -37,6 +39,8 @@ namespace buckettools {
   typedef std::map< std::string, FunctionSpace_ptr >::const_iterator   FunctionSpace_const_it;
   typedef std::map< std::string, FunctionBucket_ptr >::iterator        FunctionBucket_it;
   typedef std::map< std::string, FunctionBucket_ptr >::const_iterator  FunctionBucket_const_it;
+  typedef std::map< std::string, SolverBucket_ptr >::iterator          SolverBucket_it;
+  typedef std::map< std::string, SolverBucket_ptr >::const_iterator    SolverBucket_const_it;
   typedef std::map< std::string, GenericFunction_ptr >::iterator       GenericFunction_it;
   typedef std::map< std::string, GenericFunction_ptr >::const_iterator GenericFunction_const_it;
   typedef std::map< std::string, Function_ptr >::iterator              Function_it;

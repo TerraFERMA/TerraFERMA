@@ -1,6 +1,8 @@
 
 #include "BoostTypes.h"
 #include "System.h"
+#include "FunctionBucket.h"
+#include "SolverBucket.h"
 #include <dolfin.h>
 #include <string>
 
@@ -202,6 +204,23 @@ FunctionSpace_ptr System::fetch_coefficientspace(std::string name)
   }
 }
 
+// Register a solver in the system
+void System::register_solver(SolverBucket_ptr solver, std::string name)
+{
+  // First check if a solver with this name already exists
+  SolverBucket_it s_it = solvers_.find(name);
+  if (s_it != solvers_.end())
+  {
+    // if it does, issue an error
+    dolfin::error("SolverBucket named \"%s\" already exists in system.", name.c_str());
+  }
+  else
+  {
+    // if not then insert it into the maps
+    solvers_[name] = solver;
+  }
+}
+
 // Return a string describing the contents of the system
 std::string System::str(int indent) const
 {
@@ -212,6 +231,7 @@ std::string System::str(int indent) const
   s << uflsymbols_str(indent);
   s << fields_str(indent);
   s << coeffs_str(indent);
+  s << solvers_str(indent);
   return s.str();
 }
 
@@ -254,6 +274,18 @@ std::string System::coeffs_str(int indent) const
   for ( FunctionBucket_const_it f_it = coeffs_.begin(); f_it != coeffs_.end(); f_it++ )
   {
     s << (*(*f_it).second).str(indent);
+  }
+  return s.str();
+}
+
+// Return a string describing the contents of solvers_
+std::string System::solvers_str(int indent) const
+{
+  std::stringstream s;
+  std::string indentation (indent*2, ' ');
+  for ( SolverBucket_const_it s_it = solvers_.begin(); s_it != solvers_.end(); s_it++ )
+  {
+    s << (*(*s_it).second).str(indent);
   }
   return s.str();
 }

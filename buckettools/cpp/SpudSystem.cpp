@@ -2,10 +2,10 @@
 #include "BoostTypes.h"
 #include "InitialConditionExpression.h"
 #include "SpudSystem.h"
-#include "System.h"
 #include "SystemsWrapper.h"
 #include "SpudBase.h"
 #include "SpudFunctionBucket.h"
+#include "SpudSolverBucket.h"
 #include <dolfin.h>
 #include <string>
 #include <spud>
@@ -39,7 +39,7 @@ void SpudSystem::fill()
 
   fields_fill_(); 
  
-  // solver initiation here!
+  solvers_fill_();
 
   // initialize the coefficients
   coeffs_fill_(); 
@@ -259,6 +259,23 @@ void SpudSystem::coeffs_fill_()
 
 }
 
+void SpudSystem::solvers_fill_()
+{
+  std::stringstream buffer;
+  
+  buffer.str("");  buffer << optionpath() << "/nonlinear_solver";
+  int nsolvers = Spud::option_count(buffer.str());
+  // Loop over the nonlinear_solvers and register them
+  for (uint i = 0; i < nsolvers; i++)
+  {
+    buffer.str(""); buffer << optionpath() << "/nonlinear_solver[" << i << "]";
+
+    SpudSolverBucket_ptr solver( new SpudSolverBucket( buffer.str(), this ) );
+    (*solver).fill();
+    register_solver(solver, (*solver).name());
+  }
+}
+
 // Return a string describing the contents of the system
 std::string SpudSystem::str(int indent) const
 {
@@ -269,6 +286,7 @@ std::string SpudSystem::str(int indent) const
   s << uflsymbols_str(indent);
   s << fields_str(indent);
   s << coeffs_str(indent);
+  s << solvers_str(indent);
   return s.str();
 }
 
