@@ -8,6 +8,7 @@
 #include "SpudSystem.h"
 #include "SpudBase.h"
 #include "SpudBucket.h"
+#include "petscsnes.h"
 
 using namespace buckettools;
 
@@ -20,7 +21,13 @@ SpudSolverBucket::SpudSolverBucket(std::string optionpath, System* system) : opt
 // Default destructor (declared as virtual so will call base class destructor)
 SpudSolverBucket::~SpudSolverBucket()
 {
-  // Do nothing
+  PetscErrorCode perr;
+
+  if(type()=="SNES")
+  {
+    perr = SNESDestroy(snes_); CHKERRV(perr);
+  }
+
 }
 
 // Fill the function using spud and assuming a buckettools schema structure
@@ -28,10 +35,38 @@ void SpudSolverBucket::fill()
 {
   // A buffer to put option paths (and strings) in
   std::stringstream buffer;
+  PetscErrorCode perr;
+  Spud::OptionError serr;
 
   base_fill_();
 
   forms_fill_();
+
+  if (type()=="SNES")
+  {
+    perr = SNESCreate(PETSC_COMM_WORLD, &snes_); CHKERRV(perr);
+    buffer.str(""); buffer << name() << "_";
+    perr = SNESSetOptionsPrefix(snes_, buffer.str().c_str()); CHKERRV(perr);
+
+    // we always have at least one ksp and pc
+    perr = SNESGetKSP(snes_, &ksp_); CHKERRV(perr);
+    perr = KSPGetPC(ksp_, &pc_); CHKERRV(perr);
+
+    std::string iterative_method;
+    buffer.str(""); buffer << optionpath() << "/type/linear_solver/iterative_method/name";
+    serr = Spud::get_option(buffer.str(), iterative_method); spud_err(buffer.str(), serr);
+
+    perr = KSPSetType(ksp_, iterative_method.c_str()); CHKERRV(perr);
+
+  }
+  else if (type()=="Picard")
+  {
+
+  }
+  else
+  {
+    dolfin::error("Unknown solver type.");
+  }
 
 }
 

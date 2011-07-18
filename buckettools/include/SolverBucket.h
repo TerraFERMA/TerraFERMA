@@ -4,6 +4,7 @@
 
 #include "BoostTypes.h"
 #include <dolfin.h>
+#include "petscsnes.h"
 
 namespace buckettools
 {
@@ -23,6 +24,16 @@ namespace buckettools
 
   protected:
     
+    SNES snes_;
+
+    KSP ksp_;
+
+    PC pc_;
+
+    std::vector< KSP* > subksps_;
+
+    std::vector< PC > subpcs_;
+
     // the function name
     std::string name_;
 
