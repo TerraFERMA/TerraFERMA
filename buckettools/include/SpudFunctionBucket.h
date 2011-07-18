@@ -24,7 +24,7 @@ namespace buckettools
     std::map< std::string, std::string > functional_optionpaths_;
     
     // fill in the base data
-    void base_fill_(const uint &index, const uint &component);
+    void base_fill_(const uint &index);
  
     void initialize_field_();
 
@@ -50,14 +50,10 @@ namespace buckettools
     virtual ~SpudFunctionBucket();
 
     // Fill the function assuming the buckettools schema
-    void fill(const uint &index)
-    { fill(index, -1); }
+    void fill(const uint &index);
 
     // Fill the function assuming the buckettools schema
-    void fill(const uint &index, const uint &component);
-
-    // Fill the function assuming the buckettools schema
-    void field_fill(const uint &index, const uint &component);
+    void field_fill(const uint &index);
 
     // Fill the function assuming the buckettools schema
     void coeff_fill(const uint &index);

@@ -37,18 +37,8 @@ void SpudSystem::fill()
   // the rest of the fields recording their symbol and a null pointer
   uflsymbols_fill_();
 
-  // A counter for the components in this system (allows the ic to be generalized)
-  uint component = 0;
-  std::map< uint, Expression_ptr > icexpressions;
-
-  fields_fill_(component, icexpressions); 
+  fields_fill_(); 
  
-  // While filling the fields we should have set up a map from
-  // components to initial condition expressions... use this
-  // now to initialize the whole system function to that
-  // ic
-  apply_ic_(component, icexpressions);
-
   // solver initiation here!
 
   // initialize the coefficients
@@ -157,10 +147,13 @@ void SpudSystem::uflsymbols_fill_()
 }
 
 // Fill out the information regarding the each subfunction (or field)
-void SpudSystem::fields_fill_(uint &component,
-                              std::map< uint, Expression_ptr > icexpressions)
+void SpudSystem::fields_fill_()
 {
   std::stringstream buffer;
+
+  // A counter for the components in this system (allows the ic to be generalized)
+  uint component = 0;
+  std::map< uint, Expression_ptr > icexpressions;
 
   buffer.str("");  buffer << optionpath() << "/field";
   int nfields = Spud::option_count(buffer.str());
@@ -171,7 +164,7 @@ void SpudSystem::fields_fill_(uint &component,
     buffer.str(""); buffer << optionpath() << "/field[" << i << "]";
 
     SpudFunctionBucket_ptr field( new SpudFunctionBucket( buffer.str(), this ) );
-    (*field).field_fill(i, component);
+    (*field).field_fill(i);
     register_field(field, (*field).name());
 
     // reset the function associated with the uflsymbol back in the system
@@ -191,6 +184,12 @@ void SpudSystem::fields_fill_(uint &component,
 
     component += (*(*field).icexpression()).value_size();
   }
+
+  // While filling the fields we should have set up a map from
+  // components to initial condition expressions... use this
+  // now to initialize the whole system function to that
+  // ic
+  apply_ic_(component, icexpressions);
 
 }
 

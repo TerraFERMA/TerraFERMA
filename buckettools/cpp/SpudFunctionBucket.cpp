@@ -24,12 +24,12 @@ SpudFunctionBucket::~SpudFunctionBucket()
 }
 
 // Fill the function using spud and assuming a buckettools schema structure
-void SpudFunctionBucket::fill(const uint &index, const uint &component)
+void SpudFunctionBucket::fill(const uint &index)
 {
   // A buffer to put option paths (and strings) in
   std::stringstream buffer;
 
-  base_fill_(index, component);
+  base_fill_(index);
 
   // we do this first in case this is a function coefficient that's only referenced in this functional
   // - hence we'll have the functionspace available later
@@ -58,12 +58,12 @@ void SpudFunctionBucket::fill(const uint &index, const uint &component)
 }
 
 // Fill the function using spud and assuming a buckettools schema structure
-void SpudFunctionBucket::field_fill(const uint &index, const uint &component)
+void SpudFunctionBucket::field_fill(const uint &index)
 {
   // A buffer to put option paths (and strings) in
   std::stringstream buffer;
 
-  base_fill_(index, component);
+  base_fill_(index);
 
   // we do this first in case this is a function coefficient that's only referenced in this functional
   // - hence we'll have the functionspace available later
@@ -87,7 +87,7 @@ void SpudFunctionBucket::coeff_fill(const uint &index)
   // A buffer to put option paths (and strings) in
   std::stringstream buffer;
 
-  base_fill_(index, -1);
+  base_fill_(index);
 
   // we do this first in case this is a function coefficient that's only referenced in this functional
   // - hence we'll have the functionspace available later
@@ -105,7 +105,7 @@ void SpudFunctionBucket::coeff_fill(const uint &index)
 
 }
 
-void SpudFunctionBucket::base_fill_(const uint &index, const uint &component)
+void SpudFunctionBucket::base_fill_(const uint &index)
 {
   // A buffer to put option paths in
   std::stringstream buffer;
@@ -121,7 +121,6 @@ void SpudFunctionBucket::base_fill_(const uint &index, const uint &component)
   
   // the index of this field
   index_ = index;
-  component_ = component;
 
   // What is this field called?
   buffer.str(""); buffer << optionpath() << "/name";

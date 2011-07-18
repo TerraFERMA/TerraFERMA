@@ -29,9 +29,8 @@ namespace buckettools
     // ufl symbol
     std::string uflsymbol_;
 
+    // the field index
     uint index_;
-
-    uint component_;
 
     // the system to which this function belongs
     System* system_;

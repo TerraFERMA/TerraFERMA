@@ -30,8 +30,7 @@ namespace buckettools
     void uflsymbols_fill_();
 
     // fill in data about the fields
-    void fields_fill_(uint &component,
-                      std::map< uint, Expression_ptr > icexpressions);
+    void fields_fill_();
 
     void apply_ic_(const uint &component, const std::map< uint, Expression_ptr > &icexpressions);
 
