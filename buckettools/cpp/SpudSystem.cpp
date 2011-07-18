@@ -43,7 +43,6 @@ void SpudSystem::fill()
 
   fields_fill_(component, icexpressions); 
  
-
   // While filling the fields we should have set up a map from
   // components to initial condition expressions... use this
   // now to initialize the whole system function to that
@@ -172,7 +171,7 @@ void SpudSystem::fields_fill_(uint &component,
     buffer.str(""); buffer << optionpath() << "/field[" << i << "]";
 
     SpudFunctionBucket_ptr field( new SpudFunctionBucket( buffer.str(), this ) );
-    (*field).fill(i, component);
+    (*field).field_fill(i, component);
     register_field(field, (*field).name());
 
     // reset the function associated with the uflsymbol back in the system
@@ -230,20 +229,33 @@ void SpudSystem::coeffs_fill_()
   buffer.str("");  buffer << optionpath() << "/coefficient";
   int ncoeffs = Spud::option_count(buffer.str());
   // Loop over the coefficients and register those that are expressions or constants
-  // Can't do anything with the functions because they depend on solvers
+  // Can't do much with the functions because they depend on solvers
   // Aliased coefficients depend on all the other systems being populated first
   for (uint i = 0; i < ncoeffs; i++)
   {
     buffer.str(""); buffer << optionpath() << "/coefficient[" << i << "]";
 
     SpudFunctionBucket_ptr coeff( new SpudFunctionBucket( buffer.str(), this ) );
-    (*coeff).fill(i);
+    (*coeff).coeff_fill(i);
     register_coeff(coeff, (*coeff).name());
 
     // reset the function associated with the uflsymbol back in the system
     reset_uflsymbol((*coeff).function(), (*coeff).uflsymbol());
     reset_uflsymbol((*coeff).oldfunction(), (*coeff).uflsymbol()+"_n");
     reset_uflsymbol((*coeff).iteratedfunction(), (*coeff).uflsymbol()+"_i");
+  }
+
+  // Go for a second loop over the coefficients
+  for (FunctionBucket_it f_it = coeffs_.begin(); f_it != coeffs_.end(); f_it++)
+  {
+
+    // if the function isn't associated then we didn't find a way of
+    // initializing it on the first pass through so let's try again
+    // (will still fail for Aliased fields at this point)
+    if (!(*(*f_it).second).function())
+    {
+      (*(boost::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).initialize_coeff();
+    }
   }
 
 }

@@ -26,9 +26,7 @@ namespace buckettools
     // fill in the base data
     void base_fill_(const uint &index, const uint &component);
  
-    void field_fill_();
-
-    void coeff_fill_();
+    void initialize_field_();
 
     void ic_fill_(const std::string &optionpath);
 
@@ -57,6 +55,14 @@ namespace buckettools
 
     // Fill the function assuming the buckettools schema
     void fill(const uint &index, const uint &component);
+
+    // Fill the function assuming the buckettools schema
+    void field_fill(const uint &index, const uint &component);
+
+    // Fill the function assuming the buckettools schema
+    void coeff_fill(const uint &index);
+
+    void initialize_coeff();
 
     // Register a functional in the function (with a spud optionpath)
     void register_functional(Form_ptr functional, std::string name, std::string optionpath);

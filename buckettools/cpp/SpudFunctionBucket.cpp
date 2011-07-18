@@ -23,7 +23,149 @@ SpudFunctionBucket::~SpudFunctionBucket()
   // Do nothing
 }
 
-void SpudFunctionBucket::field_fill_()
+// Fill the function using spud and assuming a buckettools schema structure
+void SpudFunctionBucket::fill(const uint &index, const uint &component)
+{
+  // A buffer to put option paths (and strings) in
+  std::stringstream buffer;
+
+  base_fill_(index, component);
+
+  // we do this first in case this is a function coefficient that's only referenced in this functional
+  // - hence we'll have the functionspace available later
+  functionals_fill_();
+
+  if (Spud::have_option((*dynamic_cast<SpudSystem*>(system_)).optionpath()+"/field::"+name()) 
+      && Spud::have_option((*dynamic_cast<SpudSystem*>(system_)).optionpath()+"/coefficient::"+name()))
+  {
+    dolfin::error("Nonunique names between a field and a coefficient, can't tell which is which.");
+  }
+  else if (Spud::have_option((*dynamic_cast<SpudSystem*>(system_)).optionpath()+"/field::"+name()))
+  {
+    // this is a field
+    initialize_field_();
+  }
+  else if (Spud::have_option((*dynamic_cast<SpudSystem*>(system_)).optionpath()+"/coefficient::"+name()))
+  {
+    // this is a coefficient
+    initialize_coeff();
+  }
+  else
+  {
+    dolfin::error("Unknown function type.");
+  }
+
+}
+
+// Fill the function using spud and assuming a buckettools schema structure
+void SpudFunctionBucket::field_fill(const uint &index, const uint &component)
+{
+  // A buffer to put option paths (and strings) in
+  std::stringstream buffer;
+
+  base_fill_(index, component);
+
+  // we do this first in case this is a function coefficient that's only referenced in this functional
+  // - hence we'll have the functionspace available later
+  functionals_fill_();
+
+  if (Spud::have_option((*dynamic_cast<SpudSystem*>(system_)).optionpath()+"/field::"+name()))
+  {
+    // this is a field
+    initialize_field_();
+  }
+  else
+  {
+    dolfin::error("Unknown function type.");
+  }
+
+}
+
+// Fill the function using spud and assuming a buckettools schema structure
+void SpudFunctionBucket::coeff_fill(const uint &index)
+{
+  // A buffer to put option paths (and strings) in
+  std::stringstream buffer;
+
+  base_fill_(index, -1);
+
+  // we do this first in case this is a function coefficient that's only referenced in this functional
+  // - hence we'll have the functionspace available later
+  functionals_fill_();
+
+  if (Spud::have_option((*dynamic_cast<SpudSystem*>(system_)).optionpath()+"/coefficient::"+name()))
+  {
+    // this is a coefficient
+    initialize_coeff();
+  }
+  else
+  {
+    dolfin::error("Unknown function type.");
+  }
+
+}
+
+void SpudFunctionBucket::base_fill_(const uint &index, const uint &component)
+{
+  // A buffer to put option paths in
+  std::stringstream buffer;
+  Spud::OptionError serr;
+
+  // Most of what is below is broken for tensors so let's just die here with an error message
+  buffer.str(""); buffer << optionpath() << "/type/rank/name";
+  serr = Spud::get_option(buffer.str(), rank_); spud_err(buffer.str(), serr);
+  if (rank_=="Tensor")
+  {
+    dolfin::error("Tensor coefficients not hooked up yet, sorry.");
+  }
+  
+  // the index of this field
+  index_ = index;
+  component_ = component;
+
+  // What is this field called?
+  buffer.str(""); buffer << optionpath() << "/name";
+  serr = Spud::get_option(buffer.str(), name_); spud_err(buffer.str(), serr);
+
+  // Get the coeff ufl symbol (necessary to register the field name)
+  buffer.str(""); buffer << optionpath() << "/ufl_symbol";
+  serr = Spud::get_option(buffer.str(), uflsymbol_); spud_err(buffer.str(), serr);
+
+  // Get the field type
+  buffer.str(""); buffer << optionpath() << "/type/name";
+  serr = Spud::get_option(buffer.str(), type_); spud_err(buffer.str(), serr);
+
+  // What is the function size (if it's a vector)
+  // Would it be possible to get this from the subfunctionspace below?
+  buffer.str(""); buffer << optionpath() << "/type/rank/element/size";
+  serr = Spud::get_option(buffer.str(), size_, (*(*system_).bucket()).dimension()); spud_err(buffer.str(), serr);
+
+  // What is the function shape (if it's a tensor)
+  // Would it be possible to get this from the subfunctionspace below?
+  std::vector< int > default_shape(2, (*(*system_).bucket()).dimension());
+  buffer.str(""); buffer << optionpath() << "/type/rank/element/shape";
+  serr = Spud::get_option(buffer.str(), shape_, default_shape); spud_err(buffer.str(), serr);
+
+  if (type_=="Constant")
+  {
+    // These will have just been set to defaults in this case, which may not be right
+    // - only coefficients can end up in here so only consider their optionpaths
+    buffer.str(""); buffer << optionpath() << "/type/value/constant";
+    if (rank_=="Vector")
+    {
+      std::vector< int > constant_shape;
+      serr = Spud::get_option_shape(buffer.str(), constant_shape); spud_err(buffer.str(), serr);
+      size_ = constant_shape[0];
+    }
+    if (rank_=="Tensor")
+    {
+      serr = Spud::get_option_shape(buffer.str(), shape_); spud_err(buffer.str(), serr);
+    }
+  }
+
+}
+
+void SpudFunctionBucket::initialize_field_()
 {
   // A buffer to put option paths in
   std::stringstream buffer;
@@ -194,7 +336,7 @@ void SpudFunctionBucket::ic_fill_(const std::string &optionpath)
   icexpression_ = initialize_expression(optionpath, size_, shape_);
 }
 
-void SpudFunctionBucket::coeff_fill_()
+void SpudFunctionBucket::initialize_coeff()
 {
   std::stringstream buffer;
 
@@ -222,7 +364,7 @@ void SpudFunctionBucket::coeff_fill_()
           buffer.str(""); buffer << optionpath() << "/type/rank/value[" << i << "]";
           Expression_ptr valueexp = initialize_expression(buffer.str(), size_, shape_);
 
-          (*(boost::dynamic_pointer_cast< dolfin::Function >(function_))).interpolate(*valueexp);
+          (*boost::dynamic_pointer_cast< dolfin::Function >(function_)).interpolate(*valueexp);
 
   //      }
       }
@@ -262,100 +404,6 @@ void SpudFunctionBucket::coeff_fill_()
   else
   {
     dolfin::error("Unknown coeff type in coefficient_fill_.");
-  }
-
-}
-
-void SpudFunctionBucket::base_fill_(const uint &index, const uint &component)
-{
-  // A buffer to put option paths in
-  std::stringstream buffer;
-  Spud::OptionError serr;
-
-  // Most of what is below is broken for tensors so let's just die here with an error message
-  buffer.str(""); buffer << optionpath() << "/type/rank/name";
-  serr = Spud::get_option(buffer.str(), rank_); spud_err(buffer.str(), serr);
-  if (rank_=="Tensor")
-  {
-    dolfin::error("Tensor coefficients not hooked up yet, sorry.");
-  }
-  
-  // the index of this field
-  index_ = index;
-  component_ = component;
-
-  // What is this field called?
-  buffer.str(""); buffer << optionpath() << "/name";
-  serr = Spud::get_option(buffer.str(), name_); spud_err(buffer.str(), serr);
-
-  // Get the coeff ufl symbol (necessary to register the field name)
-  buffer.str(""); buffer << optionpath() << "/ufl_symbol";
-  serr = Spud::get_option(buffer.str(), uflsymbol_); spud_err(buffer.str(), serr);
-
-  // Get the field type
-  buffer.str(""); buffer << optionpath() << "/type/name";
-  serr = Spud::get_option(buffer.str(), type_); spud_err(buffer.str(), serr);
-
-  // What is the function size (if it's a vector)
-  // Would it be possible to get this from the subfunctionspace below?
-  buffer.str(""); buffer << optionpath() << "/type/rank/element/size";
-  serr = Spud::get_option(buffer.str(), size_, (*(*system_).bucket()).dimension()); spud_err(buffer.str(), serr);
-
-  // What is the function shape (if it's a tensor)
-  // Would it be possible to get this from the subfunctionspace below?
-  std::vector< int > default_shape(2, (*(*system_).bucket()).dimension());
-  buffer.str(""); buffer << optionpath() << "/type/rank/element/shape";
-  serr = Spud::get_option(buffer.str(), shape_, default_shape); spud_err(buffer.str(), serr);
-
-  if (type_=="Constant")
-  {
-    // These will have just been set to defaults in this case, which may not be right
-    // - only coefficients can end up in here so only consider their optionpaths
-    buffer.str(""); buffer << optionpath() << "/type/value/constant";
-    if (rank_=="Vector")
-    {
-      std::vector< int > constant_shape;
-      serr = Spud::get_option_shape(buffer.str(), constant_shape); spud_err(buffer.str(), serr);
-      size_ = constant_shape[0];
-    }
-    if (rank_=="Tensor")
-    {
-      serr = Spud::get_option_shape(buffer.str(), shape_); spud_err(buffer.str(), serr);
-    }
-  }
-
-}
-
-// Fill the function using spud and assuming a buckettools schema structure
-void SpudFunctionBucket::fill(const uint &index, const uint &component)
-{
-  // A buffer to put option paths (and strings) in
-  std::stringstream buffer;
-
-  base_fill_(index, component);
-
-  // we do this first in case this is a function coefficient that's only referenced in this functional
-  // - hence we'll have the functionspace available later
-  functionals_fill_();
-
-  if (Spud::have_option((*dynamic_cast<SpudSystem*>(system_)).optionpath()+"/field::"+name()) 
-      && Spud::have_option((*dynamic_cast<SpudSystem*>(system_)).optionpath()+"/coefficient::"+name()))
-  {
-    dolfin::error("Nonunique names between a field and a coefficient, can't tell which is which.");
-  }
-  else if (Spud::have_option((*dynamic_cast<SpudSystem*>(system_)).optionpath()+"/field::"+name()))
-  {
-    // this is a field
-    field_fill_();
-  }
-  else if (Spud::have_option((*dynamic_cast<SpudSystem*>(system_)).optionpath()+"/coefficient::"+name()))
-  {
-    // this is a coefficient
-    coeff_fill_();
-  }
-  else
-  {
-    dolfin::error("Unknown function type.");
   }
 
 }
