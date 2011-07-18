@@ -73,6 +73,7 @@ include_directories(${PYTHON_INCLUDE_PATH})
 # generate a library - really the main point of this whole process
 add_library(buckettools cpp/Bucket.cpp cpp/SpudBucket.cpp cpp/System.cpp cpp/SpudSystem.cpp
                         cpp/FunctionBucket.cpp cpp/SpudFunctionBucket.cpp
+                        cpp/SolverBucket.cpp cpp/SpudSolverBucket.cpp 
                         cpp/SpudBase.cpp cpp/PythonExpression.cpp cpp/PythonInstance.cpp
                         cpp/InitialConditionExpression.cpp
                         ${buckettools_BINARY_DIR}/SystemsWrapper.cpp )

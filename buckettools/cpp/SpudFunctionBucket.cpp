@@ -375,7 +375,7 @@ void SpudFunctionBucket::initialize_coeff()
   }
   else if (type_=="Aliased")
   {
-    // doesn't get handled here
+    // doesn't get handled here (yet?)
   }
   else if (type_=="Expression" || type_=="Constant")
   {
@@ -435,7 +435,7 @@ void SpudFunctionBucket::functionals_fill_()
       GenericFunction_ptr function = (*system_).fetch_uflsymbol(uflsymbol);
       if (!function)
       {
-        // the function is into initialised so either we haven't reached it yet or
+        // the function isn't initialised so either we haven't reached it yet or
         // we got to it but weren't able to initialise it because we didn't have its
         // function space available yet... let's see if it's a function
         std::string functionname = (*system_).fetch_uflname(uflsymbol);
