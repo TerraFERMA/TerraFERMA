@@ -320,7 +320,7 @@ class System:
           cpp.append("      }\n")
     cpp.append("      else\n")
     cpp.append("      {\n")
-    cpp.append("        dolfin::error(\"Unknown solvername in ufc_fetch_functionspace\");\n")
+    cpp.append("        dolfin::error(\"Unknown solvername in ufc_fetch_coefficientspace\");\n")
     cpp.append("      }\n")
     cpp.append("    }\n")
     return cpp
