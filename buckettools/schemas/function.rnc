@@ -346,10 +346,11 @@ boundary_condition_tensor =
         ## Apply this boundary condition to a subset of the tensor components on this boundary_id
         element sub_components {
           attribute name { xsd:string },
-          element component {
+          ## A list of the tensor components to which this boundary condition applies (indexes from 0 by row first)
+          element components {
             attribute name { xsd:string },
-            integer_2_vector
-          }+,
+            integer_vector
+          },
           element type {
             attribute name {"Dirichlet"},
             prescribed_scalar

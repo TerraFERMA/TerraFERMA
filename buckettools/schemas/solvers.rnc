@@ -378,12 +378,40 @@ pcfieldsplit_options =
    (
       element preconditioner {
          attribute name { "fieldsplit" },
+         (
+           element composite_type {
+             attribute name { "additive" },
+             empty
+           }|
+           element composite_type {
+             attribute name { "multiplicative" },
+             empty
+           }|
+           element composite_type {
+             attribute name { "symmetric_multiplicative" },
+             empty
+           }|
+           element composite_type {
+             attribute name { "special" },
+             empty
+           }|
+           element composite_type {
+             attribute name { "schur" },
+             empty
+           }
+         ),
          element fieldsplit {
             attribute name { xsd:string },
             (
-               element fieldsplit_by_function {
+               element fieldsplit_by_field {
                 element field {
-                   anystring
+                   attribute name { xsd:string },
+                   ## If this field is a vector or a tensor components may be listed (indexed from 0 by row first if tensorial).
+                   ##
+                   ## Defaults to all components if not selected.
+                   element components {
+                     integer_vector
+                   }?
                  }+
                }|
                element fieldsplit_by_region {

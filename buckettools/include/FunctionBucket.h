@@ -119,6 +119,10 @@ namespace buckettools
     std::string uflsymbol() const
     { return uflsymbol_; }
 
+    // Return the function index
+    uint index() const
+    { return index_; }
+
     // Return the function_
     FunctionSpace_ptr functionspace() const
     { return functionspace_; }

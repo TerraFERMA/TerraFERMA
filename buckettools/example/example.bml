@@ -307,18 +307,15 @@ F = FT + Fv + Fp</string_value>
             </max_iterations>
           </iterative_method>
           <preconditioner name="fieldsplit">
+            <composite_type name="additive"/>
             <fieldsplit name="Stokes">
-              <fieldsplit_by_function>
-                <generic_function>
-                  <string_value lines="1">Velocity</string_value>
-                </generic_function>
-                <generic_function>
-                  <string_value lines="1">Pressure</string_value>
-                </generic_function>
-              </fieldsplit_by_function>
+              <fieldsplit_by_field>
+                <field/>
+              </fieldsplit_by_field>
               <linear_solver>
                 <iterative_method name="preonly"/>
                 <preconditioner name="fieldsplit">
+                  <composite_type name="additive"/>
                   <fieldsplit name="Wedge">
                     <fieldsplit_by_region>
                       <region_ids>
@@ -328,12 +325,11 @@ F = FT + Fv + Fp</string_value>
                     <linear_solver>
                       <iterative_method name="preonly"/>
                       <preconditioner name="fieldsplit">
+                        <composite_type name="additive"/>
                         <fieldsplit name="Velocity">
-                          <fieldsplit_by_function>
-                            <generic_function>
-                              <string_value lines="1">Velocity</string_value>
-                            </generic_function>
-                          </fieldsplit_by_function>
+                          <fieldsplit_by_field>
+                            <field/>
+                          </fieldsplit_by_field>
                           <linear_solver>
                             <iterative_method name="cg">
                               <relative_error>
@@ -353,11 +349,9 @@ F = FT + Fv + Fp</string_value>
               </linear_solver>
             </fieldsplit>
             <fieldsplit name="Temperature">
-              <fieldsplit_by_function>
-                <generic_function>
-                  <string_value lines="1">Temperature</string_value>
-                </generic_function>
-              </fieldsplit_by_function>
+              <fieldsplit_by_field>
+                <field/>
+              </fieldsplit_by_field>
               <linear_solver>
                 <iterative_method name="preonly"/>
                 <preconditioner name="lu"/>

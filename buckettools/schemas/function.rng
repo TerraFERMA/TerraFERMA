@@ -440,14 +440,13 @@
             <attribute name="name">
               <data type="string"/>
             </attribute>
-            <oneOrMore>
-              <element name="component">
-                <attribute name="name">
-                  <data type="string"/>
-                </attribute>
-                <ref name="integer_2_vector"/>
-              </element>
-            </oneOrMore>
+            <element name="components">
+              <a:documentation>A list of the tensor components to which this boundary condition applies (indexes from 0 by row first)</a:documentation>
+              <attribute name="name">
+                <data type="string"/>
+              </attribute>
+              <ref name="integer_vector"/>
+            </element>
             <element name="type">
               <attribute name="name">
                 <value>Dirichlet</value>

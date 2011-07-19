@@ -100,18 +100,55 @@ void SpudSolverBucket::ksp_fill_(const std::string &optionpath, KSP &ksp)
   else if (preconditioner=="fieldsplit")
   {
 
-    perr = PCFieldSplitSetType(*pc, PC_COMPOSITE_MULTIPLICATIVE); CHKERRV(perr);
+    std::string type;
+    buffer.str(""); buffer << optionpath << "/preconditioner/composite_type/name";
+    serr = Spud::get_option(buffer.str(), type); spud_err(buffer.str(), serr);
+    if (type == "additive")
+    {
+      perr = PCFieldSplitSetType(*pc, PC_COMPOSITE_ADDITIVE); CHKERRV(perr);
+    }
+    else if (type == "multiplicative")
+    {
+      perr = PCFieldSplitSetType(*pc, PC_COMPOSITE_MULTIPLICATIVE); CHKERRV(perr);
+    }
+    else if (type == "symmetric_multiplicative")
+    {
+      perr = PCFieldSplitSetType(*pc, PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE); CHKERRV(perr);
+    }
+    else if (type == "special")
+    {
+      perr = PCFieldSplitSetType(*pc, PC_COMPOSITE_SPECIAL); CHKERRV(perr);
+    }
+    else if (type == "schur")
+    {
+      perr = PCFieldSplitSetType(*pc, PC_COMPOSITE_SCHUR); CHKERRV(perr);
+    }
+    else
+    {
+      dolfin::error("Unknown PCCompositeType.");
+    }
 
     buffer.str(""); buffer << optionpath << "/preconditioner/fieldsplit";
     int nsplits = Spud::option_count(buffer.str());
     for (uint i = 0; i < nsplits; i++)
     {
       buffer.str(""); buffer << optionpath << "/preconditioner/fieldsplit[" << i << "]";
+
+      buffer.str(""); buffer << optionpath << "/preconditioner/fieldsplit[" << i << "]/fieldsplit_by_field/field";
+      int nfields = Spud::option_count(buffer.str()); spud_err(buffer.str(), serr);
+      for (uint j = 0; i < nfields; i++)
+      {
+        buffer.str(""); buffer << optionpath << "/preconditioner/fieldsplit[" << i << "]/fieldsplit_by_field/field[" << j << "]";
+        std::string fieldname;
+        buffer.str(""); buffer << optionpath << "/preconditioner/fieldsplit[" << i << "]/fieldsplit_by_field/field[" << j << "]/name";
+        serr = Spud::get_option(buffer.str(), fieldname); spud_err(buffer.str(), serr);
+        
+        int index = (*(*system_).fetch_field(fieldname)).index();
+        
+      }
        
       buffer.str(""); buffer << optionpath << "/preconditioner/fieldsplit[" << i << "]/linear_solver";
     }
-
-
 
   }  
 

@@ -43,6 +43,23 @@ void System::register_field(FunctionBucket_ptr field, std::string name)
   }
 }
 
+// Fetch a functionbucket as a field from the system
+FunctionBucket_ptr System::fetch_field(std::string name)
+{
+  // First check if a field with this name already exists
+  FunctionBucket_it f_it = fields_.find(name);
+  if (f_it == fields_.end())
+  {
+    // if it doesn't, issue an error
+    dolfin::error("Field named \"%s\" does not exists in system.", name.c_str());
+  }
+  else
+  {
+    // if not then return it
+    return (*f_it).second;
+  }
+}
+
 // Register a functionbucket as a coefficient in the system
 void System::register_coeff(FunctionBucket_ptr coeff, std::string name)
 {
@@ -57,6 +74,23 @@ void System::register_coeff(FunctionBucket_ptr coeff, std::string name)
   {
     // if not then insert it into the maps
     coeffs_[name] = coeff;
+  }
+}
+
+// Fetch a functionbucket as a coeff from the system
+FunctionBucket_ptr System::fetch_coeff(std::string name)
+{
+  // First check if a coeff with this name already exists
+  FunctionBucket_it f_it = coeffs_.find(name);
+  if (f_it == coeffs_.end())
+  {
+    // if it doesn't, issue an error
+    dolfin::error("Coefficient named \"%s\" does not exists in system.", name.c_str());
+  }
+  else
+  {
+    // if not then return it
+    return (*f_it).second;
   }
 }
 

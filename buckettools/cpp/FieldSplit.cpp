@@ -9,12 +9,11 @@
 // 
 // 
 
-#include <dolfin/fem/DofMap.h> 
-#include <dolfin/function/Function.h> 
-#include <dolfin/function/FunctionSpace.h>
-#include <dolfin/common/types.h>
-#include "DolfinFieldSplit.h"
-#include <boost/unordered_set.hpp>
+#include "petsc.h"
+#include "petscis.h"
+#include "BoostTypes.h"
+#include <dolfin.h>
+#include "FieldSplit.h"
 
 
 using namespace dolfin;
@@ -22,7 +21,7 @@ using namespace dolfin;
 //----------------------------------------------------------------------------
 // Constructor:
 //----------------------------------------------------------------------------
-DolfinFieldSplit::DolfinFieldSplit(const FunctionSpace& V) : V(V), _num_fields(0) 
+FieldSplit::FieldSplit(const FunctionSpace& V) : V(V), _num_fields(0) 
 {
   _field_dofs = get_field_dofs();
   _num_fields = _field_dofs.size();
@@ -32,7 +31,7 @@ DolfinFieldSplit::DolfinFieldSplit(const FunctionSpace& V) : V(V), _num_fields(0
 //----------------------------------------------------------------------------
 // Destructor:
 //----------------------------------------------------------------------------
-DolfinFieldSplit::~DolfinFieldSplit()
+FieldSplit::~FieldSplit()
 {
   // do nothing
 };
@@ -40,7 +39,7 @@ DolfinFieldSplit::~DolfinFieldSplit()
 //----------------------------------------------------------------------------
 // return number of fields field dofs:
 //----------------------------------------------------------------------------
-unsigned int DolfinFieldSplit::num_fields() const
+uint FieldSplit::num_fields() const
 {
   return _num_fields;
 };
@@ -48,7 +47,7 @@ unsigned int DolfinFieldSplit::num_fields() const
 //----------------------------------------------------------------------------
 // return full set of field dofs:
 //----------------------------------------------------------------------------
-std::vector<boost::unordered_set<dolfin::uint> > DolfinFieldSplit::field_dofs() const
+std::vector<boost::unordered_set<dolfin::uint> > FieldSplit::field_dofs() const
 {
   return _field_dofs;
 };
@@ -56,7 +55,7 @@ std::vector<boost::unordered_set<dolfin::uint> > DolfinFieldSplit::field_dofs() 
 //----------------------------------------------------------------------------
 // return  field dofs for field i;
 //----------------------------------------------------------------------------
-boost::unordered_set<dolfin::uint> DolfinFieldSplit::field_dofs(const unsigned int i) const
+boost::unordered_set<dolfin::uint> FieldSplit::field_dofs(const uint i) const
 {
   return _field_dofs[i];
 };
@@ -64,7 +63,7 @@ boost::unordered_set<dolfin::uint> DolfinFieldSplit::field_dofs(const unsigned i
 //----------------------------------------------------------------------------
 // return  total ghost indices dofs for field i;
 //----------------------------------------------------------------------------
-std::vector<unsigned int> DolfinFieldSplit::ghost_indices() const
+std::vector<uint> FieldSplit::ghost_indices() const
 {
   return _ghost_indices;
 };
@@ -72,7 +71,7 @@ std::vector<unsigned int> DolfinFieldSplit::ghost_indices() const
 //-----------------------------------------------------------------------------
 //combine and sort dofmaps for specific splits and load a Petsc Index Set
 //-----------------------------------------------------------------------------
-IS  DolfinFieldSplit::getIS(std::vector<dolfin::uint>  &split) 
+IS  FieldSplit::getIS(std::vector<dolfin::uint>  &split) 
 {
   // output sorted vector
   std::vector<dolfin::uint> isv;
@@ -104,9 +103,9 @@ IS  DolfinFieldSplit::getIS(std::vector<dolfin::uint>  &split)
   PetscMalloc(n*sizeof(PetscInt),&indices);
 
   //load indices restricted to ownership range
-  std::pair<unsigned int, unsigned int> ownership_range = V.dofmap().ownership_range();
+  std::pair<uint, uint> ownership_range = V.dofmap().ownership_range();
 
-  unsigned int i=0;
+  uint i=0;
   for (it = isv.begin(); it != isv.end(); it++)
   {
     if ((*it >= ownership_range.first) && (*it < ownership_range.second)) 
@@ -132,12 +131,12 @@ IS  DolfinFieldSplit::getIS(std::vector<dolfin::uint>  &split)
 //-----------------------------------------------------------------------------
 //utility function to print degrees of freedom for each Field
 //-----------------------------------------------------------------------------
-void DolfinFieldSplit::print_dofs() 
+void FieldSplit::print_dofs() 
 {
   
   boost::unordered_set<dolfin::uint>::iterator it;
   
-  for (unsigned int i=0; i< _num_fields; i++ )
+  for (uint i=0; i< _num_fields; i++ )
   {
     cout << "Field[" << i << "] dofs: ";
     for (it = _field_dofs[i].begin(); it != _field_dofs[i].end(); it++ )
@@ -151,7 +150,7 @@ void DolfinFieldSplit::print_dofs()
 //-----------------------------------------------------------------------------
 // get_field_dofs: Function to extract degrees of freedom indices for each sub-field of a Function
 //-----------------------------------------------------------------------------
-std::vector<boost::unordered_set<dolfin::uint> >  DolfinFieldSplit::get_field_dofs()
+std::vector<boost::unordered_set<dolfin::uint> >  FieldSplit::get_field_dofs()
 {
   //allocate vector 
   std::vector<boost::unordered_set<dolfin::uint> > field_dofs;
@@ -184,10 +183,10 @@ std::vector<boost::unordered_set<dolfin::uint> >  DolfinFieldSplit::get_field_do
 //-----------------------------------------------------------------------------
 // get_ghost_indices: Function to extract degrees of freedom in function space, that are not in ownership range
 //-----------------------------------------------------------------------------
-std::vector<unsigned int>  DolfinFieldSplit::get_ghost_indices()
+std::vector<uint>  FieldSplit::get_ghost_indices()
 {
   //allocate vector 
-  std::vector<unsigned int> ghost_indices;
+  std::vector<uint> ghost_indices;
 
   //get all dofs for function space
 
@@ -197,13 +196,13 @@ std::vector<unsigned int>  DolfinFieldSplit::get_ghost_indices()
   boost::unordered_set<dolfin::uint>::iterator dof_it;
 
   //get global size
-  const unsigned int N = V.dofmap().global_dimension();
+  const uint N = V.dofmap().global_dimension();
 
   //get local range
-  const std::pair<unsigned int, unsigned int> range = V.dofmap().ownership_range();
-  const unsigned int n0 = range.first;
-  const unsigned int n1 = range.second;
-  const unsigned int local_size = n1 - n0;
+  const std::pair<uint, uint> range = V.dofmap().ownership_range();
+  const uint n0 = range.first;
+  const uint n1 = range.second;
+  const uint local_size = n1 - n0;
 
   //if distributed
   if (N > local_size)

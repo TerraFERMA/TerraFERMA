@@ -8,19 +8,16 @@
 // 
 // 
 
-#ifndef __DOLFINFIELDSPLIT_H
-#define __DOLFINFIELDSPLIT_H
+#ifndef __FIELDSPLIT_H
+#define __FIELDSPLIT_H
 
 #include "petsc.h"
 #include "petscis.h"
-/* #include <dolfin/fem/DofMap.h> */
-/* #include <dolfin/function/Function.h> */
-/* #include <dolfin/function/FunctionSpace.h> */
-#include <boost/unordered_set.hpp>
-#include <dolfin/common/types.h>
-#include <dolfin/fem/DofMap.h>
+#include "BoostTypes.h"
+#include <dolfin.h>
 
-namespace dolfin
+
+namespace buckettools
 {
 
   // Forward declarations
@@ -30,33 +27,33 @@ namespace dolfin
   // This class allows conversion between Dolfin Degrees of freedom on FunctionSpaces and sub-function spaces to
   // PETSc Index Sets (IS's)  for eventual use in defining FieldSplit block preconditioners from Dolfin Functions
 
-  class DolfinFieldSplit 
+  class FieldSplit 
   {
   public:
 
-    // Create DolfinFieldSplit for a given function space
-    explicit DolfinFieldSplit(const FunctionSpace& V);
+    // Create FieldSplit for a given function space
+    explicit FieldSplit(const FunctionSpace& V);
 
     // Destructor
-    virtual ~DolfinFieldSplit();
+    virtual ~FieldSplit();
 
     // return number of sub fields
-    unsigned int num_fields() const;
+    uint num_fields() const;
 
     // return field degrees of freedom
     std::vector<boost::unordered_set<dolfin::uint> > field_dofs() const;
 
     // return field degrees of freedom for field i
-    boost::unordered_set<dolfin::uint>  field_dofs(const unsigned int i) const;    
+    boost::unordered_set<dolfin::uint>  field_dofs(const uint i) const;    
 
     // return Index Set for specific split
-    IS getIS(std::vector<unsigned int>& split);
+    IS getIS(std::vector<uint>& split);
 
     // return ownership range
-    std::pair<unsigned int,unsigned int> range() { return V.dofmap().ownership_range(); }
+    std::pair<uint,uint> range() { return V.dofmap().ownership_range(); }
 
     // return ghost indices
-    std::vector<unsigned int> ghost_indices() const;
+    std::vector<uint> ghost_indices() const;
 
 
     // set SNES Fieldsplit (where Fieldsplit is a tree of splits
@@ -76,19 +73,19 @@ namespace dolfin
     const FunctionSpace& V;
     
     //number of sub_fields
-    unsigned int _num_fields;
+    uint _num_fields;
 
     // vector of field_dofs
     mutable std::vector<boost::unordered_set<dolfin::uint> > _field_dofs;
 
     //vector of ghost_indices (all dofs not in ownership range)
-    std::vector<unsigned int> _ghost_indices;
+    std::vector<uint> _ghost_indices;
 
     // function to extract field dofs
     std::vector<boost::unordered_set<dolfin::uint> >  get_field_dofs();
 
     // function to extract ghost indices
-    std::vector<unsigned int>  get_ghost_indices();  
+    std::vector<uint>  get_ghost_indices();  
   };
 }
 

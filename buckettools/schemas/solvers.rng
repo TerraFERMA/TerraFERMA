@@ -423,16 +423,58 @@ exact matrix inversion), or use fgmres in the outer solve.</a:documentation>
       <attribute name="name">
         <value>fieldsplit</value>
       </attribute>
+      <choice>
+        <element name="composite_type">
+          <attribute name="name">
+            <value>additive</value>
+          </attribute>
+          <empty/>
+        </element>
+        <element name="composite_type">
+          <attribute name="name">
+            <value>multiplicative</value>
+          </attribute>
+          <empty/>
+        </element>
+        <element name="composite_type">
+          <attribute name="name">
+            <value>symmetric_multiplicative</value>
+          </attribute>
+          <empty/>
+        </element>
+        <element name="composite_type">
+          <attribute name="name">
+            <value>special</value>
+          </attribute>
+          <empty/>
+        </element>
+        <element name="composite_type">
+          <attribute name="name">
+            <value>schur</value>
+          </attribute>
+          <empty/>
+        </element>
+      </choice>
       <oneOrMore>
         <element name="fieldsplit">
           <attribute name="name">
             <data type="string"/>
           </attribute>
           <choice>
-            <element name="fieldsplit_by_function">
+            <element name="fieldsplit_by_field">
               <oneOrMore>
                 <element name="field">
-                  <ref name="anystring"/>
+                  <attribute name="name">
+                    <data type="string"/>
+                  </attribute>
+                  <optional>
+                    <element name="components">
+                      <a:documentation>If this field is a vector or a tensor components may be listed (indexed from 0 by row first if tensorial).
+
+Defaults to all components if not selected.</a:documentation>
+                      <ref name="integer_vector"/>
+                    </element>
+                  </optional>
                 </element>
               </oneOrMore>
             </element>
