@@ -455,13 +455,13 @@ exact matrix inversion), or use fgmres in the outer solve.</a:documentation>
           <empty/>
         </element>
       </choice>
-      <oneOrMore>
-        <element name="fieldsplit">
-          <attribute name="name">
-            <data type="string"/>
-          </attribute>
-          <choice>
-            <element name="fieldsplit_by_field">
+      <choice>
+        <element name="fieldsplit_by_field">
+          <oneOrMore>
+            <element name="fieldsplit">
+              <attribute name="name">
+                <data type="string"/>
+              </attribute>
               <oneOrMore>
                 <element name="field">
                   <attribute name="name">
@@ -477,20 +477,31 @@ Defaults to all components if not selected.</a:documentation>
                   </optional>
                 </element>
               </oneOrMore>
+              <element name="linear_solver">
+                <a:documentation>Solver options for the full solve done by this preconditioner</a:documentation>
+                <ref name="linear_solver_options"/>
+              </element>
             </element>
-            <element name="fieldsplit_by_region">
+          </oneOrMore>
+        </element>
+        <element name="fieldsplit_by_region">
+          <oneOrMore>
+            <element name="fieldsplit">
+              <attribute name="name">
+                <data type="string"/>
+              </attribute>
               <element name="region_ids">
                 <a:documentation>A list of the region ids (physical ids in gmsh) </a:documentation>
                 <ref name="integer_vector"/>
               </element>
+              <element name="linear_solver">
+                <a:documentation>Solver options for the full solve done by this preconditioner</a:documentation>
+                <ref name="linear_solver_options"/>
+              </element>
             </element>
-          </choice>
-          <element name="linear_solver">
-            <a:documentation>Solver options for the full solve done by this preconditioner</a:documentation>
-            <ref name="linear_solver_options"/>
-          </element>
+          </oneOrMore>
         </element>
-      </oneOrMore>
+      </choice>
     </element>
   </define>
   <!--

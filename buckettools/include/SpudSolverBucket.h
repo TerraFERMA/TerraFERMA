@@ -31,6 +31,12 @@ namespace buckettools
 
     void ksp_fill_(const std::string &optionpath, KSP &ksp);
 
+    void pc_fieldsplit_fill_(const std::string &optionpath, PC &pc);
+
+    void pc_fieldsplit_by_field_fill_(const std::string &optionpath, PC &pc);
+
+    void pc_fieldsplit_by_region_fill_(const std::string &optionpath, PC &pc);
+
   public:
     
     // Specific constructor

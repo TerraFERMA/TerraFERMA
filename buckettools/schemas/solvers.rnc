@@ -400,32 +400,39 @@ pcfieldsplit_options =
              empty
            }
          ),
-         element fieldsplit {
-            attribute name { xsd:string },
-            (
-               element fieldsplit_by_field {
-                element field {
-                   attribute name { xsd:string },
-                   ## If this field is a vector or a tensor components may be listed (indexed from 0 by row first if tensorial).
-                   ##
-                   ## Defaults to all components if not selected.
-                   element components {
-                     integer_vector
-                   }?
-                 }+
-               }|
-               element fieldsplit_by_region {
-                 ## A list of the region ids (physical ids in gmsh) 
-                 element region_ids {
+         (
+           element fieldsplit_by_field {
+             element fieldsplit {
+               attribute name { xsd:string },
+               element field {
+                 attribute name { xsd:string },
+                 ## If this field is a vector or a tensor components may be listed (indexed from 0 by row first if tensorial).
+                 ##
+                 ## Defaults to all components if not selected.
+                 element components {
                    integer_vector
-                 }
+                 }?
+               }+,
+               ## Solver options for the full solve done by this preconditioner
+               element linear_solver {
+                  linear_solver_options
                }
-             ),
-             ## Solver options for the full solve done by this preconditioner
-             element linear_solver {
-                linear_solver_options
-             }
-         }+
+             }+
+           }|
+           element fieldsplit_by_region {
+             element fieldsplit {
+               attribute name { xsd:string },
+               ## A list of the region ids (physical ids in gmsh) 
+               element region_ids {
+                 integer_vector
+               },
+               ## Solver options for the full solve done by this preconditioner
+               element linear_solver {
+                 linear_solver_options
+               }
+             }+
+           }
+        )
       }
    )
 

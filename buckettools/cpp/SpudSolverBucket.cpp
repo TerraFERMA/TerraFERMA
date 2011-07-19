@@ -81,77 +81,189 @@ void SpudSolverBucket::ksp_fill_(const std::string &optionpath, KSP &ksp)
   buffer.str(""); buffer << optionpath << "/preconditioner/name";
   serr = Spud::get_option(buffer.str(), preconditioner); spud_err(buffer.str(), serr);
 
-  PC_ptr pc( new PC );
-  perr = KSPGetPC(ksp, &(*pc)); CHKERRV(perr);
-  perr = PCSetType(*pc, preconditioner.c_str()); CHKERRV(perr);
-
-  pcs_.push_back(pc);
+  PC pc;
+  perr = KSPGetPC(ksp, &pc); CHKERRV(perr);
+  perr = PCSetType(pc, preconditioner.c_str()); CHKERRV(perr);
 
   if (preconditioner=="ksp")
   {
-
     buffer.str(""); buffer << optionpath << "/preconditioner/linear_solver";
-    KSP_ptr subksp;
-    perr = PCKSPGetKSP(*pc, &(*subksp)); CHKERRV(perr);
-    ksp_fill_(buffer.str(), *subksp);
-    subksps_.push_back(subksp);
-
+    KSP subksp;
+    perr = PCKSPGetKSP(pc, &subksp); CHKERRV(perr);
+    // recurse!
+    ksp_fill_(buffer.str(), subksp);
   }
   else if (preconditioner=="fieldsplit")
   {
+    buffer.str(""); buffer << optionpath << "/preconditioner";
+    pc_fieldsplit_fill_(buffer.str(), pc);
+  }  
 
-    std::string type;
-    buffer.str(""); buffer << optionpath << "/preconditioner/composite_type/name";
-    serr = Spud::get_option(buffer.str(), type); spud_err(buffer.str(), serr);
-    if (type == "additive")
-    {
-      perr = PCFieldSplitSetType(*pc, PC_COMPOSITE_ADDITIVE); CHKERRV(perr);
-    }
-    else if (type == "multiplicative")
-    {
-      perr = PCFieldSplitSetType(*pc, PC_COMPOSITE_MULTIPLICATIVE); CHKERRV(perr);
-    }
-    else if (type == "symmetric_multiplicative")
-    {
-      perr = PCFieldSplitSetType(*pc, PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE); CHKERRV(perr);
-    }
-    else if (type == "special")
-    {
-      perr = PCFieldSplitSetType(*pc, PC_COMPOSITE_SPECIAL); CHKERRV(perr);
-    }
-    else if (type == "schur")
-    {
-      perr = PCFieldSplitSetType(*pc, PC_COMPOSITE_SCHUR); CHKERRV(perr);
-    }
-    else
-    {
-      dolfin::error("Unknown PCCompositeType.");
-    }
+}
 
-    buffer.str(""); buffer << optionpath << "/preconditioner/fieldsplit";
+void SpudSolverBucket::pc_fieldsplit_fill_(const std::string &optionpath, PC &pc)
+{
+
+  std::stringstream buffer;
+  PetscErrorCode perr;
+  Spud::OptionError serr;
+
+  std::string ctype;
+  buffer.str(""); buffer << optionpath << "/composite_type/name";
+  serr = Spud::get_option(buffer.str(), ctype); spud_err(buffer.str(), serr);
+  if (ctype == "additive")
+  {
+    perr = PCFieldSplitSetType(pc, PC_COMPOSITE_ADDITIVE); CHKERRV(perr);
+  }
+  else if (ctype == "multiplicative")
+  {
+    perr = PCFieldSplitSetType(pc, PC_COMPOSITE_MULTIPLICATIVE); CHKERRV(perr);
+  }
+  else if (ctype == "symmetric_multiplicative")
+  {
+    perr = PCFieldSplitSetType(pc, PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE); CHKERRV(perr);
+  }
+  else if (ctype == "special")
+  {
+    perr = PCFieldSplitSetType(pc, PC_COMPOSITE_SPECIAL); CHKERRV(perr);
+  }
+  else if (ctype == "schur")
+  {
+    perr = PCFieldSplitSetType(pc, PC_COMPOSITE_SCHUR); CHKERRV(perr);
+  }
+  else
+  {
+    dolfin::error("Unknown PCCompositeType.");
+  }
+
+  if (Spud::have_option(optionpath+"/fieldsplit_by_field"))
+  {
+    buffer.str(""); buffer << optionpath << "/fieldsplit_by_field/fieldsplit";
     int nsplits = Spud::option_count(buffer.str());
     for (uint i = 0; i < nsplits; i++)
     {
-      buffer.str(""); buffer << optionpath << "/preconditioner/fieldsplit[" << i << "]";
-
-      buffer.str(""); buffer << optionpath << "/preconditioner/fieldsplit[" << i << "]/fieldsplit_by_field/field";
-      int nfields = Spud::option_count(buffer.str()); spud_err(buffer.str(), serr);
-      for (uint j = 0; i < nfields; i++)
-      {
-        buffer.str(""); buffer << optionpath << "/preconditioner/fieldsplit[" << i << "]/fieldsplit_by_field/field[" << j << "]";
-        std::string fieldname;
-        buffer.str(""); buffer << optionpath << "/preconditioner/fieldsplit[" << i << "]/fieldsplit_by_field/field[" << j << "]/name";
-        serr = Spud::get_option(buffer.str(), fieldname); spud_err(buffer.str(), serr);
-        
-        int index = (*(*system_).fetch_field(fieldname)).index();
-        
-      }
-       
-      buffer.str(""); buffer << optionpath << "/preconditioner/fieldsplit[" << i << "]/linear_solver";
+      buffer.str(""); buffer << optionpath << "/fieldsplit_by_field/fieldsplit[" << i << "]";
+      pc_fieldsplit_by_field_fill_(buffer.str(), pc);
     }
 
-  }  
+    KSP *subksps;
+    PetscInt nsubksps;
+    perr = PCFieldSplitGetSubKSP(pc, &nsubksps, &subksps); CHKERRV(perr); 
 
+    assert(nsubksps==nsplits);
+
+    for (uint i = 0; i < nsplits; i++)
+    {
+      buffer.str(""); buffer << optionpath << "/fieldsplit_by_field/fieldsplit[" << i << "]/linear_solver";
+      // recurse!
+      ksp_fill_(buffer.str(), subksps[i]);
+    }
+
+  }
+  else if (Spud::have_option(optionpath+"/fieldsplit_by_region"))
+  {
+    buffer.str(""); buffer << optionpath << "/fieldsplit_by_region/fieldsplit";
+    int nsplits = Spud::option_count(buffer.str());
+    for (uint i = 0; i < nsplits; i++)
+    {
+      buffer.str(""); buffer << optionpath << "/fieldsplit_by_region/fieldsplit[" << i << "]";
+      pc_fieldsplit_by_region_fill_(buffer.str(), pc);
+    }
+  }
+  else
+  {
+    dolfin::error("Unknown way of specifying fieldsplit");
+  }
+
+  
+
+}
+
+void SpudSolverBucket::pc_fieldsplit_by_field_fill_(const std::string &optionpath, PC &pc)
+{
+
+  std::stringstream buffer;
+  PetscErrorCode perr;
+  Spud::OptionError serr;
+
+  std::vector< uint > indices_vector;
+
+  buffer.str(""); buffer << optionpath << "/field";
+  int nfields = Spud::option_count(buffer.str());
+  for (uint i = 0; i < nfields; i++)
+  {
+    buffer.str(""); buffer << optionpath << "/field[" << i << "]";
+    std::string fieldname;
+    buffer.str(""); buffer << optionpath << "/field[" << i << "]/name";
+    serr = Spud::get_option(buffer.str(), fieldname); spud_err(buffer.str(), serr);
+    
+    int fieldindex = (*(*system_).fetch_field(fieldname)).index();
+
+    buffer.str(""); buffer << optionpath << "/field[" << i << "]/components";
+    if (Spud::have_option(buffer.str()))
+    {
+      std::vector< int > components;
+      serr = Spud::get_option(buffer.str(), components); spud_err(buffer.str(), serr);
+      
+      for (std::vector<int>::const_iterator comp = components.begin(); comp != components.end(); comp++)
+      {
+        assert(*comp < (*(*(*system_).functionspace())[fieldindex]).element().num_sub_elements());
+
+        boost::unordered_set<uint> dof_set = (*(*(*(*system_).functionspace())[fieldindex])[*comp]).dofmap().dofs();
+        std::pair<uint, uint> ownership_range = (*(*system_).functionspace()).dofmap().ownership_range();
+
+        for (boost::unordered_set<uint>::const_iterator dof_it = dof_set.begin(); dof_it != dof_set.end(); dof_it++)
+        {
+          if ((*dof_it >= ownership_range.first) && (*dof_it < ownership_range.second))
+          {
+            indices_vector.push_back(*dof_it);
+          }
+        }
+      }
+    }
+    else
+    {
+      boost::unordered_set<uint> dof_set = (*(*(*system_).functionspace())[fieldindex]).dofmap().dofs();
+      std::pair<uint, uint> ownership_range = (*(*system_).functionspace()).dofmap().ownership_range();
+
+      for (boost::unordered_set<uint>::const_iterator dof_it = dof_set.begin(); dof_it != dof_set.end(); dof_it++)
+      {
+        if ((*dof_it >= ownership_range.first) && (*dof_it < ownership_range.second))
+        {
+          indices_vector.push_back(*dof_it);
+        }
+      }
+    }
+  }
+
+  std::sort(indices_vector.begin(), indices_vector.end());
+
+  PetscInt n=indices_vector.size();
+  PetscInt *indices;
+
+  PetscMalloc(n*sizeof(PetscInt), &indices);
+  uint ind = 0;
+  for (std::vector<uint>::const_iterator ind_it = indices_vector.begin(); ind_it != indices_vector.end(); ind_it++)
+  {
+    indices[ind] = *ind_it;
+    ind++;
+  }
+  assert(ind==n);
+  IS is;
+  perr = ISCreateGeneral(PETSC_COMM_WORLD, n, indices, &is); CHKERRV(perr);
+  perr = ISView(is, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);
+  perr = PCFieldSplitSetIS(pc, is); CHKERRV(perr);
+
+  PetscFree(indices);
+   
+}
+
+void SpudSolverBucket::pc_fieldsplit_by_region_fill_(const std::string &optionpath, PC &pc)
+{
+
+  std::stringstream buffer;
+  PetscErrorCode perr;
+  Spud::OptionError serr;
 
 }
 
