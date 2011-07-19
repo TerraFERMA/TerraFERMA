@@ -205,44 +205,25 @@
           <iterative_method name="preonly"/>
           <preconditioner name="fieldsplit">
             <composite_type name="additive"/>
-            <fieldsplit name="Field">
-              <fieldsplit_by_field>
-                <field name="Field"/>
-              </fieldsplit_by_field>
-              <linear_solver>
-                <iterative_method name="gmres">
-                  <restart>
-                    <integer_value rank="0"/>
-                  </restart>
-                  <relative_error>
-                    <real_value rank="0"/>
-                  </relative_error>
-                  <max_iterations>
-                    <integer_value rank="0"/>
-                  </max_iterations>
-                </iterative_method>
-                <preconditioner name="sor"/>
-              </linear_solver>
-            </fieldsplit>
-            <fieldsplit name="Hermione">
-              <fieldsplit_by_field>
+            <fieldsplit_by_field>
+              <fieldsplit>
                 <field name="Hermione"/>
-              </fieldsplit_by_field>
-              <linear_solver>
-                <iterative_method name="gmres">
-                  <restart>
-                    <integer_value rank="0"/>
-                  </restart>
-                  <relative_error>
-                    <real_value rank="0"/>
-                  </relative_error>
-                  <max_iterations>
-                    <integer_value rank="0"/>
-                  </max_iterations>
-                </iterative_method>
-                <preconditioner name="sor"/>
-              </linear_solver>
-            </fieldsplit>
+                <linear_solver>
+                  <iterative_method name="gmres">
+                    <restart>
+                      <integer_value rank="0"/>
+                    </restart>
+                    <relative_error>
+                      <real_value rank="0"/>
+                    </relative_error>
+                    <max_iterations>
+                      <integer_value rank="0"/>
+                    </max_iterations>
+                  </iterative_method>
+                  <preconditioner name="sor"/>
+                </linear_solver>
+              </fieldsplit>
+            </fieldsplit_by_field>
           </preconditioner>
         </linear_solver>
       </type>
