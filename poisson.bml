@@ -204,12 +204,30 @@
         <linear_solver>
           <iterative_method name="preonly"/>
           <preconditioner name="fieldsplit">
-            <fieldsplit name="Playing">
-              <fieldsplit_by_function>
-                <field>
-                  <string_value lines="1"/>
-                </field>
-              </fieldsplit_by_function>
+            <composite_type name="additive"/>
+            <fieldsplit name="Field">
+              <fieldsplit_by_field>
+                <field name="Field"/>
+              </fieldsplit_by_field>
+              <linear_solver>
+                <iterative_method name="gmres">
+                  <restart>
+                    <integer_value rank="0"/>
+                  </restart>
+                  <relative_error>
+                    <real_value rank="0"/>
+                  </relative_error>
+                  <max_iterations>
+                    <integer_value rank="0"/>
+                  </max_iterations>
+                </iterative_method>
+                <preconditioner name="sor"/>
+              </linear_solver>
+            </fieldsplit>
+            <fieldsplit name="Hermione">
+              <fieldsplit_by_field>
+                <field name="Hermione"/>
+              </fieldsplit_by_field>
               <linear_solver>
                 <iterative_method name="gmres">
                   <restart>
