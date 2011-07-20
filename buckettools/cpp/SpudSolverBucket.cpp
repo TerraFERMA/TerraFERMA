@@ -148,7 +148,9 @@ void SpudSolverBucket::pc_fieldsplit_fill_(const std::string &optionpath, PC &pc
   for (uint i = 0; i < nsplits; i++)
   {
     buffer.str(""); buffer << optionpath << "/fieldsplit[" << i << "]";
-    pc_fieldsplit_by_field_fill_(buffer.str(), pc, child_indices[i], parent_indices);
+    std::vector<uint> indices;
+    pc_fieldsplit_by_field_fill_(buffer.str(), pc, indices, parent_indices);
+    child_indices.push_back(indices);
   }
 
   KSP *subksps;
@@ -178,8 +180,6 @@ void SpudSolverBucket::pc_fieldsplit_by_field_fill_(const std::string &optionpat
   // spud error code holder
   Spud::OptionError serr;
 
-  // a vecto of global indices
-  std::vector< uint > indices_vector;
   // the ownership range of this functionspace
   std::pair<uint, uint> ownership_range = (*(*system_).functionspace()).dofmap().ownership_range();
 
@@ -285,7 +285,7 @@ void SpudSolverBucket::pc_fieldsplit_by_field_fill_(const std::string &optionpat
         // while we do this, check that the dofs are in the ownership range (i.e. filter out ghost nodes)
         if ((*dof_it >= ownership_range.first) && (*dof_it < ownership_range.second))
         {
-          indices_vector.push_back(*dof_it);
+          child_indices.push_back(*dof_it);
         }
       }
     }
@@ -315,7 +315,7 @@ void SpudSolverBucket::pc_fieldsplit_by_field_fill_(const std::string &optionpat
             // check first that we own these nodes
             if ((*dof_it >= ownership_range.first) && (*dof_it < ownership_range.second))
             {
-              indices_vector.push_back(*dof_it);
+              child_indices.push_back(*dof_it);
             }
           }
         }
@@ -330,7 +330,7 @@ void SpudSolverBucket::pc_fieldsplit_by_field_fill_(const std::string &optionpat
           // and insert them into the vector if we own them
           if ((*dof_it >= ownership_range.first) && (*dof_it < ownership_range.second))
           {
-            indices_vector.push_back(*dof_it);
+            child_indices.push_back(*dof_it);
           }
         }
       }
@@ -340,15 +340,15 @@ void SpudSolverBucket::pc_fieldsplit_by_field_fill_(const std::string &optionpat
   // FIXME: tidy up the above mess!
 
   // sort the vector of indices over all fields (not inherited indices!)
-  std::sort(indices_vector.begin(), indices_vector.end());
+  std::sort(child_indices.begin(), child_indices.end());
 
   // turn it into a simpler structure for the IS allocation
-  PetscInt n=indices_vector.size();
+  PetscInt n=child_indices.size();
   PetscInt *indices;
 
   PetscMalloc(n*sizeof(PetscInt), &indices);
   uint ind = 0;
-  for (std::vector<uint>::const_iterator ind_it = indices_vector.begin(); ind_it != indices_vector.end(); ind_it++)
+  for (std::vector<uint>::const_iterator ind_it = child_indices.begin(); ind_it != child_indices.end(); ind_it++)
   {
     indices[ind] = *ind_it;
     ind++;
