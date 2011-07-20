@@ -1,7 +1,7 @@
-import ufltools.system
+import ufltools.systembucket
 import libspud
 
-class SpudSystem(ufltools.system.System):
+class SpudSystem(ufltools.systembucket.System):
   """A class that stores all the information necessary to write the ufl for a system (i.e. mixed function space) 
      plus all the information necessary to populate that class using libspud."""
   

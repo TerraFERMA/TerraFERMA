@@ -1,7 +1,7 @@
 import libspud
-import ufltools.functional
+import ufltools.functionalbucket
 
-class SpudFunctional(ufltools.functional.Functional):
+class SpudFunctional(ufltools.functionalbucket.Functional):
   """A class that stores all the information necessary to write the ufl for a functional (i.e. scalar valued returning ufl) 
      plus all the information necessary to populate that class using libspud."""
 

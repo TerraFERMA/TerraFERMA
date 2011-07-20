@@ -1,8 +1,8 @@
 import sys
 import libspud
-import ufltools.function
+import ufltools.functionbucket
 
-class SpudFunction(ufltools.function.Function):
+class SpudFunction(ufltools.functionbucket.Function):
   """A class that stores all the information necessary to write the ufl for a function (field or coefficient) 
      plus all the information necessary to populate that class using libspud.
      Note that the class has limited ufl production because much of this is system dependent."""
