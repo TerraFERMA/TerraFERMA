@@ -222,7 +222,7 @@ void SpudSolverBucket::pc_fieldsplit_by_field_fill_(const std::string &optionpat
         serr = Spud::get_option(buffer.str(), components); spud_err(buffer.str(), serr);
 
         // check that the user hasn't requested a component that doesn't exist
-        std::vector<int>::iterator max_comp_it = std::max(components.begin(), components.end());
+        std::vector<int>::iterator max_comp_it = std::max_element(components.begin(), components.end());
         assert(*max_comp_it < (*(*(*system_).functionspace())[fieldindex]).element().num_sub_elements());
         
         // loop over the cells in the mesh
@@ -301,7 +301,7 @@ void SpudSolverBucket::pc_fieldsplit_by_field_fill_(const std::string &optionpat
         serr = Spud::get_option(buffer.str(), components); spud_err(buffer.str(), serr);
         
         // check the user hasn't selected a component that doesn't exist
-        std::vector<int>::iterator max_comp_it = std::max(components.begin(), components.end());
+        std::vector<int>::iterator max_comp_it = std::max_element(components.begin(), components.end());
         assert(*max_comp_it < (*(*(*system_).functionspace())[fieldindex]).element().num_sub_elements());
 
         // loop over the components
@@ -347,15 +347,42 @@ void SpudSolverBucket::pc_fieldsplit_by_field_fill_(const std::string &optionpat
   PetscInt *indices;
 
   PetscMalloc(n*sizeof(PetscInt), &indices);
+ 
   uint ind = 0;
-  for (std::vector<uint>::const_iterator ind_it = child_indices.begin(); ind_it != child_indices.end(); ind_it++)
+  if(parent_indices)
   {
-    indices[ind] = *ind_it;
-    ind++;
+    // we have been passed a list of parent indices... our child indices must be
+    // a subset of this list and indexed into it so let's do that now...
+    uint p_size = (*parent_indices).size();
+    uint p_ind = 0;
+    for (std::vector<uint>::const_iterator c_it = child_indices.begin(); c_it != child_indices.end(); c_it++)
+    {
+      while ((*parent_indices)[p_ind] != *c_it)
+      {
+        p_ind++;
+        if (p_ind == p_size)
+        {
+          dolfin::error("Fieldsplit is not a subset of a parent fieldsplit.");
+        }
+      }
+      indices[ind] = p_ind;
+      ind++; 
+      p_ind++;  // indices shouldn't be repeated so increment
+    } 
+    // these will probably not be equal
+    assert(ind<=n);
+    n = ind;
   }
-
-  // these should be equal
-  assert(ind==n);
+  else
+  {
+    for (std::vector<uint>::const_iterator ind_it = child_indices.begin(); ind_it != child_indices.end(); ind_it++)
+    {
+      indices[ind] = *ind_it;
+      ind++;
+    }
+    // these should be equal
+    assert(ind==n);
+  }
 
   // create the index set
   IS is;
