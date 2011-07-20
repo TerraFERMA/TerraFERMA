@@ -207,6 +207,7 @@
             <composite_type name="additive"/>
             <fieldsplit name="Blah">
               <field name="Hermione"/>
+              <field name="Field"/>
               <linear_solver>
                 <iterative_method name="gmres">
                   <restart>
@@ -235,7 +236,30 @@
                           <integer_value rank="0"/>
                         </max_iterations>
                       </iterative_method>
-                      <preconditioner name="sor"/>
+                      <preconditioner name="fieldsplit">
+                        <composite_type name="additive"/>
+                        <fieldsplit>
+                          <field name="Hermione">
+                            <components>
+                              <integer_value shape="1" rank="1">1</integer_value>
+                            </components>
+                          </field>
+                          <linear_solver>
+                            <iterative_method name="gmres">
+                              <restart>
+                                <integer_value rank="0"/>
+                              </restart>
+                              <relative_error>
+                                <real_value rank="0"/>
+                              </relative_error>
+                              <max_iterations>
+                                <integer_value rank="0"/>
+                              </max_iterations>
+                            </iterative_method>
+                            <preconditioner name="sor"/>
+                          </linear_solver>
+                        </fieldsplit>
+                      </preconditioner>
                     </linear_solver>
                   </fieldsplit>
                 </preconditioner>
