@@ -52,7 +52,7 @@ std::string Bucket::meshes_str(int indent) const
 std::string Bucket::systems_str(int indent) const
 {
   std::stringstream s;
-  for ( System_const_it s_it = systems_begin(); s_it != systems_end(); s_it++ )
+  for ( SystemBucket_const_it s_it = systems_begin(); s_it != systems_end(); s_it++ )
   {
     s << (*(*s_it).second).str(indent);
   }
@@ -118,14 +118,14 @@ Mesh_const_it Bucket::meshes_end() const
 }
 
 // Register a pointer to a DOLFIN mesh
-void Bucket::register_system(System_ptr system, std::string name)
+void Bucket::register_system(SystemBucket_ptr system, std::string name)
 {
   // First check if a system with this name already exists
-  System_it s_it = systems_.find(name);
+  SystemBucket_it s_it = systems_.find(name);
   if (s_it != systems_end())
   {
     // if it does, issue an error
-    dolfin::error("System named \"%s\" already exists in bucket.", name.c_str());
+    dolfin::error("SystemBucket named \"%s\" already exists in bucket.", name.c_str());
   }
   else
   {
@@ -135,14 +135,14 @@ void Bucket::register_system(System_ptr system, std::string name)
 }
 
 // Fetch a pointer to a DOLFIN mesh
-System_ptr Bucket::fetch_system(const std::string name)
+SystemBucket_ptr Bucket::fetch_system(const std::string name)
 {
   // Check if the system exists in the bucket
-  System_it s_it = systems_.find(name);
+  SystemBucket_it s_it = systems_.find(name);
   if (s_it == systems_end())
   {
     // if it doesn't then throw an error
-    dolfin::error("System named \"%s\" does not exist in bucket.", name.c_str());
+    dolfin::error("SystemBucket named \"%s\" does not exist in bucket.", name.c_str());
   }
   else
   {
@@ -152,25 +152,25 @@ System_ptr Bucket::fetch_system(const std::string name)
 }
 
 // Public iterator access
-System_it Bucket::systems_begin()
+SystemBucket_it Bucket::systems_begin()
 {
   return systems_.begin();
 }
 
 // Public iterator access
-System_const_it Bucket::systems_begin() const
+SystemBucket_const_it Bucket::systems_begin() const
 {
   return systems_.begin();
 }
 
 // Public iterator access
-System_it Bucket::systems_end()
+SystemBucket_it Bucket::systems_end()
 {
   return systems_.end();
 }
 
 // Public iterator access
-System_const_it Bucket::systems_end() const
+SystemBucket_const_it Bucket::systems_end() const
 {
   return systems_.end();
 }
@@ -191,7 +191,7 @@ void Bucket::empty_()
 //  if(s_it != systembuckets_.end())
 //  {
 //    // if it does, issue an error
-//    dolfin::error("System named \"%s\" already exists in bucket.", name.c_str());
+//    dolfin::error("SystemBucket named \"%s\" already exists in bucket.", name.c_str());
 //  }
 //  else
 //  {

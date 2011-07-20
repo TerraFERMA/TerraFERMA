@@ -43,7 +43,7 @@ namespace buckettools
   public:
     
     // Specific constructor
-    SpudSolverBucket(std::string optionpath, System* system);
+    SpudSolverBucket(std::string optionpath, SystemBucket* system);
     
     // Default destructor (virtual so it calls base class as well)
     virtual ~SpudSolverBucket();

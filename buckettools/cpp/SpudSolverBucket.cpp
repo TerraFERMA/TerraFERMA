@@ -5,7 +5,7 @@
 #include <string>
 #include <spud>
 #include "SystemsWrapper.h"
-#include "SpudSystem.h"
+#include "SpudSystemBucket.h"
 #include "SpudBase.h"
 #include "SpudBucket.h"
 #include "petscsnes.h"
@@ -13,7 +13,7 @@
 using namespace buckettools;
 
 // Specific constructor
-SpudSolverBucket::SpudSolverBucket(std::string optionpath, System* system) : optionpath_(optionpath), SolverBucket(system)
+SpudSolverBucket::SpudSolverBucket(std::string optionpath, SystemBucket* system) : optionpath_(optionpath), SolverBucket(system)
 {
   // Do nothing
 }
@@ -443,7 +443,7 @@ void SpudSolverBucket::forms_fill_()
         // we got to it but weren't able to initialise it because we didn't have its
         // function space available yet... let's see if it's a function
         std::string functionname = (*system_).fetch_uflname(uflsymbol);
-        if (Spud::have_option((*dynamic_cast<SpudSystem*>(system_)).optionpath()+"/coefficient::"+functionname+"/type::Function"))
+        if (Spud::have_option((*dynamic_cast<SpudSystemBucket*>(system_)).optionpath()+"/coefficient::"+functionname+"/type::Function"))
         {
           // yes, it's a coefficient function... so let's take this opportunity to register
           // its functionspace

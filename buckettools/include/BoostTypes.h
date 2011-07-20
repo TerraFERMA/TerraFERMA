@@ -8,8 +8,8 @@
 namespace buckettools {
 
   // predeclarations
-  class System;
-  typedef boost::shared_ptr< System > System_ptr;
+  class SystemBucket;
+  typedef boost::shared_ptr< SystemBucket > SystemBucket_ptr;
   class FunctionBucket;
   typedef boost::shared_ptr< FunctionBucket > FunctionBucket_ptr;
   class SolverBucket;
@@ -30,8 +30,8 @@ namespace buckettools {
   typedef boost::shared_ptr< IS >  IS_ptr;
 
   // Define iterator types for things accessed in the bucket maps (defined below)
-  typedef std::map< std::string, System_ptr >::iterator                 System_it;
-  typedef std::map< std::string, System_ptr >::const_iterator           System_const_it;
+  typedef std::map< std::string, SystemBucket_ptr >::iterator           SystemBucket_it;
+  typedef std::map< std::string, SystemBucket_ptr >::const_iterator     SystemBucket_const_it;
   typedef std::map< std::string, Mesh_ptr >::iterator                   Mesh_it;
   typedef std::map< std::string, Mesh_ptr >::const_iterator             Mesh_const_it;
   typedef std::map< std::string, std::string >::iterator                string_it;

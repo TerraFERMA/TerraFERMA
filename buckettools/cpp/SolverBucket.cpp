@@ -13,7 +13,7 @@ SolverBucket::SolverBucket()
 }
 
 // Specific constructor
-SolverBucket::SolverBucket(System* system) : system_(system)
+SolverBucket::SolverBucket(SystemBucket* system) : system_(system)
 {
   // Do nothing
 }

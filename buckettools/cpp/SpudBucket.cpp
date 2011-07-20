@@ -1,6 +1,6 @@
 
 #include "SpudBucket.h"
-#include "SpudSystem.h"
+#include "SpudSystemBucket.h"
 #include "SpudBase.h"
 #include "BoostTypes.h"
 //#include "GenericDetectors.h"
@@ -119,7 +119,7 @@ void SpudBucket::meshes_fill_(const std::string &optionpath)
 // Insert a system (with optionpath) into the bucket
 void SpudBucket::systems_fill_(const std::string &optionpath)
 {
-  SpudSystem_ptr system( new SpudSystem(optionpath, this) );
+  SpudSystemBucket_ptr system( new SpudSystemBucket(optionpath, this) );
 
   (*system).fill();
 

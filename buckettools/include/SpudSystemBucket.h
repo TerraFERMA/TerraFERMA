@@ -3,16 +3,16 @@
 #define __SPUD_SYSTEM_H
 
 #include "BoostTypes.h"
-#include "System.h"
+#include "SystemBucket.h"
 #include <dolfin.h>
 
 namespace buckettools
 {
   
-  // The SpudSystem class is a derived class of the system that populates the
+  // The SpudSystemBucket class is a derived class of the system that populates the
   // data structures within a system using the spud options parser (and assumes
   // the structure of the buckettools schema)
-  class SpudSystem : public System
+  class SpudSystemBucket : public SystemBucket
   {
   // only accessible by this class
   private:
@@ -43,10 +43,10 @@ namespace buckettools
   public:
     
     // Specific constructor
-    SpudSystem(std::string optionpath, Bucket* bucket);
+    SpudSystemBucket(std::string optionpath, Bucket* bucket);
 
     // Default destructor (virtual so it calls base class as well)
-    virtual ~SpudSystem();
+    virtual ~SpudSystemBucket();
 
     // Fill the system assuming the buckettools schema
     void fill();
@@ -65,7 +65,7 @@ namespace buckettools
   };
  
   // Define a boost shared pointer for a spud system
-  typedef boost::shared_ptr< SpudSystem > SpudSystem_ptr;
+  typedef boost::shared_ptr< SpudSystemBucket > SpudSystemBucket_ptr;
 
 }
 #endif

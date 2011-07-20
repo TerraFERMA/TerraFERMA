@@ -1,7 +1,7 @@
 
 #include "BoostTypes.h"
 #include "InitialConditionExpression.h"
-#include "SpudSystem.h"
+#include "SpudSystemBucket.h"
 #include "SystemsWrapper.h"
 #include "SpudBase.h"
 #include "SpudFunctionBucket.h"
@@ -13,19 +13,19 @@
 using namespace buckettools;
 
 // Specific constructor
-SpudSystem::SpudSystem(std::string optionpath, Bucket* bucket) : optionpath_(optionpath), System(bucket)
+SpudSystemBucket::SpudSystemBucket(std::string optionpath, Bucket* bucket) : optionpath_(optionpath), SystemBucket(bucket)
 {
   // Do nothing
 }
 
 // Default destructor (declared as virtual so will call base class destructor)
-SpudSystem::~SpudSystem()
+SpudSystemBucket::~SpudSystemBucket()
 {
   // Do nothing
 }
 
 // Fill the system using spud and assuming a buckettools schema structure
-void SpudSystem::fill()
+void SpudSystemBucket::fill()
 {
   // fill in the base data (could be called from the constructor)
   base_fill_();
@@ -46,7 +46,7 @@ void SpudSystem::fill()
 
 }
 
-void SpudSystem::base_fill_()
+void SpudSystemBucket::base_fill_()
 {
   // A buffer to put option paths (and strings) in
   std::stringstream buffer;
@@ -69,7 +69,7 @@ void SpudSystem::base_fill_()
 
 }
 
-void SpudSystem::systemfunction_fill_()
+void SpudSystemBucket::systemfunction_fill_()
 {
   // A buffer to put option paths (and strings) in
   std::stringstream buffer;
@@ -97,7 +97,7 @@ void SpudSystem::systemfunction_fill_()
 
 }
 
-void SpudSystem::uflsymbols_fill_()
+void SpudSystemBucket::uflsymbols_fill_()
 {
   std::stringstream buffer;
   Spud::OptionError serr;
@@ -147,7 +147,7 @@ void SpudSystem::uflsymbols_fill_()
 }
 
 // Fill out the information regarding the each subfunction (or field)
-void SpudSystem::fields_fill_()
+void SpudSystemBucket::fields_fill_()
 {
   std::stringstream buffer;
 
@@ -193,7 +193,7 @@ void SpudSystem::fields_fill_()
 
 }
 
-void SpudSystem::apply_ic_(const uint &component, const std::map< uint, Expression_ptr > &icexpressions)
+void SpudSystemBucket::apply_ic_(const uint &component, const std::map< uint, Expression_ptr > &icexpressions)
 {
   Expression_ptr ic;
   if (component==1)
@@ -209,7 +209,7 @@ void SpudSystem::apply_ic_(const uint &component, const std::map< uint, Expressi
   *function_ = *oldfunction_;
 }
 
-//void SpudSystem::apply_bc_()
+//void SpudSystemBucket::apply_bc_()
 //{
 //  for(std::map< std::string, DirichletBC_ptr >::iterator
 //            bc = dirichletbcs_begin(); 
@@ -221,7 +221,7 @@ void SpudSystem::apply_ic_(const uint &component, const std::map< uint, Expressi
 //}
 
 // Fill out the information regarding each coefficient
-void SpudSystem::coeffs_fill_()
+void SpudSystemBucket::coeffs_fill_()
 {
   std::stringstream buffer;
   
@@ -259,7 +259,7 @@ void SpudSystem::coeffs_fill_()
 
 }
 
-void SpudSystem::solvers_fill_()
+void SpudSystemBucket::solvers_fill_()
 {
   std::stringstream buffer;
   
@@ -277,11 +277,11 @@ void SpudSystem::solvers_fill_()
 }
 
 // Return a string describing the contents of the system
-std::string SpudSystem::str(int indent) const
+std::string SpudSystemBucket::str(int indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
-  s << indentation << "System " << name() << " (" << optionpath() << ")" << std::endl;
+  s << indentation << "SystemBucket " << name() << " (" << optionpath() << ")" << std::endl;
   indent++;
   s << uflsymbols_str(indent);
   s << fields_str(indent);

@@ -12,11 +12,11 @@ namespace buckettools
   // Predeclaration of parent classes to allow two-way dependencies
   class Bucket;
   
-  // The System class describes a functionspace and a set of solvers that act on the fields
+  // The SystemBucket class describes a functionspace and a set of solvers that act on the fields
   // contained in that (potentially mixed) functionspace.
   // This base class describes the basic data structures while derived classes may be defined
   // that allow it to be linked to an options system.
-  class System
+  class SystemBucket
   {
   // only accessible by this class
   private:
@@ -63,13 +63,13 @@ namespace buckettools
   public:
 
     // Default constructor
-    System();
+    SystemBucket();
 
     // Specific constructor
-    System(Bucket* bucket);
+    SystemBucket(Bucket* bucket);
     
     // Default destructor
-    ~System();
+    ~SystemBucket();
 
     // Register a field (subfunction) in the system
     void register_field(FunctionBucket_ptr field, std::string name);
@@ -174,7 +174,7 @@ namespace buckettools
   };
 
   // Define a boost shared pointer to the system class type
-  typedef boost::shared_ptr< System > System_ptr;
+  typedef boost::shared_ptr< SystemBucket > SystemBucket_ptr;
 
 }
 #endif

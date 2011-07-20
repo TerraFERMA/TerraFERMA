@@ -9,7 +9,7 @@ namespace buckettools
 {
 
   // Predeclaration of parent classes to allow two-way dependencies
-  class System;
+  class SystemBucket;
   
   // The FunctionBucket class describes system functions and coefficients and provides data types
   // to the underlying functionals.
@@ -33,7 +33,7 @@ namespace buckettools
     uint index_;
 
     // the system to which this function belongs
-    System* system_;
+    SystemBucket* system_;
 
     FunctionSpace_ptr functionspace_;
 
@@ -71,7 +71,7 @@ namespace buckettools
     FunctionBucket();
 
     // Specific constructor with an uninitialised name
-    FunctionBucket(System* system);
+    FunctionBucket(SystemBucket* system);
     
     // Default destructor
     ~FunctionBucket();

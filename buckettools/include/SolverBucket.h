@@ -10,7 +10,7 @@ namespace buckettools
 {
 
   // Predeclaration of parent classes to allow two-way dependencies
-  class System;
+  class SystemBucket;
   
   // The SolverBucket class describes system functions and coefficients and provides data types
   // to the underlying functionals.
@@ -38,7 +38,7 @@ namespace buckettools
     uint index_;
 
     // the system to which this function belongs
-    System* system_;
+    SystemBucket* system_;
 
     // a map from form names to the forms
     std::map< std::string, Form_ptr > forms_;
@@ -49,7 +49,7 @@ namespace buckettools
     SolverBucket();
 
     // Specific constructor with an uninitialised name
-    SolverBucket(System* system);
+    SolverBucket(SystemBucket* system);
     
     // Default destructor
     ~SolverBucket();

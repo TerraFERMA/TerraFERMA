@@ -5,14 +5,14 @@
 #include <string>
 #include <spud>
 #include "SystemsWrapper.h"
-#include "SpudSystem.h"
+#include "SpudSystemBucket.h"
 #include "SpudBase.h"
 #include "SpudBucket.h"
 
 using namespace buckettools;
 
 // Specific constructor
-SpudFunctionBucket::SpudFunctionBucket(std::string optionpath, System* system) : optionpath_(optionpath), FunctionBucket(system)
+SpudFunctionBucket::SpudFunctionBucket(std::string optionpath, SystemBucket* system) : optionpath_(optionpath), FunctionBucket(system)
 {
   // Do nothing
 }
@@ -35,17 +35,17 @@ void SpudFunctionBucket::fill(const uint &index)
   // - hence we'll have the functionspace available later
   functionals_fill_();
 
-  if (Spud::have_option((*dynamic_cast<SpudSystem*>(system_)).optionpath()+"/field::"+name()) 
-      && Spud::have_option((*dynamic_cast<SpudSystem*>(system_)).optionpath()+"/coefficient::"+name()))
+  if (Spud::have_option((*dynamic_cast<SpudSystemBucket*>(system_)).optionpath()+"/field::"+name()) 
+      && Spud::have_option((*dynamic_cast<SpudSystemBucket*>(system_)).optionpath()+"/coefficient::"+name()))
   {
     dolfin::error("Nonunique names between a field and a coefficient, can't tell which is which.");
   }
-  else if (Spud::have_option((*dynamic_cast<SpudSystem*>(system_)).optionpath()+"/field::"+name()))
+  else if (Spud::have_option((*dynamic_cast<SpudSystemBucket*>(system_)).optionpath()+"/field::"+name()))
   {
     // this is a field
     initialize_field_();
   }
-  else if (Spud::have_option((*dynamic_cast<SpudSystem*>(system_)).optionpath()+"/coefficient::"+name()))
+  else if (Spud::have_option((*dynamic_cast<SpudSystemBucket*>(system_)).optionpath()+"/coefficient::"+name()))
   {
     // this is a coefficient
     initialize_coeff();
@@ -69,7 +69,7 @@ void SpudFunctionBucket::field_fill(const uint &index)
   // - hence we'll have the functionspace available later
   functionals_fill_();
 
-  if (Spud::have_option((*dynamic_cast<SpudSystem*>(system_)).optionpath()+"/field::"+name()))
+  if (Spud::have_option((*dynamic_cast<SpudSystemBucket*>(system_)).optionpath()+"/field::"+name()))
   {
     // this is a field
     initialize_field_();
@@ -93,7 +93,7 @@ void SpudFunctionBucket::coeff_fill(const uint &index)
   // - hence we'll have the functionspace available later
   functionals_fill_();
 
-  if (Spud::have_option((*dynamic_cast<SpudSystem*>(system_)).optionpath()+"/coefficient::"+name()))
+  if (Spud::have_option((*dynamic_cast<SpudSystemBucket*>(system_)).optionpath()+"/coefficient::"+name()))
   {
     // this is a coefficient
     initialize_coeff();
@@ -180,7 +180,7 @@ void SpudFunctionBucket::initialize_field_()
   }
   
   // Is this a mixed functionspace or not (i.e. how many fields does the system have)?
-  int nfields = Spud::option_count((*dynamic_cast<SpudSystem*>(system_)).optionpath()+"/field");
+  int nfields = Spud::option_count((*dynamic_cast<SpudSystemBucket*>(system_)).optionpath()+"/field");
   if (nfields == 1)
   {
     // no... the subfunctionspace for this field is identical to the system's
@@ -439,7 +439,7 @@ void SpudFunctionBucket::functionals_fill_()
         // we got to it but weren't able to initialise it because we didn't have its
         // function space available yet... let's see if it's a function
         std::string functionname = (*system_).fetch_uflname(uflsymbol);
-        if (Spud::have_option((*dynamic_cast<SpudSystem*>(system_)).optionpath()+"/coefficient::"+functionname+"/type::Function"))
+        if (Spud::have_option((*dynamic_cast<SpudSystemBucket*>(system_)).optionpath()+"/coefficient::"+functionname+"/type::Function"))
         {
           // yes, it's a coefficient function... so let's take this opportunity to register
           // its functionspace

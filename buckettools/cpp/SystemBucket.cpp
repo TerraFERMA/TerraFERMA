@@ -1,6 +1,6 @@
 
 #include "BoostTypes.h"
-#include "System.h"
+#include "SystemBucket.h"
 #include "FunctionBucket.h"
 #include "SolverBucket.h"
 #include <dolfin.h>
@@ -9,25 +9,25 @@
 using namespace buckettools;
 
 // Specific constructor
-System::System()
+SystemBucket::SystemBucket()
 {
   // Do nothing
 }
 
 // Specific constructor
-System::System(Bucket* bucket) : bucket_(bucket)
+SystemBucket::SystemBucket(Bucket* bucket) : bucket_(bucket)
 {
   // Do nothing
 }
 
 // Default destructor
-System::~System()
+SystemBucket::~SystemBucket()
 {
   empty_();
 }
 
 // Register a functionbucket as a field in the system
-void System::register_field(FunctionBucket_ptr field, std::string name)
+void SystemBucket::register_field(FunctionBucket_ptr field, std::string name)
 {
   // First check if a field with this name already exists
   FunctionBucket_it f_it = fields_.find(name);
@@ -44,7 +44,7 @@ void System::register_field(FunctionBucket_ptr field, std::string name)
 }
 
 // Fetch a functionbucket as a field from the system
-FunctionBucket_ptr System::fetch_field(std::string name)
+FunctionBucket_ptr SystemBucket::fetch_field(std::string name)
 {
   // First check if a field with this name already exists
   FunctionBucket_it f_it = fields_.find(name);
@@ -61,7 +61,7 @@ FunctionBucket_ptr System::fetch_field(std::string name)
 }
 
 // Register a functionbucket as a coefficient in the system
-void System::register_coeff(FunctionBucket_ptr coeff, std::string name)
+void SystemBucket::register_coeff(FunctionBucket_ptr coeff, std::string name)
 {
   // First check if a field with this name already exists
   FunctionBucket_it f_it = coeffs_.find(name);
@@ -78,7 +78,7 @@ void System::register_coeff(FunctionBucket_ptr coeff, std::string name)
 }
 
 // Fetch a functionbucket as a coeff from the system
-FunctionBucket_ptr System::fetch_coeff(std::string name)
+FunctionBucket_ptr SystemBucket::fetch_coeff(std::string name)
 {
   // First check if a coeff with this name already exists
   FunctionBucket_it f_it = coeffs_.find(name);
@@ -95,7 +95,7 @@ FunctionBucket_ptr System::fetch_coeff(std::string name)
 }
 
 // Register a ufl symbol-function name pair
-void System::register_uflname(std::string name, std::string uflsymbol)
+void SystemBucket::register_uflname(std::string name, std::string uflsymbol)
 {
   // First check if a name with this symbol already exists
   string_it s_it = uflnames_.find(uflsymbol);
@@ -112,7 +112,7 @@ void System::register_uflname(std::string name, std::string uflsymbol)
 }
 
 // Return a pointer to a dolfin GenericFunction with the given uflsymbol
-std::string System::fetch_uflname(std::string uflsymbol)
+std::string SystemBucket::fetch_uflname(std::string uflsymbol)
 {
   // First check if a function name with this symbol already exists
   string_it s_it = uflnames_.find(uflsymbol);
@@ -129,7 +129,7 @@ std::string System::fetch_uflname(std::string uflsymbol)
 }
 
 // Register a ufl symbol-function name pair
-void System::register_uflsymbol(GenericFunction_ptr function, std::string uflsymbol)
+void SystemBucket::register_uflsymbol(GenericFunction_ptr function, std::string uflsymbol)
 {
   // First check if a function with this symbol already exists
   GenericFunction_it g_it = uflsymbols_.find(uflsymbol);
@@ -146,7 +146,7 @@ void System::register_uflsymbol(GenericFunction_ptr function, std::string uflsym
 }
 
 // Create a ufl symbol-function name pair
-void System::create_uflsymbol(std::string uflsymbol)
+void SystemBucket::create_uflsymbol(std::string uflsymbol)
 {
   // First check if a function with this symbol already exists
   GenericFunction_it g_it = uflsymbols_.find(uflsymbol);
@@ -164,7 +164,7 @@ void System::create_uflsymbol(std::string uflsymbol)
 }
 
 // Reset a ufl symbol-function name pair
-void System::reset_uflsymbol(GenericFunction_ptr function, std::string uflsymbol)
+void SystemBucket::reset_uflsymbol(GenericFunction_ptr function, std::string uflsymbol)
 {
   // First check if a function with this symbol already exists
   GenericFunction_it g_it = uflsymbols_.find(uflsymbol);
@@ -181,7 +181,7 @@ void System::reset_uflsymbol(GenericFunction_ptr function, std::string uflsymbol
 }
 
 // Return a pointer to a dolfin GenericFunction with the given uflsymbol
-GenericFunction_ptr System::fetch_uflsymbol(std::string uflsymbol)
+GenericFunction_ptr SystemBucket::fetch_uflsymbol(std::string uflsymbol)
 {
   // First check if a generic function with this symbol already exists
   GenericFunction_it g_it = uflsymbols_.find(uflsymbol);
@@ -198,7 +198,7 @@ GenericFunction_ptr System::fetch_uflsymbol(std::string uflsymbol)
 }
 
 // Register a coefficientspace in the system
-void System::register_coefficientspace(FunctionSpace_ptr coefficientspace, std::string name)
+void SystemBucket::register_coefficientspace(FunctionSpace_ptr coefficientspace, std::string name)
 {
   // First check if a field with this name already exists
   FunctionSpace_it f_it = coefficientspaces_.find(name);
@@ -215,14 +215,14 @@ void System::register_coefficientspace(FunctionSpace_ptr coefficientspace, std::
 }
 
 // Check if the system contains a coefficientspace with the given name
-bool System::contains_coefficientspace(std::string name)
+bool SystemBucket::contains_coefficientspace(std::string name)
 {
   // First check if a field with this name already exists
   FunctionSpace_it f_it = coefficientspaces_.find(name);
   return f_it != coefficientspaces_.end();
 }
 
-FunctionSpace_ptr System::fetch_coefficientspace(std::string name)
+FunctionSpace_ptr SystemBucket::fetch_coefficientspace(std::string name)
 {
   // First check if a functionspace with this name already exists
   FunctionSpace_it f_it = coefficientspaces_.find(name);
@@ -239,7 +239,7 @@ FunctionSpace_ptr System::fetch_coefficientspace(std::string name)
 }
 
 // Register a solver in the system
-void System::register_solver(SolverBucket_ptr solver, std::string name)
+void SystemBucket::register_solver(SolverBucket_ptr solver, std::string name)
 {
   // First check if a solver with this name already exists
   SolverBucket_it s_it = solvers_.find(name);
@@ -256,11 +256,11 @@ void System::register_solver(SolverBucket_ptr solver, std::string name)
 }
 
 // Return a string describing the contents of the system
-std::string System::str(int indent) const
+std::string SystemBucket::str(int indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
-  s << indentation << "System " << name() << std::endl;
+  s << indentation << "SystemBucket " << name() << std::endl;
   indent++;
   s << uflsymbols_str(indent);
   s << fields_str(indent);
@@ -270,7 +270,7 @@ std::string System::str(int indent) const
 }
 
 // Return a string describing the contents of uflsymbols_
-std::string System::uflsymbols_str(int indent) const
+std::string SystemBucket::uflsymbols_str(int indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
@@ -289,7 +289,7 @@ std::string System::uflsymbols_str(int indent) const
 }
 
 // Return a string describing the contents of fields_
-std::string System::fields_str(int indent) const
+std::string SystemBucket::fields_str(int indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
@@ -301,7 +301,7 @@ std::string System::fields_str(int indent) const
 }
 
 // Return a string describing the contents of fields_
-std::string System::coeffs_str(int indent) const
+std::string SystemBucket::coeffs_str(int indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
@@ -313,7 +313,7 @@ std::string System::coeffs_str(int indent) const
 }
 
 // Return a string describing the contents of solvers_
-std::string System::solvers_str(int indent) const
+std::string SystemBucket::solvers_str(int indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
@@ -325,7 +325,7 @@ std::string System::solvers_str(int indent) const
 }
 
 // Empty the system
-void System::empty_()
+void SystemBucket::empty_()
 {
 }
 

@@ -5,7 +5,7 @@
 // #include "GenericDetectors.h"
 // #include "PythonDetectors.h"
 #include "BoostTypes.h"
-#include "System.h"
+#include "SystemBucket.h"
 #include <dolfin.h>
 
 namespace buckettools
@@ -37,8 +37,8 @@ namespace buckettools
     std::map< std::string, Mesh_ptr >         meshes_;
 
     // A map from system name to system pointer
-    // Systems describe function spaces and the solvers that operate on them
-    std::map< std::string, System_ptr >       systems_;
+    // SystemBuckets describe function spaces and the solvers that operate on them
+    std::map< std::string, SystemBucket_ptr >       systems_;
 
 //    // A map from detector set name to detectors
 //    std::map< std::string, GenericDetectors_ptr >    detectors_;
@@ -96,28 +96,28 @@ namespace buckettools
     Mesh_const_it meshes_end() const;
  
     // Register a system in the bucket (i.e. put it into the systems_ map)
-    void register_system(System_ptr system, std::string name);
+    void register_system(SystemBucket_ptr system, std::string name);
 
     // Return a system pointer from the systems_ map, given its name
-    System_ptr fetch_system(const std::string name);
+    SystemBucket_ptr fetch_system(const std::string name);
     
     // Return the iterator to the beginning of the systems_ map
-    System_it systems_begin();
+    SystemBucket_it systems_begin();
 
     // Return the const iterator to the beginning of the systems_ map
-    System_const_it systems_begin() const;
+    SystemBucket_const_it systems_begin() const;
 
     // Return the iterator to the end of the systems_ map
-    System_it systems_end();
+    SystemBucket_it systems_end();
 
     // Return the const iterator to the end of the systems_ map
-    System_const_it systems_end() const;
+    SystemBucket_const_it systems_end() const;
 
     // Return the geometry dimension
     int dimension() const
     { return dimension_; }
  
-//    void register_system(System_ptr std::string name)
+//    void register_system(SystemBucket_ptr std::string name)
 //    { register_system(name, "uninitialised_path"); }
 //
 //    void register_system(std::string name, std::string option_path);

@@ -13,7 +13,7 @@ FunctionBucket::FunctionBucket()
 }
 
 // Specific constructor
-FunctionBucket::FunctionBucket(System* system) : system_(system)
+FunctionBucket::FunctionBucket(SystemBucket* system) : system_(system)
 {
   // Do nothing
 }
