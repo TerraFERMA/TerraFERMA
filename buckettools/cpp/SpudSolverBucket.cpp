@@ -65,7 +65,8 @@ void SpudSolverBucket::fill()
 
 }
 
-void SpudSolverBucket::ksp_fill_(const std::string &optionpath, KSP &ksp)
+void SpudSolverBucket::ksp_fill_(const std::string &optionpath, KSP &ksp, 
+                                 const std::vector<uint>* parent_indices)
 {
   std::stringstream buffer;
   PetscErrorCode perr;
@@ -91,17 +92,18 @@ void SpudSolverBucket::ksp_fill_(const std::string &optionpath, KSP &ksp)
     KSP subksp;
     perr = PCKSPGetKSP(pc, &subksp); CHKERRV(perr);
     // recurse!
-    ksp_fill_(buffer.str(), subksp);
+    ksp_fill_(buffer.str(), subksp, parent_indices);
   }
   else if (preconditioner=="fieldsplit")
   {
     buffer.str(""); buffer << optionpath << "/preconditioner";
-    pc_fieldsplit_fill_(buffer.str(), pc);
+    pc_fieldsplit_fill_(buffer.str(), pc, parent_indices);
   }  
 
 }
 
-void SpudSolverBucket::pc_fieldsplit_fill_(const std::string &optionpath, PC &pc)
+void SpudSolverBucket::pc_fieldsplit_fill_(const std::string &optionpath, PC &pc, 
+                                           const std::vector<uint>* parent_indices)
 {
 
   std::stringstream buffer;
@@ -136,12 +138,17 @@ void SpudSolverBucket::pc_fieldsplit_fill_(const std::string &optionpath, PC &pc
     dolfin::error("Unknown PCCompositeType.");
   }
 
+  // create a vector of vectors to contain the
+  // child indices (the subsets of the parent_indices vector 
+  // (if associated))
+  std::vector< std::vector<uint> > child_indices;
+
   buffer.str(""); buffer << optionpath << "/fieldsplit";
   int nsplits = Spud::option_count(buffer.str());
   for (uint i = 0; i < nsplits; i++)
   {
     buffer.str(""); buffer << optionpath << "/fieldsplit[" << i << "]";
-    pc_fieldsplit_by_field_fill_(buffer.str(), pc);
+    pc_fieldsplit_by_field_fill_(buffer.str(), pc, child_indices[i], parent_indices);
   }
 
   KSP *subksps;
@@ -153,13 +160,15 @@ void SpudSolverBucket::pc_fieldsplit_fill_(const std::string &optionpath, PC &pc
   for (uint i = 0; i < nsplits; i++)
   {
     buffer.str(""); buffer << optionpath << "/fieldsplit[" << i << "]/linear_solver";
-    // recurse!
-    ksp_fill_(buffer.str(), subksps[i]);
+    // recurse (but now child_indices[i] becomes the parent_indices for the next level!
+    ksp_fill_(buffer.str(), subksps[i], &child_indices[i]);
   }
 
 }
 
-void SpudSolverBucket::pc_fieldsplit_by_field_fill_(const std::string &optionpath, PC &pc)
+void SpudSolverBucket::pc_fieldsplit_by_field_fill_(const std::string &optionpath, PC &pc, 
+                                                    std::vector<uint> &child_indices, 
+                                                    const std::vector<uint>* parent_indices)
 {
 
   // a buffer for strings

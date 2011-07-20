@@ -29,11 +29,16 @@ namespace buckettools
     // fill in the information related to the forms of this solver
     void forms_fill_();
 
-    void ksp_fill_(const std::string &optionpath, KSP &ksp);
+    void ksp_fill_(const std::string &optionpath, KSP &ksp)
+    { ksp_fill_(optionpath, ksp, NULL); }
 
-    void pc_fieldsplit_fill_(const std::string &optionpath, PC &pc);
+    void ksp_fill_(const std::string &optionpath, KSP &ksp, const std::vector<uint>* parent_indices);
 
-    void pc_fieldsplit_by_field_fill_(const std::string &optionpath, PC &pc);
+    void pc_fieldsplit_fill_(const std::string &optionpath, PC &pc, const std::vector<uint>* parent_indices);
+
+    void pc_fieldsplit_by_field_fill_(const std::string &optionpath, PC &pc, 
+                                      std::vector<uint> &child_indices,
+                                      const std::vector<uint>* parent_indices);
 
   public:
     
