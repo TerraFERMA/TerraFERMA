@@ -136,84 +136,189 @@ void SpudSolverBucket::pc_fieldsplit_fill_(const std::string &optionpath, PC &pc
     dolfin::error("Unknown PCCompositeType.");
   }
 
-  if (Spud::have_option(optionpath+"/fieldsplit_by_field"))
+  buffer.str(""); buffer << optionpath << "/fieldsplit";
+  int nsplits = Spud::option_count(buffer.str());
+  for (uint i = 0; i < nsplits; i++)
   {
-    buffer.str(""); buffer << optionpath << "/fieldsplit_by_field/fieldsplit";
-    int nsplits = Spud::option_count(buffer.str());
-    for (uint i = 0; i < nsplits; i++)
-    {
-      buffer.str(""); buffer << optionpath << "/fieldsplit_by_field/fieldsplit[" << i << "]";
-      pc_fieldsplit_by_field_fill_(buffer.str(), pc);
-    }
-
-    KSP *subksps;
-    PetscInt nsubksps;
-    perr = PCFieldSplitGetSubKSP(pc, &nsubksps, &subksps); CHKERRV(perr); 
-
-    assert(nsubksps==nsplits);
-
-    for (uint i = 0; i < nsplits; i++)
-    {
-      buffer.str(""); buffer << optionpath << "/fieldsplit_by_field/fieldsplit[" << i << "]/linear_solver";
-      // recurse!
-      ksp_fill_(buffer.str(), subksps[i]);
-    }
-
-  }
-  else if (Spud::have_option(optionpath+"/fieldsplit_by_region"))
-  {
-    buffer.str(""); buffer << optionpath << "/fieldsplit_by_region/fieldsplit";
-    int nsplits = Spud::option_count(buffer.str());
-    for (uint i = 0; i < nsplits; i++)
-    {
-      buffer.str(""); buffer << optionpath << "/fieldsplit_by_region/fieldsplit[" << i << "]";
-      pc_fieldsplit_by_region_fill_(buffer.str(), pc);
-    }
-  }
-  else
-  {
-    dolfin::error("Unknown way of specifying fieldsplit");
+    buffer.str(""); buffer << optionpath << "/fieldsplit[" << i << "]";
+    pc_fieldsplit_by_field_fill_(buffer.str(), pc);
   }
 
-  
+  KSP *subksps;
+  PetscInt nsubksps;
+  perr = PCFieldSplitGetSubKSP(pc, &nsubksps, &subksps); CHKERRV(perr); 
+
+  assert(nsubksps==nsplits);
+
+  for (uint i = 0; i < nsplits; i++)
+  {
+    buffer.str(""); buffer << optionpath << "/fieldsplit[" << i << "]/linear_solver";
+    // recurse!
+    ksp_fill_(buffer.str(), subksps[i]);
+  }
 
 }
 
 void SpudSolverBucket::pc_fieldsplit_by_field_fill_(const std::string &optionpath, PC &pc)
 {
 
+  // a buffer for strings
   std::stringstream buffer;
+  // petsc error code holder
   PetscErrorCode perr;
+  // spud error code holder
   Spud::OptionError serr;
 
+  // a vecto of global indices
   std::vector< uint > indices_vector;
+  // the ownership range of this functionspace
+  std::pair<uint, uint> ownership_range = (*(*system_).functionspace()).dofmap().ownership_range();
 
   buffer.str(""); buffer << optionpath << "/field";
   int nfields = Spud::option_count(buffer.str());
+  // loop over the fields used in this fieldsplit
   for (uint i = 0; i < nfields; i++)
   {
     buffer.str(""); buffer << optionpath << "/field[" << i << "]";
+
+    // get the fieldname
     std::string fieldname;
     buffer.str(""); buffer << optionpath << "/field[" << i << "]/name";
     serr = Spud::get_option(buffer.str(), fieldname); spud_err(buffer.str(), serr);
     
+    // and from that the field index
     int fieldindex = (*(*system_).fetch_field(fieldname)).index();
 
-    buffer.str(""); buffer << optionpath << "/field[" << i << "]/components";
+    // do we specify region id limitations for this fieldsplit
+    buffer.str(""); buffer << optionpath << "/field[" << i << "]/region_ids";
     if (Spud::have_option(buffer.str()))
     {
-      std::vector< int > components;
-      serr = Spud::get_option(buffer.str(), components); spud_err(buffer.str(), serr);
-      
-      for (std::vector<int>::const_iterator comp = components.begin(); comp != components.end(); comp++)
+      // yes, get the region_ids
+      std::vector< int > region_ids;
+      serr = Spud::get_option(buffer.str(), region_ids); spud_err(buffer.str(), serr);
+
+      // fetch the mesh and relevent mesh data
+      Mesh_ptr mesh = (*system_).mesh();
+      MeshFunction_uint_ptr cellidmeshfunction = (*mesh).data().mesh_function("CellIDs");
+
+      // set up a set of dof
+      boost::unordered_set<uint> dof_set;
+
+      // do we specify components of this field?
+      buffer.str(""); buffer << optionpath << "/field[" << i << "]/components";
+      if (Spud::have_option(buffer.str()))
       {
-        assert(*comp < (*(*(*system_).functionspace())[fieldindex]).element().num_sub_elements());
+        // yes, get the component list
+        std::vector< int > components;
+        serr = Spud::get_option(buffer.str(), components); spud_err(buffer.str(), serr);
 
-        boost::unordered_set<uint> dof_set = (*(*(*(*system_).functionspace())[fieldindex])[*comp]).dofmap().dofs();
-        std::pair<uint, uint> ownership_range = (*(*system_).functionspace()).dofmap().ownership_range();
+        // check that the user hasn't requested a component that doesn't exist
+        std::vector<int>::iterator max_comp_it = std::max(components.begin(), components.end());
+        assert(*max_comp_it < (*(*(*system_).functionspace())[fieldindex]).element().num_sub_elements());
+        
+        // loop over the cells in the mesh
+        for (dolfin::CellIterator cell(*mesh); !cell.end(); ++cell)
+        {
+          // get the cell id from the mesh function
+          int cellid = (*cellidmeshfunction)[(*cell).index()];
+          // for each region_id we specified,
+          for (std::vector<int>::const_iterator id = region_ids.begin(); id != region_ids.end(); id++)
+          {
+            // check if this cell should be included
+            if(cellid==*id)
+            {
+              // if yes, then loop over the components we want included
+              for (std::vector<int>::const_iterator comp = components.begin(); comp != components.end(); comp++)
+              {
+                // and get their dofs from the dofmap
+                std::vector<uint> dof_vec = (*(*(*(*system_).functionspace())[fieldindex])[*comp]).dofmap().cell_dofs((*cell).index());
+                for (std::vector<uint>::const_iterator dof_it = dof_vec.begin(); dof_it < dof_vec.end(); dof_it++)
+                {
+                  // insert them into the set of dof for this field
+                  dof_set.insert(*dof_it);
+                }
+              }
+            }
+          }
+        }
+      }
+      else
+      {
+        // no, this case is simpler then
 
+        // loop over the cells in the mesh
+        for (dolfin::CellIterator cell(*mesh); !cell.end(); ++cell)
+        {
+          // get the cell id from the mesh function
+          int cellid = (*cellidmeshfunction)[(*cell).index()];
+          // for each region_id we specified
+          for (std::vector<int>::const_iterator id = region_ids.begin(); id != region_ids.end(); id++)
+          {
+            // check if this cell should be included
+            if(cellid==*id)
+            {
+              // if yes, then get the dofs from the dofmap
+              std::vector<uint> dof_vec = (*(*(*system_).functionspace())[fieldindex]).dofmap().cell_dofs((*cell).index());
+              for (std::vector<uint>::const_iterator dof_it = dof_vec.begin(); dof_it < dof_vec.end(); dof_it++)
+              {
+                // and insert them into the set of dof for this field
+                dof_set.insert(*dof_it);
+              }
+            }
+          }
+        }
+
+      }
+      // we now have a set of dofs for this field over all regions and components requested...
+      // put this into the vector of dofs for all fields (field indices, unlike cell indices, should be unique so no need for a set anymore)
+      for (boost::unordered_set<uint>::const_iterator dof_it = dof_set.begin(); dof_it != dof_set.end(); dof_it++)
+      {
+        // while we do this, check that the dofs are in the ownership range (i.e. filter out ghost nodes)
+        if ((*dof_it >= ownership_range.first) && (*dof_it < ownership_range.second))
+        {
+          indices_vector.push_back(*dof_it);
+        }
+      }
+    }
+    else
+    {
+      // no region ids
+      // but we might still have components, so check
+      buffer.str(""); buffer << optionpath << "/field[" << i << "]/components";
+      if (Spud::have_option(buffer.str()))
+      {
+        // yes, get the components
+        std::vector< int > components;
+        serr = Spud::get_option(buffer.str(), components); spud_err(buffer.str(), serr);
+        
+        // check the user hasn't selected a component that doesn't exist
+        std::vector<int>::iterator max_comp_it = std::max(components.begin(), components.end());
+        assert(*max_comp_it < (*(*(*system_).functionspace())[fieldindex]).element().num_sub_elements());
+
+        // loop over the components
+        for (std::vector<int>::const_iterator comp = components.begin(); comp != components.end(); comp++)
+        {
+          // grabbing the dofs from the dofmap
+          boost::unordered_set<uint> dof_set = (*(*(*(*system_).functionspace())[fieldindex])[*comp]).dofmap().dofs();
+          for (boost::unordered_set<uint>::const_iterator dof_it = dof_set.begin(); dof_it != dof_set.end(); dof_it++)
+          {
+            // and inserting them into the vector (component dof indices should be unique, so again no need for a set)
+            // check first that we own these nodes
+            if ((*dof_it >= ownership_range.first) && (*dof_it < ownership_range.second))
+            {
+              indices_vector.push_back(*dof_it);
+            }
+          }
+        }
+      }
+      else
+      {
+        // no region ids or components specified... the simplest case
+        // just grab the dofs from the dofmap
+        boost::unordered_set<uint> dof_set = (*(*(*system_).functionspace())[fieldindex]).dofmap().dofs();
         for (boost::unordered_set<uint>::const_iterator dof_it = dof_set.begin(); dof_it != dof_set.end(); dof_it++)
         {
+          // and insert them into the vector if we own them
           if ((*dof_it >= ownership_range.first) && (*dof_it < ownership_range.second))
           {
             indices_vector.push_back(*dof_it);
@@ -221,23 +326,14 @@ void SpudSolverBucket::pc_fieldsplit_by_field_fill_(const std::string &optionpat
         }
       }
     }
-    else
-    {
-      boost::unordered_set<uint> dof_set = (*(*(*system_).functionspace())[fieldindex]).dofmap().dofs();
-      std::pair<uint, uint> ownership_range = (*(*system_).functionspace()).dofmap().ownership_range();
-
-      for (boost::unordered_set<uint>::const_iterator dof_it = dof_set.begin(); dof_it != dof_set.end(); dof_it++)
-      {
-        if ((*dof_it >= ownership_range.first) && (*dof_it < ownership_range.second))
-        {
-          indices_vector.push_back(*dof_it);
-        }
-      }
-    }
   }
+  // phew, that's over!
+  // FIXME: tidy up the above mess!
 
+  // sort the vector of indices over all fields (not inherited indices!)
   std::sort(indices_vector.begin(), indices_vector.end());
 
+  // turn it into a simpler structure for the IS allocation
   PetscInt n=indices_vector.size();
   PetscInt *indices;
 
@@ -248,23 +344,19 @@ void SpudSolverBucket::pc_fieldsplit_by_field_fill_(const std::string &optionpat
     indices[ind] = *ind_it;
     ind++;
   }
+
+  // these should be equal
   assert(ind==n);
+
+  // create the index set
   IS is;
   perr = ISCreateGeneral(PETSC_COMM_WORLD, n, indices, &is); CHKERRV(perr);
   perr = ISView(is, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);
   perr = PCFieldSplitSetIS(pc, is); CHKERRV(perr);
 
+  // free up the indices
   PetscFree(indices);
    
-}
-
-void SpudSolverBucket::pc_fieldsplit_by_region_fill_(const std::string &optionpath, PC &pc)
-{
-
-  std::stringstream buffer;
-  PetscErrorCode perr;
-  Spud::OptionError serr;
-
 }
 
 void SpudSolverBucket::base_fill_()
