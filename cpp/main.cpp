@@ -15,7 +15,8 @@ int main(int argc, char* argv[])
   bucket.fill();
 
   buckettools::DiagnosticsFile diagfile("poisson.stat");
-  diagfile.write_header(bucket, true);
+  diagfile.write_header(bucket, false);
+  diagfile.write_data(bucket);
 
   std::cout << bucket.str();
 
