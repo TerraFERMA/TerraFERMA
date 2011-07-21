@@ -77,11 +77,27 @@ namespace buckettools
     // Fetch a field (subfunction) from the system
     FunctionBucket_ptr fetch_field(std::string name);
 
+    FunctionBucket_it fields_begin();
+
+    FunctionBucket_const_it fields_begin() const;
+
+    FunctionBucket_it fields_end();
+
+    FunctionBucket_const_it fields_end() const;
+
     // Register a coefficient (expression or function) in the system
     void register_coeff(FunctionBucket_ptr coeff, std::string name);
 
     // Fetch a coefficient (expression or function) from the system
     FunctionBucket_ptr fetch_coeff(std::string name);
+
+    FunctionBucket_it coeffs_begin();
+
+    FunctionBucket_const_it coeffs_begin() const;
+
+    FunctionBucket_it coeffs_end();
+
+    FunctionBucket_const_it coeffs_end() const;
 
     // Register a ufl name
     void register_uflname(std::string name, std::string uflsymbol);

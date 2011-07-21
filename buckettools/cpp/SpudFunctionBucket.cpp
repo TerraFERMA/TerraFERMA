@@ -501,3 +501,8 @@ std::string SpudFunctionBucket::functionals_str(int indent) const
   return s.str();
 }
 
+bool SpudFunctionBucket::include_in_diagnostics() const
+{
+  return Spud::have_option(optionpath()+"/type/output/include_in_diagnostics");
+}
+

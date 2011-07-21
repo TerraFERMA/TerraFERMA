@@ -123,6 +123,9 @@ namespace buckettools
     uint index() const
     { return index_; }
 
+    SystemBucket* system() const
+    { return system_; }
+
     // Return the function_
     FunctionSpace_ptr functionspace() const
     { return functionspace_; }
@@ -142,6 +145,8 @@ namespace buckettools
     // Return the icexpression_
     Expression_ptr icexpression() const
     { return icexpression_; }
+
+    virtual bool include_in_diagnostics() const;
 
   };
 

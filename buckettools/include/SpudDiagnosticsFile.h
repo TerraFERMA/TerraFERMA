@@ -1,6 +1,6 @@
 
-#ifndef __DIAGNOSTICS_FILE_H
-#define __DIAGNOSTICS_FILE_H
+#ifndef __SPUD_DIAGNOSTICS_FILE_H
+#define __SPUD_DIAGNOSTICS_FILE_H
 
 #include <cstdio>
 #include <fstream>
@@ -11,13 +11,13 @@
 namespace buckettools
 {
 
-  class DiagnosticsFile : public StatFile
+  class SpudDiagnosticsFile : public StatFile
   {
   public:
     
-    DiagnosticsFile(const std::string name);
+    SpudDiagnosticsFile(const std::string name);
  
-    ~DiagnosticsFile();
+    ~SpudDiagnosticsFile();
     
     void write_header(const Bucket &bucket, 
                       const bool &timestepping);
@@ -27,9 +27,6 @@ namespace buckettools
     void header_bucket_(const Bucket &bucket,
                         uint &column);
 
-    void header_functionbucket_(FunctionBucket_const_it f_begin, 
-                                FunctionBucket_const_it f_end, 
-                                uint &column);
   };
   
 }

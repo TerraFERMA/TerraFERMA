@@ -80,6 +80,8 @@ namespace buckettools
     // Return the base optionpath for this function
     std::string optionpath() const
     { return optionpath_; }
+
+    bool include_in_diagnostics() const;
     
   };
  

@@ -157,6 +157,12 @@ std::string FunctionBucket::functionals_str(int indent) const
   return s.str();
 }
 
+bool FunctionBucket::include_in_diagnostics() const
+{
+  dolfin::error("Failed to find virtual function include_in_diagnostics.");
+  return false;
+}
+
 // Empty the function
 void FunctionBucket::empty_()
 {

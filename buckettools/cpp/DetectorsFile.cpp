@@ -28,15 +28,6 @@ void DetectorsFile::write_header(Bucket &bucket,
   file_ << "</header>" << std::endl;
 }
 
-void DetectorsFile::header_timestep_(uint &column)
-{
-  
-  tag_("timestep", column++, "value");
-  tag_("ElapsedTime", column++, "value");
-  tag_("dt", column++, "value");
-  
-}
-
 void DetectorsFile::header_bucket_(Bucket &bucket, uint &column)
 {
   std::stringstream buffer;

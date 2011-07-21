@@ -29,8 +29,6 @@ namespace buckettools
     
   private:
     
-    void header_timestep_(uint &column);
-    
     void header_bucket_(Bucket &bucket,
                         uint &column);
     

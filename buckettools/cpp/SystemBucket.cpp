@@ -60,6 +60,26 @@ FunctionBucket_ptr SystemBucket::fetch_field(std::string name)
   }
 }
 
+FunctionBucket_it SystemBucket::fields_begin()
+{
+  return fields_.begin();
+}
+
+FunctionBucket_const_it SystemBucket::fields_begin() const
+{
+  return fields_.begin();
+}
+
+FunctionBucket_it SystemBucket::fields_end()
+{
+  return fields_.end();
+}
+
+FunctionBucket_const_it SystemBucket::fields_end() const
+{
+  return fields_.end();
+}
+
 // Register a functionbucket as a coefficient in the system
 void SystemBucket::register_coeff(FunctionBucket_ptr coeff, std::string name)
 {
@@ -92,6 +112,26 @@ FunctionBucket_ptr SystemBucket::fetch_coeff(std::string name)
     // if not then return it
     return (*f_it).second;
   }
+}
+
+FunctionBucket_it SystemBucket::coeffs_begin()
+{
+  return coeffs_.begin();
+}
+
+FunctionBucket_const_it SystemBucket::coeffs_begin() const
+{
+  return coeffs_.begin();
+}
+
+FunctionBucket_it SystemBucket::coeffs_end()
+{
+  return coeffs_.end();
+}
+
+FunctionBucket_const_it SystemBucket::coeffs_end() const
+{
+  return coeffs_.end();
 }
 
 // Register a ufl symbol-function name pair

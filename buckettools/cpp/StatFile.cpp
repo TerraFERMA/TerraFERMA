@@ -60,9 +60,18 @@ void StatFile::header_constants_()
 //   constant_tag_("HostName", "string", cbuffer);
 }
 
-void StatFile::constant_tag_(const std::string name, 
-                             const std::string type, 
-                             const std::string value)
+void StatFile::header_timestep_(uint &column)
+{
+  
+  tag_("timestep", column++, "value");
+  tag_("ElapsedTime", column++, "value");
+  tag_("dt", column++, "value");
+  
+}
+
+void StatFile::constant_tag_(const std::string &name, 
+                             const std::string &type, 
+                             const std::string &value)
 {
   
   file_ << "<constant name=\"" << name
@@ -72,15 +81,20 @@ void StatFile::constant_tag_(const std::string name,
 
 }
 
-void StatFile::tag_(const std::string name,
-                    const uint column,
-                    const std::string statistic,
-                    const uint components)
+void StatFile::tag_(const std::string &name,
+                    const uint &column,
+                    const std::string &statistic,
+                    const std::string &system,
+                    const uint &components)
 {
   
   file_ << "<field column=\"" << column
         << "\" name=\"" << name
         << "\" statistic=\"" << statistic << "\"";
+  if(!system.empty())
+  {
+    file_ << " system=\"" << system << "\"";
+  }
   if (components > 0)
   {
     file_ << " components=\"" << components << "\"";
