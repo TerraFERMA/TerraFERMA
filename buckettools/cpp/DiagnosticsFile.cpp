@@ -51,8 +51,10 @@ void DiagnosticsFile::header_functionbucket_(FunctionBucket_const_it f_begin, Fu
 {
   for (FunctionBucket_const_it f_it = f_begin; f_it != f_end; f_it++)
   {
+    // loop over the functions (but check that we want to include them in the diagnostic output)
     if ((*(*f_it).second).include_in_diagnostics())
     {
+      // if yes, then populate the header with the default stats
       if ((*(*(*f_it).second).function()).value_rank()==0)
       {
         tag_((*(*f_it).second).name(), column, "max", (*(*(*f_it).second).system()).name());
@@ -79,6 +81,13 @@ void DiagnosticsFile::header_functionbucket_(FunctionBucket_const_it f_begin, Fu
       else
       {
         dolfin::error("In DiagnosticsFile::header_bucket_, unknown function rank.");
+      }
+
+      // loop over the functionals attached to this function, adding their names to the header
+      for (Form_const_it s_it = (*(*f_it).second).functionals_begin(); s_it != (*(*f_it).second).functionals_end(); s_it++)
+      {
+        tag_((*(*f_it).second).name(), column, (*s_it).first, (*(*(*f_it).second).system()).name());
+        column++;
       }
     }
   }

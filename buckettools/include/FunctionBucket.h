@@ -91,6 +91,14 @@ namespace buckettools
     // Return a pointer to a functional with the given name
     Form_ptr fetch_functional(std::string name);
 
+    Form_it functionals_begin();
+
+    Form_const_it functionals_begin() const;
+
+    Form_it functionals_end();
+
+    Form_const_it functionals_end() const;
+
     // Register a bc expression in the functionbucket
     void register_bcexpression(Expression_ptr bcexpression, std::string name);
 

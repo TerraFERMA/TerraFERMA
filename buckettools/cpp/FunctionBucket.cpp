@@ -100,6 +100,26 @@ Form_ptr FunctionBucket::fetch_functional(std::string name)
   }
 }
 
+Form_it FunctionBucket::functionals_begin()
+{
+  return functionals_.begin();
+}
+
+Form_const_it FunctionBucket::functionals_begin() const
+{
+  return functionals_.begin();
+}
+
+Form_it FunctionBucket::functionals_end()
+{
+  return functionals_.end();
+}
+
+Form_const_it FunctionBucket::functionals_end() const
+{
+  return functionals_.end();
+}
+
 // Register a dolfin expression for a bc in the functionbucket
 void FunctionBucket::register_bcexpression(Expression_ptr bcexpression, std::string name)
 {
