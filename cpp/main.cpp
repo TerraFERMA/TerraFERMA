@@ -14,6 +14,9 @@ int main(int argc, char* argv[])
   buckettools::SpudBucket bucket("PoissonBucket", "");
   bucket.fill();
 
+  buckettools::DiagnosticsFile diagfile("poisson.stat");
+  diagfile.write_header(bucket, true);
+
   std::cout << bucket.str();
 
   return 0;
