@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import array
 import exceptions
 import os
@@ -8,8 +6,8 @@ import numpy
 from xml.dom.minidom import parseString
 from xml.dom.minidom import Document
 
-class stat_creator(dict):
-  """Class to create .stat files. The stat entries are defined using  
+class creator(dict):
+  """Class to create stat files. The stat entries are defined using  
    creator[system][name][statistic] 
    or
    creator[name][statistic].
@@ -94,7 +92,7 @@ class stat_creator(dict):
     finally:
           f.close()
 
-class stat_parser(dict):
+class parser(dict):
     """Parse a .stat file. The resulting mapping object is a hierarchy
 of dictionaries. Most entries are of the form:
 
@@ -226,40 +224,3 @@ for example:
         else:
             current_dict[name][statistic]=columns[int(column)-1]
 
-def shell():
-  '''
-  shell()
-
-  Return ipython shell. To actually start the shell, invoke the function
-  returned by this function.
-
-  This is particularly useful for debugging embedded
-  python or for crawling over the data when something has gone wrong.
-  '''
-  import sys
-  
-  if not hasattr(sys,"argv"):
-    sys.argv=[]
-
-  try:
-    from IPython.Shell import IPShellEmbed
-  except ImportError:
-    sys.stderr.write(
-      """
-      *****************************************************
-      *** Failed to import IPython. This probably means ***
-      *** you don't have it installed. Please install   ***
-      *** IPython and try again.                        ***
-      *****************************************************
-      """)
-    raise
-
-  banner = """
-  This is an IPython shell embedded in buckettools. You can use it to examine
-  or even set variables. Press CTRL+d to exit and return to your program.
-  """
-
-  ipshell = IPShellEmbed(banner=banner)
-
-  return ipshell
-  
