@@ -371,6 +371,50 @@ void SpudFunctionBucket::initialize_function_coeff()
 
 }
 
+void SpudFunctionBucket::initialize_aliased_coeff()
+{
+  std::stringstream buffer;
+  Spud::OptionError serr;
+
+  if (type_=="Aliased")
+  {
+
+    std::string systemname;
+    buffer.str(""); buffer << optionpath() << "/type/system/name";
+    serr = Spud::get_option(buffer.str(), systemname); spud_err(buffer.str(), serr);
+
+    if (Spud::have_option(optionpath()+"/type/field"))
+    {
+      std::string fieldname;
+      buffer.str(""); buffer << optionpath() << "/type/field/name";
+      serr = Spud::get_option(buffer.str(), fieldname); spud_err(buffer.str(), serr);
+
+      FunctionBucket_ptr field = (*(*(*system_).bucket()).fetch_system(systemname)).fetch_field(fieldname);
+
+      function_         = (*field).function();
+      oldfunction_      = (*field).oldfunction();
+      iteratedfunction_ = (*field).iteratedfunction();
+    }
+    else if (Spud::have_option(optionpath()+"/type/coefficient"))
+    {
+      std::string coeffname;
+      buffer.str(""); buffer << optionpath() << "/type/coefficient/name";
+      serr = Spud::get_option(buffer.str(), coeffname); spud_err(buffer.str(), serr);
+
+      FunctionBucket_ptr coeff = (*(*(*system_).bucket()).fetch_system(systemname)).fetch_coeff(coeffname);
+
+      function_         = (*coeff).function();
+      oldfunction_      = (*coeff).oldfunction();
+      iteratedfunction_ = (*coeff).iteratedfunction();
+    }
+    else
+    {
+      dolfin::error("Unknown aliased field/coefficient specification.");
+    }
+  }
+
+}
+
 void SpudFunctionBucket::functionals_fill_()
 {
   // A buffer to put option paths (and strings) in

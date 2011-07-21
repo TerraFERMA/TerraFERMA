@@ -59,6 +59,8 @@ namespace buckettools
 
     void initialize_function_coeff();
 
+    void initialize_aliased_coeff();
+
     // Register a functional in the function (with a spud optionpath)
     void register_functional(Form_ptr functional, std::string name, std::string optionpath);
 

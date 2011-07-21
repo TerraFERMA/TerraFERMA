@@ -34,7 +34,7 @@ void SpudSystemBucket::fill()
   systemfunction_fill_();
 
   // Having just registered the system uflsymbols, quickly loop through
-  // the rest of the fields recording their symbol and a null pointer
+  // the rest of the fields recording their symbol and name
   uflsymbols_fill_();
 
   // initialize the fields
@@ -47,9 +47,31 @@ void SpudSystemBucket::fill()
   // (we do this after the solvers so that we can get the coefficientspaces from the solver forms)
   coeffs_fill_(); 
 
+}
+
+void SpudSystemBucket::aliased_fill()
+{
+  std::stringstream buffer;
+  
+  // Go for a third (and final) loop over the coefficients as we didn't initialize aliased coeffs last time
+  for (FunctionBucket_it f_it = coeffs_begin(); f_it != coeffs_end(); f_it++)
+  {
+    if ((*(*f_it).second).type()=="Aliased")
+    {
+      (*(boost::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).initialize_aliased_coeff();
+    }
+
+    // we should now have all the functions initialised (after three loops)
+    // so register them with their uflsymbol
+    register_uflsymbol((*(*f_it).second).function(), (*(*f_it).second).uflsymbol());
+    register_uflsymbol((*(*f_it).second).oldfunction(), (*(*f_it).second).uflsymbol()+"_n");
+    register_uflsymbol((*(*f_it).second).iteratedfunction(), (*(*f_it).second).uflsymbol()+"_i");
+  }
+
   // attach the coefficients to the functionals and forms
-  // this will probably have to move to later (after aliased coefficients are populated)
+  // now that we have them all registered
   attach_all_coeffs_();
+
 }
 
 void SpudSystemBucket::base_fill_()
@@ -241,17 +263,13 @@ void SpudSystemBucket::coeffs_fill_()
   }
 
   // Go for a second loop over the coefficients as we didn't initialize functions last time
-  for (FunctionBucket_it f_it = coeffs_.begin(); f_it != coeffs_.end(); f_it++)
+  for (FunctionBucket_it f_it = coeffs_begin(); f_it != coeffs_end(); f_it++)
   {
     if ((*(*f_it).second).type()=="Function")
     {
       (*(boost::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).initialize_function_coeff();
     }
 
-    // reset the function associated with the uflsymbol back in the system
-    register_uflsymbol((*(*f_it).second).function(), (*(*f_it).second).uflsymbol());
-    register_uflsymbol((*(*f_it).second).oldfunction(), (*(*f_it).second).uflsymbol()+"_n");
-    register_uflsymbol((*(*f_it).second).iteratedfunction(), (*(*f_it).second).uflsymbol()+"_i");
   }
 
 }

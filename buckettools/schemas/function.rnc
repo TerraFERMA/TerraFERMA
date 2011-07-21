@@ -197,11 +197,19 @@ functional_options =
 coefficient_aliased_options = 
   (
     element system {
-      anystring
+      attribute name { xsd:string },
+      empty
     },
-    element generic_function {
-      anystring
-    }
+    (
+      element field {
+        attribute name { xsd:string },
+        empty
+      }|
+      element coefficient {
+        attribute name { xsd:string },
+        empty
+      }
+    )
   )
 
 initial_condition_scalar = 
