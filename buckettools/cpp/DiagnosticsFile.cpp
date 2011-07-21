@@ -36,18 +36,17 @@ void DiagnosticsFile::write_header(const Bucket &bucket,
 
 void DiagnosticsFile::header_bucket_(const Bucket &bucket, uint &column)
 {
-  std::stringstream buffer;
 
   for (SystemBucket_const_it sys_it = bucket.systems_begin(); sys_it != bucket.systems_end(); sys_it++)
   {
-    header_functionbucket_((*(*sys_it).second).fields_begin(), (*(*sys_it).second).fields_end(), column);
+    header_field_((*(*sys_it).second).fields_begin(), (*(*sys_it).second).fields_end(), column);
 
-    header_functionbucket_((*(*sys_it).second).coeffs_begin(), (*(*sys_it).second).coeffs_end(), column);
+    header_coeff_((*(*sys_it).second).coeffs_begin(), (*(*sys_it).second).coeffs_end(), column);
   }
 
 }
 
-void DiagnosticsFile::header_functionbucket_(FunctionBucket_const_it f_begin, FunctionBucket_const_it f_end, uint &column)
+void DiagnosticsFile::header_field_(FunctionBucket_const_it f_begin, FunctionBucket_const_it f_end, uint &column)
 {
   for (FunctionBucket_const_it f_it = f_begin; f_it != f_end; f_it++)
   {
@@ -83,12 +82,160 @@ void DiagnosticsFile::header_functionbucket_(FunctionBucket_const_it f_begin, Fu
         dolfin::error("In DiagnosticsFile::header_bucket_, unknown function rank.");
       }
 
-      // loop over the functionals attached to this function, adding their names to the header
-      for (Form_const_it s_it = (*(*f_it).second).functionals_begin(); s_it != (*(*f_it).second).functionals_end(); s_it++)
-      {
-        tag_((*(*f_it).second).name(), column, (*s_it).first, (*(*(*f_it).second).system()).name());
-        column++;
-      }
+      header_functional_(f_it, (*(*f_it).second).functionals_begin(), (*(*f_it).second).functionals_end(), column);
     }
   }
 }
+
+void DiagnosticsFile::header_coeff_(FunctionBucket_const_it f_begin, FunctionBucket_const_it f_end, uint &column)
+{
+  for (FunctionBucket_const_it f_it = f_begin; f_it != f_end; f_it++)
+  {
+    // loop over the functions (but check that we want to include them in the diagnostic output)
+    if ((*(*f_it).second).include_in_diagnostics())
+    {
+      header_functional_(f_it, (*(*f_it).second).functionals_begin(), (*(*f_it).second).functionals_end(), column);
+    }
+  }
+}
+
+void DiagnosticsFile::header_functional_(FunctionBucket_const_it f_it, Form_const_it s_begin, Form_const_it s_end, uint &column)
+{
+  for (Form_const_it s_it = s_begin; s_it != s_end; s_it++)
+  {
+    // loop over the functionals attached to this function, adding their names to the header
+    tag_((*(*f_it).second).name(), column, (*s_it).first, (*(*(*f_it).second).system()).name());
+    column++;
+  }
+}
+
+void DiagnosticsFile::write_data(Bucket &bucket)
+{
+  
+  data_bucket_(bucket);
+
+  file_ << std::endl << std::flush;
+  
+}
+
+void DiagnosticsFile::write_data(const uint   &timestep,
+                                 const double &elapsedtime, 
+                                 const double &dt, 
+                                 Bucket       &bucket)
+{
+  
+  data_timestep_(timestep, elapsedtime, dt);
+  data_bucket_(bucket);
+  
+  file_ << std::endl << std::flush;
+  
+}
+
+void DiagnosticsFile::data_timestep_(const uint   &timestep,
+                                     const double &elapsedtime, 
+                                     const double &dt)
+{
+  
+  file_.setf(std::ios::scientific);
+  file_.precision(10);
+  
+  file_ << timestep << " ";  
+  file_ << elapsedtime << " ";
+  file_ << dt << " ";
+  
+  file_.unsetf(std::ios::scientific);
+  
+}
+
+void DiagnosticsFile::data_bucket_(Bucket &bucket)
+{
+  
+  file_.setf(std::ios::scientific);
+  file_.precision(10);
+  
+  for (SystemBucket_const_it sys_it = bucket.systems_begin(); sys_it != bucket.systems_end(); sys_it++)
+  {
+    data_field_((*(*sys_it).second).fields_begin(), (*(*sys_it).second).fields_end());
+
+    data_coeff_((*(*sys_it).second).fields_begin(), (*(*sys_it).second).fields_end());
+  }
+
+  file_.unsetf(std::ios::scientific);
+  
+}
+
+void DiagnosticsFile::data_field_(FunctionBucket_const_it f_begin, FunctionBucket_const_it f_end)
+{
+  for (FunctionBucket_const_it f_it = f_begin; f_it != f_end; f_it++)
+  {
+    // loop over the functions (but check that we want to include them in the diagnostic output)
+    if ((*(*f_it).second).include_in_diagnostics())
+    {
+      // if yes, then populate the header with the default stats
+      if ((*(*(*f_it).second).function()).value_rank()==0)
+      {
+        file_ << (*boost::dynamic_pointer_cast< dolfin::Function >((*(*f_it).second).function())).vector().max() << " ";
+        file_ << (*boost::dynamic_pointer_cast< dolfin::Function >((*(*f_it).second).function())).vector().min() << " ";
+      }
+      else if ((*(*(*f_it).second).function()).value_rank()==1)
+      {
+        int components = (*(*(*f_it).second).function()).value_size();
+        for (uint i = 0; i < components; i++)
+        {
+          file_ << (*boost::dynamic_pointer_cast< dolfin::Function >((*(*f_it).second).function()))[i].vector().max() << " ";
+        }
+        for (uint i = 0; i < components; i++)
+        {
+          file_ << (*boost::dynamic_pointer_cast< dolfin::Function >((*(*f_it).second).function()))[i].vector().min() << " ";
+        }
+      }
+      else if ((*(*(*f_it).second).function()).value_rank()==2)
+      {
+        int dim0 = (*(*(*f_it).second).function()).value_dimension(0);
+        int dim1 = (*(*(*f_it).second).function()).value_dimension(1);
+        for (uint i = 0; i < dim0; i++)
+        {
+          for (uint j = 0; j < dim1; j++)
+          {
+            file_ << (*boost::dynamic_pointer_cast< dolfin::Function >((*(*f_it).second).function()))[i][j].vector().max() << " ";
+          }
+        }
+        for (uint i = 0; i < dim0; i++)
+        {
+          for (uint j = 0; j < dim1; j++)
+          {
+            file_ << (*boost::dynamic_pointer_cast< dolfin::Function >((*(*f_it).second).function()))[i][j].vector().min() << " ";
+          }
+        }
+      }
+      else
+      {
+        dolfin::error("In DiagnosticsFile::header_bucket_, unknown function rank.");
+      }
+
+      data_functional_((*(*f_it).second).functionals_begin(), (*(*f_it).second).functionals_end());
+    }
+  }
+}
+
+void DiagnosticsFile::data_coeff_(FunctionBucket_const_it f_begin, FunctionBucket_const_it f_end)
+{
+  for (FunctionBucket_const_it f_it = f_begin; f_it != f_end; f_it++)
+  {
+    // loop over the functions (but check that we want to include them in the diagnostic output)
+    if ((*(*f_it).second).include_in_diagnostics())
+    {
+      data_functional_((*(*f_it).second).functionals_begin(), (*(*f_it).second).functionals_end());
+    }
+  }
+}
+
+void DiagnosticsFile::data_functional_(Form_const_it s_begin, Form_const_it s_end)
+{
+  for (Form_const_it s_it = s_begin; s_it != s_end; s_it++)
+  {
+    // loop over the functionals attached to this function, assembling them and outputing them to file
+    file_ << dolfin::assemble((*(*s_it).second));
+  }
+}
+
