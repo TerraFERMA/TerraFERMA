@@ -76,6 +76,7 @@ add_library(buckettools cpp/Bucket.cpp cpp/SpudBucket.cpp cpp/SystemBucket.cpp c
                         cpp/SolverBucket.cpp cpp/SpudSolverBucket.cpp 
                         cpp/SpudBase.cpp cpp/PythonExpression.cpp cpp/PythonInstance.cpp
                         cpp/InitialConditionExpression.cpp
+                        cpp/StatFile.cpp cpp/DiagnosticsFile.cpp
                         ${buckettools_BINARY_DIR}/SystemsWrapper.cpp )
 # tell cmake that this file doesn't exist until build time
 set_source_files_properties(${buckettools_BINARY_DIR}/SystemsWrapper.cpp PROPERTIES GENERATED 1)
