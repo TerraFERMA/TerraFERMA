@@ -39,11 +39,21 @@ void DiagnosticsFile::header_bucket_(const Bucket &bucket, uint &column)
 
   for (SystemBucket_const_it sys_it = bucket.systems_begin(); sys_it != bucket.systems_end(); sys_it++)
   {
+    header_system_(sys_it, column);
+
     header_field_((*(*sys_it).second).fields_begin(), (*(*sys_it).second).fields_end(), column);
 
     header_coeff_((*(*sys_it).second).coeffs_begin(), (*(*sys_it).second).coeffs_end(), column);
   }
 
+}
+
+void DiagnosticsFile::header_system_(SystemBucket_const_it sys_it, uint &column)
+{
+  tag_("SystemFunction", column, "max", (*(*sys_it).second).name());
+  column++;
+  tag_("SystemFunction", column, "min", (*(*sys_it).second).name());
+  column++;
 }
 
 void DiagnosticsFile::header_field_(FunctionBucket_const_it f_begin, FunctionBucket_const_it f_end, uint &column)
@@ -155,13 +165,21 @@ void DiagnosticsFile::data_bucket_(Bucket &bucket)
   
   for (SystemBucket_const_it sys_it = bucket.systems_begin(); sys_it != bucket.systems_end(); sys_it++)
   {
+    data_system_(sys_it);
+
     data_field_((*(*sys_it).second).fields_begin(), (*(*sys_it).second).fields_end());
 
-    data_coeff_((*(*sys_it).second).fields_begin(), (*(*sys_it).second).fields_end());
+    data_coeff_((*(*sys_it).second).coeffs_begin(), (*(*sys_it).second).coeffs_end());
   }
 
   file_.unsetf(std::ios::scientific);
   
+}
+
+void DiagnosticsFile::data_system_(SystemBucket_const_it sys_it)
+{
+  file_ << (*(*(*sys_it).second).function()).vector().max() << " ";
+  file_ << (*(*(*sys_it).second).function()).vector().min() << " ";
 }
 
 void DiagnosticsFile::data_field_(FunctionBucket_const_it f_begin, FunctionBucket_const_it f_end)
@@ -235,7 +253,9 @@ void DiagnosticsFile::data_functional_(Form_const_it s_begin, Form_const_it s_en
   for (Form_const_it s_it = s_begin; s_it != s_end; s_it++)
   {
     // loop over the functionals attached to this function, assembling them and outputing them to file
-    file_ << dolfin::assemble((*(*s_it).second));
+    double statistic = dolfin::assemble((*(*s_it).second));
+    std::cout << "I've made it here... " << statistic << std::endl;
+    file_ << statistic << " ";
   }
 }
 

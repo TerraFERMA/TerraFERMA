@@ -188,9 +188,9 @@ void SpudFunctionBucket::initialize_field_()
     functionspace_ = (*system_).functionspace();
 
     // not sure quite what this will do (in the nfields==1 case) but let's try to register the field
-    function_.reset( new dolfin::Function( (*(*system_).function()) ) );
-    oldfunction_.reset( new dolfin::Function( (*(*system_).oldfunction()) ) );
-    iteratedfunction_.reset( new dolfin::Function( (*(*system_).iteratedfunction()) ) );
+    function_ = (*system_).function();
+    oldfunction_ = (*system_).oldfunction();
+    iteratedfunction_ = (*system_).iteratedfunction();
   }
   else
   {

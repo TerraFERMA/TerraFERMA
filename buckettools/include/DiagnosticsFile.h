@@ -34,6 +34,9 @@ namespace buckettools
     void header_bucket_(const Bucket &bucket,
                         uint &column);
 
+    void header_system_(SystemBucket_const_it sys_it, 
+                        uint &column);
+
     void header_field_(FunctionBucket_const_it f_begin, 
                        FunctionBucket_const_it f_end, 
                        uint &column);
@@ -52,6 +55,8 @@ namespace buckettools
                         const double &dt);
     
     void data_bucket_(Bucket &bucket);
+
+    void data_system_(SystemBucket_const_it sys_it);
 
     void data_field_(FunctionBucket_const_it f_begin, 
                      FunctionBucket_const_it f_end);
