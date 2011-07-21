@@ -105,6 +105,8 @@ namespace buckettools
     // Register a bc expression in the functionbucket
     void register_dirichletbc(DirichletBC_ptr bc, std::string name);
 
+    void attach_functional_coeffs();
+
     // Return a string describing the contents of the function
     virtual std::string str() const
     { str(0); }
@@ -122,6 +124,10 @@ namespace buckettools
     // Return the function name
     std::string name() const
     { return name_; }
+
+    // Return the function type
+    std::string type() const
+    { return type_; }
 
     // Return the function uflsymbol
     std::string uflsymbol() const

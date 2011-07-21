@@ -1,6 +1,7 @@
 
 #include "BoostTypes.h"
 #include "FunctionBucket.h"
+#include "SystemBucket.h"
 #include <dolfin.h>
 #include <string>
 
@@ -152,6 +153,23 @@ void FunctionBucket::register_dirichletbc(DirichletBC_ptr bc, std::string name)
     // if not then insert it into the maps
     dirichletbcs_[name] = bc;
   }
+}
+
+void FunctionBucket::attach_functional_coeffs()
+{
+  for (Form_it f_it = functionals_begin(); f_it != functionals_end(); f_it++)
+  {
+    // Loop over the functions requested by the form and hook up pointers
+    uint ncoeff = (*(*f_it).second).num_coefficients();
+    for (uint i = 0; i < ncoeff; i++)
+    {
+      std::string uflsymbol = (*(*f_it).second).coefficient_name(i);
+      GenericFunction_ptr function = (*system_).fetch_uflsymbol(uflsymbol);
+
+      (*(*f_it).second).set_coefficient(uflsymbol, function);
+    }
+  }
+
 }
 
 // Return a string describing the contents of the function

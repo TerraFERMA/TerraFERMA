@@ -237,6 +237,21 @@ GenericFunction_ptr SystemBucket::fetch_uflsymbol(std::string uflsymbol)
   }
 }
 
+// Return a pointer to a dolfin GenericFunction with the given uflsymbol
+GenericFunction_ptr SystemBucket::grab_uflsymbol(std::string uflsymbol)
+{
+  GenericFunction_ptr function; 
+  // First check if a generic function with this symbol already exists
+  GenericFunction_it g_it = uflsymbols_.find(uflsymbol);
+  if (g_it != uflsymbols_.end())
+  {
+    // if it does, take that
+    function = (*g_it).second;
+  }
+  // but otherwise just return a null pointer
+  return function;
+}
+
 // Register a coefficientspace in the system
 void SystemBucket::register_coefficientspace(FunctionSpace_ptr coefficientspace, std::string name)
 {
@@ -295,6 +310,49 @@ void SystemBucket::register_solver(SolverBucket_ptr solver, std::string name)
   }
 }
 
+SolverBucket_it SystemBucket::solvers_begin()
+{
+  return solvers_.begin();
+}
+
+SolverBucket_const_it SystemBucket::solvers_begin() const
+{
+  return solvers_.begin();
+}
+
+SolverBucket_it SystemBucket::solvers_end()
+{
+  return solvers_.end();
+}
+
+SolverBucket_const_it SystemBucket::solvers_end() const
+{
+  return solvers_.end();
+}
+
+void SystemBucket::attach_all_coeffs_()
+{
+  attach_function_coeffs_(fields_begin(), fields_end());
+  attach_function_coeffs_(coeffs_begin(), coeffs_end());
+  attach_solver_coeffs_(solvers_begin(), solvers_end());
+}
+
+void SystemBucket::attach_function_coeffs_(FunctionBucket_it f_begin, FunctionBucket_it f_end)
+{
+  for (FunctionBucket_it f_it = f_begin; f_it != f_end; f_it++)
+  {
+    (*(*f_it).second).attach_functional_coeffs();
+  }
+}
+
+void SystemBucket::attach_solver_coeffs_(SolverBucket_it s_begin, SolverBucket_it s_end)
+{
+  for (SolverBucket_it s_it = s_begin; s_it != s_end; s_it++)
+  {
+    (*(*s_it).second).attach_form_coeffs();
+  }
+}
+
 // Return a string describing the contents of the system
 std::string SystemBucket::str(int indent) const
 {
@@ -324,6 +382,18 @@ std::string SystemBucket::uflsymbols_str(int indent) const
     {
       s << indentation << "UFLSymbol " << (*g_it).first << " not associated" << std::endl;
     }
+  }
+  return s.str();
+}
+
+// Return a string describing the contents of coefficientspaces_
+std::string SystemBucket::coefficientspaces_str(int indent) const
+{
+  std::stringstream s;
+  std::string indentation (indent*2, ' ');
+  for ( FunctionSpace_const_it f_it = coefficientspaces_.begin(); f_it != coefficientspaces_.end(); f_it++ )
+  {
+    s << indentation << "CoefficientSpace for " << (*f_it).first  << std::endl;
   }
   return s.str();
 }

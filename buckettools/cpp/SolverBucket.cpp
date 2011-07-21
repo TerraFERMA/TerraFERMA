@@ -1,6 +1,7 @@
 
 #include "BoostTypes.h"
 #include "SolverBucket.h"
+#include "SystemBucket.h"
 #include <dolfin.h>
 #include <string>
 
@@ -56,6 +57,43 @@ Form_ptr SolverBucket::fetch_form(std::string name)
     // if not then return it
     return (*f_it).second;
   }
+}
+
+Form_it SolverBucket::forms_begin()
+{
+  return forms_.begin();
+}
+
+Form_const_it SolverBucket::forms_begin() const
+{
+  return forms_.begin();
+}
+
+Form_it SolverBucket::forms_end()
+{
+  return forms_.end();
+}
+
+Form_const_it SolverBucket::forms_end() const
+{
+  return forms_.end();
+}
+
+void SolverBucket::attach_form_coeffs()
+{
+  for (Form_it f_it = forms_begin(); f_it != forms_end(); f_it++)
+  {
+    // Loop over the functions requested by the form and hook up pointers
+    uint ncoeff = (*(*f_it).second).num_coefficients();
+    for (uint i = 0; i < ncoeff; i++)
+    {
+      std::string uflsymbol = (*(*f_it).second).coefficient_name(i);
+      GenericFunction_ptr function = (*system_).fetch_uflsymbol(uflsymbol);
+
+      (*(*f_it).second).set_coefficient(uflsymbol, function);
+    }
+  }
+
 }
 
 // Return a string describing the contents of the function

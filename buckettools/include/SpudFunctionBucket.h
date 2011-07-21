@@ -38,6 +38,8 @@ namespace buckettools
     void bc_fill_(const std::string &optionpath,
                   const MeshFunction_uint_ptr &edgeidmeshfunction);
 
+    void initialize_expression_coeff_();
+
     // fill in the information related to the functionals of this function
     void functionals_fill_();
 
@@ -50,15 +52,12 @@ namespace buckettools
     virtual ~SpudFunctionBucket();
 
     // Fill the function assuming the buckettools schema
-    void fill(const uint &index);
-
-    // Fill the function assuming the buckettools schema
     void field_fill(const uint &index);
 
     // Fill the function assuming the buckettools schema
     void coeff_fill(const uint &index);
 
-    void initialize_coeff();
+    void initialize_function_coeff();
 
     // Register a functional in the function (with a spud optionpath)
     void register_functional(Form_ptr functional, std::string name, std::string optionpath);
