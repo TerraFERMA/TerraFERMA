@@ -188,24 +188,10 @@ generic_function_output_options =
 
 functional_options = 
   (
-    (
-      element functional {
-        attribute name { xsd:string },
-        form
-      }|
-      element functional {
-        attribute name { "L2Norm" },
-        form
-      }|
-      element functional {
-        attribute name { "Integral" },
-        form
-      }|
-      element functional {
-        attribute name { "SurfaceIntegral" },
-        form
-      }
-    )
+    element functional {
+      attribute name { xsd:string },
+      form
+    }
   )
 
 coefficient_aliased_options = 
