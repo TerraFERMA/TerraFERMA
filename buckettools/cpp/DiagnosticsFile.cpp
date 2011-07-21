@@ -254,7 +254,6 @@ void DiagnosticsFile::data_functional_(Form_const_it s_begin, Form_const_it s_en
   {
     // loop over the functionals attached to this function, assembling them and outputing them to file
     double statistic = dolfin::assemble((*(*s_it).second));
-    std::cout << "I've made it here... " << statistic << std::endl;
     file_ << statistic << " ";
   }
 }

@@ -240,8 +240,6 @@ void SpudSystemBucket::coeffs_fill_()
 
   }
 
-  // std::cout << coefficientspaces_str() << std::flush;
-
   // Go for a second loop over the coefficients as we didn't initialize functions last time
   for (FunctionBucket_it f_it = coeffs_.begin(); f_it != coeffs_.end(); f_it++)
   {
@@ -283,6 +281,7 @@ std::string SpudSystemBucket::str(int indent) const
   s << indentation << "SystemBucket " << name() << " (" << optionpath() << ")" << std::endl;
   indent++;
   s << uflsymbols_str(indent);
+  s << coefficientspaces_str(indent);
   s << fields_str(indent);
   s << coeffs_str(indent);
   s << solvers_str(indent);

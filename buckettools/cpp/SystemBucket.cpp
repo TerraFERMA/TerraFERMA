@@ -361,6 +361,7 @@ std::string SystemBucket::str(int indent) const
   s << indentation << "SystemBucket " << name() << std::endl;
   indent++;
   s << uflsymbols_str(indent);
+  s << coefficientspaces_str(indent);
   s << fields_str(indent);
   s << coeffs_str(indent);
   s << solvers_str(indent);

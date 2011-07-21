@@ -151,35 +151,35 @@ namespace buckettools
 
     // Print a description of the fields contained in the system
     virtual std::string uflsymbols_str() const
-    { fields_str(0); }
+    { return uflsymbols_str(0); }
 
     // Print a description of the fields contained in the system
     virtual std::string uflsymbols_str(int indent) const;
 
     // Print a description of the coefficient functionspaces contained in the system
     virtual std::string coefficientspaces_str() const
-    { fields_str(0); }
+    { return coefficientspaces_str(0); }
 
     // Print a description of the coefficient functionspaces contained in the system
     virtual std::string coefficientspaces_str(int indent) const;
 
     // Print a description of the fields contained in the system
     virtual std::string fields_str() const
-    { fields_str(0); }
+    { return fields_str(0); }
 
     // Print a description of the fields contained in the system
     virtual std::string fields_str(int indent) const;
 
     // Print a description of the coefficients contained in the system
     virtual std::string coeffs_str() const
-    { coeffs_str(0); }
+    { return coeffs_str(0); }
 
     // Print a description of the coefficients contained in the system
     virtual std::string coeffs_str(int indent) const;
 
     // Print a description of the solvers contained in the system
     virtual std::string solvers_str() const
-    { coeffs_str(0); }
+    { return coeffs_str(0); }
 
     // Print a description of the solvers contained in the system
     virtual std::string solvers_str(int indent) const;
