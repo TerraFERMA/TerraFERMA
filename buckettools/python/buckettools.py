@@ -3,17 +3,10 @@
 import array
 import exceptions
 import os
-import math
-import fileinput
 import re
 import numpy
 from xml.dom.minidom import parseString
 from xml.dom.minidom import Document
-
-try:
-  import vtktools
-except:
-  pass
 
 class stat_creator(dict):
   """Class to create .stat files. The stat entries are defined using  
