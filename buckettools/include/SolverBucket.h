@@ -60,6 +60,16 @@ namespace buckettools
     // Return a pointer to a form with the given name
     Form_ptr fetch_form(std::string name);
 
+    Form_it forms_begin();
+
+    Form_const_it forms_begin() const;
+
+    Form_it forms_end();
+
+    Form_const_it forms_end() const;
+
+    void attach_form_coeffs();
+
     // Return a string describing the contents of the solver
     virtual std::string str() const
     { str(0); }

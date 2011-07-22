@@ -34,15 +34,43 @@ void SpudSystemBucket::fill()
   systemfunction_fill_();
 
   // Having just registered the system uflsymbols, quickly loop through
-  // the rest of the fields recording their symbol and a null pointer
+  // the rest of the fields recording their symbol and name
   uflsymbols_fill_();
 
+  // initialize the fields
   fields_fill_(); 
  
+  // initialize the solvers
   solvers_fill_();
 
   // initialize the coefficients
+  // (we do this after the solvers so that we can get the coefficientspaces from the solver forms)
   coeffs_fill_(); 
+
+}
+
+void SpudSystemBucket::aliased_fill()
+{
+  std::stringstream buffer;
+  
+  // Go for a third (and final) loop over the coefficients as we didn't initialize aliased coeffs last time
+  for (FunctionBucket_it f_it = coeffs_begin(); f_it != coeffs_end(); f_it++)
+  {
+    if ((*(*f_it).second).type()=="Aliased")
+    {
+      (*(boost::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).initialize_aliased_coeff();
+    }
+
+    // we should now have all the functions initialised (after three loops)
+    // so register them with their uflsymbol
+    register_uflsymbol((*(*f_it).second).function(), (*(*f_it).second).uflsymbol());
+    register_uflsymbol((*(*f_it).second).oldfunction(), (*(*f_it).second).uflsymbol()+"_n");
+    register_uflsymbol((*(*f_it).second).iteratedfunction(), (*(*f_it).second).uflsymbol()+"_i");
+  }
+
+  // attach the coefficients to the functionals and forms
+  // now that we have them all registered
+  attach_all_coeffs_();
 
 }
 
@@ -95,6 +123,13 @@ void SpudSystemBucket::systemfunction_fill_()
   buffer.str(""); buffer << name() << "::IteratedFunction";
   (*iteratedfunction_).rename( buffer.str(), buffer.str() );
 
+  register_uflsymbol(function_, uflsymbol_);
+  register_uflsymbol(oldfunction_, uflsymbol_+"_n");
+  register_uflsymbol(iteratedfunction_, uflsymbol_+"_i");
+  // we intentionally do not register the ufl with the function name
+  // as we only do that for functions not systems (in case they share
+  // a name)
+
 }
 
 void SpudSystemBucket::uflsymbols_fill_()
@@ -102,13 +137,6 @@ void SpudSystemBucket::uflsymbols_fill_()
   std::stringstream buffer;
   Spud::OptionError serr;
   std::string uflsymbol, functionname;
-
-  register_uflsymbol(function_, uflsymbol_);
-  register_uflsymbol(oldfunction_, uflsymbol_+"_n");
-  register_uflsymbol(iteratedfunction_, uflsymbol_+"_i");
-  // we intentionally do not register the ufl with the function name
-  // as we only do that for functions not systems (in case they share
-  // a name)
 
   buffer.str("");  buffer << optionpath() << "/field";
   int nfields = Spud::option_count(buffer.str());
@@ -120,11 +148,8 @@ void SpudSystemBucket::uflsymbols_fill_()
     serr = Spud::get_option(buffer.str(), functionname); spud_err(buffer.str(), serr);
     buffer.str(""); buffer << optionpath() << "/field[" << i << "]/ufl_symbol";
     serr = Spud::get_option(buffer.str(), uflsymbol); spud_err(buffer.str(), serr);
-    create_uflsymbol(uflsymbol);
     register_uflname(functionname, uflsymbol);
-    create_uflsymbol(uflsymbol+"_i");
     register_uflname(functionname, uflsymbol+"_i");
-    create_uflsymbol(uflsymbol+"_n");
     register_uflname(functionname, uflsymbol+"_n");
   }
 
@@ -137,11 +162,8 @@ void SpudSystemBucket::uflsymbols_fill_()
     serr = Spud::get_option(buffer.str(), functionname); spud_err(buffer.str(), serr);
     buffer.str(""); buffer << optionpath() << "/coefficient[" << i << "]/ufl_symbol";
     serr = Spud::get_option(buffer.str(), uflsymbol); spud_err(buffer.str(), serr);
-    create_uflsymbol(uflsymbol);
     register_uflname(functionname, uflsymbol);
-    create_uflsymbol(uflsymbol+"_i");
     register_uflname(functionname, uflsymbol+"_i");
-    create_uflsymbol(uflsymbol+"_n");
     register_uflname(functionname, uflsymbol+"_n");
   }
 }
@@ -167,10 +189,10 @@ void SpudSystemBucket::fields_fill_()
     (*field).field_fill(i);
     register_field(field, (*field).name());
 
-    // reset the function associated with the uflsymbol back in the system
-    reset_uflsymbol((*field).function(), (*field).uflsymbol());
-    reset_uflsymbol((*field).oldfunction(), (*field).uflsymbol()+"_n");
-    reset_uflsymbol((*field).iteratedfunction(), (*field).uflsymbol()+"_i");
+    // set the function associated with the uflsymbol back in the system
+    register_uflsymbol((*field).function(), (*field).uflsymbol());
+    register_uflsymbol((*field).oldfunction(), (*field).uflsymbol()+"_n");
+    register_uflsymbol((*field).iteratedfunction(), (*field).uflsymbol()+"_i");
 
     uint_Expression_it e_it = icexpressions.find(component);
     if (e_it != icexpressions.end())
@@ -238,23 +260,16 @@ void SpudSystemBucket::coeffs_fill_()
     (*coeff).coeff_fill(i);
     register_coeff(coeff, (*coeff).name());
 
-    // reset the function associated with the uflsymbol back in the system
-    reset_uflsymbol((*coeff).function(), (*coeff).uflsymbol());
-    reset_uflsymbol((*coeff).oldfunction(), (*coeff).uflsymbol()+"_n");
-    reset_uflsymbol((*coeff).iteratedfunction(), (*coeff).uflsymbol()+"_i");
   }
 
-  // Go for a second loop over the coefficients
-  for (FunctionBucket_it f_it = coeffs_.begin(); f_it != coeffs_.end(); f_it++)
+  // Go for a second loop over the coefficients as we didn't initialize functions last time
+  for (FunctionBucket_it f_it = coeffs_begin(); f_it != coeffs_end(); f_it++)
   {
-
-    // if the function isn't associated then we didn't find a way of
-    // initializing it on the first pass through so let's try again
-    // (will still fail for Aliased fields at this point)
-    if (!(*(*f_it).second).function())
+    if ((*(*f_it).second).type()=="Function")
     {
-      (*(boost::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).initialize_coeff();
+      (*(boost::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).initialize_function_coeff();
     }
+
   }
 
 }
@@ -284,6 +299,7 @@ std::string SpudSystemBucket::str(int indent) const
   s << indentation << "SystemBucket " << name() << " (" << optionpath() << ")" << std::endl;
   indent++;
   s << uflsymbols_str(indent);
+  s << coefficientspaces_str(indent);
   s << fields_str(indent);
   s << coeffs_str(indent);
   s << solvers_str(indent);

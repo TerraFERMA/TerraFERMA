@@ -24,40 +24,6 @@ SpudFunctionBucket::~SpudFunctionBucket()
 }
 
 // Fill the function using spud and assuming a buckettools schema structure
-void SpudFunctionBucket::fill(const uint &index)
-{
-  // A buffer to put option paths (and strings) in
-  std::stringstream buffer;
-
-  base_fill_(index);
-
-  // we do this first in case this is a function coefficient that's only referenced in this functional
-  // - hence we'll have the functionspace available later
-  functionals_fill_();
-
-  if (Spud::have_option((*dynamic_cast<SpudSystemBucket*>(system_)).optionpath()+"/field::"+name()) 
-      && Spud::have_option((*dynamic_cast<SpudSystemBucket*>(system_)).optionpath()+"/coefficient::"+name()))
-  {
-    dolfin::error("Nonunique names between a field and a coefficient, can't tell which is which.");
-  }
-  else if (Spud::have_option((*dynamic_cast<SpudSystemBucket*>(system_)).optionpath()+"/field::"+name()))
-  {
-    // this is a field
-    initialize_field_();
-  }
-  else if (Spud::have_option((*dynamic_cast<SpudSystemBucket*>(system_)).optionpath()+"/coefficient::"+name()))
-  {
-    // this is a coefficient
-    initialize_coeff();
-  }
-  else
-  {
-    dolfin::error("Unknown function type.");
-  }
-
-}
-
-// Fill the function using spud and assuming a buckettools schema structure
 void SpudFunctionBucket::field_fill(const uint &index)
 {
   // A buffer to put option paths (and strings) in
@@ -96,7 +62,7 @@ void SpudFunctionBucket::coeff_fill(const uint &index)
   if (Spud::have_option((*dynamic_cast<SpudSystemBucket*>(system_)).optionpath()+"/coefficient::"+name()))
   {
     // this is a coefficient
-    initialize_coeff();
+    initialize_expression_coeff_();
   }
   else
   {
@@ -194,6 +160,8 @@ void SpudFunctionBucket::initialize_field_()
   }
   else
   {
+    // FIXME: almost definitely wrong!
+   
     // yes... use DOLFIN to extract that subspace so we can declare things on it (ics, bcs etc.)
     functionspace_.reset( new dolfin::SubSpace((*(*system_).functionspace()), index_) );
 
@@ -244,7 +212,7 @@ void SpudFunctionBucket::initialize_field_()
 }
 
 void SpudFunctionBucket::bc_fill_(const std::string &optionpath,
-                          const MeshFunction_uint_ptr &edgeidmeshfunction)
+                                  const MeshFunction_uint_ptr &edgeidmeshfunction)
 {
   std::stringstream buffer;
   Spud::OptionError serr;
@@ -335,49 +303,11 @@ void SpudFunctionBucket::ic_fill_(const std::string &optionpath)
   icexpression_ = initialize_expression(optionpath, size_, shape_);
 }
 
-void SpudFunctionBucket::initialize_coeff()
+void SpudFunctionBucket::initialize_expression_coeff_()
 {
   std::stringstream buffer;
 
-  if (type_=="Function")
-  {
-    // only gets handled once we have a functionspace to put it on
-    // (either from a solver form or a functional)
-    if ((*system_).contains_coefficientspace(name()))
-    {
-      FunctionSpace_ptr coefficientspace = (*system_).fetch_coefficientspace(name());
-
-      function_.reset( new dolfin::Function(*coefficientspace) );
-
-      buffer.str(""); buffer << optionpath() << "/type/rank/value";
-      int nvs = Spud::option_count(buffer.str());
-      if (nvs > 1)
-      {
-        dolfin::error("Haven't thought about values over regions.");
-      }
-      else
-      {
-  //      for (uint i = 0; i < nvs; i++)
-  //      {
-          uint i = 0;
-          buffer.str(""); buffer << optionpath() << "/type/rank/value[" << i << "]";
-          Expression_ptr valueexp = initialize_expression(buffer.str(), size_, shape_);
-
-          (*boost::dynamic_pointer_cast< dolfin::Function >(function_)).interpolate(*valueexp);
-
-  //      }
-      }
-
-      oldfunction_ = function_;
-      iteratedfunction_ = function_;
-
-    }
-  }
-  else if (type_=="Aliased")
-  {
-    // doesn't get handled here (yet?)
-  }
-  else if (type_=="Expression" || type_=="Constant")
+  if (type_=="Expression" || type_=="Constant")
   {
 
     buffer.str(""); buffer << optionpath() << "/type/rank/value";
@@ -400,9 +330,87 @@ void SpudFunctionBucket::initialize_coeff()
 //      }
     }
   }
-  else
+
+}
+
+void SpudFunctionBucket::initialize_function_coeff()
+{
+  std::stringstream buffer;
+
+  if (type_=="Function")
   {
-    dolfin::error("Unknown coeff type in coefficient_fill_.");
+    // only gets handled once we have a functionspace to put it on
+    // (either from a solver form or a functional)
+    FunctionSpace_ptr coefficientspace = (*system_).fetch_coefficientspace(name());
+
+    function_.reset( new dolfin::Function(*coefficientspace) );
+
+    buffer.str(""); buffer << optionpath() << "/type/rank/value";
+    int nvs = Spud::option_count(buffer.str());
+    if (nvs > 1)
+    {
+      dolfin::error("Haven't thought about values over regions.");
+    }
+    else
+    {
+//      for (uint i = 0; i < nvs; i++)
+//      {
+        uint i = 0;
+        buffer.str(""); buffer << optionpath() << "/type/rank/value[" << i << "]";
+        Expression_ptr valueexp = initialize_expression(buffer.str(), size_, shape_);
+
+        (*boost::dynamic_pointer_cast< dolfin::Function >(function_)).interpolate(*valueexp);
+
+//      }
+    }
+
+    oldfunction_ = function_;
+    iteratedfunction_ = function_;
+
+  }
+
+}
+
+void SpudFunctionBucket::initialize_aliased_coeff()
+{
+  std::stringstream buffer;
+  Spud::OptionError serr;
+
+  if (type_=="Aliased")
+  {
+
+    std::string systemname;
+    buffer.str(""); buffer << optionpath() << "/type/system/name";
+    serr = Spud::get_option(buffer.str(), systemname); spud_err(buffer.str(), serr);
+
+    if (Spud::have_option(optionpath()+"/type/field"))
+    {
+      std::string fieldname;
+      buffer.str(""); buffer << optionpath() << "/type/field/name";
+      serr = Spud::get_option(buffer.str(), fieldname); spud_err(buffer.str(), serr);
+
+      FunctionBucket_ptr field = (*(*(*system_).bucket()).fetch_system(systemname)).fetch_field(fieldname);
+
+      function_         = (*field).function();
+      oldfunction_      = (*field).oldfunction();
+      iteratedfunction_ = (*field).iteratedfunction();
+    }
+    else if (Spud::have_option(optionpath()+"/type/coefficient"))
+    {
+      std::string coeffname;
+      buffer.str(""); buffer << optionpath() << "/type/coefficient/name";
+      serr = Spud::get_option(buffer.str(), coeffname); spud_err(buffer.str(), serr);
+
+      FunctionBucket_ptr coeff = (*(*(*system_).bucket()).fetch_system(systemname)).fetch_coeff(coeffname);
+
+      function_         = (*coeff).function();
+      oldfunction_      = (*coeff).oldfunction();
+      iteratedfunction_ = (*coeff).iteratedfunction();
+    }
+    else
+    {
+      dolfin::error("Unknown aliased field/coefficient specification.");
+    }
   }
 
 }
@@ -427,18 +435,20 @@ void SpudFunctionBucket::functionals_fill_()
     Form_ptr functional = ufc_fetch_functional((*system_).name(), name(), functionalname, (*system_).mesh());
     register_functional(functional, functionalname, functionaloptionpath);
 
-    // Loop over the functions requested by the form and hook up (potentially currently null) pointers
+    // Loop over the functions requested by the form and hook up pointers
     uint ncoeff = (*functional).num_coefficients();
     for (uint i = 0; i < ncoeff; i++)
     {
       std::string uflsymbol = (*functional).coefficient_name(i);
-      GenericFunction_ptr function = (*system_).fetch_uflsymbol(uflsymbol);
+      GenericFunction_ptr function = (*system_).grab_uflsymbol(uflsymbol);
       if (!function)
       {
         // the function isn't initialised so either we haven't reached it yet or
         // we got to it but weren't able to initialise it because we didn't have its
         // function space available yet... let's see if it's a function
         std::string functionname = (*system_).fetch_uflname(uflsymbol);
+        // this only checks the coefficient option path because fields get their functionspace
+        // as a subfunctionspace from the system (mixed?) functionspace
         if (Spud::have_option((*dynamic_cast<SpudSystemBucket*>(system_)).optionpath()+"/coefficient::"+functionname+"/type::Function"))
         {
           // yes, it's a coefficient function... so let's take this opportunity to register
@@ -452,7 +462,6 @@ void SpudFunctionBucket::functionals_fill_()
         }
       }
 
-      (*functional).set_coefficient(uflsymbol, function);
     }
   }
 

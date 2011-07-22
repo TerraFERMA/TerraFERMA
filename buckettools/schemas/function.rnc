@@ -188,34 +188,28 @@ generic_function_output_options =
 
 functional_options = 
   (
-    (
-      element functional {
-        attribute name { xsd:string },
-        form
-      }|
-      element functional {
-        attribute name { "L2Norm" },
-        form
-      }|
-      element functional {
-        attribute name { "Integral" },
-        form
-      }|
-      element functional {
-        attribute name { "SurfaceIntegral" },
-        form
-      }
-    )
+    element functional {
+      attribute name { xsd:string },
+      form
+    }
   )
 
 coefficient_aliased_options = 
   (
     element system {
-      anystring
+      attribute name { xsd:string },
+      empty
     },
-    element generic_function {
-      anystring
-    }
+    (
+      element field {
+        attribute name { xsd:string },
+        empty
+      }|
+      element coefficient {
+        attribute name { xsd:string },
+        empty
+      }
+    )
   )
 
 initial_condition_scalar = 

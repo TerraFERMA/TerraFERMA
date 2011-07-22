@@ -243,40 +243,34 @@
     </element>
   </define>
   <define name="functional_options">
-    <choice>
-      <element name="functional">
-        <attribute name="name">
-          <data type="string"/>
-        </attribute>
-        <ref name="form"/>
-      </element>
-      <element name="functional">
-        <attribute name="name">
-          <value>L2Norm</value>
-        </attribute>
-        <ref name="form"/>
-      </element>
-      <element name="functional">
-        <attribute name="name">
-          <value>Integral</value>
-        </attribute>
-        <ref name="form"/>
-      </element>
-      <element name="functional">
-        <attribute name="name">
-          <value>SurfaceIntegral</value>
-        </attribute>
-        <ref name="form"/>
-      </element>
-    </choice>
+    <element name="functional">
+      <attribute name="name">
+        <data type="string"/>
+      </attribute>
+      <ref name="form"/>
+    </element>
   </define>
   <define name="coefficient_aliased_options">
     <element name="system">
-      <ref name="anystring"/>
+      <attribute name="name">
+        <data type="string"/>
+      </attribute>
+      <empty/>
     </element>
-    <element name="generic_function">
-      <ref name="anystring"/>
-    </element>
+    <choice>
+      <element name="field">
+        <attribute name="name">
+          <data type="string"/>
+        </attribute>
+        <empty/>
+      </element>
+      <element name="coefficient">
+        <attribute name="name">
+          <data type="string"/>
+        </attribute>
+        <empty/>
+      </element>
+    </choice>
   </define>
   <define name="initial_condition_scalar">
     <choice>

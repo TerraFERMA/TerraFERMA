@@ -436,13 +436,15 @@ void SpudSolverBucket::forms_fill_()
     for (uint i = 0; i < ncoeff; i++)
     {
       std::string uflsymbol = (*form).coefficient_name(i);
-      GenericFunction_ptr function = (*system_).fetch_uflsymbol(uflsymbol);
+      GenericFunction_ptr function = (*system_).grab_uflsymbol(uflsymbol);
       if (!function)
       {
         // the function isn't initialised so either we haven't reached it yet or
         // we got to it but weren't able to initialise it because we didn't have its
         // function space available yet... let's see if it's a function
         std::string functionname = (*system_).fetch_uflname(uflsymbol);
+        // this only checks the coefficient option path because fields get their functionspace
+        // as a subfunctionspace from the system (mixed?) functionspace
         if (Spud::have_option((*dynamic_cast<SpudSystemBucket*>(system_)).optionpath()+"/coefficient::"+functionname+"/type::Function"))
         {
           // yes, it's a coefficient function... so let's take this opportunity to register
@@ -456,7 +458,6 @@ void SpudSolverBucket::forms_fill_()
         }
       }
 
-      (*form).set_coefficient(uflsymbol, function);
     }
   }
 

@@ -60,6 +60,12 @@ namespace buckettools
 
     std::map< std::string, SolverBucket_ptr > solvers_;
     
+    void attach_all_coeffs_();
+
+    void attach_function_coeffs_(FunctionBucket_it f_begin, FunctionBucket_it f_end);
+
+    void attach_solver_coeffs_(SolverBucket_it s_begin, SolverBucket_it s_end);
+
   public:
 
     // Default constructor
@@ -117,6 +123,9 @@ namespace buckettools
     // Return a pointer to a dolfin GenericFunction with the given uflsymbol
     GenericFunction_ptr fetch_uflsymbol(std::string uflsymbol);
 
+    // Return a pointer to a dolfin GenericFunction with the given uflsymbol
+    GenericFunction_ptr grab_uflsymbol(std::string uflsymbol);
+
     void register_coefficientspace(FunctionSpace_ptr coefficientspace, std::string name);
 
     bool contains_coefficientspace(std::string name);
@@ -124,6 +133,14 @@ namespace buckettools
     FunctionSpace_ptr fetch_coefficientspace(std::string name);
 
     void register_solver(SolverBucket_ptr solver, std::string name);
+
+    SolverBucket_it solvers_begin();
+
+    SolverBucket_const_it solvers_begin() const;
+
+    SolverBucket_it solvers_end();
+
+    SolverBucket_const_it solvers_end() const;
 
     // Return a string describing the contents of the system
     virtual std::string str() const
@@ -134,28 +151,35 @@ namespace buckettools
 
     // Print a description of the fields contained in the system
     virtual std::string uflsymbols_str() const
-    { fields_str(0); }
+    { return uflsymbols_str(0); }
 
     // Print a description of the fields contained in the system
     virtual std::string uflsymbols_str(int indent) const;
 
+    // Print a description of the coefficient functionspaces contained in the system
+    virtual std::string coefficientspaces_str() const
+    { return coefficientspaces_str(0); }
+
+    // Print a description of the coefficient functionspaces contained in the system
+    virtual std::string coefficientspaces_str(int indent) const;
+
     // Print a description of the fields contained in the system
     virtual std::string fields_str() const
-    { fields_str(0); }
+    { return fields_str(0); }
 
     // Print a description of the fields contained in the system
     virtual std::string fields_str(int indent) const;
 
     // Print a description of the coefficients contained in the system
     virtual std::string coeffs_str() const
-    { coeffs_str(0); }
+    { return coeffs_str(0); }
 
     // Print a description of the coefficients contained in the system
     virtual std::string coeffs_str(int indent) const;
 
     // Print a description of the solvers contained in the system
     virtual std::string solvers_str() const
-    { coeffs_str(0); }
+    { return coeffs_str(0); }
 
     // Print a description of the solvers contained in the system
     virtual std::string solvers_str(int indent) const;

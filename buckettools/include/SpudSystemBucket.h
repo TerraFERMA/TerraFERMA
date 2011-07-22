@@ -51,6 +51,9 @@ namespace buckettools
     // Fill the system assuming the buckettools schema
     void fill();
 
+    // Fill the aliased components of the system assuming the buckettools schema
+    void aliased_fill();
+
     // Return a string object describing the system
     std::string str() const
     { str(0); }

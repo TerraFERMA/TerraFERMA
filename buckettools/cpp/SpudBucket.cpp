@@ -69,6 +69,11 @@ void SpudBucket::fill()
     buffer.str(""); buffer << optionpath() << "/system[" << i << "]";
     systems_fill_(buffer.str());
   }
+
+  for (SystemBucket_it sys_it = systems_begin(); sys_it != systems_end(); sys_it++)
+  {
+    (*boost::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).aliased_fill();
+  }
   
 //  // Put detectors in the bucket
 //  detectors_fill_();
