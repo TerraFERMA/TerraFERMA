@@ -68,24 +68,24 @@ namespace buckettools
     void register_functional(Form_ptr functional, std::string name, std::string optionpath);
 
     // Return a string object describing the function
-    std::string str() const
+    const std::string str() const
     { return str(0); }
 
     // Return a string object describing the function
-    std::string str(int indent) const;
+    const std::string str(int indent) const;
 
     // Return a string object describing the functionals
-    std::string functionals_str() const
+    const std::string functionals_str() const
     { return str(0); }
 
     // Return a string object describing the functionals
-    std::string functionals_str(int indent) const;
+    const std::string functionals_str(int indent) const;
 
     // Return the base optionpath for this function
-    std::string optionpath() const
+    const std::string optionpath() const
     { return optionpath_; }
 
-    bool include_in_diagnostics() const;
+    const bool include_in_diagnostics() const;
     
   };
  

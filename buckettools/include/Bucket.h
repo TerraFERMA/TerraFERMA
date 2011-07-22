@@ -56,24 +56,24 @@ namespace buckettools
     ~Bucket();
 
     // Print a description of the bucket contents
-    std::string str() const;
+    const std::string str() const;
     
     // Print a description of the meshes contained in the bucket
-    virtual std::string meshes_str() const
+    virtual const std::string meshes_str() const
     { return meshes_str(0); }
 
     // Print a description of the meshes contained in the bucket
-    virtual std::string meshes_str(int indent) const;
+    virtual const std::string meshes_str(int indent) const;
 
     // Print a description of the systems contained in the bucket
-    std::string systems_str() const
+    const std::string systems_str() const
     { return systems_str(0); }
 
     // Print a description of the systems contained in the bucket
-    std::string systems_str(int indent) const;
+    const std::string systems_str(int indent) const;
 
     // Print the name of the bucket
-    std::string name() const
+    const std::string name() const
     { return name_; }
     
     // Tools for manipulating the base bucket class data structures:
@@ -101,6 +101,8 @@ namespace buckettools
     // Return a system pointer from the systems_ map, given its name
     SystemBucket_ptr fetch_system(const std::string name);
     
+    const SystemBucket_ptr fetch_system(const std::string name) const;
+    
     // Return the iterator to the beginning of the systems_ map
     SystemBucket_it systems_begin();
 
@@ -114,7 +116,7 @@ namespace buckettools
     SystemBucket_const_it systems_end() const;
 
     // Return the geometry dimension
-    int dimension() const
+    const int dimension() const
     { return dimension_; }
  
 //    void register_system(SystemBucket_ptr std::string name)

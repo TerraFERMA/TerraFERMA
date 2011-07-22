@@ -60,6 +60,22 @@ FunctionBucket_ptr SystemBucket::fetch_field(std::string name)
   }
 }
 
+const FunctionBucket_ptr SystemBucket::fetch_field(std::string name) const
+{
+  // First check if a field with this name already exists
+  FunctionBucket_const_it f_it = fields_.find(name);
+  if (f_it == fields_.end())
+  {
+    // if it doesn't, issue an error
+    dolfin::error("Field named \"%s\" does not exists in system.", name.c_str());
+  }
+  else
+  {
+    // if not then return it
+    return (*f_it).second;
+  }
+}
+
 FunctionBucket_it SystemBucket::fields_begin()
 {
   return fields_.begin();
@@ -355,7 +371,7 @@ void SystemBucket::attach_solver_coeffs_(SolverBucket_it s_begin, SolverBucket_i
 }
 
 // Return a string describing the contents of the system
-std::string SystemBucket::str(int indent) const
+const std::string SystemBucket::str(int indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
@@ -370,7 +386,7 @@ std::string SystemBucket::str(int indent) const
 }
 
 // Return a string describing the contents of uflsymbols_
-std::string SystemBucket::uflsymbols_str(int indent) const
+const std::string SystemBucket::uflsymbols_str(int indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
@@ -389,7 +405,7 @@ std::string SystemBucket::uflsymbols_str(int indent) const
 }
 
 // Return a string describing the contents of coefficientspaces_
-std::string SystemBucket::coefficientspaces_str(int indent) const
+const std::string SystemBucket::coefficientspaces_str(int indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
@@ -401,7 +417,7 @@ std::string SystemBucket::coefficientspaces_str(int indent) const
 }
 
 // Return a string describing the contents of fields_
-std::string SystemBucket::fields_str(int indent) const
+const std::string SystemBucket::fields_str(int indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
@@ -413,7 +429,7 @@ std::string SystemBucket::fields_str(int indent) const
 }
 
 // Return a string describing the contents of fields_
-std::string SystemBucket::coeffs_str(int indent) const
+const std::string SystemBucket::coeffs_str(int indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
@@ -425,7 +441,7 @@ std::string SystemBucket::coeffs_str(int indent) const
 }
 
 // Return a string describing the contents of solvers_
-std::string SystemBucket::solvers_str(int indent) const
+const std::string SystemBucket::solvers_str(int indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');

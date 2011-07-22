@@ -482,7 +482,7 @@ void SpudSolverBucket::register_form(Form_ptr form, std::string name, std::strin
 }
 
 // Return a string describing the contents of the spudfunction
-std::string SpudSolverBucket::str(int indent) const
+const std::string SpudSolverBucket::str(int indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
@@ -493,7 +493,7 @@ std::string SpudSolverBucket::str(int indent) const
 }
 
 // Describe the contents of the form_optionpaths_ map
-std::string SpudSolverBucket::forms_str(int indent) const
+const std::string SpudSolverBucket::forms_str(int indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');

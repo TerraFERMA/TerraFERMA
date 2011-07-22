@@ -83,6 +83,8 @@ namespace buckettools
     // Fetch a field (subfunction) from the system
     FunctionBucket_ptr fetch_field(std::string name);
 
+    const FunctionBucket_ptr fetch_field(std::string name) const;
+
     FunctionBucket_it fields_begin();
 
     FunctionBucket_const_it fields_begin() const;
@@ -143,72 +145,72 @@ namespace buckettools
     SolverBucket_const_it solvers_end() const;
 
     // Return a string describing the contents of the system
-    virtual std::string str() const
+    virtual const std::string str() const
     { return str(0); }
 
     // Return a string describing the contents of the system
-    virtual std::string str(int indent) const;
+    virtual const std::string str(int indent) const;
 
     // Print a description of the fields contained in the system
-    virtual std::string uflsymbols_str() const
+    virtual const std::string uflsymbols_str() const
     { return uflsymbols_str(0); }
 
     // Print a description of the fields contained in the system
-    virtual std::string uflsymbols_str(int indent) const;
+    virtual const std::string uflsymbols_str(int indent) const;
 
     // Print a description of the coefficient functionspaces contained in the system
-    virtual std::string coefficientspaces_str() const
+    virtual const std::string coefficientspaces_str() const
     { return coefficientspaces_str(0); }
 
     // Print a description of the coefficient functionspaces contained in the system
-    virtual std::string coefficientspaces_str(int indent) const;
+    virtual const std::string coefficientspaces_str(int indent) const;
 
     // Print a description of the fields contained in the system
-    virtual std::string fields_str() const
+    virtual const std::string fields_str() const
     { return fields_str(0); }
 
     // Print a description of the fields contained in the system
-    virtual std::string fields_str(int indent) const;
+    virtual const std::string fields_str(int indent) const;
 
     // Print a description of the coefficients contained in the system
-    virtual std::string coeffs_str() const
+    virtual const std::string coeffs_str() const
     { return coeffs_str(0); }
 
     // Print a description of the coefficients contained in the system
-    virtual std::string coeffs_str(int indent) const;
+    virtual const std::string coeffs_str(int indent) const;
 
     // Print a description of the solvers contained in the system
-    virtual std::string solvers_str() const
+    virtual const std::string solvers_str() const
     { return coeffs_str(0); }
 
     // Print a description of the solvers contained in the system
-    virtual std::string solvers_str(int indent) const;
+    virtual const std::string solvers_str(int indent) const;
 
     // Return the system name
-    std::string name() const
+    const std::string name() const
     { return name_; }
 
     // Return the system uflsymbol
-    std::string uflsymbol() const
+    const std::string uflsymbol() const
     { return uflsymbol_; }
 
     // Return a pointer to the system mesh
-    Mesh_ptr mesh() const
+    const Mesh_ptr mesh() const
     { return mesh_; }
 
-    FunctionSpace_ptr functionspace() const
+    const FunctionSpace_ptr functionspace() const
     { return functionspace_; }
 
-    Function_ptr function() const
+    const Function_ptr function() const
     { return function_; }
 
-    Function_ptr oldfunction() const
+    const Function_ptr oldfunction() const
     { return oldfunction_; }
 
-    Function_ptr iteratedfunction() const
+    const Function_ptr iteratedfunction() const
     { return iteratedfunction_; }
 
-    Bucket* bucket() const
+    const Bucket* bucket() const
     { return bucket_; }
 
   };

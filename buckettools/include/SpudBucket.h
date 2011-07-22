@@ -73,14 +73,14 @@ namespace buckettools
     string_const_it mesh_optionpaths_end() const;
  
     // Describe the meshes in the spudbucket (including optionpaths)
-    std::string meshes_str() const
+    const std::string meshes_str() const
     { return meshes_str(0); }
 
     // Describe the meshes in the spudbucket (including optionpaths)
-    std::string meshes_str(int indent) const;
+    const std::string meshes_str(int indent) const;
 
     // return the optionpath for this bucket
-    std::string optionpath()
+    const std::string optionpath()
     { return optionpath_; }
 
   };

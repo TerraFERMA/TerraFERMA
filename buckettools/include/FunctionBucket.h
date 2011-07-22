@@ -108,59 +108,59 @@ namespace buckettools
     void attach_functional_coeffs();
 
     // Return a string describing the contents of the function
-    virtual std::string str() const
+    virtual const std::string str() const
     { return str(0); }
 
     // Return a string describing the contents of the function
-    virtual std::string str(int indent) const;
+    virtual const std::string str(int indent) const;
 
     // Print a description of the functionals contained in the function
-    virtual std::string functionals_str() const
+    virtual const std::string functionals_str() const
     { return functionals_str(0); }
 
     // Print a description of the functionals contained in the system
-    virtual std::string functionals_str(int indent) const;
+    virtual const std::string functionals_str(int indent) const;
 
     // Return the function name
-    std::string name() const
+    const std::string name() const
     { return name_; }
 
     // Return the function type
-    std::string type() const
+    const std::string type() const
     { return type_; }
 
     // Return the function uflsymbol
-    std::string uflsymbol() const
+    const std::string uflsymbol() const
     { return uflsymbol_; }
 
     // Return the function index
-    uint index() const
+    const uint index() const
     { return index_; }
 
-    SystemBucket* system() const
+    const SystemBucket* system() const
     { return system_; }
 
     // Return the function_
-    FunctionSpace_ptr functionspace() const
+    const FunctionSpace_ptr functionspace() const
     { return functionspace_; }
 
     // Return the function_
-    GenericFunction_ptr function() const
+    const GenericFunction_ptr function() const
     { return function_; }
 
     // Return the oldfunction_
-    GenericFunction_ptr oldfunction() const
+    const GenericFunction_ptr oldfunction() const
     { return oldfunction_; }
 
     // Return the iteratedfunction_
-    GenericFunction_ptr iteratedfunction() const
+    const GenericFunction_ptr iteratedfunction() const
     { return iteratedfunction_; }
 
     // Return the icexpression_
-    Expression_ptr icexpression() const
+    const Expression_ptr icexpression() const
     { return icexpression_; }
 
-    virtual bool include_in_diagnostics() const;
+    virtual const bool include_in_diagnostics() const;
 
   };
 

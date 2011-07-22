@@ -55,21 +55,21 @@ namespace buckettools
     void register_form(Form_ptr form, std::string name, std::string optionpath);
 
     // Return a string object describing the solver
-    std::string str() const
+    const std::string str() const
     { return str(0); }
 
     // Return a string object describing the solver
-    std::string str(int indent) const;
+    const std::string str(int indent) const;
 
     // Return a string object describing the forms
-    std::string forms_str() const
+    const std::string forms_str() const
     { return forms_str(0); }
 
     // Return a string object describing the forms
-    std::string forms_str(int indent) const;
+    const std::string forms_str(int indent) const;
 
     // Return the base optionpath for this function
-    std::string optionpath() const
+    const std::string optionpath() const
     { return optionpath_; }
     
   };
