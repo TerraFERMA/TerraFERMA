@@ -7,31 +7,31 @@ class Bucket:
     """Define the expected members of the bucket class - only one really."""
     self.systems = None
 
-  def write_ufc(self, suffix=None):
+  def write_ufc(self):
     """Write all ufl files described by the bucket."""
     for system in self.systems:
       for field in system.fields:
         for functional in field.functionals:
-          functional.write_ufc(suffix=suffix)
+          functional.write_ufc()
       for coeff in system.coeffs:
         for functional in coeff.functionals:
-          functional.write_ufc(suffix=suffix)
+          functional.write_ufc()
       for solver in system.solvers:
-        solver.write_ufc(suffix=suffix)
+        solver.write_ufc()
 
-  def write_ufl(self, suffix=None):
+  def write_ufl(self):
     """Write all ufl files described by the bucket."""
     for system in self.systems:
       for field in system.fields:
         for functional in field.functionals:
-          functional.write_ufl(suffix=suffix)
+          functional.write_ufl()
       for coeff in system.coeffs:
         for functional in coeff.functionals:
-          functional.write_ufl(suffix=suffix)
+          functional.write_ufl()
       for solver in system.solvers:
-        solver.write_ufl(suffix=suffix)
+        solver.write_ufl()
 
-  def write_cpp(self, suffix=None):
+  def write_cpp(self):
     """Write a cpp header file describing all the namespaces in the bucket."""
  
     cpp       = []
@@ -151,7 +151,6 @@ class Bucket:
     cpp.append("#endif\n")
 
     filename = "SystemsWrapper.cpp"
-    if suffix: filename += "."+suffix
     filehandle = file(filename, 'w')
     filehandle.writelines(cpp)
     filehandle.close()

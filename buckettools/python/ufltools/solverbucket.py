@@ -1,6 +1,8 @@
 from ufltools.base import *
 import sys
 import subprocess
+import hashlib
+import shutil
 
 class Solver:
   """A class that stores all the information necessary to write the ufl for a system of forms (i.e. linear or bilinear) associated with a solver."""
@@ -46,26 +48,32 @@ class Solver:
     ufl = self.ufl()
     
     filename = self.namespace()+".ufl"
-    if suffix: filename += "."+suffix
+    if suffix: filename += suffix
     filehandle = file(filename, 'w')
     filehandle.writelines(ufl)
     filehandle.close()
     
-  def write_ufc(self, suffix=None):
+  def write_ufc(self):
     """Write the system of forms to a ufl file."""
     ufl = self.ufl()
     
+    self.write_ufl(suffix=".temp")
+
     filename = self.namespace()+".ufl"
-    if suffix: filename += "."+suffix
-    filehandle = file(filename, 'w')
-    filehandle.writelines(ufl)
-    filehandle.close()
 
     try:
-      subprocess.check_call(["ffc", "-l", "dolfin", filename])
+      checksum = hashlib.md5(open(filename).read()).hexdigest()
     except:
-      print "ERROR while calling ffc on file ", filename
-      sys.exit(1)
+      checksum = None
+    
+    if checksum != hashlib.md5(open(filename+".temp").read()).hexdigest():
+      # files have changed
+      shutil.copy(filename+".temp", filename)
+      try:
+        subprocess.check_call(["ffc", "-l", "dolfin", "-O", filename])
+      except:
+        print "ERROR while calling ffc on file ", filename
+        sys.exit(1)
     
   def functionspace_cpp_no_if(self):
     return "      functionspace.reset( new "+self.namespace()+"::FunctionSpace(*mesh) );\n"

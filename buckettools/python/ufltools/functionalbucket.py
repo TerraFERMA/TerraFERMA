@@ -1,5 +1,8 @@
 from ufltools.base import *
 import subprocess
+import hashlib
+import shutil
+import sys
 
 class Functional:
   """A class that stores all the information necessary to write the ufl for a functional (i.e. scalar valued returning ufl)."""
@@ -51,26 +54,32 @@ class Functional:
     ufl = self.ufl()
 
     filename   = self.namespace()+".ufl"
-    if suffix: filename += "."+suffix
+    if suffix: filename += suffix 
     filehandle = file(filename, 'w')
     filehandle.writelines(ufl)
     filehandle.close()
 
-  def write_ufc(self, suffix=None):
+  def write_ufc(self):
     """Write the functional to a ufl file."""
     ufl = self.ufl()
 
-    filename   = self.namespace()+".ufl"
-    if suffix: filename += "."+suffix
-    filehandle = file(filename, 'w')
-    filehandle.writelines(ufl)
-    filehandle.close()
+    self.write_ufl(suffix=".temp")
+
+    filename = self.namespace()+".ufl"
 
     try:
-      subprocess.check_call(["ffc", "-l", "dolfin", filename])
+      checksum = hashlib.md5(open(filename).read()).hexdigest()
     except:
-      print "ERROR while calling ffc on file ", filename
-      sys.exit(1)
+      checksum = None
+
+    if checksum != hashlib.md5(open(filename+".temp").read()).hexdigest():
+      # files have changed
+      shutil.copy(filename+".temp", filename)
+      try:
+        subprocess.check_call(["ffc", "-l", "dolfin", "-O", filename])
+      except:
+        print "ERROR while calling ffc on file ", filename
+        sys.exit(1)
 
   def namespace(self):
     return self.function.system.name+self.function.name+self.name
