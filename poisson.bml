@@ -37,9 +37,9 @@
     <ufl_symbol>
       <string_value lines="1">u</string_value>
     </ufl_symbol>
-    <field name="Field">
+    <field name="Field1">
       <ufl_symbol>
-        <string_value lines="1">s</string_value>
+        <string_value lines="1">s1</string_value>
       </ufl_symbol>
       <type name="Function">
         <rank name="Scalar" rank="0">
@@ -84,7 +84,7 @@
         <output>
           <include_in_diagnostics>
             <functional name="Integral">
-              <string_value lines="20" type="python">int = s*dx</string_value>
+              <string_value lines="20" type="python">int = s1*dx</string_value>
               <ufl_symbol>
                 <string_value lines="1">int</string_value>
               </ufl_symbol>
@@ -116,7 +116,7 @@
         <output>
           <include_in_diagnostics>
             <functional name="Integral">
-              <string_value lines="20" type="python">int = s*dx</string_value>
+              <string_value lines="20" type="python">int = s1*dx</string_value>
               <ufl_symbol>
                 <string_value lines="1">int</string_value>
               </ufl_symbol>
@@ -160,13 +160,15 @@
     <nonlinear_solver name="SimpleSolver">
       <type name="SNES">
         <form name="Residual" rank="0">
-          <string_value lines="20" type="python">r = inner(grad(s_t), grad(s_i))*dx - s_t*f*dx</string_value>
+          <string_value lines="20" type="python">r1 = inner(grad(s1_t), grad(s1_i))*dx - s1_t*f*dx
+#r2 = inner(grad(s2_t), grad(s2_i))*dx - s2_t*f*dx
+r = r1</string_value>
           <ufl_symbol>
             <string_value lines="1">r</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
-          <string_value lines="20" type="python">a = derivative(r, s_i)</string_value>
+          <string_value lines="20" type="python">a = derivative(r, s1_i)</string_value>
           <ufl_symbol>
             <string_value lines="1">a</string_value>
           </ufl_symbol>
@@ -263,7 +265,7 @@
         <output>
           <include_in_diagnostics>
             <functional name="AliasedSourceIntegral">
-              <string_value type="python" lines="20">int = f*dx</string_value>
+              <string_value lines="20" type="python">int = f*dx</string_value>
               <ufl_symbol>
                 <string_value lines="1">int</string_value>
               </ufl_symbol>
