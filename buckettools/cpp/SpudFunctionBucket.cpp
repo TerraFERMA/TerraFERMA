@@ -358,6 +358,13 @@ void SpudFunctionBucket::initialize_function_coeff()
 
   if (type_=="Function")
   {
+    if(!(*system_).contains_coefficientspace(name()))
+    {
+      std::cerr << "Coefficient " << name() << " declared as type::Function ";
+      std::cerr << "but its ufl_symbol was not found in any forms or functionals.\n";
+      dolfin::error("Unable to allocate coefficient as no matching functionspace found.");
+    }
+
     // only gets handled once we have a functionspace to put it on
     // (either from a solver form or a functional)
     FunctionSpace_ptr coefficientspace = (*system_).fetch_coefficientspace(name());
