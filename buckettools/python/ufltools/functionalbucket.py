@@ -66,7 +66,11 @@ class Functional:
     filehandle.writelines(ufl)
     filehandle.close()
 
-    subprocess.call(["ffc", "-l", "dolfin", filename])
+    try:
+      subprocess.check_call(["ffc", "-l", "dolfin", filename])
+    except:
+      print "ERROR while calling ffc on file ", filename
+      sys.exit(1)
 
   def namespace(self):
     return self.function.system.name+self.function.name+self.name

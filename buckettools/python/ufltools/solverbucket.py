@@ -61,7 +61,11 @@ class Solver:
     filehandle.writelines(ufl)
     filehandle.close()
 
-    subprocess.call(["ffc", "-l", "dolfin", filename])
+    try:
+      subprocess.check_call(["ffc", "-l", "dolfin", filename])
+    except:
+      print "ERROR while calling ffc on file ", filename
+      sys.exit(1)
     
   def functionspace_cpp_no_if(self):
     return "      functionspace.reset( new "+self.namespace()+"::FunctionSpace(*mesh) );\n"
