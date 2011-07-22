@@ -56,14 +56,14 @@ namespace buckettools
 
     // Return a string object describing the solver
     std::string str() const
-    { str(0); }
+    { return str(0); }
 
     // Return a string object describing the solver
     std::string str(int indent) const;
 
     // Return a string object describing the forms
     std::string forms_str() const
-    { forms_str(0); }
+    { return forms_str(0); }
 
     // Return a string object describing the forms
     std::string forms_str(int indent) const;

@@ -77,14 +77,10 @@ void SpudFunctionBucket::base_fill_(const uint &index)
   std::stringstream buffer;
   Spud::OptionError serr;
 
-  // Most of what is below is broken for tensors so let's just die here with an error message
-  buffer.str(""); buffer << optionpath() << "/type/rank/name";
-  serr = Spud::get_option(buffer.str(), rank_); spud_err(buffer.str(), serr);
-  if (rank_=="Tensor")
-  {
-    dolfin::error("Tensor coefficients not hooked up yet, sorry.");
-  }
-  
+  // the index, the name, the optionpath, the ufl_symbol and the type
+  // are the pieces of information unique to each field
+  // beyond these data may be aliased/shared between fields
+
   // the index of this field
   index_ = index;
 
@@ -100,22 +96,47 @@ void SpudFunctionBucket::base_fill_(const uint &index)
   buffer.str(""); buffer << optionpath() << "/type/name";
   serr = Spud::get_option(buffer.str(), type_); spud_err(buffer.str(), serr);
 
+  if(type_!="Aliased")
+  {
+    // for nonaliased fields call this just with the same option path
+    // (we'll call it for aliased coefficients with the aliased optionpath later)
+    nonaliased_base_fill_(optionpath());
+  }
+
+}
+
+void SpudFunctionBucket::nonaliased_base_fill_(const std::string &optionpath)
+{
+  // A buffer to put option paths in
+  std::stringstream buffer;
+  Spud::OptionError serr;
+
+  // Get the (potentially aliased) field type (locally)
+  std::string ltype;
+  buffer.str(""); buffer << optionpath << "/type/name";
+  serr = Spud::get_option(buffer.str(), ltype); spud_err(buffer.str(), serr);
+
+  // Most of what is below is broken for tensors so let's just die here with an error message
+  buffer.str(""); buffer << optionpath << "/type/rank/name";
+  serr = Spud::get_option(buffer.str(), rank_); spud_err(buffer.str(), serr);
+
   // What is the function size (if it's a vector)
   // Would it be possible to get this from the subfunctionspace below?
-  buffer.str(""); buffer << optionpath() << "/type/rank/element/size";
+  buffer.str(""); buffer << optionpath << "/type/rank/element/size";
   serr = Spud::get_option(buffer.str(), size_, (*(*system_).bucket()).dimension()); spud_err(buffer.str(), serr);
 
   // What is the function shape (if it's a tensor)
   // Would it be possible to get this from the subfunctionspace below?
   std::vector< int > default_shape(2, (*(*system_).bucket()).dimension());
-  buffer.str(""); buffer << optionpath() << "/type/rank/element/shape";
+  buffer.str(""); buffer << optionpath << "/type/rank/element/shape";
   serr = Spud::get_option(buffer.str(), shape_, default_shape); spud_err(buffer.str(), serr);
 
-  if (type_=="Constant")
+  // type_ will be "Aliased" so use ltype here
+  if (ltype=="Constant")
   {
     // These will have just been set to defaults in this case, which may not be right
     // - only coefficients can end up in here so only consider their optionpaths
-    buffer.str(""); buffer << optionpath() << "/type/value/constant";
+    buffer.str(""); buffer << optionpath << "/type/value/constant";
     if (rank_=="Vector")
     {
       std::vector< int > constant_shape;
@@ -391,9 +412,13 @@ void SpudFunctionBucket::initialize_aliased_coeff()
 
       FunctionBucket_ptr field = (*(*(*system_).bucket()).fetch_system(systemname)).fetch_field(fieldname);
 
+      // get the rank and element info from the aliased field we're pointing at
+      nonaliased_base_fill_((*boost::dynamic_pointer_cast<SpudFunctionBucket>(field)).optionpath());
+
       function_         = (*field).function();
       oldfunction_      = (*field).oldfunction();
       iteratedfunction_ = (*field).iteratedfunction();
+
     }
     else if (Spud::have_option(optionpath()+"/type/coefficient"))
     {
@@ -403,9 +428,13 @@ void SpudFunctionBucket::initialize_aliased_coeff()
 
       FunctionBucket_ptr coeff = (*(*(*system_).bucket()).fetch_system(systemname)).fetch_coeff(coeffname);
 
+      // get the rank and element info from the aliased field we're pointing at
+      nonaliased_base_fill_((*boost::dynamic_pointer_cast<SpudFunctionBucket>(coeff)).optionpath());
+
       function_         = (*coeff).function();
       oldfunction_      = (*coeff).oldfunction();
       iteratedfunction_ = (*coeff).iteratedfunction();
+
     }
     else
     {

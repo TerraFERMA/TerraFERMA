@@ -72,14 +72,14 @@ namespace buckettools
 
     // Return a string describing the contents of the solver
     virtual std::string str() const
-    { str(0); }
+    { return str(0); }
 
     // Return a string describing the contents of the solver
     virtual std::string str(int indent) const;
 
     // Print a description of the forms contained in the solver
     virtual std::string forms_str() const
-    { forms_str(0); }
+    { return forms_str(0); }
 
     // Print a description of the forms contained in the solver
     virtual std::string forms_str(int indent) const;

@@ -60,14 +60,14 @@ namespace buckettools
     
     // Print a description of the meshes contained in the bucket
     virtual std::string meshes_str() const
-    { meshes_str(0); }
+    { return meshes_str(0); }
 
     // Print a description of the meshes contained in the bucket
     virtual std::string meshes_str(int indent) const;
 
     // Print a description of the systems contained in the bucket
     std::string systems_str() const
-    { systems_str(0); }
+    { return systems_str(0); }
 
     // Print a description of the systems contained in the bucket
     std::string systems_str(int indent) const;

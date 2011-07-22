@@ -284,6 +284,7 @@ FunctionSpace_ptr SystemBucket::fetch_coefficientspace(std::string name)
   if (f_it == coefficientspaces_.end())
   {
     // if it doesn't, issue an error
+    std::cerr << coefficientspaces_str();
     dolfin::error("FunctionSpace named \"%s\" doesn't exist in system coefficientspaces.", name.c_str());
   }
   else

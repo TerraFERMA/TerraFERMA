@@ -109,14 +109,14 @@ namespace buckettools
 
     // Return a string describing the contents of the function
     virtual std::string str() const
-    { str(0); }
+    { return str(0); }
 
     // Return a string describing the contents of the function
     virtual std::string str(int indent) const;
 
     // Print a description of the functionals contained in the function
     virtual std::string functionals_str() const
-    { functionals_str(0); }
+    { return functionals_str(0); }
 
     // Print a description of the functionals contained in the system
     virtual std::string functionals_str(int indent) const;

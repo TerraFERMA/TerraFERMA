@@ -144,7 +144,7 @@ namespace buckettools
 
     // Return a string describing the contents of the system
     virtual std::string str() const
-    { str(0); }
+    { return str(0); }
 
     // Return a string describing the contents of the system
     virtual std::string str(int indent) const;

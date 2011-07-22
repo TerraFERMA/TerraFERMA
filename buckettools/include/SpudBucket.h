@@ -74,7 +74,7 @@ namespace buckettools
  
     // Describe the meshes in the spudbucket (including optionpaths)
     std::string meshes_str() const
-    { meshes_str(0); }
+    { return meshes_str(0); }
 
     // Describe the meshes in the spudbucket (including optionpaths)
     std::string meshes_str(int indent) const;

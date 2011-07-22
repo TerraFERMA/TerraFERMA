@@ -56,7 +56,7 @@ namespace buckettools
 
     // Return a string object describing the system
     std::string str() const
-    { str(0); }
+    { return str(0); }
 
     // Return a string object describing the system
     std::string str(int indent) const;

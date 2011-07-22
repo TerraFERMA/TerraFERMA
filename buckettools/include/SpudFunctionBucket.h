@@ -26,6 +26,9 @@ namespace buckettools
     // fill in the base data
     void base_fill_(const uint &index);
  
+    // fill in the base data that aliased coefficients don't have
+    void nonaliased_base_fill_(const std::string &optionpath);
+ 
     void initialize_field_();
 
     void ic_fill_(const std::string &optionpath);
@@ -66,14 +69,14 @@ namespace buckettools
 
     // Return a string object describing the function
     std::string str() const
-    { str(0); }
+    { return str(0); }
 
     // Return a string object describing the function
     std::string str(int indent) const;
 
     // Return a string object describing the functionals
     std::string functionals_str() const
-    { str(0); }
+    { return str(0); }
 
     // Return a string object describing the functionals
     std::string functionals_str(int indent) const;
