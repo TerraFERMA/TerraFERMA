@@ -14,17 +14,18 @@ class SpudFunction(ufltools.functionbucket.Function):
     self.system     = system
     self.type       = libspud.get_option(optionpath+"/type/name")
     if self.type == "Aliased":
-      aliasedsystem_name   = libspud.get_option(optionpath+"/type/system")
-      aliasedfunction_name = libspud.get_option(optionpath+"/type/generic_function")
-      
+      aliasedsystem_name   = libspud.get_option(optionpath+"/type/system/name")
       aliasedsystem_optionpath = "/system::"+aliasedsystem_name
-      if libspud.have_option(aliasedsystem_optionpath+"/field::"+aliasedfunction_name):
+      if libspud.have_option(optionpath+"/type/field"):
+        aliasedfunction_name = libspud.get_option(optionpath+"/type/field/name")
         aliasedfunction_optionpath = aliasedsystem_optionpath+"/field::"+aliasedfunction_name
-      elif libspud.have_option(aliasedsystem_optionpath+"/coefficient::"+aliasedfunction_name):
+      elif libspud.have_option(optionpath+"/type/coefficient"):
+        aliasedfunction_name = libspud.get_option(optionpath+"/type/coefficient/name")
         aliasedfunction_optionpath = aliasedsystem_optionpath+"/coefficient::"+aliasedfunction_name
       else:
-        print "Unable to find aliased generic_function as either a field or a coefficient."
+        print "Unknown way of specifying aliased field/coefficient."
         sys.exit(1)
+      
       self.type = libspud.get_option(aliasedfunction_optionpath+"/type/name")
       if self.type=="Aliased":
         print "Can't alias to an aliased function."
