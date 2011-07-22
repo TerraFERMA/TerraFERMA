@@ -66,10 +66,10 @@ class System:
     """Write an array of ufl strings describing the (potentially mixed) test space of a system."""
     ufl = []
     if len(self.fields)==1:
-      ufl.append(declaration_comment("Test space", "System", self.name))
-      ufl.append(testfunction_ufl(self.symbol))
       ufl.append(declaration_comment("Test space", self.fields[0].type, self.fields[0].name))
       ufl.append(testfunction_ufl(self.fields[0].symbol))
+      ufl.append(declaration_comment("Test space", "System", self.name))
+      ufl.append(equal_ufl(self.symbol, self.fields[0].symbol, suffix="_t")+"\n")
     else:
       ufl.append(declaration_comment("Test space", "System", self.name))
       ufl.append(testfunction_ufl(self.symbol))
@@ -81,10 +81,10 @@ class System:
     """Write an array of ufl strings describing the (potentially mixed) trial space of a system."""
     ufl = []
     if len(self.fields)==1:
-      ufl.append(declaration_comment("Trial space", "System", self.name))
-      ufl.append(trialfunction_ufl(self.symbol))
       ufl.append(declaration_comment("Trial space", self.fields[0].type, self.fields[0].name))
       ufl.append(trialfunction_ufl(self.fields[0].symbol))
+      ufl.append(declaration_comment("Trial space", "System", self.name))
+      ufl.append(equal_ufl(self.symbol, self.fields[0].symbol, suffix="_a")+"\n")
     else:
       ufl.append(declaration_comment("Trial space", "System", self.name))
       ufl.append(trialfunction_ufl(self.symbol))
@@ -96,10 +96,10 @@ class System:
     """Write an array of ufl strings describing the (potentially mixed) field values of a system."""
     ufl = []
     if len(self.fields)==1:
-      ufl.append(declaration_comment("Value", "System", self.name))
-      ufl.append(coefficient_ufl(self.symbol))
       ufl.append(declaration_comment("Value", self.fields[0].type, self.fields[0].name))
       ufl.append(coefficient_ufl(self.fields[0].symbol))
+      ufl.append(declaration_comment("Value", "System", self.name))
+      ufl.append(equal_ufl(self.symbol, self.fields[0].symbol)+"\n")
     else:
       ufl.append(declaration_comment("Value", "System", self.name))
       ufl.append(coefficient_ufl(self.symbol))
@@ -111,10 +111,10 @@ class System:
     """Write an array of ufl strings describing the (potentially mixed) iterated field values of a system."""
     ufl = []
     if len(self.fields)==1:
-      ufl.append(declaration_comment("Last iteration value", "System", self.name))
-      ufl.append(coefficient_ufl(self.symbol, suffix="_i"))
       ufl.append(declaration_comment("Last iteration value", self.fields[0].type, self.fields[0].name))
       ufl.append(coefficient_ufl(self.fields[0].symbol, suffix="_i"))
+      ufl.append(declaration_comment("Last iteration value", "System", self.name))
+      ufl.append(equal_ufl(self.symbol, self.fields[0].symbol, suffix="_i")+"\n")
     else:
       ufl.append(declaration_comment("Last iteration value", "System", self.name))
       ufl.append(coefficient_ufl(self.symbol, suffix="_i"))
@@ -126,10 +126,10 @@ class System:
     """Write an array of ufl strings describing the (potentially mixed) old field values of a system."""
     ufl = []
     if len(self.fields)==1:
-      ufl.append(declaration_comment("Previous time-level value", "System", self.name))
-      ufl.append(coefficient_ufl(self.symbol, suffix="_n"))
       ufl.append(declaration_comment("Previous time-level value", self.fields[0].type, self.fields[0].name))
       ufl.append(coefficient_ufl(self.fields[0].symbol, suffix="_n"))
+      ufl.append(declaration_comment("Previous time-level value", "System", self.name))
+      ufl.append(equal_ufl(self.symbol, self.fields[0].symbol, suffix="_n")+"\n")
     else:
       ufl.append(declaration_comment("Previous time-level value", "System", self.name))
       ufl.append(coefficient_ufl(self.symbol, suffix="_n"))
