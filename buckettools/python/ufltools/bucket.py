@@ -1,4 +1,6 @@
 from ufltools.base import *
+import shutil
+import hashlib
 
 class Bucket:
   """A class that stores all the information necessary to write the ufl for an options file (i.e. set of mixed function spaces)."""
@@ -151,7 +153,15 @@ class Bucket:
     cpp.append("#endif\n")
 
     filename = "SystemsWrapper.cpp"
-    filehandle = file(filename, 'w')
+    filehandle = file(filename+".temp", 'w')
     filehandle.writelines(cpp)
     filehandle.close()
 
+    try:
+      checksum = hashlib.md5(open(filename).read()).hexdigest()
+    except:
+      checksum = None
+
+    if checksum != hashlib.md5(open(filename+".temp").read()).hexdigest():
+      # file has changed
+      shutil.copy(filename+".temp", filename)
