@@ -193,7 +193,7 @@ string_const_it SpudBucket::mesh_optionpaths_end() const
 }
 
 // Describe the contents of the mesh_optionpaths_ map
-std::string SpudBucket::meshes_str(int indent) const
+const std::string SpudBucket::meshes_str(int indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');

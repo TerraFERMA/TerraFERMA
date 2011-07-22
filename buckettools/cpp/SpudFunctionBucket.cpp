@@ -181,15 +181,13 @@ void SpudFunctionBucket::initialize_field_()
   }
   else
   {
-    // FIXME: almost definitely wrong!
-   
     // yes... use DOLFIN to extract that subspace so we can declare things on it (ics, bcs etc.)
-    functionspace_.reset( new dolfin::SubSpace((*(*system_).functionspace()), index_) );
+    functionspace_ = (*(*system_).functionspace())[index_];
 
     // not sure quite what this will do (in the nfields==1 case) but let's try to register the field
-    function_.reset( new dolfin::Function( (*(*system_).function())[index_] ) );
-    oldfunction_.reset( new dolfin::Function( (*(*system_).oldfunction())[index_] ) );
-    iteratedfunction_.reset( new dolfin::Function( (*(*system_).iteratedfunction())[index_] ) );
+    function_.reset( &(*(*system_).function())[index_] );
+    oldfunction_.reset( &(*(*system_).oldfunction())[index_] );
+    iteratedfunction_.reset( &(*(*system_).iteratedfunction())[index_] );
   }
 
   // register a pointer to the field as well (first give it a sensible name and label)
@@ -515,7 +513,7 @@ void SpudFunctionBucket::register_functional(Form_ptr functional, std::string na
 }
 
 // Return a string describing the contents of the spudfunction
-std::string SpudFunctionBucket::str(int indent) const
+const std::string SpudFunctionBucket::str(int indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
@@ -526,7 +524,7 @@ std::string SpudFunctionBucket::str(int indent) const
 }
 
 // Describe the contents of the functional_optionpaths_ map
-std::string SpudFunctionBucket::functionals_str(int indent) const
+const std::string SpudFunctionBucket::functionals_str(int indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
@@ -539,7 +537,7 @@ std::string SpudFunctionBucket::functionals_str(int indent) const
   return s.str();
 }
 
-bool SpudFunctionBucket::include_in_diagnostics() const
+const bool SpudFunctionBucket::include_in_diagnostics() const
 {
   return Spud::have_option(optionpath()+"/type/output/include_in_diagnostics");
 }

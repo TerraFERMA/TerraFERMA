@@ -71,25 +71,25 @@ namespace buckettools
     void attach_form_coeffs();
 
     // Return a string describing the contents of the solver
-    virtual std::string str() const
+    virtual const std::string str() const
     { return str(0); }
 
     // Return a string describing the contents of the solver
-    virtual std::string str(int indent) const;
+    virtual const std::string str(int indent) const;
 
     // Print a description of the forms contained in the solver
-    virtual std::string forms_str() const
+    virtual const std::string forms_str() const
     { return forms_str(0); }
 
     // Print a description of the forms contained in the solver
-    virtual std::string forms_str(int indent) const;
+    virtual const std::string forms_str(int indent) const;
 
     // Return the function name
-    std::string name() const
+    const std::string name() const
     { return name_; }
 
     // Return the function type
-    std::string type() const
+    const std::string type() const
     { return type_; }
 
   };

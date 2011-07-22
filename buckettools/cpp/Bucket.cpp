@@ -26,7 +26,7 @@ Bucket::~Bucket()
 }
 
 // Return a string describing the contents of the bucket
-std::string Bucket::str() const
+const std::string Bucket::str() const
 {
   std::stringstream s;
   int indent = 1;
@@ -37,7 +37,7 @@ std::string Bucket::str() const
 }
 
 // Return a string describing the contents of meshes_
-std::string Bucket::meshes_str(int indent) const
+const std::string Bucket::meshes_str(int indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
@@ -49,7 +49,7 @@ std::string Bucket::meshes_str(int indent) const
 }
 
 // Return a string describing the contents of systems_
-std::string Bucket::systems_str(int indent) const
+const std::string Bucket::systems_str(int indent) const
 {
   std::stringstream s;
   for ( SystemBucket_const_it s_it = systems_begin(); s_it != systems_end(); s_it++ )
@@ -139,6 +139,22 @@ SystemBucket_ptr Bucket::fetch_system(const std::string name)
 {
   // Check if the system exists in the bucket
   SystemBucket_it s_it = systems_.find(name);
+  if (s_it == systems_end())
+  {
+    // if it doesn't then throw an error
+    dolfin::error("SystemBucket named \"%s\" does not exist in bucket.", name.c_str());
+  }
+  else
+  {
+    // if it does then return the pointer to the mesh
+    return (*s_it).second;
+  }
+}
+
+const SystemBucket_ptr Bucket::fetch_system(const std::string name) const
+{
+  // Check if the system exists in the bucket
+  SystemBucket_const_it s_it = systems_.find(name);
   if (s_it == systems_end())
   {
     // if it doesn't then throw an error

@@ -292,7 +292,7 @@ void SpudSystemBucket::solvers_fill_()
 }
 
 // Return a string describing the contents of the system
-std::string SpudSystemBucket::str(int indent) const
+const std::string SpudSystemBucket::str(int indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');

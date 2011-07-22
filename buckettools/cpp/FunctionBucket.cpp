@@ -173,7 +173,7 @@ void FunctionBucket::attach_functional_coeffs()
 }
 
 // Return a string describing the contents of the function
-std::string FunctionBucket::str(int indent) const
+const std::string FunctionBucket::str(int indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
@@ -184,7 +184,7 @@ std::string FunctionBucket::str(int indent) const
 }
 
 // Return a string describing the contents of functionals_
-std::string FunctionBucket::functionals_str(int indent) const
+const std::string FunctionBucket::functionals_str(int indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
@@ -195,7 +195,7 @@ std::string FunctionBucket::functionals_str(int indent) const
   return s.str();
 }
 
-bool FunctionBucket::include_in_diagnostics() const
+const bool FunctionBucket::include_in_diagnostics() const
 {
   dolfin::error("Failed to find virtual function include_in_diagnostics.");
   return false;

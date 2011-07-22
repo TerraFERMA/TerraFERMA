@@ -55,14 +55,14 @@ namespace buckettools
     void aliased_fill();
 
     // Return a string object describing the system
-    std::string str() const
+    const std::string str() const
     { return str(0); }
 
     // Return a string object describing the system
-    std::string str(int indent) const;
+    const std::string str(int indent) const;
 
     // Return the base optionpath for this system
-    std::string optionpath() const
+    const std::string optionpath() const
     { return optionpath_; }
     
   };

@@ -97,7 +97,7 @@ void SolverBucket::attach_form_coeffs()
 }
 
 // Return a string describing the contents of the function
-std::string SolverBucket::str(int indent) const
+const std::string SolverBucket::str(int indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
@@ -108,7 +108,7 @@ std::string SolverBucket::str(int indent) const
 }
 
 // Return a string describing the contents of forms_
-std::string SolverBucket::forms_str(int indent) const
+const std::string SolverBucket::forms_str(int indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
