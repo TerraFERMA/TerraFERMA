@@ -1,5 +1,4 @@
 from ufltools.base import *
-import re
 
 class System:
   """A class that stores all the information necessary to write the ufl for a system (i.e. mixed function space)."""
@@ -218,11 +217,11 @@ class System:
           else:
             cpp.append("        else if (functionalname ==  \""+self.fields[c].functionals[f].name+"\")\n")
           cpp.append("        {\n")
-          form_symbols = [symbol for symbol in re.findall(r"\b[a-z_]+\b", self.fields[c].functionals[f].form, re.I) if symbol not in ufl_reserved()]
+          symbols_in_form = form_symbols(self.fields[c].functionals[f].form)
           symbols_found = 0
           for c2 in range(len(self.coeffs)):
             for suffix in uflsymbol_suffixes():
-              if self.coeffs[c2].symbol+suffix in form_symbols: 
+              if self.coeffs[c2].symbol+suffix in symbols_in_form: 
                 cpp += self.fields[c].functionals[f].coefficientspace_cpp(self.coeffs[c2], index=symbols_found, suffix=suffix)
                 symbols_found =+ 1
                 break
@@ -253,11 +252,11 @@ class System:
           else:
             cpp.append("        else if (functionalname ==  \""+self.coeffs[c].functionals[f].name+"\")\n")
           cpp.append("        {\n")
-          form_symbols = [symbol for symbol in re.findall(r"\b[a-z_]+\b", self.coeffs[c].functionals[f].form, re.I) if symbol not in ufl_reserved()]
+          symbols_in_form = form_symbols(self.coeffs[c].functionals[f].form)
           symbols_found = 0
           for c2 in range(len(self.coeffs)):
             for suffix in uflsymbol_suffixes():
-              if self.coeffs[c2].symbol+suffix in form_symbols: 
+              if self.coeffs[c2].symbol+suffix in symbols_in_form: 
                 cpp += self.coeffs[c].functionals[f].coefficientspace_cpp(self.coeffs[c2], index=symbols_found, suffix=suffix)
                 symbols_found =+ 1
                 break
@@ -300,12 +299,12 @@ class System:
         cpp.append("        dolfin::error(\"Unknown coefficientname in ufc_fetch_coefficientspace\");\n")
         cpp.append("      }\n")
       else:
-        form_symbols = [symbol for form in self.solvers[s].forms for symbol in re.findall(r"\b[a-z_]+\b", form, re.I) if symbol not in ufl_reserved()]
-        if self.solvers[s].preamble: form_symbols += [symbol for symbol in re.findall(r"\b[a-z_]+\b", self.solvers[s].preamble, re.I) if symbol not in ufl_reserved()]
+        symbols_in_forms = forms_symbols(self.solvers[s].forms)
+        if self.solvers[s].preamble: symbols_in_forms += form_symbols(self.solvers[s].preamble)
         symbols_found = 0
         for c in range(len(self.coeffs)):
           for suffix in uflsymbol_suffixes():
-            if self.coeffs[c].symbol+suffix in form_symbols: 
+            if self.coeffs[c].symbol+suffix in symbols_in_forms: 
               cpp += self.coeffs[c].solvercoefficientspace_cpp(self.solvers[s].name, index=symbols_found, suffix=suffix)
               symbols_found =+ 1
               break

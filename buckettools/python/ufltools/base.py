@@ -1,4 +1,5 @@
 import sys
+import re
 
 # Functions used to provide comments in ufls
 def comment(string):
@@ -53,4 +54,14 @@ def ufl_reserved():
 def uflsymbol_suffixes():
   """Returns an array of available function symbols in the ufl."""
   return ["", "_i", "_n"]
+
+def form_symbols(form):
+  return [symbol for line in form.split("\n") if not line.lstrip().startswith("#") for symbol in re.findall(r"\b\w+?\b", line, re.I) if symbol not in ufl_reserved()]
+
+def forms_symbols(forms):
+  symbols = []
+  for form in forms:
+    symbols += form_symbols(form)
+  return symbols
+
 
