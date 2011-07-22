@@ -47,22 +47,20 @@ add_custom_target(
     )
 
 
-# add a command that runs the ufl generation script if the options file
+# add a command that runs the ufc generation script if the options file
 # or the (main file of the) script has changed
-# FIXME: this should be changed to only update if certain options 
-#        (which ufl depends on) have changed!
 add_custom_command(
     OUTPUT ${buckettools_BINARY_DIR}/SystemsWrapper.cpp
     COMMAND python
-    ARGS ${buckettools_SOURCE_DIR}/scripts/ufl_from_options.py ${OPTIONSFILE}
+    ARGS ${buckettools_SOURCE_DIR}/scripts/ufc_from_options.py ${OPTIONSFILE}
     WORKING_DIRECTORY ${buckettools_BINARY_DIR}
     DEPENDS ${OPTIONSFILE}
-    DEPENDS ${buckettools_SOURCE_DIR}/scripts/ufl_from_options.py
+    DEPENDS ${buckettools_SOURCE_DIR}/scripts/ufc_from_options.py
     )
  
 # create a custom target so we can make the project depend on this
 add_custom_target(
-   genufl
+   genufc
    DEPENDS ${buckettools_BINARY_DIR}/SystemsWrapper.cpp
    )
 
@@ -81,7 +79,7 @@ add_library(buckettools cpp/Bucket.cpp cpp/SpudBucket.cpp cpp/SystemBucket.cpp c
 # tell cmake that this file doesn't exist until build time
 set_source_files_properties(${buckettools_BINARY_DIR}/SystemsWrapper.cpp PROPERTIES GENERATED 1)
 # the project depends on this target
-add_dependencies(buckettools genufl)
+add_dependencies(buckettools genufc)
 # tell cmake that this file doesn't exist until build time
 set_source_files_properties(confdefs.h PROPERTIES GENERATED 1)
 # the project depends on this target
