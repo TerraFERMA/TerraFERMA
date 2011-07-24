@@ -192,10 +192,14 @@ void DiagnosticsFile::data_field_(FunctionBucket_const_it f_begin, FunctionBucke
       // if yes, then populate the header with the default stats
       if ((*(*(*f_it).second).function()).value_rank()==0)
       {
-        const Function_ptr func_ptr = boost::dynamic_pointer_cast< dolfin::Function >((*(*f_it).second).function());
-        const dolfin::Vector vec = (*func_ptr).vector();
-        file_ << vec.max() << " ";
-        file_ << vec.min() << " ";
+        //const dolfin::Function func = (*(*f_it).second).field();
+        //const dolfin::Vector vec = func.vector();
+        //file_ << vec.max() << " ";
+        //file_ << vec.min() << " ";
+        //file_ << (*boost::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).function())).vector().max() << " ";
+        //file_ << (*boost::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).function())).vector().min() << " ";
+        file_ << 0.0 << " ";
+        file_ << 0.0 << " ";
       }
       else if ((*(*(*f_it).second).function()).value_rank()==1)
       {

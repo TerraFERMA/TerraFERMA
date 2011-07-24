@@ -185,9 +185,9 @@ void SpudFunctionBucket::initialize_field_()
     functionspace_ = (*(*system_).functionspace())[index_];
 
     // not sure quite what this will do (in the nfields==1 case) but let's try to register the field
-    function_.reset( &(*(*system_).function())[index_] );
-    oldfunction_.reset( &(*(*system_).oldfunction())[index_] );
-    iteratedfunction_.reset( &(*(*system_).iteratedfunction())[index_] );
+    function_.reset( &(*(*system_).function())[index_], dolfin::NoDeleter() );
+    oldfunction_.reset( &(*(*system_).oldfunction())[index_], dolfin::NoDeleter() );
+    iteratedfunction_.reset( &(*(*system_).iteratedfunction())[index_], dolfin::NoDeleter() );
   }
 
   // register a pointer to the field as well (first give it a sensible name and label)
