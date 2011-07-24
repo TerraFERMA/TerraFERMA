@@ -91,7 +91,7 @@ class Functional:
     else:
       cpp.append("        else if (functionalname ==  \""+self.name+"\")\n")
     cpp.append("        {\n")
-    cpp.append("          functional.reset(new "+self.namespace()+"::Form_0(*mesh));\n")
+    cpp.append("          functional.reset(new "+self.namespace()+"::Form_0(mesh));\n")
     cpp.append("        }\n")
     return cpp
 
@@ -102,7 +102,7 @@ class Functional:
     else:
       cpp.append("          else if (coefficientname ==  \""+coeff.name+"\")\n")
     cpp.append("          {\n")
-    cpp.append("            coefficientspace.reset(new "+self.namespace()+"::CoefficientSpace_"+coeff.symbol+suffix+"(*mesh));\n")
+    cpp.append("            coefficientspace.reset(new "+self.namespace()+"::CoefficientSpace_"+coeff.symbol+suffix+"(mesh));\n")
     cpp.append("          }\n")
     return cpp
 

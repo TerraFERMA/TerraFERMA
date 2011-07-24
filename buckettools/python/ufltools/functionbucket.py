@@ -54,7 +54,7 @@ class Function:
     else:
       cpp.append("        else if (coefficientname ==  \""+self.name+"\")\n")
     cpp.append("        {\n")
-    cpp.append("          coefficientspace.reset(new "+self.system.name+solvername+"::CoefficientSpace_"+self.symbol+suffix+"(*mesh));\n")
+    cpp.append("          coefficientspace.reset(new "+self.system.name+solvername+"::CoefficientSpace_"+self.symbol+suffix+"(mesh));\n")
     cpp.append("        }\n")
     return cpp
 

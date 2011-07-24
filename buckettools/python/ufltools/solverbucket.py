@@ -76,7 +76,7 @@ class Solver:
         sys.exit(1)
     
   def functionspace_cpp_no_if(self):
-    return "      functionspace.reset( new "+self.namespace()+"::FunctionSpace(*mesh) );\n"
+    return "      functionspace.reset( new "+self.namespace()+"::FunctionSpace(mesh) );\n"
 
   def functionspace_cpp(self, index=0):
     cpp = [] 
@@ -85,7 +85,7 @@ class Solver:
     else:
       cpp.append("      else if (solvername ==  \""+self.name+"\")\n")
     cpp.append("      {\n")
-    cpp.append("        functionspace.reset(new "+self.namespace()+"::FunctionSpace(*mesh));\n")
+    cpp.append("        functionspace.reset(new "+self.namespace()+"::FunctionSpace(mesh));\n")
     cpp.append("      }\n")
     return cpp
 
@@ -98,9 +98,9 @@ class Solver:
         cpp.append("          else if (formname == \""+self.form_names[f]+"\")\n")
       cpp.append("          {\n")
       if self.form_ranks[f]==0:
-        cpp.append("            form.reset(new "+self.system.name+self.name+"::Form_"+`f`+"(*functionspace));\n")
+        cpp.append("            form.reset(new "+self.system.name+self.name+"::Form_"+`f`+"(functionspace));\n")
       elif self.form_ranks[f]==1:
-        cpp.append("            form.reset(new "+self.system.name+self.name+"::Form_"+`f`+"(*functionspace, *functionspace));\n")
+        cpp.append("            form.reset(new "+self.system.name+self.name+"::Form_"+`f`+"(functionspace, functionspace));\n")
       else:
         print "Unknwon form rank."
         sys.exit(1)
