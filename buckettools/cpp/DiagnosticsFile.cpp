@@ -189,31 +189,31 @@ void DiagnosticsFile::data_field_(FunctionBucket_const_it f_begin, FunctionBucke
     // loop over the functions (but check that we want to include them in the diagnostic output)
     if ((*(*f_it).second).include_in_diagnostics())
     {
+      // take a deep copy of the field so that we can access its vector
+      dolfin::Function func = *boost::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).function());
       // if yes, then populate the header with the default stats
-      if ((*(*(*f_it).second).function()).value_rank()==0)
+      if (func.value_rank()==0)
       {
-        //const dolfin::Function func = (*(*f_it).second).field();
-        //const dolfin::Vector vec = func.vector();
-        //file_ << vec.max() << " ";
-        //file_ << vec.min() << " ";
-        //file_ << (*boost::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).function())).vector().max() << " ";
-        //file_ << (*boost::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).function())).vector().min() << " ";
-        file_ << 0.0 << " ";
-        file_ << 0.0 << " ";
+        file_ << func.vector().max() << " ";
+        file_ << func.vector().min() << " ";
       }
-      else if ((*(*(*f_it).second).function()).value_rank()==1)
+      else if (func.value_rank()==1)
       {
         int components = (*(*(*f_it).second).function()).value_size();
         for (uint i = 0; i < components; i++)
         {
-          file_ << (*boost::dynamic_pointer_cast< dolfin::Function >((*(*f_it).second).function()))[i].vector().max() << " ";
+          // take a deep copy of the field so that we can access its vector
+          dolfin::Function funccomp = func[i];
+          file_ << funccomp.vector().max() << " ";
         }
         for (uint i = 0; i < components; i++)
         {
-          file_ << (*boost::dynamic_pointer_cast< dolfin::Function >((*(*f_it).second).function()))[i].vector().min() << " ";
+          // take a deep copy of the field so that we can access its vector
+          dolfin::Function funccomp = func[i];
+          file_ << funccomp.vector().min() << " ";
         }
       }
-      else if ((*(*(*f_it).second).function()).value_rank()==2)
+      else if (func.value_rank()==2)
       {
         int dim0 = (*(*(*f_it).second).function()).value_dimension(0);
         int dim1 = (*(*(*f_it).second).function()).value_dimension(1);
@@ -221,14 +221,18 @@ void DiagnosticsFile::data_field_(FunctionBucket_const_it f_begin, FunctionBucke
         {
           for (uint j = 0; j < dim1; j++)
           {
-            file_ << (*boost::dynamic_pointer_cast< dolfin::Function >((*(*f_it).second).function()))[i][j].vector().max() << " ";
+            // take a deep copy of the field so that we can access its vector
+            dolfin::Function funccomp = func[i][j];
+            file_ << funccomp.vector().max() << " ";
           }
         }
         for (uint i = 0; i < dim0; i++)
         {
           for (uint j = 0; j < dim1; j++)
           {
-            file_ << (*boost::dynamic_pointer_cast< dolfin::Function >((*(*f_it).second).function()))[i][j].vector().min() << " ";
+            // take a deep copy of the field so that we can access its vector
+            dolfin::Function funccomp = func[i][j];
+            file_ << funccomp.vector().min() << " ";
           }
         }
       }

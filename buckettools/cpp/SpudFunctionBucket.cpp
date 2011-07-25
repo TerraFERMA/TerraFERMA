@@ -184,7 +184,7 @@ void SpudFunctionBucket::initialize_field_()
     // yes... use DOLFIN to extract that subspace so we can declare things on it (ics, bcs etc.)
     functionspace_ = (*(*system_).functionspace())[index_];
 
-    // not sure quite what this will do (in the nfields==1 case) but let's try to register the field
+    // register a shallow copy of the subfunction and make sure it doesn't get deleted
     function_.reset( &(*(*system_).function())[index_], dolfin::NoDeleter() );
     oldfunction_.reset( &(*(*system_).oldfunction())[index_], dolfin::NoDeleter() );
     iteratedfunction_.reset( &(*(*system_).iteratedfunction())[index_], dolfin::NoDeleter() );
