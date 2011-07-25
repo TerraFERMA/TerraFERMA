@@ -50,9 +50,9 @@ void DiagnosticsFile::header_bucket_(const Bucket &bucket, uint &column)
 
 void DiagnosticsFile::header_system_(SystemBucket_const_it sys_it, uint &column)
 {
-  tag_("SystemFunction", column, "max", (*(*sys_it).second).name());
+  tag_((*(*sys_it).second).name(), column, "max");
   column++;
-  tag_("SystemFunction", column, "min", (*(*sys_it).second).name());
+  tag_((*(*sys_it).second).name(), column, "min");
   column++;
 }
 
