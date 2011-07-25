@@ -324,6 +324,9 @@ void SystemBucket::register_solver(SolverBucket_ptr solver, std::string name)
   {
     // if not then insert it into the maps
     solvers_[name] = solver;
+    // for the moment assume that the order they are added is the order you want them solved
+    // (this is easily extendible to a user defined order)
+    orderedsolvers_[(int) solvers_.size()] = solver;
   }
 }
 
@@ -345,6 +348,65 @@ SolverBucket_it SystemBucket::solvers_end()
 SolverBucket_const_it SystemBucket::solvers_end() const
 {
   return solvers_.end();
+}
+
+int_SolverBucket_it SystemBucket::orderedsolvers_begin()
+{
+  return orderedsolvers_.begin();
+}
+
+int_SolverBucket_const_it SystemBucket::orderedsolvers_begin() const
+{
+  return orderedsolvers_.begin();
+}
+
+int_SolverBucket_it SystemBucket::orderedsolvers_end()
+{
+  return orderedsolvers_.end();
+}
+
+int_SolverBucket_const_it SystemBucket::orderedsolvers_end() const
+{
+  return orderedsolvers_.end();
+}
+
+void solve()
+{
+  for (int_SolverBucket_const_it s_it = orderedsolvers_begin(); s_it != orderedsolvers_end(); s_it++)
+  {
+    (*(*s_it).second).solve();
+  }
+}
+
+void SystemBucket::collect_bcs_()
+{
+  for (FunctionBucket_const_it f_it = fields_begin(); f_it != fields_end(); f_it++)
+  {
+    for (BoundaryCondition_const_it b_it = (*(*f_it).second).bcs_begin(); b_it != (*(*f_it).second).bcs_end(); b_it++)
+    {
+      bcs_.push_back((*b_it).second);
+    }
+  }
+}
+
+std::vector<BoundaryCondition_ptr>::iterator SystemBucket::bcs_begin()
+{
+  return bcs_.begin();
+}
+
+std::vector<BoundaryCondition_ptr>::const_iterator SystemBucket::bcs_begin() const
+{
+  return bcs_.begin();
+}
+
+std::vector<BoundaryCondition_ptr>::iterator SystemBucket::bcs_begin()
+{
+  return bcs_.end();
+}
+
+std::vector<BoundaryCondition_ptr>::const_iterator SystemBucket::bcs_begin() const
+{
+  return bcs_.end();
 }
 
 void SystemBucket::attach_all_coeffs_()

@@ -292,9 +292,9 @@ void SpudFunctionBucket::bc_component_fill_(const std::string &optionpath,
        
        for (std::vector<int>::const_iterator bcid = bcids.begin(); bcid < bcids.end(); bcid++)
        {
-         DirichletBC_ptr bc(new dolfin::DirichletBC(*subfunctionspace, *bcexp, *edgeidmeshfunction, *bcid));
+         BoundaryCondition_ptr bc(new dolfin::DirichletBC(*subfunctionspace, *bcexp, *edgeidmeshfunction, *bcid));
          namebuffer.str(""); namebuffer << bcname << "::" << *subcompid << "::" << *bcid;
-         register_dirichletbc(bc, namebuffer.str());
+         register_bc(bc, namebuffer.str());
        }
        
     }
@@ -308,9 +308,9 @@ void SpudFunctionBucket::bc_component_fill_(const std::string &optionpath,
     
     for (std::vector<int>::const_iterator bcid = bcids.begin(); bcid < bcids.end(); bcid++)
     {
-      DirichletBC_ptr bc(new dolfin::DirichletBC(*functionspace(), *bcexp, *edgeidmeshfunction, *bcid));
+      BoundaryCondition_ptr bc(new dolfin::DirichletBC(*functionspace(), *bcexp, *edgeidmeshfunction, *bcid));
       namebuffer.str(""); namebuffer << bcname << "::" << *bcid;
-      register_dirichletbc(bc, namebuffer.str());
+      register_bc(bc, namebuffer.str());
     }
   }
 }

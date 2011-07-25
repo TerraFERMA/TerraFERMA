@@ -131,6 +131,7 @@ void Bucket::register_system(SystemBucket_ptr system, std::string name)
   {
     // if not then insert it into the maps
     systems_[name] = system;
+    orderedsystems_[(int) systems_.size()] = system;
   }
 }
 
@@ -189,6 +190,38 @@ SystemBucket_it Bucket::systems_end()
 SystemBucket_const_it Bucket::systems_end() const
 {
   return systems_.end();
+}
+
+// Public iterator access
+int_SystemBucket_it Bucket::orderedsystems_begin()
+{
+  return orderedsystems_.begin();
+}
+
+// Public iterator access
+int_SystemBucket_const_it Bucket::orderedsystems_begin() const
+{
+  return orderedsystems_.begin();
+}
+
+// Public iterator access
+int_SystemBucket_it Bucket::orderedsystems_end()
+{
+  return orderedsystems_.end();
+}
+
+// Public iterator access
+int_SystemBucket_const_it Bucket::orderedsystems_end() const
+{
+  return orderedsystems_.end();
+}
+
+void solve()
+{
+  for (int_SystemBucket_const_it s_it = orderedsystems_begin(); s_it != orderedsystems_end(); s_it++)
+  {
+    (*(*s_it).second).solve();
+  }
 }
 
 // Empty the bucket

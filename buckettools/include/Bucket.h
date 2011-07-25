@@ -39,6 +39,7 @@ namespace buckettools
     // A map from system name to system pointer
     // SystemBuckets describe function spaces and the solvers that operate on them
     std::map< std::string, SystemBucket_ptr >       systems_;
+    std::map< int, SystemBucket_ptr >               orderedsystems_;
 
 //    // A map from detector set name to detectors
 //    std::map< std::string, GenericDetectors_ptr >    detectors_;

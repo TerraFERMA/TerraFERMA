@@ -45,6 +45,7 @@ void SpudSystemBucket::fill()
 
   // initialize the coefficients
   // (we do this after the solvers so that we can get the coefficientspaces from the solver forms)
+  // (of course this also means we can't initialize the solver forms until later)
   coeffs_fill_(); 
 
 }
@@ -206,6 +207,9 @@ void SpudSystemBucket::fields_fill_()
 
     component += (*(*field).icexpression()).value_size();
   }
+
+  // We can now loop over the fields and collect references to bcs for convenience later
+  collect_bcs_();
 
   // While filling the fields we should have set up a map from
   // components to initial condition expressions... use this

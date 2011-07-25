@@ -139,20 +139,40 @@ void FunctionBucket::register_bcexpression(Expression_ptr bcexpression, std::str
 }
 
 // Register a dolfin expression for a bc in the functionbucket
-void FunctionBucket::register_dirichletbc(DirichletBC_ptr bc, std::string name)
+void FunctionBucket::register_bc(BoundaryCondition_ptr bc, std::string name)
 {
   // First check if a bc with this name already exists
-  DirichletBC_it bc_it = dirichletbcs_.find(name);
-  if (bc_it != dirichletbcs_.end())
+  BoundaryCondition_it bc_it = bcs_.find(name);
+  if (bc_it != bcs_.end())
   {
     // if it does, issue an error
-    dolfin::error("DirichletBC named \"%s\" already exists in function.", name.c_str());
+    dolfin::error("BoundaryCondition named \"%s\" already exists in function.", name.c_str());
   }
   else
   {
     // if not then insert it into the maps
-    dirichletbcs_[name] = bc;
+    bcs_[name] = bc;
   }
+}
+
+BoundaryCondition_it FunctionBucket::bcs_begin()
+{
+  return bcs_.begin();
+}
+
+BoundaryCondition_const_it FunctionBucket::bcs_begin() const
+{
+  return bcs_.begin();
+}
+
+BoundaryCondition_it FunctionBucket::bcs_end()
+{
+  return bcs_.end();
+}
+
+BoundaryCondition_const_it FunctionBucket::bcs_end() const
+{
+  return bcs_.end();
 }
 
 void FunctionBucket::attach_functional_coeffs()
