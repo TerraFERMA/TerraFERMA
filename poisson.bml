@@ -107,7 +107,14 @@
           </initial_condition>
         </rank>
         <output>
-          <include_in_diagnostics/>
+          <include_in_diagnostics>
+            <functional name="Integral">
+              <string_value type="python" lines="20">int = s2[0]*dx + s2[1]*dx</string_value>
+              <ufl_symbol>
+                <string_value lines="1">int</string_value>
+              </ufl_symbol>
+            </functional>
+          </include_in_diagnostics>
         </output>
       </type>
     </field>
