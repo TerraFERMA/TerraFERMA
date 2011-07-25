@@ -28,6 +28,11 @@ SpudSolverBucket::~SpudSolverBucket()
     perr = SNESDestroy(snes_); CHKERRV(perr);
   }
 
+  if(type()=="Picard")
+  {
+    perr = KSPDestroy(ksp_); CHKERRV(perr);
+  }
+
 }
 
 // Fill the function using spud and assuming a buckettools schema structure
@@ -56,7 +61,9 @@ void SpudSolverBucket::fill()
   }
   else if (type()=="Picard")
   {
-;
+    perr = KSPCreate(PETSC_COMM_WORLD, &ksp_); CHKERRV(perr);
+    buffer.str(""); buffer << optionpath() << "/type/linear_solver";
+    ksp_fill_(buffer.str(), ksp_);
   }
   else
   {
