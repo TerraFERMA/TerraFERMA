@@ -142,6 +142,9 @@ r = r1 + r2</string_value>
         <max_iterations>
           <integer_value rank="0">10</integer_value>
         </max_iterations>
+        <monitors>
+          <residual/>
+        </monitors>
         <linear_solver>
           <iterative_method name="cg">
             <relative_error>
@@ -150,11 +153,7 @@ r = r1 + r2</string_value>
             <max_iterations>
               <integer_value rank="0">1000</integer_value>
             </max_iterations>
-            <monitors>
-              <preconditioned_residual/>
-              <true_residual/>
-              <preconditioned_residual_graph/>
-            </monitors>
+            <monitors/>
           </iterative_method>
           <preconditioner name="sor"/>
         </linear_solver>
