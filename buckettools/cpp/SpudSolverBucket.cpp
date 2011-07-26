@@ -503,7 +503,7 @@ void SpudSolverBucket::base_fill_()
   serr = Spud::get_option(buffer.str(), minits_, 0); spud_err(buffer.str(), serr);
 
   buffer.str(""); buffer << optionpath() << "/type/max_function_evaluations";
-  serr = Spud::get_option(buffer.str(), maxfes_, 1000); spud_err(buffer.str(), serr);
+  serr = Spud::get_option(buffer.str(), maxfes_, 10000); spud_err(buffer.str(), serr);
 
 }
 

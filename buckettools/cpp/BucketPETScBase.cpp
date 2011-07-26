@@ -8,7 +8,7 @@ using namespace buckettools;
 PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f, void* ctx)
 {
   SNESCtx      *snesctx    = (SNESCtx *) ctx;
-  Function_ptr function    = (*snesctx).function;
+  Function_ptr iteratedfunction = (*snesctx).iteratedfunction;
   std::vector<BoundaryCondition_ptr>& bcs = (*snesctx).bcs;
   Vec_ptr px(&x, dolfin::NoDeleter());
   Vec_ptr pf(&f, dolfin::NoDeleter());
@@ -17,7 +17,7 @@ PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f, void* ctx)
 
   std::cout << "In FormFunction" << std::endl;
 
-  (*function).vector() = iteratedvec;
+  (*iteratedfunction).vector() = iteratedvec;
 
   dolfin::assemble(rhs, (*(*snesctx).linear), reset_tensor);
   for(uint i = 0; i < bcs.size(); ++i)
@@ -31,7 +31,7 @@ PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f, void* ctx)
 PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A, Mat *B, MatStructure* flag, void* ctx)
 {
   SNESCtx *snesctx = (SNESCtx *) ctx;
-  Function_ptr function = (*snesctx).function;
+  Function_ptr iteratedfunction = (*snesctx).iteratedfunction;
   std::vector<BoundaryCondition_ptr>& bcs = (*snesctx).bcs;
   Vec_ptr px(&x, dolfin::NoDeleter());
   Mat_ptr pA(A, dolfin::NoDeleter());
@@ -42,7 +42,7 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A, Mat *B, MatSt
 
   std::cout << "In FormJacobian" << std::endl;
 
-  (*function).vector() = iteratedvec;
+  (*iteratedfunction).vector() = iteratedvec;
 
   dolfin::assemble(matrix, (*(*snesctx).bilinear), reset_tensor);
   for(uint i = 0; i < bcs.size(); ++i)

@@ -113,8 +113,7 @@ void SolverBucket::initialize_matrices()
     ctx_.bilinear     = bilinear_;
     ctx_.bilinearpc   = bilinearpc_;
     ctx_.bcs          = (*system_).bcs();
-    ctx_.function     = (*system_).function();
-    ctx_.oldfunction  = (*system_).oldfunction();
+    ctx_.iteratedfunction = (*system_).iteratedfunction();
   }
 
   assemble_bilinearforms(true);

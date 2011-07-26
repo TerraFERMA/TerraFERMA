@@ -14,8 +14,7 @@ namespace buckettools
     Form_ptr bilinear;
     Form_ptr bilinearpc;
     std::vector<BoundaryCondition_ptr> bcs;
-    Function_ptr function;    // work function
-    Function_ptr oldfunction; // previous time step
+    Function_ptr iteratedfunction;    // work function
   } SNESCtx;
 
   PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void* ctx);
