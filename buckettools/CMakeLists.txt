@@ -1,3 +1,6 @@
+# The project name for buckettools (sets up environment variables for binary and source directories)
+project(buckettools)
+
 # Write a template header file to disk at configuration time
 # (this holds the template for the mercurial id information that will
 #  be replaced at build time by a suitable variable - using the script
@@ -39,7 +42,7 @@ add_custom_target(
     confdefs
     ${CMAKE_COMMAND} -D SRC="${buckettools_BINARY_DIR}/confdefs.h.in"
                      -D DST="${buckettools_BINARY_DIR}/confdefs.h"
-                     -D DIR="${PROJECT_SOURCE_DIR}"
+                     -D DIR="${PROJECT_SOURCE_DIR}/../"
                      -P "${buckettools_BINARY_DIR}/confdefs.cmake"
     )
 
