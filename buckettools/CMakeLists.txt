@@ -1,6 +1,3 @@
-# The name of the project...
-project(buckettools)
-
 # Write a template header file to disk at configuration time
 # (this holds the template for the mercurial id information that will
 #  be replaced at build time by a suitable variable - using the script
