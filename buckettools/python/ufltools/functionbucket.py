@@ -19,6 +19,18 @@ class Function:
     self.system = None
     self.functionals = None
   
+  def constant_ufl(self, suffix=""):
+    """Returns a ufl string declaring a constant coefficient on a cell."""
+    if self.rank == "Scalar":
+      return self.symbol+suffix+" = Constant("+self.system.cell+")\n"
+    elif self.rank == "Vector":
+      return self.symbol+suffix+" = VectorConstant("+self.system.cell+")\n"
+    elif self.rank == "Tensor":
+      return self.symbol+suffix+" = TensorConstant("+self.system.cell+")\n"
+    print self.rank
+    print "Unknown rank."
+    sys.exit(1)
+
   def element_ufl(self):
     """Write an array of ufl strings describing the function (field or coefficient) element."""
     ufl = []

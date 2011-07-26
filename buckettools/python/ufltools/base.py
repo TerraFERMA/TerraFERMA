@@ -26,10 +26,6 @@ def coefficient_ufl(symbol, suffix=""):
   """Returns a ufl string declaring a coefficient on an element."""
   return symbol+suffix+" = Coefficient("+symbol+"_e)\n"
 
-def constant_ufl(symbol, cell, suffix=""):
-  """Returns a ufl string declaring a constant coefficient on a cell."""
-  return symbol+suffix+" = Constant("+cell+")\n"
-
 def forms_ufl(form_symbols):
   """Returns a ufl string declaring a set of forms with potentially non-default symbols."""
   ufl = "forms = ["
