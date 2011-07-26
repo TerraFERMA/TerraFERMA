@@ -514,38 +514,37 @@ void SpudSolverBucket::forms_fill_()
 
     }
 
-    if (type()=="SNES") 
-    {
-      linear_      = fetch_form("Residual");
-      bilinear_    = fetch_form("Jacobian");
-      if (contains_form("JacobianPC"))
-      {
-        bilinearpc_ = fetch_form("JacobianPC");
-      }
-      // otherwise bilinearpc_ is null
-      // residual_ is a null pointer for SNES
-
-    }
-    else if (type()=="Picard")
-    {
-      linear_      = fetch_form("Linear");
-      bilinear_    = fetch_form("Bilinear");
-      if (contains_form("BilinearPC"))
-      {
-        bilinearpc_ = fetch_form("BilinearPC");
-      }
-      // otherwise bilinearpc_ is null
-      residual_   = fetch_form("Residual");
-
-    }
-    else
-    {
-      dolfin::error("Unknown solver type.");
-    }
-     
-
   }
 
+  if (type()=="SNES") 
+  {
+    linear_      = fetch_form("Residual");
+    bilinear_    = fetch_form("Jacobian");
+    if (contains_form("JacobianPC"))
+    {
+      bilinearpc_ = fetch_form("JacobianPC");
+    }
+    // otherwise bilinearpc_ is null
+    // residual_ is a null pointer for SNES
+
+  }
+  else if (type()=="Picard")
+  {
+    linear_      = fetch_form("Linear");
+    bilinear_    = fetch_form("Bilinear");
+    if (contains_form("BilinearPC"))
+    {
+      bilinearpc_ = fetch_form("BilinearPC");
+    }
+    // otherwise bilinearpc_ is null
+    residual_   = fetch_form("Residual");
+
+  }
+  else
+  {
+    dolfin::error("Unknown solver type.");
+  }
+     
 }
 
 // Register a functional in the function
