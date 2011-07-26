@@ -59,12 +59,18 @@ namespace buckettools
     std::map< std::string, FunctionSpace_ptr > coefficientspaces_;
 
     std::map< std::string, SolverBucket_ptr > solvers_;
-    
+
+    std::map< int, SolverBucket_ptr > orderedsolvers_;
+
+    std::vector< BoundaryCondition_ptr > bcs_;
+
     void attach_all_coeffs_();
 
     void attach_function_coeffs_(FunctionBucket_it f_begin, FunctionBucket_it f_end);
 
     void attach_solver_coeffs_(SolverBucket_it s_begin, SolverBucket_it s_end);
+
+    void collect_bcs_();
 
   public:
 
@@ -144,6 +150,25 @@ namespace buckettools
 
     SolverBucket_const_it solvers_end() const;
 
+    int_SolverBucket_it orderedsolvers_begin();
+
+    int_SolverBucket_const_it orderedsolvers_begin() const;
+
+    int_SolverBucket_it orderedsolvers_end();
+
+    int_SolverBucket_const_it orderedsolvers_end() const;
+
+    std::vector<BoundaryCondition_ptr>::iterator bcs_begin();
+
+    std::vector<BoundaryCondition_ptr>::const_iterator bcs_begin() const;
+
+    std::vector<BoundaryCondition_ptr>::iterator bcs_end();
+
+    std::vector<BoundaryCondition_ptr>::const_iterator bcs_end() const;
+
+    const std::vector< BoundaryCondition_ptr > bcs() const
+    { return bcs_; }
+    
     // Return a string describing the contents of the system
     virtual const std::string str() const
     { return str(0); }
@@ -185,6 +210,8 @@ namespace buckettools
 
     // Print a description of the solvers contained in the system
     virtual const std::string solvers_str(int indent) const;
+
+    void solve();
 
     // Return the system name
     const std::string name() const

@@ -184,10 +184,10 @@ void SpudFunctionBucket::initialize_field_()
     // yes... use DOLFIN to extract that subspace so we can declare things on it (ics, bcs etc.)
     functionspace_ = (*(*system_).functionspace())[index_];
 
-    // not sure quite what this will do (in the nfields==1 case) but let's try to register the field
-    function_.reset( &(*(*system_).function())[index_] );
-    oldfunction_.reset( &(*(*system_).oldfunction())[index_] );
-    iteratedfunction_.reset( &(*(*system_).iteratedfunction())[index_] );
+    // register a shallow copy of the subfunction and make sure it doesn't get deleted
+    function_.reset( &(*(*system_).function())[index_], dolfin::NoDeleter() );
+    oldfunction_.reset( &(*(*system_).oldfunction())[index_], dolfin::NoDeleter() );
+    iteratedfunction_.reset( &(*(*system_).iteratedfunction())[index_], dolfin::NoDeleter() );
   }
 
   // register a pointer to the field as well (first give it a sensible name and label)
@@ -292,9 +292,9 @@ void SpudFunctionBucket::bc_component_fill_(const std::string &optionpath,
        
        for (std::vector<int>::const_iterator bcid = bcids.begin(); bcid < bcids.end(); bcid++)
        {
-         DirichletBC_ptr bc(new dolfin::DirichletBC(*subfunctionspace, *bcexp, *edgeidmeshfunction, *bcid));
+         BoundaryCondition_ptr bc(new dolfin::DirichletBC(*subfunctionspace, *bcexp, *edgeidmeshfunction, *bcid));
          namebuffer.str(""); namebuffer << bcname << "::" << *subcompid << "::" << *bcid;
-         register_dirichletbc(bc, namebuffer.str());
+         register_bc(bc, namebuffer.str());
        }
        
     }
@@ -308,9 +308,9 @@ void SpudFunctionBucket::bc_component_fill_(const std::string &optionpath,
     
     for (std::vector<int>::const_iterator bcid = bcids.begin(); bcid < bcids.end(); bcid++)
     {
-      DirichletBC_ptr bc(new dolfin::DirichletBC(*functionspace(), *bcexp, *edgeidmeshfunction, *bcid));
+      BoundaryCondition_ptr bc(new dolfin::DirichletBC(*functionspace(), *bcexp, *edgeidmeshfunction, *bcid));
       namebuffer.str(""); namebuffer << bcname << "::" << *bcid;
-      register_dirichletbc(bc, namebuffer.str());
+      register_bc(bc, namebuffer.str());
     }
   }
 }

@@ -39,6 +39,7 @@ namespace buckettools
     // A map from system name to system pointer
     // SystemBuckets describe function spaces and the solvers that operate on them
     std::map< std::string, SystemBucket_ptr >       systems_;
+    std::map< int, SystemBucket_ptr >               orderedsystems_;
 
 //    // A map from detector set name to detectors
 //    std::map< std::string, GenericDetectors_ptr >    detectors_;
@@ -114,6 +115,20 @@ namespace buckettools
 
     // Return the const iterator to the end of the systems_ map
     SystemBucket_const_it systems_end() const;
+
+    // Return the iterator to the beginning of the systems_ map
+    int_SystemBucket_it orderedsystems_begin();
+
+    // Return the const iterator to the beginning of the systems_ map
+    int_SystemBucket_const_it orderedsystems_begin() const;
+
+    // Return the iterator to the end of the systems_ map
+    int_SystemBucket_it orderedsystems_end();
+
+    // Return the const iterator to the end of the systems_ map
+    int_SystemBucket_const_it orderedsystems_end() const;
+
+    void solve();
 
     // Return the geometry dimension
     const int dimension() const

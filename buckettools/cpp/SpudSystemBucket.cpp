@@ -45,6 +45,7 @@ void SpudSystemBucket::fill()
 
   // initialize the coefficients
   // (we do this after the solvers so that we can get the coefficientspaces from the solver forms)
+  // (of course this also means we can't initialize the solver forms until later)
   coeffs_fill_(); 
 
 }
@@ -71,6 +72,11 @@ void SpudSystemBucket::aliased_fill()
   // attach the coefficients to the functionals and forms
   // now that we have them all registered
   attach_all_coeffs_();
+
+  for (SolverBucket_it s_it = solvers_begin(); s_it != solvers_end(); s_it++)
+  {
+    (*(*s_it).second).initialize_matrices();
+  }
 
 }
 
@@ -109,17 +115,17 @@ void SpudSystemBucket::systemfunction_fill_()
 
   // Declare a series of functions on this functionspace:
   // Current
-  function_.reset( new dolfin::Function(*functionspace_) );
+  function_.reset( new dolfin::Function(functionspace_) );
   buffer.str(""); buffer << name() << "::Function";
   (*function_).rename( buffer.str(), buffer.str() );
 
   // Old
-  oldfunction_.reset( new dolfin::Function(*functionspace_) );
+  oldfunction_.reset( new dolfin::Function(functionspace_) );
   buffer.str(""); buffer << name() << "::OldFunction";
   (*oldfunction_).rename( buffer.str(), buffer.str() );
 
   // Iterated
-  iteratedfunction_.reset( new dolfin::Function(*functionspace_) );
+  iteratedfunction_.reset( new dolfin::Function(functionspace_) );
   buffer.str(""); buffer << name() << "::IteratedFunction";
   (*iteratedfunction_).rename( buffer.str(), buffer.str() );
 
@@ -207,6 +213,9 @@ void SpudSystemBucket::fields_fill_()
     component += (*(*field).icexpression()).value_size();
   }
 
+  // We can now loop over the fields and collect references to bcs for convenience later
+  collect_bcs_();
+
   // While filling the fields we should have set up a map from
   // components to initial condition expressions... use this
   // now to initialize the whole system function to that
@@ -227,8 +236,8 @@ void SpudSystemBucket::apply_ic_(const uint &component, const std::map< uint, Ex
     ic.reset( new InitialConditionExpression(component, icexpressions));
   }
   (*oldfunction_).interpolate(*ic);
-  *iteratedfunction_ = *oldfunction_;
-  *function_ = *oldfunction_;
+  (*iteratedfunction_).vector() = (*oldfunction_).vector();
+  (*function_).vector() = (*oldfunction_).vector();
 }
 
 //void SpudSystemBucket::apply_bc_()

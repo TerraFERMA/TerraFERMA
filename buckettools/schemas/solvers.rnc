@@ -65,6 +65,9 @@ picard =
     element max_iterations {
       integer
     },
+    element min_iterations {
+      integer
+    }?,
     element linear_solver {
       linear_solver_options
     }
@@ -91,6 +94,21 @@ snes =
       attribute name { "JacobianPC" },
       attribute rank { "1" },
       form
+    }?,
+    element relative_error {
+      real
+    },
+    element absolute_error {
+      real
+    }?,
+    element solution_error {
+      real
+    }?,
+    element max_iterations {
+      integer
+    },
+    element min_function_evaluations {
+      integer
     }?,
     element linear_solver {
       linear_solver_options
@@ -442,6 +460,12 @@ iterative_solver_options =
       ## Absolute error bound
       ##
       ## The solver finishes if the preconditioned error becomes smaller than this value.
+      element absolute_error {
+         real
+      }?,
+      ## Divergence error bound
+      ##
+      ## The solver finishes if the solutions diverge by more than this value.
       element absolute_error {
          real
       }?,

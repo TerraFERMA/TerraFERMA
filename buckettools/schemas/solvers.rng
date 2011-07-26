@@ -93,6 +93,11 @@
     <element name="max_iterations">
       <ref name="integer"/>
     </element>
+    <optional>
+      <element name="min_iterations">
+        <ref name="integer"/>
+      </element>
+    </optional>
     <element name="linear_solver">
       <ref name="linear_solver_options"/>
     </element>
@@ -134,6 +139,27 @@
           <value>1</value>
         </attribute>
         <ref name="form"/>
+      </element>
+    </optional>
+    <element name="relative_error">
+      <ref name="real"/>
+    </element>
+    <optional>
+      <element name="absolute_error">
+        <ref name="real"/>
+      </element>
+    </optional>
+    <optional>
+      <element name="solution_error">
+        <ref name="real"/>
+      </element>
+    </optional>
+    <element name="max_iterations">
+      <ref name="integer"/>
+    </element>
+    <optional>
+      <element name="min_function_evaluations">
+        <ref name="integer"/>
       </element>
     </optional>
     <element name="linear_solver">
@@ -510,6 +536,14 @@ Suggested value: 1.0e-7</a:documentation>
         <a:documentation>Absolute error bound
 
 The solver finishes if the preconditioned error becomes smaller than this value.</a:documentation>
+        <ref name="real"/>
+      </element>
+    </optional>
+    <optional>
+      <element name="absolute_error">
+        <a:documentation>Divergence error bound
+
+The solver finishes if the solutions diverge by more than this value.</a:documentation>
         <ref name="real"/>
       </element>
     </optional>

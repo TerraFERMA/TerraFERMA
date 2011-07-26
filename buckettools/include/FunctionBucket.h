@@ -52,8 +52,8 @@ namespace buckettools
     // a map from bc names to the Expressions describing them
     std::map< std::string, Expression_ptr > bcexpressions_;
     
-    // a map from bc::id names to dirichlet boundary conditions
-    std::map< std::string, DirichletBC_ptr > dirichletbcs_;
+    // a map from bc::id names to (mostly dirichlet) boundary conditions
+    std::map< std::string, BoundaryCondition_ptr > bcs_;
     
     int size_;
 
@@ -103,7 +103,15 @@ namespace buckettools
     void register_bcexpression(Expression_ptr bcexpression, std::string name);
 
     // Register a bc expression in the functionbucket
-    void register_dirichletbc(DirichletBC_ptr bc, std::string name);
+    void register_bc(BoundaryCondition_ptr bc, std::string name);
+
+    BoundaryCondition_it bcs_begin();
+
+    BoundaryCondition_const_it bcs_begin() const;
+
+    BoundaryCondition_it bcs_end();
+
+    BoundaryCondition_const_it bcs_end() const;
 
     void attach_functional_coeffs();
 

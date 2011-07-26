@@ -3,6 +3,7 @@
 #define __SOLVERBUCKET_H
 
 #include "BoostTypes.h"
+#include "BucketPETScBase.h"
 #include <dolfin.h>
 #include "petscsnes.h"
 
@@ -26,16 +27,25 @@ namespace buckettools
     
     SNES snes_;
 
+    SNESCtx ctx_;
+
     KSP ksp_;
 
-    // the function name
+    Form_ptr linear_, bilinear_, bilinearpc_, residual_;
+
+    PETScMatrix_ptr matrix_, matrixpc_;
+
+    PETScVector_ptr rhs_, res_, work_;
+
+    double rtol_, atol_, stol_;
+
+    int minits_, maxits_, maxfes_;
+
+    // the solver name
     std::string name_;
 
     // the function type
     std::string type_;
-
-    // the field index
-    uint index_;
 
     // the system to which this function belongs
     SystemBucket* system_;
@@ -57,6 +67,8 @@ namespace buckettools
     // Register a form in the solver
     void register_form(Form_ptr form, std::string name);
 
+    bool contains_form(std::string name);
+
     // Return a pointer to a form with the given name
     Form_ptr fetch_form(std::string name);
 
@@ -69,6 +81,12 @@ namespace buckettools
     Form_const_it forms_end() const;
 
     void attach_form_coeffs();
+
+    void initialize_matrices();
+
+    void assemble_linearforms(const bool &reset_tensor);
+
+    void assemble_bilinearforms(const bool &reset_tensor);
 
     // Return a string describing the contents of the solver
     virtual const std::string str() const
@@ -83,6 +101,8 @@ namespace buckettools
 
     // Print a description of the forms contained in the solver
     virtual const std::string forms_str(int indent) const;
+
+    void solve();
 
     // Return the function name
     const std::string name() const

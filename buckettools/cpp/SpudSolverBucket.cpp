@@ -28,6 +28,11 @@ SpudSolverBucket::~SpudSolverBucket()
     perr = SNESDestroy(snes_); CHKERRV(perr);
   }
 
+  if(type()=="Picard")
+  {
+    perr = KSPDestroy(ksp_); CHKERRV(perr);
+  }
+
 }
 
 // Fill the function using spud and assuming a buckettools schema structure
@@ -45,8 +50,11 @@ void SpudSolverBucket::fill()
   if (type()=="SNES")
   {
     perr = SNESCreate(PETSC_COMM_WORLD, &snes_); CHKERRV(perr);
-    buffer.str(""); buffer << name() << "_";
+
+    buffer.str(""); buffer << (*system_).name() << "_" << name() << "_";
     perr = SNESSetOptionsPrefix(snes_, buffer.str().c_str()); CHKERRV(perr);
+
+    perr = SNESSetTolerances(snes_, atol_, rtol_, stol_, maxits_, maxfes_); CHKERRV(perr);
 
     // we always have at least one ksp
     perr = SNESGetKSP(snes_, &ksp_); CHKERRV(perr);
@@ -56,7 +64,13 @@ void SpudSolverBucket::fill()
   }
   else if (type()=="Picard")
   {
-;
+    perr = KSPCreate(PETSC_COMM_WORLD, &ksp_); CHKERRV(perr);
+
+    buffer.str(""); buffer << (*system_).name() << "_" << name() << "_";
+    perr = KSPSetOptionsPrefix(ksp_, buffer.str().c_str()); CHKERRV(perr);
+
+    buffer.str(""); buffer << optionpath() << "/type/linear_solver";
+    ksp_fill_(buffer.str(), ksp_);
   }
   else
   {
@@ -77,6 +91,27 @@ void SpudSolverBucket::ksp_fill_(const std::string &optionpath, KSP &ksp,
   serr = Spud::get_option(buffer.str(), iterative_method); spud_err(buffer.str(), serr);
 
   perr = KSPSetType(ksp, iterative_method.c_str()); CHKERRV(perr);
+
+  if(iterative_method != "preonly")
+  {
+    PetscReal rtol;
+    buffer.str(""); buffer << optionpath << "/iterative_method/relative_error";
+    serr = Spud::get_option(buffer.str(), rtol); spud_err(buffer.str(), serr);
+
+    PetscReal atol;
+    buffer.str(""); buffer << optionpath << "/iterative_method/absolute_error";
+    serr = Spud::get_option(buffer.str(), atol, 0.0); spud_err(buffer.str(), serr);
+
+    PetscReal dtol;
+    buffer.str(""); buffer << optionpath << "/iterative_method/divergence_error";
+    serr = Spud::get_option(buffer.str(), dtol, -1.0); spud_err(buffer.str(), serr);
+
+    PetscInt maxits;
+    buffer.str(""); buffer << optionpath << "/iterative_method/max_iterations";
+    serr = Spud::get_option(buffer.str(), maxits); spud_err(buffer.str(), serr);
+
+    perr = KSPSetTolerances(ksp, rtol, atol, dtol, maxits);
+  }
 
   std::string preconditioner;
   buffer.str(""); buffer << optionpath << "/preconditioner/name";
@@ -409,6 +444,25 @@ void SpudSolverBucket::base_fill_()
   buffer.str(""); buffer << optionpath() << "/type/name";
   serr = Spud::get_option(buffer.str(), type_); spud_err(buffer.str(), serr);
 
+  // Get the tolerances
+  buffer.str(""); buffer << optionpath() << "/type/relative_error";
+  serr = Spud::get_option(buffer.str(), rtol_); spud_err(buffer.str(), serr);
+
+  buffer.str(""); buffer << optionpath() << "/type/absolute_error";
+  serr = Spud::get_option(buffer.str(), atol_, 0.0); spud_err(buffer.str(), serr);
+
+  buffer.str(""); buffer << optionpath() << "/type/solution_error";
+  serr = Spud::get_option(buffer.str(), stol_, 0.0); spud_err(buffer.str(), serr);
+
+  buffer.str(""); buffer << optionpath() << "/type/max_iterations";
+  serr = Spud::get_option(buffer.str(), maxits_); spud_err(buffer.str(), serr);
+
+  buffer.str(""); buffer << optionpath() << "/type/min_iterations";
+  serr = Spud::get_option(buffer.str(), minits_, 0); spud_err(buffer.str(), serr);
+
+  buffer.str(""); buffer << optionpath() << "/type/max_function_evaluations";
+  serr = Spud::get_option(buffer.str(), maxfes_, 1000); spud_err(buffer.str(), serr);
+
 }
 
 void SpudSolverBucket::forms_fill_()
@@ -459,8 +513,38 @@ void SpudSolverBucket::forms_fill_()
       }
 
     }
+
   }
 
+  if (type()=="SNES") 
+  {
+    linear_      = fetch_form("Residual");
+    bilinear_    = fetch_form("Jacobian");
+    if (contains_form("JacobianPC"))
+    {
+      bilinearpc_ = fetch_form("JacobianPC");
+    }
+    // otherwise bilinearpc_ is null
+    // residual_ is a null pointer for SNES
+
+  }
+  else if (type()=="Picard")
+  {
+    linear_      = fetch_form("Linear");
+    bilinear_    = fetch_form("Bilinear");
+    if (contains_form("BilinearPC"))
+    {
+      bilinearpc_ = fetch_form("BilinearPC");
+    }
+    // otherwise bilinearpc_ is null
+    residual_   = fetch_form("Residual");
+
+  }
+  else
+  {
+    dolfin::error("Unknown solver type.");
+  }
+     
 }
 
 // Register a functional in the function
