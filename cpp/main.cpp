@@ -18,6 +18,10 @@ int main(int argc, char* argv[])
   diagfile.write_header(bucket, false);
   diagfile.write_data(bucket);
 
+  bucket.solve();
+
+  diagfile.write_data(bucket);
+
   std::cout << bucket.str();
 
   return 0;
