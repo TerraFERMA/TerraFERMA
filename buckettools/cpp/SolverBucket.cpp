@@ -165,6 +165,8 @@ void SolverBucket::solve()
     double rerror = aerror/aerror0;
     dolfin::info("%u Error (absolute, relative) = %g, %g\n", it, aerror, rerror);
 
+    (*(*system_).iteratedfunction()).vector() = (*(*system_).function()).vector();
+
     while (it < minits_ || (it < maxits_ && rerror > rtol_ && aerror > atol_))
     {
       it++;
@@ -194,15 +196,15 @@ void SolverBucket::solve()
 
       perr = KSPSetUp(ksp_); CHKERRV(perr);
 
-      *work_ = (*(*system_).function()).vector();
+      *work_ = (*(*system_).iteratedfunction()).vector();
       perr = KSPSolve(ksp_, *(*rhs_).vec(), *(*work_).vec());  CHKERRV(perr);
-      (*(*system_).function()).vector() = *work_;
+      (*(*system_).iteratedfunction()).vector() = *work_;
 
       assert(residual_);
       dolfin::assemble(*res_, *residual_, false);
       for(std::vector<BoundaryCondition_ptr>::const_iterator bc = (*system_).bcs_begin(); bc != (*system_).bcs_end(); bc++)
       {
-        (*(*bc)).apply(*res_, (*(*system_).function()).vector());
+        (*(*bc)).apply(*res_, (*(*system_).iteratedfunction()).vector());
       }
 
       aerror = (*res_).norm("l2");
@@ -210,6 +212,8 @@ void SolverBucket::solve()
       dolfin::info("%u Error (absolute, relative) = %g, %g\n", it, aerror, rerror);
 
     }
+
+    (*(*system_).function()).vector() = (*(*system_).iteratedfunction()).vector();
 
   }
   else

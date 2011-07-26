@@ -124,11 +124,11 @@ void SpudSolverBucket::ksp_fill_(const std::string &optionpath, KSP &ksp,
 
     PetscReal atol;
     buffer.str(""); buffer << optionpath << "/iterative_method/absolute_error";
-    serr = Spud::get_option(buffer.str(), atol, 0.0); spud_err(buffer.str(), serr);
+    serr = Spud::get_option(buffer.str(), atol, 1.e-50); spud_err(buffer.str(), serr);
 
     PetscReal dtol;
     buffer.str(""); buffer << optionpath << "/iterative_method/divergence_error";
-    serr = Spud::get_option(buffer.str(), dtol, -1.0); spud_err(buffer.str(), serr);
+    serr = Spud::get_option(buffer.str(), dtol, 10000.0); spud_err(buffer.str(), serr);
 
     PetscInt maxits;
     buffer.str(""); buffer << optionpath << "/iterative_method/max_iterations";
