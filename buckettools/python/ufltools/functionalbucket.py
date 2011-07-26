@@ -31,7 +31,7 @@ class Functional:
       if coeff.type=="Constant":
         ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
         for suffix in uflsymbol_suffixes():
-          ufl.append(constant_ufl(coeff.symbol, coeff.system.cell, suffix=suffix))
+          ufl.append(coeff.constant_ufl(suffix=suffix))
       else:
         ufl += coeff.element_ufl()
         ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
