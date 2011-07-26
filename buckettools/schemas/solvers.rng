@@ -194,6 +194,20 @@
         <ref name="integer"/>
       </element>
     </optional>
+    <element name="monitors">
+      <a:documentation>Options to give extra information for each iteration of the
+the SNES solve. Some of those may really slow down your computation!</a:documentation>
+      <optional>
+        <element name="residual">
+          <empty/>
+        </element>
+      </optional>
+      <optional>
+        <element name="solution">
+          <empty/>
+        </element>
+      </optional>
+    </element>
     <element name="linear_solver">
       <ref name="linear_solver_options"/>
     </element>

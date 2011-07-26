@@ -150,8 +150,7 @@ void SolverBucket::solve()
   if (type()=="SNES")
   {
     *work_ = (*(*system_).function()).vector();
-    perr = SNESSolve(snes_, PETSC_NULL, *(*work_).vec());
-    perr = SNESView(snes_, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);
+    perr = SNESSolve(snes_, PETSC_NULL, *(*work_).vec()); CHKERRV(perr);
     (*(*system_).function()).vector() = *work_;
   }
   else if (type()=="Picard")

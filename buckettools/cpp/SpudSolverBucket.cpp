@@ -54,11 +54,25 @@ void SpudSolverBucket::fill()
     buffer.str(""); buffer << (*system_).name() << "_" << name() << "_";
     perr = SNESSetOptionsPrefix(snes_, buffer.str().c_str()); CHKERRV(perr);
 
+    perr = SNESSetFromOptions(snes_); CHKERRV(perr);
+
     std::string snestype;
     buffer.str(""); buffer << optionpath() << "/type/snes_type/name";
     serr = Spud::get_option(buffer.str(), snestype); spud_err(buffer.str(), serr);
 
     perr = SNESSetType(snes_, snestype.c_str()); CHKERRV(perr);
+
+    buffer.str(""); buffer << optionpath() << "/type/monitors/residual";
+    if (Spud::have_option(buffer.str()))
+    {
+      perr = SNESMonitorSet(snes_, SNESMonitorDefault, PETSC_NULL, PETSC_NULL); CHKERRV(perr);
+    }
+
+    buffer.str(""); buffer << optionpath() << "/type/monitors/solution_graph";
+    if (Spud::have_option(buffer.str()))
+    {
+      perr = SNESMonitorSet(snes_, SNESMonitorSolution, PETSC_NULL, PETSC_NULL); CHKERRV(perr);
+    }
 
     perr = SNESSetTolerances(snes_, atol_, rtol_, stol_, maxits_, maxfes_); CHKERRV(perr);
 
