@@ -73,6 +73,11 @@ void SpudSystemBucket::aliased_fill()
   // now that we have them all registered
   attach_all_coeffs_();
 
+  for (SolverBucket_it s_it = solvers_begin(); s_it != solvers_end(); s_it++)
+  {
+    (*(*s_it).second).initialize_matrices();
+  }
+
 }
 
 void SpudSystemBucket::base_fill_()
