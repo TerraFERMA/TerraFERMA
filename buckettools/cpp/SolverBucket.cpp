@@ -109,12 +109,12 @@ void SolverBucket::initialize_matrices()
 
   if (type()=="SNES") 
   {
-    ctx_.linear      = linear_;
-    ctx_.bilinear    = bilinear_;
-    ctx_.bilinearpc  = bilinearpc_;
-    ctx_.bcs         = (*system_).bcs();
-    ctx_.function    = (*system_).function();
-    ctx_.oldfuncion  = (*system_).oldfunction();
+    ctx_.linear       = linear_;
+    ctx_.bilinear     = bilinear_;
+    ctx_.bilinearpc   = bilinearpc_;
+    ctx_.bcs          = (*system_).bcs();
+    ctx_.function     = (*system_).function();
+    ctx_.oldfunction  = (*system_).oldfunction();
   }
 
   assemble_bilinearforms(true);
@@ -159,10 +159,10 @@ void SolverBucket::solve()
   {
 
     uint it = 0;
-    double aerror = Res.norm("l2");
+    double aerror = (*res_).norm("l2");
     double aerror0 = aerror;
     double rerror = aerror/aerror0;
-    dolfin::info(dolfin::INFO, "%u Error (absolute, relative) = %g, %g\n", it, aerror, rerror);
+    dolfin::info("%u Error (absolute, relative) = %g, %g\n", it, aerror, rerror);
 
     while (it < minits_ || (it < maxits_ && rerror > rtol_ && aerror > atol_))
     {
@@ -172,7 +172,7 @@ void SolverBucket::solve()
       dolfin::assemble(*rhs_, *linear_);
       for(std::vector<BoundaryCondition_ptr>::const_iterator bc = (*system_).bcs_begin(); bc != (*system_).bcs_end(); bc++)
       {
-        (*bc).apply(*matrix_, *rhs_);
+        (*(*bc)).apply(*matrix_, *rhs_);
       }
 
       if (bilinearpc_)
@@ -181,7 +181,7 @@ void SolverBucket::solve()
         dolfin::assemble(*matrixpc_, *bilinearpc_);
         for(std::vector<BoundaryCondition_ptr>::const_iterator bc = (*system_).bcs_begin(); bc != (*system_).bcs_end(); bc++)
         {
-          (*bc).apply(*matrixpc_, *rhs_);
+          (*(*bc)).apply(*matrixpc_, *rhs_);
         }
 
         perr = KSPSetOperators(ksp_, *(*matrix_).mat(), *(*matrixpc_).mat(), SAME_NONZERO_PATTERN); CHKERRV(perr);
@@ -191,7 +191,7 @@ void SolverBucket::solve()
         perr = KSPSetOperators(ksp_, *(*matrix_).mat(), *(*matrix_).mat(), SAME_NONZERO_PATTERN); CHKERRV(perr);
       }
 
-      ierr = KSPSetUp(ksp); CHKERRQ(ierr);
+      perr = KSPSetUp(ksp_); CHKERRV(perr);
 
       *work_ = (*(*system_).function()).vector();
       perr = KSPSolve(ksp_, *(*rhs_).vec(), *(*work_).vec());  CHKERRV(perr);
@@ -201,12 +201,12 @@ void SolverBucket::solve()
       dolfin::assemble(*res_, *residual_);
       for(std::vector<BoundaryCondition_ptr>::const_iterator bc = (*system_).bcs_begin(); bc != (*system_).bcs_end(); bc++)
       {
-        (*bc).apply(*res_, (*(*system_).function()).vector());
+        (*(*bc)).apply(*res_, (*(*system_).function()).vector());
       }
 
       aerror = (*res_).norm("l2");
       rerror = aerror/aerror0;
-      dolfin::info(dolfin::INFO, "%u Error (absolute, relative) = %g, %g\n", it, aerror, rerror);
+      dolfin::info("%u Error (absolute, relative) = %g, %g\n", it, aerror, rerror);
 
     }
 
@@ -233,7 +233,7 @@ void SolverBucket::assemble_bilinearforms(const bool &reset_tensor)
     {
       matrixpc_.reset(new dolfin::PETScMatrix);
     }
-    dolfin::assemble(*matrixpc_, *bilinearpc, reset_tensor);
+    dolfin::assemble(*matrixpc_, *bilinearpc_, reset_tensor);
 //    for(std::vector<BoundaryCondition_ptr>::const_iterator bc = (*system_).bcs_begin(); bc != (*system_).bcs_end(); bc++)
 //    {
 //      (*bc).apply(*res_, (*(*system_).function()))

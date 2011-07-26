@@ -216,7 +216,7 @@ int_SystemBucket_const_it Bucket::orderedsystems_end() const
   return orderedsystems_.end();
 }
 
-void solve()
+void Bucket::solve()
 {
   for (int_SystemBucket_const_it s_it = orderedsystems_begin(); s_it != orderedsystems_end(); s_it++)
   {

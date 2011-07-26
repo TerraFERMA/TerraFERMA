@@ -370,7 +370,7 @@ int_SolverBucket_const_it SystemBucket::orderedsolvers_end() const
   return orderedsolvers_.end();
 }
 
-void solve()
+void SystemBucket::solve()
 {
   for (int_SolverBucket_const_it s_it = orderedsolvers_begin(); s_it != orderedsolvers_end(); s_it++)
   {
@@ -399,12 +399,12 @@ std::vector<BoundaryCondition_ptr>::const_iterator SystemBucket::bcs_begin() con
   return bcs_.begin();
 }
 
-std::vector<BoundaryCondition_ptr>::iterator SystemBucket::bcs_begin()
+std::vector<BoundaryCondition_ptr>::iterator SystemBucket::bcs_end()
 {
   return bcs_.end();
 }
 
-std::vector<BoundaryCondition_ptr>::const_iterator SystemBucket::bcs_begin() const
+std::vector<BoundaryCondition_ptr>::const_iterator SystemBucket::bcs_end() const
 {
   return bcs_.end();
 }

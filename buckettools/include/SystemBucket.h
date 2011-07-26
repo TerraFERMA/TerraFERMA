@@ -158,6 +158,14 @@ namespace buckettools
 
     int_SolverBucket_const_it orderedsolvers_end() const;
 
+    std::vector<BoundaryCondition_ptr>::iterator bcs_begin();
+
+    std::vector<BoundaryCondition_ptr>::const_iterator bcs_begin() const;
+
+    std::vector<BoundaryCondition_ptr>::iterator bcs_end();
+
+    std::vector<BoundaryCondition_ptr>::const_iterator bcs_end() const;
+
     const std::vector< BoundaryCondition_ptr > bcs() const
     { return bcs_; }
     
@@ -202,6 +210,8 @@ namespace buckettools
 
     // Print a description of the solvers contained in the system
     virtual const std::string solvers_str(int indent) const;
+
+    void solve();
 
     // Return the system name
     const std::string name() const

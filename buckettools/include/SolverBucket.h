@@ -82,6 +82,8 @@ namespace buckettools
 
     void attach_form_coeffs();
 
+    void initialize_matrices();
+
     void assemble_linearforms(const bool &reset_tensor);
 
     void assemble_bilinearforms(const bool &reset_tensor);
