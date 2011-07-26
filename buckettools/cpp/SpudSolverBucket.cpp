@@ -54,6 +54,12 @@ void SpudSolverBucket::fill()
     buffer.str(""); buffer << (*system_).name() << "_" << name() << "_";
     perr = SNESSetOptionsPrefix(snes_, buffer.str().c_str()); CHKERRV(perr);
 
+    std::string snestype;
+    buffer.str(""); buffer << optionpath() << "/type/snes_type/name";
+    serr = Spud::get_option(buffer.str(), snestype); spud_err(buffer.str(), serr);
+
+    perr = SNESSetType(snes_, snestype.c_str()); CHKERRV(perr);
+
     perr = SNESSetTolerances(snes_, atol_, rtol_, stol_, maxits_, maxfes_); CHKERRV(perr);
 
     // we always have at least one ksp
@@ -61,6 +67,8 @@ void SpudSolverBucket::fill()
     
     buffer.str(""); buffer << optionpath() << "/type/linear_solver";
     ksp_fill_(buffer.str(), ksp_);
+
+    perr = SNESView(snes_, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);
   }
   else if (type()=="Picard")
   {
@@ -71,6 +79,8 @@ void SpudSolverBucket::fill()
 
     buffer.str(""); buffer << optionpath() << "/type/linear_solver";
     ksp_fill_(buffer.str(), ksp_);
+
+    perr = KSPView(ksp_, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);
   }
   else
   {
@@ -109,6 +119,24 @@ void SpudSolverBucket::ksp_fill_(const std::string &optionpath, KSP &ksp,
     PetscInt maxits;
     buffer.str(""); buffer << optionpath << "/iterative_method/max_iterations";
     serr = Spud::get_option(buffer.str(), maxits); spud_err(buffer.str(), serr);
+
+    buffer.str(""); buffer << optionpath << "/iterative_method/monitors/preconditioned_residual";
+    if (Spud::have_option(buffer.str()))
+    {
+      perr = KSPMonitorSet(ksp, KSPMonitorDefault, PETSC_NULL, PETSC_NULL); CHKERRV(perr);
+    }
+
+    buffer.str(""); buffer << optionpath << "/iterative_method/monitors/true_residual";
+    if (Spud::have_option(buffer.str()))
+    {
+      perr = KSPMonitorSet(ksp, KSPMonitorTrueResidualNorm, PETSC_NULL, PETSC_NULL); CHKERRV(perr);
+    }
+
+    buffer.str(""); buffer << optionpath << "/iterative_method/monitors/preconditioned_residual_graph";
+    if (Spud::have_option(buffer.str()))
+    {
+      perr = KSPMonitorSet(ksp, KSPMonitorLG, PETSC_NULL, PETSC_NULL); CHKERRV(perr);
+    }
 
     perr = KSPSetTolerances(ksp, rtol, atol, dtol, maxits);
   }
@@ -449,10 +477,10 @@ void SpudSolverBucket::base_fill_()
   serr = Spud::get_option(buffer.str(), rtol_); spud_err(buffer.str(), serr);
 
   buffer.str(""); buffer << optionpath() << "/type/absolute_error";
-  serr = Spud::get_option(buffer.str(), atol_, 0.0); spud_err(buffer.str(), serr);
+  serr = Spud::get_option(buffer.str(), atol_, 1.e-50); spud_err(buffer.str(), serr);
 
   buffer.str(""); buffer << optionpath() << "/type/solution_error";
-  serr = Spud::get_option(buffer.str(), stol_, 0.0); spud_err(buffer.str(), serr);
+  serr = Spud::get_option(buffer.str(), stol_, 1.e-8); spud_err(buffer.str(), serr);
 
   buffer.str(""); buffer << optionpath() << "/type/max_iterations";
   serr = Spud::get_option(buffer.str(), maxits_); spud_err(buffer.str(), serr);

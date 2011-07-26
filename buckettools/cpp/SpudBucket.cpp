@@ -129,8 +129,6 @@ void SpudBucket::systems_fill_(const std::string &optionpath)
   (*system).fill();
 
   register_system(system, (*system).name());
-  
-  std::cout << (*system).str();
 }
 
 // Register a pointer to a DOLFIN mesh (and an optionpath)

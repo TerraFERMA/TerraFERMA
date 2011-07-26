@@ -95,6 +95,28 @@ snes =
       attribute rank { "1" },
       form
     }?,
+    (
+      element snes_type {
+        attribute name { "ls" },
+        empty
+      }|
+      element snes_type {
+        attribute name { "tr" },
+        empty
+      }|
+      element snes_type {
+        attribute name { "python" },
+        empty
+      }|
+      element snes_type {
+        attribute name { "test" },
+        empty
+      }|
+      element snes_type {
+        attribute name { xsd:string },
+        empty
+      }
+    ),
     element relative_error {
       real
     },
@@ -107,7 +129,7 @@ snes =
     element max_iterations {
       integer
     },
-    element min_function_evaluations {
+    element max_function_evaluations {
       integer
     }?,
     element linear_solver {
@@ -473,7 +495,43 @@ iterative_solver_options =
       ## before giving up.
       element max_iterations {
          integer
-      }
+      },
+      ## Options to give extra information for each iteration of the
+      ## the solve. Some of those may really slow down your computation!
+      element monitors {
+         ## Prints the preconditioned residual for each iteration of the solve.
+         ## This is the error estimation PETSc uses during the solve.
+         element preconditioned_residual {
+            empty
+         }?,
+         ## Prints the "true" residual for each iteration of the solve,
+         ## i.e. PETSc computes the L2-norm of r=A-bx. This may mean
+         ## PETSc has to do extra computations.
+         element true_residual {
+            empty
+         }?,
+         ## Draws a graph over the convergence of the preconditioned residual
+         ## during the solve. This option only works for systems where PETSc
+         ## has been linked with the X library.
+         element preconditioned_residual_graph {
+            empty
+         }?
+#         ## Prints the error by computing the difference with the provided
+#         ## exact solution each time step.
+#         element true_error {
+#            ## Give the field name of the field that contains the exact
+#            ## solution to be compared with each iteration
+#            attribute coefficient {
+#               attribute name { xsd:string },
+#               empty
+#            }
+#         }?,
+#         ## Writes out the approximate solution to a vtu each iteration.
+#         ## <b>This may create a large number of vtus!</b>
+#         element iteration_vtus {
+#            empty
+#         }?
+     }
    )
 
 generic_solver_options =

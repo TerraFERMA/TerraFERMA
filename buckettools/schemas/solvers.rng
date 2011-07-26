@@ -141,6 +141,38 @@
         <ref name="form"/>
       </element>
     </optional>
+    <choice>
+      <element name="snes_type">
+        <attribute name="name">
+          <value>ls</value>
+        </attribute>
+        <empty/>
+      </element>
+      <element name="snes_type">
+        <attribute name="name">
+          <value>tr</value>
+        </attribute>
+        <empty/>
+      </element>
+      <element name="snes_type">
+        <attribute name="name">
+          <value>python</value>
+        </attribute>
+        <empty/>
+      </element>
+      <element name="snes_type">
+        <attribute name="name">
+          <value>test</value>
+        </attribute>
+        <empty/>
+      </element>
+      <element name="snes_type">
+        <attribute name="name">
+          <data type="string"/>
+        </attribute>
+        <empty/>
+      </element>
+    </choice>
     <element name="relative_error">
       <ref name="real"/>
     </element>
@@ -158,7 +190,7 @@
       <ref name="integer"/>
     </element>
     <optional>
-      <element name="min_function_evaluations">
+      <element name="max_function_evaluations">
         <ref name="integer"/>
       </element>
     </optional>
@@ -551,6 +583,52 @@ The solver finishes if the solutions diverge by more than this value.</a:documen
       <a:documentation>Maximum number of iterations allowed in the linear solver
 before giving up.</a:documentation>
       <ref name="integer"/>
+    </element>
+    <element name="monitors">
+      <a:documentation>Options to give extra information for each iteration of the
+the solve. Some of those may really slow down your computation!</a:documentation>
+      <group>
+        <optional>
+          <element name="preconditioned_residual">
+            <a:documentation>Prints the preconditioned residual for each iteration of the solve.
+This is the error estimation PETSc uses during the solve.</a:documentation>
+            <empty/>
+          </element>
+        </optional>
+        <optional>
+          <element name="true_residual">
+            <a:documentation>Prints the "true" residual for each iteration of the solve,
+i.e. PETSc computes the L2-norm of r=A-bx. This may mean
+PETSc has to do extra computations.</a:documentation>
+            <empty/>
+          </element>
+        </optional>
+        <optional>
+          <element name="preconditioned_residual_graph">
+            <a:documentation>Draws a graph over the convergence of the preconditioned residual
+during the solve. This option only works for systems where PETSc
+has been linked with the X library.</a:documentation>
+            <empty/>
+          </element>
+        </optional>
+      </group>
+      <!--
+                ## Prints the error by computing the difference with the provided
+                ## exact solution each time step.
+                element true_error {
+                   ## Give the field name of the field that contains the exact
+                   ## solution to be compared with each iteration
+                   attribute coefficient {
+                      attribute name { xsd:string },
+                      empty
+                   }
+                }?,
+                ## Writes out the approximate solution to a vtu each iteration.
+                ## <b>This may create a large number of vtus!</b>
+                element iteration_vtus {
+                   empty
+                }?
+      -->
     </element>
   </define>
   <define name="generic_solver_options">

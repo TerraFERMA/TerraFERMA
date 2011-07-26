@@ -139,8 +139,6 @@ void SolverBucket::initialize_matrices()
       perr = SNESSetJacobian(snes_, *(*matrix_).mat(), *(*matrix_).mat(), FormJacobian, (void *) &ctx_); CHKERRV(perr);
     }
 
-    perr = SNESView(snes_, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);
-
   }
 
 }
@@ -153,6 +151,7 @@ void SolverBucket::solve()
   {
     *work_ = (*(*system_).function()).vector();
     perr = SNESSolve(snes_, PETSC_NULL, *(*work_).vec());
+    perr = SNESView(snes_, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);
     (*(*system_).function()).vector() = *work_;
   }
   else if (type()=="Picard")
