@@ -91,19 +91,11 @@
       <ufl_symbol>
         <string_value lines="1">f1</string_value>
       </ufl_symbol>
-      <type name="Function">
+      <type name="Constant">
         <rank name="Scalar" rank="0">
-          <element name="P0">
-            <family>
-              <string_value>DG</string_value>
-            </family>
-            <degree>
-              <integer_value rank="0">0</integer_value>
-            </degree>
-          </element>
           <value name="WholeMesh">
             <constant>
-              <real_value rank="0">10.0</real_value>
+              <real_value rank="0">1000.0</real_value>
             </constant>
           </value>
         </rank>
@@ -114,16 +106,8 @@
       <ufl_symbol>
         <string_value lines="1">f2</string_value>
       </ufl_symbol>
-      <type name="Function">
+      <type name="Constant">
         <rank name="Vector" rank="1">
-          <element name="P0">
-            <family>
-              <string_value>DG</string_value>
-            </family>
-            <degree>
-              <integer_value rank="0">0</integer_value>
-            </degree>
-          </element>
           <value name="WholeMesh">
             <constant name="dim">
               <real_value shape="2" dim1="dim" rank="1">2000.0 3000.0</real_value>
