@@ -498,7 +498,7 @@ iterative_solver_options =
       ## Divergence error bound
       ##
       ## The solver finishes if the solutions diverge by more than this value.
-      element absolute_error {
+      element divergence_error {
          real
       }?,
       ## Maximum number of iterations allowed in the linear solver

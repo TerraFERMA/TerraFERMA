@@ -151,6 +151,9 @@ void SolverBucket::solve()
   {
     *work_ = (*(*system_).function()).vector();
     perr = SNESSolve(snes_, PETSC_NULL, *(*work_).vec()); CHKERRV(perr);
+    SNESConvergedReason reason;
+    perr = SNESGetConvergedReason(snes_, &reason); CHKERRV(perr);
+    std::cout << "SNESConvergedReason " << reason << std::endl;
     (*(*system_).function()).vector() = *work_;
   }
   else if (type()=="Picard")
@@ -166,8 +169,8 @@ void SolverBucket::solve()
     {
       it++;
 
-      dolfin::assemble(*matrix_, *bilinear_);
-      dolfin::assemble(*rhs_, *linear_);
+      dolfin::assemble(*matrix_, *bilinear_, false);
+      dolfin::assemble(*rhs_, *linear_, false);
       for(std::vector<BoundaryCondition_ptr>::const_iterator bc = (*system_).bcs_begin(); bc != (*system_).bcs_end(); bc++)
       {
         (*(*bc)).apply(*matrix_, *rhs_);
@@ -176,7 +179,7 @@ void SolverBucket::solve()
       if (bilinearpc_)
       {
         assert(matrixpc_);
-        dolfin::assemble(*matrixpc_, *bilinearpc_);
+        dolfin::assemble(*matrixpc_, *bilinearpc_, false);
         for(std::vector<BoundaryCondition_ptr>::const_iterator bc = (*system_).bcs_begin(); bc != (*system_).bcs_end(); bc++)
         {
           (*(*bc)).apply(*matrixpc_, *rhs_);
@@ -196,7 +199,7 @@ void SolverBucket::solve()
       (*(*system_).function()).vector() = *work_;
 
       assert(residual_);
-      dolfin::assemble(*res_, *residual_);
+      dolfin::assemble(*res_, *residual_, false);
       for(std::vector<BoundaryCondition_ptr>::const_iterator bc = (*system_).bcs_begin(); bc != (*system_).bcs_end(); bc++)
       {
         (*(*bc)).apply(*res_, (*(*system_).function()).vector());

@@ -203,7 +203,7 @@ the SNES solve. Some of those may really slow down your computation!</a:document
         </element>
       </optional>
       <optional>
-        <element name="solution">
+        <element name="solution_graph">
           <empty/>
         </element>
       </optional>
@@ -586,7 +586,7 @@ The solver finishes if the preconditioned error becomes smaller than this value.
       </element>
     </optional>
     <optional>
-      <element name="absolute_error">
+      <element name="divergence_error">
         <a:documentation>Divergence error bound
 
 The solver finishes if the solutions diverge by more than this value.</a:documentation>
