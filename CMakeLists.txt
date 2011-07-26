@@ -33,6 +33,14 @@ set(EXECUTABLE "poissonbucket" CACHE STRING
 set(BUCKETTOOLS_DIR "${PROJECT_SOURCE_DIR}/buckettools" CACHE PATH
      "Location of buckettools." FORCE)
 
+find_package(PythonLibs)
+
+if(NOT ${PYTHONLIBS_FOUND})
+  message(FATAL_ERROR "Could not find python libraries.")
+endif(NOT ${PYTHONLIBS_FOUND})
+
+include_directories(${PYTHON_INCLUDE_PATH})
+
 set(OPTIONSFILE CACHE FILEPATH "Choose the input file.")
 
 if(NOT IS_ABSOLUTE ${OPTIONSFILE})
@@ -50,14 +58,6 @@ endif(NOT EXISTS ${OPTIONSFILE})
 add_subdirectory(${BUCKETTOOLS_DIR} "buckettools")
 
 include_directories("${BUCKETTOOLS_DIR}/include")
-
-find_package(PythonLibs)
-
-if(NOT ${PYTHONLIBS_FOUND})
-  message(FATAL_ERROR "Could not find python libraries.")
-endif(NOT ${PYTHONLIBS_FOUND})
-
-include_directories(${PYTHON_INCLUDE_PATH})
 
 add_executable(${EXECUTABLE} "${PROJECT_SOURCE_DIR}/cpp/main.cpp")
 
