@@ -136,7 +136,7 @@ void SpudFunctionBucket::nonaliased_base_fill_(const std::string &optionpath)
   {
     // These will have just been set to defaults in this case, which may not be right
     // - only coefficients can end up in here so only consider their optionpaths
-    buffer.str(""); buffer << optionpath << "/type/value/constant";
+    buffer.str(""); buffer << optionpath << "/type/rank/value/constant";
     if (rank_=="Vector")
     {
       std::vector< int > constant_shape;
