@@ -25,9 +25,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${DOLFIN_CXX_FLAGS}")
 # Include directories
 include_directories(${DOLFIN_INCLUDE_DIRS} ${DOLFIN_3RD_PARTY_INCLUDE_DIRS})
 
-project(poissonbucket)
+project(basebucket)
 
-set(EXECUTABLE "poissonbucket" CACHE STRING
+set(EXECUTABLE "basebucket" CACHE STRING
      "The name of the executable" FORCE)
 
 set(BUCKETTOOLS_DIR "${PROJECT_SOURCE_DIR}/buckettools" CACHE PATH
