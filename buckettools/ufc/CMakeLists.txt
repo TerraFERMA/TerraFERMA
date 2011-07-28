@@ -14,7 +14,7 @@ add_custom_command(
  
 # create a custom target so we can make the project depend on this
 add_custom_target(
-   genufc
+   ${PREFIX}genufc
    DEPENDS ${PROJECT_BINARY_DIR}/SystemsWrapper.cpp
    )
 
@@ -23,9 +23,9 @@ include_directories("${PROJECT_SOURCE_DIR}/../include" ${PROJECT_BINARY_DIR})
 # include python
 include_directories(${PYTHON_INCLUDE_PATH})
 # generate a library - really the main point of this whole process
-add_library(buckettools_ufc ${PROJECT_BINARY_DIR}/SystemsWrapper.cpp )
+add_library(${PREFIX}buckettools_ufc ${PROJECT_BINARY_DIR}/SystemsWrapper.cpp )
 # tell cmake that this file doesn't exist until build time
 set_source_files_properties(${PROJECT_BINARY_DIR}/SystemsWrapper.cpp PROPERTIES GENERATED 1)
 # the project depends on this target
-add_dependencies(buckettools_ufc genufc)
+add_dependencies(${PREFIX}buckettools_ufc ${PREFIX}genufc)
 
