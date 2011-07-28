@@ -63,7 +63,7 @@
           </initial_condition>
           <boundary_condition name="Sides">
             <boundary_ids>
-              <integer_value shape="2" rank="1">1 2</integer_value>
+              <integer_value shape="2" rank="1">2 1</integer_value>
             </boundary_ids>
             <sub_components name="All">
               <type name="Dirichlet">
