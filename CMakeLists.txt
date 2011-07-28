@@ -61,7 +61,9 @@ include_directories("${BUCKETTOOLS_DIR}/include")
 
 add_executable(${EXECUTABLE} "${PROJECT_SOURCE_DIR}/cpp/main.cpp")
 
-set (EXTRA_LIBS ${EXTRA_LIBS} buckettools)
+link_directories("${BUCKETTOOLS_DIR}/cpp" "${BUCKETTOOLS_DIR}/ufc")
+
+set (EXTRA_LIBS ${EXTRA_LIBS} buckettools_cpp buckettools_ufc)
 
 target_link_libraries(${EXECUTABLE} ${DOLFIN_LIBRARIES} ${DOLFIN_3RD_PARTY_LIBRARIES} ${EXTRA_LIBS} /usr/lib/libspud.a ${PYTHON_LIBRARIES})
 
