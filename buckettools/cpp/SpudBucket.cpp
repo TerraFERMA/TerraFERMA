@@ -3,6 +3,7 @@
 #include "SpudSystemBucket.h"
 #include "SpudBase.h"
 #include "BoostTypes.h"
+#include "BucketDolfinBase.h"
 //#include "GenericDetectors.h"
 //#include "PointDetectors.h"
 //#include "PythonDetectors.h"
@@ -92,30 +93,219 @@ void SpudBucket::meshes_fill_(const std::string &optionpath)
   buffer.str(""); buffer << optionpath << "/name";
   serr = Spud::get_option(buffer.str(), meshname); spud_err(buffer.str(), serr);
   
-  // Get the name of the mesh file
-  std::string basename;
-  buffer.str(""); buffer << optionpath << "/file";
-  serr = Spud::get_option(buffer.str(), basename); spud_err(buffer.str(), serr);
-  
-  // Use DOLFIN to read in the mesh
-  std::stringstream filename;
-  filename.str(""); filename << basename << ".xml";
-  Mesh_ptr mesh(new dolfin::Mesh(filename.str()));
-  (*mesh).init();
+  std::string source;
+  buffer.str(""); buffer << optionpath << "/source/name";
+  serr = Spud::get_option(buffer.str(), source); spud_err(buffer.str(), serr);
 
-  // Register the mesh functions (in dolfin::MeshData associated with the mesh - saves us having a separate set of mesh functions in
-  // the Bucket, which would need to be associated with a particular mesh in the case of multiple meshes!):
-  // - for the edge ids
-  MeshFunction_uint_ptr meshfuncedgeids = (*mesh).data().create_mesh_function("EdgeIDs");
-  filename.str(""); filename << basename << "_edge_subdomain.xml";
-  dolfin::MeshFunction<dolfin::uint> edgeids(*mesh, filename.str());
-  *meshfuncedgeids = edgeids;
+  Mesh_ptr mesh;
 
-  // - for the cell ids
-  MeshFunction_uint_ptr meshfunccellids = (*mesh).data().create_mesh_function("CellIDs");
-  filename.str(""); filename << basename << "_cell_subdomain.xml";
-  dolfin::MeshFunction<dolfin::uint> cellids(*mesh, filename.str());
-  *meshfunccellids = cellids;
+  if (source=="File")
+  {
+    // Get the name of the mesh file
+    std::string basename;
+    buffer.str(""); buffer << optionpath << "/source/file";
+    serr = Spud::get_option(buffer.str(), basename); spud_err(buffer.str(), serr);
+    
+    // Use DOLFIN to read in the mesh
+    std::stringstream filename;
+    filename.str(""); filename << basename << ".xml";
+    mesh.reset(new dolfin::Mesh(filename.str()));
+    (*mesh).init();
+
+    // Register the mesh functions (in dolfin::MeshData associated with the mesh - saves us having a separate set of mesh functions in
+    // the Bucket, which would need to be associated with a particular mesh in the case of multiple meshes!):
+    // - for the edge ids
+    MeshFunction_uint_ptr meshfuncedgeids = (*mesh).data().create_mesh_function("EdgeIDs");
+    filename.str(""); filename << basename << "_edge_subdomain.xml";
+    dolfin::MeshFunction<dolfin::uint> edgeids(*mesh, filename.str());
+    *meshfuncedgeids = edgeids;
+
+    // - for the cell ids
+    MeshFunction_uint_ptr meshfunccellids = (*mesh).data().create_mesh_function("CellIDs");
+    filename.str(""); filename << basename << "_cell_subdomain.xml";
+    dolfin::MeshFunction<dolfin::uint> cellids(*mesh, filename.str());
+    *meshfunccellids = cellids;
+  }
+  else if (source=="UnitInterval")
+  {
+    int cells;
+    buffer.str(""); buffer << optionpath << "/source/number_cells";
+    serr = Spud::get_option(buffer.str(), cells); spud_err(buffer.str(), serr);
+    
+    mesh.reset( new dolfin::UnitInterval(cells) );
+
+    MeshFunction_uint_ptr meshfuncedgeids = (*mesh).data().create_mesh_function("EdgeIDs", 0);
+    Side left(0, 0.0);
+    Side right(0, 1.0);
+    (*meshfuncedgeids).set_all(0);
+    left.mark(*meshfuncedgeids, 1);
+    right.mark(*meshfuncedgeids, 2);
+  }
+  else if (source=="Interval")
+  {
+    double leftx;
+    buffer.str(""); buffer << optionpath << "/source/left";
+    serr = Spud::get_option(buffer.str(), leftx); spud_err(buffer.str(), serr);
+
+    double rightx;
+    buffer.str(""); buffer << optionpath << "/source/right";
+    serr = Spud::get_option(buffer.str(), rightx); spud_err(buffer.str(), serr);
+
+    int cells;
+    buffer.str(""); buffer << optionpath << "/source/number_cells";
+    serr = Spud::get_option(buffer.str(), cells); spud_err(buffer.str(), serr);
+    
+    mesh.reset( new dolfin::Interval(cells, leftx, rightx) );
+
+    MeshFunction_uint_ptr meshfuncedgeids = (*mesh).data().create_mesh_function("EdgeIDs", 0);
+    Side left(0, leftx);
+    Side right(0, rightx);
+    (*meshfuncedgeids).set_all(0);
+    left.mark(*meshfuncedgeids, 1);
+    right.mark(*meshfuncedgeids, 2);
+  }
+  else if (source=="UnitSquare")
+  {
+    std::vector<int> cells;
+    buffer.str(""); buffer << optionpath << "/source/number_cells";
+    serr = Spud::get_option(buffer.str(), cells); spud_err(buffer.str(), serr);
+    
+    std::string diagonal;
+    buffer.str(""); buffer << optionpath << "/source/diagonal";
+    serr = Spud::get_option(buffer.str(), diagonal); spud_err(buffer.str(), serr);
+    
+    mesh.reset( new dolfin::UnitSquare(cells[0], cells[1], diagonal) );
+
+    MeshFunction_uint_ptr meshfuncedgeids = (*mesh).data().create_mesh_function("EdgeIDs", 1);
+    Side left(0, 0.0);
+    Side right(0, 1.0);
+    Side bottom(1, 0.0);
+    Side top(1, 1.0);
+    (*meshfuncedgeids).set_all(0);
+    left.mark(*meshfuncedgeids, 1);
+    right.mark(*meshfuncedgeids, 2);
+    bottom.mark(*meshfuncedgeids, 3);
+    top.mark(*meshfuncedgeids, 4);
+  }
+  else if (source=="Rectangle")
+  {
+    std::vector<double> lowerleft;
+    buffer.str(""); buffer << optionpath << "/source/lower_left";
+    serr = Spud::get_option(buffer.str(), lowerleft); spud_err(buffer.str(), serr);
+    
+    std::vector<double> upperright;
+    buffer.str(""); buffer << optionpath << "/source/upper_right";
+    serr = Spud::get_option(buffer.str(), upperright); spud_err(buffer.str(), serr);
+    
+    std::vector<int> cells;
+    buffer.str(""); buffer << optionpath << "/source/number_cells";
+    serr = Spud::get_option(buffer.str(), cells); spud_err(buffer.str(), serr);
+    
+    std::string diagonal;
+    buffer.str(""); buffer << optionpath << "/source/diagonal";
+    serr = Spud::get_option(buffer.str(), diagonal); spud_err(buffer.str(), serr);
+    
+    mesh.reset( new dolfin::Rectangle(lowerleft[0], lowerleft[1], 
+                                      upperright[0], upperright[1], 
+                                      cells[0], cells[1], diagonal) );
+
+    MeshFunction_uint_ptr meshfuncedgeids = (*mesh).data().create_mesh_function("EdgeIDs", 1);
+    Side left(0, lowerleft[0]);
+    Side right(0, upperright[0]);
+    Side bottom(1, lowerleft[1]);
+    Side top(1, upperright[1]);
+    (*meshfuncedgeids).set_all(0);
+    left.mark(*meshfuncedgeids, 1);
+    right.mark(*meshfuncedgeids, 2);
+    bottom.mark(*meshfuncedgeids, 3);
+    top.mark(*meshfuncedgeids, 4);
+  }
+  else if (source=="UnitCircle")
+  {
+    int cells;
+    buffer.str(""); buffer << optionpath << "/source/number_cells";
+    serr = Spud::get_option(buffer.str(), cells); spud_err(buffer.str(), serr);
+    
+    std::string diagonal;
+    buffer.str(""); buffer << optionpath << "/source/diagonal";
+    serr = Spud::get_option(buffer.str(), diagonal); spud_err(buffer.str(), serr);
+    
+    std::string transformation;
+    buffer.str(""); buffer << optionpath << "/source/transformation";
+    serr = Spud::get_option(buffer.str(), transformation); spud_err(buffer.str(), serr);
+    
+    mesh.reset( new dolfin::UnitCircle(cells, diagonal, transformation) );
+
+  }
+  else if (source=="UnitCube")
+  {
+    std::vector<int> cells;
+    buffer.str(""); buffer << optionpath << "/source/number_cells";
+    serr = Spud::get_option(buffer.str(), cells); spud_err(buffer.str(), serr);
+    
+    mesh.reset( new dolfin::UnitCube(cells[0], cells[1], cells[2]) );
+
+    MeshFunction_uint_ptr meshfuncedgeids = (*mesh).data().create_mesh_function("EdgeIDs", 2);
+    Side left(0, 0.0);
+    Side right(0, 1.0);
+    Side bottom(2, 0.0);
+    Side top(2, 1.0);
+    Side back(1, 0.0);
+    Side front(1, 1.0);
+    (*meshfuncedgeids).set_all(0);
+    left.mark(*meshfuncedgeids, 1);
+    right.mark(*meshfuncedgeids, 2);
+    bottom.mark(*meshfuncedgeids, 3);
+    top.mark(*meshfuncedgeids, 4);
+    back.mark(*meshfuncedgeids, 5);
+    front.mark(*meshfuncedgeids, 6);
+  }
+  else if (source=="Box")
+  {
+    std::vector<double> lowerbackleft;
+    buffer.str(""); buffer << optionpath << "/source/lower_back_left";
+    serr = Spud::get_option(buffer.str(), lowerbackleft); spud_err(buffer.str(), serr);
+    
+    std::vector<double> upperfrontright;
+    buffer.str(""); buffer << optionpath << "/source/upper_front_right";
+    serr = Spud::get_option(buffer.str(), upperfrontright); spud_err(buffer.str(), serr);
+    
+    std::vector<int> cells;
+    buffer.str(""); buffer << optionpath << "/source/number_cells";
+    serr = Spud::get_option(buffer.str(), cells); spud_err(buffer.str(), serr);
+    
+    mesh.reset( new dolfin::Box(lowerbackleft[0], lowerbackleft[1], lowerbackleft[2],
+                                upperfrontright[0], upperfrontright[1], upperfrontright[2], 
+                                cells[0], cells[1], cells[2]) );
+
+    MeshFunction_uint_ptr meshfuncedgeids = (*mesh).data().create_mesh_function("EdgeIDs", 2);
+    Side left(0, lowerbackleft[0]);
+    Side right(0, upperfrontright[0]);
+    Side bottom(2, lowerbackleft[2]);
+    Side top(2, upperfrontright[2]);
+    Side back(1, lowerbackleft[1]);
+    Side front(1, upperfrontright[1]);
+    (*meshfuncedgeids).set_all(0);
+    left.mark(*meshfuncedgeids, 1);
+    right.mark(*meshfuncedgeids, 2);
+    bottom.mark(*meshfuncedgeids, 3);
+    top.mark(*meshfuncedgeids, 4);
+    back.mark(*meshfuncedgeids, 5);
+    front.mark(*meshfuncedgeids, 6);
+  }
+  else if (source=="UnitSphere")
+  {
+    int cells;
+    buffer.str(""); buffer << optionpath << "/source/number_cells";
+    serr = Spud::get_option(buffer.str(), cells); spud_err(buffer.str(), serr);
+    
+    mesh.reset( new dolfin::UnitSphere(cells) );
+
+  }
+  else
+  {
+    dolfin::error("Unknown mesh source.");
+  }
 
   // Put the mesh into the bucket
   register_mesh(mesh, meshname, optionpath);
