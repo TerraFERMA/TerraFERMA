@@ -25,12 +25,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${DOLFIN_CXX_FLAGS}")
 # Include directories
 include_directories(${DOLFIN_INCLUDE_DIRS} ${DOLFIN_3RD_PARTY_INCLUDE_DIRS})
 
-project(basebucket)
+project(poisson)
 
-set(EXECUTABLE "basebucket" CACHE STRING
+set(EXECUTABLE "poisson" CACHE STRING
      "The name of the executable" FORCE)
 
-set(BUCKETTOOLS_DIR "${PROJECT_SOURCE_DIR}/buckettools" CACHE PATH
+set(BUCKETTOOLS_DIR "${PROJECT_SOURCE_DIR}/../../buckettools" CACHE PATH
      "Location of buckettools." FORCE)
 
 find_package(PythonLibs)
@@ -41,7 +41,7 @@ endif(NOT ${PYTHONLIBS_FOUND})
 
 include_directories(${PYTHON_INCLUDE_PATH})
 
-set(OPTIONSFILE CACHE FILEPATH "Choose the input file.")
+set(OPTIONSFILE "${PROJECT_SOURCE_DIR}/poisson.bml" CACHE FILEPATH "Choose the input file.")
 
 if(NOT IS_ABSOLUTE ${OPTIONSFILE})
   set(OPTIONSFILE ${PROJECT_BINARY_DIR}/${OPTIONSFILE})
@@ -59,7 +59,7 @@ add_subdirectory(${BUCKETTOOLS_DIR} "buckettools")
 
 include_directories("${BUCKETTOOLS_DIR}/include")
 
-add_executable(${EXECUTABLE} "${PROJECT_SOURCE_DIR}/cpp/main.cpp")
+add_executable(${EXECUTABLE} "${PROJECT_SOURCE_DIR}/../../cpp/main.cpp")
 
 set (EXTRA_LIBS ${EXTRA_LIBS} buckettools_cpp buckettools_ufc)
 
