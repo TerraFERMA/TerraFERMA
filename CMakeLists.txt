@@ -60,7 +60,7 @@ add_subdirectory(${BUCKETTOOLS_DIR} "buckettools")
 include_directories("${BUCKETTOOLS_DIR}/include")
 
 #include where to find spud
-include_directories(/usr/include)
+include_directories("/usr/include")
 
 add_executable(${EXECUTABLE} "${PROJECT_SOURCE_DIR}/cpp/main.cpp")
 
