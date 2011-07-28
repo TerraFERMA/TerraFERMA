@@ -51,6 +51,8 @@ add_custom_target(
 include_directories("${PROJECT_SOURCE_DIR}/../include" ${PROJECT_BINARY_DIR})
 # include python
 include_directories(${PYTHON_INCLUDE_PATH})
+#include where to find spud
+include_directories(/usr/share)
 # generate a library - really the main point of this whole process
 add_library(buckettools_cpp Bucket.cpp SpudBucket.cpp SystemBucket.cpp SpudSystemBucket.cpp
                             FunctionBucket.cpp SpudFunctionBucket.cpp
