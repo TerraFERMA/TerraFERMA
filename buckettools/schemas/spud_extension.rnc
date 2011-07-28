@@ -11,3 +11,36 @@ integer_2_vector =
     comment
   )
 
+real_2_vector =
+  (
+    element integer_value {
+      attribute rank { "1" },
+      attribute dim1 { "2" },
+      attribute shape { xsd:integer },
+      list { xsd:float+ }
+    },
+    comment
+  )
+
+integer_3_vector =
+  (
+    element integer_value {
+      attribute rank { "1" },
+      attribute dim1 { "3" },
+      attribute shape { xsd:integer },
+      list { xsd:integer+ }
+    },
+    comment
+  )
+
+real_3_vector =
+  (
+    element integer_value {
+      attribute rank { "1" },
+      attribute dim1 { "3" },
+      attribute shape { xsd:integer },
+      list { xsd:float+ }
+    },
+    comment
+  )
+

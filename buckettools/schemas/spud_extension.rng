@@ -20,4 +20,61 @@
     </element>
     <ref name="comment"/>
   </define>
+  <define name="real_2_vector">
+    <element name="integer_value">
+      <attribute name="rank">
+        <value>1</value>
+      </attribute>
+      <attribute name="dim1">
+        <value>2</value>
+      </attribute>
+      <attribute name="shape">
+        <data type="integer"/>
+      </attribute>
+      <list>
+        <oneOrMore>
+          <data type="float"/>
+        </oneOrMore>
+      </list>
+    </element>
+    <ref name="comment"/>
+  </define>
+  <define name="integer_3_vector">
+    <element name="integer_value">
+      <attribute name="rank">
+        <value>1</value>
+      </attribute>
+      <attribute name="dim1">
+        <value>3</value>
+      </attribute>
+      <attribute name="shape">
+        <data type="integer"/>
+      </attribute>
+      <list>
+        <oneOrMore>
+          <data type="integer"/>
+        </oneOrMore>
+      </list>
+    </element>
+    <ref name="comment"/>
+  </define>
+  <define name="real_3_vector">
+    <element name="integer_value">
+      <attribute name="rank">
+        <value>1</value>
+      </attribute>
+      <attribute name="dim1">
+        <value>3</value>
+      </attribute>
+      <attribute name="shape">
+        <data type="integer"/>
+      </attribute>
+      <list>
+        <oneOrMore>
+          <data type="float"/>
+        </oneOrMore>
+      </list>
+    </element>
+    <ref name="comment"/>
+  </define>
 </grammar>

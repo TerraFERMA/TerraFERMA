@@ -40,20 +40,193 @@
     </element>
   </define>
   <define name="mesh_options">
-    <element name="file">
-      <a:documentation>Input the basename (i.e. without the .xml) of a DOLFIN format mesh</a:documentation>
-      <ref name="filename"/>
-    </element>
-    <element name="cell">
-      <a:documentation>Choose the type of ufl cell</a:documentation>
-      <!-- a hard coded string_value -->
-      <element name="string_value">
-        <choice>
-          <value>interval</value>
-          <value>triangle</value>
-          <value>tetrahedron</value>
-        </choice>
+    <choice>
+      <element name="source">
+        <attribute name="name">
+          <value>File</value>
+        </attribute>
+        <element name="file">
+          <a:documentation>Input the basename (i.e. without the .xml) of a DOLFIN format mesh</a:documentation>
+          <ref name="filename"/>
+        </element>
+        <element name="cell">
+          <a:documentation>Choose the type of ufl cell</a:documentation>
+          <!-- a hard coded string_value -->
+          <element name="string_value">
+            <choice>
+              <value>interval</value>
+              <value>triangle</value>
+              <value>tetrahedron</value>
+            </choice>
+          </element>
+        </element>
       </element>
-    </element>
+      <element name="source">
+        <attribute name="name">
+          <value>UnitInterval</value>
+        </attribute>
+        <element name="number_cells">
+          <ref name="integer"/>
+        </element>
+        <element name="cell">
+          <element name="string_value">
+            <value>interval</value>
+          </element>
+        </element>
+      </element>
+      <element name="source">
+        <attribute name="name">
+          <value>Interval</value>
+        </attribute>
+        <element name="left">
+          <ref name="real"/>
+        </element>
+        <element name="right">
+          <ref name="real"/>
+        </element>
+        <element name="number_cells">
+          <ref name="integer"/>
+        </element>
+        <element name="cell">
+          <element name="string_value">
+            <value>interval</value>
+          </element>
+        </element>
+      </element>
+      <element name="source">
+        <attribute name="name">
+          <value>UnitSquare</value>
+        </attribute>
+        <element name="number_cells">
+          <ref name="integer_2_vector"/>
+        </element>
+        <element name="diagonal">
+          <!-- a hard coded string_value -->
+          <element name="string_value">
+            <choice>
+              <value>left</value>
+              <value>right</value>
+              <value>right/left</value>
+              <value>left/right</value>
+              <value>crossed</value>
+            </choice>
+          </element>
+        </element>
+        <element name="cell">
+          <element name="string_value">
+            <value>triangle</value>
+          </element>
+        </element>
+      </element>
+      <element name="source">
+        <attribute name="name">
+          <value>Rectangle</value>
+        </attribute>
+        <element name="lower_left">
+          <ref name="real_2_vector"/>
+        </element>
+        <element name="upper_right">
+          <ref name="real_2_vector"/>
+        </element>
+        <element name="number_cells">
+          <ref name="integer_2_vector"/>
+        </element>
+        <element name="diagonal">
+          <!-- a hard coded string_value -->
+          <element name="string_value">
+            <choice>
+              <value>left</value>
+              <value>right</value>
+              <value>right/left</value>
+              <value>left/right</value>
+              <value>crossed</value>
+            </choice>
+          </element>
+        </element>
+        <element name="cell">
+          <element name="string_value">
+            <value>triangle</value>
+          </element>
+        </element>
+      </element>
+      <element name="source">
+        <attribute name="name">
+          <value>UnitCircle</value>
+        </attribute>
+        <element name="number_cells">
+          <ref name="integer"/>
+        </element>
+        <element name="diagonal">
+          <!-- a hard coded string_value -->
+          <element name="string_value">
+            <choice>
+              <value>left</value>
+              <value>right</value>
+              <value>crossed</value>
+            </choice>
+          </element>
+        </element>
+        <element name="transformation">
+          <!-- a hard coded string_value -->
+          <element name="string_value">
+            <choice>
+              <value>maxn</value>
+              <value>sumn</value>
+              <value>rotsumn</value>
+            </choice>
+          </element>
+        </element>
+        <element name="cell">
+          <element name="string_value">
+            <value>triangle</value>
+          </element>
+        </element>
+      </element>
+      <element name="source">
+        <attribute name="name">
+          <value>UnitCube</value>
+        </attribute>
+        <element name="number_cells">
+          <ref name="integer_3_vector"/>
+        </element>
+        <element name="cell">
+          <element name="string_value">
+            <value>tetrahedron</value>
+          </element>
+        </element>
+      </element>
+      <element name="source">
+        <attribute name="name">
+          <value>Box</value>
+        </attribute>
+        <element name="lower_back_left">
+          <ref name="real_3_vector"/>
+        </element>
+        <element name="upper_front_right">
+          <ref name="real_3_vector"/>
+        </element>
+        <element name="number_cells">
+          <ref name="integer_3_vector"/>
+        </element>
+        <element name="cell">
+          <element name="string_value">
+            <value>tetrahedron</value>
+          </element>
+        </element>
+      </element>
+      <element name="source">
+        <attribute name="name">
+          <value>UnitSphere</value>
+        </attribute>
+        <element name="number_cells">
+          <ref name="integer"/>
+        </element>
+        <element name="cell">
+          <element name="string_value">
+            <value>tetrahedron</value>
+          </element>
+        </element>
+      </element>
+    </choice>
   </define>
 </grammar>

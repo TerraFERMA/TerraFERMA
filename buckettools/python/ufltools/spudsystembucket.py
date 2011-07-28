@@ -13,7 +13,7 @@ class SpudSystem(ufltools.systembucket.System):
 
     self.mesh_name        = libspud.get_option(optionpath+"/mesh/name")
     mesh_optionpath  = "/geometry/mesh::"+self.mesh_name
-    self.cell             = libspud.get_option(mesh_optionpath+"/cell")
+    self.cell             = libspud.get_option(mesh_optionpath+"/source/cell")
 
     self.fields = []
     self.coeffs = []

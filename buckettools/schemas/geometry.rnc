@@ -30,16 +30,151 @@ geometry =
 
 mesh_options =
   (
-     ## Input the basename (i.e. without the .xml) of a DOLFIN format mesh
-     element file {
-       filename
-     },
-     ## Choose the type of ufl cell
-     element cell {
-       # a hard coded string_value
-       element string_value {
-         ( "interval" | "triangle" | "tetrahedron" )
+     (
+       element source {
+         attribute name { "File" },
+         ## Input the basename (i.e. without the .xml) of a DOLFIN format mesh
+         element file {
+           filename
+         },
+         ## Choose the type of ufl cell
+         element cell {
+           # a hard coded string_value
+           element string_value {
+             ( "interval" | "triangle" | "tetrahedron" )
+           }
+         }
+       }|
+       element source {
+         attribute name { "UnitInterval" },
+         element number_cells {
+           integer
+         },
+         element cell {
+           element string_value {
+             "interval"
+           }
+         }
+       }|
+       element source {
+         attribute name { "Interval" },
+         element left {
+           real
+         },
+         element right {
+           real
+         },
+         element number_cells {
+           integer
+         },
+         element cell {
+           element string_value {
+             "interval"
+           }
+         }
+       }|
+       element source {
+         attribute name { "UnitSquare" },
+         element number_cells {
+           integer_2_vector
+         },
+         element diagonal {
+           # a hard coded string_value
+           element string_value {
+             ( "left" | "right" | "right/left" | "left/right" | "crossed" )
+           }
+         },
+         element cell {
+           element string_value {
+             "triangle"
+           }
+         }
+       }|
+       element source {
+         attribute name { "Rectangle" },
+         element lower_left {
+           real_2_vector
+         },
+         element upper_right {
+           real_2_vector
+         },
+         element number_cells {
+           integer_2_vector
+         },
+         element diagonal {
+           # a hard coded string_value
+           element string_value {
+             ( "left" | "right" | "right/left" | "left/right" | "crossed" )
+           }
+         },
+         element cell {
+           element string_value {
+             "triangle"
+           }
+         }
+       }|
+       element source {
+         attribute name { "UnitCircle" },
+         element number_cells {
+           integer
+         },
+         element diagonal {
+           # a hard coded string_value
+           element string_value {
+             ( "left" | "right" | "crossed" )
+           }
+         },
+         element transformation {
+           # a hard coded string_value
+           element string_value {
+             ( "maxn" | "sumn" | "rotsumn" )
+           }
+         },
+         element cell {
+           element string_value {
+             "triangle"
+           }
+         }
+       }|
+       element source {
+         attribute name { "UnitCube" },
+         element number_cells {
+           integer_3_vector
+         },
+         element cell {
+           element string_value {
+             "tetrahedron"
+           }
+         }
+       }|
+       element source {
+         attribute name { "Box" },
+         element lower_back_left {
+           real_3_vector
+         },
+         element upper_front_right {
+           real_3_vector
+         },
+         element number_cells {
+           integer_3_vector
+         },
+         element cell {
+           element string_value {
+             "tetrahedron"
+           }
+         }
+       }|
+       element source {
+         attribute name { "UnitSphere" },
+         element number_cells {
+           integer
+         },
+         element cell {
+           element string_value {
+             "tetrahedron"
+           }
+         }
        }
-     }
+     )
   )
 
