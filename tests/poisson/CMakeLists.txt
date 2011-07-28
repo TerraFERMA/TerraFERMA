@@ -1,47 +1,12 @@
-# Require CMake 2.8
-cmake_minimum_required(VERSION 2.8)
+set(EXECUTABLE "poisson")
 
-# Set verbose output while testing CMake
-#set(CMAKE_VERBOSE_MAKEFILE 1)
+set(OPTIONSFILENAME "${EXECUTABLE}.bml")
 
-# Set CMake behavior
-cmake_policy(SET CMP0004 OLD)
+set(PREFIX ${EXECUTABLE})
 
-# Get DOLFIN configuration data (dolfin-config.cmake must be in DOLFIN_CMAKE_CONFIG_PATH)
-find_package(dolfin)
+project($EXECUTABLE)
 
-# Default build type (can be overridden by user)
-if (NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING
-    "Choose the type of build, options are: Debug MinSizeRel Release RelWithDebInfo." FORCE)
-endif()
-
-# Compiler definitions
-add_definitions(${DOLFIN_CXX_DEFINITIONS})
-
-# Add special DOLFIN compiler flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${DOLFIN_CXX_FLAGS}")
-
-# Include directories
-include_directories(${DOLFIN_INCLUDE_DIRS} ${DOLFIN_3RD_PARTY_INCLUDE_DIRS})
-
-project(poisson)
-
-set(EXECUTABLE "poisson" CACHE STRING
-     "The name of the executable" FORCE)
-
-set(BUCKETTOOLS_DIR "${PROJECT_SOURCE_DIR}/../../buckettools" CACHE PATH
-     "Location of buckettools." FORCE)
-
-find_package(PythonLibs)
-
-if(NOT ${PYTHONLIBS_FOUND})
-  message(FATAL_ERROR "Could not find python libraries.")
-endif(NOT ${PYTHONLIBS_FOUND})
-
-include_directories(${PYTHON_INCLUDE_PATH})
-
-set(OPTIONSFILE "${PROJECT_SOURCE_DIR}/poisson.bml" CACHE FILEPATH "Choose the input file.")
+set(OPTIONSFILE "${PROJECT_SOURCE_DIR}/${OPTIONSFILENAME}")
 
 if(NOT IS_ABSOLUTE ${OPTIONSFILE})
   set(OPTIONSFILE ${PROJECT_BINARY_DIR}/${OPTIONSFILE})
@@ -55,20 +20,11 @@ if (NOT EXISTS ${OPTIONSFILE})
   message(FATAL_ERROR "Could not find OPTIONSFILE ${OPTIONSFILE}")
 endif(NOT EXISTS ${OPTIONSFILE})
 
-add_subdirectory(${BUCKETTOOLS_DIR} "buckettools")
-
-include_directories("${BUCKETTOOLS_DIR}/include")
+add_subdirectory("${BUCKETTOOLS_DIR}/ufc" "buckettools_ufc")
 
 add_executable(${EXECUTABLE} "${PROJECT_SOURCE_DIR}/../../cpp/main.cpp")
 
-set (EXTRA_LIBS ${EXTRA_LIBS} buckettools_cpp buckettools_ufc)
+set (EXTRA_LIBS ${EXTRA_LIBS} buckettools_cpp ${PREFIX}buckettools_ufc)
 
 target_link_libraries(${EXECUTABLE} ${DOLFIN_LIBRARIES} ${DOLFIN_3RD_PARTY_LIBRARIES} ${EXTRA_LIBS} /usr/lib/libspud.a ${PYTHON_LIBRARIES})
-
-add_custom_target(
-  run
-  COMMAND ${EXECUTABLE} ${OPTIONSFILE} 
-  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-  DEPENDS ${EXECUTABLE}
-  )
 
