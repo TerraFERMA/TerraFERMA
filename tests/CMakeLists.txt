@@ -42,5 +42,8 @@ add_subdirectory("${BUCKETTOOLS_DIR}/cpp" "buckettools_cpp")
 
 include_directories("${BUCKETTOOLS_DIR}/include")
 
+# include where to find spud
+include_directories(/usr/share)
+
 add_subdirectory(poisson)
 add_subdirectory(projection_mixedelement)

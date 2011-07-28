@@ -59,6 +59,9 @@ add_subdirectory(${BUCKETTOOLS_DIR} "buckettools")
 
 include_directories("${BUCKETTOOLS_DIR}/include")
 
+#include where to find spud
+include_directories(/usr/share)
+
 add_executable(${EXECUTABLE} "${PROJECT_SOURCE_DIR}/cpp/main.cpp")
 
 set (EXTRA_LIBS ${EXTRA_LIBS} buckettools_cpp buckettools_ufc)
