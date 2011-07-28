@@ -7,6 +7,7 @@
 //#include "SystemBucket.h"
 //#include "SpudSystemBucket.h"
 #include "BoostTypes.h"
+#include "SpudBase.h"
 //#include "StatFile.h"
 #include "DiagnosticsFile.h"
 //#include "DetectorsFile.h"
