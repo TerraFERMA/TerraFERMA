@@ -44,3 +44,7 @@ include_directories("${BUCKETTOOLS_DIR}/include")
 
 add_subdirectory(poisson)
 add_subdirectory(projection_mixedelement)
+
+add_custom_target(run)
+add_dependencies(run poissonrun projectionrun)
+
