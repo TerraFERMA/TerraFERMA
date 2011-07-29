@@ -37,3 +37,11 @@ add_custom_target(
 
 set(RUNLIST ${RUNLIST} ${PREFIX}run)
 
+add_custom_target(
+  ${PREFIX}test
+  COMMAND py.test ${PROJECT_SOURCE_DIR}/tests.py 
+  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+  DEPENDS ${PROJECT_SOURCE_DIR}/tests.py
+  )
+add_dependencies(${PREFIX}test ${PREFIX}run)
+

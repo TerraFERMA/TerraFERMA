@@ -1,3 +1,5 @@
+project(tests)
+
 # Require CMake 2.8
 cmake_minimum_required(VERSION 2.8)
 
@@ -25,8 +27,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${DOLFIN_CXX_FLAGS}")
 # Include directories
 include_directories(${DOLFIN_INCLUDE_DIRS} ${DOLFIN_3RD_PARTY_INCLUDE_DIRS})
 
-project(tests)
-
 set(BUCKETTOOLS_DIR "${PROJECT_SOURCE_DIR}/../buckettools" CACHE PATH
      "Location of buckettools." FORCE)
 
@@ -47,4 +47,7 @@ add_subdirectory(projection_mixedelement)
 
 add_custom_target(run)
 add_dependencies(run poissonrun projectionrun)
+
+add_custom_target(test)
+add_dependencies(test projectiontest)
 
