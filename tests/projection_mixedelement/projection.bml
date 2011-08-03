@@ -37,11 +37,11 @@
   <system name="SNESProjection">
     <mesh name="Frank"/>
     <ufl_symbol>
-      <string_value lines="1">u</string_value>
+      <string_value lines="1">us</string_value>
     </ufl_symbol>
     <field name="Field1">
       <ufl_symbol>
-        <string_value lines="1">s1</string_value>
+        <string_value lines="1">ss1</string_value>
       </ufl_symbol>
       <type name="Function">
         <rank name="Scalar" rank="0">
@@ -62,7 +62,7 @@
         <output>
           <include_in_diagnostics>
             <functional name="Integral">
-              <string_value lines="20" type="python">int = s1*dx</string_value>
+              <string_value lines="20" type="python">int = ss1*dx</string_value>
               <ufl_symbol>
                 <string_value lines="1">int</string_value>
               </ufl_symbol>
@@ -73,7 +73,7 @@
     </field>
     <field name="Field2">
       <ufl_symbol>
-        <string_value lines="1">s2</string_value>
+        <string_value lines="1">ss2</string_value>
       </ufl_symbol>
       <type name="Function">
         <rank name="Vector" rank="1">
@@ -94,13 +94,13 @@
         <output>
           <include_in_diagnostics>
             <functional name="Integral0">
-              <string_value lines="20" type="python">int = s2[0]*dx</string_value>
+              <string_value lines="20" type="python">int = ss2[0]*dx</string_value>
               <ufl_symbol>
                 <string_value lines="1">int</string_value>
               </ufl_symbol>
             </functional>
             <functional name="Integral1">
-              <string_value lines="20" type="python">int = s2[1]*dx</string_value>
+              <string_value lines="20" type="python">int = ss2[1]*dx</string_value>
               <ufl_symbol>
                 <string_value lines="1">int</string_value>
               </ufl_symbol>
@@ -111,7 +111,7 @@
     </field>
     <coefficient name="Source1">
       <ufl_symbol>
-        <string_value lines="1">f1</string_value>
+        <string_value lines="1">fs1</string_value>
       </ufl_symbol>
       <type name="Constant">
         <rank name="Scalar" rank="0">
@@ -124,7 +124,7 @@
         <output>
           <include_in_diagnostics>
             <functional name="Integral">
-              <string_value lines="20" type="python">int = s1*dx</string_value>
+              <string_value lines="20" type="python">int = ss1*dx</string_value>
               <ufl_symbol>
                 <string_value lines="1">int</string_value>
               </ufl_symbol>
@@ -135,7 +135,7 @@
     </coefficient>
     <coefficient name="Source2">
       <ufl_symbol>
-        <string_value lines="1">f2</string_value>
+        <string_value lines="1">fs2</string_value>
       </ufl_symbol>
       <type name="Constant">
         <rank name="Vector" rank="1">
@@ -148,13 +148,13 @@
         <output>
           <include_in_diagnostics>
             <functional name="Integral0">
-              <string_value lines="20" type="python">int = s2[0]*dx</string_value>
+              <string_value lines="20" type="python">int = ss2[0]*dx</string_value>
               <ufl_symbol>
                 <string_value lines="1">int</string_value>
               </ufl_symbol>
             </functional>
             <functional name="Integral1">
-              <string_value lines="20" type="python">int = s2[1]*dx</string_value>
+              <string_value lines="20" type="python">int = ss2[1]*dx</string_value>
               <ufl_symbol>
                 <string_value lines="1">int</string_value>
               </ufl_symbol>
@@ -166,9 +166,9 @@
     <nonlinear_solver name="SimpleSolver">
       <type name="SNES">
         <form name="Residual" rank="0">
-          <string_value lines="20" type="python">r1 = s1_t*(s1_i-f1)*dx
-r20 = s2_t[0]*(s2_i[0]-f2[0])*dx
-r21 = s2_t[1]*(s2_i[1]-f2[1])*dx
+          <string_value lines="20" type="python">r1 = ss1_t*(ss1_i-fs1)*dx
+r20 = ss2_t[0]*(ss2_i[0]-fs2[0])*dx
+r21 = ss2_t[1]*(ss2_i[1]-fs2[1])*dx
 r2 = r20 + r21
 r = r1 + r2</string_value>
           <ufl_symbol>
@@ -176,7 +176,7 @@ r = r1 + r2</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
-          <string_value lines="20" type="python">a = derivative(r, u_i)</string_value>
+          <string_value lines="20" type="python">a = derivative(r, us_i)</string_value>
           <ufl_symbol>
             <string_value lines="1">a</string_value>
           </ufl_symbol>
@@ -211,11 +211,11 @@ r = r1 + r2</string_value>
   <system name="PicardProjection">
     <mesh name="Frank"/>
     <ufl_symbol>
-      <string_value lines="1">u</string_value>
+      <string_value lines="1">up</string_value>
     </ufl_symbol>
     <field name="Field1">
       <ufl_symbol>
-        <string_value lines="1">s1</string_value>
+        <string_value lines="1">sp1</string_value>
       </ufl_symbol>
       <type name="Function">
         <rank name="Scalar" rank="0">
@@ -236,7 +236,7 @@ r = r1 + r2</string_value>
         <output>
           <include_in_diagnostics>
             <functional name="Integral">
-              <string_value lines="20" type="python">int = s1*dx</string_value>
+              <string_value lines="20" type="python">int = sp1*dx</string_value>
               <ufl_symbol>
                 <string_value lines="1">int</string_value>
               </ufl_symbol>
@@ -247,7 +247,7 @@ r = r1 + r2</string_value>
     </field>
     <field name="Field2">
       <ufl_symbol>
-        <string_value lines="1">s2</string_value>
+        <string_value lines="1">sp2</string_value>
       </ufl_symbol>
       <type name="Function">
         <rank name="Vector" rank="1">
@@ -268,13 +268,13 @@ r = r1 + r2</string_value>
         <output>
           <include_in_diagnostics>
             <functional name="Integral0">
-              <string_value lines="20" type="python">int = s2[0]*dx</string_value>
+              <string_value lines="20" type="python">int = sp2[0]*dx</string_value>
               <ufl_symbol>
                 <string_value lines="1">int</string_value>
               </ufl_symbol>
             </functional>
             <functional name="Integral1">
-              <string_value lines="20" type="python">int = s2[1]*dx</string_value>
+              <string_value lines="20" type="python">int = sp2[1]*dx</string_value>
               <ufl_symbol>
                 <string_value lines="1">int</string_value>
               </ufl_symbol>
@@ -285,7 +285,7 @@ r = r1 + r2</string_value>
     </field>
     <coefficient name="Source1">
       <ufl_symbol>
-        <string_value lines="1">f1</string_value>
+        <string_value lines="1">fp1</string_value>
       </ufl_symbol>
       <type name="Constant">
         <rank name="Scalar" rank="0">
@@ -298,7 +298,7 @@ r = r1 + r2</string_value>
         <output>
           <include_in_diagnostics>
             <functional name="Integral">
-              <string_value lines="20" type="python">int = s1*dx</string_value>
+              <string_value lines="20" type="python">int = sp1*dx</string_value>
               <ufl_symbol>
                 <string_value lines="1">int</string_value>
               </ufl_symbol>
@@ -309,7 +309,7 @@ r = r1 + r2</string_value>
     </coefficient>
     <coefficient name="Source2">
       <ufl_symbol>
-        <string_value lines="1">f2</string_value>
+        <string_value lines="1">fp2</string_value>
       </ufl_symbol>
       <type name="Constant">
         <rank name="Vector" rank="1">
@@ -322,13 +322,13 @@ r = r1 + r2</string_value>
         <output>
           <include_in_diagnostics>
             <functional name="Integral0">
-              <string_value lines="20" type="python">int = s2[0]*dx</string_value>
+              <string_value lines="20" type="python">int = sp2[0]*dx</string_value>
               <ufl_symbol>
                 <string_value lines="1">int</string_value>
               </ufl_symbol>
             </functional>
             <functional name="Integral1">
-              <string_value lines="20" type="python">int = s2[1]*dx</string_value>
+              <string_value lines="20" type="python">int = sp2[1]*dx</string_value>
               <ufl_symbol>
                 <string_value lines="1">int</string_value>
               </ufl_symbol>
@@ -340,9 +340,9 @@ r = r1 + r2</string_value>
     <nonlinear_solver name="SimpleSolver">
       <type name="Picard">
         <preamble>
-          <string_value lines="20" type="python">F1 = s1_t*(s1_a-f1)*dx
-F20 = s2_t[0]*(s2_a[0]-f2[0])*dx
-F21 = s2_t[1]*(s2_a[1]-f2[1])*dx
+          <string_value lines="20" type="python">F1 = sp1_t*(sp1_a-fp1)*dx
+F20 = sp2_t[0]*(sp2_a[0]-fp2[0])*dx
+F21 = sp2_t[1]*(sp2_a[1]-fp2[1])*dx
 F2 = F20 + F21
 F = F1 + F2</string_value>
         </preamble>
@@ -359,7 +359,7 @@ F = F1 + F2</string_value>
           </ufl_symbol>
         </form>
         <form name="Residual" rank="0">
-          <string_value lines="20" type="python">r = action(a, u_i) - L</string_value>
+          <string_value lines="20" type="python">r = action(a, up_i) - L</string_value>
           <ufl_symbol>
             <string_value lines="1">r</string_value>
           </ufl_symbol>

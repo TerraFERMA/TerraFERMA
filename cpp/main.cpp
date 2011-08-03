@@ -20,13 +20,17 @@ int main(int argc, char* argv[])
   serr = Spud::get_option(buffer.str(), basename); buckettools::spud_err(buffer.str(), serr);
 
   buckettools::SpudBucket bucket(basename, "");
+
   bucket.fill();
+  bucket.output();
 
   buckettools::DiagnosticsFile diagfile(basename+".stat");
   diagfile.write_header(bucket, false);
   diagfile.write_data(bucket);
 
-  bucket.solve();
+  bucket.run();
+
+  bucket.output();
 
   diagfile.write_data(bucket);
 
