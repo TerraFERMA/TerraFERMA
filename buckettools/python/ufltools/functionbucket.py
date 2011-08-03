@@ -62,9 +62,9 @@ class Function:
   def solvercoefficientspace_cpp(self, solvername, index=0, suffix=""):
     cpp = [] 
     if index == 0:
-      cpp.append("        if (coefficientname ==  \""+self.name+"\")\n")
+      cpp.append("        if (uflsymbol ==  \""+self.symbol+"\")\n")
     else:
-      cpp.append("        else if (coefficientname ==  \""+self.name+"\")\n")
+      cpp.append("        else if (uflsymbol ==  \""+self.symbol+"\")\n")
     cpp.append("        {\n")
     cpp.append("          coefficientspace.reset(new "+self.system.name+solvername+"::CoefficientSpace_"+self.symbol+suffix+"(mesh));\n")
     cpp.append("        }\n")

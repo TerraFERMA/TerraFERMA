@@ -11,4 +11,6 @@ class SpudFunctional(ufltools.functionalbucket.Functional):
     self.symbol   = libspud.get_option(optionpath+"/ufl_symbol")
     self.form     = libspud.get_option(optionpath)+"\n"
     self.function = function
+
+
   

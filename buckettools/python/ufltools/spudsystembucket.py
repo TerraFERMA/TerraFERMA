@@ -1,22 +1,52 @@
 import ufltools.systembucket
+import ufltools.spud
 import libspud
 
 class SpudSystem(ufltools.systembucket.System):
   """A class that stores all the information necessary to write the ufl for a system (i.e. mixed function space) 
      plus all the information necessary to populate that class using libspud."""
   
-  def fill(self, optionpath):
+  def fill(self, optionpath, bucket):
     """Fill a system class with data describing that system using libspud and the given optionpath."""
     self.name       = libspud.get_option(optionpath+"/name")
     self.optionpath = optionpath
     self.symbol     = libspud.get_option(optionpath+"/ufl_symbol")
+    self.bucket     = bucket
 
     self.mesh_name        = libspud.get_option(optionpath+"/mesh/name")
     mesh_optionpath  = "/geometry/mesh::"+self.mesh_name
     self.cell             = libspud.get_option(mesh_optionpath+"/source/cell")
 
     self.fields = []
+    for j in range(libspud.option_count(optionpath+"/field")):
+      field_optionpath = optionpath+"/field["+`j`+"]"
+      field = ufltools.spud.SpudFunction()
+      # get all the information about this field from the options dictionary
+      field.fill(field_optionpath, self, j)
+      # let the system know about this field
+      self.fields.append(field)
+      # remove the local copy of this field
+      del field
+
     self.coeffs = []
-    self.solvers = []
+    for j in range(libspud.option_count(optionpath+"/coefficient")):
+      coeff_optionpath = optionpath+"/coefficient["+`j`+"]"
+      coeff = ufltools.spud.SpudFunction()
+      # get all the information about this coefficient from the options dictionary
+      coeff.fill(coeff_optionpath, self, j)
+      # let the system know about this coefficient
+      self.coeffs.append(coeff)
+      # remove the local copy of this coefficient
+      del coeff
     
- 
+    self.solvers = []
+    for j in range(libspud.option_count(optionpath+"/nonlinear_solver")):
+      solver_optionpath = optionpath+"/nonlinear_solver["+`j`+"]"
+      solver = ufltools.spud.SpudSolver()
+      # get all the information about this nonlinear solver from the options dictionary
+      solver.fill(solver_optionpath, self)
+      # let the system know about this solver
+      self.solvers.append(solver)
+      # done with this nonlinear solver
+      del solver
+

@@ -22,9 +22,33 @@ start =
          geometry,
          # in io.rnc
          io,
+         timestepping?,
+         nonlinear?,
          # in system.rnc
          system+
       }
    )
 
+timestepping =
+   (
+      element timestepping {
+        element current_time {
+          real
+        },
+        element finish_time {
+          real
+        },
+        element timestep {
+          real
+        }
+      }
+   )
 
+nonlinear =
+   (
+      element nonlinear_systems {
+        element nonlinear_iterations {
+          integer
+        }
+      }
+   )

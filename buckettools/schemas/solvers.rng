@@ -382,6 +382,32 @@ This performs a complete, direct solve of the equation and should only be used i
       <attribute name="name">
         <value>lu</value>
       </attribute>
+      <choice>
+        <element name="factorization_package">
+          <attribute name="name">
+            <value>petsc</value>
+          </attribute>
+          <empty/>
+        </element>
+        <element name="factorization_package">
+          <attribute name="name">
+            <value>umfpack</value>
+          </attribute>
+          <empty/>
+        </element>
+        <element name="factorization_package">
+          <attribute name="name">
+            <value>mumps</value>
+          </attribute>
+          <empty/>
+        </element>
+        <element name="factorization_package">
+          <attribute name="name">
+            <data type="string"/>
+          </attribute>
+          <empty/>
+        </element>
+      </choice>
     </element>
   </define>
   <define name="pcprometheus_options">
@@ -647,19 +673,44 @@ has been linked with the X library.</a:documentation>
   </define>
   <define name="generic_solver_options">
     <optional>
-      <element name="start_from_zero">
-        <a:documentation>Switch on to not use an initial guess from a previous solve but
-start with a zero vector. Note that some of the solves always
-start at zero in which case this switch will have no effect (see the log output).</a:documentation>
-        <empty/>
-      </element>
-    </optional>
-    <optional>
+      <!--
+             ## Switch on to not use an initial guess from a previous solve but
+             ## start with a zero vector. Note that some of the solves always
+             ## start at zero in which case this switch will have no effect (see the log output).
+             element start_from_zero {
+                empty
+             }?,
+      -->
       <element name="remove_null_space">
-        <a:documentation>Remove Null-space from residual after applying preconditioner.
-This often leads to better convergence rates, when compared to
-imposing a reference_node to pin the solution.</a:documentation>
-        <empty/>
+        <a:documentation>Remove Null-space from residual after applying preconditioner.</a:documentation>
+        <oneOrMore>
+          <element name="null_space">
+            <attribute name="name">
+              <data type="string"/>
+            </attribute>
+            <oneOrMore>
+              <element name="field">
+                <attribute name="name">
+                  <data type="string"/>
+                </attribute>
+                <optional>
+                  <element name="components">
+                    <a:documentation>If this field is a vector or a tensor components may be listed (indexed from 0 by row first if tensorial).
+
+Defaults to all components if not selected.</a:documentation>
+                    <ref name="integer_vector"/>
+                  </element>
+                </optional>
+                <optional>
+                  <element name="region_ids">
+                    <a:documentation>A list of the region ids (physical ids in gmsh) </a:documentation>
+                    <ref name="integer_vector"/>
+                  </element>
+                </optional>
+              </element>
+            </oneOrMore>
+          </element>
+        </oneOrMore>
       </element>
     </optional>
   </define>

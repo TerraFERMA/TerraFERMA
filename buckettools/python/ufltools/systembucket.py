@@ -12,6 +12,7 @@ class System:
     self.fields = None
     self.coeffs = None
     self.solvers = None
+    self.bucket = None
 
   def functions_ufl(self):
     """Write an array of ufl strings describing all the functions (fields and coefficients) within a system."""
@@ -41,6 +42,34 @@ class System:
         ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
         for suffix in uflsymbol_suffixes():
           ufl.append(coefficient_ufl(coeff.symbol, suffix=suffix))
+    ufl.append("\n")
+    ufl.append(comment("Finished declaring functions for this system, start on other systems."))
+    ufl.append("\n")
+    for system in self.bucket.systems:
+      if system.name == self.name: continue
+      ufl.append(declaration_comment("Function elements", "System", system.name))
+      for field in system.fields:
+        ufl += field.element_ufl()
+      ufl += system.element_ufl()
+      ufl.append("\n")
+      ufl += system.function_ufl()
+      ufl.append("\n")
+      ufl += system.iterate_ufl()
+      ufl.append("\n")
+      ufl += system.old_ufl()
+      ufl.append("\n")
+      for coeff in system.coeffs:
+        if coeff.type == "Constant":
+          ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
+          for suffix in uflsymbol_suffixes():
+            ufl.append(coeff.constant_ufl(suffix=suffix))
+        else:
+          ufl += coeff.element_ufl()
+          ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
+          for suffix in uflsymbol_suffixes():
+            ufl.append(coefficient_ufl(coeff.symbol, suffix=suffix))
+    ufl.append("\n")
+    ufl.append(comment("Finished declaring functions for all other systems, start on forms."))
     ufl.append("\n")
     return ufl
 
@@ -203,9 +232,9 @@ class System:
     cpp.append("    {\n")
     for c in range(len(self.fields)):
       if c == 0:
-        cpp.append("      if (functionname ==  \""+self.fields[c].name+"\")\n")
+        cpp.append("      if (uflsymbol ==  \""+self.fields[c].name+"\")\n")
       else:
-        cpp.append("      else if (functionname ==  \""+self.fields[c].name+"\")\n")
+        cpp.append("      else if (uflsymbol ==  \""+self.fields[c].name+"\")\n")
       cpp.append("      {\n")
       if len(self.fields[c].functionals)==0:
         cpp.append("        dolfin::error(\"Unknown functionalname in ufc_fetch_coefficientspace\");\n")
@@ -240,7 +269,7 @@ class System:
         cpp.append("        }\n")
         cpp.append("      }\n")
     for c in range(len(self.coeffs)):
-      cpp.append("      else if (functionname ==  \""+self.coeffs[c].name+"\")\n")
+      cpp.append("      else if (uflsymbol ==  \""+self.coeffs[c].name+"\")\n")
       cpp.append("      {\n")
       if len(self.coeffs[c].functionals)==0:
         cpp.append("        dolfin::error(\"Unknown functionalname in ufc_fetch_coefficientspace\");\n")
@@ -276,7 +305,7 @@ class System:
         cpp.append("      }\n")
     cpp.append("      else\n")
     cpp.append("      {\n")
-    cpp.append("        dolfin::error(\"Unknown functionname in ufc_fetch_coefficientspace\");\n")
+    cpp.append("        dolfin::error(\"Unknown uflsymbol in ufc_fetch_coefficientspace\");\n")
     cpp.append("      }\n")
     cpp.append("    }\n")
     return cpp
@@ -309,12 +338,12 @@ class System:
               symbols_found =+ 1
               break
         if symbols_found == 0:
-          cpp.append("        dolfin::error(\"Unknown coefficientname in ufc_fetch_coefficientspace\");\n")
+          cpp.append("        dolfin::error(\"Unknown uflsymbol in ufc_fetch_coefficientspace\");\n")
           cpp.append("      }\n")
         else:
           cpp.append("        else\n")
           cpp.append("        {\n")
-          cpp.append("          dolfin::error(\"Unknown coefficientname in ufc_fetch_coefficientspace\");\n")
+          cpp.append("          dolfin::error(\"Unknown uflsymbol in ufc_fetch_coefficientspace\");\n")
           cpp.append("        }\n")
           cpp.append("      }\n")
     cpp.append("      else\n")

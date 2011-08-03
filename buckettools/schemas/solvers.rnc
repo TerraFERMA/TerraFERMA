@@ -316,7 +316,25 @@ pclu_options =
       ##
       ## This performs a complete, direct solve of the equation and should only be used in combination with preonly as iterative method.
       element preconditioner {
-         attribute name { "lu" }
+         attribute name { "lu" },
+         (
+           element factorization_package {
+             attribute name { "petsc" },
+             empty
+           }|
+           element factorization_package {
+             attribute name { "umfpack" },
+             empty
+           }|
+           element factorization_package {
+             attribute name { "mumps" },
+             empty
+           }|
+           element factorization_package {
+             attribute name { xsd:string },
+             empty
+           }
+         )
      }
    )
 
@@ -546,17 +564,30 @@ iterative_solver_options =
 
 generic_solver_options =
    (
-      ## Switch on to not use an initial guess from a previous solve but
-      ## start with a zero vector. Note that some of the solves always
-      ## start at zero in which case this switch will have no effect (see the log output).
-      element start_from_zero {
-         empty
-      }?,
+#      ## Switch on to not use an initial guess from a previous solve but
+#      ## start with a zero vector. Note that some of the solves always
+#      ## start at zero in which case this switch will have no effect (see the log output).
+#      element start_from_zero {
+#         empty
+#      }?,
       ## Remove Null-space from residual after applying preconditioner.
-      ## This often leads to better convergence rates, when compared to
-      ## imposing a reference_node to pin the solution.
       element remove_null_space {
-         empty
+         element null_space {
+           attribute name { xsd:string },
+           element field {
+             attribute name { xsd:string },
+             ## If this field is a vector or a tensor components may be listed (indexed from 0 by row first if tensorial).
+             ##
+             ## Defaults to all components if not selected.
+             element components {
+               integer_vector
+             }?,
+             ## A list of the region ids (physical ids in gmsh) 
+             element region_ids {
+               integer_vector
+             }?
+           }+
+         }+
       }?
    )
 

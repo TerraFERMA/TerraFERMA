@@ -59,14 +59,14 @@ class Bucket:
     solverfunctionspace_cpp.append("    FunctionSpace_ptr functionspace;\n")
 
     solvercoefficientspace_cpp         = []
-    solvercoefficientspace_cpp.append("  // A function to return a functionspace (for a coefficient) from a system given a mesh, a solvername and a functionname.\n")
-    solvercoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace(const std::string &systemname, const std::string &solvername, const std::string &coefficientname, Mesh_ptr mesh)\n")
+    solvercoefficientspace_cpp.append("  // A function to return a functionspace (for a coefficient) from a system given a mesh, a solvername and a uflsymbol.\n")
+    solvercoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace(const std::string &systemname, const std::string &solvername, const std::string &uflsymbol, Mesh_ptr mesh)\n")
     solvercoefficientspace_cpp.append("  {\n")
     solvercoefficientspace_cpp.append("    FunctionSpace_ptr coefficientspace;\n")
 
     functionalcoefficientspace_cpp         = []
-    functionalcoefficientspace_cpp.append("  // A function to return a functionspace (for a coefficient) from a system given a mesh, a solvername and a functionname.\n")
-    functionalcoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace(const std::string &systemname, const std::string &functionname, const std::string &functionalname, const std::string &coefficientname, Mesh_ptr mesh)\n")
+    functionalcoefficientspace_cpp.append("  // A function to return a functionspace (for a coefficient) from a system given a mesh, a solvername and a uflsymbol.\n")
+    functionalcoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace(const std::string &systemname, const std::string &uflsymbol, const std::string &functionalname, const std::string &coefficientname, Mesh_ptr mesh)\n")
     functionalcoefficientspace_cpp.append("  {\n")
     functionalcoefficientspace_cpp.append("    FunctionSpace_ptr coefficientspace;\n")
 
@@ -82,14 +82,16 @@ class Bucket:
     form_cpp.append("  {\n")
     form_cpp.append("    Form_ptr form;\n")
  
-    for s in range(len(self.systems)):
-      include_cpp    += self.systems[s].include_cpp()
-      functionspace_cpp += self.systems[s].functionspace_cpp(index=s)
-      solverfunctionspace_cpp += self.systems[s].solverfunctionspace_cpp(index=s)
-      solvercoefficientspace_cpp += self.systems[s].solvercoefficientspace_cpp(index=s)
-      functionalcoefficientspace_cpp += self.systems[s].functionalcoefficientspace_cpp(index=s)
-      functional_cpp += self.systems[s].functional_cpp(index=s)
-      form_cpp += self.systems[s].form_cpp(index=s)
+    s = 0
+    for system in self.systems:
+      include_cpp    += system.include_cpp()
+      functionspace_cpp += system.functionspace_cpp(index=s)
+      solverfunctionspace_cpp += system.solverfunctionspace_cpp(index=s)
+      solvercoefficientspace_cpp += system.solvercoefficientspace_cpp(index=s)
+      functionalcoefficientspace_cpp += system.functionalcoefficientspace_cpp(index=s)
+      functional_cpp += system.functional_cpp(index=s)
+      form_cpp += system.form_cpp(index=s)
+      s += 1
 
     functionspace_cpp.append("    else\n")
     functionspace_cpp.append("    {\n")

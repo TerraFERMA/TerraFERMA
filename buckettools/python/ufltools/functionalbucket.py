@@ -37,7 +37,36 @@ class Functional:
         ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
         for suffix in uflsymbol_suffixes():
           ufl.append(coefficient_ufl(coeff.symbol, suffix=suffix))
-      ufl.append("\n\n")
+      ufl.append("\n")
+    ufl.append("\n")
+    ufl.append(comment("Finished declaring functions for this system, start on other systems."))
+    ufl.append("\n")
+    for system in self.function.system.bucket.systems:
+      if system.name == self.function.system.name: continue
+      ufl.append(declaration_comment("Function elements", "System", system.name))
+      for field in system.fields:
+        ufl += field.element_ufl()
+      ufl += system.element_ufl()
+      ufl.append("\n")
+      ufl += system.function_ufl()
+      ufl.append("\n")
+      ufl += system.iterate_ufl()
+      ufl.append("\n")
+      ufl += system.old_ufl()
+      ufl.append("\n")
+      for coeff in system.coeffs:
+        if coeff.type == "Constant":
+          ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
+          for suffix in uflsymbol_suffixes():
+            ufl.append(coeff.constant_ufl(suffix=suffix))
+        else:
+          ufl += coeff.element_ufl()
+          ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
+          for suffix in uflsymbol_suffixes():
+            ufl.append(coefficient_ufl(coeff.symbol, suffix=suffix))
+    ufl.append("\n")
+    ufl.append(comment("Finished declaring functions for all other systems, start on forms."))
+    ufl.append("\n")
     ufl.append("\n")
     ufl.append(declaration_comment("Form", "form", self.name))
     ufl.append(self.form)
@@ -98,9 +127,9 @@ class Functional:
   def coefficientspace_cpp(self, coeff, index=0, suffix=""):
     cpp = [] 
     if index == 0:
-      cpp.append("          if (coefficientname ==  \""+coeff.name+"\")\n")
+      cpp.append("          if (uflsymbol ==  \""+coeff.symbol+"\")\n")
     else:
-      cpp.append("          else if (coefficientname ==  \""+coeff.name+"\")\n")
+      cpp.append("          else if (uflsymbol ==  \""+coeff.symbol+"\")\n")
     cpp.append("          {\n")
     cpp.append("            coefficientspace.reset(new "+self.namespace()+"::CoefficientSpace_"+coeff.symbol+suffix+"(mesh));\n")
     cpp.append("          }\n")
