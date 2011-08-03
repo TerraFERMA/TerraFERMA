@@ -35,15 +35,12 @@ void SpudFunctionBucket::field_fill(const uint &index)
   // - hence we'll have the functionspace available later
   functionals_fill_();
 
-  if (Spud::have_option((*dynamic_cast<SpudSystemBucket*>(system_)).optionpath()+"/field::"+name()))
-  {
-    // this is a field
-    initialize_field_();
-  }
-  else
-  {
-    dolfin::error("Unknown function type.");
-  }
+  assert(Spud::have_option((*dynamic_cast<SpudSystemBucket*>(system_)).optionpath()+"/field::"+name()));
+
+  // this is a field
+  initialize_field_();
+
+  pvdfile_.reset( new dolfin::File((*system_).name()+"_"+name()+".pvd", "compressed") );
 
 }
 
@@ -59,15 +56,10 @@ void SpudFunctionBucket::coeff_fill(const uint &index)
   // - hence we'll have the functionspace available later
   functionals_fill_();
 
-  if (Spud::have_option((*dynamic_cast<SpudSystemBucket*>(system_)).optionpath()+"/coefficient::"+name()))
-  {
-    // this is a coefficient
-    initialize_expression_coeff_();
-  }
-  else
-  {
-    dolfin::error("Unknown function type.");
-  }
+  assert(Spud::have_option((*dynamic_cast<SpudSystemBucket*>(system_)).optionpath()+"/coefficient::"+name()));
+
+  // this is a coefficient
+  initialize_expression_coeff_();
 
 }
 
@@ -79,7 +71,6 @@ void SpudFunctionBucket::base_fill_(const uint &index)
 
   // the index, the name, the optionpath, the ufl_symbol and the type
   // are the pieces of information unique to each field
-  // beyond these data may be aliased/shared between fields
 
   // the index of this field
   index_ = index;
@@ -96,47 +87,26 @@ void SpudFunctionBucket::base_fill_(const uint &index)
   buffer.str(""); buffer << optionpath() << "/type/name";
   serr = Spud::get_option(buffer.str(), type_); spud_err(buffer.str(), serr);
 
-  if(type_!="Aliased")
-  {
-    // for nonaliased fields call this just with the same option path
-    // (we'll call it for aliased coefficients with the aliased optionpath later)
-    nonaliased_base_fill_(optionpath());
-  }
-
-}
-
-void SpudFunctionBucket::nonaliased_base_fill_(const std::string &optionpath)
-{
-  // A buffer to put option paths in
-  std::stringstream buffer;
-  Spud::OptionError serr;
-
-  // Get the (potentially aliased) field type (locally)
-  std::string ltype;
-  buffer.str(""); buffer << optionpath << "/type/name";
-  serr = Spud::get_option(buffer.str(), ltype); spud_err(buffer.str(), serr);
-
   // Most of what is below is broken for tensors so let's just die here with an error message
-  buffer.str(""); buffer << optionpath << "/type/rank/name";
+  buffer.str(""); buffer << optionpath() << "/type/rank/name";
   serr = Spud::get_option(buffer.str(), rank_); spud_err(buffer.str(), serr);
 
   // What is the function size (if it's a vector)
   // Would it be possible to get this from the subfunctionspace below?
-  buffer.str(""); buffer << optionpath << "/type/rank/element/size";
+  buffer.str(""); buffer << optionpath() << "/type/rank/element/size";
   serr = Spud::get_option(buffer.str(), size_, (*(*system_).bucket()).dimension()); spud_err(buffer.str(), serr);
 
   // What is the function shape (if it's a tensor)
   // Would it be possible to get this from the subfunctionspace below?
   std::vector< int > default_shape(2, (*(*system_).bucket()).dimension());
-  buffer.str(""); buffer << optionpath << "/type/rank/element/shape";
+  buffer.str(""); buffer << optionpath() << "/type/rank/element/shape";
   serr = Spud::get_option(buffer.str(), shape_, default_shape); spud_err(buffer.str(), serr);
 
-  // type_ will be "Aliased" so use ltype here
-  if (ltype=="Constant")
+  if (type_=="Constant")
   {
     // These will have just been set to defaults in this case, which may not be right
     // - only coefficients can end up in here so only consider their optionpaths
-    buffer.str(""); buffer << optionpath << "/type/rank/value/constant";
+    buffer.str(""); buffer << optionpath() << "/type/rank/value/constant";
     if (rank_=="Vector")
     {
       std::vector< int > constant_shape;
@@ -358,7 +328,7 @@ void SpudFunctionBucket::initialize_function_coeff()
 
   if (type_=="Function")
   {
-    if(!(*system_).contains_coefficientspace(name()))
+    if(!(*(*system_).bucket()).contains_coefficientspace(uflsymbol()))
     {
       std::cerr << "Coefficient " << name() << " declared as type::Function ";
       std::cerr << "but its ufl_symbol was not found in any forms or functionals.\n";
@@ -367,7 +337,7 @@ void SpudFunctionBucket::initialize_function_coeff()
 
     // only gets handled once we have a functionspace to put it on
     // (either from a solver form or a functional)
-    FunctionSpace_ptr coefficientspace = (*system_).fetch_coefficientspace(name());
+    FunctionSpace_ptr coefficientspace = (*(*system_).bucket()).fetch_coefficientspace(uflsymbol());
 
     function_.reset( new dolfin::Function(*coefficientspace) );
 
@@ -397,58 +367,6 @@ void SpudFunctionBucket::initialize_function_coeff()
 
 }
 
-void SpudFunctionBucket::initialize_aliased_coeff()
-{
-  std::stringstream buffer;
-  Spud::OptionError serr;
-
-  if (type_=="Aliased")
-  {
-
-    std::string systemname;
-    buffer.str(""); buffer << optionpath() << "/type/system/name";
-    serr = Spud::get_option(buffer.str(), systemname); spud_err(buffer.str(), serr);
-
-    if (Spud::have_option(optionpath()+"/type/field"))
-    {
-      std::string fieldname;
-      buffer.str(""); buffer << optionpath() << "/type/field/name";
-      serr = Spud::get_option(buffer.str(), fieldname); spud_err(buffer.str(), serr);
-
-      FunctionBucket_ptr field = (*(*(*system_).bucket()).fetch_system(systemname)).fetch_field(fieldname);
-
-      // get the rank and element info from the aliased field we're pointing at
-      nonaliased_base_fill_((*boost::dynamic_pointer_cast<SpudFunctionBucket>(field)).optionpath());
-
-      function_         = (*field).function();
-      oldfunction_      = (*field).oldfunction();
-      iteratedfunction_ = (*field).iteratedfunction();
-
-    }
-    else if (Spud::have_option(optionpath()+"/type/coefficient"))
-    {
-      std::string coeffname;
-      buffer.str(""); buffer << optionpath() << "/type/coefficient/name";
-      serr = Spud::get_option(buffer.str(), coeffname); spud_err(buffer.str(), serr);
-
-      FunctionBucket_ptr coeff = (*(*(*system_).bucket()).fetch_system(systemname)).fetch_coeff(coeffname);
-
-      // get the rank and element info from the aliased field we're pointing at
-      nonaliased_base_fill_((*boost::dynamic_pointer_cast<SpudFunctionBucket>(coeff)).optionpath());
-
-      function_         = (*coeff).function();
-      oldfunction_      = (*coeff).oldfunction();
-      iteratedfunction_ = (*coeff).iteratedfunction();
-
-    }
-    else
-    {
-      dolfin::error("Unknown aliased field/coefficient specification.");
-    }
-  }
-
-}
-
 void SpudFunctionBucket::functionals_fill_()
 {
   // A buffer to put option paths (and strings) in
@@ -474,25 +392,17 @@ void SpudFunctionBucket::functionals_fill_()
     for (uint i = 0; i < ncoeff; i++)
     {
       std::string uflsymbol = (*functional).coefficient_name(i);
-      GenericFunction_ptr function = (*system_).grab_uflsymbol(uflsymbol);
-      if (!function)
+      // is this a function coefficient?
+      if ((*(*system_).bucket()).contains_uflname(uflsymbol))
       {
-        // the function isn't initialised so either we haven't reached it yet or
-        // we got to it but weren't able to initialise it because we didn't have its
-        // function space available yet... let's see if it's a function
-        std::string functionname = (*system_).fetch_uflname(uflsymbol);
-        // this only checks the coefficient option path because fields get their functionspace
-        // as a subfunctionspace from the system (mixed?) functionspace
-        if (Spud::have_option((*dynamic_cast<SpudSystemBucket*>(system_)).optionpath()+"/coefficient::"+functionname+"/type::Function"))
+        // yes, it's a coefficient function... so let's take this opportunity to register
+        // its functionspace (if we don't already have it)
+        std::string baseuflsymbol = (*(*system_).bucket()).fetch_uflname(uflsymbol);
+        if (!(*(*system_).bucket()).contains_coefficientspace(baseuflsymbol))
         {
-          // yes, it's a coefficient function... so let's take this opportunity to register
-          // its functionspace
-          if (!(*system_).contains_coefficientspace(functionname))
-          {
-            FunctionSpace_ptr coefficientspace;
-            coefficientspace = ufc_fetch_coefficientspace((*system_).name(), name(), functionalname, functionname, (*system_).mesh());
-            (*system_).register_coefficientspace(coefficientspace, functionname);
-          }
+          FunctionSpace_ptr coefficientspace;
+          coefficientspace = ufc_fetch_coefficientspace((*system_).name(), name(), functionalname, baseuflsymbol, (*system_).mesh());
+          (*(*system_).bucket()).register_coefficientspace(coefficientspace, baseuflsymbol);
         }
       }
 

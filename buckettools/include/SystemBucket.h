@@ -50,14 +50,6 @@ namespace buckettools
     // a map from coefficient names to the functionbuckets of coefficients
     std::map< std::string, FunctionBucket_ptr > coeffs_;
     
-    // a map from ufl symbols to field and coefficient names
-    std::map< std::string, std::string > uflnames_;
-    
-    // a map from ufl symbols to pointers to functions
-    std::map< std::string, GenericFunction_ptr > uflsymbols_;
-
-    std::map< std::string, FunctionSpace_ptr > coefficientspaces_;
-
     std::map< std::string, SolverBucket_ptr > solvers_;
 
     std::map< int, SolverBucket_ptr > orderedsolvers_;
@@ -113,33 +105,6 @@ namespace buckettools
 
     FunctionBucket_const_it coeffs_end() const;
 
-    // Register a ufl name
-    void register_uflname(std::string name, std::string uflsymbol);
-
-    // Register a ufl system and function pointer in the system
-    void register_uflsymbol(GenericFunction_ptr function, std::string uflsymbol);
-
-    // Return the name of a function with uflsymbol
-    std::string fetch_uflname(std::string uflsymbol);
-
-    // Create a ufl system pointing at a null function pointer
-    void create_uflsymbol(std::string uflsymbol);
-
-    // Reset a function associated with a ufl system
-    void reset_uflsymbol(GenericFunction_ptr function, std::string uflsymbol);
-
-    // Return a pointer to a dolfin GenericFunction with the given uflsymbol
-    GenericFunction_ptr fetch_uflsymbol(std::string uflsymbol);
-
-    // Return a pointer to a dolfin GenericFunction with the given uflsymbol
-    GenericFunction_ptr grab_uflsymbol(std::string uflsymbol);
-
-    void register_coefficientspace(FunctionSpace_ptr coefficientspace, std::string name);
-
-    bool contains_coefficientspace(std::string name);
-
-    FunctionSpace_ptr fetch_coefficientspace(std::string name);
-
     void register_solver(SolverBucket_ptr solver, std::string name);
 
     SolverBucket_it solvers_begin();
@@ -177,20 +142,6 @@ namespace buckettools
     virtual const std::string str(int indent) const;
 
     // Print a description of the fields contained in the system
-    virtual const std::string uflsymbols_str() const
-    { return uflsymbols_str(0); }
-
-    // Print a description of the fields contained in the system
-    virtual const std::string uflsymbols_str(int indent) const;
-
-    // Print a description of the coefficient functionspaces contained in the system
-    virtual const std::string coefficientspaces_str() const
-    { return coefficientspaces_str(0); }
-
-    // Print a description of the coefficient functionspaces contained in the system
-    virtual const std::string coefficientspaces_str(int indent) const;
-
-    // Print a description of the fields contained in the system
     virtual const std::string fields_str() const
     { return fields_str(0); }
 
@@ -210,6 +161,8 @@ namespace buckettools
 
     // Print a description of the solvers contained in the system
     virtual const std::string solvers_str(int indent) const;
+
+    void attach_and_initialize();
 
     void solve();
 
@@ -237,8 +190,13 @@ namespace buckettools
     const Function_ptr iteratedfunction() const
     { return iteratedfunction_; }
 
+    Bucket* bucket()
+    { return bucket_; }
+
     const Bucket* bucket() const
     { return bucket_; }
+
+    void output();
 
   };
 

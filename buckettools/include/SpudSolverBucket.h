@@ -36,6 +36,10 @@ namespace buckettools
 
     void pc_fieldsplit_fill_(const std::string &optionpath, PC &pc, const std::vector<uint>* parent_indices);
 
+    void is_by_field_fill_(const std::string &optionpath, IS &is, 
+                           std::vector<uint> &child_indices,
+                           const std::vector<uint>* parent_indices);
+
     void pc_fieldsplit_by_field_fill_(const std::string &optionpath, PC &pc, 
                                       std::vector<uint> &child_indices,
                                       const std::vector<uint>* parent_indices);

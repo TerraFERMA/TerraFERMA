@@ -150,166 +150,6 @@ FunctionBucket_const_it SystemBucket::coeffs_end() const
   return coeffs_.end();
 }
 
-// Register a ufl symbol-function name pair
-void SystemBucket::register_uflname(std::string name, std::string uflsymbol)
-{
-  // First check if a name with this symbol already exists
-  string_it s_it = uflnames_.find(uflsymbol);
-  if (s_it != uflnames_.end())
-  {
-    // if it does, issue an error
-    dolfin::error("Name with ufl symbol \"%s\" already exists in system.", uflsymbol.c_str());
-  }
-  else
-  {
-    // if not then insert it into the maps
-    uflnames_[uflsymbol] = name;
-  }
-}
-
-// Return a pointer to a dolfin GenericFunction with the given uflsymbol
-std::string SystemBucket::fetch_uflname(std::string uflsymbol)
-{
-  // First check if a function name with this symbol already exists
-  string_it s_it = uflnames_.find(uflsymbol);
-  if (s_it == uflnames_.end())
-  {
-    // if it doesn't, issue an error
-    dolfin::error("Name with uflsymbol \"%s\" does not exist in system.", uflsymbol.c_str());
-  }
-  else
-  {
-    // if not then return it
-    return (*s_it).second;
-  }
-}
-
-// Register a ufl symbol-function name pair
-void SystemBucket::register_uflsymbol(GenericFunction_ptr function, std::string uflsymbol)
-{
-  // First check if a function with this symbol already exists
-  GenericFunction_it g_it = uflsymbols_.find(uflsymbol);
-  if (g_it != uflsymbols_.end())
-  {
-    // if it does, issue an error
-    dolfin::error("GenericFunction with ufl symbol \"%s\" already exists in system.", uflsymbol.c_str());
-  }
-  else
-  {
-    // if not then insert it into the maps
-    uflsymbols_[uflsymbol] = function;
-  }
-}
-
-// Create a ufl symbol-function name pair
-void SystemBucket::create_uflsymbol(std::string uflsymbol)
-{
-  // First check if a function with this symbol already exists
-  GenericFunction_it g_it = uflsymbols_.find(uflsymbol);
-  if (g_it != uflsymbols_.end())
-  {
-    // if it does, issue an error
-    dolfin::error("GenericFunction with ufl symbol \"%s\" already exists in system.", uflsymbol.c_str());
-  }
-  else
-  {
-    // if not then insert it into the maps
-    GenericFunction_ptr function;
-    uflsymbols_[uflsymbol] = function;
-  }
-}
-
-// Reset a ufl symbol-function name pair
-void SystemBucket::reset_uflsymbol(GenericFunction_ptr function, std::string uflsymbol)
-{
-  // First check if a function with this symbol already exists
-  GenericFunction_it g_it = uflsymbols_.find(uflsymbol);
-  if (g_it == uflsymbols_.end())
-  {
-    // if it doesn't, issue an error
-    dolfin::error("GenericFunction with ufl symbol \"%s\" doesn't exist in system.", uflsymbol.c_str());
-  }
-  else
-  {
-    // if not then insert it into the maps
-    (*g_it).second = function;
-  }
-}
-
-// Return a pointer to a dolfin GenericFunction with the given uflsymbol
-GenericFunction_ptr SystemBucket::fetch_uflsymbol(std::string uflsymbol)
-{
-  // First check if a generic function with this symbol already exists
-  GenericFunction_it g_it = uflsymbols_.find(uflsymbol);
-  if (g_it == uflsymbols_.end())
-  {
-    // if it doesn't, issue an error
-    dolfin::error("GenericFunction with uflsymbol \"%s\" does not exist in system.", uflsymbol.c_str());
-  }
-  else
-  {
-    // if not then return it
-    return (*g_it).second;
-  }
-}
-
-// Return a pointer to a dolfin GenericFunction with the given uflsymbol
-GenericFunction_ptr SystemBucket::grab_uflsymbol(std::string uflsymbol)
-{
-  GenericFunction_ptr function; 
-  // First check if a generic function with this symbol already exists
-  GenericFunction_it g_it = uflsymbols_.find(uflsymbol);
-  if (g_it != uflsymbols_.end())
-  {
-    // if it does, take that
-    function = (*g_it).second;
-  }
-  // but otherwise just return a null pointer
-  return function;
-}
-
-// Register a coefficientspace in the system
-void SystemBucket::register_coefficientspace(FunctionSpace_ptr coefficientspace, std::string name)
-{
-  // First check if a field with this name already exists
-  FunctionSpace_it f_it = coefficientspaces_.find(name);
-  if (f_it != coefficientspaces_.end())
-  {
-    // if it does, issue an error
-    dolfin::error("FunctionSpace named \"%s\" already exists in system coefficientspaces.", name.c_str());
-  }
-  else
-  {
-    // if not then insert it into the maps
-    coefficientspaces_[name] = coefficientspace;
-  }
-}
-
-// Check if the system contains a coefficientspace with the given name
-bool SystemBucket::contains_coefficientspace(std::string name)
-{
-  // First check if a field with this name already exists
-  FunctionSpace_it f_it = coefficientspaces_.find(name);
-  return f_it != coefficientspaces_.end();
-}
-
-FunctionSpace_ptr SystemBucket::fetch_coefficientspace(std::string name)
-{
-  // First check if a functionspace with this name already exists
-  FunctionSpace_it f_it = coefficientspaces_.find(name);
-  if (f_it == coefficientspaces_.end())
-  {
-    // if it doesn't, issue an error
-    std::cerr << coefficientspaces_str();
-    dolfin::error("FunctionSpace named \"%s\" doesn't exist in system coefficientspaces.", name.c_str());
-  }
-  else
-  {
-    // if it does return it
-    return (*f_it).second;
-  }
-}
-
 // Register a solver in the system
 void SystemBucket::register_solver(SolverBucket_ptr solver, std::string name)
 {
@@ -378,6 +218,14 @@ void SystemBucket::solve()
   }
 }
 
+void SystemBucket::output()
+{
+  for (FunctionBucket_it f_it = fields_begin(); f_it != fields_end(); f_it++)
+  {
+    (*(*f_it).second).output();
+  }
+}
+
 void SystemBucket::collect_bcs_()
 {
   for (FunctionBucket_const_it f_it = fields_begin(); f_it != fields_end(); f_it++)
@@ -409,6 +257,20 @@ std::vector<BoundaryCondition_ptr>::const_iterator SystemBucket::bcs_end() const
   return bcs_.end();
 }
 
+void SystemBucket::attach_and_initialize()
+{
+  // attach the coefficients to the functionals and forms
+  // now that we have them all registered
+  dolfin::info("Attaching coeffs for system %s", name().c_str());
+  attach_all_coeffs_();
+
+  for (SolverBucket_it s_it = solvers_begin(); s_it != solvers_end(); s_it++)
+  {
+    (*(*s_it).second).initialize_matrices();
+  }
+
+}
+
 void SystemBucket::attach_all_coeffs_()
 {
   attach_function_coeffs_(fields_begin(), fields_end());
@@ -426,6 +288,7 @@ void SystemBucket::attach_function_coeffs_(FunctionBucket_it f_begin, FunctionBu
 
 void SystemBucket::attach_solver_coeffs_(SolverBucket_it s_begin, SolverBucket_it s_end)
 {
+
   for (SolverBucket_it s_it = s_begin; s_it != s_end; s_it++)
   {
     (*(*s_it).second).attach_form_coeffs();
@@ -439,42 +302,9 @@ const std::string SystemBucket::str(int indent) const
   std::string indentation (indent*2, ' ');
   s << indentation << "SystemBucket " << name() << std::endl;
   indent++;
-  s << uflsymbols_str(indent);
-  s << coefficientspaces_str(indent);
   s << fields_str(indent);
   s << coeffs_str(indent);
   s << solvers_str(indent);
-  return s.str();
-}
-
-// Return a string describing the contents of uflsymbols_
-const std::string SystemBucket::uflsymbols_str(int indent) const
-{
-  std::stringstream s;
-  std::string indentation (indent*2, ' ');
-  for ( GenericFunction_const_it g_it = uflsymbols_.begin(); g_it != uflsymbols_.end(); g_it++ )
-  {
-    if ((*g_it).second)
-    {
-      s << indentation << "UFLSymbol " << (*g_it).first << " associated" << std::endl;
-    }
-    else
-    {
-      s << indentation << "UFLSymbol " << (*g_it).first << " not associated" << std::endl;
-    }
-  }
-  return s.str();
-}
-
-// Return a string describing the contents of coefficientspaces_
-const std::string SystemBucket::coefficientspaces_str(int indent) const
-{
-  std::stringstream s;
-  std::string indentation (indent*2, ' ');
-  for ( FunctionSpace_const_it f_it = coefficientspaces_.begin(); f_it != coefficientspaces_.end(); f_it++ )
-  {
-    s << indentation << "CoefficientSpace for " << (*f_it).first  << std::endl;
-  }
   return s.str();
 }
 

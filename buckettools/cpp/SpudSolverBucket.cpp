@@ -159,6 +159,63 @@ void SpudSolverBucket::ksp_fill_(const std::string &optionpath, KSP &ksp,
   buffer.str(""); buffer << optionpath << "/preconditioner/name";
   serr = Spud::get_option(buffer.str(), preconditioner); spud_err(buffer.str(), serr);
 
+  buffer.str(""); buffer << optionpath << "/remove_null_space";
+  if (Spud::have_option(buffer.str()))
+  {
+    buffer.str(""); buffer << optionpath << "/remove_null_space/null_space";
+    int nnulls = Spud::option_count(buffer.str());
+
+    uint kspsize = 0;
+    if(parent_indices)
+    {
+      kspsize = (*parent_indices).size();
+      // FIXME: not right for parallel!
+    }
+    else
+    {
+      kspsize = (*(*system_).function()).vector().size();
+    }
+
+    std::vector< PETScVector_ptr > nullvecs;
+    Vec vecs[nnulls];
+
+    for (uint i = 0; i<nnulls; i++)
+    {
+      IS is;
+      std::vector<uint> indices; // don't really need these
+      buffer.str(""); buffer << optionpath << "/remove_null_space/null_space[" << i << "]";
+      is_by_field_fill_(buffer.str(), is,
+                        indices, parent_indices);
+
+      PETScVector_ptr nullvec( new dolfin::PETScVector(kspsize) );
+    
+      PetscInt size, localsize;
+      ISGetSize(is, &size);
+      ISGetLocalSize(is, &localsize);
+      dolfin::PETScVector unitvec(localsize, "local");
+      double unit = 1./(std::sqrt( (double) size));
+      unitvec = unit;
+
+      (*nullvec).zero();
+      VecScatter scatter;
+      perr = VecScatterCreate(*unitvec.vec(), PETSC_NULL, *(*nullvec).vec(), is, &scatter); CHKERRV(perr);
+      perr = VecScatterBegin(scatter, *unitvec.vec(), *(*nullvec).vec(), INSERT_VALUES, SCATTER_FORWARD); CHKERRV(perr);
+      perr = VecScatterEnd(scatter, *unitvec.vec(), *(*nullvec).vec(), INSERT_VALUES, SCATTER_FORWARD); CHKERRV(perr);
+      (*nullvec).apply(""); //just in case
+
+      // keep this vector in scope so that the (standard) pointer assignment below is safe
+      // necessary?
+      nullvecs.push_back(nullvec);
+      vecs[i] = *(*nullvec).vec();
+
+    }
+
+    //create null space and attach to the ksp
+    MatNullSpace SP;
+    perr = MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_FALSE, nnulls, vecs, &SP); CHKERRV(perr);
+    perr = KSPSetNullSpace(ksp, SP); CHKERRV(perr);
+  }
+
   PC pc;
   perr = KSPGetPC(ksp, &pc); CHKERRV(perr);
   perr = PCSetType(pc, preconditioner.c_str()); CHKERRV(perr);
@@ -175,7 +232,16 @@ void SpudSolverBucket::ksp_fill_(const std::string &optionpath, KSP &ksp,
   {
     buffer.str(""); buffer << optionpath << "/preconditioner";
     pc_fieldsplit_fill_(buffer.str(), pc, parent_indices);
-  }  
+  }
+  else if (preconditioner=="lu")
+  {
+    std::string factorization_package;
+    buffer.str(""); buffer << optionpath << "/preconditioner/factorization_package/name";
+    serr = Spud::get_option(buffer.str(), factorization_package); spud_err(buffer.str(), serr);
+
+    perr = PCFactorSetMatSolverPackage(pc, factorization_package.c_str()); CHKERRV(perr);
+
+  }
 
 }
 
@@ -249,6 +315,19 @@ void SpudSolverBucket::pc_fieldsplit_by_field_fill_(const std::string &optionpat
                                                     std::vector<uint> &child_indices, 
                                                     const std::vector<uint>* parent_indices)
 {
+  PetscErrorCode perr;
+  // create the index set
+  IS is;
+  is_by_field_fill_(optionpath, is,
+                    child_indices, parent_indices);
+  perr = PCFieldSplitSetIS(pc, is); CHKERRV(perr);
+
+}
+
+void SpudSolverBucket::is_by_field_fill_(const std::string &optionpath, IS &is, 
+                                         std::vector<uint> &child_indices, 
+                                         const std::vector<uint>* parent_indices)
+{
 
   // a buffer for strings
   std::stringstream buffer;
@@ -262,7 +341,7 @@ void SpudSolverBucket::pc_fieldsplit_by_field_fill_(const std::string &optionpat
 
   buffer.str(""); buffer << optionpath << "/field";
   int nfields = Spud::option_count(buffer.str());
-  // loop over the fields used in this fieldsplit
+  // loop over the fields used in this is
   for (uint i = 0; i < nfields; i++)
   {
     buffer.str(""); buffer << optionpath << "/field[" << i << "]";
@@ -275,7 +354,7 @@ void SpudSolverBucket::pc_fieldsplit_by_field_fill_(const std::string &optionpat
     // and from that the field index
     int fieldindex = (*(*system_).fetch_field(fieldname)).index();
 
-    // do we specify region id limitations for this fieldsplit
+    // do we specify region id limitations for this is
     buffer.str(""); buffer << optionpath << "/field[" << i << "]/region_ids";
     if (Spud::have_option(buffer.str()))
     {
@@ -439,7 +518,7 @@ void SpudSolverBucket::pc_fieldsplit_by_field_fill_(const std::string &optionpat
         p_ind++;
         if (p_ind == p_size)
         {
-          dolfin::error("Fieldsplit is not a subset of a parent fieldsplit.");
+          dolfin::error("IS indices are not a subset of a parent fieldsplit.");
         }
       }
       indices[ind] = p_ind;
@@ -462,10 +541,8 @@ void SpudSolverBucket::pc_fieldsplit_by_field_fill_(const std::string &optionpat
   }
 
   // create the index set
-  IS is;
   perr = ISCreateGeneral(PETSC_COMM_WORLD, n, indices, &is); CHKERRV(perr);
-  perr = ISView(is, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);
-  perr = PCFieldSplitSetIS(pc, is); CHKERRV(perr);
+  //perr = ISView(is, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);
 
   // free up the indices
   PetscFree(indices);
@@ -532,25 +609,17 @@ void SpudSolverBucket::forms_fill_()
     for (uint i = 0; i < ncoeff; i++)
     {
       std::string uflsymbol = (*form).coefficient_name(i);
-      GenericFunction_ptr function = (*system_).grab_uflsymbol(uflsymbol);
-      if (!function)
+      // is this a coefficient function in this system?
+      if ((*(*system_).bucket()).contains_uflname(uflsymbol))
       {
-        // the function isn't initialised so either we haven't reached it yet or
-        // we got to it but weren't able to initialise it because we didn't have its
-        // function space available yet... let's see if it's a function
-        std::string functionname = (*system_).fetch_uflname(uflsymbol);
-        // this only checks the coefficient option path because fields get their functionspace
-        // as a subfunctionspace from the system (mixed?) functionspace
-        if (Spud::have_option((*dynamic_cast<SpudSystemBucket*>(system_)).optionpath()+"/coefficient::"+functionname+"/type::Function"))
+        // yes, it's a coefficient function... so let's take this opportunity to register
+        // its functionspace (if we don't already have it)
+        std::string baseuflsymbol = (*(*system_).bucket()).fetch_uflname(uflsymbol);
+        if (!(*(*system_).bucket()).contains_coefficientspace(baseuflsymbol))
         {
-          // yes, it's a coefficient function... so let's take this opportunity to register
-          // its functionspace
-          if (!(*system_).contains_coefficientspace(functionname))
-          {
-            FunctionSpace_ptr coefficientspace;
-            coefficientspace = ufc_fetch_coefficientspace((*system_).name(), name(), functionname, (*system_).mesh());
-            (*system_).register_coefficientspace(coefficientspace, functionname);
-          }
+          FunctionSpace_ptr coefficientspace;
+          coefficientspace = ufc_fetch_coefficientspace((*system_).name(), name(), baseuflsymbol, (*system_).mesh());
+          (*(*system_).bucket()).register_coefficientspace(coefficientspace, baseuflsymbol);
         }
       }
 

@@ -2,6 +2,7 @@
 #include "BoostTypes.h"
 #include "SolverBucket.h"
 #include "SystemBucket.h"
+#include "Bucket.h"
 #include <dolfin.h>
 #include <string>
 
@@ -90,12 +91,14 @@ void SolverBucket::attach_form_coeffs()
 {
   for (Form_it f_it = forms_begin(); f_it != forms_end(); f_it++)
   {
+    dolfin::info("  Attaching coeffs for form %s", (*f_it).first.c_str());
     // Loop over the functions requested by the form and hook up pointers
     uint ncoeff = (*(*f_it).second).num_coefficients();
     for (uint i = 0; i < ncoeff; i++)
     {
       std::string uflsymbol = (*(*f_it).second).coefficient_name(i);
-      GenericFunction_ptr function = (*system_).fetch_uflsymbol(uflsymbol);
+      dolfin::info("    Attaching uflsymbol %s", uflsymbol.c_str());
+      GenericFunction_ptr function = (*(*system_).bucket()).fetch_uflsymbol(uflsymbol);
 
       (*(*f_it).second).set_coefficient(uflsymbol, function);
     }
@@ -211,6 +214,11 @@ void SolverBucket::solve()
       dolfin::info("%u Error (absolute, relative) = %g, %g\n", it, aerror, rerror);
 
     }
+
+//    for(std::vector<BoundaryCondition_ptr>::const_iterator bc = (*system_).bcs_begin(); bc != (*system_).bcs_end(); bc++)
+//    {
+//      (*(*bc)).apply((*(*system_).iteratedfunction()).vector());
+//    }
 
     (*(*system_).function()).vector() = (*(*system_).iteratedfunction()).vector();
 

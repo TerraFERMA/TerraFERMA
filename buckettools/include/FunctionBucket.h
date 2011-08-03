@@ -43,6 +43,8 @@ namespace buckettools
     // expression for the initial condition (if it exists)
     Expression_ptr icexpression_;
 
+    File_ptr pvdfile_;
+
     // a map from functional names to the forms (the real point of this class)
     std::map< std::string, Form_ptr > functionals_;
 
@@ -169,6 +171,8 @@ namespace buckettools
     { return icexpression_; }
 
     virtual const bool include_in_diagnostics() const;
+
+    void output();
 
   };
 

@@ -27,6 +27,7 @@ namespace buckettools {
   typedef boost::shared_ptr< dolfin::Form >                         Form_ptr;
   typedef boost::shared_ptr< dolfin::PETScMatrix >                  PETScMatrix_ptr;
   typedef boost::shared_ptr< dolfin::PETScVector >                  PETScVector_ptr;
+  typedef boost::shared_ptr< dolfin::File >                         File_ptr;
 
   typedef boost::shared_ptr< KSP > KSP_ptr;
   typedef boost::shared_ptr< PC >  PC_ptr;

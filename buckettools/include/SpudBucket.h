@@ -32,6 +32,13 @@ namespace buckettools
 //    // populate the detectors_ data structure
 //    void detectors_fill_();
  
+    // fill in the uflnames
+    void uflnames_fill_(const std::string &optionpath);
+
+    void timestep_run_();
+
+    void steady_run_();
+
     // Destroy the data in the bucket
     void empty_();
 
@@ -83,6 +90,8 @@ namespace buckettools
     const std::string optionpath()
     { return optionpath_; }
 
+    void run();
+ 
   };
 
   // Define a boost shared ptr type for the class

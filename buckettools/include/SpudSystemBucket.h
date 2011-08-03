@@ -26,16 +26,15 @@ namespace buckettools
     // fill in the system function information
     void systemfunction_fill_();
 
-    // fill in the uflsymbols
-    void uflsymbols_fill_();
-
     // fill in data about the fields
     void fields_fill_();
 
     void apply_ic_(const uint &component, const std::map< uint, Expression_ptr > &icexpressions);
 
+    void apply_bc_();
+
     // fill in data about the coefficients
-    void coeffs_fill_();
+    void expcoeffs_fill_();
 
     // fill in data about the solvers
     void solvers_fill_();
@@ -52,7 +51,10 @@ namespace buckettools
     void fill();
 
     // Fill the aliased components of the system assuming the buckettools schema
-    void aliased_fill();
+    void attach_and_initialize();
+
+    // fill in data about the coefficients
+    void funccoeffs_fill();
 
     // Return a string object describing the system
     const std::string str() const

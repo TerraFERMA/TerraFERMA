@@ -62,9 +62,17 @@ void SpudBucket::fill()
     meshes_fill_(buffer.str());
   }
   
-  // Put systems into the bucket
+  // Having just registered the system uflsymbols, quickly loop through
+  // the rest of the fields recording their symbol and name
   buffer.str(""); buffer << optionpath() << "/system";
   int nsystems = Spud::option_count(buffer.str());
+  for (uint i = 0; i<nsystems; i++)
+  {
+    buffer.str(""); buffer << optionpath() << "/system[" << i << "]";
+    uflnames_fill_(buffer.str());
+  }
+
+  // Put systems into the bucket
   for (uint i = 0; i<nsystems; i++)
   {
     buffer.str(""); buffer << optionpath() << "/system[" << i << "]";
@@ -73,7 +81,14 @@ void SpudBucket::fill()
 
   for (SystemBucket_it sys_it = systems_begin(); sys_it != systems_end(); sys_it++)
   {
-    (*boost::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).aliased_fill();
+    (*boost::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).funccoeffs_fill();
+  }
+  
+  uflsymbols_fill_();
+
+  for (SystemBucket_it sys_it = systems_begin(); sys_it != systems_end(); sys_it++)
+  {
+    (*(*sys_it).second).attach_and_initialize();
   }
   
 //  // Put detectors in the bucket
@@ -311,6 +326,30 @@ void SpudBucket::meshes_fill_(const std::string &optionpath)
   register_mesh(mesh, meshname, optionpath);
 }
 
+void SpudBucket::uflnames_fill_(const std::string &optionpath)
+{
+  std::stringstream buffer;
+  Spud::OptionError serr;
+  std::string uflsymbol, type;
+
+  buffer.str("");  buffer << optionpath << "/coefficient";
+  int ncoeffs = Spud::option_count(buffer.str());
+  // Loop over the coefficients and register their ufsymbols
+  for (uint i = 0; i < ncoeffs; i++)
+  {
+    buffer.str(""); buffer << optionpath << "/coefficient[" << i << "]/type/name";
+    serr = Spud::get_option(buffer.str(), type); spud_err(buffer.str(), serr);
+    if (type=="Function")
+    {
+      buffer.str(""); buffer << optionpath << "/coefficient[" << i << "]/ufl_symbol";
+      serr = Spud::get_option(buffer.str(), uflsymbol); spud_err(buffer.str(), serr);
+      register_uflname(uflsymbol, uflsymbol);
+      register_uflname(uflsymbol, uflsymbol+"_i");
+      register_uflname(uflsymbol, uflsymbol+"_n");
+    }
+  }
+}
+
 // Insert a system (with optionpath) into the bucket
 void SpudBucket::systems_fill_(const std::string &optionpath)
 {
@@ -392,6 +431,66 @@ const std::string SpudBucket::meshes_str(int indent) const
   }
 
   return s.str();
+}
+
+void SpudBucket::run()
+{
+  Spud::OptionError serr;
+  std::stringstream buffer;
+
+  buffer.str(""); buffer << "/timestepping";
+  if (Spud::have_option(buffer.str()))
+  {
+    timestep_run_(); 
+  }
+  else
+  {
+    steady_run_();
+  }
+
+}
+
+void SpudBucket::timestep_run_()
+{
+  Spud::OptionError serr;
+  std::stringstream buffer;
+
+  double time;
+  buffer.str(""); buffer << "/timestepping/current_time";
+  serr = Spud::get_option(buffer.str(), time); spud_err(buffer.str(), serr);
+
+  double finish_time;
+  buffer.str(""); buffer << "/timestepping/finish_time";
+  serr = Spud::get_option(buffer.str(), finish_time); spud_err(buffer.str(), serr);
+
+  double timestep;
+  buffer.str(""); buffer << "/timestepping/timestep";
+  serr = Spud::get_option(buffer.str(), timestep); spud_err(buffer.str(), serr);
+
+  while(time < finish_time)
+  {
+    dolfin::error("Timestepping not implemented.");
+    time += timestep;
+  }
+
+}
+
+void SpudBucket::steady_run_()
+{
+  Spud::OptionError serr;
+  std::stringstream buffer;
+
+  int nints;
+  buffer.str(""); buffer << "/nonlinear_systems/nonlinear_iterations";
+  serr = Spud::get_option(buffer.str(), nints, 1); spud_err(buffer.str(), serr);
+
+  for (uint i = 0; i < nints; i++)
+  {
+
+    solve();
+
+  }
+
 }
 
 // Empty the spudbucket

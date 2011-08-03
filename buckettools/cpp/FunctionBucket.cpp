@@ -2,6 +2,7 @@
 #include "BoostTypes.h"
 #include "FunctionBucket.h"
 #include "SystemBucket.h"
+#include "Bucket.h"
 #include <dolfin.h>
 #include <string>
 
@@ -179,12 +180,14 @@ void FunctionBucket::attach_functional_coeffs()
 {
   for (Form_it f_it = functionals_begin(); f_it != functionals_end(); f_it++)
   {
+    dolfin::info("  Attaching coeffs for functional %s", (*f_it).first.c_str());
     // Loop over the functions requested by the form and hook up pointers
     uint ncoeff = (*(*f_it).second).num_coefficients();
     for (uint i = 0; i < ncoeff; i++)
     {
       std::string uflsymbol = (*(*f_it).second).coefficient_name(i);
-      GenericFunction_ptr function = (*system_).fetch_uflsymbol(uflsymbol);
+      dolfin::info("    Attaching uflsymbol %s", uflsymbol.c_str());
+      GenericFunction_ptr function = (*(*system_).bucket()).fetch_uflsymbol(uflsymbol);
 
       (*(*f_it).second).set_coefficient(uflsymbol, function);
     }
@@ -219,6 +222,14 @@ const bool FunctionBucket::include_in_diagnostics() const
 {
   dolfin::error("Failed to find virtual function include_in_diagnostics.");
   return false;
+}
+
+void FunctionBucket::output()
+{
+  if (pvdfile_)
+  {
+    *pvdfile_ << *boost::dynamic_pointer_cast< dolfin::Function >(function());
+  }
 }
 
 // Empty the function

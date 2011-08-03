@@ -23,6 +23,14 @@ namespace buckettools
     // The name of the bucket
     std::string name_;
     
+    // a map from ufl symbols to field and coefficient names
+    std::map< std::string, std::string > uflnames_;
+    
+    // a map from ufl symbols to pointers to functions
+    std::map< std::string, GenericFunction_ptr > uflsymbols_;
+
+    std::map< std::string, FunctionSpace_ptr > coefficientspaces_;
+
     // Destroy the data in the bucket
     void empty_();
 
@@ -40,6 +48,9 @@ namespace buckettools
     // SystemBuckets describe function spaces and the solvers that operate on them
     std::map< std::string, SystemBucket_ptr >       systems_;
     std::map< int, SystemBucket_ptr >               orderedsystems_;
+
+    // fill in the uflsymbols
+    void uflsymbols_fill_();
 
 //    // A map from detector set name to detectors
 //    std::map< std::string, GenericDetectors_ptr >    detectors_;
@@ -128,12 +139,51 @@ namespace buckettools
     // Return the const iterator to the end of the systems_ map
     int_SystemBucket_const_it orderedsystems_end() const;
 
+    // Register a ufl name
+    void register_uflname(std::string name, std::string uflsymbol);
+
+    // Return the name of a function with uflsymbol
+    const std::string fetch_uflname(std::string uflsymbol) const;
+
+    // Return the name of a function with uflsymbol
+    const bool contains_uflname(std::string uflsymbol) const;
+
+    // Register a ufl system and function pointer in the system
+    void register_uflsymbol(GenericFunction_ptr function, std::string uflsymbol);
+
+    // Return a pointer to a dolfin GenericFunction with the given uflsymbol
+    GenericFunction_ptr fetch_uflsymbol(std::string uflsymbol) const;
+
+    void register_coefficientspace(FunctionSpace_ptr coefficientspace, std::string name);
+
+    const bool contains_coefficientspace(std::string name) const;
+
+    FunctionSpace_ptr fetch_coefficientspace(std::string name) const;
+
     void solve();
 
     // Return the geometry dimension
     const int dimension() const
     { return dimension_; }
+
+    void output();
+
+    virtual void run();
  
+    // Print a description of the coefficient functionspaces contained in the system
+    virtual const std::string coefficientspaces_str() const
+    { return coefficientspaces_str(0); }
+
+    // Print a description of the coefficient functionspaces contained in the system
+    virtual const std::string coefficientspaces_str(int indent) const;
+
+    // Print a description of the fields contained in the system
+    virtual const std::string uflsymbols_str() const
+    { return uflsymbols_str(0); }
+
+    // Print a description of the fields contained in the system
+    virtual const std::string uflsymbols_str(int indent) const;
+
 //    void register_system(SystemBucket_ptr std::string name)
 //    { register_system(name, "uninitialised_path"); }
 //
