@@ -44,11 +44,12 @@ include_directories("${BUCKETTOOLS_DIR}/include")
 
 add_subdirectory(poisson)
 add_subdirectory(projection_mixedelement)
+add_subdirectory(rbconvection_steadystate_split)
 add_subdirectory(rbconvection_steadystate)
 
 add_custom_target(run)
-add_dependencies(run poissonrun projectionrun rbconvectiontest)
+add_dependencies(run poissonrun projectionrun rbconvectionrun rbconvectioncoupledrun)
 
 add_custom_target(test)
-add_dependencies(test projectiontest rbconvectiontest)
+add_dependencies(test projectiontest rbconvectiontest rbconvectioncoupledtest)
 

@@ -1,4 +1,4 @@
-set(EXECUTABLE "rbconvectioncoupled")
+set(EXECUTABLE "rbconvectionsplit")
 
 set(OPTIONSFILENAME "rbconvection.bml")
 
