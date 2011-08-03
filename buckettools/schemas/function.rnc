@@ -90,10 +90,6 @@ coefficient_options =
             }
           ),
           generic_function_output_options
-        }|
-        element type {
-          attribute name { "Aliased" },
-          coefficient_aliased_options
         }
       )
     }
@@ -192,24 +188,6 @@ functional_options =
       attribute name { xsd:string },
       form
     }
-  )
-
-coefficient_aliased_options = 
-  (
-    element system {
-      attribute name { xsd:string },
-      empty
-    },
-    (
-      element field {
-        attribute name { xsd:string },
-        empty
-      }|
-      element coefficient {
-        attribute name { xsd:string },
-        empty
-      }
-    )
   )
 
 initial_condition_scalar = 

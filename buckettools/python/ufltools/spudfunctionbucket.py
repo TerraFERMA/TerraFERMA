@@ -7,57 +7,42 @@ class SpudFunction(ufltools.functionbucket.Function):
      plus all the information necessary to populate that class using libspud.
      Note that the class has limited ufl production because much of this is system dependent."""
 
-  def fill(self, optionpath, system):
+  def fill(self, optionpath, system, index):
     """Fill a function class with data describing that function using libspud, the given optionpath and the system its based on."""
     self.name       = libspud.get_option(optionpath+"/name")
     self.symbol     = libspud.get_option(optionpath+"/ufl_symbol")
     self.system     = system
+    self.index      = index
     self.type       = libspud.get_option(optionpath+"/type/name")
-    if self.type == "Aliased":
-      aliasedsystem_name   = libspud.get_option(optionpath+"/type/system/name")
-      aliasedsystem_optionpath = "/system::"+aliasedsystem_name
-      if libspud.have_option(optionpath+"/type/field"):
-        aliasedfunction_name = libspud.get_option(optionpath+"/type/field/name")
-        aliasedfunction_optionpath = aliasedsystem_optionpath+"/field::"+aliasedfunction_name
-      elif libspud.have_option(optionpath+"/type/coefficient"):
-        aliasedfunction_name = libspud.get_option(optionpath+"/type/coefficient/name")
-        aliasedfunction_optionpath = aliasedsystem_optionpath+"/coefficient::"+aliasedfunction_name
-      else:
-        print "Unknown way of specifying aliased field/coefficient."
-        sys.exit(1)
-      
-      self.type = libspud.get_option(aliasedfunction_optionpath+"/type/name")
-      if self.type=="Aliased":
-        print "Can't alias to an aliased function."
-        sys.exit(1)
-       
-      # Perform a check that the meshes at least have the same name (a necessary check but is it sufficient?)
-      aliasedsystemmesh_name = libspud.get_option(aliasedsystem_optionpath+"/mesh/name")
-      assert(aliasedsystemmesh_name == self.system.mesh_name)
-      
-      newoptionpath = aliasedfunction_optionpath
-    else:
-      newoptionpath = optionpath
 
-    self.rank   = libspud.get_option(newoptionpath+"/type/rank/name")
+    self.rank   = libspud.get_option(optionpath+"/type/rank/name")
     self.family   = None
     self.degree = None
     if self.type != "Constant":
-      self.family = libspud.get_option(newoptionpath+"/type/rank/element/family")
-      self.degree = libspud.get_option(newoptionpath+"/type/rank/element/degree")
+      self.family = libspud.get_option(optionpath+"/type/rank/element/family")
+      self.degree = libspud.get_option(optionpath+"/type/rank/element/degree")
     
     self.size     = None
     self.shape    = None
     self.symmetry = None
     if self.rank == "Vector":
-      if libspud.have_option(newoptionpath+"/type/rank/element/size"):
-        self.size = libspud.get_option(newoptionpath+"/type/rank/element/size")
+      if libspud.have_option(optionpath+"/type/rank/element/size"):
+        self.size = libspud.get_option(optionpath+"/type/rank/element/size")
     elif self.rank == "Tensor":
-      if libspud.have_option(newoptionpath+"/type/rank/element/shape"):
-        self.shape = libspud.get_option(newoptionpath+"/type/rank/element/shape")
-      if libspud.have_option(newoptionpath+"/type/rank/element/symmetry"):
+      if libspud.have_option(optionpath+"/type/rank/element/shape"):
+        self.shape = libspud.get_option(optionpath+"/type/rank/element/shape")
+      if libspud.have_option(optionpath+"/type/rank/element/symmetry"):
         self.symmetry = True
 
     self.functionals = []
     
+    for k in range(libspud.option_count(optionpath+"/type/output/include_in_diagnostics/functional")):
+      functional_optionpath = optionpath+"/type/output/include_in_diagnostics/functional["+`k`+"]"
+      functional = ufltools.spud.SpudFunctional()
+      # get all the information about this functional from the options dictionary
+      functional.fill(functional_optionpath, self)
+      # let the field know about this functional
+      self.functionals.append(functional)
+      # done with this functional
+      del functional
 
