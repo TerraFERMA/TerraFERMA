@@ -9,3 +9,7 @@ def test_v_rms():
   val = sqrt(stat["Stokes"]["Velocity"]["L2Norm"][-1])
   assert abs(val - 42.865) < 0.01
 
+def test_nu():
+  val = -1.0*(stat["Temperature"]["Temperature"]["TopSurfaceIntegral"][-1])
+  assert val - 4.9 < 0.05
+
