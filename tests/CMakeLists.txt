@@ -48,8 +48,8 @@ add_subdirectory(rbconvection_steadystate_split)
 add_subdirectory(rbconvection_steadystate)
 
 add_custom_target(run)
-add_dependencies(run poissonrun projectionrun rbconvectionrun rbconvectioncoupledrun)
+add_dependencies(run poissonrun projectionrun rbconvectionsplitrun rbconvectioncoupledrun)
 
 add_custom_target(test)
-add_dependencies(test projectiontest rbconvectiontest rbconvectioncoupledtest)
+add_dependencies(test projectiontest rbconvectionsplittest rbconvectioncoupledtest)
 
