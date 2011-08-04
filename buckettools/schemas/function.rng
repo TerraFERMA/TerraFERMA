@@ -31,8 +31,8 @@
             <ref name="tensor_field_function_options"/>
           </element>
         </choice>
-        <ref name="generic_function_output_options"/>
       </element>
+      <ref name="generic_function_output_options"/>
     </element>
   </define>
   <define name="coefficient_options">
@@ -64,7 +64,6 @@
               <ref name="tensor_coefficient_function_expression_options"/>
             </element>
           </choice>
-          <ref name="generic_function_output_options"/>
         </element>
         <element name="type">
           <attribute name="name">
@@ -90,7 +89,6 @@
               <ref name="tensor_coefficient_function_expression_options"/>
             </element>
           </choice>
-          <ref name="generic_function_output_options"/>
         </element>
         <element name="type">
           <attribute name="name">
@@ -116,9 +114,9 @@
               <ref name="tensor_coefficient_constant_options"/>
             </element>
           </choice>
-          <ref name="generic_function_output_options"/>
         </element>
       </choice>
+      <ref name="generic_function_output_options"/>
     </element>
   </define>
   <define name="scalar_field_function_options">

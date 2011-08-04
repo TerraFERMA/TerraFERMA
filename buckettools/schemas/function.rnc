@@ -23,10 +23,10 @@ field_options =
               attribute name { "Tensor" },
               tensor_field_function_options
             }
-          ),
-          generic_function_output_options
+          )
         }
-      )
+      ),
+      generic_function_output_options
     }
   )
 
@@ -52,8 +52,7 @@ coefficient_options =
               attribute name { "Tensor" },
               tensor_coefficient_function_expression_options
             }
-          ),
-          generic_function_output_options
+          )
         }|
         element type {
           attribute name { "Expression" },
@@ -70,8 +69,7 @@ coefficient_options =
               attribute name { "Tensor" },
               tensor_coefficient_function_expression_options
             }
-          ),
-          generic_function_output_options
+          )
         }|
         element type {
           attribute name { "Constant" },
@@ -88,10 +86,10 @@ coefficient_options =
               attribute name { "Tensor" },
               tensor_coefficient_constant_options
             }
-          ),
-          generic_function_output_options
+          )
         }
-      )
+      ),
+      generic_function_output_options
     }
   )
 
