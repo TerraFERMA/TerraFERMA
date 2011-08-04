@@ -243,16 +243,7 @@ void SpudFunctionBucket::bc_component_fill_(const std::string &optionpath,
     for (std::vector<int>::const_iterator subcompid = subcompids.begin(); subcompid < subcompids.end(); subcompid++)
     {
 
-       FunctionSpace_ptr subfunctionspace;
-       if (contains_subfunctionspace(*subcompid))
-       {
-         subfunctionspace = fetch_subfunctionspace(*subcompid);
-       }
-       else
-       {
-         subfunctionspace.reset( new dolfin::SubSpace(*(functionspace()), *subcompid) );
-         register_subfunctionspace(subfunctionspace, *subcompid);
-       }
+       FunctionSpace_ptr subfunctionspace = (*functionspace())[*subcompid];
        
        buffer.str(""); buffer << optionpath << "/type::Dirichlet";
        Expression_ptr bcexp = initialize_expression(buffer.str(), size_, shape_);

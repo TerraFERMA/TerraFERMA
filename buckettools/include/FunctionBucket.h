@@ -48,9 +48,6 @@ namespace buckettools
     // a map from functional names to the forms (the real point of this class)
     std::map< std::string, Form_ptr > functionals_;
 
-    // a map from components to the (sub)functionspaces they are described on
-    std::map< int, FunctionSpace_ptr > subfunctionspaces_;
-    
     // a map from bc names to the Expressions describing them
     std::map< std::string, Expression_ptr > bcexpressions_;
     
@@ -77,15 +74,6 @@ namespace buckettools
     
     // Default destructor
     ~FunctionBucket();
-
-    // Register a subfunctionspace in the system
-    void register_subfunctionspace(FunctionSpace_ptr subfunctionspace, int component);
-
-    // Return whether a subfunctionspace with the given name is in the system
-    bool contains_subfunctionspace(int component);
-
-    // Return a pointer to a dolfin subfunctionspace with the given name
-    FunctionSpace_ptr fetch_subfunctionspace(int component);
 
     // Register a functional in the function
     void register_functional(Form_ptr functional, std::string name);
