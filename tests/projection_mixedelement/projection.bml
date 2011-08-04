@@ -59,17 +59,17 @@
             </constant>
           </initial_condition>
         </rank>
-        <output>
-          <include_in_diagnostics>
-            <functional name="Integral">
-              <string_value lines="20" type="python">int = ss1*dx</string_value>
-              <ufl_symbol>
-                <string_value lines="1">int</string_value>
-              </ufl_symbol>
-            </functional>
-          </include_in_diagnostics>
-        </output>
       </type>
+      <output>
+        <include_in_diagnostics>
+          <functional name="Integral">
+            <string_value lines="20" type="python">int = ss1*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+          </functional>
+        </include_in_diagnostics>
+      </output>
     </field>
     <field name="Field2">
       <ufl_symbol>
@@ -91,23 +91,23 @@
             </constant>
           </initial_condition>
         </rank>
-        <output>
-          <include_in_diagnostics>
-            <functional name="Integral0">
-              <string_value lines="20" type="python">int = ss2[0]*dx</string_value>
-              <ufl_symbol>
-                <string_value lines="1">int</string_value>
-              </ufl_symbol>
-            </functional>
-            <functional name="Integral1">
-              <string_value lines="20" type="python">int = ss2[1]*dx</string_value>
-              <ufl_symbol>
-                <string_value lines="1">int</string_value>
-              </ufl_symbol>
-            </functional>
-          </include_in_diagnostics>
-        </output>
       </type>
+      <output>
+        <include_in_diagnostics>
+          <functional name="Integral0">
+            <string_value lines="20" type="python">int = ss2[0]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+          </functional>
+          <functional name="Integral1">
+            <string_value lines="20" type="python">int = ss2[1]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+          </functional>
+        </include_in_diagnostics>
+      </output>
     </field>
     <coefficient name="Source1">
       <ufl_symbol>
@@ -121,17 +121,17 @@
             </constant>
           </value>
         </rank>
-        <output>
-          <include_in_diagnostics>
-            <functional name="Integral">
-              <string_value lines="20" type="python">int = ss1*dx</string_value>
-              <ufl_symbol>
-                <string_value lines="1">int</string_value>
-              </ufl_symbol>
-            </functional>
-          </include_in_diagnostics>
-        </output>
       </type>
+      <output>
+        <include_in_diagnostics>
+          <functional name="Integral">
+            <string_value lines="20" type="python">int = ss1*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+          </functional>
+        </include_in_diagnostics>
+      </output>
     </coefficient>
     <coefficient name="Source2">
       <ufl_symbol>
@@ -145,23 +145,23 @@
             </constant>
           </value>
         </rank>
-        <output>
-          <include_in_diagnostics>
-            <functional name="Integral0">
-              <string_value lines="20" type="python">int = ss2[0]*dx</string_value>
-              <ufl_symbol>
-                <string_value lines="1">int</string_value>
-              </ufl_symbol>
-            </functional>
-            <functional name="Integral1">
-              <string_value lines="20" type="python">int = ss2[1]*dx</string_value>
-              <ufl_symbol>
-                <string_value lines="1">int</string_value>
-              </ufl_symbol>
-            </functional>
-          </include_in_diagnostics>
-        </output>
       </type>
+      <output>
+        <include_in_diagnostics>
+          <functional name="Integral0">
+            <string_value lines="20" type="python">int = ss2[0]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+          </functional>
+          <functional name="Integral1">
+            <string_value lines="20" type="python">int = ss2[1]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+          </functional>
+        </include_in_diagnostics>
+      </output>
     </coefficient>
     <nonlinear_solver name="SimpleSolver">
       <type name="SNES">
@@ -233,17 +233,17 @@ r = r1 + r2</string_value>
             </constant>
           </initial_condition>
         </rank>
-        <output>
-          <include_in_diagnostics>
-            <functional name="Integral">
-              <string_value lines="20" type="python">int = sp1*dx</string_value>
-              <ufl_symbol>
-                <string_value lines="1">int</string_value>
-              </ufl_symbol>
-            </functional>
-          </include_in_diagnostics>
-        </output>
       </type>
+      <output>
+        <include_in_diagnostics>
+          <functional name="Integral">
+            <string_value lines="20" type="python">int = sp1*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+          </functional>
+        </include_in_diagnostics>
+      </output>
     </field>
     <field name="Field2">
       <ufl_symbol>
@@ -265,23 +265,23 @@ r = r1 + r2</string_value>
             </constant>
           </initial_condition>
         </rank>
-        <output>
-          <include_in_diagnostics>
-            <functional name="Integral0">
-              <string_value lines="20" type="python">int = sp2[0]*dx</string_value>
-              <ufl_symbol>
-                <string_value lines="1">int</string_value>
-              </ufl_symbol>
-            </functional>
-            <functional name="Integral1">
-              <string_value lines="20" type="python">int = sp2[1]*dx</string_value>
-              <ufl_symbol>
-                <string_value lines="1">int</string_value>
-              </ufl_symbol>
-            </functional>
-          </include_in_diagnostics>
-        </output>
       </type>
+      <output>
+        <include_in_diagnostics>
+          <functional name="Integral0">
+            <string_value lines="20" type="python">int = sp2[0]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+          </functional>
+          <functional name="Integral1">
+            <string_value lines="20" type="python">int = sp2[1]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+          </functional>
+        </include_in_diagnostics>
+      </output>
     </field>
     <coefficient name="Source1">
       <ufl_symbol>
@@ -295,17 +295,17 @@ r = r1 + r2</string_value>
             </constant>
           </value>
         </rank>
-        <output>
-          <include_in_diagnostics>
-            <functional name="Integral">
-              <string_value lines="20" type="python">int = sp1*dx</string_value>
-              <ufl_symbol>
-                <string_value lines="1">int</string_value>
-              </ufl_symbol>
-            </functional>
-          </include_in_diagnostics>
-        </output>
       </type>
+      <output>
+        <include_in_diagnostics>
+          <functional name="Integral">
+            <string_value lines="20" type="python">int = sp1*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+          </functional>
+        </include_in_diagnostics>
+      </output>
     </coefficient>
     <coefficient name="Source2">
       <ufl_symbol>
@@ -319,23 +319,23 @@ r = r1 + r2</string_value>
             </constant>
           </value>
         </rank>
-        <output>
-          <include_in_diagnostics>
-            <functional name="Integral0">
-              <string_value lines="20" type="python">int = sp2[0]*dx</string_value>
-              <ufl_symbol>
-                <string_value lines="1">int</string_value>
-              </ufl_symbol>
-            </functional>
-            <functional name="Integral1">
-              <string_value lines="20" type="python">int = sp2[1]*dx</string_value>
-              <ufl_symbol>
-                <string_value lines="1">int</string_value>
-              </ufl_symbol>
-            </functional>
-          </include_in_diagnostics>
-        </output>
       </type>
+      <output>
+        <include_in_diagnostics>
+          <functional name="Integral0">
+            <string_value lines="20" type="python">int = sp2[0]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+          </functional>
+          <functional name="Integral1">
+            <string_value lines="20" type="python">int = sp2[1]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+          </functional>
+        </include_in_diagnostics>
+      </output>
     </coefficient>
     <nonlinear_solver name="SimpleSolver">
       <type name="Picard">

@@ -91,17 +91,17 @@
             </sub_components>
           </boundary_condition>
         </rank>
-        <output>
-          <include_in_diagnostics>
-            <functional name="TopSurfaceIntegral">
-              <string_value lines="20" type="python">int = grad(T)[1]*ds(4)</string_value>
-              <ufl_symbol>
-                <string_value lines="1">int</string_value>
-              </ufl_symbol>
-            </functional>
-          </include_in_diagnostics>
-        </output>
       </type>
+      <output>
+        <include_in_diagnostics>
+          <functional name="TopSurfaceIntegral">
+            <string_value lines="20" type="python">int = grad(T)[1]*ds(4)</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+          </functional>
+        </include_in_diagnostics>
+      </output>
     </field>
     <coefficient name="Source">
       <ufl_symbol>
@@ -115,8 +115,8 @@
             </constant>
           </value>
         </rank>
-        <output/>
       </type>
+      <output/>
     </coefficient>
     <nonlinear_solver name="PreliminarySolver">
       <type name="Picard">
@@ -243,17 +243,17 @@ r = rT</string_value>
             </sub_components>
           </boundary_condition>
         </rank>
-        <output>
-          <include_in_diagnostics>
-            <functional name="L2Norm">
-              <string_value lines="20" type="python">int = inner(v,v)*dx</string_value>
-              <ufl_symbol>
-                <string_value lines="1">int</string_value>
-              </ufl_symbol>
-            </functional>
-          </include_in_diagnostics>
-        </output>
       </type>
+      <output>
+        <include_in_diagnostics>
+          <functional name="L2Norm">
+            <string_value lines="20" type="python">int = inner(v,v)*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+          </functional>
+        </include_in_diagnostics>
+      </output>
     </field>
     <field name="Pressure">
       <ufl_symbol>
@@ -275,10 +275,10 @@ r = rT</string_value>
             </constant>
           </initial_condition>
         </rank>
-        <output>
-          <include_in_diagnostics/>
-        </output>
       </type>
+      <output>
+        <include_in_diagnostics/>
+      </output>
     </field>
     <nonlinear_solver name="PreliminarySolver">
       <type name="Picard">
