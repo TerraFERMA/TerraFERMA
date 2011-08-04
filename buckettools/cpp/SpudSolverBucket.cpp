@@ -364,7 +364,7 @@ void SpudSolverBucket::is_by_field_fill_(const std::string &optionpath, IS &is,
 
       // fetch the mesh and relevent mesh data
       Mesh_ptr mesh = (*system_).mesh();
-      MeshFunction_uint_ptr cellidmeshfunction = (*mesh).data().mesh_function("CellIDs");
+      MeshFunction_uint_ptr cellidmeshfunction = (*mesh).data().mesh_function("cell_domains");
 
       // set up a set of dof
       boost::unordered_set<uint> dof_set;

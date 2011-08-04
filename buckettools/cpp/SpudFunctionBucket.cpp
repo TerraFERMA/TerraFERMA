@@ -173,7 +173,7 @@ void SpudFunctionBucket::initialize_field_()
   if (nbcs > 0)
   {
     // get the edge id information to set the bcs
-    MeshFunction_uint_ptr edgeidmeshfunction = (*(*system_).mesh()).data().mesh_function("EdgeIDs");
+    MeshFunction_uint_ptr edgeidmeshfunction = (*(*system_).mesh()).data().mesh_function("exterior_facet_domains");
 
     for (uint i = 0; i < nbcs; i++)
     {
