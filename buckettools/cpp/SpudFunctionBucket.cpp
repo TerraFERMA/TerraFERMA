@@ -373,11 +373,11 @@ void SpudFunctionBucket::functionals_fill_()
   std::stringstream buffer;
   Spud::OptionError serr;
    
-  buffer.str(""); buffer << optionpath() << "/type/output/include_in_diagnostics/functional";
+  buffer.str(""); buffer << optionpath() << "/output/include_in_diagnostics/functional";
   int nfuncs = Spud::option_count(buffer.str());
   for (uint i = 0; i < nfuncs; i++)
   {
-    buffer.str(""); buffer << optionpath() << "/type/output/include_in_diagnostics/functional[" << i << "]";
+    buffer.str(""); buffer << optionpath() << "/output/include_in_diagnostics/functional[" << i << "]";
     std::string functionaloptionpath = buffer.str();
 
     std::string functionalname;
@@ -456,6 +456,6 @@ const std::string SpudFunctionBucket::functionals_str(int indent) const
 
 const bool SpudFunctionBucket::include_in_diagnostics() const
 {
-  return Spud::have_option(optionpath()+"/type/output/include_in_diagnostics");
+  return Spud::have_option(optionpath()+"/output/include_in_diagnostics");
 }
 
