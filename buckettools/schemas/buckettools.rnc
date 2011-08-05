@@ -5,6 +5,7 @@ include "spud_base.rnc"
 # direct dependencies of this file
 include "geometry.rnc"
 include "io.rnc"
+include "timestepping.rnc"
 include "system.rnc"
 
 # indirect dependencies of the direct dependencies:
@@ -22,33 +23,12 @@ start =
          geometry,
          # in io.rnc
          io,
+         # in timestepping.rnc
          timestepping?,
+         # in timestepping.rnc
          nonlinear?,
          # in system.rnc
          system+
       }
    )
 
-timestepping =
-   (
-      element timestepping {
-        element current_time {
-          real
-        },
-        element finish_time {
-          real
-        },
-        element timestep {
-          real
-        }
-      }
-   )
-
-nonlinear =
-   (
-      element nonlinear_systems {
-        element nonlinear_iterations {
-          integer
-        }
-      }
-   )

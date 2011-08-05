@@ -8,6 +8,7 @@
   <!-- direct dependencies of this file -->
   <include href="geometry.rng"/>
   <include href="io.rng"/>
+  <include href="timestepping.rng"/>
   <include href="system.rng"/>
   <!-- indirect dependencies of the direct dependencies: -->
   <include href="spud_extension.rng"/>
@@ -23,9 +24,11 @@
       <!-- in io.rnc -->
       <ref name="io"/>
       <optional>
+        <!-- in timestepping.rnc -->
         <ref name="timestepping"/>
       </optional>
       <optional>
+        <!-- in timestepping.rnc -->
         <ref name="nonlinear"/>
       </optional>
       <oneOrMore>
@@ -34,24 +37,4 @@
       </oneOrMore>
     </element>
   </start>
-  <define name="timestepping">
-    <element name="timestepping">
-      <element name="current_time">
-        <ref name="real"/>
-      </element>
-      <element name="finish_time">
-        <ref name="real"/>
-      </element>
-      <element name="timestep">
-        <ref name="real"/>
-      </element>
-    </element>
-  </define>
-  <define name="nonlinear">
-    <element name="nonlinear_systems">
-      <element name="nonlinear_iterations">
-        <ref name="integer"/>
-      </element>
-    </element>
-  </define>
 </grammar>

@@ -1,0 +1,32 @@
+include "spud_base.rnc"
+
+timestepping =
+   (
+      element timestepping {
+        element current_time {
+          real
+        },
+        element finish_time {
+          real
+        },
+        element timestep {
+          element system {
+            attribute name{ xsd:string },
+            empty
+          },
+          element coefficient {
+            attribute name{ xsd:string },
+            empty
+          }
+        }
+      }
+   )
+
+nonlinear =
+   (
+      element nonlinear_systems {
+        element nonlinear_iterations {
+          integer
+        }
+      }
+   )

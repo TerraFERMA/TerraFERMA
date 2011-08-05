@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+  <include href="spud_base.rng"/>
+  <define name="timestepping">
+    <element name="timestepping">
+      <element name="current_time">
+        <ref name="real"/>
+      </element>
+      <element name="finish_time">
+        <ref name="real"/>
+      </element>
+      <element name="timestep">
+        <element name="system">
+          <attribute name="name">
+            <data type="string"/>
+          </attribute>
+          <empty/>
+        </element>
+        <element name="coefficient">
+          <attribute name="name">
+            <data type="string"/>
+          </attribute>
+          <empty/>
+        </element>
+      </element>
+    </element>
+  </define>
+  <define name="nonlinear">
+    <element name="nonlinear_systems">
+      <element name="nonlinear_iterations">
+        <ref name="integer"/>
+      </element>
+    </element>
+  </define>
+</grammar>
