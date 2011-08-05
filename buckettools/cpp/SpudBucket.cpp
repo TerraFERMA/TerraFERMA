@@ -120,26 +120,39 @@ void SpudBucket::meshes_fill_(const std::string &optionpath)
     std::string basename;
     buffer.str(""); buffer << optionpath << "/source/file";
     serr = Spud::get_option(buffer.str(), basename); spud_err(buffer.str(), serr);
-    
+
     // Use DOLFIN to read in the mesh
     std::stringstream filename;
     filename.str(""); filename << basename << ".xml";
     mesh.reset(new dolfin::Mesh(filename.str()));
     (*mesh).init();
 
+    std::ifstream file;
+    
     // Register the mesh functions (in dolfin::MeshData associated with the mesh - saves us having a separate set of mesh functions in
     // the Bucket, which would need to be associated with a particular mesh in the case of multiple meshes!):
     // - for the edge ids
-    MeshFunction_uint_ptr meshfuncedgeids = (*mesh).data().create_mesh_function("EdgeIDs");
     filename.str(""); filename << basename << "_edge_subdomain.xml";
-    dolfin::MeshFunction<dolfin::uint> edgeids(*mesh, filename.str());
-    *meshfuncedgeids = edgeids;
+    file.open(filename.str().c_str(), std::ifstream::in);
+    if (file)
+    {
+      file.close();
+      MeshFunction_uint_ptr meshfuncedgeids = (*mesh).data().create_mesh_function("exterior_facet_domains");
+      dolfin::MeshFunction<dolfin::uint> edgeids(*mesh, filename.str());
+      *meshfuncedgeids = edgeids;
+    }
 
     // - for the cell ids
-    MeshFunction_uint_ptr meshfunccellids = (*mesh).data().create_mesh_function("CellIDs");
     filename.str(""); filename << basename << "_cell_subdomain.xml";
-    dolfin::MeshFunction<dolfin::uint> cellids(*mesh, filename.str());
-    *meshfunccellids = cellids;
+    file.open(filename.str().c_str(), std::ifstream::in);
+    if (file)
+    {
+      file.close();
+      MeshFunction_uint_ptr meshfunccellids = (*mesh).data().create_mesh_function("cell_domains");
+      dolfin::MeshFunction<dolfin::uint> cellids(*mesh, filename.str());
+      *meshfunccellids = cellids;
+    }
+
   }
   else if (source=="UnitInterval")
   {
@@ -149,7 +162,7 @@ void SpudBucket::meshes_fill_(const std::string &optionpath)
     
     mesh.reset( new dolfin::UnitInterval(cells) );
 
-    MeshFunction_uint_ptr meshfuncedgeids = (*mesh).data().create_mesh_function("EdgeIDs", 0);
+    MeshFunction_uint_ptr meshfuncedgeids = (*mesh).data().create_mesh_function("exterior_facet_domains", 0);
     Side left(0, 0.0);
     Side right(0, 1.0);
     (*meshfuncedgeids).set_all(0);
@@ -172,7 +185,7 @@ void SpudBucket::meshes_fill_(const std::string &optionpath)
     
     mesh.reset( new dolfin::Interval(cells, leftx, rightx) );
 
-    MeshFunction_uint_ptr meshfuncedgeids = (*mesh).data().create_mesh_function("EdgeIDs", 0);
+    MeshFunction_uint_ptr meshfuncedgeids = (*mesh).data().create_mesh_function("exterior_facet_domains", 0);
     Side left(0, leftx);
     Side right(0, rightx);
     (*meshfuncedgeids).set_all(0);
@@ -191,7 +204,7 @@ void SpudBucket::meshes_fill_(const std::string &optionpath)
     
     mesh.reset( new dolfin::UnitSquare(cells[0], cells[1], diagonal) );
 
-    MeshFunction_uint_ptr meshfuncedgeids = (*mesh).data().create_mesh_function("EdgeIDs", 1);
+    MeshFunction_uint_ptr meshfuncedgeids = (*mesh).data().create_mesh_function("exterior_facet_domains", 1);
     Side left(0, 0.0);
     Side right(0, 1.0);
     Side bottom(1, 0.0);
@@ -224,7 +237,7 @@ void SpudBucket::meshes_fill_(const std::string &optionpath)
                                       upperright[0], upperright[1], 
                                       cells[0], cells[1], diagonal) );
 
-    MeshFunction_uint_ptr meshfuncedgeids = (*mesh).data().create_mesh_function("EdgeIDs", 1);
+    MeshFunction_uint_ptr meshfuncedgeids = (*mesh).data().create_mesh_function("exterior_facet_domains", 1);
     Side left(0, lowerleft[0]);
     Side right(0, upperright[0]);
     Side bottom(1, lowerleft[1]);
@@ -260,7 +273,7 @@ void SpudBucket::meshes_fill_(const std::string &optionpath)
     
     mesh.reset( new dolfin::UnitCube(cells[0], cells[1], cells[2]) );
 
-    MeshFunction_uint_ptr meshfuncedgeids = (*mesh).data().create_mesh_function("EdgeIDs", 2);
+    MeshFunction_uint_ptr meshfuncedgeids = (*mesh).data().create_mesh_function("exterior_facet_domains", 2);
     Side left(0, 0.0);
     Side right(0, 1.0);
     Side bottom(2, 0.0);
@@ -293,7 +306,7 @@ void SpudBucket::meshes_fill_(const std::string &optionpath)
                                 upperfrontright[0], upperfrontright[1], upperfrontright[2], 
                                 cells[0], cells[1], cells[2]) );
 
-    MeshFunction_uint_ptr meshfuncedgeids = (*mesh).data().create_mesh_function("EdgeIDs", 2);
+    MeshFunction_uint_ptr meshfuncedgeids = (*mesh).data().create_mesh_function("exterior_facet_domains", 2);
     Side left(0, lowerbackleft[0]);
     Side right(0, upperfrontright[0]);
     Side bottom(2, lowerbackleft[2]);
@@ -463,14 +476,31 @@ void SpudBucket::timestep_run_()
   buffer.str(""); buffer << "/timestepping/finish_time";
   serr = Spud::get_option(buffer.str(), finish_time); spud_err(buffer.str(), serr);
 
-  double timestep;
-  buffer.str(""); buffer << "/timestepping/timestep";
-  serr = Spud::get_option(buffer.str(), timestep); spud_err(buffer.str(), serr);
+  Constant_ptr timestep;
+  std::string systemname;
+  buffer.str(""); buffer << "/timestepping/timestep/system/name";
+  serr = Spud::get_option(buffer.str(), systemname); spud_err(buffer.str(), serr);
+  std::string coeffname;
+  buffer.str(""); buffer << "/timestepping/timestep/coefficient/name";
+  serr = Spud::get_option(buffer.str(), coeffname); spud_err(buffer.str(), serr);
+  timestep = boost::dynamic_pointer_cast< dolfin::Constant >((*fetch_system(systemname)).fetch_coeff(coeffname));
+
+  int nints;
+  buffer.str(""); buffer << "/nonlinear_systems/nonlinear_iterations";
+  serr = Spud::get_option(buffer.str(), nints, 1); spud_err(buffer.str(), serr);
+
+  int timestep_count = 0;
 
   while(time < finish_time)
   {
     dolfin::error("Timestepping not implemented.");
-    time += timestep;
+    for (uint i = 0; i < nints; i++)
+    {
+      solve();
+    }
+
+    time += double(*timestep);
+    timestep_count++;
   }
 
 }

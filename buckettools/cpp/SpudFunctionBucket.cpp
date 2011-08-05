@@ -173,7 +173,7 @@ void SpudFunctionBucket::initialize_field_()
   if (nbcs > 0)
   {
     // get the edge id information to set the bcs
-    MeshFunction_uint_ptr edgeidmeshfunction = (*(*system_).mesh()).data().mesh_function("EdgeIDs");
+    MeshFunction_uint_ptr edgeidmeshfunction = (*(*system_).mesh()).data().mesh_function("exterior_facet_domains");
 
     for (uint i = 0; i < nbcs; i++)
     {
@@ -243,16 +243,7 @@ void SpudFunctionBucket::bc_component_fill_(const std::string &optionpath,
     for (std::vector<int>::const_iterator subcompid = subcompids.begin(); subcompid < subcompids.end(); subcompid++)
     {
 
-       FunctionSpace_ptr subfunctionspace;
-       if (contains_subfunctionspace(*subcompid))
-       {
-         subfunctionspace = fetch_subfunctionspace(*subcompid);
-       }
-       else
-       {
-         subfunctionspace.reset( new dolfin::SubSpace(*(functionspace()), *subcompid) );
-         register_subfunctionspace(subfunctionspace, *subcompid);
-       }
+       FunctionSpace_ptr subfunctionspace = (*functionspace())[*subcompid];
        
        buffer.str(""); buffer << optionpath << "/type::Dirichlet";
        Expression_ptr bcexp = initialize_expression(buffer.str(), size_, shape_);
@@ -373,11 +364,11 @@ void SpudFunctionBucket::functionals_fill_()
   std::stringstream buffer;
   Spud::OptionError serr;
    
-  buffer.str(""); buffer << optionpath() << "/type/output/include_in_diagnostics/functional";
+  buffer.str(""); buffer << optionpath() << "/output/include_in_diagnostics/functional";
   int nfuncs = Spud::option_count(buffer.str());
   for (uint i = 0; i < nfuncs; i++)
   {
-    buffer.str(""); buffer << optionpath() << "/type/output/include_in_diagnostics/functional[" << i << "]";
+    buffer.str(""); buffer << optionpath() << "/output/include_in_diagnostics/functional[" << i << "]";
     std::string functionaloptionpath = buffer.str();
 
     std::string functionalname;
@@ -456,6 +447,6 @@ const std::string SpudFunctionBucket::functionals_str(int indent) const
 
 const bool SpudFunctionBucket::include_in_diagnostics() const
 {
-  return Spud::have_option(optionpath()+"/type/output/include_in_diagnostics");
+  return Spud::have_option(optionpath()+"/output/include_in_diagnostics");
 }
 

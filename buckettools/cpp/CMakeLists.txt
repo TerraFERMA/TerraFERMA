@@ -6,7 +6,7 @@ project(buckettools_cpp)
 #  be replaced at build time by a suitable variable - using the script
 #  below)
 file(
-    WRITE ${PROJECT_BINARY_DIR}/confdefs.h.in
+    WRITE ${PROJECT_BINARY_DIR}/builddefs.h.in
     "#define __HG_ID__ \"@HG_ID@\"\n"
     )
 
@@ -15,7 +15,7 @@ file(
 #  to an environment variable which can be used to write a
 #  header file for the build)
 file(
-    WRITE ${PROJECT_BINARY_DIR}/confdefs.cmake
+    WRITE ${PROJECT_BINARY_DIR}/builddefs.cmake
     "find_program(HAVE_HG hg)
     if(HAVE_HG)
         execute_process (
@@ -39,15 +39,15 @@ file(
 # add a target that runs the above cmake script and creates the header
 # file containing the hg id information
 add_custom_target(
-    confdefs
-    ${CMAKE_COMMAND} -D SRC="${PROJECT_BINARY_DIR}/confdefs.h.in"
-                     -D DST="${PROJECT_BINARY_DIR}/confdefs.h"
+    builddefs
+    ${CMAKE_COMMAND} -D SRC="${PROJECT_BINARY_DIR}/builddefs.h.in"
+                     -D DST="${PROJECT_BINARY_DIR}/builddefs.h"
                      -D DIR="${PROJECT_SOURCE_DIR}/../../"
-                     -P "${PROJECT_BINARY_DIR}/confdefs.cmake"
+                     -P "${PROJECT_BINARY_DIR}/builddefs.cmake"
     )
 
 
-# include the buckettools include directory and the binary directory (for confdefs and the systemswrapper)
+# include the buckettools include directory and the binary directory (for builddefs and the systemswrapper)
 include_directories("${PROJECT_SOURCE_DIR}/../include" ${PROJECT_BINARY_DIR})
 # include python
 include_directories(${PYTHON_INCLUDE_PATH})
@@ -60,9 +60,9 @@ add_library(buckettools_cpp Bucket.cpp SpudBucket.cpp SystemBucket.cpp SpudSyste
                             StatFile.cpp DiagnosticsFile.cpp
                             BucketPETScBase.cpp BucketDolfinBase.cpp)
 # tell cmake that this file doesn't exist until build time
-set_source_files_properties(confdefs.h PROPERTIES GENERATED 1)
+set_source_files_properties(builddefs.h PROPERTIES GENERATED 1)
 # the project depends on this target
-add_dependencies(buckettools_cpp confdefs)
+add_dependencies(buckettools_cpp builddefs)
 # link to python
 target_link_libraries(buckettools_cpp ${PYTHON_LIBRARIES})
 
