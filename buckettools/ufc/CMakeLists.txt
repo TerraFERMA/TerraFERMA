@@ -18,7 +18,7 @@ add_custom_target(
    DEPENDS ${PROJECT_BINARY_DIR}/SystemsWrapper.cpp
    )
 
-# include the buckettools include directory and the binary directory (for confdefs and the systemswrapper)
+# include the buckettools include directory and the binary directory (for the systemswrapper)
 include_directories("${PROJECT_SOURCE_DIR}/../include" ${PROJECT_BINARY_DIR})
 # include python
 include_directories(${PYTHON_INCLUDE_PATH})
