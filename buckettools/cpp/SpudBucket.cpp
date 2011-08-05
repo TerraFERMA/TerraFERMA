@@ -120,26 +120,39 @@ void SpudBucket::meshes_fill_(const std::string &optionpath)
     std::string basename;
     buffer.str(""); buffer << optionpath << "/source/file";
     serr = Spud::get_option(buffer.str(), basename); spud_err(buffer.str(), serr);
-    
+
     // Use DOLFIN to read in the mesh
     std::stringstream filename;
     filename.str(""); filename << basename << ".xml";
     mesh.reset(new dolfin::Mesh(filename.str()));
     (*mesh).init();
 
+    std::ifstream file;
+    
     // Register the mesh functions (in dolfin::MeshData associated with the mesh - saves us having a separate set of mesh functions in
     // the Bucket, which would need to be associated with a particular mesh in the case of multiple meshes!):
     // - for the edge ids
-    MeshFunction_uint_ptr meshfuncedgeids = (*mesh).data().create_mesh_function("exterior_facet_domains");
     filename.str(""); filename << basename << "_edge_subdomain.xml";
-    dolfin::MeshFunction<dolfin::uint> edgeids(*mesh, filename.str());
-    *meshfuncedgeids = edgeids;
+    file.open(filename.str().c_str(), std::ifstream::in);
+    if (file)
+    {
+      file.close();
+      MeshFunction_uint_ptr meshfuncedgeids = (*mesh).data().create_mesh_function("exterior_facet_domains");
+      dolfin::MeshFunction<dolfin::uint> edgeids(*mesh, filename.str());
+      *meshfuncedgeids = edgeids;
+    }
 
     // - for the cell ids
-    MeshFunction_uint_ptr meshfunccellids = (*mesh).data().create_mesh_function("cell_domains");
     filename.str(""); filename << basename << "_cell_subdomain.xml";
-    dolfin::MeshFunction<dolfin::uint> cellids(*mesh, filename.str());
-    *meshfunccellids = cellids;
+    file.open(filename.str().c_str(), std::ifstream::in);
+    if (file)
+    {
+      file.close();
+      MeshFunction_uint_ptr meshfunccellids = (*mesh).data().create_mesh_function("cell_domains");
+      dolfin::MeshFunction<dolfin::uint> cellids(*mesh, filename.str());
+      *meshfunccellids = cellids;
+    }
+
   }
   else if (source=="UnitInterval")
   {
