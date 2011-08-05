@@ -63,7 +63,7 @@
       <output>
         <include_in_diagnostics>
           <functional name="Integral">
-            <string_value lines="20" type="python">int = ss1*dx</string_value>
+            <string_value lines="20" type="python">int = ss1*dx(11)</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
@@ -95,13 +95,13 @@
       <output>
         <include_in_diagnostics>
           <functional name="Integral0">
-            <string_value lines="20" type="python">int = ss2[0]*dx</string_value>
+            <string_value lines="20" type="python">int = ss2[0]*dx(11)</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
           </functional>
           <functional name="Integral1">
-            <string_value lines="20" type="python">int = ss2[1]*dx</string_value>
+            <string_value lines="20" type="python">int = ss2[1]*dx(11)</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
@@ -125,7 +125,7 @@
       <output>
         <include_in_diagnostics>
           <functional name="Integral">
-            <string_value lines="20" type="python">int = ss1*dx</string_value>
+            <string_value lines="20" type="python">int = ss1*dx(11)</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
@@ -149,13 +149,13 @@
       <output>
         <include_in_diagnostics>
           <functional name="Integral0">
-            <string_value lines="20" type="python">int = ss2[0]*dx</string_value>
+            <string_value lines="20" type="python">int = ss2[0]*dx(11)</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
           </functional>
           <functional name="Integral1">
-            <string_value lines="20" type="python">int = ss2[1]*dx</string_value>
+            <string_value lines="20" type="python">int = ss2[1]*dx(11)</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
@@ -166,9 +166,9 @@
     <nonlinear_solver name="SimpleSolver">
       <type name="SNES">
         <form name="Residual" rank="0">
-          <string_value lines="20" type="python">r1 = ss1_t*(ss1_i-fs1)*dx
-r20 = ss2_t[0]*(ss2_i[0]-fs2[0])*dx
-r21 = ss2_t[1]*(ss2_i[1]-fs2[1])*dx
+          <string_value lines="20" type="python">r1 = ss1_t*(ss1_i-fs1)*dx(11)
+r20 = ss2_t[0]*(ss2_i[0]-fs2[0])*dx(11)
+r21 = ss2_t[1]*(ss2_i[1]-fs2[1])*dx(11)
 r2 = r20 + r21
 r = r1 + r2</string_value>
           <ufl_symbol>
@@ -237,7 +237,7 @@ r = r1 + r2</string_value>
       <output>
         <include_in_diagnostics>
           <functional name="Integral">
-            <string_value lines="20" type="python">int = sp1*dx</string_value>
+            <string_value lines="20" type="python">int = sp1*dx(11)</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
@@ -269,13 +269,13 @@ r = r1 + r2</string_value>
       <output>
         <include_in_diagnostics>
           <functional name="Integral0">
-            <string_value lines="20" type="python">int = sp2[0]*dx</string_value>
+            <string_value lines="20" type="python">int = sp2[0]*dx(11)</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
           </functional>
           <functional name="Integral1">
-            <string_value lines="20" type="python">int = sp2[1]*dx</string_value>
+            <string_value lines="20" type="python">int = sp2[1]*dx(11)</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
@@ -299,7 +299,7 @@ r = r1 + r2</string_value>
       <output>
         <include_in_diagnostics>
           <functional name="Integral">
-            <string_value lines="20" type="python">int = sp1*dx</string_value>
+            <string_value lines="20" type="python">int = sp1*dx(11)</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
@@ -323,13 +323,13 @@ r = r1 + r2</string_value>
       <output>
         <include_in_diagnostics>
           <functional name="Integral0">
-            <string_value lines="20" type="python">int = sp2[0]*dx</string_value>
+            <string_value lines="20" type="python">int = sp2[0]*dx(11)</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
           </functional>
           <functional name="Integral1">
-            <string_value lines="20" type="python">int = sp2[1]*dx</string_value>
+            <string_value lines="20" type="python">int = sp2[1]*dx(11)</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
@@ -340,9 +340,9 @@ r = r1 + r2</string_value>
     <nonlinear_solver name="SimpleSolver">
       <type name="Picard">
         <preamble>
-          <string_value lines="20" type="python">F1 = sp1_t*(sp1_a-fp1)*dx
-F20 = sp2_t[0]*(sp2_a[0]-fp2[0])*dx
-F21 = sp2_t[1]*(sp2_a[1]-fp2[1])*dx
+          <string_value lines="20" type="python">F1 = sp1_t*(sp1_a-fp1)*dx(11)
+F20 = sp2_t[0]*(sp2_a[0]-fp2[0])*dx(11)
+F21 = sp2_t[1]*(sp2_a[1]-fp2[1])*dx(11)
 F2 = F20 + F21
 F = F1 + F2</string_value>
         </preamble>
