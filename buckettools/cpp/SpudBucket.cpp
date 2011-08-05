@@ -476,14 +476,31 @@ void SpudBucket::timestep_run_()
   buffer.str(""); buffer << "/timestepping/finish_time";
   serr = Spud::get_option(buffer.str(), finish_time); spud_err(buffer.str(), serr);
 
-  double timestep;
-  buffer.str(""); buffer << "/timestepping/timestep";
-  serr = Spud::get_option(buffer.str(), timestep); spud_err(buffer.str(), serr);
+  Constant_ptr timestep;
+  std::string systemname;
+  buffer.str(""); buffer << "/timestepping/timestep/system/name";
+  serr = Spud::get_option(buffer.str(), systemname); spud_err(buffer.str(), serr);
+  std::string coeffname;
+  buffer.str(""); buffer << "/timestepping/timestep/coefficient/name";
+  serr = Spud::get_option(buffer.str(), coeffname); spud_err(buffer.str(), serr);
+  timestep = boost::dynamic_pointer_cast< dolfin::Constant >((*fetch_system(systemname)).fetch_coeff(coeffname));
+
+  int nints;
+  buffer.str(""); buffer << "/nonlinear_systems/nonlinear_iterations";
+  serr = Spud::get_option(buffer.str(), nints, 1); spud_err(buffer.str(), serr);
+
+  int timestep_count = 0;
 
   while(time < finish_time)
   {
     dolfin::error("Timestepping not implemented.");
-    time += timestep;
+    for (uint i = 0; i < nints; i++)
+    {
+      solve();
+    }
+
+    time += double(*timestep);
+    timestep_count++;
   }
 
 }
