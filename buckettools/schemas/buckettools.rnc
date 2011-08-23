@@ -17,7 +17,11 @@ include "ufl.rnc"
 
 start =
    (
-      ## The root node of the options dictionary.
+      ## The root node of the options dictionary for buckettools.
+      ##
+      ## Options which are shaded blue are incomplete and require input.
+      ## Greyed out options are optional.
+      ## Black options are active.
       element bucket_options {
          # in geometry.rnc
          geometry,

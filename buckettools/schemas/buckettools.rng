@@ -18,7 +18,11 @@
   <include href="ufl.rng"/>
   <start>
     <element name="bucket_options">
-      <a:documentation>The root node of the options dictionary.</a:documentation>
+      <a:documentation>The root node of the options dictionary for buckettools.
+
+Options which are shaded blue are incomplete and require input.
+Greyed out options are optional.
+Black options are active.</a:documentation>
       <!-- in geometry.rnc -->
       <ref name="geometry"/>
       <!-- in io.rnc -->
