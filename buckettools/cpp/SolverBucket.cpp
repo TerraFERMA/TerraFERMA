@@ -156,8 +156,7 @@ void SolverBucket::solve()
     SNESConvergedReason reason;
     perr = SNESGetConvergedReason(snes_, &reason); CHKERRV(perr);
     std::cout << "SNESConvergedReason " << reason << std::endl;
-    //(*(*system_).function()).vector() = *work_;
-    (*(*system_).function()).vector() = (*(*system_).iteratedfunction()).vector();
+    (*(*system_).function()).vector() = *work_;
   }
   else if (type()=="Picard")
   {

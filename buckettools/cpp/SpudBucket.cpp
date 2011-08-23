@@ -493,12 +493,13 @@ void SpudBucket::timestep_run_()
 
   while(time < finish_time)
   {
-    dolfin::error("Timestepping not implemented.");
+
     for (uint i = 0; i < nints; i++)
     {
       solve();
     }
 
+    update();
     time += double(*timestep);
     timestep_count++;
   }

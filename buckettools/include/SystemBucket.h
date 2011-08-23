@@ -166,6 +166,8 @@ namespace buckettools
 
     void solve();
 
+    void update();
+
     // Return the system name
     const std::string name() const
     { return name_; }
