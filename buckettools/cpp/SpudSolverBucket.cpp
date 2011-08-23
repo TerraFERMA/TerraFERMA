@@ -201,6 +201,8 @@ void SpudSolverBucket::ksp_fill_(const std::string &optionpath, KSP &ksp,
       perr = VecScatterCreate(*unitvec.vec(), PETSC_NULL, *(*nullvec).vec(), is, &scatter); CHKERRV(perr);
       perr = VecScatterBegin(scatter, *unitvec.vec(), *(*nullvec).vec(), INSERT_VALUES, SCATTER_FORWARD); CHKERRV(perr);
       perr = VecScatterEnd(scatter, *unitvec.vec(), *(*nullvec).vec(), INSERT_VALUES, SCATTER_FORWARD); CHKERRV(perr);
+      perr = VecScatterDestroy(scatter); CHKERRV(perr);  // necessary?
+      perr = ISDestroy(is); CHKERRV(perr); // necessary?
       (*nullvec).apply(""); //just in case
 
       // keep this vector in scope so that the (standard) pointer assignment below is safe
@@ -214,6 +216,7 @@ void SpudSolverBucket::ksp_fill_(const std::string &optionpath, KSP &ksp,
     MatNullSpace SP;
     perr = MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_FALSE, nnulls, vecs, &SP); CHKERRV(perr);
     perr = KSPSetNullSpace(ksp, SP); CHKERRV(perr);
+    perr = MatNullSpaceDestroy(SP); CHKERRV(perr);  // necessary?
   }
 
   PC pc;
@@ -321,6 +324,7 @@ void SpudSolverBucket::pc_fieldsplit_by_field_fill_(const std::string &optionpat
   is_by_field_fill_(optionpath, is,
                     child_indices, parent_indices);
   perr = PCFieldSplitSetIS(pc, is); CHKERRV(perr);
+  perr = ISDestroy(is); CHKERRV(perr);
 
 }
 

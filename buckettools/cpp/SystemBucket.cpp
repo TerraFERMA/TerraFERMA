@@ -218,6 +218,11 @@ void SystemBucket::solve()
   }
 }
 
+void SystemBucket::update()
+{
+  (*oldfunction_).vector() = (*function_).vector();
+}
+
 void SystemBucket::output()
 {
   for (FunctionBucket_it f_it = fields_begin(); f_it != fields_end(); f_it++)

@@ -368,6 +368,14 @@ void Bucket::solve()
   }
 }
 
+void Bucket::update()
+{
+  for (int_SystemBucket_const_it s_it = orderedsystems_begin(); s_it != orderedsystems_end(); s_it++)
+  {
+    (*(*s_it).second).update();
+  }
+}
+
 void Bucket::output()
 {
   for (SystemBucket_it s_it = systems_begin(); s_it != systems_end(); s_it++)
