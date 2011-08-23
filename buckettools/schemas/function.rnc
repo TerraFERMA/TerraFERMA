@@ -120,7 +120,6 @@ coefficient_options =
 scalar_field_function_options =
   (
     attribute rank { "0" },
-    ## Options describing the finite element
     element_options_scalar,
     initial_condition_scalar+,
     boundary_condition_scalar*
@@ -129,7 +128,6 @@ scalar_field_function_options =
 vector_field_function_options =
   (
     attribute rank { "1" },
-    ## Options describing the finite element
     element_options_vector,
     initial_condition_vector+,
     boundary_condition_vector*
@@ -138,7 +136,6 @@ vector_field_function_options =
 tensor_field_function_options =
   (
     attribute rank { "2" },
-    ## Options describing the finite element
     element_options_tensor,
     initial_condition_tensor+,
     boundary_condition_tensor*
@@ -147,7 +144,6 @@ tensor_field_function_options =
 scalar_coefficient_function_expression_options =
   (
     attribute rank { "0" },
-    ## Options describing the finite element
     element_options_scalar,
     prescribed_expression_scalar+
   )
@@ -155,7 +151,6 @@ scalar_coefficient_function_expression_options =
 vector_coefficient_function_expression_options =
   (
     attribute rank { "1" },
-    ## Options describing the finite element
     element_options_vector,
     prescribed_expression_vector+
   )
@@ -163,7 +158,6 @@ vector_coefficient_function_expression_options =
 tensor_coefficient_function_expression_options =
   (
     attribute rank { "2" },
-    ## Options describing the finite element
     element_options_tensor,
     prescribed_expression_tensor+
   )
@@ -200,10 +194,15 @@ coeff_header_options =
 
 generic_function_output_options = 
   (
+    ## Output options
     element output {
+      ## Include this field or coefficient in the diagnostic output file.
+      ## The minimum and maximum of functions is included.  There is no automatic output for expressions or coefficients and only
+      ## functionals defined below will be included.
       element include_in_diagnostics {
         functional_options*
       }?,
+      ## Include this field or coefficient in the detectors output file.
       element include_in_detectors {
         empty
       }?
@@ -212,9 +211,9 @@ generic_function_output_options =
 
 functional_options = 
   (
+    ## ufl code and symbol describing a functional.  This must return a single number and have a unique name beneath this field or coefficient.
     element functional {
       attribute name { xsd:string },
-      ## ufl code describing a functional.
       python_code,
       functional_ufl_symbol
     }
@@ -222,11 +221,12 @@ functional_options =
 
 initial_condition_scalar = 
   (
-    ## Options for the description of the initial condition over the domain
+    ## Options for the description of the initial condition over the whole domain
     element initial_condition {
       attribute name {"WholeMesh"},
       prescribed_scalar
     }|
+    ## Options for the description of the initial condition over a subset of the whole domain
     element initial_condition {
       attribute name { xsd:string },
       ## A list of the region ids (physical ids in gmsh) that this  condition applies to
@@ -239,12 +239,12 @@ initial_condition_scalar =
 
 initial_condition_vector = 
   (
-    ## Options for the description of the initial condition over the domain
+    ## Options for the description of the initial condition over the whole domain
     element initial_condition {
       attribute name {"WholeMesh"},
       prescribed_vector
     }|
-    ## Options for the description of the initial condition over regions
+    ## Options for the description of the initial condition over a subset of the whole domain
     element initial_condition {
       attribute name { xsd:string },
       ## A list of the region ids (physical ids in gmsh) that this condition applies to
@@ -257,12 +257,12 @@ initial_condition_vector =
 
 initial_condition_tensor = 
   (
-    ## Options for the description of the initial condition over the domain
+    ## Options for the description of the initial condition over the whole domain
     element initial_condition {
       attribute name {"WholeMesh"},
       prescribed_tensor
     }|
-    ## Options for the description of the initial condition over regions
+    ## Options for the description of the initial condition over a subset of the whole domain
     element initial_condition {
       attribute name { xsd:string },
       ## A list of the region ids (physical ids in gmsh) that this condition applies to
@@ -285,6 +285,7 @@ boundary_condition_scalar =
       ## There are no sub components to a scalar so this is just a dummy tree level for consistency with a vector function
       element sub_components {
         attribute name { "All"},
+        ## The boundary condition type (only strong Dirichlet available).
         element type {
           attribute name {"Dirichlet"},
           prescribed_scalar
@@ -306,6 +307,7 @@ boundary_condition_vector =
         ## Apply this boundary condition to all the vector components on this boundary_id
         element sub_components {
           attribute name {"All"},
+          ## The boundary condition type (only strong Dirichlet available).
           element type {
             attribute name {"Dirichlet"},
             prescribed_vector
@@ -318,6 +320,7 @@ boundary_condition_vector =
           element components {
             integer_vector
           },
+          ## The boundary condition type (only strong Dirichlet available).
           element type {
             attribute name {"Dirichlet"},
             prescribed_scalar
@@ -340,6 +343,7 @@ boundary_condition_tensor =
         ## Apply this boundary condition to all the tensor components on this boundary_id
         element sub_components {
           attribute name {"All"},
+          ## The boundary condition type (only strong Dirichlet available).
           element type {
             attribute name {"Dirichlet"},
             prescribed_tensor
@@ -353,6 +357,7 @@ boundary_condition_tensor =
             attribute name { xsd:string },
             integer_vector
           },
+          ## The boundary condition type (only strong Dirichlet available).
           element type {
             attribute name {"Dirichlet"},
             prescribed_scalar
@@ -454,11 +459,12 @@ prescribed_scalar_constant =
 
 prescribed_vector_constant = 
   (
-    ## A constant vector
+    ## A constant vector of length /geometry/dimension
     element constant {
       attribute name { "dim" },
       real_dim_vector
     }|
+    ## A constant vector of arbitrary length (must be the same as the size of the vector element).
     element constant {
       attribute name { "arbitrary" },
       real_vector
@@ -467,11 +473,13 @@ prescribed_vector_constant =
 
 prescribed_tensor_constant = 
   (
-    ## A constant tensor
+    ## A constant tensor of shape /geometry/dimension x /geometry/dimension
     element constant {
       attribute name { "dim" },
       real_dim_tensor
     }|
+    ## A constant tensor of arbitrary shape (must be the same as the size of the tensor element).  
+    ## Values should be entered by row first.
     element constant {
       attribute name { "arbitrary" },
       real_tensor

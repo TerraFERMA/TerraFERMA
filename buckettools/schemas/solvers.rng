@@ -3,37 +3,27 @@
   <include href="spud_base.rng"/>
   <include href="ufl.rng"/>
   <define name="nonlinear_solver_options">
-    <choice>
-      <element name="nonlinear_solver">
-        <attribute name="name">
-          <data type="string"/>
-        </attribute>
-        <choice>
-          <element name="type">
-            <ref name="snes"/>
-          </element>
-          <element name="type">
-            <ref name="picard"/>
-          </element>
-        </choice>
-      </element>
-      <element name="nonlinear_solver">
-        <attribute name="name">
-          <value>SNES</value>
-        </attribute>
+    <element name="nonlinear_solver">
+      <a:documentation>Options describing a nonlinear solver.  This consists of a set of bilinear and linear forms acting on the function 
+and functionspace in this system and using coefficients defined anywhere in this options file.  Additionally a nonlinear
+solver describes the method of convering the nonlinear solve, either using a Newton or Picard iteration loop and a
+description of the linear solver used within this loop.</a:documentation>
+      <attribute name="name">
+        <data type="string"/>
+      </attribute>
+      <choice>
         <element name="type">
+          <a:documentation>The type of nonlinear solver. 
+PETSc SNES - a Newton iteration with line search.</a:documentation>
           <ref name="snes"/>
         </element>
-      </element>
-      <element name="nonlinear_solver">
-        <attribute name="name">
-          <value>Picard</value>
-        </attribute>
         <element name="type">
+          <a:documentation>The type of nonlinear solver. 
+A Picard iteration.</a:documentation>
           <ref name="picard"/>
         </element>
-      </element>
-    </choice>
+      </choice>
+    </element>
   </define>
   <define name="picard">
     <attribute name="name">
@@ -41,48 +31,58 @@
     </attribute>
     <optional>
       <element name="preamble">
+        <a:documentation>ufl code preamble to the forms defined below.  
+Any system, field or coefficient ufl symbols defined in this options file may be used in this preamble.</a:documentation>
         <ref name="python_code"/>
       </element>
     </optional>
     <element name="form">
+      <a:documentation>ufl code form describing a bilinear form (must return a bilinear form).  
+Any system, field or coefficient ufl symbols defined in this options file may be used in this form as well as any symbols 
+defined in the preamble above.</a:documentation>
       <attribute name="name">
         <value>Bilinear</value>
       </attribute>
       <attribute name="rank">
         <value>1</value>
       </attribute>
-      <ref name="python_code">
-        <a:documentation>ufl code describing a form.</a:documentation>
-      </ref>
+      <ref name="python_code"/>
       <ref name="form_ufl_symbol"/>
     </element>
     <optional>
       <element name="form">
+        <a:documentation>ufl code form describing a preconditioner bilinear form (must return a bilinear form).  
+Any system, field or coefficient ufl symbols defined in this options file may be used in this form as well as any symbols 
+defined in the preamble and bilinear form above.
+
+If undefined the bilinear form above will be used to precondition itself.</a:documentation>
         <attribute name="name">
           <value>BilinearPC</value>
         </attribute>
         <attribute name="rank">
           <value>1</value>
         </attribute>
-        <ref name="python_code">
-          <a:documentation>ufl code describing a form.</a:documentation>
-        </ref>
+        <ref name="python_code"/>
         <ref name="form_ufl_symbol"/>
       </element>
     </optional>
     <element name="form">
+      <a:documentation>ufl code form describing a linear form (must return a linear form).  
+Any system, field or coefficient ufl symbols defined in this options file may be used in this form as well as any symbols 
+defined in the preamble and bilinear forms above.</a:documentation>
       <attribute name="name">
         <value>Linear</value>
       </attribute>
       <attribute name="rank">
         <value>0</value>
       </attribute>
-      <ref name="python_code">
-        <a:documentation>ufl code describing a form.</a:documentation>
-      </ref>
+      <ref name="python_code"/>
       <ref name="form_ufl_symbol"/>
     </element>
     <element name="form">
+      <a:documentation>ufl code form describing a linear residual form (must return a linear form).  
+Any system, field or coefficient ufl symbols defined in this options file may be used in this form as well as any symbols 
+defined in the preamble, bilinear and linear forms above.</a:documentation>
       <attribute name="name">
         <value>Residual</value>
       </attribute>
@@ -95,22 +95,31 @@
       <ref name="form_ufl_symbol"/>
     </element>
     <element name="relative_error">
+      <a:documentation>The relative error allowed to remain in the vector l2 norm of the nonlinear solver residual (defined above) upon termination
+of the iteration loop.</a:documentation>
       <ref name="real"/>
     </element>
     <optional>
       <element name="absolute_error">
+        <a:documentation>The absolute error allowed to remain in the vector l2 norm of the nonlinear solver residual (defined above) upon termination
+of the iteration loop.
+
+Defaults to 1.e-50.</a:documentation>
         <ref name="real"/>
       </element>
     </optional>
     <element name="max_iterations">
+      <a:documentation>The maximum number of iterations to take in this nonlinear solver loop.</a:documentation>
       <ref name="integer"/>
     </element>
     <optional>
       <element name="min_iterations">
+        <a:documentation>The minimum number of iterations to take in this nonlinear solver loop.</a:documentation>
         <ref name="integer"/>
       </element>
     </optional>
     <element name="linear_solver">
+      <a:documentation>Options describing a linear solver.</a:documentation>
       <ref name="linear_solver_options"/>
     </element>
   </define>
@@ -120,76 +129,85 @@
     </attribute>
     <optional>
       <element name="preamble">
-        <ref name="python_code">
-          <a:documentation>ufl code describing a form.</a:documentation>
-        </ref>
+        <a:documentation>ufl code preamble to the forms defined below.  
+Any system, field or coefficient ufl symbols defined in this options file may be used in this preamble.</a:documentation>
+        <ref name="python_code"/>
       </element>
     </optional>
     <element name="form">
+      <a:documentation>ufl code form describing a linear residual form (must return a linear form).  
+Any system, field or coefficient ufl symbols defined in this options file may be used in this form as well as any symbols 
+defined in the preamble above.</a:documentation>
       <attribute name="name">
         <value>Residual</value>
       </attribute>
       <attribute name="rank">
         <value>0</value>
       </attribute>
-      <ref name="python_code">
-        <a:documentation>ufl code describing a form.</a:documentation>
-      </ref>
+      <ref name="python_code"/>
       <ref name="form_ufl_symbol"/>
     </element>
     <element name="form">
-      <a:documentation>Describe the Jacobian form using ufl</a:documentation>
+      <a:documentation>ufl code form describing a jacobian bilinear form (must return a bilinear form).  
+Any system, field or coefficient ufl symbols defined in this options file may be used in this form as well as any symbols 
+defined in the preamble and residual linear form above.</a:documentation>
       <attribute name="name">
         <value>Jacobian</value>
       </attribute>
       <attribute name="rank">
         <value>1</value>
       </attribute>
-      <ref name="python_code">
-        <a:documentation>ufl code describing a form.</a:documentation>
-      </ref>
+      <ref name="python_code"/>
       <ref name="form_ufl_symbol"/>
     </element>
     <optional>
       <element name="form">
+        <a:documentation>ufl code form describing a preconditioner jacobian bilinear form (must return a bilinear form).  
+Any system, field or coefficient ufl symbols defined in this options file may be used in this form as well as any symbols 
+defined in the preamble and bilinear form above.
+
+If undefined the jacobian bilinear form above will be used to precondition itself.</a:documentation>
         <attribute name="name">
           <value>JacobianPC</value>
         </attribute>
         <attribute name="rank">
           <value>1</value>
         </attribute>
-        <ref name="python_code">
-          <a:documentation>ufl code describing a form.</a:documentation>
-        </ref>
+        <ref name="python_code"/>
         <ref name="form_ufl_symbol"/>
       </element>
     </optional>
     <choice>
       <element name="snes_type">
+        <a:documentation>The SNES type.  Line search.</a:documentation>
         <attribute name="name">
           <value>ls</value>
         </attribute>
         <empty/>
       </element>
       <element name="snes_type">
+        <a:documentation>The SNES type.</a:documentation>
         <attribute name="name">
           <value>tr</value>
         </attribute>
         <empty/>
       </element>
       <element name="snes_type">
+        <a:documentation>The SNES type.</a:documentation>
         <attribute name="name">
           <value>python</value>
         </attribute>
         <empty/>
       </element>
       <element name="snes_type">
+        <a:documentation>The SNES type.</a:documentation>
         <attribute name="name">
           <value>test</value>
         </attribute>
         <empty/>
       </element>
       <element name="snes_type">
+        <a:documentation>The SNES type.  Any valid PETSc SNES type may be entered.</a:documentation>
         <attribute name="name">
           <data type="string"/>
         </attribute>
@@ -197,23 +215,34 @@
       </element>
     </choice>
     <element name="relative_error">
+      <a:documentation>The relative error allowed to remain in the l2 norm of the nonlinear solver residual upon termination
+of the iteration loop.</a:documentation>
       <ref name="real"/>
     </element>
     <optional>
       <element name="absolute_error">
+        <a:documentation>The absolute error allowed to remain in the vector l2 norm of the nonlinear solver residual upon termination
+of the iteration loop.
+
+Defaults to 1.e-50.</a:documentation>
         <ref name="real"/>
       </element>
     </optional>
     <optional>
       <element name="solution_error">
+        <a:documentation>Defaults to 1.e-8.</a:documentation>
         <ref name="real"/>
       </element>
     </optional>
     <element name="max_iterations">
+      <a:documentation>The maximum number of iterations to take in this nonlinear solver loop.</a:documentation>
       <ref name="integer"/>
     </element>
     <optional>
       <element name="max_function_evaluations">
+        <a:documentation>The maximum number of solver evaluations allowed in this nonlinear solver loop.
+
+Defaults to 10000.</a:documentation>
         <ref name="integer"/>
       </element>
     </optional>
@@ -222,16 +251,19 @@
 the SNES solve. Some of those may really slow down your computation!</a:documentation>
       <optional>
         <element name="residual">
+          <a:documentation>Output the residual at every function evaluation.</a:documentation>
           <empty/>
         </element>
       </optional>
       <optional>
         <element name="solution_graph">
+          <a:documentation>Plot a graph of the solution with each iteration.</a:documentation>
           <empty/>
         </element>
       </optional>
     </element>
     <element name="linear_solver">
+      <a:documentation>Options describing a linear solver.</a:documentation>
       <ref name="linear_solver_options"/>
     </element>
   </define>
@@ -239,8 +271,7 @@ the SNES solve. Some of those may really slow down your computation!</a:document
     <choice>
       <a:documentation>Iterative (Krylov) method to solve the linear discretised equation
 Given are the most frequently used methods. The solution is done
-by the PETSc library. Many more methods are provided.
-</a:documentation>
+by the PETSc library. Many more methods are provided.</a:documentation>
       <ref name="kspgmres_options"/>
       <ref name="kspfgmres_options"/>
       <ref name="kspcg_options"/>
@@ -407,24 +438,32 @@ This performs a complete, direct solve of the equation and should only be used i
       </attribute>
       <choice>
         <element name="factorization_package">
+          <a:documentation>Package to use for the factorization - petsc.</a:documentation>
           <attribute name="name">
             <value>petsc</value>
           </attribute>
           <empty/>
         </element>
         <element name="factorization_package">
+          <a:documentation>Package to use for the factorization - umfpack.
+
+Useful for systems with a near zero pivot.</a:documentation>
           <attribute name="name">
             <value>umfpack</value>
           </attribute>
           <empty/>
         </element>
         <element name="factorization_package">
+          <a:documentation>Package to use for the factorization - mumps.
+
+Useful for parallel direct solves (if installed on system).</a:documentation>
           <attribute name="name">
             <value>mumps</value>
           </attribute>
           <empty/>
         </element>
         <element name="factorization_package">
+          <a:documentation>Package to use for the factorization - any valid package.</a:documentation>
           <attribute name="name">
             <data type="string"/>
           </attribute>
@@ -524,7 +563,9 @@ http://www-unix.mcs.anl.gov/petsc/petsc-2/snapshots/petsc-dev/docs/manualpages/P
   </define>
   <define name="pcksp_options">
     <element name="preconditioner">
-      <a:documentation>This only makes sense for solves where a different approximated preconditioner
+      <a:documentation>A ksp preconditioner.
+
+This only makes sense for solves where a different approximated preconditioner
 matrix is provided.
 
 NOTE: If you are using a krylov method (cg/gmres) for this preconditioner 
@@ -542,35 +583,41 @@ exact matrix inversion), or use fgmres in the outer solve.</a:documentation>
   </define>
   <define name="pcfieldsplit_options">
     <element name="preconditioner">
+      <a:documentation>A fieldsplit preconditioner.</a:documentation>
       <attribute name="name">
         <value>fieldsplit</value>
       </attribute>
       <choice>
         <element name="composite_type">
+          <a:documentation>Composite type of the fieldsplit preconditioner - additive - do not update off diagonal blocks.</a:documentation>
           <attribute name="name">
             <value>additive</value>
           </attribute>
           <empty/>
         </element>
         <element name="composite_type">
+          <a:documentation>Composite type of the fieldsplit preconditioner - multiplicative - update off diagonal blocks.</a:documentation>
           <attribute name="name">
             <value>multiplicative</value>
           </attribute>
           <empty/>
         </element>
         <element name="composite_type">
+          <a:documentation>Composite type of the fieldsplit preconditioner - symmetric_multiplicative - update off diagonal blocks.</a:documentation>
           <attribute name="name">
             <value>symmetric_multiplicative</value>
           </attribute>
           <empty/>
         </element>
         <element name="composite_type">
+          <a:documentation>Composite type of the fieldsplit preconditioner - special.</a:documentation>
           <attribute name="name">
             <value>special</value>
           </attribute>
           <empty/>
         </element>
         <element name="composite_type">
+          <a:documentation>Composite type of the fieldsplit preconditioner - schur.</a:documentation>
           <attribute name="name">
             <value>schur</value>
           </attribute>
@@ -579,11 +626,16 @@ exact matrix inversion), or use fgmres in the outer solve.</a:documentation>
       </choice>
       <oneOrMore>
         <element name="fieldsplit">
+          <a:documentation>Describe the fieldsplits.  Names must be unique within this linear solver.
+
+Each fieldsplit must fully describe the split from the base system function (i.e. field names, region ids and components are not
+inherited down the tree of splits).</a:documentation>
           <attribute name="name">
             <data type="string"/>
           </attribute>
           <oneOrMore>
             <element name="field">
+              <a:documentation>Field to include in this split.</a:documentation>
               <attribute name="name">
                 <data type="string"/>
               </attribute>
@@ -630,7 +682,9 @@ Suggested value: 1.0e-7</a:documentation>
       <element name="absolute_error">
         <a:documentation>Absolute error bound
 
-The solver finishes if the preconditioned error becomes smaller than this value.</a:documentation>
+The solver finishes if the preconditioned error becomes smaller than this value.
+
+Defaults to 1.e-50.</a:documentation>
         <ref name="real"/>
       </element>
     </optional>
@@ -638,7 +692,9 @@ The solver finishes if the preconditioned error becomes smaller than this value.
       <element name="divergence_error">
         <a:documentation>Divergence error bound
 
-The solver finishes if the solutions diverge by more than this value.</a:documentation>
+The solver finishes if the solutions diverge by more than this value.
+
+Defaults to 10000.</a:documentation>
         <ref name="real"/>
       </element>
     </optional>
@@ -708,11 +764,16 @@ has been linked with the X library.</a:documentation>
         <a:documentation>Remove Null-space from residual after applying preconditioner.</a:documentation>
         <oneOrMore>
           <element name="null_space">
+            <a:documentation>Describe the null spaces.  Names must be unique within this linear solver.
+
+Each null space must fully describe the space from the base system function (i.e. field names, region ids and components are not
+inherited down the tree).</a:documentation>
             <attribute name="name">
               <data type="string"/>
             </attribute>
             <oneOrMore>
               <element name="field">
+                <a:documentation>Field to include in this null space.</a:documentation>
                 <attribute name="name">
                   <data type="string"/>
                 </attribute>
@@ -726,7 +787,9 @@ Defaults to all components if not selected.</a:documentation>
                 </optional>
                 <optional>
                   <element name="region_ids">
-                    <a:documentation>A list of the region ids (physical ids in gmsh) </a:documentation>
+                    <a:documentation>A list of the region ids (physical ids in gmsh).
+
+Defaults to the whole mesh if left unspecified.</a:documentation>
                     <ref name="integer_vector"/>
                   </element>
                 </optional>

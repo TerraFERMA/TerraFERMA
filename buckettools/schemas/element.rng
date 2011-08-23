@@ -89,6 +89,7 @@
   <define name="vector_element_options">
     <optional>
       <element name="size">
+        <a:documentation>The size (length) of the vector.</a:documentation>
         <ref name="integer"/>
       </element>
     </optional>
@@ -96,11 +97,13 @@
   <define name="tensor_element_options">
     <optional>
       <element name="shape">
+        <a:documentation>The shape of the tensor.</a:documentation>
         <ref name="integer_2_vector"/>
       </element>
     </optional>
     <optional>
       <element name="symmetric">
+        <a:documentation>Tensor symmetry.</a:documentation>
         <empty/>
       </element>
     </optional>
@@ -108,28 +111,28 @@
   <define name="element_options_scalar">
     <choice>
       <element name="element">
-        <a:documentation>Options describing the finite element</a:documentation>
+        <a:documentation>Options describing a user defined finite element for a scalar.</a:documentation>
         <attribute name="name">
           <value>UserDefined</value>
         </attribute>
         <ref name="generic_element"/>
       </element>
       <element name="element">
-        <a:documentation>Options describing the finite element</a:documentation>
+        <a:documentation>Options describing piecewise constant discontinuous Lagrange finite element for a scalar.</a:documentation>
         <attribute name="name">
           <value>P0</value>
         </attribute>
         <ref name="p0_element"/>
       </element>
       <element name="element">
-        <a:documentation>Options describing the finite element</a:documentation>
+        <a:documentation>Options describing piecewise linear continuous Lagrange finite element for a scalar.</a:documentation>
         <attribute name="name">
           <value>P1</value>
         </attribute>
         <ref name="p1_element"/>
       </element>
       <element name="element">
-        <a:documentation>Options describing the finite element</a:documentation>
+        <a:documentation>Options describing piecewise quadratic continuous Lagrange finite element for a scalar.</a:documentation>
         <attribute name="name">
           <value>P2</value>
         </attribute>
@@ -140,7 +143,7 @@
   <define name="element_options_vector">
     <choice>
       <element name="element">
-        <a:documentation>Options describing the finite element</a:documentation>
+        <a:documentation>Options describing a user defined finite element for a vector.</a:documentation>
         <attribute name="name">
           <value>UserDefined</value>
         </attribute>
@@ -148,7 +151,7 @@
         <ref name="vector_element_options"/>
       </element>
       <element name="element">
-        <a:documentation>Options describing the finite element</a:documentation>
+        <a:documentation>Options describing piecewise constant discontinuous Lagrange finite element for a vector.</a:documentation>
         <attribute name="name">
           <value>P0</value>
         </attribute>
@@ -156,7 +159,7 @@
         <ref name="vector_element_options"/>
       </element>
       <element name="element">
-        <a:documentation>Options describing the finite element</a:documentation>
+        <a:documentation>Options describing piecewise linear continuous Lagrange finite element for a vector.</a:documentation>
         <attribute name="name">
           <value>P1</value>
         </attribute>
@@ -164,7 +167,7 @@
         <ref name="vector_element_options"/>
       </element>
       <element name="element">
-        <a:documentation>Options describing the finite element</a:documentation>
+        <a:documentation>Options describing piecewise quadratic continuous Lagrange finite element for a vector.</a:documentation>
         <attribute name="name">
           <value>P2</value>
         </attribute>
@@ -176,7 +179,7 @@
   <define name="element_options_tensor">
     <choice>
       <element name="element">
-        <a:documentation>Options describing the finite element</a:documentation>
+        <a:documentation>Options describing a user defined finite element for a tensor.</a:documentation>
         <attribute name="name">
           <value>UserDefined</value>
         </attribute>
@@ -184,7 +187,7 @@
         <ref name="tensor_element_options"/>
       </element>
       <element name="element">
-        <a:documentation>Options describing the finite element</a:documentation>
+        <a:documentation>Options describing piecewise constant discontinuous Lagrange finite element for a tensor.</a:documentation>
         <attribute name="name">
           <value>P0</value>
         </attribute>
@@ -192,7 +195,7 @@
         <ref name="tensor_element_options"/>
       </element>
       <element name="element">
-        <a:documentation>Options describing the finite element</a:documentation>
+        <a:documentation>Options describing piecewise linear continuous Lagrange finite element for a tensor.</a:documentation>
         <attribute name="name">
           <value>P1</value>
         </attribute>
@@ -200,7 +203,7 @@
         <ref name="tensor_element_options"/>
       </element>
       <element name="element">
-        <a:documentation>Options describing the finite element</a:documentation>
+        <a:documentation>Options describing piecewise quadratic continuous Lagrange finite element for a tensor.</a:documentation>
         <attribute name="name">
           <value>P2</value>
         </attribute>

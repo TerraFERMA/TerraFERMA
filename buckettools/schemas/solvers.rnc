@@ -3,60 +3,67 @@ include "ufl.rnc"
 
 nonlinear_solver_options =
   (
-    (
-      element nonlinear_solver {
-        attribute name { xsd:string },
-        (
-          element type {
-            snes
-          }|
-          element type {
-            picard
-          }
-        )
-      }|
-      element nonlinear_solver {
-        attribute name { "SNES" },
+    ## Options describing a nonlinear solver.  This consists of a set of bilinear and linear forms acting on the function 
+    ## and functionspace in this system and using coefficients defined anywhere in this options file.  Additionally a nonlinear
+    ## solver describes the method of convering the nonlinear solve, either using a Newton or Picard iteration loop and a
+    ## description of the linear solver used within this loop.
+    element nonlinear_solver {
+      attribute name { xsd:string },
+      (
+        ## The type of nonlinear solver. 
+        ## PETSc SNES - a Newton iteration with line search.
         element type {
           snes
-        }
-      }|
-      element nonlinear_solver {
-        attribute name { "Picard" },
+        }|
+        ## The type of nonlinear solver. 
+        ## A Picard iteration.
         element type {
           picard
         }
-      }
-    )
+      )
+    }
   )
 
 picard =
   (
     attribute name { "Picard" },
+    ## ufl code preamble to the forms defined below.  
+    ## Any system, field or coefficient ufl symbols defined in this options file may be used in this preamble.
     element preamble {
       python_code 
     }?,
+    ## ufl code form describing a bilinear form (must return a bilinear form).  
+    ## Any system, field or coefficient ufl symbols defined in this options file may be used in this form as well as any symbols 
+    ## defined in the preamble above.
     element form {
       attribute name { "Bilinear" },
       attribute rank { "1" },
-      ## ufl code describing a form.
       python_code,
       form_ufl_symbol
     },
+    ## ufl code form describing a preconditioner bilinear form (must return a bilinear form).  
+    ## Any system, field or coefficient ufl symbols defined in this options file may be used in this form as well as any symbols 
+    ## defined in the preamble and bilinear form above.
+    ##
+    ## If undefined the bilinear form above will be used to precondition itself.
     element form {
       attribute name { "BilinearPC" },
       attribute rank { "1" },
-      ## ufl code describing a form.
       python_code,
       form_ufl_symbol
     }?,
+    ## ufl code form describing a linear form (must return a linear form).  
+    ## Any system, field or coefficient ufl symbols defined in this options file may be used in this form as well as any symbols 
+    ## defined in the preamble and bilinear forms above.
     element form {
       attribute name { "Linear" },
       attribute rank { "0" },
-      ## ufl code describing a form.
       python_code,
       form_ufl_symbol
     },
+    ## ufl code form describing a linear residual form (must return a linear form).  
+    ## Any system, field or coefficient ufl symbols defined in this options file may be used in this form as well as any symbols 
+    ## defined in the preamble, bilinear and linear forms above.
     element form {
       attribute name { "Residual" },
       attribute rank { "0" },
@@ -64,18 +71,27 @@ picard =
       python_code,
       form_ufl_symbol
     },
+    ## The relative error allowed to remain in the vector l2 norm of the nonlinear solver residual (defined above) upon termination
+    ## of the iteration loop.
     element relative_error {
       real
     },
+    ## The absolute error allowed to remain in the vector l2 norm of the nonlinear solver residual (defined above) upon termination
+    ## of the iteration loop.
+    ##
+    ## Defaults to 1.e-50.
     element absolute_error {
       real
     }?,
+    ## The maximum number of iterations to take in this nonlinear solver loop.
     element max_iterations {
       integer
     },
+    ## The minimum number of iterations to take in this nonlinear solver loop.
     element min_iterations {
       integer
     }?,
+    ## Options describing a linear solver.
     element linear_solver {
       linear_solver_options
     }
@@ -84,79 +100,106 @@ picard =
 snes =
   (
     attribute name { "SNES" },
+    ## ufl code preamble to the forms defined below.  
+    ## Any system, field or coefficient ufl symbols defined in this options file may be used in this preamble.
     element preamble {
-      ## ufl code describing a form.
       python_code
     }?,
+    ## ufl code form describing a linear residual form (must return a linear form).  
+    ## Any system, field or coefficient ufl symbols defined in this options file may be used in this form as well as any symbols 
+    ## defined in the preamble above.
     element form {
       attribute name { "Residual" },
       attribute rank { "0" },
-      ## ufl code describing a form.
       python_code,
       form_ufl_symbol
     },
-    ## Describe the Jacobian form using ufl
+    ## ufl code form describing a jacobian bilinear form (must return a bilinear form).  
+    ## Any system, field or coefficient ufl symbols defined in this options file may be used in this form as well as any symbols 
+    ## defined in the preamble and residual linear form above.
     element form {
       attribute name { "Jacobian" },
       attribute rank { "1" },
-      ## ufl code describing a form.
       python_code,
       form_ufl_symbol
     },
+    ## ufl code form describing a preconditioner jacobian bilinear form (must return a bilinear form).  
+    ## Any system, field or coefficient ufl symbols defined in this options file may be used in this form as well as any symbols 
+    ## defined in the preamble and bilinear form above.
+    ##
+    ## If undefined the jacobian bilinear form above will be used to precondition itself.
     element form {
       attribute name { "JacobianPC" },
       attribute rank { "1" },
-      ## ufl code describing a form.
       python_code,
       form_ufl_symbol
     }?,
     (
+      ## The SNES type.  Line search.
       element snes_type {
         attribute name { "ls" },
         empty
       }|
+      ## The SNES type.
       element snes_type {
         attribute name { "tr" },
         empty
       }|
+      ## The SNES type.
       element snes_type {
         attribute name { "python" },
         empty
       }|
+      ## The SNES type.
       element snes_type {
         attribute name { "test" },
         empty
       }|
+      ## The SNES type.  Any valid PETSc SNES type may be entered.
       element snes_type {
         attribute name { xsd:string },
         empty
       }
     ),
+    ## The relative error allowed to remain in the l2 norm of the nonlinear solver residual upon termination
+    ## of the iteration loop.
     element relative_error {
       real
     },
+    ## The absolute error allowed to remain in the vector l2 norm of the nonlinear solver residual upon termination
+    ## of the iteration loop.
+    ##
+    ## Defaults to 1.e-50.
     element absolute_error {
       real
     }?,
+    ## Defaults to 1.e-8.
     element solution_error {
       real
     }?,
+    ## The maximum number of iterations to take in this nonlinear solver loop.
     element max_iterations {
       integer
     },
+    ## The maximum number of solver evaluations allowed in this nonlinear solver loop.
+    ##
+    ## Defaults to 10000.
     element max_function_evaluations {
       integer
     }?,
     ## Options to give extra information for each iteration of the
     ## the SNES solve. Some of those may really slow down your computation!
     element monitors {
+       ## Output the residual at every function evaluation.
        element residual {
           empty
        }?,
+       ## Plot a graph of the solution with each iteration.
        element solution_graph {
           empty
        }?
     },
+    ## Options describing a linear solver.
     element linear_solver {
       linear_solver_options
     }
@@ -168,7 +211,6 @@ linear_solver_options =
       ## Iterative (Krylov) method to solve the linear discretised equation
       ## Given are the most frequently used methods. The solution is done
       ## by the PETSc library. Many more methods are provided.
-      ##
       (
          kspgmres_options|
          kspfgmres_options|
@@ -333,18 +375,26 @@ pclu_options =
       element preconditioner {
          attribute name { "lu" },
          (
+           ## Package to use for the factorization - petsc.
            element factorization_package {
              attribute name { "petsc" },
              empty
            }|
+           ## Package to use for the factorization - umfpack.
+           ##
+           ## Useful for systems with a near zero pivot.
            element factorization_package {
              attribute name { "umfpack" },
              empty
            }|
+           ## Package to use for the factorization - mumps.
+           ##
+           ## Useful for parallel direct solves (if installed on system).
            element factorization_package {
              attribute name { "mumps" },
              empty
            }|
+           ## Package to use for the factorization - any valid package.
            element factorization_package {
              attribute name { xsd:string },
              empty
@@ -442,6 +492,8 @@ pcother_options =
    
 pcksp_options =
    (
+      ## A ksp preconditioner.
+      ##
       ## This only makes sense for solves where a different approximated preconditioner
       ## matrix is provided.
       ##
@@ -460,32 +512,43 @@ pcksp_options =
 
 pcfieldsplit_options =
    (
+      ## A fieldsplit preconditioner.
       element preconditioner {
          attribute name { "fieldsplit" },
          (
+           ## Composite type of the fieldsplit preconditioner - additive - do not update off diagonal blocks.
            element composite_type {
              attribute name { "additive" },
              empty
            }|
+           ## Composite type of the fieldsplit preconditioner - multiplicative - update off diagonal blocks.
            element composite_type {
              attribute name { "multiplicative" },
              empty
            }|
+           ## Composite type of the fieldsplit preconditioner - symmetric_multiplicative - update off diagonal blocks.
            element composite_type {
              attribute name { "symmetric_multiplicative" },
              empty
            }|
+           ## Composite type of the fieldsplit preconditioner - special.
            element composite_type {
              attribute name { "special" },
              empty
            }|
+           ## Composite type of the fieldsplit preconditioner - schur.
            element composite_type {
              attribute name { "schur" },
              empty
            }
          ),
+         ## Describe the fieldsplits.  Names must be unique within this linear solver.
+         ##
+         ## Each fieldsplit must fully describe the split from the base system function (i.e. field names, region ids and components are not
+         ## inherited down the tree of splits).
          element fieldsplit {
            attribute name { xsd:string },
+           ## Field to include in this split.
            element field {
              attribute name { xsd:string },
              ## If this field is a vector or a tensor components may be listed (indexed from 0 by row first if tensorial).
@@ -525,12 +588,16 @@ iterative_solver_options =
       ## Absolute error bound
       ##
       ## The solver finishes if the preconditioned error becomes smaller than this value.
+      ##
+      ## Defaults to 1.e-50.
       element absolute_error {
          real
       }?,
       ## Divergence error bound
       ##
       ## The solver finishes if the solutions diverge by more than this value.
+      ##
+      ## Defaults to 10000.
       element divergence_error {
          real
       }?,
@@ -587,8 +654,13 @@ generic_solver_options =
 #      }?,
       ## Remove Null-space from residual after applying preconditioner.
       element remove_null_space {
+         ## Describe the null spaces.  Names must be unique within this linear solver.
+         ##
+         ## Each null space must fully describe the space from the base system function (i.e. field names, region ids and components are not
+         ## inherited down the tree).
          element null_space {
            attribute name { xsd:string },
+           ## Field to include in this null space.
            element field {
              attribute name { xsd:string },
              ## If this field is a vector or a tensor components may be listed (indexed from 0 by row first if tensorial).
@@ -597,7 +669,9 @@ generic_solver_options =
              element components {
                integer_vector
              }?,
-             ## A list of the region ids (physical ids in gmsh) 
+             ## A list of the region ids (physical ids in gmsh).
+             ##
+             ## Defaults to the whole mesh if left unspecified.
              element region_ids {
                integer_vector
              }?

@@ -100,6 +100,7 @@ p2_element =
 
 vector_element_options =
   (
+    ## The size (length) of the vector.
     element size {
       integer
     }?
@@ -107,9 +108,11 @@ vector_element_options =
 
 tensor_element_options =
   (
+    ## The shape of the tensor.
     element shape {
       integer_2_vector
     }?,
+    ## Tensor symmetry.
     element symmetric {
       empty
     }?
@@ -118,22 +121,22 @@ tensor_element_options =
 element_options_scalar =
   (
      (
-       ## Options describing the finite element
+       ## Options describing a user defined finite element for a scalar.
        element element {
          attribute name { "UserDefined" },
          generic_element
        }|
-       ## Options describing the finite element
+       ## Options describing piecewise constant discontinuous Lagrange finite element for a scalar.
        element element {
          attribute name { "P0" },
          p0_element
        }|
-       ## Options describing the finite element
+       ## Options describing piecewise linear continuous Lagrange finite element for a scalar.
        element element {
          attribute name { "P1" },
          p1_element
        }|
-       ## Options describing the finite element
+       ## Options describing piecewise quadratic continuous Lagrange finite element for a scalar.
        element element {
          attribute name { "P2" },
          p2_element
@@ -144,25 +147,25 @@ element_options_scalar =
 element_options_vector =
   (
      (
-       ## Options describing the finite element
+       ## Options describing a user defined finite element for a vector.
        element element {
          attribute name { "UserDefined" },
          generic_element,
          vector_element_options
        }|
-       ## Options describing the finite element
+       ## Options describing piecewise constant discontinuous Lagrange finite element for a vector.
        element element {
          attribute name { "P0" },
          p0_element,
          vector_element_options
        }|
-       ## Options describing the finite element
+       ## Options describing piecewise linear continuous Lagrange finite element for a vector.
        element element {
          attribute name { "P1" },
          p1_element,
          vector_element_options
        }|
-       ## Options describing the finite element
+       ## Options describing piecewise quadratic continuous Lagrange finite element for a vector.
        element element {
          attribute name { "P2" },
          p2_element,
@@ -174,25 +177,25 @@ element_options_vector =
 element_options_tensor =
   (
      (
-       ## Options describing the finite element
+       ## Options describing a user defined finite element for a tensor.
        element element {
          attribute name { "UserDefined" },
          generic_element,
          tensor_element_options
        }|
-       ## Options describing the finite element
+       ## Options describing piecewise constant discontinuous Lagrange finite element for a tensor.
        element element {
          attribute name { "P0" },
          p0_element,
          tensor_element_options
        }|
-       ## Options describing the finite element
+       ## Options describing piecewise linear continuous Lagrange finite element for a tensor.
        element element {
          attribute name { "P1" },
          p1_element,
          tensor_element_options
        }|
-       ## Options describing the finite element
+       ## Options describing piecewise quadratic continuous Lagrange finite element for a tensor.
        element element {
          attribute name { "P2" },
          p2_element,

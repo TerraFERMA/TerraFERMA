@@ -147,9 +147,7 @@ Constants are spatially constant expressions.</a:documentation>
     <attribute name="rank">
       <value>0</value>
     </attribute>
-    <ref name="element_options_scalar">
-      <a:documentation>Options describing the finite element</a:documentation>
-    </ref>
+    <ref name="element_options_scalar"/>
     <oneOrMore>
       <ref name="initial_condition_scalar"/>
     </oneOrMore>
@@ -161,9 +159,7 @@ Constants are spatially constant expressions.</a:documentation>
     <attribute name="rank">
       <value>1</value>
     </attribute>
-    <ref name="element_options_vector">
-      <a:documentation>Options describing the finite element</a:documentation>
-    </ref>
+    <ref name="element_options_vector"/>
     <oneOrMore>
       <ref name="initial_condition_vector"/>
     </oneOrMore>
@@ -175,9 +171,7 @@ Constants are spatially constant expressions.</a:documentation>
     <attribute name="rank">
       <value>2</value>
     </attribute>
-    <ref name="element_options_tensor">
-      <a:documentation>Options describing the finite element</a:documentation>
-    </ref>
+    <ref name="element_options_tensor"/>
     <oneOrMore>
       <ref name="initial_condition_tensor"/>
     </oneOrMore>
@@ -189,9 +183,7 @@ Constants are spatially constant expressions.</a:documentation>
     <attribute name="rank">
       <value>0</value>
     </attribute>
-    <ref name="element_options_scalar">
-      <a:documentation>Options describing the finite element</a:documentation>
-    </ref>
+    <ref name="element_options_scalar"/>
     <oneOrMore>
       <ref name="prescribed_expression_scalar"/>
     </oneOrMore>
@@ -200,9 +192,7 @@ Constants are spatially constant expressions.</a:documentation>
     <attribute name="rank">
       <value>1</value>
     </attribute>
-    <ref name="element_options_vector">
-      <a:documentation>Options describing the finite element</a:documentation>
-    </ref>
+    <ref name="element_options_vector"/>
     <oneOrMore>
       <ref name="prescribed_expression_vector"/>
     </oneOrMore>
@@ -211,9 +201,7 @@ Constants are spatially constant expressions.</a:documentation>
     <attribute name="rank">
       <value>2</value>
     </attribute>
-    <ref name="element_options_tensor">
-      <a:documentation>Options describing the finite element</a:documentation>
-    </ref>
+    <ref name="element_options_tensor"/>
     <oneOrMore>
       <ref name="prescribed_expression_tensor"/>
     </oneOrMore>
@@ -250,8 +238,12 @@ Constants are spatially constant expressions.</a:documentation>
   </define>
   <define name="generic_function_output_options">
     <element name="output">
+      <a:documentation>Output options</a:documentation>
       <optional>
         <element name="include_in_diagnostics">
+          <a:documentation>Include this field or coefficient in the diagnostic output file.
+The minimum and maximum of functions is included.  There is no automatic output for expressions or coefficients and only
+functionals defined below will be included.</a:documentation>
           <zeroOrMore>
             <ref name="functional_options"/>
           </zeroOrMore>
@@ -259,6 +251,7 @@ Constants are spatially constant expressions.</a:documentation>
       </optional>
       <optional>
         <element name="include_in_detectors">
+          <a:documentation>Include this field or coefficient in the detectors output file.</a:documentation>
           <empty/>
         </element>
       </optional>
@@ -266,25 +259,25 @@ Constants are spatially constant expressions.</a:documentation>
   </define>
   <define name="functional_options">
     <element name="functional">
+      <a:documentation>ufl code and symbol describing a functional.  This must return a single number and have a unique name beneath this field or coefficient.</a:documentation>
       <attribute name="name">
         <data type="string"/>
       </attribute>
-      <ref name="python_code">
-        <a:documentation>ufl code describing a functional.</a:documentation>
-      </ref>
+      <ref name="python_code"/>
       <ref name="functional_ufl_symbol"/>
     </element>
   </define>
   <define name="initial_condition_scalar">
     <choice>
       <element name="initial_condition">
-        <a:documentation>Options for the description of the initial condition over the domain</a:documentation>
+        <a:documentation>Options for the description of the initial condition over the whole domain</a:documentation>
         <attribute name="name">
           <value>WholeMesh</value>
         </attribute>
         <ref name="prescribed_scalar"/>
       </element>
       <element name="initial_condition">
+        <a:documentation>Options for the description of the initial condition over a subset of the whole domain</a:documentation>
         <attribute name="name">
           <data type="string"/>
         </attribute>
@@ -299,14 +292,14 @@ Constants are spatially constant expressions.</a:documentation>
   <define name="initial_condition_vector">
     <choice>
       <element name="initial_condition">
-        <a:documentation>Options for the description of the initial condition over the domain</a:documentation>
+        <a:documentation>Options for the description of the initial condition over the whole domain</a:documentation>
         <attribute name="name">
           <value>WholeMesh</value>
         </attribute>
         <ref name="prescribed_vector"/>
       </element>
       <element name="initial_condition">
-        <a:documentation>Options for the description of the initial condition over regions</a:documentation>
+        <a:documentation>Options for the description of the initial condition over a subset of the whole domain</a:documentation>
         <attribute name="name">
           <data type="string"/>
         </attribute>
@@ -321,14 +314,14 @@ Constants are spatially constant expressions.</a:documentation>
   <define name="initial_condition_tensor">
     <choice>
       <element name="initial_condition">
-        <a:documentation>Options for the description of the initial condition over the domain</a:documentation>
+        <a:documentation>Options for the description of the initial condition over the whole domain</a:documentation>
         <attribute name="name">
           <value>WholeMesh</value>
         </attribute>
         <ref name="prescribed_tensor"/>
       </element>
       <element name="initial_condition">
-        <a:documentation>Options for the description of the initial condition over regions</a:documentation>
+        <a:documentation>Options for the description of the initial condition over a subset of the whole domain</a:documentation>
         <attribute name="name">
           <data type="string"/>
         </attribute>
@@ -356,6 +349,7 @@ Constants are spatially constant expressions.</a:documentation>
           <value>All</value>
         </attribute>
         <element name="type">
+          <a:documentation>The boundary condition type (only strong Dirichlet available).</a:documentation>
           <attribute name="name">
             <value>Dirichlet</value>
           </attribute>
@@ -382,6 +376,7 @@ Constants are spatially constant expressions.</a:documentation>
               <value>All</value>
             </attribute>
             <element name="type">
+              <a:documentation>The boundary condition type (only strong Dirichlet available).</a:documentation>
               <attribute name="name">
                 <value>Dirichlet</value>
               </attribute>
@@ -398,6 +393,7 @@ Constants are spatially constant expressions.</a:documentation>
               <ref name="integer_vector"/>
             </element>
             <element name="type">
+              <a:documentation>The boundary condition type (only strong Dirichlet available).</a:documentation>
               <attribute name="name">
                 <value>Dirichlet</value>
               </attribute>
@@ -426,6 +422,7 @@ Constants are spatially constant expressions.</a:documentation>
               <value>All</value>
             </attribute>
             <element name="type">
+              <a:documentation>The boundary condition type (only strong Dirichlet available).</a:documentation>
               <attribute name="name">
                 <value>Dirichlet</value>
               </attribute>
@@ -445,6 +442,7 @@ Constants are spatially constant expressions.</a:documentation>
               <ref name="integer_vector"/>
             </element>
             <element name="type">
+              <a:documentation>The boundary condition type (only strong Dirichlet available).</a:documentation>
               <attribute name="name">
                 <value>Dirichlet</value>
               </attribute>
@@ -557,13 +555,14 @@ Constants are spatially constant expressions.</a:documentation>
   <define name="prescribed_vector_constant">
     <choice>
       <element name="constant">
-        <a:documentation>A constant vector</a:documentation>
+        <a:documentation>A constant vector of length /geometry/dimension</a:documentation>
         <attribute name="name">
           <value>dim</value>
         </attribute>
         <ref name="real_dim_vector"/>
       </element>
       <element name="constant">
+        <a:documentation>A constant vector of arbitrary length (must be the same as the size of the vector element).</a:documentation>
         <attribute name="name">
           <value>arbitrary</value>
         </attribute>
@@ -574,13 +573,15 @@ Constants are spatially constant expressions.</a:documentation>
   <define name="prescribed_tensor_constant">
     <choice>
       <element name="constant">
-        <a:documentation>A constant tensor</a:documentation>
+        <a:documentation>A constant tensor of shape /geometry/dimension x /geometry/dimension</a:documentation>
         <attribute name="name">
           <value>dim</value>
         </attribute>
         <ref name="real_dim_tensor"/>
       </element>
       <element name="constant">
+        <a:documentation>A constant tensor of arbitrary shape (must be the same as the size of the tensor element).  
+Values should be entered by row first.</a:documentation>
         <attribute name="name">
           <value>arbitrary</value>
         </attribute>
