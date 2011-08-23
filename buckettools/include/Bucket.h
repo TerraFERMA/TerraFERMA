@@ -11,111 +11,58 @@
 namespace buckettools
 {
   
-  // The Bucket is a class that describes a collection of meshes, systems and point diagnostics (detectors).
+  //*****************************************************************|************************************************************//
+  // Bucket class:
+  //
+  // A class that describes a collection of meshes, systems and point diagnostics (detectors).
   // The base class contains data structures and mechanisms for accessing those structures.
   // Derived classes are designed for specific options systems and are capable of populating those data
   // structures and may be extended to incorporate the ability to run entire models.
+  //*****************************************************************|************************************************************//
   class Bucket
   {
-  // only accessible to memebers of this class
-  private:
-
-    // The name of the bucket
-    std::string name_;
+  public:                                                            // accessible to everyone
     
-    // a map from ufl symbols to field and coefficient names
-    std::map< std::string, std::string > uflnames_;
+    Bucket();                                                        // default constructor
+
+    Bucket(std::string name);                                        // optional constructor specifying the name
     
-    // a map from ufl symbols to pointers to functions
-    std::map< std::string, GenericFunction_ptr > uflsymbols_;
+    ~Bucket();                                                       // default destructor
 
-    std::map< std::string, FunctionSpace_ptr > coefficientspaces_;
-
-    // Destroy the data in the bucket
-    void empty_();
-
-  // accessible to derived classes
-  protected:    
-
-    // Geometry dimension (assumed size of various objects that don't state their own size explicitly)
-    int dimension_;
-
-    // A map from mesh name to mesh pointer
-    // The mesh format is assumed to be DOLFIN
-    std::map< std::string, Mesh_ptr >         meshes_;
-
-    // A map from system name to system pointer
-    // SystemBuckets describe function spaces and the solvers that operate on them
-    std::map< std::string, SystemBucket_ptr >       systems_;
-    std::map< int, SystemBucket_ptr >               orderedsystems_;
-
-    // fill in the uflsymbols
-    void uflsymbols_fill_();
-
-//    // A map from detector set name to detectors
-//    std::map< std::string, GenericDetectors_ptr >    detectors_;
+    const std::string str() const                                    // return a string describing the bucket contents
     
-  // accessible to everyone
-  public:
-    
-    // Default constructor (the name really isn't all that necessary)
-    Bucket();
-
-    // Optional constructor specifying the name
-    Bucket(std::string name);
-    
-    // Default destructor
-    ~Bucket();
-
-    // Print a description of the bucket contents
-    const std::string str() const;
-    
-    // Print a description of the meshes contained in the bucket
-    virtual const std::string meshes_str() const
+    virtual const std::string meshes_str() const                     // return a string describing the meshes in the bucket
     { return meshes_str(0); }
 
-    // Print a description of the meshes contained in the bucket
-    virtual const std::string meshes_str(int indent) const;
+    virtual const std::string meshes_str(int indent) const;          // return an indented string describing the meshes in the bucket
 
-    // Print a description of the systems contained in the bucket
-    const std::string systems_str() const
+    const std::string systems_str() const                            // return a string describing the systems in the bucket
     { return systems_str(0); }
 
-    // Print a description of the systems contained in the bucket
-    const std::string systems_str(int indent) const;
+    const std::string systems_str(int indent) const;                 // return an indented string describing the systems in the bucket
 
-    // Print the name of the bucket
-    const std::string name() const
+    const std::string name() const                                   // return a string containing the name of the bucket
     { return name_; }
     
-    // Tools for manipulating the base bucket class data structures:
-    // Register a mesh in the bucket (i.e. put it into the meshes_ map)
-    void register_mesh(Mesh_ptr mesh, std::string name);
+    void register_mesh(Mesh_ptr mesh, std::string name);             // register a mesh with the given name in the bucket
 
-    // Return a mesh pointer from the meshes_ map, given its name
-    Mesh_ptr fetch_mesh(const std::string name);
+    Mesh_ptr fetch_mesh(const std::string name);                     // return a (boost shared) pointer to a mesh with the given name
     
-    // Return the iterator to the beginning of the meshes_ map
-    Mesh_it meshes_begin();
+    Mesh_it meshes_begin();                                          // return an iterator to the beginning of the meshes
 
-    // Return the const iterator to the beginning of the meshes_ map
-    Mesh_const_it meshes_begin() const;
+    Mesh_const_it meshes_begin() const;                              // return a constant iterator to the beginning of the meshes
 
-    // Return the iterator to the end of the meshes_ map
-    Mesh_it meshes_end();
+    Mesh_it meshes_end();                                            // return an iterator to the end of the meshes
 
-    // Return the const iterator to the end of the meshes_ map
-    Mesh_const_it meshes_end() const;
+    Mesh_const_it meshes_end() const;                                // return a constant iterator to the end of the meshes
  
-    // Register a system in the bucket (i.e. put it into the systems_ map)
-    void register_system(SystemBucket_ptr system, std::string name);
+    void register_system(SystemBucket_ptr system, std::string name); // register a system with the given name in the bucket
 
-    // Return a system pointer from the systems_ map, given its name
-    SystemBucket_ptr fetch_system(const std::string name);
+    SystemBucket_ptr fetch_system(const std::string name);           // return a (boost shared) pointer to a system with the given name
     
-    const SystemBucket_ptr fetch_system(const std::string name) const;
+    const SystemBucket_ptr fetch_system(const std::string name) 
+          const;                                                     // return a constant (boost shared) pointer to a system with the given name
     
-    // Return the iterator to the beginning of the systems_ map
     SystemBucket_it systems_begin();
 
     // Return the const iterator to the beginning of the systems_ map
@@ -162,6 +109,8 @@ namespace buckettools
 
     void solve();
 
+    void update();
+
     // Return the geometry dimension
     const int dimension() const
     { return dimension_; }
@@ -184,6 +133,43 @@ namespace buckettools
     // Print a description of the fields contained in the system
     virtual const std::string uflsymbols_str(int indent) const;
 
+  // only accessible to memebers of this class
+  private:
+
+    std::string name_;                                                             // The name of the bucket
+    
+    // a map from ufl symbols to field and coefficient names
+    std::map< std::string, std::string > uflnames_;
+    
+    // a map from ufl symbols to pointers to functions
+    std::map< std::string, GenericFunction_ptr > uflsymbols_;
+
+    std::map< std::string, FunctionSpace_ptr > coefficientspaces_;
+
+    // Destroy the data in the bucket
+    void empty_();
+
+  // accessible to derived classes
+  protected:    
+
+    // Geometry dimension (assumed size of various objects that don't state their own size explicitly)
+    int dimension_;
+
+    // A map from mesh name to mesh pointer
+    // The mesh format is assumed to be DOLFIN
+    std::map< std::string, Mesh_ptr >         meshes_;
+
+    // A map from system name to system pointer
+    // SystemBuckets describe function spaces and the solvers that operate on them
+    std::map< std::string, SystemBucket_ptr >       systems_;
+    std::map< int, SystemBucket_ptr >               orderedsystems_;
+
+    // fill in the uflsymbols
+    void uflsymbols_fill_();
+
+//    // A map from detector set name to detectors
+//    std::map< std::string, GenericDetectors_ptr >    detectors_;
+    
 //    void register_system(SystemBucket_ptr std::string name)
 //    { register_system(name, "uninitialised_path"); }
 //
