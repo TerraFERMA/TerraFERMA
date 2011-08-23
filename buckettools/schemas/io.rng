@@ -16,18 +16,18 @@
   </define>
   <define name="detectors_options">
     <element name="detectors">
-      <a:documentation>Detectors</a:documentation>
+      <a:documentation>Detectors options</a:documentation>
       <zeroOrMore>
         <choice>
           <element name="point">
-            <a:documentation>Set up point detectors</a:documentation>
+            <a:documentation>Define a single point detector.  The name must be unique amongst all detectors.</a:documentation>
             <attribute name="name">
               <data type="string"/>
             </attribute>
             <ref name="real_dim_vector"/>
           </element>
           <element name="array">
-            <a:documentation>Set up an array of detectors</a:documentation>
+            <a:documentation>Define an array of detectors using python.  The name of the array must be unique amongst all detectors.</a:documentation>
             <attribute name="name">
               <data type="string"/>
             </attribute>
@@ -45,7 +45,7 @@ Functions should be of the form:
     # Function code
     return # Return value
 
-The return value must have length number_of_detectors.</a:documentation>
+The return value must have length number_of_detectors (above).</a:documentation>
               <ref name="python_code"/>
             </element>
           </element>

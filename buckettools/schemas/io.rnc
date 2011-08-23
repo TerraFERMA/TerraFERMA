@@ -19,15 +19,15 @@ output_file_options =
 
 detectors_options =
   (
-    ## Detectors
+    ## Detectors options
     element detectors {
       (
-        ## Set up point detectors
+        ## Define a single point detector.  The name must be unique amongst all detectors.
         element point {
           attribute name { xsd:string },
           real_dim_vector
         }|
-        ## Set up an array of detectors
+        ## Define an array of detectors using python.  The name of the array must be unique amongst all detectors.
         element array {
           attribute name { xsd:string },
           ## The number of detectors returned by
@@ -43,7 +43,7 @@ detectors_options =
           ##     # Function code
           ##     return # Return value
           ##
-          ## The return value must have length number_of_detectors.
+          ## The return value must have length number_of_detectors (above).
           element python {
             python_code
           }
