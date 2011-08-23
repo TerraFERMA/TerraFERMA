@@ -41,7 +41,7 @@
     </attribute>
     <optional>
       <element name="preamble">
-        <ref name="ufl"/>
+        <ref name="python_code"/>
       </element>
     </optional>
     <element name="form">
@@ -51,7 +51,10 @@
       <attribute name="rank">
         <value>1</value>
       </attribute>
-      <ref name="form"/>
+      <ref name="python_code">
+        <a:documentation>ufl code describing a form.</a:documentation>
+      </ref>
+      <ref name="form_ufl_symbol"/>
     </element>
     <optional>
       <element name="form">
@@ -61,7 +64,10 @@
         <attribute name="rank">
           <value>1</value>
         </attribute>
-        <ref name="form"/>
+        <ref name="python_code">
+          <a:documentation>ufl code describing a form.</a:documentation>
+        </ref>
+        <ref name="form_ufl_symbol"/>
       </element>
     </optional>
     <element name="form">
@@ -71,7 +77,10 @@
       <attribute name="rank">
         <value>0</value>
       </attribute>
-      <ref name="form"/>
+      <ref name="python_code">
+        <a:documentation>ufl code describing a form.</a:documentation>
+      </ref>
+      <ref name="form_ufl_symbol"/>
     </element>
     <element name="form">
       <attribute name="name">
@@ -80,7 +89,10 @@
       <attribute name="rank">
         <value>0</value>
       </attribute>
-      <ref name="form"/>
+      <ref name="python_code">
+        <a:documentation>ufl code describing a form.</a:documentation>
+      </ref>
+      <ref name="form_ufl_symbol"/>
     </element>
     <element name="relative_error">
       <ref name="real"/>
@@ -108,7 +120,9 @@
     </attribute>
     <optional>
       <element name="preamble">
-        <ref name="ufl"/>
+        <ref name="python_code">
+          <a:documentation>ufl code describing a form.</a:documentation>
+        </ref>
       </element>
     </optional>
     <element name="form">
@@ -118,7 +132,10 @@
       <attribute name="rank">
         <value>0</value>
       </attribute>
-      <ref name="form"/>
+      <ref name="python_code">
+        <a:documentation>ufl code describing a form.</a:documentation>
+      </ref>
+      <ref name="form_ufl_symbol"/>
     </element>
     <element name="form">
       <a:documentation>Describe the Jacobian form using ufl</a:documentation>
@@ -128,7 +145,10 @@
       <attribute name="rank">
         <value>1</value>
       </attribute>
-      <ref name="form"/>
+      <ref name="python_code">
+        <a:documentation>ufl code describing a form.</a:documentation>
+      </ref>
+      <ref name="form_ufl_symbol"/>
     </element>
     <optional>
       <element name="form">
@@ -138,7 +158,10 @@
         <attribute name="rank">
           <value>1</value>
         </attribute>
-        <ref name="form"/>
+        <ref name="python_code">
+          <a:documentation>ufl code describing a form.</a:documentation>
+        </ref>
+        <ref name="form_ufl_symbol"/>
       </element>
     </optional>
     <choice>

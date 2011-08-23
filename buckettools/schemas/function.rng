@@ -5,26 +5,32 @@
   <include href="ufl.rng"/>
   <define name="field_options">
     <element name="field">
-      <a:documentation>Options describing a function in this system</a:documentation>
-      <ref name="generic_function_header_options"/>
+      <a:documentation>Options describing a field (a prognostic function) in this system</a:documentation>
+      <ref name="field_header_options"/>
       <element name="type">
+        <a:documentation>The type of field (no option available).
+
+Fields may only be prognostic functions.</a:documentation>
         <attribute name="name">
           <value>Function</value>
         </attribute>
         <choice>
           <element name="rank">
+            <a:documentation>The rank of the field (scalar, rank 0).</a:documentation>
             <attribute name="name">
               <value>Scalar</value>
             </attribute>
             <ref name="scalar_field_function_options"/>
           </element>
           <element name="rank">
+            <a:documentation>The rank of the field (vector, rank 1).</a:documentation>
             <attribute name="name">
               <value>Vector</value>
             </attribute>
             <ref name="vector_field_function_options"/>
           </element>
           <element name="rank">
+            <a:documentation>The rank of the field (tensor, rank 2).</a:documentation>
             <attribute name="name">
               <value>Tensor</value>
             </attribute>
@@ -37,27 +43,33 @@
   </define>
   <define name="coefficient_options">
     <element name="coefficient">
-      <a:documentation>Options describing a function in this system</a:documentation>
-      <ref name="generic_function_header_options"/>
+      <a:documentation>Options describing a coefficient in this system</a:documentation>
+      <ref name="coeff_header_options"/>
       <choice>
         <element name="type">
+          <a:documentation>The type of coefficient.
+
+Functions require a functionspace, which will be defined on the same mesh as the system in which this coefficient falls.</a:documentation>
           <attribute name="name">
             <value>Function</value>
           </attribute>
           <choice>
             <element name="rank">
+              <a:documentation>The rank of the coefficient (scalar, rank 0).</a:documentation>
               <attribute name="name">
                 <value>Scalar</value>
               </attribute>
               <ref name="scalar_coefficient_function_expression_options"/>
             </element>
             <element name="rank">
+              <a:documentation>The rank of the coefficient (vector, rank 1).</a:documentation>
               <attribute name="name">
                 <value>Vector</value>
               </attribute>
               <ref name="vector_coefficient_function_expression_options"/>
             </element>
             <element name="rank">
+              <a:documentation>The rank of the coefficient (tensor, rank 2).</a:documentation>
               <attribute name="name">
                 <value>Tensor</value>
               </attribute>
@@ -66,23 +78,29 @@
           </choice>
         </element>
         <element name="type">
+          <a:documentation>The type of coefficient.
+
+Expressions are not defined on functionspaces but require an element to be described in ufl.</a:documentation>
           <attribute name="name">
             <value>Expression</value>
           </attribute>
           <choice>
             <element name="rank">
+              <a:documentation>The rank of the coefficient (scalar, rank 0).</a:documentation>
               <attribute name="name">
                 <value>Scalar</value>
               </attribute>
               <ref name="scalar_coefficient_function_expression_options"/>
             </element>
             <element name="rank">
+              <a:documentation>The rank of the coefficient (vector, rank 1).</a:documentation>
               <attribute name="name">
                 <value>Vector</value>
               </attribute>
               <ref name="vector_coefficient_function_expression_options"/>
             </element>
             <element name="rank">
+              <a:documentation>The rank of the coefficient (tensor, rank 2).</a:documentation>
               <attribute name="name">
                 <value>Tensor</value>
               </attribute>
@@ -91,23 +109,29 @@
           </choice>
         </element>
         <element name="type">
+          <a:documentation>The type of coefficient.
+
+Constants are spatially constant expressions.</a:documentation>
           <attribute name="name">
             <value>Constant</value>
           </attribute>
           <choice>
             <element name="rank">
+              <a:documentation>The rank of the coefficient (scalar, rank 0).</a:documentation>
               <attribute name="name">
                 <value>Scalar</value>
               </attribute>
               <ref name="scalar_coefficient_constant_options"/>
             </element>
             <element name="rank">
+              <a:documentation>The rank of the coefficient (vector, rank 1).</a:documentation>
               <attribute name="name">
                 <value>Vector</value>
               </attribute>
               <ref name="vector_coefficient_constant_options"/>
             </element>
             <element name="rank">
+              <a:documentation>The rank of the coefficient (tensor, rank 2).</a:documentation>
               <attribute name="name">
                 <value>Tensor</value>
               </attribute>
@@ -212,11 +236,17 @@
     </attribute>
     <ref name="prescribed_constant_tensor"/>
   </define>
-  <define name="generic_function_header_options">
+  <define name="field_header_options">
     <attribute name="name">
       <data type="string"/>
     </attribute>
-    <ref name="ufl_symbol"/>
+    <ref name="field_ufl_symbol"/>
+  </define>
+  <define name="coeff_header_options">
+    <attribute name="name">
+      <data type="string"/>
+    </attribute>
+    <ref name="coeff_ufl_symbol"/>
   </define>
   <define name="generic_function_output_options">
     <element name="output">
@@ -239,7 +269,10 @@
       <attribute name="name">
         <data type="string"/>
       </attribute>
-      <ref name="form"/>
+      <ref name="python_code">
+        <a:documentation>ufl code describing a functional.</a:documentation>
+      </ref>
+      <ref name="functional_ufl_symbol"/>
     </element>
   </define>
   <define name="initial_condition_scalar">

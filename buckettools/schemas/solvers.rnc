@@ -34,27 +34,35 @@ picard =
   (
     attribute name { "Picard" },
     element preamble {
-      ufl 
+      python_code 
     }?,
     element form {
       attribute name { "Bilinear" },
       attribute rank { "1" },
-      form
+      ## ufl code describing a form.
+      python_code,
+      form_ufl_symbol
     },
     element form {
       attribute name { "BilinearPC" },
       attribute rank { "1" },
-      form
+      ## ufl code describing a form.
+      python_code,
+      form_ufl_symbol
     }?,
     element form {
       attribute name { "Linear" },
       attribute rank { "0" },
-      form
+      ## ufl code describing a form.
+      python_code,
+      form_ufl_symbol
     },
     element form {
       attribute name { "Residual" },
       attribute rank { "0" },
-      form
+      ## ufl code describing a form.
+      python_code,
+      form_ufl_symbol
     },
     element relative_error {
       real
@@ -77,23 +85,30 @@ snes =
   (
     attribute name { "SNES" },
     element preamble {
-      ufl 
+      ## ufl code describing a form.
+      python_code
     }?,
     element form {
       attribute name { "Residual" },
       attribute rank { "0" },
-      form
+      ## ufl code describing a form.
+      python_code,
+      form_ufl_symbol
     },
     ## Describe the Jacobian form using ufl
     element form {
       attribute name { "Jacobian" },
       attribute rank { "1" },
-      form
+      ## ufl code describing a form.
+      python_code,
+      form_ufl_symbol
     },
     element form {
       attribute name { "JacobianPC" },
       attribute rank { "1" },
-      form
+      ## ufl code describing a form.
+      python_code,
+      form_ufl_symbol
     }?,
     (
       element snes_type {

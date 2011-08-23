@@ -1,33 +1,81 @@
 include "spud_base.rnc"
 
-ufl_symbol =
+system_ufl_symbol =
   (
-    ## - trial (ansatz) function = symbol_a
+    ## The ufl symbol that will be used in ufl forms and functionals to describe the system function. 
+    ## This is the potentially mixed function made up of the fields defined in this system. This ufl
+    ## symbol must be unique across the entire options file as it may be used in any ufl form or functional
+    ## written in this file.
     ##
-    ## - test function           = symbol_t
-    ##
-    ## - iterated function       = symbol_i
-    ##
-    ## - old function            = symbol_n
+    ## Several additional symbols will be automatically derived from this base symbol:
+    ##   - trial (ansatz) function = symbol_a
+    ##     (the trial basis function, to be used in linear and bilinear forms)
+    ##   - test function           = symbol_t
+    ##     (the test basis function, to be used in bilinear forms)
+    ##   - iterated function       = symbol_i
+    ##     (the iterated function coefficient, containing the most up to date values for the system function)
+    ##   - old function            = symbol_n
+    ##     (the old function coefficient, containing the values from the previous timestep for the system function)
     ##
     element ufl_symbol {
       anystring
     }
   )
 
-form =
+field_ufl_symbol =
   (
-    ufl_w_symbol
+    ## The ufl symbol that will be used in ufl forms and functionals to describe the field. 
+    ## This is the potentially sub function of the potentially mixed system function. This ufl
+    ## symbol must be unique across the entire options file as it may be used in any ufl form or functional
+    ## written in this file.
+    ##
+    ## Several additional symbols will be automatically derived from this base symbol:
+    ##   - trial (ansatz) function = symbol_a
+    ##     (the trial basis function, to be used in linear and bilinear forms)
+    ##   - test function           = symbol_t
+    ##     (the test basis function, to be used in bilinear forms)
+    ##   - iterated function       = symbol_i
+    ##     (the iterated function coefficient, containing the most up to date values for the system function)
+    ##   - old function            = symbol_n
+    ##     (the old function coefficient, containing the values from the previous timestep for the system function)
+    ##
+    element ufl_symbol {
+      anystring
+    }
   )
 
-ufl =
+coeff_ufl_symbol =
   (
-    python_code
+    ## The ufl symbol that will be used in ufl forms and functionals to describe the coefficient. 
+    ## This ufl symbol must be unique across the entire options file as it may be used in any ufl form or functional
+    ## written in this file.
+    ##
+    ## Several additional symbols will be automatically derived from this base symbol:
+    ##   - iterated function       = symbol_i
+    ##     (the iterated function coefficient, containing the most up to date values for the system function)
+    ##   - old function            = symbol_n
+    ##     (the old function coefficient, containing the values from the previous timestep for the system function)
+    ##
+    element ufl_symbol {
+      anystring
+    }
   )
 
-ufl_w_symbol =
+form_ufl_symbol =
   (
-    python_code,
-    ufl_symbol
+    ## The ufl symbol used above to describe a form.  This need only be unique within this nonlinear_solver. 
+    ## No additional symbols will be automatically generated based on this symbol.
+    element ufl_symbol {
+      anystring
+    }
+  )
+
+functional_ufl_symbol =
+  (
+    ## The ufl symbol used above to describe a functional.  This need not be unique as it is only accessible
+    ## from this description.  No additional symbols will be automatically generated based on this symbol.
+    element ufl_symbol {
+      anystring
+    }
   )
 

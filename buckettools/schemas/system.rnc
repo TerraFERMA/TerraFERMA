@@ -5,10 +5,17 @@ include "ufl.rnc"
 
 system = 
   (
+    ## Options describing a system.  
+    ##
+    ## A system consists of a DOLFIN functionspace, 
+    ## the fields on this functionspace, the forms describing the solvers and preconditioners
+    ## that act on that functionspace and the coefficients that appear in those forms.
+    ##
+    ## The system name must be unique amongst any other systems.
     element system {
       attribute name { xsd:string },
       mesh_choice,
-      ufl_symbol,
+      system_ufl_symbol,
       field_options+,
       coefficient_options*,
       nonlinear_solver_options+
@@ -18,12 +25,16 @@ system =
 mesh_choice =
   (
     (
-      ## What mesh is this system on?
+      ## The name of the mesh that the system functionspace and any coefficient functions are defined on. 
+      ## The actual mesh must be described above in /geometry/mesh.
       element mesh {
         attribute name { xsd:string },
         empty
       }|
-      ## What mesh is this system on?
+      ## The name of the mesh that the system functionspace and any coefficient functions are defined on. 
+      ## The actual mesh must be described above in /geometry/mesh.
+      ##
+      ## Use the automatically available name "Mesh."
       element mesh {
         attribute name { "Mesh" },
         empty

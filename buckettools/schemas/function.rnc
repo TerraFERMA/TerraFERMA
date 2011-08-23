@@ -4,21 +4,27 @@ include "ufl.rnc"
 
 field_options =
   (
-    ## Options describing a function in this system
+    ## Options describing a field (a prognostic function) in this system
     element field {
-      generic_function_header_options,
+      field_header_options,
       (
+        ## The type of field (no option available).
+        ##
+        ## Fields may only be prognostic functions.
         element type {
           attribute name { "Function" },
           (
+            ## The rank of the field (scalar, rank 0).
             element rank {
               attribute name { "Scalar" },
               scalar_field_function_options
             }|
+            ## The rank of the field (vector, rank 1).
             element rank {
               attribute name { "Vector" },
               vector_field_function_options
             }|
+            ## The rank of the field (tensor, rank 2).
             element rank {
               attribute name { "Tensor" },
               tensor_field_function_options
@@ -33,55 +39,73 @@ field_options =
 
 coefficient_options =
   (
-    ## Options describing a function in this system
+    ## Options describing a coefficient in this system
     element coefficient {
-      generic_function_header_options,
+      coeff_header_options,
       (
+        ## The type of coefficient.
+        ##
+        ## Functions require a functionspace, which will be defined on the same mesh as the system in which this coefficient falls.
         element type {
           attribute name { "Function" },
           (
+            ## The rank of the coefficient (scalar, rank 0).
             element rank {
               attribute name { "Scalar" },
               scalar_coefficient_function_expression_options
             }|
+            ## The rank of the coefficient (vector, rank 1).
             element rank {
               attribute name { "Vector" },
               vector_coefficient_function_expression_options
             }|
+            ## The rank of the coefficient (tensor, rank 2).
             element rank {
               attribute name { "Tensor" },
               tensor_coefficient_function_expression_options
             }
           )
         }|
+        ## The type of coefficient.
+        ##
+        ## Expressions are not defined on functionspaces but require an element to be described in ufl.
         element type {
           attribute name { "Expression" },
           (
+            ## The rank of the coefficient (scalar, rank 0).
             element rank {
               attribute name { "Scalar" },
               scalar_coefficient_function_expression_options
             }|
+            ## The rank of the coefficient (vector, rank 1).
             element rank {
               attribute name { "Vector" },
               vector_coefficient_function_expression_options
             }|
+            ## The rank of the coefficient (tensor, rank 2).
             element rank {
               attribute name { "Tensor" },
               tensor_coefficient_function_expression_options
             }
           )
         }|
+        ## The type of coefficient.
+        ##
+        ## Constants are spatially constant expressions.
         element type {
           attribute name { "Constant" },
           (
+            ## The rank of the coefficient (scalar, rank 0).
             element rank {
               attribute name { "Scalar" },
               scalar_coefficient_constant_options
             }|
+            ## The rank of the coefficient (vector, rank 1).
             element rank {
               attribute name { "Vector" },
               vector_coefficient_constant_options
             }|
+            ## The rank of the coefficient (tensor, rank 2).
             element rank {
               attribute name { "Tensor" },
               tensor_coefficient_constant_options
@@ -162,10 +186,16 @@ tensor_coefficient_constant_options =
     prescribed_constant_tensor
   )
 
-generic_function_header_options =
+field_header_options =
   (
     attribute name { xsd:string },
-    ufl_symbol
+    field_ufl_symbol
+  )
+
+coeff_header_options =
+  (
+    attribute name { xsd:string },
+    coeff_ufl_symbol
   )
 
 generic_function_output_options = 
@@ -184,7 +214,9 @@ functional_options =
   (
     element functional {
       attribute name { xsd:string },
-      form
+      ## ufl code describing a functional.
+      python_code,
+      functional_ufl_symbol
     }
   )
 

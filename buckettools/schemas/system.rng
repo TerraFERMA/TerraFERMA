@@ -6,11 +6,18 @@
   <include href="ufl.rng"/>
   <define name="system">
     <element name="system">
+      <a:documentation>Options describing a system.  
+
+A system consists of a DOLFIN functionspace, 
+the fields on this functionspace, the forms describing the solvers and preconditioners
+that act on that functionspace and the coefficients that appear in those forms.
+
+The system name must be unique amongst any other systems.</a:documentation>
       <attribute name="name">
         <data type="string"/>
       </attribute>
       <ref name="mesh_choice"/>
-      <ref name="ufl_symbol"/>
+      <ref name="system_ufl_symbol"/>
       <oneOrMore>
         <ref name="field_options"/>
       </oneOrMore>
@@ -25,14 +32,18 @@
   <define name="mesh_choice">
     <choice>
       <element name="mesh">
-        <a:documentation>What mesh is this system on?</a:documentation>
+        <a:documentation>The name of the mesh that the system functionspace and any coefficient functions are defined on. 
+The actual mesh must be described above in /geometry/mesh.</a:documentation>
         <attribute name="name">
           <data type="string"/>
         </attribute>
         <empty/>
       </element>
       <element name="mesh">
-        <a:documentation>What mesh is this system on?</a:documentation>
+        <a:documentation>The name of the mesh that the system functionspace and any coefficient functions are defined on. 
+The actual mesh must be described above in /geometry/mesh.
+
+Use the automatically available name "Mesh."</a:documentation>
         <attribute name="name">
           <value>Mesh</value>
         </attribute>
