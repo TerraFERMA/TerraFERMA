@@ -9,68 +9,89 @@
 namespace buckettools
 {
   
+  //*****************************************************************|************************************************************//
+  // SystemBucket class:
+  //
   // The SpudSystemBucket class is a derived class of the system that populates the
   // data structures within a system using the spud options parser (and assumes
   // the structure of the buckettools schema)
+  //*****************************************************************|************************************************************//
   class SpudSystemBucket : public SystemBucket
   {
-  // only accessible by this class
-  private:
 
-    // supplement the base class with an optionpath
-    std::string optionpath_;
+  //*****************************************************************|***********************************************************//
+  // Publicly available functions
+  //*****************************************************************|***********************************************************//
 
-    // fill in some of the base info in the class
-    void base_fill_();
-
-    // fill in the system function information
-    void systemfunction_fill_();
-
-    // fill in data about the fields
-    void fields_fill_();
-
-    void apply_ic_(const uint &component, const std::map< uint, Expression_ptr > &icexpressions);
-
-    void apply_bc_();
-
-    // fill in data about the coefficients
-    void expcoeffs_fill_();
-
-    // fill in data about the solvers
-    void solvers_fill_();
-
-  public:
+  public:                                                            // accessible to everyone
     
-    // Specific constructor
-    SpudSystemBucket(std::string optionpath, Bucket* bucket);
+    //***************************************************************|***********************************************************//
+    // Constructors and destructors
+    //***************************************************************|***********************************************************//
 
-    // Default destructor (virtual so it calls base class as well)
-    virtual ~SpudSystemBucket();
+    SpudSystemBucket(std::string optionpath, Bucket* bucket);        // default constructor
 
-    // Fill the system assuming the buckettools schema
-    void fill();
+    virtual ~SpudSystemBucket();                                     // default destructor
 
-    // Fill the aliased components of the system assuming the buckettools schema
-    void attach_and_initialize();
+    //***************************************************************|***********************************************************//
+    // Filling data
+    //***************************************************************|***********************************************************//
 
-    // fill in data about the coefficients
-    void funccoeffs_fill();
+    void fill();                                                     // fill the system assuming a buckettools spud schema
 
-    // Return a string object describing the system
-    const std::string str() const
-    { return str(0); }
+    void funccoeffs_fill();                                          // fill in the coefficient functions
 
-    // Return a string object describing the system
-    const std::string str(int indent) const;
+    //***************************************************************|***********************************************************//
+    // Base data access
+    //***************************************************************|***********************************************************//
 
-    // Return the base optionpath for this system
-    const std::string optionpath() const
+    const std::string optionpath() const                             // return a string containing the optionpath for the system
     { return optionpath_; }
     
+    //***************************************************************|***********************************************************//
+    // Output functions
+    //***************************************************************|***********************************************************//
+
+    const std::string str() const                                    // return a string describing the contents of the system
+    { return str(0); }
+
+    const std::string str(int indent) const;                         // return an indented string describing the contents of the
+                                                                     // system
+
+  //*****************************************************************|***********************************************************//
+  // Private functions
+  //*****************************************************************|***********************************************************//
+
+  private:                                                           // only accessible in this class
+
+    //***************************************************************|***********************************************************//
+    // Base data
+    //***************************************************************|***********************************************************//
+
+    std::string optionpath_;                                         // the system optionpath
+
+    //***************************************************************|***********************************************************//
+    // Filling data
+    //***************************************************************|***********************************************************//
+
+    void base_fill_();                                               // fill in the base information about the system
+
+    void systemfunction_fill_();                                     // fill in the system function information
+
+    void fields_fill_();                                             // fill in the data about the system fields (subfunctions)
+
+    void apply_ic_(const uint &component, const std::map< uint,      // apply the initial conditions to the system function
+                                  Expression_ptr > &icexpressions);
+
+    void apply_bc_();                                                // apply the bcs to the system function
+
+    void expcoeffs_fill_();                                          // fill in the coefficient expression information
+
+    void solvers_fill_();                                            // fill in the solver bucket information
+
   };
  
-  // Define a boost shared pointer for a spud system
-  typedef boost::shared_ptr< SpudSystemBucket > SpudSystemBucket_ptr;
+  typedef boost::shared_ptr< SpudSystemBucket > SpudSystemBucket_ptr;// define a (boost shared) pointer type for the spud system
 
 }
 #endif
