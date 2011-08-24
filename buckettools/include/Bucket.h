@@ -143,7 +143,7 @@ namespace buckettools
 
     void output();                                                   // output diagnostics for the bucket
 
-    const std::string str() const                                    // return a string describing the bucket contents
+    const std::string str() const;                                   // return a string describing the bucket contents
     
     virtual const std::string meshes_str() const                     // return a string describing the meshes in the bucket
     { return meshes_str(0); }
@@ -179,10 +179,6 @@ namespace buckettools
 
     std::string name_;                                               // the name of the bucket
     
-    int dimension_;                                                  // geometry dimension
-                                                                     // (assumed size of various objects that don't state
-                                                                     //  their own size explicitly)
-
     //***************************************************************|***********************************************************//
     // Pointers data
     //***************************************************************|***********************************************************//
@@ -205,6 +201,14 @@ namespace buckettools
   //*****************************************************************|***********************************************************//
 
   protected:                                                         // accessible to derived classes
+
+    //***************************************************************|***********************************************************//
+    // Base data (continued)
+    //***************************************************************|***********************************************************//
+
+    int dimension_;                                                  // geometry dimension
+                                                                     // (assumed size of various objects that don't state
+                                                                     //  their own size explicitly)
 
     //***************************************************************|***********************************************************//
     // Pointers data (continued)
