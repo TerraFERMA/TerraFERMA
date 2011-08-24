@@ -614,11 +614,11 @@ void SpudSolverBucket::forms_fill_()
     {
       std::string uflsymbol = (*form).coefficient_name(i);
       // is this a coefficient function in this system?
-      if ((*(*system_).bucket()).contains_uflname(uflsymbol))
+      if ((*(*system_).bucket()).contains_baseuflsymbol(uflsymbol))
       {
         // yes, it's a coefficient function... so let's take this opportunity to register
         // its functionspace (if we don't already have it)
-        std::string baseuflsymbol = (*(*system_).bucket()).fetch_uflname(uflsymbol);
+        std::string baseuflsymbol = (*(*system_).bucket()).fetch_baseuflsymbol(uflsymbol);
         if (!(*(*system_).bucket()).contains_coefficientspace(baseuflsymbol))
         {
           FunctionSpace_ptr coefficientspace;

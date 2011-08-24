@@ -9,93 +9,130 @@
 namespace buckettools
 {
   
+  //*****************************************************************|************************************************************//
+  // SpudBucket class:
+  //
   // The SpudBucket derived class uses the data structures of the Bucket class,
   // which describes a numerical model, and populates them (plus some supplementary
   // material) using the spud options parser.
+  //*****************************************************************|************************************************************//
   class SpudBucket : public Bucket
   {
-  // only accessible to this class
-  private:
+
+  //*****************************************************************|***********************************************************//
+  // Publicly available functions
+  //*****************************************************************|***********************************************************//
+
+  public:                                                            // accessible to everyone
     
-    // the spud xml base option path for this bucket (probably an empty string)
-    std::string optionpath_;
+    //***************************************************************|***********************************************************//
+    // Constructors and destructors
+    //***************************************************************|***********************************************************//
 
-    // supplementary to the bucket base data store the optionpaths for the meshes_
-    std::map< std::string, std::string > mesh_optionpaths_;
-
-    // populate the meshes_ data structure
-    void meshes_fill_(const std::string &optionpath);
+    SpudBucket();                                                    // Default constructor
     
-    // populate the systems_ data structure
-    void systems_fill_(const std::string &optionpath);
+    SpudBucket(std::string name);                                    // Optional constructor (specifying name)
+    
+    SpudBucket(std::string name, std::string option_path);           // Optional constructor (specifying name and optionpath)
 
-//    // populate the detectors_ data structure
-//    void detectors_fill_();
+    virtual ~SpudBucket();                                           // Default destructor
+    
+    //***************************************************************|***********************************************************//
+    // Functions used to run the model
+    //***************************************************************|***********************************************************//
+
+    void run();                                                      // run the model described in the bucket
  
-    // fill in the uflnames
-    void uflnames_fill_(const std::string &optionpath);
+    //***************************************************************|***********************************************************//
+    // Filling data
+    //***************************************************************|***********************************************************//
 
-    void timestep_run_();
+    void fill();                                                     // fill the bucket data structures assuming the buckettools
+                                                                     // spud schema
 
-    void steady_run_();
+    //***************************************************************|***********************************************************//
+    // Base data access
+    //***************************************************************|***********************************************************//
 
-    // Destroy the data in the bucket
-    void empty_();
+    const std::string optionpath()                                   // return the optionpath for this bucket
+    { return optionpath_; }                                          // (normally an empty string)
 
-  // accessible to anyone
-  public:
-    
-    // Default constructor
-    SpudBucket();
-    
-    // Specific constructor (assume string is a name and optionpath is empty)
-    SpudBucket(std::string name);
-    
-    // Specific constructor
-    SpudBucket(std::string name, std::string option_path);
+    //***************************************************************|***********************************************************//
+    // Mesh data access
+    //***************************************************************|***********************************************************//
 
-    // Destructor (virtual so that it calls the base destructor as well)
-    virtual ~SpudBucket();
-    
-    // Populate the bucket assuming the buckettools spud schema
-    void fill();
+    void register_mesh(Mesh_ptr mesh, std::string name,              // register a mesh with a given name (and an optionpath)
+                                        std::string optionpath); 
 
-    // Tools for manipulating the class data structures:
-    // Register a mesh in the bucket with an optionpath in the derived class
-    void register_mesh(Mesh_ptr mesh, std::string name, std::string optionpath);
+    std::string fetch_mesh_optionpath(const std::string name);       // return the optionpath associated with the named mesh
 
-    // Return the optionpath to a named mesh
-    std::string fetch_mesh_optionpath(const std::string name);
+    string_it mesh_optionpaths_begin();                              // return an iterator to the beginning of the mesh optionpaths
 
-    // Return the iterator to the beginning of the mesh_optionpaths_ map
-    string_it mesh_optionpaths_begin();
+    string_const_it mesh_optionpaths_begin() const;                  // return a constant iterator to the beginning of the mesh
+                                                                     // optionpaths
 
-    // Return the const iterator to the beginning of the mesh_optionpaths_ map
-    string_const_it mesh_optionpaths_begin() const;
+    string_it mesh_optionpaths_end();                                // return an iterator to the end of the mesh optionpaths
 
-    // Return the iterator to the end of the mesh_optionpaths_ map
-    string_it mesh_optionpaths_end();
-
-    // Return the const iterator to the end of the mesh_optionpaths_ map
-    string_const_it mesh_optionpaths_end() const;
+    string_const_it mesh_optionpaths_end() const;                    // return a constant iterator to the end of the mesh
+                                                                     // optionpaths
  
-    // Describe the meshes in the spudbucket (including optionpaths)
-    const std::string meshes_str() const
+    //***************************************************************|***********************************************************//
+    // Output functions
+    //***************************************************************|***********************************************************//
+
+    const std::string meshes_str() const                             // return a string describing the meshes
     { return meshes_str(0); }
 
-    // Describe the meshes in the spudbucket (including optionpaths)
-    const std::string meshes_str(int indent) const;
+    const std::string meshes_str(int indent) const;                  // return an indented string describing the meshes
 
-    // return the optionpath for this bucket
-    const std::string optionpath()
-    { return optionpath_; }
+  //*****************************************************************|***********************************************************//
+  // Private functions
+  //*****************************************************************|***********************************************************//
 
-    void run();
+  private:                                                           // only accessible to this class
+    
+    //***************************************************************|***********************************************************//
+    // Base data
+    //***************************************************************|***********************************************************//
+
+    std::string optionpath_;                                         // the option path associated with the bucket (normally an
+                                                                     // empty string)
+
+    //***************************************************************|***********************************************************//
+    // Pointers data
+    //***************************************************************|***********************************************************//
+
+    std::map< std::string, std::string > mesh_optionpaths_;          // a map from mesh names to spud mesh optionpaths
+
+    //***************************************************************|***********************************************************//
+    // Functions used to run the model (continued)
+    //***************************************************************|***********************************************************//
+
+    void timestep_run_();                                            // run a dynamics simulation
+
+    void steady_run_();                                              // run a steady state simulation
+
+    //***************************************************************|***********************************************************//
+    // Filling data (continued)
+    //***************************************************************|***********************************************************//
+
+    void meshes_fill_(const std::string &optionpath);                // fill in the mesh data structures
+    
+    void systems_fill_(const std::string &optionpath);               // fill in information about the systems
+
+    void baseuflsymbols_fill_(const std::string &optionpath);        // fill the ufl symbol maps
+
+//    void detectors_fill_();                                          // fill the detectors
  
+    //***************************************************************|***********************************************************//
+    // Emptying data
+    //***************************************************************|***********************************************************//
+
+    void empty_();
+
   };
 
-  // Define a boost shared ptr type for the class
-  typedef boost::shared_ptr< SpudBucket > SpudBucket_ptr;
+  typedef boost::shared_ptr< SpudBucket > SpudBucket_ptr;            // define a boost shared pointer type for this class
 
 }
 #endif

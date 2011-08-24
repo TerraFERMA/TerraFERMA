@@ -219,11 +219,11 @@ int_SystemBucket_const_it Bucket::orderedsystems_end() const
 }
 
 // Register a ufl symbol-function name pair
-void Bucket::register_uflname(std::string name, std::string uflsymbol)
+void Bucket::register_baseuflsymbol(std::string name, std::string uflsymbol)
 {
   // First check if a name with this symbol already exists
-  string_it s_it = uflnames_.find(uflsymbol);
-  if (s_it != uflnames_.end())
+  string_it s_it = baseuflsymbols_.find(uflsymbol);
+  if (s_it != baseuflsymbols_.end())
   {
     // if it does, issue an error
     dolfin::error("Name with ufl symbol \"%s\" already exists in system.", uflsymbol.c_str());
@@ -231,16 +231,16 @@ void Bucket::register_uflname(std::string name, std::string uflsymbol)
   else
   {
     // if not then insert it into the maps
-    uflnames_[uflsymbol] = name;
+    baseuflsymbols_[uflsymbol] = name;
   }
 }
 
 // Return a pointer to a dolfin GenericFunction with the given uflsymbol
-const std::string Bucket::fetch_uflname(std::string uflsymbol) const
+const std::string Bucket::fetch_baseuflsymbol(std::string uflsymbol) const
 {
   // First check if a function name with this symbol already exists
-  string_const_it s_it = uflnames_.find(uflsymbol);
-  if (s_it == uflnames_.end())
+  string_const_it s_it = baseuflsymbols_.find(uflsymbol);
+  if (s_it == baseuflsymbols_.end())
   {
     // if it doesn't, issue an error
     dolfin::error("Name with uflsymbol \"%s\" does not exist in system.", uflsymbol.c_str());
@@ -252,11 +252,11 @@ const std::string Bucket::fetch_uflname(std::string uflsymbol) const
   }
 }
 
-// Check if a uflname exists in this system
-const bool Bucket::contains_uflname(std::string uflsymbol) const
+// Check if a baseuflsymbol exists in this system
+const bool Bucket::contains_baseuflsymbol(std::string uflsymbol) const
 {
-  string_const_it s_it = uflnames_.find(uflsymbol);
-  return s_it != uflnames_.end();
+  string_const_it s_it = baseuflsymbols_.find(uflsymbol);
+  return s_it != baseuflsymbols_.end();
 }
 
 // Register a ufl symbol-function name pair
@@ -319,39 +319,39 @@ void Bucket::uflsymbols_fill_()
 }
 
 // Register a coefficientspace in the system
-void Bucket::register_coefficientspace(FunctionSpace_ptr coefficientspace, std::string name)
+void Bucket::register_coefficientspace(FunctionSpace_ptr coefficientspace, std::string uflsymbol)
 {
   // First check if a field with this name already exists
-  FunctionSpace_it f_it = coefficientspaces_.find(name);
+  FunctionSpace_it f_it = coefficientspaces_.find(uflsymbol);
   if (f_it != coefficientspaces_.end())
   {
     // if it does, issue an error
-    dolfin::error("FunctionSpace named \"%s\" already exists in system coefficientspaces.", name.c_str());
+    dolfin::error("FunctionSpace with uflsymbol \"%s\" already exists in system coefficientspaces.", uflsymbol.c_str());
   }
   else
   {
     // if not then insert it into the maps
-    coefficientspaces_[name] = coefficientspace;
+    coefficientspaces_[uflsymbol] = coefficientspace;
   }
 }
 
-// Check if the system contains a coefficientspace with the given name
-const bool Bucket::contains_coefficientspace(std::string name) const
+// Check if the system contains a coefficientspace with the given uflsymbol
+const bool Bucket::contains_coefficientspace(std::string uflsymbol) const
 {
-  // First check if a field with this name already exists
-  FunctionSpace_const_it f_it = coefficientspaces_.find(name);
+  // First check if a field with this uflsymbol already exists
+  FunctionSpace_const_it f_it = coefficientspaces_.find(uflsymbol);
   return f_it != coefficientspaces_.end();
 }
 
-FunctionSpace_ptr Bucket::fetch_coefficientspace(std::string name) const
+FunctionSpace_ptr Bucket::fetch_coefficientspace(std::string uflsymbol) const
 {
-  // First check if a functionspace with this name already exists
-  FunctionSpace_const_it f_it = coefficientspaces_.find(name);
+  // First check if a functionspace with this uflsymbol already exists
+  FunctionSpace_const_it f_it = coefficientspaces_.find(uflsymbol);
   if (f_it == coefficientspaces_.end())
   {
     // if it doesn't, issue an error
     std::cerr << coefficientspaces_str();
-    dolfin::error("FunctionSpace named \"%s\" doesn't exist in system coefficientspaces.", name.c_str());
+    dolfin::error("FunctionSpace with uflsymbol \"%s\" doesn't exist in system coefficientspaces.", uflsymbol.c_str());
   }
   else
   {

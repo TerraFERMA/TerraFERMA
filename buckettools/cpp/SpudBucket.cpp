@@ -69,7 +69,7 @@ void SpudBucket::fill()
   for (uint i = 0; i<nsystems; i++)
   {
     buffer.str(""); buffer << optionpath() << "/system[" << i << "]";
-    uflnames_fill_(buffer.str());
+    baseuflsymbols_fill_(buffer.str());
   }
 
   // Put systems into the bucket
@@ -339,7 +339,7 @@ void SpudBucket::meshes_fill_(const std::string &optionpath)
   register_mesh(mesh, meshname, optionpath);
 }
 
-void SpudBucket::uflnames_fill_(const std::string &optionpath)
+void SpudBucket::baseuflsymbols_fill_(const std::string &optionpath)
 {
   std::stringstream buffer;
   Spud::OptionError serr;
@@ -356,9 +356,9 @@ void SpudBucket::uflnames_fill_(const std::string &optionpath)
     {
       buffer.str(""); buffer << optionpath << "/coefficient[" << i << "]/ufl_symbol";
       serr = Spud::get_option(buffer.str(), uflsymbol); spud_err(buffer.str(), serr);
-      register_uflname(uflsymbol, uflsymbol);
-      register_uflname(uflsymbol, uflsymbol+"_i");
-      register_uflname(uflsymbol, uflsymbol+"_n");
+      register_baseuflsymbol(uflsymbol, uflsymbol);
+      register_baseuflsymbol(uflsymbol, uflsymbol+"_i");
+      register_baseuflsymbol(uflsymbol, uflsymbol+"_n");
     }
   }
 }
