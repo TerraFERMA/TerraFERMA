@@ -10,7 +10,7 @@ namespace buckettools
 {
   
   //*****************************************************************|************************************************************//
-  // SystemBucket class:
+  // SpudSystemBucket class:
   //
   // The SpudSystemBucket class is a derived class of the system that populates the
   // data structures within a system using the spud options parser (and assumes
