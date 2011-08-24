@@ -12,7 +12,7 @@ namespace buckettools
   class Bucket;                                                      // predeclaration
   
   //*****************************************************************|************************************************************//
-  // Bucket class:
+  // SystemBucket class:
   //
   // The SystemBucket class describes a functionspace and a set of solvers that act on the fields
   // contained in that (potentially mixed) functionspace.
