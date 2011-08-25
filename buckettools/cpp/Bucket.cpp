@@ -337,7 +337,71 @@ GenericFunction_ptr Bucket::fetch_uflsymbol(
   }
 }
 
-// Return a string describing the contents of the bucket
+//*******************************************************************|************************************************************//
+// register a (boost shared) pointer to a functionspace for a coefficient with the given ufl symbol in the bucket data maps
+//*******************************************************************|************************************************************//
+void Bucket::register_coefficientspace(
+                                FunctionSpace_ptr coefficientspace, 
+                                const std::string &uflsymbol)
+{
+  FunctionSpace_it f_it = coefficientspaces_.find(uflsymbol);        // check if this ufl symbol already exists
+  if (f_it != coefficientspaces_.end())
+  {
+    dolfin::error(                                                   // if it does, issue an error
+    "FunctionSpace with uflsymbol \"%s\" already exists in system coefficientspaces.", 
+                                              uflsymbol.c_str());
+  }
+  else
+  {
+    coefficientspaces_[uflsymbol] = coefficientspace;                // if not, register the pointer in the coefficientspaces_ map
+  }
+}
+
+//*******************************************************************|************************************************************//
+// check if a functionspace for a coefficient with the given ufl symbol exists in the bucket data maps
+//*******************************************************************|************************************************************//
+const bool Bucket::contains_coefficientspace(
+                                  const std::string &uflsymbol) const
+{
+  FunctionSpace_const_it f_it = coefficientspaces_.find(uflsymbol);
+  return f_it != coefficientspaces_.end();
+}
+
+//*******************************************************************|************************************************************//
+// return a (boost shared) pointer to a functionspace for a coefficient with the given ufl symbol from the bucket data maps
+//*******************************************************************|************************************************************//
+FunctionSpace_ptr Bucket::fetch_coefficientspace(
+                                  const std::string &uflsymbol) const
+{
+  FunctionSpace_const_it f_it = coefficientspaces_.find(uflsymbol);  // check if a functionspace with this uflsymbol already exists
+  if (f_it == coefficientspaces_.end())
+  {
+    std::cerr << coefficientspaces_str();                            // if it doesn't, output which coefficientspaces are available
+    dolfin::error(                                                   // and issue an error
+    "FunctionSpace with uflsymbol \"%s\" doesn't exist in system coefficientspaces.", 
+                                    uflsymbol.c_str());
+  }
+  else
+  {
+    return (*f_it).second;                                           // if it does, return a pointer to the functionspace
+  }
+}
+
+//*******************************************************************|************************************************************//
+// loop over the systems in the bucket, telling each to output diagnostic data
+//*******************************************************************|************************************************************//
+void Bucket::output()
+{
+  for (SystemBucket_it s_it = systems_begin(); s_it != systems_end(); 
+                                                              s_it++)
+  {
+    (*(*s_it).second).output();
+  } 
+}
+
+//*******************************************************************|************************************************************//
+// return a string describing the contents of the bucket
+//*******************************************************************|************************************************************//
 const std::string Bucket::str() const 
 {
   std::stringstream s;
@@ -350,162 +414,131 @@ const std::string Bucket::str() const
   return s.str();
 }
 
-// Return a string describing the contents of meshes_
-const std::string Bucket::meshes_str(int indent) const
+//*******************************************************************|************************************************************//
+// return a string describing the contents of the meshes_ data structure
+//*******************************************************************|************************************************************//
+const std::string Bucket::meshes_str(const int &indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
-  for ( Mesh_const_it m_it = meshes_begin(); m_it != meshes_end(); m_it++ )
+  for ( Mesh_const_it m_it = meshes_begin(); m_it != meshes_end(); 
+                                                            m_it++ )
   {
     s << indentation << "Mesh " << (*m_it).first  << std::endl;
   }
   return s.str();
 }
 
-// Return a string describing the contents of systems_
-const std::string Bucket::systems_str(int indent) const
+//*******************************************************************|************************************************************//
+// return a string describing the contents of the systems_ data structure
+// (loop over the systems producing appending strings for each)
+//*******************************************************************|************************************************************//
+const std::string Bucket::systems_str(const int &indent) const
 {
   std::stringstream s;
-  for ( SystemBucket_const_it s_it = systems_begin(); s_it != systems_end(); s_it++ )
+  for ( SystemBucket_const_it s_it = systems_begin(); 
+                                      s_it != systems_end(); s_it++ )
   {
     s << (*(*s_it).second).str(indent);
   }
   return s.str();
 }
 
-void Bucket::uflsymbols_fill_()
-{
-  for (SystemBucket_const_it s_it = systems_begin(); s_it != systems_end(); s_it++)
-  {
-    SystemBucket_ptr system = (*s_it).second;
-    register_uflsymbol((*system).function(), (*system).uflsymbol());
-    register_uflsymbol((*system).oldfunction(), (*system).uflsymbol()+"_n");
-    register_uflsymbol((*system).iteratedfunction(), (*system).uflsymbol()+"_i");
-    for (FunctionBucket_const_it f_it = (*system).fields_begin(); f_it != (*system).fields_end(); f_it++)
-    {
-      FunctionBucket_ptr field = (*f_it).second;
-      register_uflsymbol((*system).function(), (*field).uflsymbol());
-      register_uflsymbol((*system).oldfunction(), (*field).uflsymbol()+"_n");
-      register_uflsymbol((*system).iteratedfunction(), (*field).uflsymbol()+"_i");
-    }
-    for (FunctionBucket_const_it f_it = (*system).coeffs_begin(); f_it != (*system).coeffs_end(); f_it++)
-    {
-      FunctionBucket_ptr coeff = (*f_it).second;
-      register_uflsymbol((*coeff).function(), (*coeff).uflsymbol());
-      register_uflsymbol((*coeff).oldfunction(), (*coeff).uflsymbol()+"_n");
-      register_uflsymbol((*coeff).iteratedfunction(), (*coeff).uflsymbol()+"_i");
-    }
-  }
-}
-
-// Register a coefficientspace in the system
-void Bucket::register_coefficientspace(FunctionSpace_ptr coefficientspace, std::string uflsymbol)
-{
-  // First check if a field with this name already exists
-  FunctionSpace_it f_it = coefficientspaces_.find(uflsymbol);
-  if (f_it != coefficientspaces_.end())
-  {
-    // if it does, issue an error
-    dolfin::error("FunctionSpace with uflsymbol \"%s\" already exists in system coefficientspaces.", uflsymbol.c_str());
-  }
-  else
-  {
-    // if not then insert it into the maps
-    coefficientspaces_[uflsymbol] = coefficientspace;
-  }
-}
-
-// Check if the system contains a coefficientspace with the given uflsymbol
-const bool Bucket::contains_coefficientspace(std::string uflsymbol) const
-{
-  // First check if a field with this uflsymbol already exists
-  FunctionSpace_const_it f_it = coefficientspaces_.find(uflsymbol);
-  return f_it != coefficientspaces_.end();
-}
-
-FunctionSpace_ptr Bucket::fetch_coefficientspace(std::string uflsymbol) const
-{
-  // First check if a functionspace with this uflsymbol already exists
-  FunctionSpace_const_it f_it = coefficientspaces_.find(uflsymbol);
-  if (f_it == coefficientspaces_.end())
-  {
-    // if it doesn't, issue an error
-    std::cerr << coefficientspaces_str();
-    dolfin::error("FunctionSpace with uflsymbol \"%s\" doesn't exist in system coefficientspaces.", uflsymbol.c_str());
-  }
-  else
-  {
-    // if it does return it
-    return (*f_it).second;
-  }
-}
-
-void Bucket::output()
-{
-  for (SystemBucket_it s_it = systems_begin(); s_it != systems_end(); s_it++)
-  {
-    (*(*s_it).second).output();
-  } 
-}
-
-// Return a string describing the contents of uflsymbols_
-const std::string Bucket::uflsymbols_str(int indent) const
+//*******************************************************************|************************************************************//
+// return a string describing what functionspaces are registered for coefficients in the bucket
+//*******************************************************************|************************************************************//
+const std::string Bucket::coefficientspaces_str(const int &indent) 
+                                                              const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
-  for ( GenericFunction_const_it g_it = uflsymbols_.begin(); g_it != uflsymbols_.end(); g_it++ )
+  for ( FunctionSpace_const_it f_it = coefficientspaces_.begin(); 
+                          f_it != coefficientspaces_.end(); f_it++ )
+  {
+    s << indentation << "CoefficientSpace for " << (*f_it).first  
+                                                      << std::endl;
+  }
+  return s.str();
+}
+
+//*******************************************************************|************************************************************//
+// return a string describing which uflsymbols have functions associated
+//*******************************************************************|************************************************************//
+const std::string Bucket::uflsymbols_str(const int &indent) const
+{
+  std::stringstream s;
+  std::string indentation (indent*2, ' ');
+  for ( GenericFunction_const_it g_it = uflsymbols_.begin(); 
+                                  g_it != uflsymbols_.end(); g_it++ )
   {
     if ((*g_it).second)
     {
-      s << indentation << "UFLSymbol " << (*g_it).first << " associated" << std::endl;
+      s << indentation << "UFLSymbol " << (*g_it).first 
+                                      << " associated" << std::endl;
     }
     else
     {
-      s << indentation << "UFLSymbol " << (*g_it).first << " not associated" << std::endl;
+      s << indentation << "UFLSymbol " << (*g_it).first 
+                                  << " not associated" << std::endl;
     }
   }
   return s.str();
 }
 
-// Return a string describing the contents of coefficientspaces_
-const std::string Bucket::coefficientspaces_str(int indent) const
-{
-  std::stringstream s;
-  std::string indentation (indent*2, ' ');
-  for ( FunctionSpace_const_it f_it = coefficientspaces_.begin(); f_it != coefficientspaces_.end(); f_it++ )
-  {
-    s << indentation << "CoefficientSpace for " << (*f_it).first  << std::endl;
-  }
-  return s.str();
-}
-
-// Empty the bucket
+//*******************************************************************|************************************************************//
+// empty the data structures in the bucket
+//*******************************************************************|************************************************************//
 void Bucket::empty_()
 {
   meshes_.clear();
   systems_.clear();
+  orderedsystems_.clear();
+  baseuflsymbols_.clear();
+  uflsymbols_.clear();
+  coefficientspaces_.clear();
 //  detectors_.clear();
 }
 
-//// Create a system bucket in this bucket
-//void Bucket::register_system(std::string name, std::string option_path)
-//{
-//  // First check if a system with this name already exists
-//  SystemBucket_it s_it = systembuckets_.find(name);
-//  if(s_it != systembuckets_.end())
-//  {
-//    // if it does, issue an error
-//    dolfin::error("SystemBucket named \"%s\" already exists in bucket.", name.c_str());
-//  }
-//  else
-//  {
-//    // if not then create it and insert it into the maps
-//    SystemBucket_ptr system(new SystemBucket(name, option_path));
-//    systembuckets_[name] = system;
-//    systembucket_optionpaths_[name] = option_path;
-//  }
-//}
-//
+//*******************************************************************|************************************************************//
+// after having filled the system and function buckets loop over them and register their functions with their uflsymbols 
+//*******************************************************************|************************************************************//
+void Bucket::uflsymbols_fill_()
+{
+  for (SystemBucket_const_it s_it = systems_begin();                 // loop over the systems
+                                      s_it != systems_end(); s_it++)
+  {
+    SystemBucket_ptr system = (*s_it).second;
+    register_uflsymbol((*system).function(),                         // current system function
+                                      (*system).uflsymbol());
+    register_uflsymbol((*system).oldfunction(),                      // old system function
+                                      (*system).uflsymbol()+"_n");
+    register_uflsymbol((*system).iteratedfunction(),                 // iterated system function
+                                      (*system).uflsymbol()+"_i");
+    for (FunctionBucket_const_it f_it = (*system).fields_begin();    // loop over the fields in this system
+                            f_it != (*system).fields_end(); f_it++)
+    {
+      FunctionBucket_ptr field = (*f_it).second;
+      register_uflsymbol((*system).function(),                       // current field
+                                      (*field).uflsymbol());
+      register_uflsymbol((*system).oldfunction(),                    // old field
+                                      (*field).uflsymbol()+"_n");
+      register_uflsymbol((*system).iteratedfunction(),               // iterated field
+                                      (*field).uflsymbol()+"_i");
+    }
+    for (FunctionBucket_const_it f_it = (*system).coeffs_begin();    // loop over the coefficients in this system
+                            f_it != (*system).coeffs_end(); f_it++)
+    {
+      FunctionBucket_ptr coeff = (*f_it).second;
+      register_uflsymbol((*coeff).function(),                        // current coefficient
+                                      (*coeff).uflsymbol());
+      register_uflsymbol((*coeff).oldfunction(),                     // old coefficient
+                                      (*coeff).uflsymbol()+"_n");
+      register_uflsymbol((*coeff).iteratedfunction(),                // iterated coefficient
+                                      (*coeff).uflsymbol()+"_i");
+    }
+  }
+}
+
 //// Register a detector set in the bucket
 //void Bucket::register_detector(GenericDetectors_ptr detector, std::string name, std::string option_path)
 //{
@@ -524,47 +557,12 @@ void Bucket::empty_()
 //  }
 //}
 //
-//void Bucket::register_functionspace(FunctionSpace_ptr functionspace, std::string name)
-//{
-//  functionspaces_.insert(std::pair<std::string, FunctionSpace_ptr>(name, functionspace));
-//}
-//
-//void Bucket::register_dirichletbc(DirichletBC_ptr dirichletbc, std::string name)
-//{
-//  dirichletbcs_.insert(std::pair<std::string, DirichletBC_ptr>(name, dirichletbc));
-//}
-//
-//void Bucket::register_function(Function_ptr function, std::string name)
-//{
-//  functions_.insert(std::pair<std::string, Function_ptr>(name, function));
-//}
-//
-//void Bucket::register_bcexp(GenericFunction_ptr bcexp)
-//{
-//  bcexps_.push_back(bcexp);
-//}
-
-//FunctionSpace_ptr Bucket::fetch_functionspace(const std::string name)
-//{
-//  std::map< std::string, FunctionSpace_ptr >::iterator it;
-//  it = functionspaces_.find(name);
-//  return (*it).second;
-//}
-//
 //GenericDetectors_ptr Bucket::fetch_detector(const std::string name)
 //{
 //  std::map< std::string, GenericDetectors_ptr >::iterator it;
 //  it = detectors_.find(name);
 //  return (*it).second;
 //}
-//
-//Function_ptr Bucket::fetch_function(const std::string name)
-//{
-//  std::map< std::string, Function_ptr >::iterator it;
-//  it = functions_.find(name);
-//  return (*it).second;
-//}
-//
 //
 //std::map< std::string, GenericDetectors_ptr >::iterator Bucket::detectors_begin()
 //{
@@ -586,43 +584,4 @@ void Bucket::empty_()
 //  return detectors_.end();
 //}
 //
-//std::map< std::string, DirichletBC_ptr >::iterator Bucket::dirichletbcs_begin()
-//{
-//  return dirichletbcs_.begin();
-//}
-//
-//std::map< std::string, DirichletBC_ptr >::const_iterator Bucket::dirichletbcs_begin() const
-//{
-//  return dirichletbcs_.begin();
-//}
-//
-//std::map< std::string, DirichletBC_ptr >::iterator Bucket::dirichletbcs_end()
-//{
-//  return dirichletbcs_.end();
-//}
-//
-//std::map< std::string, DirichletBC_ptr >::const_iterator Bucket::dirichletbcs_end() const
-//{
-//  return dirichletbcs_.end();
-//}
-//
-//std::map< std::string, Function_ptr >::iterator Bucket::functions_begin()
-//{
-//  return functions_.begin();
-//}
-//
-//std::map< std::string, Function_ptr >::const_iterator Bucket::functions_begin() const
-//{
-//  return functions_.begin();
-//}
-//
-//std::map< std::string, Function_ptr >::iterator Bucket::functions_end()
-//{
-//  return functions_.end();
-//}
-//
-//std::map< std::string, Function_ptr >::const_iterator Bucket::functions_end() const
-//{
-//  return functions_.end();
-//}
 

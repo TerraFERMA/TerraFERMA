@@ -130,13 +130,14 @@ namespace buckettools
     //***************************************************************|***********************************************************//
 
     void register_coefficientspace(FunctionSpace_ptr                 // register a functionspace for a coefficient function with a 
-                           coefficientspace, std::string uflsymbol); // given ufl symbol
+                           coefficientspace,                         // given ufl symbol
+                           const std::string &uflsymbol);
 
-    const bool contains_coefficientspace(std::string uflsymbol)      // returns a boolean, true if the bucket contains a
-                                                         const;      // functionspace for the uflsymbol, false otherwise
+    const bool contains_coefficientspace(const std::string           // returns a boolean, true if the bucket contains a
+                                               &uflsymbol) const;    // functionspace for the uflsymbol, false otherwise
 
-    FunctionSpace_ptr fetch_coefficientspace(std::string uflsymbol)  // returns a (boost shared) pointer to a functionspace for
-                                                         const;      // the coefficient with the given uflsymbol
+    FunctionSpace_ptr fetch_coefficientspace(const std::string       // returns a (boost shared) pointer to a functionspace for
+                                               &uflsymbol) const;    // the coefficient with the given uflsymbol
 
     //***************************************************************|***********************************************************//
     // Output functions
@@ -149,24 +150,24 @@ namespace buckettools
     virtual const std::string meshes_str() const                     // return a string describing the meshes in the bucket
     { return meshes_str(0); }
 
-    virtual const std::string meshes_str(int indent) const;          // return an indented string describing the meshes in the bucket
+    virtual const std::string meshes_str(const int &indent) const;   // return an indented string describing the meshes in the bucket
 
     const std::string systems_str() const                            // return a string describing the systems in the bucket
     { return systems_str(0); }
 
-    const std::string systems_str(int indent) const;                 // return an indented string describing the systems in the bucket
+    const std::string systems_str(const int &indent) const;          // return an indented string describing the systems in the bucket
 
     virtual const std::string coefficientspaces_str() const          // return a string describing the coefficient functionspaces
     { return coefficientspaces_str(0); }                             // contained in the bucket
 
-    virtual const std::string coefficientspaces_str(int indent)      // return an indented string describing the coefficient functionspaces
-                                                           const;    // contained in the bucket
+    virtual const std::string coefficientspaces_str(const int        // return an indented string describing the coefficient functionspaces
+                                                    &indent) const;  // contained in the bucket
 
     virtual const std::string uflsymbols_str() const                 // return a string describing the ufl symbols contained in the
     { return uflsymbols_str(0); }                                    // bucket
 
-    virtual const std::string uflsymbols_str(int indent) const;      // return an indented string describing the ufl symbols contained in the
-                                                                     // bucket
+    virtual const std::string uflsymbols_str(const int &indent)      // return an indented string describing the ufl symbols contained in the
+                                                           const;    // bucket
 
   //*****************************************************************|***********************************************************//
   // Private functions
@@ -230,32 +231,13 @@ namespace buckettools
 
 //    // A map from detector set name to detectors
 //    std::map< std::string, GenericDetectors_ptr >    detectors_;
-    
-//    void register_system(SystemBucket_ptr std::string name)
-//    { register_system(name, "uninitialised_path"); }
-//
-//    void register_system(std::string name, std::string option_path);
-//
+//    
 //    void register_detector(GenericDetectors_ptr detector, std::string name)
 //    { register_detector(detector, name, "uninitialised_path"); }
 //    
 //    void register_detector(GenericDetectors_ptr detector, std::string name, std::string option_path);
 //    
-//    void register_functionspace(FunctionSpace_ptr functionspace, std::string systemname, std::string name);
-//    
-//    void register_dirichletbc(DirichletBC_ptr dirichletbc, std::string systemname, std::string name);
-//    
-//    void register_function(Function_ptr function, std::string systemname, std::string name)
-//    { register_function(function, systemname, name, "uninitialised_path"); }
-//    
-//    void register_function(Function_ptr function, std::string systemname, std::string name, std::string option_path);
-//    
-//    FunctionSpace_ptr fetch_functionspace(const std::string systemname, const std::string name);
-//    
-//    Function_ptr fetch_function(const std::string systemname, const std::string name);
-//    
 //    GenericDetectors_ptr fetch_detector(const std::string name);
-//    
 //
 //    std::map< std::string, GenericDetectors_ptr >::iterator detectors_begin();
 //    
@@ -264,25 +246,6 @@ namespace buckettools
 //    std::map< std::string, GenericDetectors_ptr >::iterator detectors_end();
 //    
 //    std::map< std::string, GenericDetectors_ptr >::const_iterator detectors_end() const;
-//    
-//    std::map< std::string, DirichletBC_ptr >::iterator dirichletbcs_begin();
-//    
-//    std::map< std::string, DirichletBC_ptr >::const_iterator dirichletbcs_begin() const;
-//    
-//    std::map< std::string, DirichletBC_ptr >::iterator dirichletbcs_end();
-//    
-//    std::map< std::string, DirichletBC_ptr >::const_iterator dirichletbcs_end() const;
-//    
-//    std::map< std::string, Function_ptr >::iterator functions_begin();
-//    
-//    std::map< std::string, Function_ptr >::const_iterator functions_begin() const;
-//    
-//    std::map< std::string, Function_ptr >::iterator functions_end();
-//    
-//    std::map< std::string, Function_ptr >::const_iterator functions_end() const;
-//    
-//    void register_bcexp(GenericFunction_ptr bcexp, std::string systemname);
-    
   };
 
   typedef boost::shared_ptr< Bucket > Bucket_ptr;                    // define a boost shared ptr type for the class
