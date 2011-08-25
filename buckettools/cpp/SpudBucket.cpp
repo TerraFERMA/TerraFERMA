@@ -15,84 +15,112 @@
 
 using namespace buckettools;
 
-// Default constructor for spudbucket derived class
+//*******************************************************************|************************************************************//
+// default constructor
+//*******************************************************************|************************************************************//
 SpudBucket::SpudBucket() : Bucket()
 {
-  // Do nothing
+                                                                     // do nothing
 }
 
-// Default constructor for spudbucket derived class
+//*******************************************************************|************************************************************//
+// specific constructor
+//*******************************************************************|************************************************************//
 SpudBucket::SpudBucket(std::string name) : Bucket(name)
 {
-  // Do nothing
+                                                                     // do nothing
 }
 
-// Default constructor for spudbucket derived class
-SpudBucket::SpudBucket(std::string name, std::string optionpath) : optionpath_(optionpath), Bucket(name)
+//*******************************************************************|************************************************************//
+// specific constructor
+//*******************************************************************|************************************************************//
+SpudBucket::SpudBucket(std::string name, std::string optionpath) : 
+                                optionpath_(optionpath), Bucket(name)
 {
-  // Do nothing
+                                                                     // do nothing
 }
 
-// Default destructor for spudbucket derived class
+//*******************************************************************|************************************************************//
+// default destructor
+//*******************************************************************|************************************************************//
 SpudBucket::~SpudBucket()
 {
-  empty_();
+  empty_();                                                          // empty the data structures
 }
 
-// Fill the bucket with stuff based on options tree provided by Spud
+//*******************************************************************|************************************************************//
+// run the model described by this bucket
+//*******************************************************************|************************************************************//
+void SpudBucket::run()
+{
+  Spud::OptionError serr;
+  std::stringstream buffer;
+
+  buffer.str(""); buffer << "/timestepping";                         // check if this is a dynamic run or not
+  if (Spud::have_option(buffer.str()))
+  {
+    timestep_run_();                                                 // yes
+  }
+  else
+  {
+    steady_run_();                                                   // no
+  }
+
+}
+
+//*******************************************************************|************************************************************//
+// fill the bucket data structures assuming the buckettools schema
+//*******************************************************************|************************************************************//
 void SpudBucket::fill()
 {
-  // A buffer to put option paths in
-  std::stringstream buffer;
-  Spud::OptionError serr;
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud error code
   
-  // Get the dimension to pass it down to all systems
-  // (we currently assume this is the length of some
-  //  of things, which may need to be generalized in the
-  //  future)
-  buffer.str(""); buffer << optionpath() << "/geometry/dimension";  
-  serr = Spud::get_option(buffer.str(), dimension_); spud_err(buffer.str(), serr);
+  buffer.str(""); buffer << optionpath() << "/geometry/dimension";   // geometry dimension set in the bucket to pass it down to all
+  serr = Spud::get_option(buffer.str(), dimension_);                 // systems (we assume this is the length of things that do
+  spud_err(buffer.str(), serr);                                      // not have them independently specified)
 
-  // Put meshes into the bucket
-  buffer.str(""); buffer << optionpath() << "/geometry/mesh";  
+  buffer.str(""); buffer << optionpath() << "/geometry/mesh";        // put the meshes into the bucket
   int nmeshes = Spud::option_count(buffer.str());
-  for (uint i = 0; i<nmeshes; i++)
+  for (uint i = 0; i<nmeshes; i++)                                   // loop over the meshes defined in the options file
   {
-    buffer.str(""); buffer << optionpath() << "/geometry/mesh[" << i << "]";
+    buffer.str(""); buffer << optionpath() << "/geometry/mesh[" 
+                                                        << i << "]";
     meshes_fill_(buffer.str());
   }
   
-  // Having just registered the system uflsymbols, quickly loop through
-  // the rest of the fields recording their symbol and name
   buffer.str(""); buffer << optionpath() << "/system";
   int nsystems = Spud::option_count(buffer.str());
-  for (uint i = 0; i<nsystems; i++)
-  {
+  for (uint i = 0; i<nsystems; i++)                                  // loop over the systems registering the base uflsymbols of any
+  {                                                                  // coefficient functions contained in them
     buffer.str(""); buffer << optionpath() << "/system[" << i << "]";
     baseuflsymbols_fill_(buffer.str());
   }
 
-  // Put systems into the bucket
-  for (uint i = 0; i<nsystems; i++)
-  {
+  for (uint i = 0; i<nsystems; i++)                                  // loop over the systems *again*, this time filling all the
+  {                                                                  // systems data into the bucket data structures
     buffer.str(""); buffer << optionpath() << "/system[" << i << "]";
     systems_fill_(buffer.str());
   }
 
-  for (SystemBucket_it sys_it = systems_begin(); sys_it != systems_end(); sys_it++)
-  {
+  for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *third* time, this time filling
+                                  sys_it != systems_end(); sys_it++) // in the data for the coefficient functions contained within
+  {                                                                  // them
     (*boost::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).funccoeffs_fill();
-  }
+  }                                                                  // we couldn't do this before because we might not have had
+                                                                     // the right functionspace available
   
-  uflsymbols_fill_();
+  uflsymbols_fill_();                                                // now all the functions in the systems are complete we can 
+                                                                     // register them in the bucket so it's easy to attach them
+                                                                     // to the forms and functionals
 
-  for (SystemBucket_it sys_it = systems_begin(); sys_it != systems_end(); sys_it++)
-  {
+  for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *fourth* time, attaching the
+                                  sys_it != systems_end(); sys_it++) // coefficients to the forms and functionals and initializing
+  {                                                                  // the matrices by performing a preassembly step on them
     (*(*sys_it).second).attach_and_initialize();
   }
   
-//  // Put detectors in the bucket
-//  detectors_fill_();
+//  detectors_fill_();                                                 // put the detectors in the bucket
 
 }
 
@@ -446,23 +474,6 @@ const std::string SpudBucket::meshes_str(int indent) const
   return s.str();
 }
 
-void SpudBucket::run()
-{
-  Spud::OptionError serr;
-  std::stringstream buffer;
-
-  buffer.str(""); buffer << "/timestepping";
-  if (Spud::have_option(buffer.str()))
-  {
-    timestep_run_(); 
-  }
-  else
-  {
-    steady_run_();
-  }
-
-}
-
 void SpudBucket::timestep_run_()
 {
   Spud::OptionError serr;
@@ -525,9 +536,10 @@ void SpudBucket::steady_run_()
 }
 
 // Empty the spudbucket
-void SpudBucket::empty_()
+void SpudBucket::derived_empty_()
 {
   mesh_optionpaths_.clear();
+  empty_();
 }
 
 //void SpudBucket::detectors_fill_()

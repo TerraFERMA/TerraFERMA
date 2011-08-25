@@ -486,20 +486,6 @@ const std::string Bucket::uflsymbols_str(const int &indent) const
 }
 
 //*******************************************************************|************************************************************//
-// empty the data structures in the bucket
-//*******************************************************************|************************************************************//
-void Bucket::empty_()
-{
-  meshes_.clear();
-  systems_.clear();
-  orderedsystems_.clear();
-  baseuflsymbols_.clear();
-  uflsymbols_.clear();
-  coefficientspaces_.clear();
-//  detectors_.clear();
-}
-
-//*******************************************************************|************************************************************//
 // after having filled the system and function buckets loop over them and register their functions with their uflsymbols 
 //*******************************************************************|************************************************************//
 void Bucket::uflsymbols_fill_()
@@ -537,6 +523,20 @@ void Bucket::uflsymbols_fill_()
                                       (*coeff).uflsymbol()+"_i");
     }
   }
+}
+
+//*******************************************************************|************************************************************//
+// empty the data structures in the bucket
+//*******************************************************************|************************************************************//
+void Bucket::empty_()
+{
+  meshes_.clear();
+  systems_.clear();
+  orderedsystems_.clear();
+  baseuflsymbols_.clear();
+  uflsymbols_.clear();
+  coefficientspaces_.clear();
+//  detectors_.clear();
 }
 
 //// Register a detector set in the bucket
