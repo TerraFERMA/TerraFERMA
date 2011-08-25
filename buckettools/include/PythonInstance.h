@@ -7,45 +7,68 @@
 
 namespace buckettools
 {
-  // The PythonInstance class wraps python functionality so that it is
-  // accessible from C++
-  // NOTE: This assumes a function name val is available and runs that
-  // and only that!
+  //*****************************************************************|************************************************************//
+  // PythonExpression class:
+  //
+  // The PythonInstance class wraps python functionality so that it is accessible from C++
+  // NOTE: This assumes a function name val is available and runs that and only that!
+  //*****************************************************************|************************************************************//
   class PythonInstance
   {
-  // only accessible to this class
-  private:
 
-    // a string describing a python function
-    const std::string function_;
+  //*****************************************************************|***********************************************************//
+  // Publicly available functions
+  //*****************************************************************|***********************************************************//
 
-    // Python objects for the function
-    PyObject *pMain_, *pGlobals_, *pLocals_, *pCode_, *pFunc_;
-    
-    // Initialize the python instance
-    void init_();
-    
-    // Clean up the python instance
-    void clean_();
-    
-  // accessible to everyone
-  public:
+  public:                                                            // available to everyone
 
-    // No default constructor as we require a python function
+    //***************************************************************|***********************************************************//
+    // Constructors and destructors
+    //***************************************************************|***********************************************************//
 
-    // Specific constructor
-    PythonInstance(const std::string &function);
+    PythonInstance(const std::string &function);                     // specific constructor (takes a string with the python function)
     
-    // Default destructor
-    ~PythonInstance();
+    ~PythonInstance();                                               // default destructor
     
-    // Return the function
-    std::string function() const
+    //***************************************************************|***********************************************************//
+    // Base data access
+    //***************************************************************|***********************************************************//
+
+    const std::string function() const                               // return a constant string containing the function
     { return function_; }
     
-    // Run the python instance by calling the function
-    PyObject* call(PyObject *pArgs) const;
+    //***************************************************************|***********************************************************//
+    // Functions used to run the model
+    //***************************************************************|***********************************************************//
+
+    PyObject* call(PyObject *pArgs) const;                           // run the function contained in this python instance
+
+  //*****************************************************************|***********************************************************//
+  // Private functions
+  //*****************************************************************|***********************************************************//
+
+  private:
+
+    //***************************************************************|***********************************************************//
+    // Base data
+    //***************************************************************|***********************************************************//
+
+    const std::string function_;                                     // the python function string
+
+    PyObject *pMain_, *pGlobals_, *pLocals_, *pCode_, *pFunc_;       // python objects used to run the function (and cacheable between calls)
+    
+    //***************************************************************|***********************************************************//
+    // Initialization
+    //***************************************************************|***********************************************************//
+
+    void init_();                                                    // initialize the python instance
+    
+    //***************************************************************|***********************************************************//
+    // Clean up
+    //***************************************************************|***********************************************************//
+
+    void clean_();                                                   // clean the python instance
+    
   };
 }
-
 #endif

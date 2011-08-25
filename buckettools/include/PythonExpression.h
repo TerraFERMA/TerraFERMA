@@ -9,41 +9,56 @@
 namespace buckettools
 {
 
+  //*****************************************************************|************************************************************//
+  // PythonExpression class:
+  //
   // The PythonExpression class describes a derived dolfin Expression class that overloads
   // the eval function using python
+  //*****************************************************************|************************************************************//
   class PythonExpression : public dolfin::Expression
   {
-  // only accessible within this class
-  private:
-    
-    // An instance of python (contains and wraps all the useful python information)
-    const PythonInstance pyinst_;
 
-  // accessible to everyone
-  public:
+  //*****************************************************************|***********************************************************//
+  // Publicly available functions
+  //*****************************************************************|***********************************************************//
 
-    // No default constructor as we require a function
+  public:                                                            // available to everyone
 
-    // Specific constructor
-    PythonExpression(const std::string &function);
+    //***************************************************************|***********************************************************//
+    // Constructors and destructors
+    //***************************************************************|***********************************************************//
     
-    // Specific constructor (vector)
-    PythonExpression(const uint &dim, const std::string &function);
+    PythonExpression(const std::string &function);                   // specific constructor (scalar)
     
-    // Specific constructor (tensor)
-    PythonExpression(const uint &dim0, const uint &dim1, const std::string &function);
+    PythonExpression(const uint &dim, const std::string &function);  // specific constructor (vector)
     
-    // Specific constructor (alternative tensor)
-    PythonExpression(const std::vector<uint> &value_shape, const std::string &function);
+    PythonExpression(const uint &dim0, const uint &dim1,             // specific constructor (tensor)
+                     const std::string &function);
     
-    // no copy constructor for now
+    PythonExpression(const std::vector<uint> &value_shape,           // specific constructor (alternate tensor)
+                     const std::string &function);
     
-    // Default constructor (virtual so calls DOLFIN expression destructor too)
-    virtual ~PythonExpression();
+    virtual ~PythonExpression();                                     // default destructor
     
-    // overload eval function to call python instance
-    void eval(dolfin::Array<double>& values, const dolfin::Array<double>& x) const;
+    //***************************************************************|***********************************************************//
+    // Overloaded base class functions
+    //***************************************************************|***********************************************************//
     
+    void eval(dolfin::Array<double>& values,                         // evaluate the expression at a given point
+              const dolfin::Array<double>& x) const;                 // (but no cell information?)
+    
+  //*****************************************************************|***********************************************************//
+  // Private functions
+  //*****************************************************************|***********************************************************//
+
+  private:                                                           // only available to this class
+    
+    //***************************************************************|***********************************************************//
+    // Base data
+    //***************************************************************|***********************************************************//
+    
+    const PythonInstance pyinst_;                                    // a python instance (wrapping useful python information)
+
   };
 
 }
