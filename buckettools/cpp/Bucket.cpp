@@ -7,26 +7,338 @@
 
 using namespace buckettools;
 
-// Default constructor
+//*******************************************************************|************************************************************//
+// default constructor
+//*******************************************************************|************************************************************//
 Bucket::Bucket()
 {
-  // Do nothing
+                                                                     // do nothing
 }
 
-// Specific constructor
+//*******************************************************************|************************************************************//
+// specific constructor
+//*******************************************************************|************************************************************//
 Bucket::Bucket(std::string name) : name_(name)
 {
-  // Do nothing
+                                                                     // do nothing
 }
 
-// Default destructor
+//*******************************************************************|************************************************************//
+// default destructor
+//*******************************************************************|************************************************************//
 Bucket::~Bucket()
 {
-  empty_();
+  empty_();                                                          // empty the data structures (unnecessary?)
+}
+
+//*******************************************************************|************************************************************//
+// run the model
+//*******************************************************************|************************************************************//
+void Bucket::run()
+{
+  dolfin::error("Failed to find virtual function run.");             // require a function to be defined in a derived class
+}
+
+//*******************************************************************|************************************************************//
+// loop over the ordered systems in the bucket, calling solve on each of them
+//*******************************************************************|************************************************************//
+void Bucket::solve()
+{
+  for (int_SystemBucket_const_it s_it = orderedsystems_begin(); 
+                              s_it != orderedsystems_end(); s_it++)
+  {
+    (*(*s_it).second).solve();
+  }
+}
+
+//*******************************************************************|************************************************************//
+// loop over the ordered systems in the bucket, calling update on each of them
+//*******************************************************************|************************************************************//
+void Bucket::update()
+{
+  for (int_SystemBucket_const_it s_it = orderedsystems_begin(); 
+                             s_it != orderedsystems_end(); s_it++)
+  {
+    (*(*s_it).second).update();
+  }
+}
+
+//*******************************************************************|************************************************************//
+// register a (boost shared) pointer to a dolfin mesh in the bucket data maps
+//*******************************************************************|************************************************************//
+void Bucket::register_mesh(Mesh_ptr mesh, const std::string &name)
+{
+  Mesh_it m_it = meshes_.find(name);                                 // check if a mesh with this name already exists
+  if (m_it != meshes_end())
+  {
+    dolfin::error("Mesh named \"%s\" already exists in bucket.",     // if it does, issue an error
+                                                    name.c_str());
+  }
+  else
+  {
+    meshes_[name] = mesh;                                            // if not, insert it into the meshes_ map
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return a (boost shared) pointer to a dolfin mesh in the bucket data maps
+//*******************************************************************|************************************************************//
+Mesh_ptr Bucket::fetch_mesh(const std::string &name)
+{
+  Mesh_it m_it = meshes_.find(name);                                 // check if this mesh exists in the meshes_ map
+  if (m_it == meshes_end())
+  {
+    dolfin::error("Mesh named \"%s\" does not exist in bucket.",     // if it doesn't, issue an error
+                                                    name.c_str());
+  }
+  else
+  {
+    return (*m_it).second;                                           // if it does, return a (boost shared) pointer to it
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the beginning of the meshes_ map
+//*******************************************************************|************************************************************//
+Mesh_it Bucket::meshes_begin()
+{
+  return meshes_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the beginning of the meshes_ map
+//*******************************************************************|************************************************************//
+Mesh_const_it Bucket::meshes_begin() const
+{
+  return meshes_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the end of the meshes_ map
+//*******************************************************************|************************************************************//
+Mesh_it Bucket::meshes_end()
+{
+  return meshes_.end();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the end of the meshes_ map
+//*******************************************************************|************************************************************//
+Mesh_const_it Bucket::meshes_end() const
+{
+  return meshes_.end();
+}
+
+//*******************************************************************|************************************************************//
+// register a (boost shared) pointer to a system bucket in the bucket data maps
+//*******************************************************************|************************************************************//
+void Bucket::register_system(SystemBucket_ptr system, 
+                                         const std::string &name)
+{
+  SystemBucket_it s_it = systems_.find(name);                        // check if a system with this name already exists
+  if (s_it != systems_end())
+  {
+    dolfin::error(
+            "SystemBucket named \"%s\" already exists in bucket",    // if it does, issue an error
+                                  name.c_str());
+  }
+  else
+  {
+    systems_[name] = system;                                         // if not insert it into the systems_ map
+    orderedsystems_[(int) systems_.size()] = system;                 // also insert it in the order it was registered in the 
+                                                                     // orderedsystems_ map
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return a (boost shared) pointer to a system bucket in the bucket data maps
+//*******************************************************************|************************************************************//
+SystemBucket_ptr Bucket::fetch_system(const std::string &name)
+{
+  SystemBucket_it s_it = systems_.find(name);                        // check if a system with this name exists in the bucket
+  if (s_it == systems_end())
+  {
+    dolfin::error(                                                   // if it doesn't, issue an error
+            "SystemBucket named \"%s\" does not exist in bucket.", 
+                                name.c_str());
+  }
+  else
+  {
+    return (*s_it).second;                                           // if it does, return a pointer to it
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return a constant (boost shared) pointer to a system bucket in the bucket data maps
+//*******************************************************************|************************************************************//
+const SystemBucket_ptr Bucket::fetch_system(const std::string &name) 
+                                                              const
+{
+  SystemBucket_const_it s_it = systems_.find(name);                  // check if a system with this name exists in the bucket
+  if (s_it == systems_end())
+  {
+    dolfin::error(
+              "SystemBucket named \"%s\" does not exist in bucket.", // if it doesn't, throw an error
+                                                      name.c_str());
+  }
+  else
+  {
+    return (*s_it).second;                                           // if it does, return a pointer to it
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the beginning of the systems_ map
+//*******************************************************************|************************************************************//
+SystemBucket_it Bucket::systems_begin()
+{
+  return systems_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the beginning of the systems_ map
+//*******************************************************************|************************************************************//
+SystemBucket_const_it Bucket::systems_begin() const
+{
+  return systems_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the end of the systems_ map
+//*******************************************************************|************************************************************//
+SystemBucket_it Bucket::systems_end()
+{
+  return systems_.end();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the end of the systems_ map
+//*******************************************************************|************************************************************//
+SystemBucket_const_it Bucket::systems_end() const
+{
+  return systems_.end();
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the beginning of the orderedsystems_ map
+//*******************************************************************|************************************************************//
+int_SystemBucket_it Bucket::orderedsystems_begin()
+{
+  return orderedsystems_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the beginning of the orderedsystems_ map
+//*******************************************************************|************************************************************//
+int_SystemBucket_const_it Bucket::orderedsystems_begin() const
+{
+  return orderedsystems_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the end of the orderedsystems_ map
+//*******************************************************************|************************************************************//
+int_SystemBucket_it Bucket::orderedsystems_end()
+{
+  return orderedsystems_.end();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the end of the orderedsystems_ map
+//*******************************************************************|************************************************************//
+int_SystemBucket_const_it Bucket::orderedsystems_end() const
+{
+  return orderedsystems_.end();
+}
+
+//*******************************************************************|************************************************************//
+// register a base ufl symbol (associated with the derived ufl symbol) in the bucket data maps
+//*******************************************************************|************************************************************//
+void Bucket::register_baseuflsymbol(const std::string &baseuflsymbol, 
+                                    const std::string &uflsymbol)
+{
+  string_it s_it = baseuflsymbols_.find(uflsymbol);                  // check if this ufl symbol already exists
+  if (s_it != baseuflsymbols_.end())
+  {
+    dolfin::error(                                                   // if it does, issue an error
+            "Name with ufl symbol \"%s\" already exists in system.", 
+                                              uflsymbol.c_str());
+  }
+  else
+  {
+    baseuflsymbols_[uflsymbol] = baseuflsymbol;                      // if it doesn't, assign the baseuflsymbol to the maps
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return a string containing the base ufl symbol for a given ufl symbol from the bucket data maps
+//*******************************************************************|************************************************************//
+const std::string Bucket::fetch_baseuflsymbol(
+                                const std::string &uflsymbol) const
+{
+  string_const_it s_it = baseuflsymbols_.find(uflsymbol);            // check if this ufl symbol exists
+  if (s_it == baseuflsymbols_.end())
+  {
+    dolfin::error(                                                   // if it doesn't, issue an error
+            "Name with uflsymbol \"%s\" does not exist in system.", 
+                                                uflsymbol.c_str());
+  }
+  else
+  {
+    return (*s_it).second;                                           // if it does, return the string containing the base ufl symbol
+  }
+}
+
+//*******************************************************************|************************************************************//
+// check if a ufl symbol exists in the baseuflsymbols_ bucket data map
+//*******************************************************************|************************************************************//
+const bool Bucket::contains_baseuflsymbol(
+                              const std::string &uflsymbol) const
+{
+  string_const_it s_it = baseuflsymbols_.find(uflsymbol);
+  return s_it != baseuflsymbols_.end();
+}
+
+//*******************************************************************|************************************************************//
+// register a (boost shared) pointer to a function with the given ufl symbol in the bucket data maps
+//*******************************************************************|************************************************************//
+void Bucket::register_uflsymbol(GenericFunction_ptr function, 
+                                const std::string &uflsymbol)
+{
+  GenericFunction_it g_it = uflsymbols_.find(uflsymbol);             // check if the ufl symbol already exists
+  if (g_it != uflsymbols_.end())
+  {
+    dolfin::error(                                                   // if it does, issue an error
+    "GenericFunction with ufl symbol \"%s\" already exists in system.", 
+                                  uflsymbol.c_str());
+  }
+  else
+  {
+    uflsymbols_[uflsymbol] = function;                               // if not, register the pointer in the maps
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return a (boost shared) pointer to the function associated with the given ufl symbol
+//*******************************************************************|************************************************************//
+GenericFunction_ptr Bucket::fetch_uflsymbol(
+                                const std::string &uflsymbol) const
+{
+  GenericFunction_const_it g_it = uflsymbols_.find(uflsymbol);       // check if the ufl symbol exists
+  if (g_it == uflsymbols_.end())
+  {
+    dolfin::error(                                                   // if it doesn't, issue an error
+    "GenericFunction with uflsymbol \"%s\" does not exist in system.", 
+                                          uflsymbol.c_str());
+  }
+  else
+  {
+    return (*g_it).second;                                           // if it does, return a pointer to the associated function
+  }
 }
 
 // Return a string describing the contents of the bucket
-const std::string Bucket::str() const
+const std::string Bucket::str() const 
 {
   std::stringstream s;
   int indent = 1;
@@ -59,238 +371,6 @@ const std::string Bucket::systems_str(int indent) const
     s << (*(*s_it).second).str(indent);
   }
   return s.str();
-}
-
-// Register a pointer to a DOLFIN mesh
-void Bucket::register_mesh(Mesh_ptr mesh, std::string name)
-{
-  // First check if a mesh with this name already exists
-  Mesh_it m_it = meshes_.find(name);
-  if (m_it != meshes_end())
-  {
-    // if it does, issue an error
-    dolfin::error("Mesh named \"%s\" already exists in bucket.", name.c_str());
-  }
-  else
-  {
-    // if not then insert it into the maps
-    meshes_[name] = mesh;
-  }
-}
-
-// Fetch a pointer to a DOLFIN mesh
-Mesh_ptr Bucket::fetch_mesh(const std::string name)
-{
-  // Check if the mesh exists in the bucket
-  Mesh_it m_it = meshes_.find(name);
-  if (m_it == meshes_end())
-  {
-    // if it doesn't then throw an error
-    dolfin::error("Mesh named \"%s\" does not exist in bucket.", name.c_str());
-  }
-  else
-  {
-    // if it does then return the pointer to the mesh
-    return (*m_it).second;
-  }
-}
-
-// Public iterator access
-Mesh_it Bucket::meshes_begin()
-{
-  return meshes_.begin();
-}
-
-// Public iterator access
-Mesh_const_it Bucket::meshes_begin() const
-{
-  return meshes_.begin();
-}
-
-// Public iterator access
-Mesh_it Bucket::meshes_end()
-{
-  return meshes_.end();
-}
-
-// Public iterator access
-Mesh_const_it Bucket::meshes_end() const
-{
-  return meshes_.end();
-}
-
-// Register a pointer to a DOLFIN mesh
-void Bucket::register_system(SystemBucket_ptr system, std::string name)
-{
-  // First check if a system with this name already exists
-  SystemBucket_it s_it = systems_.find(name);
-  if (s_it != systems_end())
-  {
-    // if it does, issue an error
-    dolfin::error("SystemBucket named \"%s\" already exists in bucket.", name.c_str());
-  }
-  else
-  {
-    // if not then insert it into the maps
-    systems_[name] = system;
-    orderedsystems_[(int) systems_.size()] = system;
-  }
-}
-
-// Fetch a pointer to a DOLFIN mesh
-SystemBucket_ptr Bucket::fetch_system(const std::string name)
-{
-  // Check if the system exists in the bucket
-  SystemBucket_it s_it = systems_.find(name);
-  if (s_it == systems_end())
-  {
-    // if it doesn't then throw an error
-    dolfin::error("SystemBucket named \"%s\" does not exist in bucket.", name.c_str());
-  }
-  else
-  {
-    // if it does then return the pointer to the mesh
-    return (*s_it).second;
-  }
-}
-
-const SystemBucket_ptr Bucket::fetch_system(const std::string name) const
-{
-  // Check if the system exists in the bucket
-  SystemBucket_const_it s_it = systems_.find(name);
-  if (s_it == systems_end())
-  {
-    // if it doesn't then throw an error
-    dolfin::error("SystemBucket named \"%s\" does not exist in bucket.", name.c_str());
-  }
-  else
-  {
-    // if it does then return the pointer to the mesh
-    return (*s_it).second;
-  }
-}
-
-// Public iterator access
-SystemBucket_it Bucket::systems_begin()
-{
-  return systems_.begin();
-}
-
-// Public iterator access
-SystemBucket_const_it Bucket::systems_begin() const
-{
-  return systems_.begin();
-}
-
-// Public iterator access
-SystemBucket_it Bucket::systems_end()
-{
-  return systems_.end();
-}
-
-// Public iterator access
-SystemBucket_const_it Bucket::systems_end() const
-{
-  return systems_.end();
-}
-
-// Public iterator access
-int_SystemBucket_it Bucket::orderedsystems_begin()
-{
-  return orderedsystems_.begin();
-}
-
-// Public iterator access
-int_SystemBucket_const_it Bucket::orderedsystems_begin() const
-{
-  return orderedsystems_.begin();
-}
-
-// Public iterator access
-int_SystemBucket_it Bucket::orderedsystems_end()
-{
-  return orderedsystems_.end();
-}
-
-// Public iterator access
-int_SystemBucket_const_it Bucket::orderedsystems_end() const
-{
-  return orderedsystems_.end();
-}
-
-// Register a ufl symbol-function name pair
-void Bucket::register_baseuflsymbol(std::string name, std::string uflsymbol)
-{
-  // First check if a name with this symbol already exists
-  string_it s_it = baseuflsymbols_.find(uflsymbol);
-  if (s_it != baseuflsymbols_.end())
-  {
-    // if it does, issue an error
-    dolfin::error("Name with ufl symbol \"%s\" already exists in system.", uflsymbol.c_str());
-  }
-  else
-  {
-    // if not then insert it into the maps
-    baseuflsymbols_[uflsymbol] = name;
-  }
-}
-
-// Return a pointer to a dolfin GenericFunction with the given uflsymbol
-const std::string Bucket::fetch_baseuflsymbol(std::string uflsymbol) const
-{
-  // First check if a function name with this symbol already exists
-  string_const_it s_it = baseuflsymbols_.find(uflsymbol);
-  if (s_it == baseuflsymbols_.end())
-  {
-    // if it doesn't, issue an error
-    dolfin::error("Name with uflsymbol \"%s\" does not exist in system.", uflsymbol.c_str());
-  }
-  else
-  {
-    // if not then return it
-    return (*s_it).second;
-  }
-}
-
-// Check if a baseuflsymbol exists in this system
-const bool Bucket::contains_baseuflsymbol(std::string uflsymbol) const
-{
-  string_const_it s_it = baseuflsymbols_.find(uflsymbol);
-  return s_it != baseuflsymbols_.end();
-}
-
-// Register a ufl symbol-function name pair
-void Bucket::register_uflsymbol(GenericFunction_ptr function, std::string uflsymbol)
-{
-  // First check if a function with this symbol already exists
-  GenericFunction_it g_it = uflsymbols_.find(uflsymbol);
-  if (g_it != uflsymbols_.end())
-  {
-    // if it does, issue an error
-    dolfin::error("GenericFunction with ufl symbol \"%s\" already exists in system.", uflsymbol.c_str());
-  }
-  else
-  {
-    // if not then insert it into the maps
-    uflsymbols_[uflsymbol] = function;
-  }
-}
-
-// Return a pointer to a dolfin GenericFunction with the given uflsymbol
-GenericFunction_ptr Bucket::fetch_uflsymbol(std::string uflsymbol) const
-{
-  // First check if a generic function with this symbol already exists
-  GenericFunction_const_it g_it = uflsymbols_.find(uflsymbol);
-  if (g_it == uflsymbols_.end())
-  {
-    // if it doesn't, issue an error
-    dolfin::error("GenericFunction with uflsymbol \"%s\" does not exist in system.", uflsymbol.c_str());
-  }
-  else
-  {
-    // if not then return it
-    return (*g_it).second;
-  }
 }
 
 void Bucket::uflsymbols_fill_()
@@ -360,33 +440,12 @@ FunctionSpace_ptr Bucket::fetch_coefficientspace(std::string uflsymbol) const
   }
 }
 
-void Bucket::solve()
-{
-  for (int_SystemBucket_const_it s_it = orderedsystems_begin(); s_it != orderedsystems_end(); s_it++)
-  {
-    (*(*s_it).second).solve();
-  }
-}
-
-void Bucket::update()
-{
-  for (int_SystemBucket_const_it s_it = orderedsystems_begin(); s_it != orderedsystems_end(); s_it++)
-  {
-    (*(*s_it).second).update();
-  }
-}
-
 void Bucket::output()
 {
   for (SystemBucket_it s_it = systems_begin(); s_it != systems_end(); s_it++)
   {
     (*(*s_it).second).output();
   } 
-}
-
-void Bucket::run()
-{
-  dolfin::error("Failed to find virtual function include_in_diagnostics.");
 }
 
 // Return a string describing the contents of uflsymbols_

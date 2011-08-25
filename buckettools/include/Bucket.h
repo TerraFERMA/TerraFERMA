@@ -62,9 +62,9 @@ namespace buckettools
     // Mesh data access
     //***************************************************************|***********************************************************//
 
-    void register_mesh(Mesh_ptr mesh, std::string name);             // register a mesh with the given name in the bucket
+    void register_mesh(Mesh_ptr mesh, const std::string &name);      // register a mesh with the given name in the bucket
 
-    Mesh_ptr fetch_mesh(const std::string name);                     // return a (boost shared) pointer to a mesh with the given name
+    Mesh_ptr fetch_mesh(const std::string &name);                    // return a (boost shared) pointer to a mesh with the given name
     
     Mesh_it meshes_begin();                                          // return an iterator to the beginning of the meshes
 
@@ -78,12 +78,13 @@ namespace buckettools
     // System data access
     //***************************************************************|***********************************************************//
 
-    void register_system(SystemBucket_ptr system, std::string name); // register a system with the given name in the bucket
+    void register_system(SystemBucket_ptr system,                    // register a system with the given name in the bucket
+                                           const std::string &name);
 
-    SystemBucket_ptr fetch_system(const std::string name);           // return a (boost shared) pointer to a system with the given name
+    SystemBucket_ptr fetch_system(const std::string &name);          // return a (boost shared) pointer to a system with the given name
     
-    const SystemBucket_ptr fetch_system(const std::string name) 
-          const;                                                     // return a constant (boost shared) pointer to a system with the given name
+    const SystemBucket_ptr fetch_system(const std::string &name)     // return a constant (boost shared) pointer to a system with the given name 
+          const;                                                
     
     SystemBucket_it systems_begin();                                 // return an iterator to the beginning of the systems
 
@@ -109,19 +110,19 @@ namespace buckettools
     // UFL symbol data access
     //***************************************************************|***********************************************************//
 
-    void register_baseuflsymbol(std::string name,                    // register a function name with a ufl symbol
-                                std::string uflsymbol);  
+    void register_baseuflsymbol(const std::string &baseuflsymbol,    // register a function name with a ufl symbol
+                                const std::string &uflsymbol);  
 
-    const std::string fetch_baseuflsymbol(std::string uflsymbol)     // return a string containing the function name belonging to a ufl symbol
-                                                         const;
+    const std::string fetch_baseuflsymbol(const std::string          // return a string containing the function name belonging to a ufl symbol
+                                                &uflsymbol) const;
 
-    const bool contains_baseuflsymbol(std::string uflsymbol) const;  // return a boolean, true if the bucket contains a ufl symbol,
-                                                                     //                                            false otherwise
+    const bool contains_baseuflsymbol(const std::string &uflsymbol)  // return a boolean, true if the bucket contains a base ufl symbol
+                                                        const;       //                 for the given ufl symbol false otherwise
 
     void register_uflsymbol(GenericFunction_ptr function,            // register a (boost shared) pointer to a function with a ufl
-                                   std::string uflsymbol);           // symbol
+                            const std::string &uflsymbol);           // symbol
 
-    GenericFunction_ptr fetch_uflsymbol(std::string uflsymbol)       // fetch a (boost shared) pointer to a function associated with
+    GenericFunction_ptr fetch_uflsymbol(const std::string &uflsymbol)// fetch a (boost shared) pointer to a function associated with
                        const;                                        // a ufl symbol
 
     //***************************************************************|***********************************************************//
