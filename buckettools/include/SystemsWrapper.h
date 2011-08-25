@@ -5,23 +5,46 @@
 
 namespace buckettools
 {
-  // A function to return a functionspace from a system given a mesh (defaults to first solver in system as they should all be the same).
-  FunctionSpace_ptr ufc_fetch_functionspace(const std::string &systemname, Mesh_ptr mesh);
+  //*****************************************************************|************************************************************//
+  // Header definitions for code that is automatically generated on a per options file basis.
+  // These functions provide an interface between the bucket and the ufc, which is model specific.
+  // DO NOT CHANGE THESE INTERFACES WITHOUT UPDATING THE CODE GENERATION SCRIPT.
+  //*****************************************************************|************************************************************//
 
-  // A function to return a functionspace from a system given a mesh and a solvername.
-  FunctionSpace_ptr ufc_fetch_functionspace(const std::string &systemname, const std::string &solvername, Mesh_ptr mesh);
+  FunctionSpace_ptr ufc_fetch_functionspace(const std::string        // return a (boost shared) pointer to a functionspace from a
+                                            &systemname,             // system given a (boost shared) pointer to a mesh (defaults to the
+                                      Mesh_ptr mesh);                // first solver in the system as they should all be the same)
 
-  // A function to return a functionspace (for a coefficient) from a system given a mesh, a solvername and a (base) uflsymbol.
-  FunctionSpace_ptr ufc_fetch_coefficientspace(const std::string &systemname, const std::string &solvername, const std::string &uflsymbol, Mesh_ptr mesh);
+  FunctionSpace_ptr ufc_fetch_functionspace(const std::string        // return a (boost shared) pointer to a functionspace from a
+                                            &systemname,             // system given a mesh and a solver name (i.e. does not default
+                                      const std::string &solvername, // as above) 
+                                      Mesh_ptr mesh);
 
-  // A function to return a functionspace (for a coefficient) from a system given a mesh, a solvername and a (base) uflsymbol.
-  FunctionSpace_ptr ufc_fetch_coefficientspace(const std::string &systemname, const std::string &functionname, const std::string &funcionalname, const std::string &uflsymbol, Mesh_ptr mesh);
+  FunctionSpace_ptr ufc_fetch_coefficientspace(const std::string     // return a (boost shared) pointer to a functionspace for a
+                                            &systemname,             // coefficient function from a solver given a mesh, a solver name
+                                      const std::string &solvername, // and a (base) ufl symbol
+                                      const std::string &uflsymbol, 
+                                      Mesh_ptr mesh);
 
-  // A function to return a form for a solver from a system given a functionspace, a solvername, a solvertype and a formname.
-  Form_ptr ufc_fetch_form(const std::string &systemname, const std::string &solvername, const std::string &solvertype, const std::string &formname, FunctionSpace_ptr functionspace);
+  FunctionSpace_ptr ufc_fetch_coefficientspace(const std::string     // return a (boost shared) pointer to a functionspace for a 
+                                            &systemname,             // coefficient function from a functional given a mesh, a
+                                      const std::string              // function name, a functional name and a (base) ufl symbol
+                                            &functionname, 
+                                      const std::string 
+                                            &funcionalname, 
+                                      const std::string &uflsymbol, 
+                                      Mesh_ptr mesh);
 
-  // A function to return a functional from a system-function set given a mesh and a functionalname.
-  Form_ptr ufc_fetch_functional(const std::string &systemname, const std::string &functionname, const std::string &functionalname, Mesh_ptr mesh);
+  Form_ptr ufc_fetch_form(const std::string &systemname,             // return a (boost shared) pointer to a form from a solver
+                          const std::string &solvername,             // given a functionspace, a solver name, a solver type
+                          const std::string &solvertype,             // and a form name
+                          const std::string &formname, 
+                          FunctionSpace_ptr functionspace);
+
+  Form_ptr ufc_fetch_functional(const std::string &systemname,       // return a (boost shared) pointer to a form from a functional
+                          const std::string &functionname,           // given a mesh, a function name and a functional name
+                          const std::string &functionalname, 
+                          Mesh_ptr mesh);
 
 }
 

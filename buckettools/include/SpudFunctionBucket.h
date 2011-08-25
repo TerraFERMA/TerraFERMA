@@ -9,88 +9,117 @@
 namespace buckettools
 {
   
+  //*****************************************************************|************************************************************//
+  // SpudFunctionBucket class:
+  //
   // The SpudFunctionBucket class is a derived class of the function that populates the
   // data structures within a function using the spud options parser (and assumes
   // the structure of the buckettools schema)
+  //*****************************************************************|************************************************************//
   class SpudFunctionBucket : public FunctionBucket
   {
-  // only accessible by this class
-  private:
 
-    // supplement the base class with an optionpath
-    std::string optionpath_;
-
-    // supplementary to the function base data store the optionpaths for the functionals_
-    std::map< std::string, std::string > functional_optionpaths_;
-    
-    // fill in the base data
-    void base_fill_(const uint &index);
- 
-    // fill in the base data that aliased coefficients don't have
-    void nonaliased_base_fill_(const std::string &optionpath);
- 
-    void initialize_field_();
-
-    void ic_fill_(const std::string &optionpath);
-
-    void bc_component_fill_(const std::string &optionpath,
-                            const std::string &bcname,
-                            const std::vector<int> &bcids,
-                            const MeshFunction_uint_ptr &edgeidmeshfunction);
-
-    void bc_fill_(const std::string &optionpath,
-                  const MeshFunction_uint_ptr &edgeidmeshfunction);
-
-    void initialize_expression_coeff_();
-
-    // fill in the information related to the functionals of this function
-    void functionals_fill_();
+  //*****************************************************************|***********************************************************//
+  // Publicly available functions
+  //*****************************************************************|***********************************************************//
 
   public:
     
-    // Specific constructor
-    SpudFunctionBucket(std::string optionpath, SystemBucket* system);
+    //***************************************************************|***********************************************************//
+    // Constructors and destructors
+    //***************************************************************|***********************************************************//
+
+    SpudFunctionBucket(std::string optionpath, SystemBucket* system);// optional constructor
     
-    // Default destructor (virtual so it calls base class as well)
-    virtual ~SpudFunctionBucket();
+    virtual ~SpudFunctionBucket();                                   // default destructor
 
-    // Fill the function assuming the buckettools schema
-    void field_fill(const uint &index);
+    //***************************************************************|***********************************************************//
+    // Base data access
+    //***************************************************************|***********************************************************//
 
-    // Fill the function assuming the buckettools schema
-    void coeff_fill(const uint &index);
-
-    void initialize_function_coeff();
-
-    void initialize_aliased_coeff();
-
-    // Register a functional in the function (with a spud optionpath)
-    void register_functional(Form_ptr functional, std::string name, std::string optionpath);
-
-    // Return a string object describing the function
-    const std::string str() const
-    { return str(0); }
-
-    // Return a string object describing the function
-    const std::string str(int indent) const;
-
-    // Return a string object describing the functionals
-    const std::string functionals_str() const
-    { return str(0); }
-
-    // Return a string object describing the functionals
-    const std::string functionals_str(int indent) const;
-
-    // Return the base optionpath for this function
-    const std::string optionpath() const
+    const std::string optionpath() const                             // return a string containing the optionpath of this function
     { return optionpath_; }
 
-    const bool include_in_diagnostics() const;
+    //***************************************************************|***********************************************************//
+    // Filling data
+    //***************************************************************|***********************************************************//
+
+    void field_fill(const uint &index);                              // fill this function assuming it's a field
+
+    void coeff_fill(const uint &index);                              // fill this function assuming it's a coefficient
+
+    void initialize_function_coeff();                                // initialize this function assuming it's a coefficient function
+
+    //***************************************************************|***********************************************************//
+    // Functional data access
+    //***************************************************************|***********************************************************//
+
+    void register_functional(Form_ptr functional, std::string name,  // register a functional with the given name and optionpath
+                                            std::string optionpath);
+
+    //***************************************************************|***********************************************************//
+    // Output functions
+    //***************************************************************|***********************************************************//
+
+    const bool include_in_diagnostics() const;                       // return a boolean indicating if this function is to 
+                                                                     // be included in diagnostic output
     
+    const std::string str() const                                    // return a string describing the contents of this function
+    { return str(0); }
+
+    const std::string str(int indent) const;                         // return an indented string describing the contents of this function
+
+    const std::string functionals_str() const                        // return a string describing the functionals of this function
+    { return str(0); }
+
+    const std::string functionals_str(int indent) const;             // return an indented string describing the functionals of this function
+
+  //*****************************************************************|***********************************************************//
+  // Private functions
+  //*****************************************************************|***********************************************************//
+
+  private:                                                           // only available this class
+
+    //***************************************************************|***********************************************************//
+    // Base data
+    //***************************************************************|***********************************************************//
+
+    std::string optionpath_;                                         // the optionpath of this function
+
+    //***************************************************************|***********************************************************//
+    // Pointers data
+    //***************************************************************|***********************************************************//
+
+    std::map< std::string, std::string > functional_optionpaths_;    // a map from funcional name to functional optionpath
+    
+    //***************************************************************|***********************************************************//
+    // Filling data
+    //***************************************************************|***********************************************************//
+
+    void base_fill_(const uint &index);                              // fill the base data of this function
+ 
+    void initialize_field_();                                        // initialize this function assuming its a field
+
+    void initialize_expression_coeff_();                             // initialize this function assuming its a coefficient expression
+
+    void ic_fill_(const std::string &optionpath);                    // fill in the initial condition data for this function
+
+    void bc_fill_(const std::string &optionpath,                     // fill in the bc for this function
+                  const MeshFunction_uint_ptr 
+                                            &edgeidmeshfunction);
+
+    void bc_component_fill_(const std::string &optionpath,           // fill in the bc data for a component of this function
+                            const std::string &bcname,
+                            const std::vector<int> &bcids,
+                            const MeshFunction_uint_ptr 
+                                            &edgeidmeshfunction);
+
+    void functionals_fill_();                                        // fill in the data for the functionals of this function
+
   };
  
-  // Define a boost shared pointer for a spud function
-  typedef boost::shared_ptr< SpudFunctionBucket > SpudFunctionBucket_ptr;
+  typedef boost::shared_ptr< SpudFunctionBucket >                    // define a (boost shared) pointer for this function class type
+                                            SpudFunctionBucket_ptr;
 
 }
 #endif

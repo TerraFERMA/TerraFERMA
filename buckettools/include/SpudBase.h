@@ -8,13 +8,18 @@
 
 namespace buckettools
 {
+  //*****************************************************************|************************************************************//
   // A collection of tools that are spud (and schema) specific but do not depend on any class
   // objects in the bucketools library
+  //*****************************************************************|************************************************************//
 
-  // Initialize an expression based on a optionpath (and size and shape for vectors and tensors)
-  Expression_ptr initialize_expression(const std::string &optionpath, const int &size, const std::vector<int> &shape);
+  Expression_ptr initialize_expression(const std::string &optionpath,// initialize an expression based on an optionpath (and a size
+                                       const int &size,              // and shape for vectors and tensors)
+                                       const std::vector<int> 
+                                                            &shape);
 
-  void spud_err(const std::string &optionpath, const Spud::OptionError &error);
+  void spud_err(const std::string &optionpath,                       // translate the spud error codes into dolfin errors
+                const Spud::OptionError &error);
 
 }
 

@@ -9,77 +9,114 @@
 namespace buckettools
 {
   
+  //*****************************************************************|************************************************************//
+  // SpudSolverBucket class:
+  //
   // The SpudSolverBucket class is a derived class of the solver that populates the
   // data structures within a solver using the spud options parser (and assumes
   // the structure of the buckettools schema)
+  //*****************************************************************|************************************************************//
   class SpudSolverBucket : public SolverBucket
   {
-  // only accessible by this class
-  private:
 
-    // supplement the base class with an optionpath
-    std::string optionpath_;
-
-    // supplementary to the solver base data store the optionpaths for the forms_
-    std::map< std::string, std::string > form_optionpaths_;
-    
-    // fill in the base data
-    void base_fill_();
- 
-    // fill in the information related to the forms of this solver
-    void forms_fill_();
-
-    void ksp_fill_(const std::string &optionpath, KSP &ksp)
-    { ksp_fill_(optionpath, ksp, NULL); }
-
-    void ksp_fill_(const std::string &optionpath, KSP &ksp, const std::vector<uint>* parent_indices);
-
-    void pc_fieldsplit_fill_(const std::string &optionpath, PC &pc, const std::vector<uint>* parent_indices);
-
-    void is_by_field_fill_(const std::string &optionpath, IS &is, 
-                           std::vector<uint> &child_indices,
-                           const std::vector<uint>* parent_indices);
-
-    void pc_fieldsplit_by_field_fill_(const std::string &optionpath, PC &pc, 
-                                      std::vector<uint> &child_indices,
-                                      const std::vector<uint>* parent_indices);
+  //*****************************************************************|***********************************************************//
+  // Publicly available functions
+  //*****************************************************************|***********************************************************//
 
   public:
     
-    // Specific constructor
-    SpudSolverBucket(std::string optionpath, SystemBucket* system);
+    //***************************************************************|***********************************************************//
+    // Constructors and destructors
+    //***************************************************************|***********************************************************//
+
+    SpudSolverBucket(std::string optionpath, SystemBucket* system);  // optional constructor (taking in optionpath and parent system)
     
-    // Default destructor (virtual so it calls base class as well)
-    virtual ~SpudSolverBucket();
+    virtual ~SpudSolverBucket();                                     // default destructor
 
-    // Fill the solver assuming the buckettools schema
-    void fill();
+    //***************************************************************|***********************************************************//
+    // Base data access
+    //***************************************************************|***********************************************************//
 
-    // Register a form in the solver (with a spud optionpath)
-    void register_form(Form_ptr form, std::string name, std::string optionpath);
+    const std::string optionpath() const                             // return a constant string containing the optionpath for the solver bucket
+    { return optionpath_; }
 
-    // Return a string object describing the solver
-    const std::string str() const
+    //***************************************************************|***********************************************************//
+    // Filling data
+    //***************************************************************|***********************************************************//
+
+    void fill();                                                     // fill in the data in the base solver bucket
+
+    //***************************************************************|***********************************************************//
+    // Form data access
+    //***************************************************************|***********************************************************//
+
+    void register_form(Form_ptr form, std::string name,              // register a form with the given name and optionpath in the solver
+                                          std::string optionpath);   // bucket
+
+    //***************************************************************|***********************************************************//
+    // Output functions
+    //***************************************************************|***********************************************************//
+
+    const std::string str() const                                    // return a string describing the contents of the solver bucket
     { return str(0); }
 
-    // Return a string object describing the solver
-    const std::string str(int indent) const;
+    const std::string str(int indent) const;                         // return an indented string describing the contents of the solver bucket
 
-    // Return a string object describing the forms
-    const std::string forms_str() const
+    const std::string forms_str() const                              // return a string describing the forms in the solver bucket
     { return forms_str(0); }
 
-    // Return a string object describing the forms
-    const std::string forms_str(int indent) const;
+    const std::string forms_str(int indent) const;                   // return an indented string describing the forms in the solver bucket
 
-    // Return the base optionpath for this function
-    const std::string optionpath() const
-    { return optionpath_; }
+  //*****************************************************************|***********************************************************//
+  // Private functions
+  //*****************************************************************|***********************************************************//
+
+  private:                                                           // only accessible by this class
+
+    //***************************************************************|***********************************************************//
+    // Base data
+    //***************************************************************|***********************************************************//
+
+    std::string optionpath_;                                         // the optionpath for the solver bucket
+
+    //***************************************************************|***********************************************************//
+    // Pointers data
+    //***************************************************************|***********************************************************//
+
+    std::map< std::string, std::string > form_optionpaths_;          // a map from form names to form optionpaths
+    
+    //***************************************************************|***********************************************************//
+    // Filling data (continued)
+    //***************************************************************|***********************************************************//
+
+    void base_fill_();                                               // fill the base data of the solver bucket
+ 
+    void forms_fill_();                                              // fill the form data of the solver bucket
+
+    void ksp_fill_(const std::string &optionpath, KSP &ksp)          // fill the information about a parent ksp
+    { ksp_fill_(optionpath, ksp, NULL); }
+
+    void ksp_fill_(const std::string &optionpath, KSP &ksp,          // fill the information about a child ksp
+                         const std::vector<uint>* parent_indices);
+
+    void pc_fieldsplit_fill_(const std::string &optionpath, PC &pc,  // fill the information about a fieldsplit pc
+                         const std::vector<uint>* parent_indices);
+
+    void is_by_field_fill_(const std::string &optionpath, IS &is,    // set up a petsc index set
+                           std::vector<uint> &child_indices,
+                           const std::vector<uint>* parent_indices);
+
+    void pc_fieldsplit_by_field_fill_(const std::string &optionpath, // fill in the information about a fieldsplit pc
+                                      PC &pc,                        // based on a field based petsc index set
+                                      std::vector<uint> 
+                                                     &child_indices,
+                                      const std::vector<uint>* 
+                                                    parent_indices);
+
     
   };
  
-  // Define a boost shared pointer for a spud function
-  typedef boost::shared_ptr< SpudSolverBucket > SpudSolverBucket_ptr;
+  typedef boost::shared_ptr< SpudSolverBucket > SpudSolverBucket_ptr;// define a (boost shared) pointer to a spud solver bucket class
 
 }
 #endif

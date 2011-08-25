@@ -10,112 +10,150 @@
 namespace buckettools
 {
 
-  // Predeclaration of parent classes to allow two-way dependencies
-  class SystemBucket;
+  class SystemBucket;                                                // predeclaration
   
+  //*****************************************************************|************************************************************//
+  // SolverBucket class:
+  //
   // The SolverBucket class describes system functions and coefficients and provides data types
   // to the underlying functionals.
+  //*****************************************************************|************************************************************//
   class SolverBucket
   {
-  // only accessible by this class
-  private:
 
-    // Empty the data structures of the function
-    void empty_();
+  //*****************************************************************|***********************************************************//
+  // Publicly available functions
+  //*****************************************************************|***********************************************************//
 
-  protected:
+  public:                                                            // available to everyone
+
+    //***************************************************************|***********************************************************//
+    // Constructors and destructors
+    //***************************************************************|***********************************************************//
+
+    SolverBucket();                                                  // default constructor
+
+    SolverBucket(SystemBucket* system);                              // optional constructor (with parent system)
     
-    SNES snes_;
+    ~SolverBucket();                                                 // default destructor
 
-    SNESCtx ctx_;
+    //***************************************************************|***********************************************************//
+    // Functions used to run the model
+    //***************************************************************|***********************************************************//
 
-    KSP ksp_;
+    void solve();                                                    // run the nonlinear solver described by this class
 
-    Form_ptr linear_, bilinear_, bilinearpc_, residual_;
+    void assemble_linearforms(const bool &reset_tensor);             // assemble all linear forms in this solver
 
-    PETScMatrix_ptr matrix_, matrixpc_;
+    void assemble_bilinearforms(const bool &reset_tensor);           // assemble all bilinear forms in this solver
 
-    PETScVector_ptr rhs_, res_, work_;
+    //***************************************************************|***********************************************************//
+    // Filling data
+    //***************************************************************|***********************************************************//
 
-    double rtol_, atol_, stol_;
+    void attach_form_coeffs();                                       // attach coefficients to the forms in this solver
 
-    int minits_, maxits_, maxfes_;
+    void initialize_matrices();                                      // initialize the vectors and matrices (preassembly) described
+                                                                     // by the forms in this solver
 
-    // the solver name
-    std::string name_;
+    //***************************************************************|***********************************************************//
+    // Base data access
+    //***************************************************************|***********************************************************//
 
-    // the function type
-    std::string type_;
-
-    // the system to which this function belongs
-    SystemBucket* system_;
-
-    // a map from form names to the forms
-    std::map< std::string, Form_ptr > forms_;
-
-  public:
-
-    // Default constructor
-    SolverBucket();
-
-    // Specific constructor with an uninitialised name
-    SolverBucket(SystemBucket* system);
-    
-    // Default destructor
-    ~SolverBucket();
-
-    // Register a form in the solver
-    void register_form(Form_ptr form, std::string name);
-
-    bool contains_form(std::string name);
-
-    // Return a pointer to a form with the given name
-    Form_ptr fetch_form(std::string name);
-
-    Form_it forms_begin();
-
-    Form_const_it forms_begin() const;
-
-    Form_it forms_end();
-
-    Form_const_it forms_end() const;
-
-    void attach_form_coeffs();
-
-    void initialize_matrices();
-
-    void assemble_linearforms(const bool &reset_tensor);
-
-    void assemble_bilinearforms(const bool &reset_tensor);
-
-    // Return a string describing the contents of the solver
-    virtual const std::string str() const
-    { return str(0); }
-
-    // Return a string describing the contents of the solver
-    virtual const std::string str(int indent) const;
-
-    // Print a description of the forms contained in the solver
-    virtual const std::string forms_str() const
-    { return forms_str(0); }
-
-    // Print a description of the forms contained in the solver
-    virtual const std::string forms_str(int indent) const;
-
-    void solve();
-
-    // Return the function name
-    const std::string name() const
+    const std::string name() const                                   // return a string containing the solver name
     { return name_; }
 
-    // Return the function type
-    const std::string type() const
+    const std::string type() const                                   // return a string describing the solver type
     { return type_; }
+
+    //***************************************************************|***********************************************************//
+    // Form data access
+    //***************************************************************|***********************************************************//
+
+    void register_form(Form_ptr form, std::string name);             // register a form in the solver
+
+    bool contains_form(std::string name);                            // return a boolean, true if the names form exists in the
+                                                                     // solver, false otherwise
+
+    Form_ptr fetch_form(std::string name);                           // fetch the named form
+
+    Form_it forms_begin();                                           // return an iterator to the beginning of the forms
+
+    Form_const_it forms_begin() const;                               // return a constant iterator to the beginning of the forms
+
+    Form_it forms_end();                                             // return an iterator to the end of the forms
+
+    Form_const_it forms_end() const;                                 // return a constant iterator to the end of the forms
+
+    //***************************************************************|***********************************************************//
+    // Output functions
+    //***************************************************************|***********************************************************//
+
+    virtual const std::string str() const                            // return a string describing the contents of this solver
+    { return str(0); }
+
+    virtual const std::string str(int indent) const;                 // return an indented string describing the contents of this
+                                                                     // solver
+
+    virtual const std::string forms_str() const                      // return a string describing the forms in this solver
+    { return forms_str(0); }
+
+    virtual const std::string forms_str(int indent) const;           // return an indented string describing the forms in this
+                                                                     // solver
+
+  //*****************************************************************|***********************************************************//
+  // Private functions
+  //*****************************************************************|***********************************************************//
+
+  private:                                                           // only available to this class
+
+    //***************************************************************|***********************************************************//
+    // Emptying data
+    //***************************************************************|***********************************************************//
+
+    void empty_();                                                   // empty the class data structures
+
+  //*****************************************************************|***********************************************************//
+  // Protected functions
+  //*****************************************************************|***********************************************************//
+
+  protected:                                                         // availble to this class and its derived classes
+    
+    //***************************************************************|***********************************************************//
+    // Base data
+    //***************************************************************|***********************************************************//
+
+    SNES snes_;                                                      // a petsc snes object
+
+    SNESCtx ctx_;                                                    // a snes context type (defined in BucketPETScBase.h)
+
+    KSP ksp_;                                                        // a petsc ksp type
+
+    Form_ptr linear_, bilinear_, bilinearpc_, residual_;             // (boost shared) pointers to forms
+
+    PETScMatrix_ptr matrix_, matrixpc_;                              // dolfin petsc matrix types
+
+    PETScVector_ptr rhs_, res_, work_;                               // dolfin petsc vector types
+
+    double rtol_, atol_, stol_;                                      // nonlinear solver tolerances
+
+    int minits_, maxits_, maxfes_;                                   // nonlinear solver iteration counts
+
+    std::string name_;                                               // solver name
+
+    std::string type_;                                               // solver type (string)
+
+    SystemBucket* system_;                                           // parent system
+
+    //***************************************************************|***********************************************************//
+    // Pointers data
+    //***************************************************************|***********************************************************//
+
+    std::map< std::string, Form_ptr > forms_;                        // a map from the form names to the form pointers
 
   };
 
-  // Define a boost shared pointer to the system class type
-  typedef boost::shared_ptr< SolverBucket > SolverBucket_ptr;
+  typedef boost::shared_ptr< SolverBucket > SolverBucket_ptr;        // define a (boost shared) pointer to the solver class type
 
 }
 #endif

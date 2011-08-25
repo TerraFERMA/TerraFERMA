@@ -200,7 +200,7 @@ namespace buckettools
   // Protected functions
   //*****************************************************************|***********************************************************//
 
-  protected:                                                         // accessible to derived classes
+  protected:                                                         // availble to this class and its derived classes
 
     //***************************************************************|***********************************************************//
     // Base data (continued)

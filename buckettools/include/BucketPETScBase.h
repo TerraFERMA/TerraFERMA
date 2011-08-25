@@ -8,18 +8,22 @@
 namespace buckettools
 {
 
-  typedef struct {
-    //pointers to forms and boundary conditions
-    Form_ptr linear;
-    Form_ptr bilinear;
-    Form_ptr bilinearpc;
-    std::vector<BoundaryCondition_ptr> bcs;
-    Function_ptr iteratedfunction;    // work function
+  //*****************************************************************|************************************************************//
+  // A collection of structures and callback functions used in the bucket by petsc
+  //*****************************************************************|************************************************************//
+
+  typedef struct {                                                   // a structure used to pass bucket data into snes callback functions
+    Form_ptr linear;                                                 // linear form
+    Form_ptr bilinear;                                               // bilinear form
+    Form_ptr bilinearpc;                                             // bilinear pc (may be null if not used)
+    std::vector<BoundaryCondition_ptr> bcs;                          // bcs
+    Function_ptr iteratedfunction;                                   // work function
   } SNESCtx;
 
-  PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void* ctx);
+  PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void* ctx);   // petsc snes callback function to form the residual
 
-  PetscErrorCode FormJacobian(SNES snes, Vec x, Mat *A, Mat *B, MatStructure* flag, void* ctx);
+  PetscErrorCode FormJacobian(SNES snes, Vec x, Mat *A, Mat *B,      // petsc snes callback function to form the jacobian
+                                   MatStructure* flag, void* ctx);
 
 }
 

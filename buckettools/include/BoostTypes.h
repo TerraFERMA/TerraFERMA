@@ -7,15 +7,25 @@
 
 namespace buckettools {
 
-  // predeclarations
-  class SystemBucket;
-  typedef boost::shared_ptr< SystemBucket > SystemBucket_ptr;
-  class FunctionBucket;
-  typedef boost::shared_ptr< FunctionBucket > FunctionBucket_ptr;
-  class SolverBucket;
-  typedef boost::shared_ptr< SolverBucket > SolverBucket_ptr;
+  //*****************************************************************|************************************************************//
+  // A collection of typedefs for boost pointers to dolfin, petsc and bucket structures
+  //*****************************************************************|************************************************************//
 
-  // Define boost shared_ptr types for lots of useful things from DOLFIN
+  //*****************************************************************|************************************************************//
+  // boost shared pointers to bucket objects
+  //*****************************************************************|************************************************************//
+
+  class SystemBucket;                                                // predeclaration
+  typedef boost::shared_ptr< SystemBucket >   SystemBucket_ptr;
+  class FunctionBucket;                                              // predeclaration
+  typedef boost::shared_ptr< FunctionBucket > FunctionBucket_ptr;
+  class SolverBucket;                                                // predeclaration
+  typedef boost::shared_ptr< SolverBucket >   SolverBucket_ptr;
+
+  //*****************************************************************|************************************************************//
+  // boost shared pointers to dolfin objects
+  //*****************************************************************|************************************************************//
+
   typedef boost::shared_ptr< dolfin::GenericFunction >              GenericFunction_ptr;
   typedef boost::shared_ptr< dolfin::Constant >                     Constant_ptr;
   typedef boost::shared_ptr< dolfin::Expression >                   Expression_ptr;
@@ -30,25 +40,30 @@ namespace buckettools {
   typedef boost::shared_ptr< dolfin::PETScVector >                  PETScVector_ptr;
   typedef boost::shared_ptr< dolfin::File >                         File_ptr;
 
+  //*****************************************************************|************************************************************//
+  // boost shared pointers to petsc objects
+  //*****************************************************************|************************************************************//
+
   typedef boost::shared_ptr< KSP > KSP_ptr;
   typedef boost::shared_ptr< PC >  PC_ptr;
   typedef boost::shared_ptr< IS >  IS_ptr;
   typedef boost::shared_ptr< Mat > Mat_ptr;
   typedef boost::shared_ptr< Vec > Vec_ptr;
 
-  // Define iterator types for things accessed in the bucket maps (defined below)
-  typedef std::map< std::string, SystemBucket_ptr >::iterator           SystemBucket_it;
-  typedef std::map< std::string, SystemBucket_ptr >::const_iterator     SystemBucket_const_it;
-  typedef std::map< int, SystemBucket_ptr >::iterator                   int_SystemBucket_it;
-  typedef std::map< int, SystemBucket_ptr >::const_iterator             int_SystemBucket_const_it;
-  typedef std::map< std::string, Mesh_ptr >::iterator                   Mesh_it;
-  typedef std::map< std::string, Mesh_ptr >::const_iterator             Mesh_const_it;
-  typedef std::map< std::string, std::string >::iterator                string_it;
-  typedef std::map< std::string, std::string >::const_iterator          string_const_it;
-//  typedef std::map< std::string, GenericDetectors_ptr >::iterator       GenericDetectors_it;
-//  typedef std::map< std::string, GenericDetectors_ptr >::const_iterator GenericDetectors_const_it;
-  
-  // Define iterator types for things accessed in the system maps (defined below)
+  //*****************************************************************|************************************************************//
+  // iterators to boost shared pointers in map pointer structures
+  //*****************************************************************|************************************************************//
+
+  typedef std::map< std::string, SystemBucket_ptr >::iterator            SystemBucket_it;
+  typedef std::map< std::string, SystemBucket_ptr >::const_iterator      SystemBucket_const_it;
+  typedef std::map< int, SystemBucket_ptr >::iterator                    int_SystemBucket_it;
+  typedef std::map< int, SystemBucket_ptr >::const_iterator              int_SystemBucket_const_it;
+  typedef std::map< std::string, Mesh_ptr >::iterator                    Mesh_it;
+  typedef std::map< std::string, Mesh_ptr >::const_iterator              Mesh_const_it;
+  typedef std::map< std::string, std::string >::iterator                 string_it;
+  typedef std::map< std::string, std::string >::const_iterator           string_const_it;
+//  typedef std::map< std::string, GenericDetectors_ptr >::iterator        GenericDetectors_it;
+//  typedef std::map< std::string, GenericDetectors_ptr >::const_iterator  GenericDetectors_const_it;
   typedef std::map< std::string, FunctionSpace_ptr >::iterator           FunctionSpace_it;
   typedef std::map< std::string, FunctionSpace_ptr >::const_iterator     FunctionSpace_const_it;
   typedef std::map< std::string, FunctionBucket_ptr >::iterator          FunctionBucket_it;
@@ -71,10 +86,8 @@ namespace buckettools {
   typedef std::map< uint, Expression_ptr >::const_iterator               uint_Expression_const_it;
   typedef std::map< int, FunctionSpace_ptr >::iterator                   int_FunctionSpace_it;
   typedef std::map< int, FunctionSpace_ptr >::const_iterator             int_FunctionSpace_const_it;
-
-  // Define iterator types for things accessed in the function maps (defined below)
-  typedef std::map< std::string, Form_ptr >::iterator       Form_it;
-  typedef std::map< std::string, Form_ptr >::const_iterator Form_const_it;
+  typedef std::map< std::string, Form_ptr >::iterator                    Form_it;
+  typedef std::map< std::string, Form_ptr >::const_iterator              Form_const_it;
   
 }
 
