@@ -42,9 +42,6 @@ namespace buckettools
     // Functions used to run the model
     //***************************************************************|***********************************************************//
 
-    void attach_and_initialize();                                    // attach functions to the forms and functionals
-                                                                     // in the system and initialize the matrices
-
     void solve();                                                    // solve the solvers in this system (in order)
 
     void update();                                                   // update the functions in this system at the end of a timestep
@@ -53,7 +50,8 @@ namespace buckettools
     // Filling data
     //***************************************************************|***********************************************************//
 
-    void register_field(FunctionBucket_ptr field, std::string name); // register a field (subfunction) with the given name
+    void attach_and_initialize();                                    // attach functions to the forms and functionals
+                                                                     // in the system and initialize the matrices
 
     //***************************************************************|***********************************************************//
     // Base data access
@@ -89,6 +87,8 @@ namespace buckettools
     //***************************************************************|***********************************************************//
     // Field data access
     //***************************************************************|***********************************************************//
+
+    void register_field(FunctionBucket_ptr field, std::string name); // register a field (subfunction) with the given name
 
     FunctionBucket_ptr fetch_field(std::string name);                // return a (boost shared) pointer to a field with the given
                                                                      // name
@@ -196,18 +196,6 @@ namespace buckettools
                                                                      // the system
 
   //*****************************************************************|***********************************************************//
-  // Private functions
-  //*****************************************************************|***********************************************************//
-
-  private:                                                           // only accessible to this class
-
-    //***************************************************************|***********************************************************//
-    // Emptying data
-    //***************************************************************|***********************************************************//
-
-    void empty_();                                                   // empty the data structures in this system
-
-  //*****************************************************************|***********************************************************//
   // Protected functions
   //*****************************************************************|***********************************************************//
 
@@ -261,6 +249,12 @@ namespace buckettools
                                                                      // (boost shared) pointers to solver buckets
 
     std::vector< BoundaryCondition_ptr > bcs_;                       // a vector of (boost shared) poitners to bcs
+
+    //***************************************************************|***********************************************************//
+    // Emptying data
+    //***************************************************************|***********************************************************//
+
+    void empty_();                                                   // empty the data structures in this system
 
   };
 
