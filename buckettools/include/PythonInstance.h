@@ -8,7 +8,7 @@
 namespace buckettools
 {
   //*****************************************************************|************************************************************//
-  // PythonExpression class:
+  // PythonInstance class:
   //
   // The PythonInstance class wraps python functionality so that it is accessible from C++
   // NOTE: This assumes a function name val is available and runs that and only that!
