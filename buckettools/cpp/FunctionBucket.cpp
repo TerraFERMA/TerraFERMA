@@ -8,152 +8,204 @@
 
 using namespace buckettools;
 
-// Default constructor
+//*******************************************************************|************************************************************//
+// default constructor
+//*******************************************************************|************************************************************//
 FunctionBucket::FunctionBucket()
 {
-  // Do nothing
+                                                                     // do nothing
 }
 
-// Specific constructor
+//*******************************************************************|************************************************************//
+// specific constructor
+//*******************************************************************|************************************************************//
 FunctionBucket::FunctionBucket(SystemBucket* system) : system_(system)
 {
-  // Do nothing
+                                                                     // do nothing
 }
 
-// Default destructor
+//*******************************************************************|************************************************************//
+// default destructor
+//*******************************************************************|************************************************************//
 FunctionBucket::~FunctionBucket()
 {
-  empty_();
+  empty_();                                                          // empty the function data maps
 }
 
-// Register a functional in the function
-void FunctionBucket::register_functional(Form_ptr functional, std::string name)
-{
-  // First check if a field with this name already exists
-  Form_it f_it = functionals_.find(name);
-  if (f_it != functionals_.end())
-  {
-    // if it does, issue an error
-    dolfin::error("Functional named \"%s\" already exists in function.", name.c_str());
-  }
-  else
-  {
-    // if not then insert it into the maps
-    functionals_[name] = functional;
-  }
-}
-
-// Return a pointer to a functional with the given name
-Form_ptr FunctionBucket::fetch_functional(std::string name)
-{
-  // First check if a functional with this name already exists
-  Form_it f_it = functionals_.find(name);
-  if (f_it == functionals_.end())
-  {
-    // if it doesn't, issue an error
-    dolfin::error("Functional named \"%s\" does not exist in function.", name.c_str());
-  }
-  else
-  {
-    // if not then return it
-    return (*f_it).second;
-  }
-}
-
-Form_it FunctionBucket::functionals_begin()
-{
-  return functionals_.begin();
-}
-
-Form_const_it FunctionBucket::functionals_begin() const
-{
-  return functionals_.begin();
-}
-
-Form_it FunctionBucket::functionals_end()
-{
-  return functionals_.end();
-}
-
-Form_const_it FunctionBucket::functionals_end() const
-{
-  return functionals_.end();
-}
-
-// Register a dolfin expression for a bc in the functionbucket
-void FunctionBucket::register_bcexpression(Expression_ptr bcexpression, std::string name)
-{
-  // First check if a bc expression with this name already exists
-  Expression_it e_it = bcexpressions_.find(name);
-  if (e_it != bcexpressions_.end())
-  {
-    // if it does, issue an error
-    dolfin::error("BCExpression named \"%s\" already exists in function.", name.c_str());
-  }
-  else
-  {
-    // if not then insert it into the maps
-    bcexpressions_[name] = bcexpression;
-  }
-}
-
-// Register a dolfin expression for a bc in the functionbucket
-void FunctionBucket::register_bc(BoundaryCondition_ptr bc, std::string name)
-{
-  // First check if a bc with this name already exists
-  BoundaryCondition_it bc_it = bcs_.find(name);
-  if (bc_it != bcs_.end())
-  {
-    // if it does, issue an error
-    dolfin::error("BoundaryCondition named \"%s\" already exists in function.", name.c_str());
-  }
-  else
-  {
-    // if not then insert it into the maps
-    bcs_[name] = bc;
-  }
-}
-
-BoundaryCondition_it FunctionBucket::bcs_begin()
-{
-  return bcs_.begin();
-}
-
-BoundaryCondition_const_it FunctionBucket::bcs_begin() const
-{
-  return bcs_.begin();
-}
-
-BoundaryCondition_it FunctionBucket::bcs_end()
-{
-  return bcs_.end();
-}
-
-BoundaryCondition_const_it FunctionBucket::bcs_end() const
-{
-  return bcs_.end();
-}
-
+//*******************************************************************|************************************************************//
+// loop over the functionals in this function bucket and attach the coefficients they request using the parent bucket data maps
+//*******************************************************************|************************************************************//
 void FunctionBucket::attach_functional_coeffs()
 {
-  for (Form_it f_it = functionals_begin(); f_it != functionals_end(); f_it++)
+  for (Form_it f_it = functionals_begin(); f_it != functionals_end();// loop over the functionals
+                                                              f_it++)
   {
-    dolfin::info("  Attaching coeffs for functional %s", (*f_it).first.c_str());
-    // Loop over the functions requested by the form and hook up pointers
-    uint ncoeff = (*(*f_it).second).num_coefficients();
-    for (uint i = 0; i < ncoeff; i++)
+    dolfin::info("  Attaching coeffs for functional %s", 
+                                              (*f_it).first.c_str());
+    uint ncoeff = (*(*f_it).second).num_coefficients();              // find out how many coefficients this functional requires
+    for (uint i = 0; i < ncoeff; i++)                                // loop over the required coefficients
     {
-      std::string uflsymbol = (*(*f_it).second).coefficient_name(i);
+      std::string uflsymbol = (*(*f_it).second).coefficient_name(i); // get the (possibly derived) ufl symbol of this coefficient
       dolfin::info("    Attaching uflsymbol %s", uflsymbol.c_str());
-      GenericFunction_ptr function = (*(*system_).bucket()).fetch_uflsymbol(uflsymbol);
+      GenericFunction_ptr function =                                 // grab the corresponding function (possible old, iterated etc.
+                  (*(*system_).bucket()).fetch_uflsymbol(uflsymbol); // if ufl symbol is derived)
 
-      (*(*f_it).second).set_coefficient(uflsymbol, function);
+      (*(*f_it).second).set_coefficient(uflsymbol, function);        // attach that function as a coefficient
     }
   }
 
 }
 
-// Return a string describing the contents of the function
+//*******************************************************************|************************************************************//
+// register a (boost shared) pointer to a functional form in the function bucket data maps
+//*******************************************************************|************************************************************//
+void FunctionBucket::register_functional(Form_ptr functional, std::string name)
+{
+  Form_it f_it = functionals_.find(name);                            // check if the name already exists
+  if (f_it != functionals_.end())
+  {
+    dolfin::error(                                                   // if it does, issue an error
+            "Functional named \"%s\" already exists in function.", 
+                                                      name.c_str());
+  }
+  else
+  {
+    functionals_[name] = functional;                                 // if not, insert it into the functionals_ map
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return a (boost shared) pointer to a functional form from the function bucket data maps
+//*******************************************************************|************************************************************//
+Form_ptr FunctionBucket::fetch_functional(std::string name)
+{
+  Form_it f_it = functionals_.find(name);                            // check if the name already exists
+  if (f_it == functionals_.end())
+  {
+    dolfin::error(                                                   // if it doesn't, issue an error
+            "Functional named \"%s\" does not exist in function.", 
+                                                      name.c_str());
+  }
+  else
+  {
+    return (*f_it).second;                                           // if it does, return it
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the beginning of the functionals_ map
+//*******************************************************************|************************************************************//
+Form_it FunctionBucket::functionals_begin()
+{
+  return functionals_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the beginning of the functionals_ map
+//*******************************************************************|************************************************************//
+Form_const_it FunctionBucket::functionals_begin() const
+{
+  return functionals_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the end of the functionals_ map
+//*******************************************************************|************************************************************//
+Form_it FunctionBucket::functionals_end()
+{
+  return functionals_.end();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the end of the functionals_ map
+//*******************************************************************|************************************************************//
+Form_const_it FunctionBucket::functionals_end() const
+{
+  return functionals_.end();
+}
+
+//*******************************************************************|************************************************************//
+// register a (boost shared) pointer to a bc expression in the function bucket data maps
+//*******************************************************************|************************************************************//
+void FunctionBucket::register_bcexpression(Expression_ptr bcexpression, std::string name)
+{
+  Expression_it e_it = bcexpressions_.find(name);                    // check if the name already exists
+  if (e_it != bcexpressions_.end())
+  {
+    dolfin::error(                                                   // if it does, issue an error
+            "BCExpression named \"%s\" already exists in function.", 
+                                                      name.c_str());
+  }
+  else
+  {
+    bcexpressions_[name] = bcexpression;                             // if not, then insert the expression pointer into the maps
+  }
+}
+
+//*******************************************************************|************************************************************//
+// register a (boost shared) pointer to a bc in the function bucket data maps
+//*******************************************************************|************************************************************//
+void FunctionBucket::register_bc(BoundaryCondition_ptr bc, std::string name)
+{
+  BoundaryCondition_it bc_it = bcs_.find(name);                      // check if the name already exists
+  if (bc_it != bcs_.end())
+  {
+    dolfin::error(                                                   // if it does, issue an error
+        "BoundaryCondition named \"%s\" already exists in function.", 
+                                                    name.c_str());
+  }
+  else
+  {
+    bcs_[name] = bc;                                                 // if not, register the bc
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the beginning of the bcs_ map
+//*******************************************************************|************************************************************//
+BoundaryCondition_it FunctionBucket::bcs_begin()
+{
+  return bcs_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the beginning of the bcs_ map
+//*******************************************************************|************************************************************//
+BoundaryCondition_const_it FunctionBucket::bcs_begin() const
+{
+  return bcs_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the end of the bcs_ map
+//*******************************************************************|************************************************************//
+BoundaryCondition_it FunctionBucket::bcs_end()
+{
+  return bcs_.end();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the end of the bcs_ map
+//*******************************************************************|************************************************************//
+BoundaryCondition_const_it FunctionBucket::bcs_end() const
+{
+  return bcs_.end();
+}
+
+//*******************************************************************|************************************************************//
+// output the current contents of the function to a pvd file (if associated)
+//*******************************************************************|************************************************************//
+void FunctionBucket::output()
+{
+  if (pvdfile_)                                                      // check a pvd file is associated
+  {
+    *pvdfile_ << *boost::dynamic_pointer_cast< dolfin::Function >(function());
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return a string describing the contents of the function bucket
+//*******************************************************************|************************************************************//
 const std::string FunctionBucket::str(int indent) const
 {
   std::stringstream s;
@@ -164,7 +216,9 @@ const std::string FunctionBucket::str(int indent) const
   return s.str();
 }
 
-// Return a string describing the contents of functionals_
+//*******************************************************************|************************************************************//
+// return a string describing the functionals in the function bucket
+//*******************************************************************|************************************************************//
 const std::string FunctionBucket::functionals_str(int indent) const
 {
   std::stringstream s;
@@ -176,23 +230,23 @@ const std::string FunctionBucket::functionals_str(int indent) const
   return s.str();
 }
 
+//*******************************************************************|************************************************************//
+// include this function in diagnostic output
+// this is a virtual function and should be implemented in the derived options class
+//*******************************************************************|************************************************************//
 const bool FunctionBucket::include_in_diagnostics() const
 {
   dolfin::error("Failed to find virtual function include_in_diagnostics.");
   return false;
 }
 
-void FunctionBucket::output()
-{
-  if (pvdfile_)
-  {
-    *pvdfile_ << *boost::dynamic_pointer_cast< dolfin::Function >(function());
-  }
-}
-
-// Empty the function
+//*******************************************************************|************************************************************//
+// empty the data structures in the function bucket
+//*******************************************************************|************************************************************//
 void FunctionBucket::empty_()
 {
   functionals_.clear();
+  bcexpressions_.clear();
+  bcs_.clear();
 }
 
