@@ -9,33 +9,55 @@
 namespace buckettools
 {
 
+  //*****************************************************************|************************************************************//
+  // InitalConditionExpression class:
+  //
   // This class provides a method of looping over field initial conditions (as individual expressions)
-  // and setting a mixed function space to those initial conditions
+  // and setting a mixed function space to those initial conditions.
+  // It is a derived dolfin expression and overloads much functionality in that base class
+  //*****************************************************************|************************************************************//
   class InitialConditionExpression : public dolfin::Expression
   {
-  // only accessible within this class
-  private:
-    
-    // a map from field component number to expression
-    std::map< uint, Expression_ptr > expressions_;
-  
-  // accessible to everyone
-  public:
 
-    // Specific constructor (scalar)
-    InitialConditionExpression(std::map< uint, Expression_ptr > expressions);
+  //*****************************************************************|***********************************************************//
+  // Publicly available functions
+  //*****************************************************************|***********************************************************//
+
+  public:                                                            // available to everyone
+
+    //***************************************************************|***********************************************************//
+    // Constructors and destructors
+    //***************************************************************|***********************************************************//
     
-    // Specific constructor (vector)
-    InitialConditionExpression(uint dim, std::map< uint, Expression_ptr > expressions);
+    InitialConditionExpression(                                      // specific constructor (scalar)
+                      std::map< uint, Expression_ptr > expressions);
     
-    // no copy constructor for now
+    InitialConditionExpression(uint dim,                             // specific constructor (vector)
+                      std::map< uint, Expression_ptr > expressions);
     
-    // Default destructor (also calls DOLFIN expression destructor)
-    virtual ~InitialConditionExpression();
     
-    // overloaded DOLFIN expression eval
-    void eval(dolfin::Array<double>& values, const dolfin::Array<double>& x, const ufc::cell &cell) const;
+    virtual ~InitialConditionExpression();                           // default destructor
     
+    //***************************************************************|***********************************************************//
+    // Overloaded base class functions
+    //***************************************************************|***********************************************************//
+    
+    void eval(dolfin::Array<double>& values,                         // evaluate this expression at a point in a given cell
+              const dolfin::Array<double>& x, 
+              const ufc::cell &cell) const;
+    
+  //*****************************************************************|***********************************************************//
+  // Private functions
+  //*****************************************************************|***********************************************************//
+
+  private:                                                           // only available to this class
+    
+    //***************************************************************|***********************************************************//
+    // Pointers data
+    //***************************************************************|***********************************************************//
+
+    std::map< uint, Expression_ptr > expressions_;                   // map from component to initial condition expression for a function
+  
   };
 
 }

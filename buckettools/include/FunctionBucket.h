@@ -31,7 +31,7 @@ namespace buckettools
 
     FunctionBucket();                                                // default constructor
 
-    FunctionBucket(SystemBucket* system);                            // optional constructor
+    FunctionBucket(SystemBucket* system);                            // specific constructor
     
     ~FunctionBucket();                                               // default destructor
 

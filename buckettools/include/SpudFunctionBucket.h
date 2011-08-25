@@ -29,7 +29,7 @@ namespace buckettools
     // Constructors and destructors
     //***************************************************************|***********************************************************//
 
-    SpudFunctionBucket(std::string optionpath, SystemBucket* system);// optional constructor
+    SpudFunctionBucket(std::string optionpath, SystemBucket* system);// specific constructor
     
     virtual ~SpudFunctionBucket();                                   // default destructor
 

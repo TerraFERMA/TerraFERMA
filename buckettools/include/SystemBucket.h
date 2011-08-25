@@ -34,7 +34,7 @@ namespace buckettools
 
     SystemBucket();                                                  // default constructor
 
-    SystemBucket(Bucket* bucket);                                    // optional constructor
+    SystemBucket(Bucket* bucket);                                    // specific constructor
     
     ~SystemBucket();                                                 // default destructor
 

@@ -30,7 +30,7 @@ namespace buckettools
     // Constructors and destructors
     //***************************************************************|***********************************************************//
     
-    DiagnosticsFile(const std::string name);                         // optional constructor
+    DiagnosticsFile(const std::string name);                         // specific constructor
  
     ~DiagnosticsFile();                                              // default destructor
     

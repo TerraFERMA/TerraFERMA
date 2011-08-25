@@ -32,7 +32,7 @@ namespace buckettools
 
     StatFile();                                                      // default constructor
     
-    StatFile(const std::string name);                                // optional constructor
+    StatFile(const std::string name);                                // specific constructor
     
     virtual ~StatFile();                                             // default destructor
     

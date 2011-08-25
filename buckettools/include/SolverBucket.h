@@ -33,7 +33,7 @@ namespace buckettools
 
     SolverBucket();                                                  // default constructor
 
-    SolverBucket(SystemBucket* system);                              // optional constructor (with parent system)
+    SolverBucket(SystemBucket* system);                              // specific constructor (with parent system)
     
     ~SolverBucket();                                                 // default destructor
 

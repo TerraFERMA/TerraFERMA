@@ -34,7 +34,7 @@ namespace buckettools
 
     Bucket();                                                        // default constructor
 
-    Bucket(std::string name);                                        // optional constructor specifying the name
+    Bucket(std::string name);                                        // specific constructor specifying the name
     
     ~Bucket();                                                       // default destructor
 
