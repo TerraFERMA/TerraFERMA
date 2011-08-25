@@ -116,6 +116,12 @@ namespace buckettools
 
     void functionals_fill_();                                        // fill in the data for the functionals of this function
 
+    //***************************************************************|***********************************************************//
+    // Emptying data
+    //***************************************************************|***********************************************************//
+
+    void derived_empty_();                                           // empty the data structures of this function bucket
+
   };
  
   typedef boost::shared_ptr< SpudFunctionBucket >                    // define a (boost shared) pointer for this function class type
