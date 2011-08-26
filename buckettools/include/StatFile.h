@@ -81,6 +81,14 @@ namespace buckettools
               const std::string &system,
               const uint &components);
 
+    //***************************************************************|***********************************************************//
+    // Data writing functions
+    //***************************************************************|***********************************************************//
+
+    void data_timestep_(const uint   &timestep,                      // write the data for timestepping for a dynamic simulation
+                        const double &elapsedtime, 
+                        const double &dt);
+    
   };
   
 }

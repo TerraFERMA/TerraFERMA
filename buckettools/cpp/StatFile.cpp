@@ -123,4 +123,22 @@ void StatFile::tag_(const std::string &name,
   
 }
 
+//*******************************************************************|************************************************************//
+// write data to the file for values relating to timestepping
+//*******************************************************************|************************************************************//
+void StatFile::data_timestep_(const uint   &timestep,
+                              const double &elapsedtime, 
+                              const double &dt)
+{
+  
+  file_.setf(std::ios::scientific);
+  file_.precision(10);
+  
+  file_ << timestep << " ";  
+  file_ << elapsedtime << " ";
+  file_ << dt << " ";
+  
+  file_.unsetf(std::ios::scientific);
+  
+}
 

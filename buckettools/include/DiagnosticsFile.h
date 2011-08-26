@@ -65,7 +65,7 @@ namespace buckettools
     void header_bucket_(const Bucket &bucket,                        // write the header for the bucket (non-constant and 
                         uint &column);                               // timestepping entries)
 
-    void header_system_(SystemBucket_const_it sys_it,                // write the header for a system
+    void header_system_(const SystemBucket_ptr sys_ptr,              // write the header for a system
                         uint &column);
 
     void header_field_(FunctionBucket_const_it f_begin,              // write the header for a set of fields
@@ -76,22 +76,18 @@ namespace buckettools
                        FunctionBucket_const_it f_end, 
                        uint &column);
 
-    void header_functional_(FunctionBucket_const_it f_it,            // write the header for a set of functionals of a function
-                            Form_const_it s_begin,
-                            Form_const_it s_end, 
+    void header_functional_(const FunctionBucket_ptr f_ptr,          // write the header for a set of functionals of a function
+                            Form_const_it f_begin,
+                            Form_const_it f_end, 
                             uint &column);
 
     //***************************************************************|***********************************************************//
     // Data writing functions (continued)
     //***************************************************************|***********************************************************//
 
-    void data_timestep_(const uint   &timestep,                      // write the data for a dynamic simulation
-                        const double &elapsedtime, 
-                        const double &dt);
-    
     void data_bucket_(Bucket &bucket);                               // write the data for a steady state simulation
 
-    void data_system_(SystemBucket_const_it sys_it);                 // write the data for a system
+    void data_system_(const SystemBucket_ptr sys_ptr);                 // write the data for a system
 
     void data_field_(FunctionBucket_const_it f_begin,                // write the data for a set of fields
                      FunctionBucket_const_it f_end);
