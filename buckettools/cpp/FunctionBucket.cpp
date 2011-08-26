@@ -37,23 +37,8 @@ FunctionBucket::~FunctionBucket()
 //*******************************************************************|************************************************************//
 void FunctionBucket::attach_functional_coeffs()
 {
-  for (Form_it f_it = functionals_begin(); f_it != functionals_end();// loop over the functionals
-                                                              f_it++)
-  {
-    dolfin::info("  Attaching coeffs for functional %s", 
-                                              (*f_it).first.c_str());
-    uint ncoeff = (*(*f_it).second).num_coefficients();              // find out how many coefficients this functional requires
-    for (uint i = 0; i < ncoeff; i++)                                // loop over the required coefficients
-    {
-      std::string uflsymbol = (*(*f_it).second).coefficient_name(i); // get the (possibly derived) ufl symbol of this coefficient
-      dolfin::info("    Attaching uflsymbol %s", uflsymbol.c_str());
-      GenericFunction_ptr function =                                 // grab the corresponding function (possible old, iterated etc.
-                  (*(*system_).bucket()).fetch_uflsymbol(uflsymbol); // if ufl symbol is derived)
-
-      (*(*f_it).second).set_coefficient(uflsymbol, function);        // attach that function as a coefficient
-    }
-  }
-
+  (*(*system_).bucket()).attach_coeffs(functionals_begin(),
+                                                functionals_end());
 }
 
 //*******************************************************************|************************************************************//

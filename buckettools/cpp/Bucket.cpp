@@ -64,6 +64,25 @@ void Bucket::update()
 }
 
 //*******************************************************************|************************************************************//
+// loop over the selected forms and attach the coefficients they request using the bucket data maps
+//*******************************************************************|************************************************************//
+void Bucket::attach_coeffs(Form_it f_begin, Form_it f_end)
+{
+  for (Form_it f_it = f_begin; f_it != f_end; f_it++)                // loop over the forms
+  {
+    uint ncoeff = (*(*f_it).second).num_coefficients();              // find out how many coefficients this form requires
+    for (uint i = 0; i < ncoeff; i++)                                // loop over the required coefficients
+    {
+      std::string uflsymbol = (*(*f_it).second).coefficient_name(i); // get the (possibly derived) ufl symbol of this coefficient
+      GenericFunction_ptr function = fetch_uflsymbol(uflsymbol);     // grab the corresponding function (possible old, iterated etc.
+                                                                     // if ufl symbol is derived)
+
+      (*(*f_it).second).set_coefficient(uflsymbol, function);        // attach that function as a coefficient
+    }
+  }
+}
+
+//*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a dolfin mesh in the bucket data maps
 //*******************************************************************|************************************************************//
 void Bucket::register_mesh(Mesh_ptr mesh, const std::string &name)

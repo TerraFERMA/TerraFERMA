@@ -8,109 +8,198 @@
 
 using namespace buckettools;
 
-// Default constructor
+//*******************************************************************|************************************************************//
+// default constructor
+//*******************************************************************|************************************************************//
 SolverBucket::SolverBucket()
 {
-  // Do nothing
+                                                                     // do nothing
 }
 
-// Specific constructor
+//*******************************************************************|************************************************************//
+// specific constructor
+//*******************************************************************|************************************************************//
 SolverBucket::SolverBucket(SystemBucket* system) : system_(system)
 {
-  // Do nothing
+                                                                     // do nothing
 }
 
-// Default destructor
+//*******************************************************************|************************************************************//
+// default destructor
+//*******************************************************************|************************************************************//
 SolverBucket::~SolverBucket()
 {
-  empty_();
+  empty_();                                                          // empty the solver bucket data structures
 }
 
-// Register a form in the solver
-void SolverBucket::register_form(Form_ptr form, std::string name)
-{
-  // First check if a form with this name already exists
-  Form_it f_it = forms_.find(name);
-  if (f_it != forms_.end())
-  {
-    // if it does, issue an error
-    dolfin::error("Form named \"%s\" already exists in solver.", name.c_str());
-  }
-  else
-  {
-    // if not then insert it into the maps
-    forms_[name] = form;
-  }
-}
-
-// Do we have a form with a particular name?
-bool SolverBucket::contains_form(std::string name)
-{
-  Form_it f_it = forms_.find(name);
-  return f_it != forms_.end();
-}
-
-// Return a pointer to a form with the given name
-Form_ptr SolverBucket::fetch_form(std::string name)
-{
-  // First check if a form with this name already exists
-  Form_it f_it = forms_.find(name);
-  if (f_it == forms_.end())
-  {
-    // if it doesn't, issue an error
-    dolfin::error("Form named \"%s\" does not exist in solver.", name.c_str());
-  }
-  else
-  {
-    // if not then return it
-    return (*f_it).second;
-  }
-}
-
-Form_it SolverBucket::forms_begin()
-{
-  return forms_.begin();
-}
-
-Form_const_it SolverBucket::forms_begin() const
-{
-  return forms_.begin();
-}
-
-Form_it SolverBucket::forms_end()
-{
-  return forms_.end();
-}
-
-Form_const_it SolverBucket::forms_end() const
-{
-  return forms_.end();
-}
-
-void SolverBucket::attach_form_coeffs()
-{
-  for (Form_it f_it = forms_begin(); f_it != forms_end(); f_it++)
-  {
-    dolfin::info("  Attaching coeffs for form %s", (*f_it).first.c_str());
-    // Loop over the functions requested by the form and hook up pointers
-    uint ncoeff = (*(*f_it).second).num_coefficients();
-    for (uint i = 0; i < ncoeff; i++)
-    {
-      std::string uflsymbol = (*(*f_it).second).coefficient_name(i);
-      dolfin::info("    Attaching uflsymbol %s", uflsymbol.c_str());
-      GenericFunction_ptr function = (*(*system_).bucket()).fetch_uflsymbol(uflsymbol);
-
-      (*(*f_it).second).set_coefficient(uflsymbol, function);
-    }
-  }
-
-}
-
-void SolverBucket::initialize_matrices()
+//*******************************************************************|************************************************************//
+// solve the bilinear system described by the forms in the solver bucket
+//*******************************************************************|************************************************************//
+void SolverBucket::solve()
 {
   PetscErrorCode perr;
 
-  if (type()=="SNES") 
+  if (type()=="SNES")                                                // this is a petsc snes solver - FIXME: switch to an enumerated type
+  {
+    *work_ = (*(*system_).function()).vector();                      // set the work vector to the function vector
+    perr = SNESSolve(snes_, PETSC_NULL, *(*work_).vec());            // call petsc to perform a snes solve
+    CHKERRV(perr);
+    SNESConvergedReason reason;                                      // check what the convergence reason was
+    perr = SNESGetConvergedReason(snes_, &reason); CHKERRV(perr);     
+    std::cout << "SNESConvergedReason " << reason << std::endl;      // print - FIXME: proper logging here
+    (*(*system_).function()).vector() = *work_;                      // update the function
+  }
+  else if (type()=="Picard")                                         // this is a hand-rolled picard iteration - FIXME: switch to enum
+  {
+
+    uint it = 0;                                                     // an iteration counter
+    double aerror = (*res_).norm("l2");                              // work out the initial absolute l2 error (this should be
+                                                                     // initialized to the right value on the first pass and still
+                                                                     // be the correct value from the previous sweep (if this stops
+                                                                     // being the case it will be necessary to assemble the residual
+                                                                     // here too)
+    double aerror0 = aerror;                                         // record the initial absolute error
+    double rerror = aerror/aerror0;                                  // relative error, starts out as 1.
+
+    dolfin::info("%u Error (absolute, relative) = %g, %g\n", 
+                                              it, aerror, rerror);
+
+    (*(*system_).iteratedfunction()).vector() =                      // system iterated function gets set to the function values
+                                  (*(*system_).function()).vector();
+
+    while (it < minits_ ||                                           // loop for the minimum number of iterations or
+          (it < maxits_ && rerror > rtol_ && aerror > atol_))        // until the max is reached or a tolerance criterion is
+    {                                                                // satisfied
+      it++;                                                          // increment iteration counter
+
+      dolfin::assemble(*matrix_, *bilinear_, false);                 // assemble bilinear form
+      dolfin::assemble(*rhs_, *linear_, false);                      // assemble linear form
+      for(std::vector<BoundaryCondition_ptr>::const_iterator bc =    // loop over the collected vector of system bcs
+                                      (*system_).bcs_begin(); 
+                                  bc != (*system_).bcs_end(); bc++)
+      {
+        (*(*bc)).apply(*matrix_, *rhs_);                             // apply the bcs to the matrix and rhs (hopefully this
+      }                                                              // maintains any symmetry)
+
+      if (bilinearpc_)                                               // if there's a pc associated
+      {
+        assert(matrixpc_);
+        dolfin::assemble(*matrixpc_, *bilinearpc_, false);           // assemble the pc
+        for(std::vector<BoundaryCondition_ptr>::const_iterator bc = 
+                                          (*system_).bcs_begin(); 
+                                  bc != (*system_).bcs_end(); bc++)
+        {
+          (*(*bc)).apply(*matrixpc_, *rhs_);                         // apply the collected vector of system bcs
+        }
+
+        perr = KSPSetOperators(ksp_, *(*matrix_).mat(),              // set the ksp operators with two matrices
+                                      *(*matrixpc_).mat(), 
+                                        SAME_NONZERO_PATTERN); 
+        CHKERRV(perr);
+      }
+      else
+      {
+        perr = KSPSetOperators(ksp_, *(*matrix_).mat(),              // set the ksp operators with the same matrices
+                                      *(*matrix_).mat(), 
+                                        SAME_NONZERO_PATTERN); 
+        CHKERRV(perr);
+      }
+
+      perr = KSPSetUp(ksp_); CHKERRV(perr);                          // set up the ksp
+
+      *work_ = (*(*system_).iteratedfunction()).vector();            // set the work vector to the iterated function
+      perr = KSPSolve(ksp_, *(*rhs_).vec(), *(*work_).vec());        // perform a linear solve
+      CHKERRV(perr);
+      (*(*system_).iteratedfunction()).vector() = *work_;            // update the iterated function with the work vector
+
+      assert(residual_);
+      dolfin::assemble(*res_, *residual_, false);                    // assemble the residual
+      for(std::vector<BoundaryCondition_ptr>::const_iterator bc = 
+                                      (*system_).bcs_begin(); 
+                                  bc != (*system_).bcs_end(); bc++)
+      {                                                              // apply bcs to residual
+        (*(*bc)).apply(*res_, (*(*system_).iteratedfunction()).vector());
+      }
+
+      aerror = (*res_).norm("l2");                                   // work out absolute error
+      rerror = aerror/aerror0;                                       // and relative error
+      dolfin::info("%u Error (absolute, relative) = %g, %g\n", 
+                                            it, aerror, rerror);
+                                                                     // and decide to loop or not...
+
+    }
+
+    (*(*system_).function()).vector() =                              // update the function values with the iterated values
+                      (*(*system_).iteratedfunction()).vector();
+
+  }
+  else                                                               // don't know what solver type this is
+  {
+    dolfin::error("Unknown solver type.");
+  }
+
+}
+
+//*******************************************************************|************************************************************//
+// assemble all linear forms (this includes initializing the vectors if necessary)
+//*******************************************************************|************************************************************//
+void SolverBucket::assemble_linearforms(const bool &reset_tensor)
+{
+  assert(linear_);
+  if(!rhs_)                                                          // do we have a rhs_ vector?
+  {
+    rhs_.reset(new dolfin::PETScVector);                             // no, allocate one
+  }
+  dolfin::assemble(*rhs_, *linear_, reset_tensor);                   // and assemble it
+
+  if(residual_)                                                      // do we have a residual_ form?
+  {                                                                  // yes...
+    if(!res_)                                                        // do we have a res_ vector?
+    {
+      res_.reset(new dolfin::PETScVector);                           // no, allocate one
+    }
+    dolfin::assemble(*res_, *residual_, reset_tensor);               // and assemble it
+  }
+}
+
+//*******************************************************************|************************************************************//
+// assemble all bilinear forms (this includes initializing the matrices if necessary)
+//*******************************************************************|************************************************************//
+void SolverBucket::assemble_bilinearforms(const bool &reset_tensor)
+{
+  assert(bilinear_);
+  if(!matrix_)                                                       // do we have a matrix_ matrix?
+  {
+    matrix_.reset(new dolfin::PETScMatrix);                          // no, allocate one
+  }
+  dolfin::assemble(*matrix_, *bilinear_, reset_tensor);              // and assemble it
+
+  if(bilinearpc_)                                                    // do we have a pc form?
+  {
+    if(!matrixpc_)                                                   // do we have a pc matrix?
+    {
+      matrixpc_.reset(new dolfin::PETScMatrix);                      // no, allocate one
+    }
+    dolfin::assemble(*matrixpc_, *bilinearpc_, reset_tensor);        // and assemble it
+  }
+}
+
+//*******************************************************************|************************************************************//
+// loop over the forms in this solver bucket and attach the coefficients they request using the parent bucket data maps
+//*******************************************************************|************************************************************//
+void SolverBucket::attach_form_coeffs()
+{
+  (*(*system_).bucket()).attach_coeffs(forms_begin(), forms_end());
+}
+
+//*******************************************************************|************************************************************//
+// perform some preassembly on the matrices and complete the snes setup (including setting up the context)
+//*******************************************************************|************************************************************//
+void SolverBucket::initialize_matrices()
+{
+  PetscErrorCode perr;                                               // petsc error code variable
+
+  if (type()=="SNES")                                                // if this is a snes object then initialize the context
   {
     ctx_.linear       = linear_;
     ctx_.bilinear     = bilinear_;
@@ -119,166 +208,117 @@ void SolverBucket::initialize_matrices()
     ctx_.iteratedfunction = (*system_).iteratedfunction();
   }
 
-  assemble_bilinearforms(true);
-  assemble_linearforms(true);
+  assemble_bilinearforms(true);                                      // perform preassembly of the bilinear forms
+  assemble_linearforms(true);                                        // perform preassembly of the linear forms
   
-  uint syssize = (*(*system_).function()).vector().size();
+  uint syssize = (*(*system_).function()).vector().size();           // set up a work vector of the correct (system) size
   work_.reset( new dolfin::PETScVector(syssize) ); 
-  if(type()=="SNES")
+
+  if(type()=="SNES")                                                 // again, if the type is snes complete the set up
   {
-    assert(!res_);
-    res_.reset( new dolfin::PETScVector(syssize) );
+    assert(!res_);                                                   // initialize the residual vector (should only be associated
+    res_.reset( new dolfin::PETScVector(syssize) );                  // before now for picard solvers)
 
-    perr = SNESSetFunction(snes_, *(*res_).vec(), FormFunction, (void *) &ctx_); CHKERRV(perr);
+    perr = SNESSetFunction(snes_, *(*res_).vec(),                    // set the snes function to use the newly allocated residual vector
+                                    FormFunction, (void *) &ctx_); 
+    CHKERRV(perr);
 
-    if (bilinearpc_) 
+    if (bilinearpc_)                                                 // if we have a pc form
     {
       assert(matrixpc_);
-      perr = SNESSetJacobian(snes_, *(*matrix_).mat(), *(*matrixpc_).mat(), FormJacobian, (void *) &ctx_); CHKERRV(perr);
+      perr = SNESSetJacobian(snes_, *(*matrix_).mat(),               // set the snes jacobian to have two matrices
+                  *(*matrixpc_).mat(), FormJacobian, (void *) &ctx_); 
+      CHKERRV(perr);
     }
-    else 
+    else                                                             // otherwise
     {
-      perr = SNESSetJacobian(snes_, *(*matrix_).mat(), *(*matrix_).mat(), FormJacobian, (void *) &ctx_); CHKERRV(perr);
+      perr = SNESSetJacobian(snes_, *(*matrix_).mat(),               // set the snes jacobian to have the same matrix twice
+                    *(*matrix_).mat(), FormJacobian, (void *) &ctx_); 
+      CHKERRV(perr);
     }
 
   }
 
 }
 
-void SolverBucket::solve()
+//*******************************************************************|************************************************************//
+// register a (boost shared) pointer to a form in the solver bucket data maps
+//*******************************************************************|************************************************************//
+void SolverBucket::register_form(Form_ptr form, std::string name)
 {
-  PetscErrorCode perr;
-
-  if (type()=="SNES")
+  Form_it f_it = forms_.find(name);                                  // check if this name already exists
+  if (f_it != forms_.end())
   {
-    *work_ = (*(*system_).function()).vector();
-    perr = SNESSolve(snes_, PETSC_NULL, *(*work_).vec()); CHKERRV(perr);
-    SNESConvergedReason reason;
-    perr = SNESGetConvergedReason(snes_, &reason); CHKERRV(perr);
-    std::cout << "SNESConvergedReason " << reason << std::endl;
-    (*(*system_).function()).vector() = *work_;
-  }
-  else if (type()=="Picard")
-  {
-
-    uint it = 0;
-    double aerror = (*res_).norm("l2");
-    double aerror0 = aerror;
-    double rerror = aerror/aerror0;
-    dolfin::info("%u Error (absolute, relative) = %g, %g\n", it, aerror, rerror);
-
-    (*(*system_).iteratedfunction()).vector() = (*(*system_).function()).vector();
-
-    while (it < minits_ || (it < maxits_ && rerror > rtol_ && aerror > atol_))
-    {
-      it++;
-
-      dolfin::assemble(*matrix_, *bilinear_, false);
-      dolfin::assemble(*rhs_, *linear_, false);
-      for(std::vector<BoundaryCondition_ptr>::const_iterator bc = (*system_).bcs_begin(); bc != (*system_).bcs_end(); bc++)
-      {
-        (*(*bc)).apply(*matrix_, *rhs_);
-      }
-
-      if (bilinearpc_)
-      {
-        assert(matrixpc_);
-        dolfin::assemble(*matrixpc_, *bilinearpc_, false);
-        for(std::vector<BoundaryCondition_ptr>::const_iterator bc = (*system_).bcs_begin(); bc != (*system_).bcs_end(); bc++)
-        {
-          (*(*bc)).apply(*matrixpc_, *rhs_);
-        }
-
-        perr = KSPSetOperators(ksp_, *(*matrix_).mat(), *(*matrixpc_).mat(), SAME_NONZERO_PATTERN); CHKERRV(perr);
-      }
-      else
-      {
-        perr = KSPSetOperators(ksp_, *(*matrix_).mat(), *(*matrix_).mat(), SAME_NONZERO_PATTERN); CHKERRV(perr);
-      }
-
-      perr = KSPSetUp(ksp_); CHKERRV(perr);
-
-      *work_ = (*(*system_).iteratedfunction()).vector();
-      perr = KSPSolve(ksp_, *(*rhs_).vec(), *(*work_).vec());  CHKERRV(perr);
-      (*(*system_).iteratedfunction()).vector() = *work_;
-
-      assert(residual_);
-      dolfin::assemble(*res_, *residual_, false);
-      for(std::vector<BoundaryCondition_ptr>::const_iterator bc = (*system_).bcs_begin(); bc != (*system_).bcs_end(); bc++)
-      {
-        (*(*bc)).apply(*res_, (*(*system_).iteratedfunction()).vector());
-      }
-
-      aerror = (*res_).norm("l2");
-      rerror = aerror/aerror0;
-      dolfin::info("%u Error (absolute, relative) = %g, %g\n", it, aerror, rerror);
-
-    }
-
-//    for(std::vector<BoundaryCondition_ptr>::const_iterator bc = (*system_).bcs_begin(); bc != (*system_).bcs_end(); bc++)
-//    {
-//      (*(*bc)).apply((*(*system_).iteratedfunction()).vector());
-//    }
-
-    (*(*system_).function()).vector() = (*(*system_).iteratedfunction()).vector();
-
+    dolfin::error("Form named \"%s\" already exists in solver.",     // if it does, issue an error
+                                                  name.c_str());
   }
   else
   {
-    dolfin::error("Unknown solver type.");
+    forms_[name] = form;                                             // if not, register the form in the maps
   }
-
 }
 
-void SolverBucket::assemble_bilinearforms(const bool &reset_tensor)
+//*******************************************************************|************************************************************//
+// return a boolean indicating if the solver bucket contains a form with the given name
+//*******************************************************************|************************************************************//
+bool SolverBucket::contains_form(std::string name)                   
 {
-
-  assert(bilinear_);
-  if(!matrix_)
-  {
-    matrix_.reset(new dolfin::PETScMatrix);
-  }
-  dolfin::assemble(*matrix_, *bilinear_, reset_tensor);
-  if(bilinearpc_)
-  {
-    if(!matrixpc_)
-    {
-      matrixpc_.reset(new dolfin::PETScMatrix);
-    }
-    dolfin::assemble(*matrixpc_, *bilinearpc_, reset_tensor);
-//    for(std::vector<BoundaryCondition_ptr>::const_iterator bc = (*system_).bcs_begin(); bc != (*system_).bcs_end(); bc++)
-//    {
-//      (*bc).apply(*res_, (*(*system_).function()))
-//    }
-  }
-
+  Form_it f_it = forms_.find(name);
+  return f_it != forms_.end();
 }
 
-void SolverBucket::assemble_linearforms(const bool &reset_tensor)
+//*******************************************************************|************************************************************//
+// return a (boost shared) pointer to a form from the solver bucket data maps
+//*******************************************************************|************************************************************//
+Form_ptr SolverBucket::fetch_form(std::string name)
 {
-
-  assert(linear_);
-  if(!rhs_)
+  Form_it f_it = forms_.find(name);                                  // check if this name already exists
+  if (f_it == forms_.end())
   {
-    rhs_.reset(new dolfin::PETScVector);
+    dolfin::error("Form named \"%s\" does not exist in solver.",     // if it doesn't, issue an error
+                                                    name.c_str());
   }
-  dolfin::assemble(*rhs_, *linear_, reset_tensor);
-  if(residual_)
+  else
   {
-    if(!res_)
-    {
-      res_.reset(new dolfin::PETScVector);
-    }
-    dolfin::assemble(*res_, *residual_, reset_tensor);
-//    for(std::vector<BoundaryCondition_ptr>::const_iterator bc = (*system_).bcs_begin(); bc != (*system_).bcs_end(); bc++)
-//    {
-//      (*bc).apply(*res_, (*(*system_).function()))
-//    }
+    return (*f_it).second;                                           // if it does, return it
   }
-
 }
 
-// Return a string describing the contents of the function
+//*******************************************************************|************************************************************//
+// return an iterator to the beginning of the forms_ map
+//*******************************************************************|************************************************************//
+Form_it SolverBucket::forms_begin()
+{
+  return forms_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the beginning of the forms_ map
+//*******************************************************************|************************************************************//
+Form_const_it SolverBucket::forms_begin() const
+{
+  return forms_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the end of the forms_ map
+//*******************************************************************|************************************************************//
+Form_it SolverBucket::forms_end()
+{
+  return forms_.end();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the end of the forms_ map
+//*******************************************************************|************************************************************//
+Form_const_it SolverBucket::forms_end() const
+{
+  return forms_.end();
+}
+
+//*******************************************************************|************************************************************//
+// return a string describing the contents of the solver bucket
+//*******************************************************************|************************************************************//
 const std::string SolverBucket::str(int indent) const
 {
   std::stringstream s;
@@ -289,7 +329,9 @@ const std::string SolverBucket::str(int indent) const
   return s.str();
 }
 
-// Return a string describing the contents of forms_
+//*******************************************************************|************************************************************//
+// return a string describing the forms in the solver bucket
+//*******************************************************************|************************************************************//
 const std::string SolverBucket::forms_str(int indent) const
 {
   std::stringstream s;
@@ -301,7 +343,9 @@ const std::string SolverBucket::forms_str(int indent) const
   return s.str();
 }
 
-// Empty the function
+//*******************************************************************|************************************************************//
+// empty the data structures in the function bucket
+//*******************************************************************|************************************************************//
 void SolverBucket::empty_()
 {
   forms_.clear();
