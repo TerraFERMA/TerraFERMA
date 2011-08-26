@@ -36,7 +36,7 @@ namespace buckettools
 
     Bucket(std::string name);                                        // specific constructor specifying the name
     
-    ~Bucket();                                                       // default destructor
+    virtual ~Bucket();                                               // default destructor
 
     //***************************************************************|***********************************************************//
     // Functions used to run the model

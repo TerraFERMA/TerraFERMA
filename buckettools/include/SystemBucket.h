@@ -36,7 +36,7 @@ namespace buckettools
 
     SystemBucket(Bucket* bucket);                                    // specific constructor
     
-    ~SystemBucket();                                                 // default destructor
+    virtual ~SystemBucket();                                         // default destructor
 
     //***************************************************************|***********************************************************//
     // Functions used to run the model

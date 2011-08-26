@@ -31,7 +31,7 @@ namespace buckettools
 
     SpudSystemBucket(std::string optionpath, Bucket* bucket);        // default constructor
 
-    virtual ~SpudSystemBucket();                                     // default destructor
+    ~SpudSystemBucket();                                     // default destructor
 
     //***************************************************************|***********************************************************//
     // Filling data

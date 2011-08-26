@@ -33,7 +33,7 @@ namespace buckettools
 
     FunctionBucket(SystemBucket* system);                            // specific constructor
     
-    ~FunctionBucket();                                               // default destructor
+    virtual ~FunctionBucket();                                       // default destructor
 
     //***************************************************************|***********************************************************//
     // Base data access

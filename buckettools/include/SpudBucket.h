@@ -35,7 +35,7 @@ namespace buckettools
     
     SpudBucket(std::string name, std::string option_path);           // Optional constructor (specifying name and optionpath)
 
-    virtual ~SpudBucket();                                           // Default destructor
+    ~SpudBucket();                                           // Default destructor
     
     //***************************************************************|***********************************************************//
     // Functions used to run the model

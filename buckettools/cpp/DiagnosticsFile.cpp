@@ -9,11 +9,17 @@
 
 using namespace buckettools;
 
+//*******************************************************************|************************************************************//
+// specific constructor
+//*******************************************************************|************************************************************//
 DiagnosticsFile::DiagnosticsFile(const std::string name) : StatFile(name)
 {
-  // Do nothing... all handled by StatFile constructor
+                                                                     // do nothing... all handled by StatFile constructor
 }
 
+//*******************************************************************|************************************************************//
+// specific constructor
+//*******************************************************************|************************************************************//
 DiagnosticsFile::~DiagnosticsFile()
 {
   // Do nothing... all handled by StatFile destructor

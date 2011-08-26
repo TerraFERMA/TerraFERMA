@@ -31,7 +31,7 @@ namespace buckettools
 
     SpudSolverBucket(std::string optionpath, SystemBucket* system);  // specific constructor (taking in optionpath and parent system)
     
-    virtual ~SpudSolverBucket();                                     // default destructor
+    ~SpudSolverBucket();                                             // default destructor
 
     //***************************************************************|***********************************************************//
     // Filling data

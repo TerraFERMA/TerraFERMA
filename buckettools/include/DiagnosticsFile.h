@@ -32,7 +32,7 @@ namespace buckettools
     
     DiagnosticsFile(const std::string name);                         // specific constructor
  
-    ~DiagnosticsFile();                                              // default destructor
+    ~DiagnosticsFile();                                      // default destructor
     
     //***************************************************************|***********************************************************//
     // Header writing functions

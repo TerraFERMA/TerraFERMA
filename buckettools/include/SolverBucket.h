@@ -35,7 +35,7 @@ namespace buckettools
 
     SolverBucket(SystemBucket* system);                              // specific constructor (with parent system)
     
-    ~SolverBucket();                                                 // default destructor
+    virtual ~SolverBucket();                                         // default destructor
 
     //***************************************************************|***********************************************************//
     // Functions used to run the model
