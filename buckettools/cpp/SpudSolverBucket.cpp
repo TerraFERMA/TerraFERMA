@@ -12,468 +12,731 @@
 
 using namespace buckettools;
 
-// Specific constructor
-SpudSolverBucket::SpudSolverBucket(std::string optionpath, SystemBucket* system) : optionpath_(optionpath), SolverBucket(system)
+//*******************************************************************|************************************************************//
+// specific constructor
+//*******************************************************************|************************************************************//
+SpudSolverBucket::SpudSolverBucket(std::string optionpath, 
+                                            SystemBucket* system) : 
+                                            optionpath_(optionpath), 
+                                            SolverBucket(system)
 {
-  // Do nothing
+                                                                     // do nothing
 }
 
-// Default destructor (declared as virtual so will call base class destructor)
+//*******************************************************************|************************************************************//
+// default destructor
+//*******************************************************************|************************************************************//
 SpudSolverBucket::~SpudSolverBucket()
 {
-  PetscErrorCode perr;
-
-  if(type()=="SNES")
-  {
-    perr = SNESDestroy(snes_); CHKERRV(perr);
-  }
-
-  if(type()=="Picard")
-  {
-    perr = KSPDestroy(ksp_); CHKERRV(perr);
-  }
-
+  derived_empty_();                                                  // empty the data in the derived class
 }
 
-// Fill the function using spud and assuming a buckettools schema structure
+//*******************************************************************|************************************************************//
+// fill the solver bucket data structures assuming the buckettools schema
+//*******************************************************************|************************************************************//
 void SpudSolverBucket::fill()
 {
-  // A buffer to put option paths (and strings) in
-  std::stringstream buffer;
-  PetscErrorCode perr;
-  Spud::OptionError serr;
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud error code
+  PetscErrorCode perr;                                               // petsc error code
 
-  base_fill_();
+  base_fill_();                                                      // fill the base solver data: type, name etc.
 
-  forms_fill_();
+  forms_fill_();                                                     // fill the forms data
 
-  if (type()=="SNES")
+  if (type()=="SNES")                                                // if this is a snes solver.  FIXME: switch to enum check
   {
-    perr = SNESCreate(PETSC_COMM_WORLD, &snes_); CHKERRV(perr);
 
-    buffer.str(""); buffer << (*system_).name() << "_" << name() << "_";
-    perr = SNESSetOptionsPrefix(snes_, buffer.str().c_str()); CHKERRV(perr);
+    perr = SNESCreate(PETSC_COMM_WORLD, &snes_); CHKERRV(perr);      // create the petsc snes object
 
-    perr = SNESSetFromOptions(snes_); CHKERRV(perr);
+    buffer.str(""); buffer << (*system_).name() << "_" << name() 
+                                                            << "_";
+    perr = SNESSetOptionsPrefix(snes_, buffer.str().c_str());        // set its petsc options name prefix to SystemName_SolverName
+    CHKERRV(perr);
+
+    perr = SNESSetFromOptions(snes_); CHKERRV(perr);                 // set-up snes from options (we do this first to ensure that
+                                                                     // any duplicated options from the options file overwrite the
+                                                                     // command line
 
     std::string snestype;
     buffer.str(""); buffer << optionpath() << "/type/snes_type/name";
-    serr = Spud::get_option(buffer.str(), snestype); spud_err(buffer.str(), serr);
+    serr = Spud::get_option(buffer.str(), snestype);                 // set the snes type... ls is most common
+    spud_err(buffer.str(), serr);
+    perr = SNESSetType(snes_, snestype.c_str()); CHKERRV(perr); 
 
-    perr = SNESSetType(snes_, snestype.c_str()); CHKERRV(perr);
-
-    buffer.str(""); buffer << optionpath() << "/type/monitors/residual";
+    buffer.str(""); buffer << optionpath() 
+                                        << "/type/monitors/residual";
     if (Spud::have_option(buffer.str()))
     {
-      perr = SNESMonitorSet(snes_, SNESMonitorDefault, PETSC_NULL, PETSC_NULL); CHKERRV(perr);
+      perr = SNESMonitorSet(snes_, SNESMonitorDefault,               // set a snes residual monitor
+                                            PETSC_NULL, PETSC_NULL); 
+      CHKERRV(perr);
     }
 
-    buffer.str(""); buffer << optionpath() << "/type/monitors/solution_graph";
+    buffer.str(""); buffer << optionpath() 
+                                  << "/type/monitors/solution_graph";
     if (Spud::have_option(buffer.str()))
     {
-      perr = SNESMonitorSet(snes_, SNESMonitorSolution, PETSC_NULL, PETSC_NULL); CHKERRV(perr);
+      perr = SNESMonitorSet(snes_, SNESMonitorSolution,              // set a snes solution monitor (graph)
+                                            PETSC_NULL, PETSC_NULL); 
+      CHKERRV(perr);
     }
 
-    perr = SNESSetTolerances(snes_, atol_, rtol_, stol_, maxits_, maxfes_); CHKERRV(perr);
+    perr = SNESSetTolerances(snes_, atol_, rtol_, stol_, maxits_,    // from the data we collected in the base data fill set-up the
+                                                            maxfes_);// snes tolerances
+    CHKERRV(perr);
 
-    // we always have at least one ksp
-    perr = SNESGetKSP(snes_, &ksp_); CHKERRV(perr);
+    perr = SNESGetKSP(snes_, &ksp_); CHKERRV(perr);                  // we always have at least one ksp so use the solverbucket ksp
+                                                                     // to start setting up the ksp inside the snes
     
-    buffer.str(""); buffer << optionpath() << "/type/linear_solver";
-    ksp_fill_(buffer.str(), ksp_);
+    buffer.str(""); buffer << optionpath() << "/type/linear_solver"; // the ksp solver path
+    ksp_fill_(buffer.str(), ksp_);                                   // can then be used to fill the ksp data
 
-    perr = SNESView(snes_, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);
+    perr = SNESView(snes_, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr); // turn on snesview so we get some debugging info
+
   }
-  else if (type()=="Picard")
+  else if (type()=="Picard")                                         // if this is a picard solver
   {
-    perr = KSPCreate(PETSC_COMM_WORLD, &ksp_); CHKERRV(perr);
 
-    buffer.str(""); buffer << (*system_).name() << "_" << name() << "_";
-    perr = KSPSetOptionsPrefix(ksp_, buffer.str().c_str()); CHKERRV(perr);
+    perr = KSPCreate(PETSC_COMM_WORLD, &ksp_); CHKERRV(perr);        // create a ksp object from the variable in the solverbucket
 
-    buffer.str(""); buffer << optionpath() << "/type/linear_solver";
-    ksp_fill_(buffer.str(), ksp_);
+    buffer.str(""); buffer << (*system_).name() << "_" 
+                                                    << name() << "_";
+    perr = KSPSetOptionsPrefix(ksp_, buffer.str().c_str());          // set the ksp options prefix to SystemName_SolverName_
+    CHKERRV(perr);
 
-    perr = KSPView(ksp_, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);
+    buffer.str(""); buffer << optionpath() << "/type/linear_solver"; // figure out the linear solver optionspath
+    ksp_fill_(buffer.str(), ksp_);                                   // fill the ksp data
+
+    perr = KSPView(ksp_, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);   // turn on kspview so we get some debugging info
+
   }
-  else
+  else                                                               // don't know how we got here
   {
     dolfin::error("Unknown solver type.");
   }
 
 }
 
+//*******************************************************************|************************************************************//
+// register a (boost shared) pointer to a form in the solver bucket data maps (with an optionpath as well)
+//*******************************************************************|************************************************************//
+void SpudSolverBucket::register_form(Form_ptr form, std::string name, 
+                                              std::string optionpath)
+{
+  Form_it f_it = forms_.find(name);                                  // check if name exists
+  if (f_it != forms_.end())
+  {
+    dolfin::error("Form named \"%s\" already exists in function.",   // if it does, issue an error
+                                                    name.c_str());
+  }
+  else
+  {
+    forms_[name]            = form;                                  // if not, insert form pointer into data map
+    form_optionpaths_[name] = optionpath;                            // and do the same for its optionpath
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return a string describing the contents of the solver bucket
+//*******************************************************************|************************************************************//
+const std::string SpudSolverBucket::str(int indent) const
+{
+  std::stringstream s;
+  std::string indentation (indent*2, ' ');
+  s << indentation << "SolverBucket " << name() << " (" << 
+                                    optionpath() << ")" << std::endl;
+  indent++;
+  s << forms_str(indent);
+  return s.str();
+}
+
+//*******************************************************************|************************************************************//
+// return a string describing the forms in the solver bucket
+//*******************************************************************|************************************************************//
+const std::string SpudSolverBucket::forms_str(int indent) const
+{
+  std::stringstream s;
+  std::string indentation (indent*2, ' ');
+
+  for ( string_const_it s_it = form_optionpaths_.begin(); 
+                            s_it != form_optionpaths_.end(); s_it++ )
+  {
+    s << indentation << "Form " << (*s_it).first << " (" << 
+                                (*s_it).second  << ")" << std::endl;
+  }
+
+  return s.str();
+}
+
+//*******************************************************************|************************************************************//
+// fill the solver bucket base data assuming the buckettools schema (common for all solver types)
+//*******************************************************************|************************************************************//
+void SpudSolverBucket::base_fill_()
+{
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud error code
+
+  buffer.str(""); buffer << optionpath() << "/name";                 // solver name
+  serr = Spud::get_option(buffer.str(), name_); 
+  spud_err(buffer.str(), serr);
+
+  buffer.str(""); buffer << optionpath() << "/type/name";            // solver type (as string)
+  serr = Spud::get_option(buffer.str(), type_);                      // FIXME: add conversion to enum here
+  spud_err(buffer.str(), serr);
+
+  buffer.str(""); buffer << optionpath() << "/type/relative_error";  // relative nonlinear error
+  serr = Spud::get_option(buffer.str(), rtol_); 
+  spud_err(buffer.str(), serr);
+
+  buffer.str(""); buffer << optionpath() << "/type/absolute_error";  // absolute nonlinear error
+  serr = Spud::get_option(buffer.str(), atol_, 1.e-50); 
+  spud_err(buffer.str(), serr);
+
+  buffer.str(""); buffer << optionpath() << "/type/solution_error";  // nonlinear solution error (only applies to snes solver types)
+  serr = Spud::get_option(buffer.str(), stol_, 1.e-8); 
+  spud_err(buffer.str(), serr);
+
+  buffer.str(""); buffer << optionpath() << "/type/max_iterations";  // maximum number of nonlinear iterations
+  serr = Spud::get_option(buffer.str(), maxits_); 
+  spud_err(buffer.str(), serr);
+
+  buffer.str(""); buffer << optionpath() << "/type/min_iterations";  // minimum number of nonlinear iterations (only applies to
+  serr = Spud::get_option(buffer.str(), minits_, 0);                 // picard solver types)
+  spud_err(buffer.str(), serr);
+
+  buffer.str(""); buffer << optionpath() <<                          // maximum number of residual evaluations (only applies to snes
+                                  "/type/max_function_evaluations";  // solver types)
+  serr = Spud::get_option(buffer.str(), maxfes_, 10000); 
+  spud_err(buffer.str(), serr);
+
+}
+
+//*******************************************************************|************************************************************//
+// fill the forms in solver bucket assuming the buckettools schema (common for all solver types)
+//*******************************************************************|************************************************************//
+void SpudSolverBucket::forms_fill_()
+{
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud error code
+   
+  buffer.str(""); buffer << optionpath() << "/type/form";           
+  int nforms = Spud::option_count(buffer.str());                     // find out how many forms we have
+  for (uint i = 0; i < nforms; i++)                                  // loop over them 
+  {
+    buffer.str(""); buffer << optionpath() << "/type/form[" << 
+                                                          i << "]";
+    std::string formoptionpath = buffer.str();
+
+    std::string formname;
+    buffer.str(""); buffer << formoptionpath << "/name";             // get the form name
+    serr = Spud::get_option(buffer.str(), formname); 
+    spud_err(buffer.str(), serr);
+
+    Form_ptr form = ufc_fetch_form((*system_).name(), name(),        // get the form from the ufc using the system functionspace
+                                        type(), 
+                                        formname, 
+                                        (*system_).functionspace());
+    register_form(form, formname, formoptionpath);
+
+                                                                     // at this stage we cannot attach any coefficients to this
+                                                                     // form because we do not necessarily have them all
+                                                                     // initialized yet so for the time being let's just grab any
+                                                                     // functionspaces for the coefficients that we can find...
+    uint ncoeff = (*form).num_coefficients();                        // how many coefficients does this form require?
+    for (uint i = 0; i < ncoeff; i++)
+    {
+      std::string uflsymbol = (*form).coefficient_name(i);           // what is the (possibly derived) ufl symbol for this
+                                                                     // coefficient
+      if ((*(*system_).bucket()).contains_baseuflsymbol(uflsymbol))  // a base ufl symbol was only inserted into the parent bucket's
+      {                                                              // if this is a coefficient function so we use this as an
+                                                                     // indicator or whether we need to grab the functionspace or
+                                                                     // not...
+        std::string baseuflsymbol =                                  // what is the base ufl symbol?
+              (*(*system_).bucket()).fetch_baseuflsymbol(uflsymbol); // have we already registered a functionspace for this base ufl
+                                                                     // symbol?
+        if (!(*(*system_).bucket()).contains_coefficientspace(baseuflsymbol))
+        {                                                            // no...
+          FunctionSpace_ptr coefficientspace;
+          coefficientspace = ufc_fetch_coefficientspace(             // take a pointer to the functionspace from the ufc
+                                        (*system_).name(), name(), 
+                                        baseuflsymbol, 
+                                        (*system_).mesh());
+          (*(*system_).bucket()).register_coefficientspace(          // and register it in the parent bucket's map
+                                        coefficientspace, 
+                                        baseuflsymbol);
+        }
+      }
+
+    }
+
+  }
+
+                                                                     // depending on the type of solver we assign certain forms to
+                                                                     // hardcoded names in the solver bucket (basically it depends
+                                                                     // which are linear or bilinear)
+  if (type()=="SNES")                                                // snes solver type...
+  {
+    linear_      = fetch_form("Residual");
+    bilinear_    = fetch_form("Jacobian");
+    if (contains_form("JacobianPC"))                                 // is there a pc form?
+    {
+      bilinearpc_ = fetch_form("JacobianPC");                        // yes but
+    }                                                                // otherwise bilinearpc_ is null (indicates self pcing)
+                                                                     // residual_ is always a null pointer for snes
+
+  }
+  else if (type()=="Picard")                                         // picard solver type...
+  {
+    linear_      = fetch_form("Linear");
+    bilinear_    = fetch_form("Bilinear");
+    if (contains_form("BilinearPC"))                                 // is there a pc form?
+    {
+      bilinearpc_ = fetch_form("BilinearPC");                        // yes but
+    }                                                                // otherwise bilinearpc_ is null (indicates self pcing)
+    residual_   = fetch_form("Residual");
+
+  }
+  else                                                               // unknown solver type
+  {
+    dolfin::error("Unknown solver type.");
+  }
+     
+}
+
+//*******************************************************************|************************************************************//
+// fill a ksp object from the options tree (not necessarily the main solver bucket ksp_ object as this routine may be called
+// recursively for ksp and fieldsplit pc types)
+//*******************************************************************|************************************************************//
 void SpudSolverBucket::ksp_fill_(const std::string &optionpath, KSP &ksp, 
                                  const std::vector<uint>* parent_indices)
 {
-  std::stringstream buffer;
-  PetscErrorCode perr;
-  Spud::OptionError serr;
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud error code
+  PetscErrorCode perr;                                               // petsc error code
 
   std::string iterative_method;
-  buffer.str(""); buffer << optionpath << "/iterative_method/name";
-  serr = Spud::get_option(buffer.str(), iterative_method); spud_err(buffer.str(), serr);
+  buffer.str(""); buffer << optionpath << "/iterative_method/name";  // iterative method (gmres, fgmres, cg etc.)
+  serr = Spud::get_option(buffer.str(), iterative_method); 
+  spud_err(buffer.str(), serr);
 
-  perr = KSPSetType(ksp, iterative_method.c_str()); CHKERRV(perr);
+  perr = KSPSetType(ksp, iterative_method.c_str()); CHKERRV(perr);   // set the ksp type to the iterative method
 
-  if(iterative_method != "preonly")
+  if(iterative_method != "preonly")                                  // tolerances (and monitors) only apply to iterative methods
   {
     PetscReal rtol;
-    buffer.str(""); buffer << optionpath << "/iterative_method/relative_error";
-    serr = Spud::get_option(buffer.str(), rtol); spud_err(buffer.str(), serr);
+    buffer.str(""); buffer << optionpath << 
+                                  "/iterative_method/relative_error";
+    serr = Spud::get_option(buffer.str(), rtol);                     // relative error
+    spud_err(buffer.str(), serr);
 
     PetscReal atol;
-    buffer.str(""); buffer << optionpath << "/iterative_method/absolute_error";
-    serr = Spud::get_option(buffer.str(), atol, 1.e-50); spud_err(buffer.str(), serr);
+    buffer.str(""); buffer << optionpath << 
+                                  "/iterative_method/absolute_error";
+    serr = Spud::get_option(buffer.str(), atol, 1.e-50);             // absolute error
+    spud_err(buffer.str(), serr);
 
     PetscReal dtol;
-    buffer.str(""); buffer << optionpath << "/iterative_method/divergence_error";
-    serr = Spud::get_option(buffer.str(), dtol, 10000.0); spud_err(buffer.str(), serr);
+    buffer.str(""); buffer << optionpath << 
+                                "/iterative_method/divergence_error";
+    serr = Spud::get_option(buffer.str(), dtol, 10000.0);            // divergence error (tolerance?) - preconditioned solution must
+    spud_err(buffer.str(), serr);                                    // diverge this much to be considered divergent
 
     PetscInt maxits;
-    buffer.str(""); buffer << optionpath << "/iterative_method/max_iterations";
-    serr = Spud::get_option(buffer.str(), maxits); spud_err(buffer.str(), serr);
+    buffer.str(""); buffer << optionpath << 
+                                  "/iterative_method/max_iterations";// maximum number of linear solver iterations
+    serr = Spud::get_option(buffer.str(), maxits); 
+    spud_err(buffer.str(), serr);
 
-    buffer.str(""); buffer << optionpath << "/iterative_method/monitors/preconditioned_residual";
+    buffer.str(""); buffer << optionpath << 
+                "/iterative_method/monitors/preconditioned_residual";// monitor the preconditioned residual
     if (Spud::have_option(buffer.str()))
     {
-      perr = KSPMonitorSet(ksp, KSPMonitorDefault, PETSC_NULL, PETSC_NULL); CHKERRV(perr);
+      perr = KSPMonitorSet(ksp, KSPMonitorDefault, 
+                                            PETSC_NULL, PETSC_NULL); 
+      CHKERRV(perr);
     }
 
-    buffer.str(""); buffer << optionpath << "/iterative_method/monitors/true_residual";
+    buffer.str(""); buffer << optionpath << 
+                          "/iterative_method/monitors/true_residual";// monitor the true residual (more expensive)
     if (Spud::have_option(buffer.str()))
     {
-      perr = KSPMonitorSet(ksp, KSPMonitorTrueResidualNorm, PETSC_NULL, PETSC_NULL); CHKERRV(perr);
+      perr = KSPMonitorSet(ksp, KSPMonitorTrueResidualNorm, 
+                                            PETSC_NULL, PETSC_NULL); 
+      CHKERRV(perr);
     }
 
-    buffer.str(""); buffer << optionpath << "/iterative_method/monitors/preconditioned_residual_graph";
+    buffer.str(""); buffer << optionpath << 
+          "/iterative_method/monitors/preconditioned_residual_graph";// plot a graph of the preconditioned residual
     if (Spud::have_option(buffer.str()))
     {
-      perr = KSPMonitorSet(ksp, KSPMonitorLG, PETSC_NULL, PETSC_NULL); CHKERRV(perr);
+      perr = KSPMonitorSet(ksp, KSPMonitorLG, 
+                                             PETSC_NULL, PETSC_NULL); 
+      CHKERRV(perr);
     }
 
     perr = KSPSetTolerances(ksp, rtol, atol, dtol, maxits);
   }
 
-  std::string preconditioner;
-  buffer.str(""); buffer << optionpath << "/preconditioner/name";
-  serr = Spud::get_option(buffer.str(), preconditioner); spud_err(buffer.str(), serr);
-
-  buffer.str(""); buffer << optionpath << "/remove_null_space";
+  buffer.str(""); buffer << optionpath << "/remove_null_space";      // removing a (or multiple) null space(s)
   if (Spud::have_option(buffer.str()))
   {
-    buffer.str(""); buffer << optionpath << "/remove_null_space/null_space";
-    int nnulls = Spud::option_count(buffer.str());
+    buffer.str(""); buffer << optionpath << 
+                                "/remove_null_space/null_space";
+    int nnulls = Spud::option_count(buffer.str());                   // how many null spaces?
 
     uint kspsize = 0;
     if(parent_indices)
-    {
-      kspsize = (*parent_indices).size();
-      // FIXME: not right for parallel!
-    }
+    {                                                                // if parent_indices is associated then this is a null space
+       kspsize = (*parent_indices).size();                           // of a subksp so the kspsize is not the whole thing
+    }                                                                // FIXME: broken in parallel!
     else
-    {
-      kspsize = (*(*system_).function()).vector().size();
-    }
+    {                                                                 
+      kspsize = (*(*system_).function()).vector().size();            // otherwise, this is quite easy - just the size of the parent
+    }                                                                // system function
 
-    std::vector< PETScVector_ptr > nullvecs;
-    Vec vecs[nnulls];
+    std::vector< PETScVector_ptr > nullvecs;                         // collect the null space vectors here (so we maintain a reference)
+    Vec vecs[nnulls];                                                // and here (for the petsc interface)
 
-    for (uint i = 0; i<nnulls; i++)
+    for (uint i = 0; i<nnulls; i++)                                  // loop over the nullspaces
     {
       IS is;
-      std::vector<uint> indices; // don't really need these
-      buffer.str(""); buffer << optionpath << "/remove_null_space/null_space[" << i << "]";
-      is_by_field_fill_(buffer.str(), is,
-                        indices, parent_indices);
+      std::vector<uint> indices;                                     // FIXME: don't really need these but the interface returns them!
+                                                                     // (these become the parent_indices in the fieldsplit setup)
+      buffer.str(""); buffer << optionpath <<                        // optionpath of the nullspace
+                        "/remove_null_space/null_space[" << i << "]";
+      is_by_field_fill_(buffer.str(), is,                            // create an is based on this optionpath (consistent schema
+                        indices, parent_indices);                    // with fieldsplit description)
 
-      PETScVector_ptr nullvec( new dolfin::PETScVector(kspsize) );
+      PETScVector_ptr nullvec( new dolfin::PETScVector(kspsize) );   // create a null vector for this null space
     
-      PetscInt size, localsize;
+      PetscInt size, localsize;                                      // get the local and global sizes of this IS
       ISGetSize(is, &size);
       ISGetLocalSize(is, &localsize);
-      dolfin::PETScVector unitvec(localsize, "local");
-      double unit = 1./(std::sqrt( (double) size));
-      unitvec = unit;
+      dolfin::PETScVector unitvec(localsize, "local");               // create a local vector of local size length 
+      double unit = 1./(std::sqrt( (double) size));                  // figure out what value a unit vector would have
+      unitvec = unit;                                                // and set all entries of the vector to it
 
-      (*nullvec).zero();
-      VecScatter scatter;
-      perr = VecScatterCreate(*unitvec.vec(), PETSC_NULL, *(*nullvec).vec(), is, &scatter); CHKERRV(perr);
-      perr = VecScatterBegin(scatter, *unitvec.vec(), *(*nullvec).vec(), INSERT_VALUES, SCATTER_FORWARD); CHKERRV(perr);
-      perr = VecScatterEnd(scatter, *unitvec.vec(), *(*nullvec).vec(), INSERT_VALUES, SCATTER_FORWARD); CHKERRV(perr);
-      perr = VecScatterDestroy(scatter); CHKERRV(perr);  // necessary?
-      perr = ISDestroy(is); CHKERRV(perr); // necessary?
-      (*nullvec).apply(""); //just in case
+      (*nullvec).zero();                                             // zero the null vector
 
-      // keep this vector in scope so that the (standard) pointer assignment below is safe
-      // necessary?
-      nullvecs.push_back(nullvec);
-      vecs[i] = *(*nullvec).vec();
+      VecScatter scatter;                                            // create a petsc scatter object from an object with the same 
+      perr = VecScatterCreate(*unitvec.vec(), PETSC_NULL,            // structure as the unit vector to one with the same structure
+                              *(*nullvec).vec(), is, &scatter);      // as the null vector using the IS
+      CHKERRV(perr);
+      perr = VecScatterBegin(scatter, *unitvec.vec(),                // scatter from the unit vector to the null vector
+                             *(*nullvec).vec(), INSERT_VALUES, 
+                             SCATTER_FORWARD); 
+      CHKERRV(perr);
+      perr = VecScatterEnd(scatter, *unitvec.vec(), 
+                           *(*nullvec).vec(), INSERT_VALUES, 
+                           SCATTER_FORWARD); 
+      CHKERRV(perr);
+      perr = VecScatterDestroy(scatter); CHKERRV(perr);              // necessary or taken care of when object leaves scope?
+      perr = ISDestroy(is); CHKERRV(perr);                           // necessary or taken care of when object leaves scope?
+      (*nullvec).apply("");                                          // finish assembly of the null vector, just in case
+
+      nullvecs.push_back(nullvec);                                   // keep the null vector in scope by grabbing a reference to it
+      vecs[i] = *(*nullvec).vec();                                   // also collect it in a petsc compatible format (shouldn't take
+                                                                     // reference though... hence line above, necessary?)
 
     }
 
-    //create null space and attach to the ksp
-    MatNullSpace SP;
-    perr = MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_FALSE, nnulls, vecs, &SP); CHKERRV(perr);
-    perr = KSPSetNullSpace(ksp, SP); CHKERRV(perr);
-    perr = MatNullSpaceDestroy(SP); CHKERRV(perr);  // necessary?
+    MatNullSpace SP;                                                 // create a set of nullspaces in a null space object
+    perr = MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_FALSE, nnulls, 
+                                                        vecs, &SP); 
+    CHKERRV(perr);
+    perr = KSPSetNullSpace(ksp, SP); CHKERRV(perr);                  // attach it to the ksp
+    perr = MatNullSpaceDestroy(SP); CHKERRV(perr);                   // destroy the null space object, necessary?
   }
+
+  std::string preconditioner;
+  buffer.str(""); buffer << optionpath << "/preconditioner/name";    // preconditioner type
+  serr = Spud::get_option(buffer.str(), preconditioner); 
+  spud_err(buffer.str(), serr);
 
   PC pc;
-  perr = KSPGetPC(ksp, &pc); CHKERRV(perr);
-  perr = PCSetType(pc, preconditioner.c_str()); CHKERRV(perr);
+  perr = KSPGetPC(ksp, &pc); CHKERRV(perr);                          // get the pc from the ksp
+  perr = PCSetType(pc, preconditioner.c_str()); CHKERRV(perr);       // set its type (read from options earlier)
 
-  if (preconditioner=="ksp")
+  if (preconditioner=="ksp")                                         // if the pc is itself a ksp
   {
-    buffer.str(""); buffer << optionpath << "/preconditioner/linear_solver";
-    KSP subksp;
+    buffer.str(""); buffer << optionpath << 
+                                    "/preconditioner/linear_solver";
+    KSP subksp;                                                      // create a subksp from this pc
     perr = PCKSPGetKSP(pc, &subksp); CHKERRV(perr);
-    // recurse!
-    ksp_fill_(buffer.str(), subksp, parent_indices);
+    ksp_fill_(buffer.str(), subksp, parent_indices);                 // recursively fill the ksp data (i.e. go back to this routine)
   }
-  else if (preconditioner=="fieldsplit")
+  else if (preconditioner=="fieldsplit")                             // if the pc is a fieldsplit
   {
     buffer.str(""); buffer << optionpath << "/preconditioner";
-    pc_fieldsplit_fill_(buffer.str(), pc, parent_indices);
+    pc_fieldsplit_fill_(buffer.str(), pc, parent_indices);           // fill the fieldsplit data (will end up back here again
+                                                                     // eventually)
   }
-  else if (preconditioner=="lu")
+  else if (preconditioner=="lu")                                     // if the pc is direct
   {
-    std::string factorization_package;
-    buffer.str(""); buffer << optionpath << "/preconditioner/factorization_package/name";
-    serr = Spud::get_option(buffer.str(), factorization_package); spud_err(buffer.str(), serr);
+    std::string factorization_package;                               // we get to choose a factorization package
+    buffer.str(""); buffer << optionpath << 
+                        "/preconditioner/factorization_package/name";
+    serr = Spud::get_option(buffer.str(), factorization_package); 
+    spud_err(buffer.str(), serr);
 
-    perr = PCFactorSetMatSolverPackage(pc, factorization_package.c_str()); CHKERRV(perr);
+    perr = PCFactorSetMatSolverPackage(pc, 
+                                      factorization_package.c_str()); 
+    CHKERRV(perr);
 
   }
 
 }
 
-void SpudSolverBucket::pc_fieldsplit_fill_(const std::string &optionpath, PC &pc, 
+//*******************************************************************|************************************************************//
+// fill a pc object from the options tree assuming its a fieldsplit pc
+//*******************************************************************|************************************************************//
+void SpudSolverBucket::pc_fieldsplit_fill_(const std::string &optionpath, 
+                                           PC &pc, 
                                            const std::vector<uint>* parent_indices)
 {
 
-  std::stringstream buffer;
-  PetscErrorCode perr;
-  Spud::OptionError serr;
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud error code
+  PetscErrorCode perr;                                               // petsc error code
 
   std::string ctype;
-  buffer.str(""); buffer << optionpath << "/composite_type/name";
-  serr = Spud::get_option(buffer.str(), ctype); spud_err(buffer.str(), serr);
-  if (ctype == "additive")
+  buffer.str(""); buffer << optionpath << "/composite_type/name";    // composite type of fieldsplit (additive, multiplicative etc.)
+  serr = Spud::get_option(buffer.str(), ctype);                      // sadly no string based interface provided to this (I think)
+  spud_err(buffer.str(), serr);                                      // so hard code an if block
+
+  if (ctype == "additive")                                           // additive fieldsplit
   {
-    perr = PCFieldSplitSetType(pc, PC_COMPOSITE_ADDITIVE); CHKERRV(perr);
+    perr = PCFieldSplitSetType(pc, PC_COMPOSITE_ADDITIVE); 
+    CHKERRV(perr);
   }
-  else if (ctype == "multiplicative")
+  else if (ctype == "multiplicative")                                // multiplicative fieldsplit
   {
-    perr = PCFieldSplitSetType(pc, PC_COMPOSITE_MULTIPLICATIVE); CHKERRV(perr);
+    perr = PCFieldSplitSetType(pc, PC_COMPOSITE_MULTIPLICATIVE); 
+    CHKERRV(perr);
   }
-  else if (ctype == "symmetric_multiplicative")
+  else if (ctype == "symmetric_multiplicative")                      // symmetric multiplicative fieldsplit
   {
-    perr = PCFieldSplitSetType(pc, PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE); CHKERRV(perr);
+    perr = PCFieldSplitSetType(pc, 
+                          PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE); 
+    CHKERRV(perr);
   }
-  else if (ctype == "special")
+  else if (ctype == "special")                                       // special fieldsplit (whatever that means!)
   {
-    perr = PCFieldSplitSetType(pc, PC_COMPOSITE_SPECIAL); CHKERRV(perr);
+    perr = PCFieldSplitSetType(pc, PC_COMPOSITE_SPECIAL); 
+    CHKERRV(perr);
   }
-  else if (ctype == "schur")
+  else if (ctype == "schur")                                         // schur fieldsplit
   {
-    perr = PCFieldSplitSetType(pc, PC_COMPOSITE_SCHUR); CHKERRV(perr);
+    perr = PCFieldSplitSetType(pc, PC_COMPOSITE_SCHUR); 
+    CHKERRV(perr);
   }
-  else
+  else                                                               // unknown (to buckettools) fieldsplit composite type
   {
     dolfin::error("Unknown PCCompositeType.");
   }
 
-  // create a vector of vectors to contain the
-  // child indices (the subsets of the parent_indices vector 
-  // (if associated))
-  std::vector< std::vector<uint> > child_indices;
+  std::vector< std::vector<uint> > child_indices;                    // a vector of vectors to collect the child indices (the
+                                                                     // subsets of the parent_indices vector (if associated) that
+                                                                     // will themselves become the parent_indices on the next
+                                                                     // recursion)
 
   buffer.str(""); buffer << optionpath << "/fieldsplit";
-  int nsplits = Spud::option_count(buffer.str());
-  for (uint i = 0; i < nsplits; i++)
+  int nsplits = Spud::option_count(buffer.str());                    // how many fieldsplits exist for this pc
+  for (uint i = 0; i < nsplits; i++)                                 // loop over them all
   {
-    buffer.str(""); buffer << optionpath << "/fieldsplit[" << i << "]";
+    buffer.str(""); buffer << optionpath << 
+                                        "/fieldsplit[" << i << "]";
     std::vector<uint> indices;
-    pc_fieldsplit_by_field_fill_(buffer.str(), pc, indices, parent_indices);
-    child_indices.push_back(indices);
-  }
+    IS is;
+    is_by_field_fill_(buffer.str(), is,                              // setup an IS for each fieldsplit
+                      indices, parent_indices);
+    perr = PCFieldSplitSetIS(pc, is); CHKERRV(perr);                 // set the fs using that IS
+    perr = ISDestroy(is); CHKERRV(perr);                             // destroy the IS, necessary?
+    child_indices.push_back(indices);                                // record the indices of the global vector that made it into
+  }                                                                  // IS (and hence the fieldsplit)
 
-  KSP *subksps;
+  KSP *subksps;                                                      // setup the fieldsplit subksps
   PetscInt nsubksps;
-  perr = PCFieldSplitGetSubKSP(pc, &nsubksps, &subksps); CHKERRV(perr); 
+  perr = PCFieldSplitGetSubKSP(pc, &nsubksps, &subksps); 
+  CHKERRV(perr); 
 
   assert(nsubksps==nsplits);
 
-  for (uint i = 0; i < nsplits; i++)
+  for (uint i = 0; i < nsplits; i++)                                 // loop over the splits again
   {
-    buffer.str(""); buffer << optionpath << "/fieldsplit[" << i << "]/linear_solver";
-    // recurse (but now child_indices[i] becomes the parent_indices for the next level!
-    ksp_fill_(buffer.str(), subksps[i], &child_indices[i]);
+    buffer.str(""); buffer << optionpath << "/fieldsplit[" 
+                                        << i << "]/linear_solver";
+    ksp_fill_(buffer.str(), subksps[i], &child_indices[i]);          // recurse and fill in the data on each subksp but passing down
+                                                                     // the child_indices as the new parent_indices
   }
 
 }
 
-void SpudSolverBucket::pc_fieldsplit_by_field_fill_(const std::string &optionpath, PC &pc, 
-                                                    std::vector<uint> &child_indices, 
-                                                    const std::vector<uint>* parent_indices)
-{
-  PetscErrorCode perr;
-  // create the index set
-  IS is;
-  is_by_field_fill_(optionpath, is,
-                    child_indices, parent_indices);
-  perr = PCFieldSplitSetIS(pc, is); CHKERRV(perr);
-  perr = ISDestroy(is); CHKERRV(perr);
-
-}
-
+//*******************************************************************|************************************************************//
+// fill a petsc is object from the options tree (for fieldsplits and null spaces - must share common schema tree)
+// IS's may be set up by field name, components of the field and regions of the domain (FIXME: also need surface ids)
+// this leads to four combinations... fields, fields with components, fields with regions, fields with both components and regions
+// additionally the resulting IS is checked for consistency with any parents in the tree and will fail if a full description is
+// not given
+//*******************************************************************|************************************************************//
 void SpudSolverBucket::is_by_field_fill_(const std::string &optionpath, IS &is, 
                                          std::vector<uint> &child_indices, 
                                          const std::vector<uint>* parent_indices)
 {
 
-  // a buffer for strings
-  std::stringstream buffer;
-  // petsc error code holder
-  PetscErrorCode perr;
-  // spud error code holder
-  Spud::OptionError serr;
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud error code
+  PetscErrorCode perr;                                               // petsc error code
 
-  // the ownership range of this functionspace
-  std::pair<uint, uint> ownership_range = (*(*system_).functionspace()).dofmap().ownership_range();
+  std::pair<uint, uint> ownership_range =                            // the parallel ownership range of the system functionspace
+          (*(*system_).functionspace()).dofmap().ownership_range();
 
-  buffer.str(""); buffer << optionpath << "/field";
+  buffer.str(""); buffer << optionpath << "/field";                  // loop over the fields used to describe this IS
   int nfields = Spud::option_count(buffer.str());
-  // loop over the fields used in this is
   for (uint i = 0; i < nfields; i++)
   {
     buffer.str(""); buffer << optionpath << "/field[" << i << "]";
 
-    // get the fieldname
     std::string fieldname;
-    buffer.str(""); buffer << optionpath << "/field[" << i << "]/name";
-    serr = Spud::get_option(buffer.str(), fieldname); spud_err(buffer.str(), serr);
+    buffer.str(""); buffer << optionpath << "/field[" << i <<        // get the field name
+                                                          "]/name";
+    serr = Spud::get_option(buffer.str(), fieldname); 
+    spud_err(buffer.str(), serr);
     
-    // and from that the field index
-    int fieldindex = (*(*system_).fetch_field(fieldname)).index();
+    int fieldindex = (*(*system_).fetch_field(fieldname)).index();   // using the name, get the field index
 
-    // do we specify region id limitations for this is
-    buffer.str(""); buffer << optionpath << "/field[" << i << "]/region_ids";
+    buffer.str(""); buffer << optionpath << "/field[" << i <<        // are region id restrictions specified under this field?
+                                                   "]/region_ids";
     if (Spud::have_option(buffer.str()))
-    {
-      // yes, get the region_ids
+    {                                                                // yes... 
       std::vector< int > region_ids;
-      serr = Spud::get_option(buffer.str(), region_ids); spud_err(buffer.str(), serr);
+      serr = Spud::get_option(buffer.str(), region_ids);             // get the region ids
+      spud_err(buffer.str(), serr);
 
-      // fetch the mesh and relevent mesh data
-      Mesh_ptr mesh = (*system_).mesh();
-      MeshFunction_uint_ptr cellidmeshfunction = (*mesh).data().mesh_function("cell_domains");
+      Mesh_ptr mesh = (*system_).mesh();                             // get the mesh
+      MeshFunction_uint_ptr cellidmeshfunction =                     // and the region id mesh function
+                      (*mesh).data().mesh_function("cell_domains");
 
-      // set up a set of dof
-      boost::unordered_set<uint> dof_set;
+      boost::unordered_set<uint> dof_set;                            // set up an unordered set of dof
 
       // do we specify components of this field?
-      buffer.str(""); buffer << optionpath << "/field[" << i << "]/components";
+      buffer.str(""); buffer << optionpath << "/field[" << i <<      // are specific components of this field requested?
+                                                    "]/components";
       if (Spud::have_option(buffer.str()))
-      {
-        // yes, get the component list
-        std::vector< int > components;
-        serr = Spud::get_option(buffer.str(), components); spud_err(buffer.str(), serr);
+      {                                                              // yes... **field+region+component**
 
-        // check that the user hasn't requested a component that doesn't exist
-        std::vector<int>::iterator max_comp_it = std::max_element(components.begin(), components.end());
+        std::vector< int > components;
+        serr = Spud::get_option(buffer.str(), components);           // get the requested components
+        spud_err(buffer.str(), serr);
+
+        std::vector<int>::iterator max_comp_it = 
+              std::max_element(components.begin(), components.end());// check this component exists
         assert(*max_comp_it < (*(*(*system_).functionspace())[fieldindex]).element().num_sub_elements());
         
-        // loop over the cells in the mesh
-        for (dolfin::CellIterator cell(*mesh); !cell.end(); ++cell)
+        for (dolfin::CellIterator cell(*mesh); !cell.end(); ++cell)  // loop over the cells in the mesh
         {
-          // get the cell id from the mesh function
-          int cellid = (*cellidmeshfunction)[(*cell).index()];
-          // for each region_id we specified,
-          for (std::vector<int>::const_iterator id = region_ids.begin(); id != region_ids.end(); id++)
+
+          int cellid = (*cellidmeshfunction)[(*cell).index()];       // get the cell region id from the mesh function
+
+          for (std::vector<int>::const_iterator id =                 // loop over the regions that have been requested
+                                  region_ids.begin(); 
+                                  id != region_ids.end(); id++)
           {
-            // check if this cell should be included
-            if(cellid==*id)
-            {
-              // if yes, then loop over the components we want included
-              for (std::vector<int>::const_iterator comp = components.begin(); comp != components.end(); comp++)
+            if(cellid==*id)                                          // and check if this cell should be included
+            {                                                        // yes...
+              for (std::vector<int>::const_iterator comp =           // loop over the components that have been requested
+                                      components.begin(); 
+                                      comp != components.end(); 
+                                      comp++)
               {
-                // and get their dofs from the dofmap
-                std::vector<uint> dof_vec = (*(*(*(*system_).functionspace())[fieldindex])[*comp]).dofmap().cell_dofs((*cell).index());
-                for (std::vector<uint>::const_iterator dof_it = dof_vec.begin(); dof_it < dof_vec.end(); dof_it++)
+                std::vector<uint> dof_vec =                          // get the cell dof for the current component
+                    (*(*(*(*system_).functionspace())[fieldindex])[*comp]).dofmap().cell_dofs((*cell).index());
+                for (std::vector<uint>::const_iterator dof_it =      // loop over the cell dof for this component
+                                              dof_vec.begin(); 
+                                              dof_it < dof_vec.end(); 
+                                              dof_it++)
                 {
-                  // insert them into the set of dof for this field
-                  dof_set.insert(*dof_it);
-                }
+                  dof_set.insert(*dof_it);                           // insert each dof into the unordered set
+                }                                                    // (i.e. if it's not there already)
               }
             }
           }
         }
       }
       else
-      {
-        // no, this case is simpler then
+      {                                                              // no, no components specified... **field+region**
 
-        // loop over the cells in the mesh
-        for (dolfin::CellIterator cell(*mesh); !cell.end(); ++cell)
+        for (dolfin::CellIterator cell(*mesh); !cell.end(); ++cell)  // loop over the cells in the mesh
         {
-          // get the cell id from the mesh function
-          int cellid = (*cellidmeshfunction)[(*cell).index()];
-          // for each region_id we specified
-          for (std::vector<int>::const_iterator id = region_ids.begin(); id != region_ids.end(); id++)
+          int cellid = (*cellidmeshfunction)[(*cell).index()];       // get the cell region id from the mesh function
+
+          for (std::vector<int>::const_iterator id =                 // loop over the region ids that have been requested
+                                      region_ids.begin(); 
+                                      id != region_ids.end(); id++)
           {
-            // check if this cell should be included
-            if(cellid==*id)
-            {
-              // if yes, then get the dofs from the dofmap
-              std::vector<uint> dof_vec = (*(*(*system_).functionspace())[fieldindex]).dofmap().cell_dofs((*cell).index());
-              for (std::vector<uint>::const_iterator dof_it = dof_vec.begin(); dof_it < dof_vec.end(); dof_it++)
+            if(cellid==*id)                                          // check if this cell should be included
+            {                                                        // yes...
+              std::vector<uint> dof_vec =                            // get the cell dof (potentially for all components)
+                (*(*(*system_).functionspace())[fieldindex]).dofmap().cell_dofs((*cell).index());
+              for (std::vector<uint>::const_iterator dof_it =        // loop over the cell dof
+                                      dof_vec.begin(); 
+                                      dof_it < dof_vec.end(); 
+                                      dof_it++)
               {
-                // and insert them into the set of dof for this field
-                dof_set.insert(*dof_it);
-              }
+                dof_set.insert(*dof_it);                             // and insert each one into the unordered set
+              }                                                      // (i.e. if it hasn't been added already)
             }
           }
         }
 
       }
-      // we now have a set of dofs for this field over all regions and components requested...
-      // put this into the vector of dofs for all fields (field indices, unlike cell indices, should be unique so no need for a set anymore)
-      for (boost::unordered_set<uint>::const_iterator dof_it = dof_set.begin(); dof_it != dof_set.end(); dof_it++)
-      {
-        // while we do this, check that the dofs are in the ownership range (i.e. filter out ghost nodes)
-        if ((*dof_it >= ownership_range.first) && (*dof_it < ownership_range.second))
+                                                                     // we now have a set of dofs for this field over all regions
+                                                                     // and components requested...
+                                                                     // put this into the vector of dofs for all fields (field
+                                                                     // indices, unlike cell indices, should be unique so no need
+                                                                     // for a set anymore)
+      for (boost::unordered_set<uint>::const_iterator dof_it =      
+                                            dof_set.begin(); 
+                                            dof_it != dof_set.end(); // loop over all entries in the set 
+                                            dof_it++)
+      {                                                              // and insert into the child_indices vector
+        if ((*dof_it >= ownership_range.first)                       // but only if the dof is within the ownership range in
+                && (*dof_it < ownership_range.second))               // parallel
         {
           child_indices.push_back(*dof_it);
         }
       }
     }
     else
-    {
-      // no region ids
-      // but we might still have components, so check
-      buffer.str(""); buffer << optionpath << "/field[" << i << "]/components";
+    {                                                                // no region ids specified, but there might still be components
+      buffer.str(""); buffer << optionpath << "/field[" << i << 
+                                                      "]/components";
       if (Spud::have_option(buffer.str()))
-      {
+      {                                                              // yes, there are components specified... **field+components**
         // yes, get the components
         std::vector< int > components;
-        serr = Spud::get_option(buffer.str(), components); spud_err(buffer.str(), serr);
+        serr = Spud::get_option(buffer.str(), components);           // get the components
+        spud_err(buffer.str(), serr);
         
-        // check the user hasn't selected a component that doesn't exist
-        std::vector<int>::iterator max_comp_it = std::max_element(components.begin(), components.end());
+        std::vector<int>::iterator max_comp_it =                  
+             std::max_element(components.begin(), components.end()); // check this component exists
         assert(*max_comp_it < (*(*(*system_).functionspace())[fieldindex]).element().num_sub_elements());
 
-        // loop over the components
-        for (std::vector<int>::const_iterator comp = components.begin(); comp != components.end(); comp++)
+        for (std::vector<int>::const_iterator comp =                 // loop over the requested components
+                                      components.begin(); 
+                                      comp != components.end(); 
+                                      comp++)
         {
-          // grabbing the dofs from the dofmap
-          boost::unordered_set<uint> dof_set = (*(*(*(*system_).functionspace())[fieldindex])[*comp]).dofmap().dofs();
-          for (boost::unordered_set<uint>::const_iterator dof_it = dof_set.begin(); dof_it != dof_set.end(); dof_it++)
-          {
-            // and inserting them into the vector (component dof indices should be unique, so again no need for a set)
-            // check first that we own these nodes
-            if ((*dof_it >= ownership_range.first) && (*dof_it < ownership_range.second))
+          boost::unordered_set<uint> dof_set =                       // take the set of dof for this component
+              (*(*(*(*system_).functionspace())[fieldindex])[*comp]).dofmap().dofs();
+          for (boost::unordered_set<uint>::const_iterator            // loop over the dof in the set
+                                        dof_it = dof_set.begin(); 
+                                        dof_it != dof_set.end(); 
+                                        dof_it++)
+          {                                                          // and insert them into the child_indices vector
+            if ((*dof_it >= ownership_range.first) &&                // but first check that this process owns them
+                                (*dof_it < ownership_range.second))  // (in parallel)
             {
               child_indices.push_back(*dof_it);
             }
@@ -481,14 +744,16 @@ void SpudSolverBucket::is_by_field_fill_(const std::string &optionpath, IS &is,
         }
       }
       else
-      {
-        // no region ids or components specified... the simplest case
-        // just grab the dofs from the dofmap
-        boost::unordered_set<uint> dof_set = (*(*(*system_).functionspace())[fieldindex]).dofmap().dofs();
-        for (boost::unordered_set<uint>::const_iterator dof_it = dof_set.begin(); dof_it != dof_set.end(); dof_it++)
-        {
-          // and insert them into the vector if we own them
-          if ((*dof_it >= ownership_range.first) && (*dof_it < ownership_range.second))
+      {                                                              // no regions or components specified... **field**
+        boost::unordered_set<uint> dof_set =                         // take the set of dof for this field
+              (*(*(*system_).functionspace())[fieldindex]).dofmap().dofs();
+        for (boost::unordered_set<uint>::const_iterator              // loop over the dof in the set
+                                        dof_it = dof_set.begin(); 
+                                        dof_it != dof_set.end(); 
+                                        dof_it++)
+        {                                                            // and insert them into the child_indices vector
+          if ((*dof_it >= ownership_range.first) &&                  // but first check that this process owns them
+                                (*dof_it < ownership_range.second))  // (in parallel)
           {
             child_indices.push_back(*dof_it);
           }
@@ -496,212 +761,70 @@ void SpudSolverBucket::is_by_field_fill_(const std::string &optionpath, IS &is,
       }
     }
   }
-  // phew, that's over!
-  // FIXME: tidy up the above mess!
+                                                                     // phew, that's over!
+                                                                     // FIXME: tidy up the above mess!
 
-  // sort the vector of indices over all fields (not inherited indices!)
-  std::sort(child_indices.begin(), child_indices.end());
+  std::sort(child_indices.begin(), child_indices.end());             // sort the vector of child_indices
 
-  // turn it into a simpler structure for the IS allocation
-  PetscInt n=child_indices.size();
+  PetscInt n=child_indices.size();                                   // setup a simpler structure for petsc
   PetscInt *indices;
-
   PetscMalloc(n*sizeof(PetscInt), &indices);
  
   uint ind = 0;
   if(parent_indices)
-  {
-    // we have been passed a list of parent indices... our child indices must be
-    // a subset of this list and indexed into it so let's do that now...
+  {                                                                  // we have been passed a list of parent indices... 
+                                                                     // our child indices must be a  subset of this list and indexed
+                                                                     // into it so let's do that now while we convert structures...
     uint p_size = (*parent_indices).size();
     uint p_ind = 0;
-    for (std::vector<uint>::const_iterator c_it = child_indices.begin(); c_it != child_indices.end(); c_it++)
+    for (std::vector<uint>::const_iterator                           // loop over the child indices
+                                        c_it = child_indices.begin(); 
+                                        c_it != child_indices.end(); 
+                                        c_it++)
     {
-      while ((*parent_indices)[p_ind] != *c_it)
-      {
+      while ((*parent_indices)[p_ind] != *c_it)                      // child_indices is sorted, so parent_indices should be too...
+      {                                                              // search parent_indices until the current child index is found
         p_ind++;
-        if (p_ind == p_size)
-        {
+        if (p_ind == p_size)                                         // or we reach the end of the parent_indices...
+        {                                                            // and throw an error
           dolfin::error("IS indices are not a subset of a parent fieldsplit.");
         }
       }
-      indices[ind] = p_ind;
-      ind++; 
-      p_ind++;  // indices shouldn't be repeated so increment
+      indices[ind] = p_ind;                                          // found the child index in the parent_indices so copy it into
+                                                                     // the PetscInt array
+      ind++;                                                         // increment the array index
+      p_ind++;                                                       // indices shouldn't be repeated so increment the parent too
     } 
-    // these will probably not be equal
-    assert(ind<=n);
+    assert(ind<=n);                                                  // these will probably not be equal
     n = ind;
   }
   else
   {
-    for (std::vector<uint>::const_iterator ind_it = child_indices.begin(); ind_it != child_indices.end(); ind_it++)
+    for (std::vector<uint>::const_iterator                           // loop over the child_indices
+                                      ind_it = child_indices.begin(); 
+                                      ind_it != child_indices.end(); 
+                                      ind_it++)
     {
-      indices[ind] = *ind_it;
-      ind++;
+      indices[ind] = *ind_it;                                        // insert them into the PetscInt array
+      ind++;                                                         // increment the array index
     }
     // these should be equal
-    assert(ind==n);
+    assert(ind==n);                                                  // these should be equal
   }
 
-  // create the index set
-  perr = ISCreateGeneral(PETSC_COMM_WORLD, n, indices, &is); CHKERRV(perr);
-  //perr = ISView(is, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);
+  perr = ISCreateGeneral(PETSC_COMM_WORLD, n, indices, &is);         // create the general index set based on the indices
+  CHKERRV(perr);
+  //perr = ISView(is, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);        // isview?  FIXME: add an option?
 
-  // free up the indices
-  PetscFree(indices);
+  PetscFree(indices);                                                // free the PetscInt array of indices
    
 }
 
-void SpudSolverBucket::base_fill_()
+//*******************************************************************|************************************************************//
+// empty the data structures in the spudsolver bucket
+//*******************************************************************|************************************************************//
+void SpudSolverBucket::derived_empty_()
 {
-  // A buffer to put option paths in
-  std::stringstream buffer;
-  Spud::OptionError serr;
-
-  // What is this field called?
-  buffer.str(""); buffer << optionpath() << "/name";
-  serr = Spud::get_option(buffer.str(), name_); spud_err(buffer.str(), serr);
-
-  // Get the field type
-  buffer.str(""); buffer << optionpath() << "/type/name";
-  serr = Spud::get_option(buffer.str(), type_); spud_err(buffer.str(), serr);
-
-  // Get the tolerances
-  buffer.str(""); buffer << optionpath() << "/type/relative_error";
-  serr = Spud::get_option(buffer.str(), rtol_); spud_err(buffer.str(), serr);
-
-  buffer.str(""); buffer << optionpath() << "/type/absolute_error";
-  serr = Spud::get_option(buffer.str(), atol_, 1.e-50); spud_err(buffer.str(), serr);
-
-  buffer.str(""); buffer << optionpath() << "/type/solution_error";
-  serr = Spud::get_option(buffer.str(), stol_, 1.e-8); spud_err(buffer.str(), serr);
-
-  buffer.str(""); buffer << optionpath() << "/type/max_iterations";
-  serr = Spud::get_option(buffer.str(), maxits_); spud_err(buffer.str(), serr);
-
-  buffer.str(""); buffer << optionpath() << "/type/min_iterations";
-  serr = Spud::get_option(buffer.str(), minits_, 0); spud_err(buffer.str(), serr);
-
-  buffer.str(""); buffer << optionpath() << "/type/max_function_evaluations";
-  serr = Spud::get_option(buffer.str(), maxfes_, 10000); spud_err(buffer.str(), serr);
-
-}
-
-void SpudSolverBucket::forms_fill_()
-{
-  // A buffer to put option paths (and strings) in
-  std::stringstream buffer;
-  Spud::OptionError serr;
-   
-  buffer.str(""); buffer << optionpath() << "/type/form";
-  int nforms = Spud::option_count(buffer.str());
-  for (uint i = 0; i < nforms; i++)
-  {
-    buffer.str(""); buffer << optionpath() << "/type/form[" << i << "]";
-    std::string formoptionpath = buffer.str();
-
-    std::string formname;
-    buffer.str(""); buffer << formoptionpath << "/name";
-    serr = Spud::get_option(buffer.str(), formname); spud_err(buffer.str(), serr);
-
-    Form_ptr form = ufc_fetch_form((*system_).name(), name(), type(), formname, (*system_).functionspace());
-    register_form(form, formname, formoptionpath);
-
-    // Loop over the functions requested by the form and hook up (potentially currently null) pointers
-    uint ncoeff = (*form).num_coefficients();
-    for (uint i = 0; i < ncoeff; i++)
-    {
-      std::string uflsymbol = (*form).coefficient_name(i);
-      // is this a coefficient function in this system?
-      if ((*(*system_).bucket()).contains_baseuflsymbol(uflsymbol))
-      {
-        // yes, it's a coefficient function... so let's take this opportunity to register
-        // its functionspace (if we don't already have it)
-        std::string baseuflsymbol = (*(*system_).bucket()).fetch_baseuflsymbol(uflsymbol);
-        if (!(*(*system_).bucket()).contains_coefficientspace(baseuflsymbol))
-        {
-          FunctionSpace_ptr coefficientspace;
-          coefficientspace = ufc_fetch_coefficientspace((*system_).name(), name(), baseuflsymbol, (*system_).mesh());
-          (*(*system_).bucket()).register_coefficientspace(coefficientspace, baseuflsymbol);
-        }
-      }
-
-    }
-
-  }
-
-  if (type()=="SNES") 
-  {
-    linear_      = fetch_form("Residual");
-    bilinear_    = fetch_form("Jacobian");
-    if (contains_form("JacobianPC"))
-    {
-      bilinearpc_ = fetch_form("JacobianPC");
-    }
-    // otherwise bilinearpc_ is null
-    // residual_ is a null pointer for SNES
-
-  }
-  else if (type()=="Picard")
-  {
-    linear_      = fetch_form("Linear");
-    bilinear_    = fetch_form("Bilinear");
-    if (contains_form("BilinearPC"))
-    {
-      bilinearpc_ = fetch_form("BilinearPC");
-    }
-    // otherwise bilinearpc_ is null
-    residual_   = fetch_form("Residual");
-
-  }
-  else
-  {
-    dolfin::error("Unknown solver type.");
-  }
-     
-}
-
-// Register a functional in the function
-void SpudSolverBucket::register_form(Form_ptr form, std::string name, std::string optionpath)
-{
-  // First check if a form with this name already exists
-  Form_it f_it = forms_.find(name);
-  if (f_it != forms_.end())
-  {
-    // if it does, issue an error
-    dolfin::error("Form named \"%s\" already exists in function.", name.c_str());
-  }
-  else
-  {
-    // if not then insert it into the maps
-    forms_[name]            = form;
-    form_optionpaths_[name] = optionpath;
-  }
-}
-
-// Return a string describing the contents of the spudfunction
-const std::string SpudSolverBucket::str(int indent) const
-{
-  std::stringstream s;
-  std::string indentation (indent*2, ' ');
-  s << indentation << "SolverBucket " << name() << " (" << optionpath() << ")" << std::endl;
-  indent++;
-  s << forms_str(indent);
-  return s.str();
-}
-
-// Describe the contents of the form_optionpaths_ map
-const std::string SpudSolverBucket::forms_str(int indent) const
-{
-  std::stringstream s;
-  std::string indentation (indent*2, ' ');
-
-  for ( string_const_it s_it = form_optionpaths_.begin(); s_it != form_optionpaths_.end(); s_it++ )
-  {
-    s << indentation << "Form " << (*s_it).first << " (" << (*s_it).second  << ")" << std::endl;
-  }
-
-  return s.str();
+  form_optionpaths_.clear();
 }
 

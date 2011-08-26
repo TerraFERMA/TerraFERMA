@@ -605,12 +605,11 @@ void SpudBucket::baseuflsymbols_fill_(const std::string &optionpath)
 }
 
 //*******************************************************************|************************************************************//
-// empty the data structures in the spudbucket and bucket
+// empty the data structures in the spudbucket
 //*******************************************************************|************************************************************//
 void SpudBucket::derived_empty_()
 {
   mesh_optionpaths_.clear();
-  empty_();
 }
 
 //void SpudBucket::detectors_fill_()

@@ -30,6 +30,19 @@ SolverBucket::SolverBucket(SystemBucket* system) : system_(system)
 SolverBucket::~SolverBucket()
 {
   empty_();                                                          // empty the solver bucket data structures
+
+  PetscErrorCode perr;                                               // petsc error code
+
+  if(type()=="SNES")
+  {
+    perr = SNESDestroy(snes_); CHKERRV(perr);                        // destroy the snes object
+  }
+
+  if(type()=="Picard")
+  {
+    perr = KSPDestroy(ksp_); CHKERRV(perr);                          // destroy the ksp object
+  }
+
 }
 
 //*******************************************************************|************************************************************//
@@ -344,7 +357,7 @@ const std::string SolverBucket::forms_str(int indent) const
 }
 
 //*******************************************************************|************************************************************//
-// empty the data structures in the function bucket
+// empty the data structures in the solver bucket
 //*******************************************************************|************************************************************//
 void SolverBucket::empty_()
 {

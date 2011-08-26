@@ -34,17 +34,17 @@ namespace buckettools
     virtual ~SpudSolverBucket();                                     // default destructor
 
     //***************************************************************|***********************************************************//
+    // Filling data
+    //***************************************************************|***********************************************************//
+
+    void fill();                                                     // fill in the data in the base solver bucket
+
+    //***************************************************************|***********************************************************//
     // Base data access
     //***************************************************************|***********************************************************//
 
     const std::string optionpath() const                             // return a constant string containing the optionpath for the solver bucket
     { return optionpath_; }
-
-    //***************************************************************|***********************************************************//
-    // Filling data
-    //***************************************************************|***********************************************************//
-
-    void fill();                                                     // fill in the data in the base solver bucket
 
     //***************************************************************|***********************************************************//
     // Form data access
@@ -106,12 +106,11 @@ namespace buckettools
                            std::vector<uint> &child_indices,
                            const std::vector<uint>* parent_indices);
 
-    void pc_fieldsplit_by_field_fill_(const std::string &optionpath, // fill in the information about a fieldsplit pc
-                                      PC &pc,                        // based on a field based petsc index set
-                                      std::vector<uint> 
-                                                     &child_indices,
-                                      const std::vector<uint>* 
-                                                    parent_indices);
+    //***************************************************************|***********************************************************//
+    // Emptying data
+    //***************************************************************|***********************************************************//
+
+    void derived_empty_();                                           // empty the derived and base class data structures
 
     
   };
