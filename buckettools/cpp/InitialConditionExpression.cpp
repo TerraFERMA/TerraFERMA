@@ -6,37 +6,52 @@
 
 using namespace buckettools;
 
-// Specific constructor (scalar)
-InitialConditionExpression::InitialConditionExpression(std::map< uint, Expression_ptr > expressions) : dolfin::Expression(), expressions_(expressions)
+//*******************************************************************|************************************************************//
+// specific constructor (scalar)
+//*******************************************************************|************************************************************//
+InitialConditionExpression::InitialConditionExpression(std::map< uint, 
+                                     Expression_ptr > expressions) : 
+                                            dolfin::Expression(), 
+                                            expressions_(expressions)
 {
-  // Do nothing
+                                                                     // do nothing
 }
 
-// Specific constructor (vector)
+//*******************************************************************|************************************************************//
+// specific constructor (vector)
+//*******************************************************************|************************************************************//
 InitialConditionExpression::InitialConditionExpression(uint dim, std::map< uint, Expression_ptr > expressions) : dolfin::Expression(dim), expressions_(expressions)
 {
-  // Do nothing
+                                                                     // do nothing
 }
 
-// Default destructor
+//*******************************************************************|************************************************************//
+// default destructor
+//*******************************************************************|************************************************************//
 InitialConditionExpression::~InitialConditionExpression()
 {
-  // should all be automatic from pyinst_ destructor
+                                                                     // do nothing
 }
 
-// Overload eval to loop over subfunction/field intial condition expressions
-void InitialConditionExpression::eval(dolfin::Array<double>& values, const dolfin::Array<double>& x, const ufc::cell &cell) const
+//*******************************************************************|************************************************************//
+// overload dolfin expression eval to loop over a map (from component) of expressions and evaluate them all to a single expression 
+// value array
+//*******************************************************************|************************************************************//
+void InitialConditionExpression::eval(dolfin::Array<double>& values, 
+                                      const dolfin::Array<double>& x, 
+                                      const ufc::cell &cell) const
 {
-  double zero = 0.0;
+  double zero = 0.0;                                                 // zero the full value array
   values=zero;
-  for (std::map< uint, Expression_ptr >::const_iterator expr = expressions_.begin();
+  for (std::map< uint, Expression_ptr >::const_iterator expr =       // loop over the expressions in the map
+                    expressions_.begin();
                     expr != expressions_.end(); expr++)
   {
-    dolfin::Array<double> tmp_values((*(*expr).second).value_size());
-    (*(*expr).second).eval(tmp_values, x, cell);
-    for (uint i = 0; i< tmp_values.size(); i++)
+    dolfin::Array<double> tmp_values((*(*expr).second).value_size());// set up a temporary value array
+    (*(*expr).second).eval(tmp_values, x, cell);                     // evaluate the component expression
+    for (uint i = 0; i< tmp_values.size(); i++)                      // loop over the temporary value array
     {
-      values[(*expr).first+i] = tmp_values[i];
+      values[(*expr).first+i] = tmp_values[i];                       // insert component value into the full value array
     }
   }
   
