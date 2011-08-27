@@ -16,11 +16,13 @@ namespace buckettools {
   //*****************************************************************|************************************************************//
 
   class SystemBucket;                                                // predeclaration
-  typedef boost::shared_ptr< SystemBucket >   SystemBucket_ptr;
+  typedef boost::shared_ptr< SystemBucket >     SystemBucket_ptr;
   class FunctionBucket;                                              // predeclaration
-  typedef boost::shared_ptr< FunctionBucket > FunctionBucket_ptr;
+  typedef boost::shared_ptr< FunctionBucket >   FunctionBucket_ptr;
   class SolverBucket;                                                // predeclaration
-  typedef boost::shared_ptr< SolverBucket >   SolverBucket_ptr;
+  typedef boost::shared_ptr< SolverBucket >     SolverBucket_ptr;
+  class GenericDetectors;                                            // predeclaration
+  typedef boost::shared_ptr< GenericDetectors > GenericDetectors_ptr;
 
   //*****************************************************************|************************************************************//
   // boost shared pointers to dolfin objects
@@ -39,6 +41,7 @@ namespace buckettools {
   typedef boost::shared_ptr< dolfin::PETScMatrix >                  PETScMatrix_ptr;
   typedef boost::shared_ptr< dolfin::PETScVector >                  PETScVector_ptr;
   typedef boost::shared_ptr< dolfin::File >                         File_ptr;
+  typedef boost::shared_ptr< dolfin::Array<double> >                Array_double_ptr;
 
   //*****************************************************************|************************************************************//
   // boost shared pointers to petsc objects
@@ -62,8 +65,6 @@ namespace buckettools {
   typedef std::map< std::string, Mesh_ptr >::const_iterator              Mesh_const_it;
   typedef std::map< std::string, std::string >::iterator                 string_it;
   typedef std::map< std::string, std::string >::const_iterator           string_const_it;
-//  typedef std::map< std::string, GenericDetectors_ptr >::iterator        GenericDetectors_it;
-//  typedef std::map< std::string, GenericDetectors_ptr >::const_iterator  GenericDetectors_const_it;
   typedef std::map< std::string, FunctionSpace_ptr >::iterator           FunctionSpace_it;
   typedef std::map< std::string, FunctionSpace_ptr >::const_iterator     FunctionSpace_const_it;
   typedef std::map< std::string, FunctionBucket_ptr >::iterator          FunctionBucket_it;
@@ -88,6 +89,8 @@ namespace buckettools {
   typedef std::map< int, FunctionSpace_ptr >::const_iterator             int_FunctionSpace_const_it;
   typedef std::map< std::string, Form_ptr >::iterator                    Form_it;
   typedef std::map< std::string, Form_ptr >::const_iterator              Form_const_it;
+  typedef std::map< std::string, GenericDetectors_ptr >::iterator        GenericDetectors_it;
+  typedef std::map< std::string, GenericDetectors_ptr >::const_iterator  GenericDetectors_const_it;
   
 }
 

@@ -24,7 +24,7 @@ SpudFunctionBucket::SpudFunctionBucket(std::string optionpath, SystemBucket* sys
 //*******************************************************************|************************************************************//
 SpudFunctionBucket::~SpudFunctionBucket()
 {
-  derived_empty_();                                                  // empty the data in the derived class
+  empty_();                                                  // empty the data in the derived class
 }
 
 //*******************************************************************|************************************************************//
@@ -526,8 +526,9 @@ void SpudFunctionBucket::functionals_fill_()
 //*******************************************************************|************************************************************//
 // empty the data structures in the spudfunctionbucket
 //*******************************************************************|************************************************************//
-void SpudFunctionBucket::derived_empty_()
+void SpudFunctionBucket::empty_()
 {
   functional_optionpaths_.clear();
+  FunctionBucket::empty_();
 }
 

@@ -6,28 +6,46 @@
 
 using namespace buckettools;
 
+//*******************************************************************|************************************************************//
+// default constructor
+//*******************************************************************|************************************************************//
 PointDetectors::PointDetectors() : GenericDetectors()
 {
-  // Do nothing
+                                                                     // do nothing
 }
 
-PointDetectors::PointDetectors(Array_double_ptr point, std::string name) : GenericDetectors(1, (*point).size(), name)
+//*******************************************************************|************************************************************//
+// specific constructor
+//*******************************************************************|************************************************************//
+PointDetectors::PointDetectors(const Array_double_ptr point, 
+                                          const std::string &name) : 
+                           GenericDetectors(1, (*point).size(), name)
 {
-  init_(point);
+  init_(point);                                                      // initialize the detector 
 }
 
-PointDetectors::PointDetectors(std::vector<double> *point, 
-                               std::string name) : GenericDetectors(1, (*point).size(), name)
+//*******************************************************************|************************************************************//
+// specific constructor
+//*******************************************************************|************************************************************//
+PointDetectors::PointDetectors(const std::vector<double> &point, 
+                                          const std::string &name) : 
+                          GenericDetectors(1, point.size(), name)
 {
-  init_(point);
+  init_(point);                                                      // initialize the detector
 }
 
+//*******************************************************************|************************************************************//
+// default destructor
+//*******************************************************************|************************************************************//
 PointDetectors::~PointDetectors()
 {
-  // Do nothing - taken care of by base destructor
+                                                                     // do nothing
 }
 
-void PointDetectors::init_(Array_double_ptr point)
+//*******************************************************************|************************************************************//
+// intialize a point detector from a (boost shared) pointer to a dolfin array
+//*******************************************************************|************************************************************//
+void PointDetectors::init_(const Array_double_ptr point)
 {
   if(!positions_.empty())
   {
@@ -37,18 +55,17 @@ void PointDetectors::init_(Array_double_ptr point)
   positions_.push_back(point);
 }
 
-void PointDetectors::init_(std::vector<double> *point)
+//*******************************************************************|************************************************************//
+// intialize a point detector from a std vector
+//*******************************************************************|************************************************************//
+void PointDetectors::init_(const std::vector<double> &point)
 {
-  if(!positions_.empty())
+  Array_double_ptr arraypoint(new dolfin::Array<double>(point.size()));
+  for (uint i = 0; i<point.size(); i++)
   {
-    dolfin::error("In PointDetectors::init_ intializing already initialized detectors.");
+    (*arraypoint)[i] = point[i];
   }
   
-  Array_double_ptr arraypoint(new dolfin::Array<double>((*point).size()));
-  for (uint i = 0; i<(*point).size(); i++)
-  {
-    (*arraypoint)[i] = (*point)[i];
-  }
-  
-  positions_.push_back(arraypoint);
+  init_(arraypoint);
 }
+

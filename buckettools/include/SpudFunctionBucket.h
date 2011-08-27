@@ -120,7 +120,7 @@ namespace buckettools
     // Emptying data
     //***************************************************************|***********************************************************//
 
-    void derived_empty_();                                           // empty the data structures of this function bucket
+    void empty_();                                           // empty the data structures of this function bucket
 
   };
  

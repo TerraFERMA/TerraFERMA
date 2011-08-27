@@ -407,6 +407,75 @@ FunctionSpace_ptr Bucket::fetch_coefficientspace(
 }
 
 //*******************************************************************|************************************************************//
+// register a (boost shared) pointer to a detector set in the bucket data maps
+//*******************************************************************|************************************************************//
+void Bucket::register_detector(GenericDetectors_ptr detector, 
+                                            const std::string &name)
+{
+  GenericDetectors_it d_it = detectors_.find(name);                  // check if a mesh with this name already exists
+  if (d_it != detectors_end())
+  {
+    dolfin::error(
+          "Detector set named \"%s\" already exists in bucket.",     // if it does, issue an error
+                                                    name.c_str());
+  }
+  else
+  {
+    detectors_[name] = detector;                                     // if not, insert it into the detectors_ map
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return a (boost shared) pointer to a detector set from the bucket data maps
+//*******************************************************************|************************************************************//
+GenericDetectors_ptr Bucket::fetch_detector(const std::string &name)
+{
+  GenericDetectors_it d_it = detectors_.find(name);                  // check if this detector exists in the detectors_ map
+  if (d_it == detectors_end())
+  {
+    dolfin::error(
+          "Detector set named \"%s\" does not exist in bucket.",     // if it doesn't, issue an error
+                                                    name.c_str());
+  }
+  else
+  {
+    return (*d_it).second;                                           // if it does, return a (boost shared) pointer to it
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the beginning of the detectors_ map
+//*******************************************************************|************************************************************//
+GenericDetectors_it Bucket::detectors_begin()
+{
+  return detectors_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the beginning of the detectors_ map
+//*******************************************************************|************************************************************//
+GenericDetectors_const_it Bucket::detectors_begin() const
+{
+  return detectors_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the end of the detectors_ map
+//*******************************************************************|************************************************************//
+GenericDetectors_it Bucket::detectors_end()
+{
+  return detectors_.end();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the end of the detectors_ map
+//*******************************************************************|************************************************************//
+GenericDetectors_const_it Bucket::detectors_end() const
+{
+  return detectors_.end();
+}
+
+//*******************************************************************|************************************************************//
 // loop over the systems in the bucket, telling each to output diagnostic data
 //*******************************************************************|************************************************************//
 void Bucket::output()
@@ -555,52 +624,7 @@ void Bucket::empty_()
   baseuflsymbols_.clear();
   uflsymbols_.clear();
   coefficientspaces_.clear();
-//  detectors_.clear();
+  detectors_.clear();
 }
 
-//// Register a detector set in the bucket
-//void Bucket::register_detector(GenericDetectors_ptr detector, std::string name, std::string option_path)
-//{
-//  // First check if a detector set with this name already exists
-//  GenericDetectors_it d_it = detectors_.find(name);
-//  if (d_it != detectors_.end())
-//  {
-//    // if it does, issue an error
-//    dolfin::error("Detector set named \"%s\" already exists in bucket.", name.c_str());
-//  }
-//  else
-//  {
-//    // if not then insert it into the maps
-//    detectors_[name] = detector;
-//    detector_optionpaths_[name] = option_path;
-//  }
-//}
-//
-//GenericDetectors_ptr Bucket::fetch_detector(const std::string name)
-//{
-//  std::map< std::string, GenericDetectors_ptr >::iterator it;
-//  it = detectors_.find(name);
-//  return (*it).second;
-//}
-//
-//std::map< std::string, GenericDetectors_ptr >::iterator Bucket::detectors_begin()
-//{
-//  return detectors_.begin();
-//}
-//
-//std::map< std::string, GenericDetectors_ptr >::const_iterator Bucket::detectors_begin() const
-//{
-//  return detectors_.begin();
-//}
-//
-//std::map< std::string, GenericDetectors_ptr >::iterator Bucket::detectors_end()
-//{
-//  return detectors_.end();
-//}
-//
-//std::map< std::string, GenericDetectors_ptr >::const_iterator Bucket::detectors_end() const
-//{
-//  return detectors_.end();
-//}
-//
 

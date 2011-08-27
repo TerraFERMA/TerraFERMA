@@ -57,6 +57,7 @@ add_library(buckettools_cpp Bucket.cpp SpudBucket.cpp SystemBucket.cpp SpudSyste
                             SolverBucket.cpp SpudSolverBucket.cpp 
                             SpudBase.cpp PythonExpression.cpp PythonInstance.cpp
                             InitialConditionExpression.cpp
+                            GenericDetectors.cpp PointDetectors.cpp PythonDetectors.cpp
                             StatFile.cpp DiagnosticsFile.cpp
                             BucketPETScBase.cpp BucketDolfinBase.cpp)
 # tell cmake that this file doesn't exist until build time

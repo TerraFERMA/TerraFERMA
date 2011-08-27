@@ -61,8 +61,8 @@ namespace buckettools
     // Mesh data access
     //***************************************************************|***********************************************************//
 
-    void register_mesh(Mesh_ptr mesh, std::string name,              // register a mesh with a given name (and an optionpath)
-                                        std::string optionpath); 
+    void register_mesh(Mesh_ptr mesh, const std::string &name,       // register a mesh with a given name (and an optionpath)
+                       const std::string &optionpath); 
 
     std::string fetch_mesh_optionpath(const std::string name);       // return the optionpath associated with the named mesh
 
@@ -77,6 +77,26 @@ namespace buckettools
                                                                      // optionpaths
  
     //***************************************************************|***********************************************************//
+    // Detector data access
+    //***************************************************************|***********************************************************//
+
+    void register_detector(GenericDetectors_ptr detector,            // register a detector with a given name (and an optionpath)
+                           const std::string &name, 
+                           const std::string &option_path);
+    
+    std::string fetch_detector_optionpath(const std::string name);   // return the optionpath associated with the named detector
+
+    string_it detector_optionpaths_begin();                          // return an iterator to the beginning of the detector optionpaths
+
+    string_const_it detector_optionpaths_begin() const;              // return a constant iterator to the beginning of the detector
+                                                                     // optionpaths
+
+    string_it detector_optionpaths_end();                            // return an iterator to the end of the detector optionpaths
+
+    string_const_it detector_optionpaths_end() const;                // return a constant iterator to the end of the detector
+                                                                     // optionpaths
+ 
+    //***************************************************************|***********************************************************//
     // Output functions
     //***************************************************************|***********************************************************//
 
@@ -84,6 +104,11 @@ namespace buckettools
     { return meshes_str(0); }
 
     const std::string meshes_str(int indent) const;                  // return an indented string describing the meshes
+
+    const std::string detectors_str() const                          // return a string describing the meshes
+    { return detectors_str(0); }
+
+    const std::string detectors_str(int indent) const;               // return an indented string describing the meshes
 
   //*****************************************************************|***********************************************************//
   // Private functions
@@ -104,6 +129,8 @@ namespace buckettools
 
     std::map< std::string, std::string > mesh_optionpaths_;          // a map from mesh names to spud mesh optionpaths
 
+    std::map< std::string, std::string > detector_optionpaths_;      // a map from detector names to spud detector optionpaths
+
     //***************************************************************|***********************************************************//
     // Functions used to run the model (continued)
     //***************************************************************|***********************************************************//
@@ -122,13 +149,13 @@ namespace buckettools
 
     void baseuflsymbols_fill_(const std::string &optionpath);        // fill the ufl symbol maps
 
-//    void detectors_fill_();                                          // fill the detectors
+    void detectors_fill_();                                          // fill the detectors
  
     //***************************************************************|***********************************************************//
     // Emptying data
     //***************************************************************|***********************************************************//
 
-    void derived_empty_();
+    void empty_();
 
   };
 

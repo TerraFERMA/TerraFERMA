@@ -2,8 +2,7 @@
 #ifndef __BUCKET_H
 #define __BUCKET_H
 
-// #include "GenericDetectors.h"
-// #include "PythonDetectors.h"
+#include "GenericDetectors.h"
 #include "BoostTypes.h"
 #include "SystemBucket.h"
 #include <dolfin.h>
@@ -146,6 +145,23 @@ namespace buckettools
                                                &uflsymbol) const;    // the coefficient with the given uflsymbol
 
     //***************************************************************|***********************************************************//
+    // Coefficient functionspace data access
+    //***************************************************************|***********************************************************//
+
+    void register_detector(GenericDetectors_ptr detector,            // register a detector set with the given name
+                                  const std::string &name);
+    
+    GenericDetectors_ptr fetch_detector(const std::string &name);    // fetch a detector set with the given name
+
+    GenericDetectors_it detectors_begin();                           // return an iterator to the beginning of the detectors
+    
+    GenericDetectors_const_it detectors_begin() const;               // return a constant iterator to the beginning of the detectors
+    
+    GenericDetectors_it detectors_end();                             // return an iterator to the beginning of the detectors
+    
+    GenericDetectors_const_it detectors_end() const;                 // return a constant iterator to the beginning of the detectors
+
+    //***************************************************************|***********************************************************//
     // Output functions
     //***************************************************************|***********************************************************//
 
@@ -222,6 +238,7 @@ namespace buckettools
 
     std::map< int, SystemBucket_ptr > orderedsystems_;               // an ordered (user defined) map from system names to (boost
                                                                      // shared) pointers to systems
+    std::map< std::string, GenericDetectors_ptr > detectors_;        // a map from detector set name to (boost shared) pointers to detectors
 
     //***************************************************************|***********************************************************//
     // Filling data
@@ -235,23 +252,6 @@ namespace buckettools
 
     void empty_();                                                   // empty the maps contained in the bucket
 
-//    // A map from detector set name to detectors
-//    std::map< std::string, GenericDetectors_ptr >    detectors_;
-//    
-//    void register_detector(GenericDetectors_ptr detector, std::string name)
-//    { register_detector(detector, name, "uninitialised_path"); }
-//    
-//    void register_detector(GenericDetectors_ptr detector, std::string name, std::string option_path);
-//    
-//    GenericDetectors_ptr fetch_detector(const std::string name);
-//
-//    std::map< std::string, GenericDetectors_ptr >::iterator detectors_begin();
-//    
-//    std::map< std::string, GenericDetectors_ptr >::const_iterator detectors_begin() const;
-//    
-//    std::map< std::string, GenericDetectors_ptr >::iterator detectors_end();
-//    
-//    std::map< std::string, GenericDetectors_ptr >::const_iterator detectors_end() const;
   };
 
   typedef boost::shared_ptr< Bucket > Bucket_ptr;                    // define a boost shared ptr type for the class

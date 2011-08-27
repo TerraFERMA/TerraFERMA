@@ -28,7 +28,7 @@ SpudSolverBucket::SpudSolverBucket(std::string optionpath,
 //*******************************************************************|************************************************************//
 SpudSolverBucket::~SpudSolverBucket()
 {
-  derived_empty_();                                                  // empty the data in the derived class
+  empty_();                                                  // empty the data in the derived class
 }
 
 //*******************************************************************|************************************************************//
@@ -823,8 +823,9 @@ void SpudSolverBucket::is_by_field_fill_(const std::string &optionpath, IS &is,
 //*******************************************************************|************************************************************//
 // empty the data structures in the spudsolver bucket
 //*******************************************************************|************************************************************//
-void SpudSolverBucket::derived_empty_()
+void SpudSolverBucket::empty_()
 {
   form_optionpaths_.clear();
+  SolverBucket::empty_();
 }
 

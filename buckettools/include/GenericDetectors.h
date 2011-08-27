@@ -3,74 +3,98 @@
 #define __GENERICDETECTORS_H
 
 #include <dolfin.h>
+#include "BoostTypes.h"
 
 namespace buckettools
 {
   
-  typedef boost::shared_ptr< dolfin::Array<double> > Array_double_ptr;
-  
+  //*****************************************************************|************************************************************//
+  // GenericDetectors class:
+  //
   // GenericDetectors is a generic class that contains base information for point and python detectors
+  //*****************************************************************|************************************************************//
   class GenericDetectors
   {
-  protected:
-    
-    // The name of this detector set
-    std::string                     name_;
-    // The number of detectors and the mesh dimension
-    dolfin::uint                    number_detectors_, 
-                                    meshdim_;
-    // A vector of arrays describing the locations of the positions
-    std::vector< Array_double_ptr > positions_;
-    
-    // Clean the detector class
-    void clean_();
-    
-  public:
-    // Default constructor
-    GenericDetectors();
-    
-    // Specific constructor - takes number of detectors, the mesh dimension and the detector's name
-    GenericDetectors(dolfin::uint number_detectors, 
-              dolfin::uint meshdim, 
-              std::string  name);
-    
-    // No copy constructor yet
-    
-    // Destructor
-    ~GenericDetectors();
-    
-    // The base implementation of eval, which returns the values of a function at the locations described by positions_
-    void eval(std::vector< Array_double_ptr > &values,
-              dolfin::GenericFunction         &function);
-    
-    // Return the name_
-    std::string name() const;
-    
-    // Return the mesh dimension
-    uint dim() const;
-    
-    // Return how many detectors are in this set
-    uint size() const;
+  //*****************************************************************|***********************************************************//
+  // Publicly available functions
+  //*****************************************************************|***********************************************************//
 
-    // Pretty print output of the detector positions_
-    std::string str() const;
+  public:                                                            // accessible to everyone
+
+    //***************************************************************|***********************************************************//
+    // Constructors and destructors
+    //***************************************************************|***********************************************************//
+
+    GenericDetectors();                                              // default constructor
     
-    // Return begin iterator for positions_
-    std::vector< Array_double_ptr >::iterator begin();
+    GenericDetectors(const uint &number_detectors,                   // specific constructor - no. detectors, coordinate dimension,
+                     const uint &meshdim,                            // and name
+                     const std::string &name);
+    
+    virtual ~GenericDetectors();                                     // destructor
+    
+    //***************************************************************|***********************************************************//
+    // Detector evaluation
+    //***************************************************************|***********************************************************//
 
-    // Return const begin iterator for positions_
-    std::vector< Array_double_ptr >::const_iterator begin() const;
+    void eval(std::vector< Array_double_ptr > &values,               // base eval implementation, take values of a function at
+              const dolfin::GenericFunction &function);              // detector positions and returns values
+    
+    //***************************************************************|***********************************************************//
+    // Base data access
+    //***************************************************************|***********************************************************//
 
-    // Return end iterator for positions_
-    std::vector< Array_double_ptr >::iterator end();
+    const std::string name() const                                   // return the name
+    { return name_; }
 
-    // Return const end iterator for positions_
-    std::vector< Array_double_ptr >::const_iterator end() const;
+    const uint dim() const                                           // return the coordinate dimensions
+    { return meshdim_; } 
+
+    const uint size() const                                          // return the number of detectors in this set
+    { return number_detectors_; }
+
+    //***************************************************************|***********************************************************//
+    // Data array access
+    //***************************************************************|***********************************************************//
+
+    std::vector< Array_double_ptr >::iterator begin();               // return an iterator to the beginning of the positions
+
+    std::vector< Array_double_ptr >::const_iterator begin() const;   // return a constant iterator to the beginning of the positions
+
+    std::vector< Array_double_ptr >::iterator end();                 // return an iterator to the end of the positions
+
+    std::vector< Array_double_ptr >::const_iterator end() const;     // return a constant iterator to the end of the positions
+    
+    //***************************************************************|***********************************************************//
+    // Output
+    //***************************************************************|***********************************************************//
+
+    virtual const std::string str() const;                           // return a string giving the detector locations
+    
+  //*****************************************************************|***********************************************************//
+  // Protected functions
+  //*****************************************************************|***********************************************************//
+
+  protected:                                                         // only available to this class and derived classes
+    
+    //***************************************************************|***********************************************************//
+    // Base data
+    //***************************************************************|***********************************************************//
+
+    std::string                     name_;                           // detectors set name
+    dolfin::uint                    number_detectors_,               // number of detectors
+                                    meshdim_;                        // coordinate dimensions
+    std::vector< Array_double_ptr > positions_;                      // vector of arrays giving locations of detectors
+    
+    //***************************************************************|***********************************************************//
+    // Emptying data
+    //***************************************************************|***********************************************************//
+
+    void clean_();                                                   // empty the data maps
     
   };
   
-  // Define a boost shared_ptr for the base GenericDetectors class
-  typedef boost::shared_ptr< GenericDetectors > GenericDetectors_ptr;
+  typedef boost::shared_ptr< GenericDetectors > GenericDetectors_ptr;// define a (boost shared) pointer to the class type
   
 }
 

@@ -110,7 +110,7 @@ namespace buckettools
     // Emptying data
     //***************************************************************|***********************************************************//
 
-    void derived_empty_();                                           // empty the derived and base class data structures
+    void empty_();                                           // empty the derived and base class data structures
 
     
   };

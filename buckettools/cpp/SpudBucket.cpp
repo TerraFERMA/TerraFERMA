@@ -5,8 +5,8 @@
 #include "BoostTypes.h"
 #include "BucketDolfinBase.h"
 //#include "GenericDetectors.h"
-//#include "PointDetectors.h"
-//#include "PythonDetectors.h"
+#include "PointDetectors.h"
+#include "PythonDetectors.h"
 //#include "PythonExpression.h"
 //#include "InitialConditionExpression.h"
 #include <dolfin.h>
@@ -45,7 +45,7 @@ SpudBucket::SpudBucket(std::string name, std::string optionpath) :
 //*******************************************************************|************************************************************//
 SpudBucket::~SpudBucket()
 {
-  derived_empty_();                                                  // empty the data structures
+  empty_();                                                          // empty the data structures
 }
 
 //*******************************************************************|************************************************************//
@@ -127,7 +127,9 @@ void SpudBucket::fill()
 //*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a dolfin mesh in the bucket (and spudbucket) data maps with a spud optionpath
 //*******************************************************************|************************************************************//
-void SpudBucket::register_mesh(Mesh_ptr mesh, std::string name, std::string optionpath)
+void SpudBucket::register_mesh(Mesh_ptr mesh, 
+                               const std::string &name, 
+                               const std::string &optionpath)
 {
   Mesh_it m_it = meshes_.find(name);                                 // check if a mesh with this name already exists
   if (m_it != meshes_end())
@@ -192,7 +194,78 @@ string_const_it SpudBucket::mesh_optionpaths_end() const
 }
 
 //*******************************************************************|************************************************************//
-// return a string describing the contents of the meshoptionpaths_ data structure
+// register a (boost shared) pointer to a detector in the bucket (and spudbucket) data maps with a spud optionpath
+//*******************************************************************|************************************************************//
+void SpudBucket::register_detector(GenericDetectors_ptr detector, 
+                               const std::string &name, 
+                               const std::string &optionpath)
+{
+  GenericDetectors_it d_it = detectors_.find(name);                  // check if a detector set with this name already exists
+  if (d_it != detectors_end())
+  {
+    dolfin::error(
+              "Detector named \"%s\" already exists in spudbucket.", // if it does, issue an error
+                                                      name.c_str());
+  }
+  else
+  {
+    detectors_[name]            = detector;                          // if not register it in the map
+    detector_optionpaths_[name] = optionpath;                        // also register its optionpath
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return a string containing the detector optionpath in the spudbucket data maps
+//*******************************************************************|************************************************************//
+std::string SpudBucket::fetch_detector_optionpath(const std::string name)
+{
+  string_it s_it = detector_optionpaths_.find(name);                 // check if a mesh with this name exists
+  if (s_it == detector_optionpaths_end())
+  {
+    dolfin::error(
+              "Detector named \"%s\" does not exist in spudbucket.",
+                                                      name.c_str()); // if it doesn't, issue an error
+  }
+  else
+  {
+    return (*s_it).second;                                           // if it does, return the optionpath
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the beginning of the detector_optionpaths_ map
+//*******************************************************************|************************************************************//
+string_it SpudBucket::detector_optionpaths_begin()
+{
+  return detector_optionpaths_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the beginning of the detector_optionpaths_ map
+//*******************************************************************|************************************************************//
+string_const_it SpudBucket::detector_optionpaths_begin() const
+{
+  return detector_optionpaths_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the end of the detector_optionpaths_ map
+//*******************************************************************|************************************************************//
+string_it SpudBucket::detector_optionpaths_end()
+{
+  return detector_optionpaths_.end();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the end of the mesh_optionpaths_ map
+//*******************************************************************|************************************************************//
+string_const_it SpudBucket::detector_optionpaths_end() const
+{
+  return detector_optionpaths_.end();
+}
+
+//*******************************************************************|************************************************************//
+// return a string describing the contents of the mesh_optionpaths_ data structure
 //*******************************************************************|************************************************************//
 const std::string SpudBucket::meshes_str(int indent) const
 {
@@ -203,6 +276,24 @@ const std::string SpudBucket::meshes_str(int indent) const
                             s_it != mesh_optionpaths_end(); s_it++ )
   {
     s << indentation << "Mesh " << (*s_it).first 
+                    << " (" << (*s_it).second  << ")" << std::endl;
+  }
+
+  return s.str();
+}
+
+//*******************************************************************|************************************************************//
+// return a string describing the contents of the detector_optionpaths_ data structure
+//*******************************************************************|************************************************************//
+const std::string SpudBucket::detectors_str(int indent) const
+{
+  std::stringstream s;
+  std::string indentation (indent*2, ' ');
+
+  for ( string_const_it s_it = detector_optionpaths_begin(); 
+                            s_it != detector_optionpaths_end(); s_it++ )
+  {
+    s << indentation << "Detector set " << (*s_it).first 
                     << " (" << (*s_it).second  << ")" << std::endl;
   }
 
@@ -605,76 +696,67 @@ void SpudBucket::baseuflsymbols_fill_(const std::string &optionpath)
 }
 
 //*******************************************************************|************************************************************//
-// empty the data structures in the spudbucket
+// loop over the detectors defined in the options dictionary and set up the requested detectors
 //*******************************************************************|************************************************************//
-void SpudBucket::derived_empty_()
+void SpudBucket::detectors_fill_()
 {
-  mesh_optionpaths_.clear();
+  GenericDetectors_ptr det(new GenericDetectors());                  // initialize a pointer to a generic detector
+  std::stringstream buffer;                                          // optionpath buffer
+  
+  int npdets = Spud::option_count("/io/detectors/point");            // number of point detectors
+  for (uint i=0; i<npdets; i++)                                      // loop over point detectors
+  {
+    std::stringstream detectorpath;
+    detectorpath.str(""); detectorpath << "/io/detectors/point[" 
+                                                        << i << "]";
+    
+    std::string detname;                                             // detector name
+    buffer.str(detectorpath.str()); buffer << "/name";
+    Spud::get_option(buffer.str(), detname);
+
+    std::vector<double> point;                                       // point location
+    buffer.str(detectorpath.str());
+    Spud::get_option(buffer.str(), point);
+    
+    det.reset(new PointDetectors(point, detname));                   // create point detector
+    register_detector(det, detname, detectorpath.str());             // register detector
+  }
+  
+  int nadets = Spud::option_count("/io/detectors/array");            // number of array detectors
+  for (uint i=0; i<nadets; i++)                                      // loop over array detectors
+  {
+    std::stringstream detectorpath;
+    detectorpath.str(""); detectorpath << "/io/detectors/array[" 
+                                                        << i << "]";
+    
+    int no_det;                                                      // number of detectors in array
+    buffer.str(detectorpath.str()); buffer << "/number_of_detectors";
+    Spud::get_option(buffer.str(), no_det);
+
+    std::string detname;                                             // detector array name
+    buffer.str(detectorpath.str()); buffer << "/name";
+    Spud::get_option(buffer.str(), detname);
+
+    std::string function;                                            // python function describing the detector positions
+    buffer.str(detectorpath.str()); buffer << "/python";
+    Spud::get_option(buffer.str(), function);
+    
+    int dimension;                                                   // FIXME: geometry dimension is not necessarily the coordinate
+    Spud::get_option("/geometry/dimension", dimension);              // dimension
+
+                                                                     // create python detectors array
+    det.reset(new PythonDetectors(no_det, dimension, function, detname));
+    register_detector(det, detname, detectorpath.str());             // register detector
+  }  
+  
 }
 
-//void SpudBucket::detectors_fill_()
-//{
-//  // Initialise a pointer to a generic detector - so that it can be reset in the loops
-//  GenericDetectors_ptr det(new GenericDetectors());
-//  // A string buffer for option paths
-//  std::stringstream buffer;
-//  
-//  // Find out how many point detectors there are
-//  int npdets = Spud::option_count("/io/detectors/point");
-//  // and loop over them
-//  for (uint i=0; i<npdets; i++)
-//  {
-//    // Set up the base path for a point detector
-//    std::stringstream detectorpath;
-//    detectorpath.str(""); detectorpath << "/io/detectors/point[" << i << "]";
-//    
-//    // Get the name of the detector
-//    std::string detname;
-//    buffer.str(detectorpath.str()); buffer << "/name";
-//    Spud::get_option(buffer.str(), detname);
-//
-//    // Get the location of the detector
-//    std::vector<double> point;
-//    buffer.str(detectorpath.str());
-//    Spud::get_option(buffer.str(), point);
-//    
-//    // Initialise and register the point detector
-//    det.reset(new PointDetectors(&point, detname));
-//    register_detector(det, detname);
-//  }
-//  
-//  // Find out how many detector arrays there are
-//  int nadets = Spud::option_count("/io/detectors/array");
-//  // and loop over them
-//  for (uint i=0; i<nadets; i++)
-//  {
-//    // Set up the base path for a detector array
-//    std::stringstream detectorpath;
-//    detectorpath.str(""); detectorpath << "/io/detectors/array[" << i << "]";
-//    
-//    // Get the number of points in this array
-//    int no_det;
-//    buffer.str(detectorpath.str()); buffer << "/number_of_detectors";
-//    Spud::get_option(buffer.str(), no_det);
-//
-//    // Get the detector array name
-//    std::string detname;
-//    buffer.str(detectorpath.str()); buffer << "/name";
-//    Spud::get_option(buffer.str(), detname);
-//
-//    // Get the python function that describes the positions of the detectors
-//    std::string function;
-//    buffer.str(detectorpath.str()); buffer << "/python";
-//    Spud::get_option(buffer.str(), function);
-//    
-//    // Get the dimension of this problem
-//    // - here we assume that there is only one dimension in this problem
-//    int dimension;
-//    Spud::get_option("/geometry/dimension", dimension);
-//
-//    // Create the detector and register it in the bucket
-//    det.reset(new PythonDetectors(no_det, dimension, function, detname));
-//    register_detector(det, detname);
-//  }  
-//  
-//}
+//*******************************************************************|************************************************************//
+// empty the data structures in the spudbucket
+//*******************************************************************|************************************************************//
+void SpudBucket::empty_()
+{
+  mesh_optionpaths_.clear();
+  Bucket::empty_();
+}
+
