@@ -12,7 +12,7 @@ using namespace buckettools;
 //*******************************************************************|************************************************************//
 // specific constructor
 //*******************************************************************|************************************************************//
-DiagnosticsFile::DiagnosticsFile(const std::string name) : StatFile(name)
+DiagnosticsFile::DiagnosticsFile(const std::string &name) : StatFile(name)
 {
                                                                      // do nothing... all handled by StatFile constructor
 }

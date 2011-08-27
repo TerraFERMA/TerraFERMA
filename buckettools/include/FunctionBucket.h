@@ -96,9 +96,10 @@ namespace buckettools
     // Functional data access
     //***************************************************************|***********************************************************//
 
-    void register_functional(Form_ptr functional, std::string name); // register a functional with the given name in this function
+    void register_functional(Form_ptr functional, 
+                                           const std::string &name); // register a functional with the given name in this function
 
-    Form_ptr fetch_functional(std::string name);                     // return a (boost shared) pointer to a functional with the given name
+    Form_ptr fetch_functional(const std::string &name);              // return a (boost shared) pointer to a functional with the given name
 
     Form_it functionals_begin();                                     // return an iterator to the beginning of the functionals of this function
 
@@ -113,9 +114,10 @@ namespace buckettools
     //***************************************************************|***********************************************************//
 
     void register_bcexpression(Expression_ptr bcexpression,          // register an expression for a bc in this function
-                                               std::string name);
+                                          const std::string &name);
 
-    void register_bc(BoundaryCondition_ptr bc, std::string name);    // register a bc in this function
+    void register_bc(BoundaryCondition_ptr bc, 
+                                        const std::string &name);    // register a bc in this function
 
     BoundaryCondition_it bcs_begin();                                // return an iterator to the beginning of the bcs of this function
 

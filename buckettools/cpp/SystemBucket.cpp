@@ -74,7 +74,7 @@ void SystemBucket::attach_and_initialize()
 //*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a field function bucket in the system bucket data maps
 //*******************************************************************|************************************************************//
-void SystemBucket::register_field(FunctionBucket_ptr field, std::string name)
+void SystemBucket::register_field(FunctionBucket_ptr field, const std::string &name)
 {
   FunctionBucket_it f_it = fields_.find(name);                       // check if name already exists
   if (f_it != fields_.end())
@@ -91,7 +91,7 @@ void SystemBucket::register_field(FunctionBucket_ptr field, std::string name)
 //*******************************************************************|************************************************************//
 // return a (boost shared) pointer to a field function bucket in the system bucket data maps
 //*******************************************************************|************************************************************//
-FunctionBucket_ptr SystemBucket::fetch_field(std::string name)
+FunctionBucket_ptr SystemBucket::fetch_field(const std::string &name)
 {
   FunctionBucket_it f_it = fields_.find(name);                       // check if name already exists
   if (f_it == fields_.end())
@@ -108,7 +108,7 @@ FunctionBucket_ptr SystemBucket::fetch_field(std::string name)
 //*******************************************************************|************************************************************//
 // return a constant (boost shared) pointer to a field function bucket in the system bucket data maps
 //*******************************************************************|************************************************************//
-const FunctionBucket_ptr SystemBucket::fetch_field(std::string name) const
+const FunctionBucket_ptr SystemBucket::fetch_field(const std::string &name) const
 {
   FunctionBucket_const_it f_it = fields_.find(name);                 // check if name already exists
   if (f_it == fields_.end())
@@ -158,7 +158,7 @@ FunctionBucket_const_it SystemBucket::fields_end() const
 //*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a coefficient function bucket in the system bucket data maps
 //*******************************************************************|************************************************************//
-void SystemBucket::register_coeff(FunctionBucket_ptr coeff, std::string name)
+void SystemBucket::register_coeff(FunctionBucket_ptr coeff, const std::string &name)
 {
   FunctionBucket_it f_it = coeffs_.find(name);                       // check if name already exists
   if (f_it != coeffs_.end())
@@ -176,7 +176,7 @@ void SystemBucket::register_coeff(FunctionBucket_ptr coeff, std::string name)
 //*******************************************************************|************************************************************//
 // return a (boost shared) pointer to a coefficient function bucket in the system bucket data maps
 //*******************************************************************|************************************************************//
-FunctionBucket_ptr SystemBucket::fetch_coeff(std::string name)
+FunctionBucket_ptr SystemBucket::fetch_coeff(const std::string &name)
 {
   FunctionBucket_it f_it = coeffs_.find(name);                       // check if the name already exists
   if (f_it == coeffs_.end())
@@ -226,7 +226,7 @@ FunctionBucket_const_it SystemBucket::coeffs_end() const
 //*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a solver bucket in the system bucket data maps
 //*******************************************************************|************************************************************//
-void SystemBucket::register_solver(SolverBucket_ptr solver, std::string name)
+void SystemBucket::register_solver(SolverBucket_ptr solver, const std::string &name)
 {
   // First check if a solver with this name already exists
   SolverBucket_it s_it = solvers_.find(name);                        // check if this name exists already
@@ -370,7 +370,7 @@ const std::string SystemBucket::str(int indent) const
 //*******************************************************************|************************************************************//
 // return a string describing the fields in the system
 //*******************************************************************|************************************************************//
-const std::string SystemBucket::fields_str(int indent) const
+const std::string SystemBucket::fields_str(const int &indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
@@ -385,7 +385,7 @@ const std::string SystemBucket::fields_str(int indent) const
 //*******************************************************************|************************************************************//
 // return a string describing the coefficients in the system
 //*******************************************************************|************************************************************//
-const std::string SystemBucket::coeffs_str(int indent) const
+const std::string SystemBucket::coeffs_str(const int &indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
@@ -400,7 +400,7 @@ const std::string SystemBucket::coeffs_str(int indent) const
 //*******************************************************************|************************************************************//
 // return a string describing the solvers in the system
 //*******************************************************************|************************************************************//
-const std::string SystemBucket::solvers_str(int indent) const
+const std::string SystemBucket::solvers_str(const int &indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');

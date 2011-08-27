@@ -29,9 +29,9 @@ namespace buckettools
     // Constructors and destructors
     //***************************************************************|***********************************************************//
 
-    SpudSystemBucket(std::string optionpath, Bucket* bucket);        // default constructor
+    SpudSystemBucket(const std::string &optionpath, Bucket* bucket); // default constructor
 
-    ~SpudSystemBucket();                                     // default destructor
+    ~SpudSystemBucket();                                             // default destructor
 
     //***************************************************************|***********************************************************//
     // Filling data

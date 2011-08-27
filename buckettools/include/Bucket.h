@@ -33,7 +33,7 @@ namespace buckettools
 
     Bucket();                                                        // default constructor
 
-    Bucket(std::string name);                                        // specific constructor specifying the name
+    Bucket(const std::string &name);                                 // specific constructor specifying the name
     
     virtual ~Bucket();                                               // default destructor
 

@@ -29,7 +29,7 @@ namespace buckettools
     // Constructors and destructors
     //***************************************************************|***********************************************************//
 
-    SpudSolverBucket(std::string optionpath, SystemBucket* system);  // specific constructor (taking in optionpath and parent system)
+    SpudSolverBucket(const std::string &optionpath, SystemBucket* system);  // specific constructor (taking in optionpath and parent system)
     
     ~SpudSolverBucket();                                             // default destructor
 
@@ -50,8 +50,8 @@ namespace buckettools
     // Form data access
     //***************************************************************|***********************************************************//
 
-    void register_form(Form_ptr form, std::string name,              // register a form with the given name and optionpath in the solver
-                                          std::string optionpath);   // bucket
+    void register_form(Form_ptr form, const std::string &name,       // register a form with the given name and optionpath in the solver
+                                   const std::string &optionpath);   // bucket
 
     //***************************************************************|***********************************************************//
     // Output functions
@@ -65,7 +65,7 @@ namespace buckettools
     const std::string forms_str() const                              // return a string describing the forms in the solver bucket
     { return forms_str(0); }
 
-    const std::string forms_str(int indent) const;                   // return an indented string describing the forms in the solver bucket
+    const std::string forms_str(const int &indent) const;            // return an indented string describing the forms in the solver bucket
 
   //*****************************************************************|***********************************************************//
   // Private functions

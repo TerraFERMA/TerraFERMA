@@ -15,7 +15,7 @@ using namespace buckettools;
 //*******************************************************************|************************************************************//
 // specific constructor
 //*******************************************************************|************************************************************//
-SpudSystemBucket::SpudSystemBucket(std::string optionpath, 
+SpudSystemBucket::SpudSystemBucket(const std::string &optionpath, 
                                             Bucket* bucket) : 
                                             optionpath_(optionpath), 
                                             SystemBucket(bucket)

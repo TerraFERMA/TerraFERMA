@@ -44,7 +44,7 @@ void FunctionBucket::attach_functional_coeffs()
 //*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a functional form in the function bucket data maps
 //*******************************************************************|************************************************************//
-void FunctionBucket::register_functional(Form_ptr functional, std::string name)
+void FunctionBucket::register_functional(Form_ptr functional, const std::string &name)
 {
   Form_it f_it = functionals_.find(name);                            // check if the name already exists
   if (f_it != functionals_.end())
@@ -62,7 +62,7 @@ void FunctionBucket::register_functional(Form_ptr functional, std::string name)
 //*******************************************************************|************************************************************//
 // return a (boost shared) pointer to a functional form from the function bucket data maps
 //*******************************************************************|************************************************************//
-Form_ptr FunctionBucket::fetch_functional(std::string name)
+Form_ptr FunctionBucket::fetch_functional(const std::string &name)
 {
   Form_it f_it = functionals_.find(name);                            // check if the name already exists
   if (f_it == functionals_.end())
@@ -112,7 +112,7 @@ Form_const_it FunctionBucket::functionals_end() const
 //*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a bc expression in the function bucket data maps
 //*******************************************************************|************************************************************//
-void FunctionBucket::register_bcexpression(Expression_ptr bcexpression, std::string name)
+void FunctionBucket::register_bcexpression(Expression_ptr bcexpression, const std::string &name)
 {
   Expression_it e_it = bcexpressions_.find(name);                    // check if the name already exists
   if (e_it != bcexpressions_.end())
@@ -130,7 +130,7 @@ void FunctionBucket::register_bcexpression(Expression_ptr bcexpression, std::str
 //*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a bc in the function bucket data maps
 //*******************************************************************|************************************************************//
-void FunctionBucket::register_bc(BoundaryCondition_ptr bc, std::string name)
+void FunctionBucket::register_bc(BoundaryCondition_ptr bc, const std::string &name)
 {
   BoundaryCondition_it bc_it = bcs_.find(name);                      // check if the name already exists
   if (bc_it != bcs_.end())

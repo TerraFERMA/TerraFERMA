@@ -21,7 +21,7 @@ StatFile::StatFile()
 //*******************************************************************|************************************************************//
 // specific constructor
 //*******************************************************************|************************************************************//
-StatFile::StatFile(const std::string name) : name_(name)
+StatFile::StatFile(const std::string &name) : name_(name)
 {
   file_.open((char*)name.c_str());                                   // open the file_ member
 }

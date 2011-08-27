@@ -26,7 +26,7 @@ SpudBucket::SpudBucket() : Bucket()
 //*******************************************************************|************************************************************//
 // specific constructor
 //*******************************************************************|************************************************************//
-SpudBucket::SpudBucket(std::string name) : Bucket(name)
+SpudBucket::SpudBucket(const std::string &name) : Bucket(name)
 {
                                                                      // do nothing
 }
@@ -34,7 +34,7 @@ SpudBucket::SpudBucket(std::string name) : Bucket(name)
 //*******************************************************************|************************************************************//
 // specific constructor
 //*******************************************************************|************************************************************//
-SpudBucket::SpudBucket(std::string name, std::string optionpath) : 
+SpudBucket::SpudBucket(const std::string &name, const std::string &optionpath) : 
                                 optionpath_(optionpath), Bucket(name)
 {
                                                                      // do nothing
@@ -147,7 +147,7 @@ void SpudBucket::register_mesh(Mesh_ptr mesh,
 //*******************************************************************|************************************************************//
 // return a string containing the mesh optionpath in the spudbucket data maps
 //*******************************************************************|************************************************************//
-std::string SpudBucket::fetch_mesh_optionpath(const std::string name)
+std::string SpudBucket::fetch_mesh_optionpath(const std::string &name)
 {
   string_it s_it = mesh_optionpaths_.find(name);                     // check if a mesh with this name exists
   if (s_it == mesh_optionpaths_end())
@@ -217,7 +217,7 @@ void SpudBucket::register_detector(GenericDetectors_ptr detector,
 //*******************************************************************|************************************************************//
 // return a string containing the detector optionpath in the spudbucket data maps
 //*******************************************************************|************************************************************//
-std::string SpudBucket::fetch_detector_optionpath(const std::string name)
+std::string SpudBucket::fetch_detector_optionpath(const std::string &name)
 {
   string_it s_it = detector_optionpaths_.find(name);                 // check if a mesh with this name exists
   if (s_it == detector_optionpaths_end())
@@ -267,7 +267,7 @@ string_const_it SpudBucket::detector_optionpaths_end() const
 //*******************************************************************|************************************************************//
 // return a string describing the contents of the mesh_optionpaths_ data structure
 //*******************************************************************|************************************************************//
-const std::string SpudBucket::meshes_str(int indent) const
+const std::string SpudBucket::meshes_str(const int &indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
@@ -285,7 +285,7 @@ const std::string SpudBucket::meshes_str(int indent) const
 //*******************************************************************|************************************************************//
 // return a string describing the contents of the detector_optionpaths_ data structure
 //*******************************************************************|************************************************************//
-const std::string SpudBucket::detectors_str(int indent) const
+const std::string SpudBucket::detectors_str(const int &indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');

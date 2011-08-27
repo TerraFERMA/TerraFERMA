@@ -31,11 +31,12 @@ namespace buckettools
 
     SpudBucket();                                                    // Default constructor
     
-    SpudBucket(std::string name);                                    // Optional constructor (specifying name)
+    SpudBucket(const std::string &name);                             // Specific constructor (specifying name)
     
-    SpudBucket(std::string name, std::string option_path);           // Optional constructor (specifying name and optionpath)
+    SpudBucket(const std::string &name, 
+                          const std::string &optionpath);            // Specific constructor (specifying name and optionpath)
 
-    ~SpudBucket();                                           // Default destructor
+    ~SpudBucket();                                                   // Default destructor
     
     //***************************************************************|***********************************************************//
     // Functions used to run the model
@@ -64,7 +65,7 @@ namespace buckettools
     void register_mesh(Mesh_ptr mesh, const std::string &name,       // register a mesh with a given name (and an optionpath)
                        const std::string &optionpath); 
 
-    std::string fetch_mesh_optionpath(const std::string name);       // return the optionpath associated with the named mesh
+    std::string fetch_mesh_optionpath(const std::string &name);      // return the optionpath associated with the named mesh
 
     string_it mesh_optionpaths_begin();                              // return an iterator to the beginning of the mesh optionpaths
 
@@ -84,7 +85,7 @@ namespace buckettools
                            const std::string &name, 
                            const std::string &option_path);
     
-    std::string fetch_detector_optionpath(const std::string name);   // return the optionpath associated with the named detector
+    std::string fetch_detector_optionpath(const std::string &name);  // return the optionpath associated with the named detector
 
     string_it detector_optionpaths_begin();                          // return an iterator to the beginning of the detector optionpaths
 
@@ -103,12 +104,12 @@ namespace buckettools
     const std::string meshes_str() const                             // return a string describing the meshes
     { return meshes_str(0); }
 
-    const std::string meshes_str(int indent) const;                  // return an indented string describing the meshes
+    const std::string meshes_str(const int &indent) const;           // return an indented string describing the meshes
 
     const std::string detectors_str() const                          // return a string describing the meshes
     { return detectors_str(0); }
 
-    const std::string detectors_str(int indent) const;               // return an indented string describing the meshes
+    const std::string detectors_str(const int &indent) const;        // return an indented string describing the meshes
 
   //*****************************************************************|***********************************************************//
   // Private functions

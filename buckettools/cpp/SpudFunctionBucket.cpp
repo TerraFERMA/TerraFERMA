@@ -14,7 +14,10 @@ using namespace buckettools;
 //*******************************************************************|************************************************************//
 // specific constructor
 //*******************************************************************|************************************************************//
-SpudFunctionBucket::SpudFunctionBucket(std::string optionpath, SystemBucket* system) : optionpath_(optionpath), FunctionBucket(system)
+SpudFunctionBucket::SpudFunctionBucket(const std::string &optionpath, 
+                                            SystemBucket* system) : 
+                                            optionpath_(optionpath), 
+                                            FunctionBucket(system)
 {
                                                                      // do nothing
 }
@@ -127,7 +130,9 @@ void SpudFunctionBucket::initialize_function_coeff()
 //*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a functional form in the function bucket data maps (with an optionpath as well)
 //*******************************************************************|************************************************************//
-void SpudFunctionBucket::register_functional(Form_ptr functional, std::string name, std::string optionpath)
+void SpudFunctionBucket::register_functional(Form_ptr functional, 
+                                      const std::string &name, 
+                                      const std::string &optionpath)
 {
   Form_it f_it = functionals_.find(name);                            // check if name already exists
   if (f_it != functionals_.end())
@@ -168,7 +173,7 @@ const std::string SpudFunctionBucket::str(int indent) const
 //*******************************************************************|************************************************************//
 // return a string describing the functionals in this function bucket
 //*******************************************************************|************************************************************//
-const std::string SpudFunctionBucket::functionals_str(int indent) 
+const std::string SpudFunctionBucket::functionals_str(const int &indent) 
                                                               const
 {
   std::stringstream s;

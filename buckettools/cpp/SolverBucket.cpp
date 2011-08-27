@@ -257,7 +257,7 @@ void SolverBucket::initialize_matrices()
 //*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a form in the solver bucket data maps
 //*******************************************************************|************************************************************//
-void SolverBucket::register_form(Form_ptr form, std::string name)
+void SolverBucket::register_form(Form_ptr form, const std::string &name)
 {
   Form_it f_it = forms_.find(name);                                  // check if this name already exists
   if (f_it != forms_.end())
@@ -274,7 +274,7 @@ void SolverBucket::register_form(Form_ptr form, std::string name)
 //*******************************************************************|************************************************************//
 // return a boolean indicating if the solver bucket contains a form with the given name
 //*******************************************************************|************************************************************//
-bool SolverBucket::contains_form(std::string name)                   
+bool SolverBucket::contains_form(const std::string &name)                   
 {
   Form_it f_it = forms_.find(name);
   return f_it != forms_.end();
@@ -283,7 +283,7 @@ bool SolverBucket::contains_form(std::string name)
 //*******************************************************************|************************************************************//
 // return a (boost shared) pointer to a form from the solver bucket data maps
 //*******************************************************************|************************************************************//
-Form_ptr SolverBucket::fetch_form(std::string name)
+Form_ptr SolverBucket::fetch_form(const std::string &name)
 {
   Form_it f_it = forms_.find(name);                                  // check if this name already exists
   if (f_it == forms_.end())
@@ -345,7 +345,7 @@ const std::string SolverBucket::str(int indent) const
 //*******************************************************************|************************************************************//
 // return a string describing the forms in the solver bucket
 //*******************************************************************|************************************************************//
-const std::string SolverBucket::forms_str(int indent) const
+const std::string SolverBucket::forms_str(const int &indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');

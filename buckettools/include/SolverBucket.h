@@ -70,12 +70,12 @@ namespace buckettools
     // Form data access
     //***************************************************************|***********************************************************//
 
-    void register_form(Form_ptr form, std::string name);             // register a form in the solver
+    void register_form(Form_ptr form, const std::string &name);      // register a form in the solver
 
-    bool contains_form(std::string name);                            // return a boolean, true if the names form exists in the
+    bool contains_form(const std::string &name);                     // return a boolean, true if the names form exists in the
                                                                      // solver, false otherwise
 
-    Form_ptr fetch_form(std::string name);                           // fetch the named form
+    Form_ptr fetch_form(const std::string &name);                    // fetch the named form
 
     Form_it forms_begin();                                           // return an iterator to the beginning of the forms
 
@@ -98,7 +98,7 @@ namespace buckettools
     virtual const std::string forms_str() const                      // return a string describing the forms in this solver
     { return forms_str(0); }
 
-    virtual const std::string forms_str(int indent) const;           // return an indented string describing the forms in this
+    virtual const std::string forms_str(const int &indent) const;    // return an indented string describing the forms in this
                                                                      // solver
 
   //*****************************************************************|***********************************************************//

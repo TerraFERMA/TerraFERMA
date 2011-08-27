@@ -15,7 +15,7 @@ using namespace buckettools;
 //*******************************************************************|************************************************************//
 // specific constructor
 //*******************************************************************|************************************************************//
-SpudSolverBucket::SpudSolverBucket(std::string optionpath, 
+SpudSolverBucket::SpudSolverBucket(const std::string &optionpath, 
                                             SystemBucket* system) : 
                                             optionpath_(optionpath), 
                                             SolverBucket(system)
@@ -121,8 +121,9 @@ void SpudSolverBucket::fill()
 //*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a form in the solver bucket data maps (with an optionpath as well)
 //*******************************************************************|************************************************************//
-void SpudSolverBucket::register_form(Form_ptr form, std::string name, 
-                                              std::string optionpath)
+void SpudSolverBucket::register_form(Form_ptr form, 
+                                      const std::string &name, 
+                                      const std::string &optionpath)
 {
   Form_it f_it = forms_.find(name);                                  // check if name exists
   if (f_it != forms_.end())
@@ -154,7 +155,7 @@ const std::string SpudSolverBucket::str(int indent) const
 //*******************************************************************|************************************************************//
 // return a string describing the forms in the solver bucket
 //*******************************************************************|************************************************************//
-const std::string SpudSolverBucket::forms_str(int indent) const
+const std::string SpudSolverBucket::forms_str(const int &indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');

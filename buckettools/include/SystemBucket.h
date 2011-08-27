@@ -88,13 +88,14 @@ namespace buckettools
     // Field data access
     //***************************************************************|***********************************************************//
 
-    void register_field(FunctionBucket_ptr field, std::string name); // register a field (subfunction) with the given name
+    void register_field(FunctionBucket_ptr field, 
+                                           const std::string &name); // register a field (subfunction) with the given name
 
-    FunctionBucket_ptr fetch_field(std::string name);                // return a (boost shared) pointer to a field with the given
+    FunctionBucket_ptr fetch_field(const std::string &name);         // return a (boost shared) pointer to a field with the given
                                                                      // name
 
-    const FunctionBucket_ptr fetch_field(std::string name) const;    // return a constant (boost shared) pointer to a field with the
-                                                                     // given name
+    const FunctionBucket_ptr fetch_field(const std::string &name)    // return a constant (boost shared) pointer to a field with the
+                                                          const;     // given name
 
     FunctionBucket_it fields_begin();                                // return an iterator to the beginning of the fields
 
@@ -108,9 +109,10 @@ namespace buckettools
     // Coefficient data access
     //***************************************************************|***********************************************************//
 
-    void register_coeff(FunctionBucket_ptr coeff, std::string name); // register a coefficient with the given name
+    void register_coeff(FunctionBucket_ptr coeff, 
+                                           const std::string &name); // register a coefficient with the given name
 
-    FunctionBucket_ptr fetch_coeff(std::string name);                // return a (boost shared) pointer to a coefficient with the
+    FunctionBucket_ptr fetch_coeff(const std::string &name);         // return a (boost shared) pointer to a coefficient with the
                                                                      // given name
 
     FunctionBucket_it coeffs_begin();                                // return an iterator to the beginning of the coefficients
@@ -126,7 +128,8 @@ namespace buckettools
     // Solver bucket data access
     //***************************************************************|***********************************************************//
 
-    void register_solver(SolverBucket_ptr solver, std::string name); // register a solver bucket with the given name
+    void register_solver(SolverBucket_ptr solver, 
+                                           const std::string &name); // register a solver bucket with the given name
 
     SolverBucket_it solvers_begin();                                 // return an iterator to the beginning of the solver buckets
 
@@ -180,19 +183,19 @@ namespace buckettools
     virtual const std::string fields_str() const                     // return a string describing the fields in the system
     { return fields_str(0); }
 
-    virtual const std::string fields_str(int indent) const;          // return an indented string describing the fields in the
+    virtual const std::string fields_str(const int &indent) const;          // return an indented string describing the fields in the
                                                                      // system
 
     virtual const std::string coeffs_str() const                     // return a string describing the coefficients in the system
     { return coeffs_str(0); }
 
-    virtual const std::string coeffs_str(int indent) const;          // return an indented string describing the fields in the
+    virtual const std::string coeffs_str(const int &indent) const;          // return an indented string describing the fields in the
                                                                      // system
 
     virtual const std::string solvers_str() const                    // return a string describing the solver buckets in the system
     { return coeffs_str(0); }
 
-    virtual const std::string solvers_str(int indent) const;         // return an indented string describing the solver buckets in
+    virtual const std::string solvers_str(const int &indent) const;         // return an indented string describing the solver buckets in
                                                                      // the system
 
   //*****************************************************************|***********************************************************//

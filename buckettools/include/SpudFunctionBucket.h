@@ -29,7 +29,8 @@ namespace buckettools
     // Constructors and destructors
     //***************************************************************|***********************************************************//
 
-    SpudFunctionBucket(std::string optionpath, SystemBucket* system);// specific constructor
+    SpudFunctionBucket(const std::string &optionpath, 
+                                               SystemBucket* system);// specific constructor
     
     ~SpudFunctionBucket();                                           // default destructor
 
@@ -54,8 +55,9 @@ namespace buckettools
     // Functional data access
     //***************************************************************|***********************************************************//
 
-    void register_functional(Form_ptr functional, std::string name,  // register a functional with the given name and optionpath
-                                            std::string optionpath);
+    void register_functional(Form_ptr functional, 
+                                    const std::string &name,         // register a functional with the given name and optionpath
+                                    const std::string &optionpath);
 
     //***************************************************************|***********************************************************//
     // Output functions
@@ -72,7 +74,7 @@ namespace buckettools
     const std::string functionals_str() const                        // return a string describing the functionals of this function
     { return str(0); }
 
-    const std::string functionals_str(int indent) const;             // return an indented string describing the functionals of this function
+    const std::string functionals_str(const int &indent) const;      // return an indented string describing the functionals of this function
 
   //*****************************************************************|***********************************************************//
   // Private functions
