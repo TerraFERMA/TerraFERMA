@@ -5,60 +5,70 @@
 
 using namespace buckettools;
 
-PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f, void* ctx)
+//*******************************************************************|************************************************************//
+// define the petsc snes callback function that assembles the residual function
+//*******************************************************************|************************************************************//
+PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f, 
+                                                          void* ctx)
 {
-  SNESCtx      *snesctx    = (SNESCtx *) ctx;
-  Function_ptr iteratedfunction = (*snesctx).iteratedfunction;
-  std::vector<BoundaryCondition_ptr>& bcs = (*snesctx).bcs;
-  Vec_ptr px(&x, dolfin::NoDeleter());
-  Vec_ptr pf(&f, dolfin::NoDeleter());
+  SNESCtx *snesctx = (SNESCtx *)ctx;                                 // cast the snes context
+  Function_ptr iteratedfunction = (*snesctx).iteratedfunction;       // collect the iterated system bucket function
+  std::vector<BoundaryCondition_ptr>& bcs = (*snesctx).bcs;          // get the vector of bcs
+  Vec_ptr px(&x, dolfin::NoDeleter());                               // convert the iterated snes vector
+  Vec_ptr pf(&f, dolfin::NoDeleter());                               // convert the rhs snes vector
   dolfin::PETScVector rhs(pf), iteratedvec(px);
-  bool reset_tensor = false;
+  bool reset_tensor = false;                                         // never reset the tensor
 
-  std::cout << "In FormFunction" << std::endl;
+  std::cout << "In FormFunction" << std::endl;                       // FIXME: dolfin info
 
-  (*iteratedfunction).vector() = iteratedvec;
+  (*iteratedfunction).vector() = iteratedvec;                        // update the iterated system bucket function
 
-  dolfin::assemble(rhs, (*(*snesctx).linear), reset_tensor);
-  for(uint i = 0; i < bcs.size(); ++i)
+  dolfin::assemble(rhs, (*(*snesctx).linear), reset_tensor);         // assemble the rhs from the context linear form
+  for(uint i = 0; i < bcs.size(); ++i)                               // loop over the bcs
   {
-    (*bcs[i]).apply(rhs, iteratedvec);
+    (*bcs[i]).apply(rhs, iteratedvec);                               // FIXME: will break symmetry?
   }
   
   PetscFunctionReturn(0);
 }
 
-PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A, Mat *B, MatStructure* flag, void* ctx)
+//*******************************************************************|************************************************************//
+// define the petsc snes callback function that assembles the jacobian function
+//*******************************************************************|************************************************************//
+PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A, 
+                                         Mat *B, MatStructure* flag, 
+                                         void* ctx)
 {
-  SNESCtx *snesctx = (SNESCtx *) ctx;
-  Function_ptr iteratedfunction = (*snesctx).iteratedfunction;
-  std::vector<BoundaryCondition_ptr>& bcs = (*snesctx).bcs;
-  Vec_ptr px(&x, dolfin::NoDeleter());
-  Mat_ptr pA(A, dolfin::NoDeleter());
-  Mat_ptr pB(B, dolfin::NoDeleter());
+  SNESCtx *snesctx = (SNESCtx *)ctx;                                 // cast the snes context
+  Function_ptr iteratedfunction = (*snesctx).iteratedfunction;       // collect the iterated system bucket function
+  std::vector<BoundaryCondition_ptr>& bcs = (*snesctx).bcs;          // get the vector of bcs
+  Vec_ptr px(&x, dolfin::NoDeleter());                               // convert the iterated snes vector
   dolfin::PETScVector iteratedvec(px);
+  Mat_ptr pA(A, dolfin::NoDeleter());                                // convert the snes matrix
+  Mat_ptr pB(B, dolfin::NoDeleter());                                // convert the snes matrix pc
   dolfin::PETScMatrix matrix(pA), matrixpc(pB);
-  bool reset_tensor = false;
+  bool reset_tensor = false;                                         // never reset the tensor
 
-  std::cout << "In FormJacobian" << std::endl;
+  std::cout << "In FormJacobian" << std::endl;                       // FIXME: dolfin info
 
-  (*iteratedfunction).vector() = iteratedvec;
+  (*iteratedfunction).vector() = iteratedvec;                        // update the iterated system bucket function
 
-  dolfin::assemble(matrix, (*(*snesctx).bilinear), reset_tensor);
-  for(uint i = 0; i < bcs.size(); ++i)
+  dolfin::assemble(matrix, (*(*snesctx).bilinear), reset_tensor);    // assemble the matrix from the context bilinear form
+  for(uint i = 0; i < bcs.size(); ++i)                               // loop over the bcs
   {
-    (*bcs[i]).apply(matrix);
+    (*bcs[i]).apply(matrix);                                         // FIXME: will break symmetry?
   }
-  if ((*snesctx).bilinearpc)
+  if ((*snesctx).bilinearpc)                                         // do we have a different bilinear pc form associated?
   {
-    dolfin::assemble(matrixpc, (*(*snesctx).bilinearpc), reset_tensor);
-    for(uint i = 0; i < bcs.size(); ++i)
+    dolfin::assemble(matrixpc, (*(*snesctx).bilinearpc),             // assemble the matrix pc from the context bilinear pc form
+                                                      reset_tensor);
+    for(uint i = 0; i < bcs.size(); ++i)                             // loop over the bcs
     {
-      (*bcs[i]).apply(matrixpc);
+      (*bcs[i]).apply(matrixpc);                                     // FIXME: will break symmetry
     }
   }
 
-  *flag = SAME_NONZERO_PATTERN;
+  *flag = SAME_NONZERO_PATTERN;                                      // both matrices are assumed to have the same sparsity
 
   PetscFunctionReturn(0);
 }
