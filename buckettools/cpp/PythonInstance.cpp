@@ -6,57 +6,68 @@
 
 using namespace buckettools;
 
-// Specific constructor
-PythonInstance::PythonInstance(const std::string &function) : function_(function)
+//*******************************************************************|************************************************************//
+// specific constructor
+//*******************************************************************|************************************************************//
+PythonInstance::PythonInstance(const std::string &function) : 
+                                                  function_(function)
 {
-  init_();
+  init_();                                                           // initialize
 }
 
-// Default destructor
+//*******************************************************************|************************************************************//
+// default destructor
+//*******************************************************************|************************************************************//
 PythonInstance::~PythonInstance()
 {
-  clean_();
+  clean_();                                                          // finalize
 }
 
-// Initialize the python objects contained in the python instance
+//*******************************************************************|************************************************************//
+// given a python arguments object call the val function and return the result
+//*******************************************************************|************************************************************//
+PyObject* PythonInstance::call(PyObject *pArgs) const
+{
+  return PyObject_CallObject(pFunc_, pArgs);
+}
+
+//*******************************************************************|************************************************************//
+// initialize the python objects contained in the python instance
+//*******************************************************************|************************************************************//
 void PythonInstance::init_()
 {
   if(not Py_IsInitialized())
   {
-    Py_Initialize();
+    Py_Initialize();                                                 // if python isn't initialized, do it now
   }
   
-  pMain_ = PyImport_AddModule("__main__");
-  pGlobals_ = PyModule_GetDict(pMain_);
-  pLocals_ = PyDict_New();
+  pMain_ = PyImport_AddModule("__main__");                           // set up a main module
+  pGlobals_ = PyModule_GetDict(pMain_);                              // set up the globals dictionary
+  pLocals_ = PyDict_New();                                           // set up the locals dictionary
   
-  pCode_ = PyRun_String((char*)function_.c_str(), Py_file_input, pGlobals_, pLocals_);
+  pCode_ = PyRun_String((char*)function_.c_str(), Py_file_input,     // run the function string 
+                                              pGlobals_, pLocals_);
   
-  pFunc_ = PyDict_GetItemString(pLocals_, "val");
+  pFunc_ = PyDict_GetItemString(pLocals_, "val");                    // get the val function from the function string
   
-  // Check for errors in executing user code.
-  if (PyErr_Occurred()){
+  if (PyErr_Occurred()){                                             // check for errors in getting the function
     PyErr_Print();
     dolfin::error("In PythonInstance::init_");
   }
   
 }
 
-// Remove references to the contained python objects
+//*******************************************************************|************************************************************//
+// finalize the python instance
+//*******************************************************************|************************************************************//
 void PythonInstance::clean_()
 {
-  Py_DECREF(pLocals_);
-  Py_DECREF(pCode_);
+  Py_DECREF(pLocals_);                                               // decrease the reference count on the locals
+  Py_DECREF(pCode_);                                                 // and the code
   
-  if(Py_IsInitialized())
-  {
+  if(Py_IsInitialized())                                             // if python is initialized then collect (safe for multiple
+  {                                                                  // python instances?)
     PyGC_Collect();
   }
-}
-
-// Call the python function object and return the result
-PyObject* PythonInstance::call(PyObject *pArgs) const
-{
-  return PyObject_CallObject(pFunc_, pArgs);
 }
 
