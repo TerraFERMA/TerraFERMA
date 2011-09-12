@@ -9,6 +9,7 @@
 #include "PythonDetectors.h"
 //#include "PythonExpression.h"
 //#include "InitialConditionExpression.h"
+#include "DiagnosticsFile.h"
 #include <dolfin.h>
 #include <string>
 #include <spud>
@@ -56,15 +57,33 @@ void SpudBucket::run()
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
 
-  buffer.str(""); buffer << "/timestepping";                         // check if this is a dynamic run or not
-  if (Spud::have_option(buffer.str()))
-  {
-    timestep_run_();                                                 // yes
-  }
-  else
-  {
-    steady_run_();                                                   // no
-  }
+  std::string basename;                                              // get the output base name
+  buffer.str(""); buffer << "/io/output_base_name";
+  serr = Spud::get_option(buffer.str(), basename); 
+  spud_err(buffer.str(), serr);
+
+  DiagnosticsFile diagfile(basename+".stat");
+  diagfile.write_header(*this);
+  diagfile.write_data(*this);
+
+  do {                                                               // loop over time
+
+    for (*iteration_count_ = 0; \
+         *iteration_count_ < nonlinear_iterations(); 
+         (*iteration_count_)++)                                        // loop over the nonlinear iterations
+    {
+      solve();                                                       // solve all systems in the bucket
+    }
+
+    update();                                                        // update all functions in the bucket
+    *current_time_ += timestep();                                     // increment time with the timestep
+    (*timestep_count_)++;                                               // increment the number of timesteps taken
+
+    diagfile.write_data(*this);
+
+  } while (*current_time_ < finish_time());                            // syntax ensures at least one solve
+
+  diagfile.close();                                                  // close the diagnostics
 
 }
 
@@ -79,6 +98,8 @@ void SpudBucket::fill()
   buffer.str(""); buffer << optionpath() << "/geometry/dimension";   // geometry dimension set in the bucket to pass it down to all
   serr = Spud::get_option(buffer.str(), dimension_);                 // systems (we assume this is the length of things that do
   spud_err(buffer.str(), serr);                                      // not have them independently specified)
+
+  timestepping_fill_();                                              // fill in the timestepping options (if there are any)
 
   buffer.str(""); buffer << optionpath() << "/geometry/mesh";        // put the meshes into the bucket
   int nmeshes = Spud::option_count(buffer.str());
@@ -120,7 +141,7 @@ void SpudBucket::fill()
     (*(*sys_it).second).attach_and_initialize();
   }
   
-//  detectors_fill_();                                                 // put the detectors in the bucket
+  detectors_fill_();                                                 // put the detectors in the bucket
 
 }
 
@@ -301,80 +322,52 @@ const std::string SpudBucket::detectors_str(const int &indent) const
 }
 
 //*******************************************************************|************************************************************//
-// run the (time-dependent) model described by this bucket
+// fill in any timestepping data or set up dummy values instead (zero essentially)
 //*******************************************************************|************************************************************//
-void SpudBucket::timestep_run_()
+void SpudBucket::timestepping_fill_()
 {
   std::stringstream buffer;                                          // optionpath buffer
-  Spud::OptionError serr;                                            // spud error code
+  Spud::OptionError serr;                                            // spud option error
+  
+  timestep_count_.reset( new int );
+  *timestep_count_ = 0;                                              // the number of timesteps taken
+  iteration_count_.reset( new int );
+  *iteration_count_ = 0;                                             // the number of iterations taken
 
-  double time;                                                       // get the current time
-  buffer.str(""); buffer << "/timestepping/current_time";            // may be non-zero at the start of simulations (e.g.
-  serr = Spud::get_option(buffer.str(), time);                       // checkpoints)
+  current_time_.reset( new double );
+  buffer.str(""); buffer << "/timestepping/current_time";            // get the current time
+  serr = Spud::get_option(buffer.str(), *current_time_, 0.0);        // may be non-zero at the start of simulations (e.g.
+  spud_err(buffer.str(), serr);                                      // checkpoints) but assumed zero for steady simulations
+
+  finish_time_.reset( new double );
+  buffer.str(""); buffer << "/timestepping/finish_time";             // get the finish time (assumed zero for steady simulations)
+  serr = Spud::get_option(buffer.str(), *finish_time_, 0.0); 
   spud_err(buffer.str(), serr);
 
-  double finish_time;                                                // get the finish time
-  buffer.str(""); buffer << "/timestepping/finish_time";
-  serr = Spud::get_option(buffer.str(), finish_time); 
+  nonlinear_iterations_.reset( new int );
+  buffer.str(""); buffer                                             // find out if we're doing nonlinear iterations
+                    << "/nonlinear_systems/nonlinear_iterations";    // between the systems
+  serr = Spud::get_option(buffer.str(), *nonlinear_iterations_, 1); 
   spud_err(buffer.str(), serr);
 
-  Constant_ptr timestep;                                             // set up a constant for the timestep to attach to forms
-  std::string systemname;
-  buffer.str(""); buffer << "/timestepping/timestep/system/name";    // find which system the timestep coefficient is in
-  serr = Spud::get_option(buffer.str(), systemname); 
-  spud_err(buffer.str(), serr);
-  std::string coeffname;
-  buffer.str(""); buffer 
-                       << "/timestepping/timestep/coefficient/name"; // and what the coefficient is called
-  serr = Spud::get_option(buffer.str(), coeffname); 
-  spud_err(buffer.str(), serr);                                      // grab that coefficient from the bucket (and recast it as a
-                                                                     // constant
-  timestep = boost::dynamic_pointer_cast< dolfin::Constant >((*fetch_system(systemname)).fetch_coeff(coeffname));
-
-  int nints;                                                         // find out if we're doing nonlinear iterations
-  buffer.str(""); buffer                                             // between the systems
-                      << "/nonlinear_systems/nonlinear_iterations";
-  serr = Spud::get_option(buffer.str(), nints, 1); 
-  spud_err(buffer.str(), serr);
-
-  int timestep_count = 0;                                            // the number of timesteps
-
-  while(time < finish_time)                                          // loop over time
+  buffer.str(""); buffer << "/timestepping";
+  if (Spud::have_option(buffer.str()))
   {
+    buffer.str(""); 
+    buffer << "/timestepping/timestep/coefficient::Timestep/ufl_symbol";
+    serr = Spud::get_option(buffer.str(), timestep_.first);
+    spud_err(buffer.str(), serr);
 
-    for (uint i = 0; i < nints; i++)                                 // loop over the nonlinear iterations
-    {
-      solve();                                                       // solve all systems in the bucket
-    }
-
-    update();                                                        // update all functions in the bucket
-    time += double(*timestep);                                       // increment time with the timestep
-    timestep_count++;                                                // increment the number of timesteps taken
+    buffer.str(""); 
+    buffer << "/timestepping/timestep/coefficient::Timestep";
+    timestep_.second = boost::dynamic_pointer_cast< dolfin::Constant >(initialize_expression(buffer.str()));
   }
-
-}
-
-//*******************************************************************|************************************************************//
-// run the (steady state) model described by this bucket
-//*******************************************************************|************************************************************//
-void SpudBucket::steady_run_()
-{
-  std::stringstream buffer;                                          // optionpath buffer
-  Spud::OptionError serr;                                            // spud error code
-
-  int nints;                                                         // find out if we're doing nonlinear iterations
-  buffer.str(""); buffer 
-                      << "/nonlinear_systems/nonlinear_iterations";
-  serr = Spud::get_option(buffer.str(), nints, 1); 
-  spud_err(buffer.str(), serr);
-
-  for (uint i = 0; i < nints; i++)                                   // loop over the nonlinear iterations
+  else
   {
-
-    solve();                                                         // solve all systems in the bucket
-
+    timestep_.first = "";
+    timestep_.second.reset( new dolfin::Constant(0.0) );
   }
-
+  
 }
 
 //*******************************************************************|************************************************************//
@@ -702,6 +695,7 @@ void SpudBucket::detectors_fill_()
 {
   GenericDetectors_ptr det(new GenericDetectors());                  // initialize a pointer to a generic detector
   std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud error code
   
   int npdets = Spud::option_count("/io/detectors/point");            // number of point detectors
   for (uint i=0; i<npdets; i++)                                      // loop over point detectors
@@ -711,12 +705,14 @@ void SpudBucket::detectors_fill_()
                                                         << i << "]";
     
     std::string detname;                                             // detector name
-    buffer.str(detectorpath.str()); buffer << "/name";
-    Spud::get_option(buffer.str(), detname);
+    buffer.str(""); buffer << detectorpath.str() << "/name";
+    serr = Spud::get_option(buffer.str(), detname);
+    spud_err(buffer.str(), serr);
 
     std::vector<double> point;                                       // point location
-    buffer.str(detectorpath.str());
-    Spud::get_option(buffer.str(), point);
+    buffer.str(""); buffer << detectorpath.str();
+    serr = Spud::get_option(buffer.str(), point);
+    spud_err(buffer.str(), serr);
     
     det.reset(new PointDetectors(point, detname));                   // create point detector
     register_detector(det, detname, detectorpath.str());             // register detector
@@ -730,22 +726,22 @@ void SpudBucket::detectors_fill_()
                                                         << i << "]";
     
     int no_det;                                                      // number of detectors in array
-    buffer.str(detectorpath.str()); buffer << "/number_of_detectors";
-    Spud::get_option(buffer.str(), no_det);
+    buffer.str(""); buffer << detectorpath.str() << "/number_of_detectors";
+    serr = Spud::get_option(buffer.str(), no_det);
+    spud_err(buffer.str(), serr);
 
     std::string detname;                                             // detector array name
-    buffer.str(detectorpath.str()); buffer << "/name";
-    Spud::get_option(buffer.str(), detname);
+    buffer.str(""); buffer << detectorpath.str() << "/name";
+    serr = Spud::get_option(buffer.str(), detname);
+    spud_err(buffer.str(), serr);
 
     std::string function;                                            // python function describing the detector positions
-    buffer.str(detectorpath.str()); buffer << "/python";
-    Spud::get_option(buffer.str(), function);
+    buffer.str(""); buffer << detectorpath.str() << "/python";
+    serr = Spud::get_option(buffer.str(), function);
+    spud_err(buffer.str(), serr);
     
-    int dimension;                                                   // FIXME: geometry dimension is not necessarily the coordinate
-    Spud::get_option("/geometry/dimension", dimension);              // dimension
-
                                                                      // create python detectors array
-    det.reset(new PythonDetectors(no_det, dimension, function, detname));
+    det.reset(new PythonDetectors(no_det, dimension(), function, detname));
     register_detector(det, detname, detectorpath.str());             // register detector
   }  
   

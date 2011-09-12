@@ -53,6 +53,8 @@ namespace buckettools
 
     void attach_coeffs(Form_it f_begin, Form_it f_end);              // attach coefficients to the selected forms
 
+    // void copy_statdata(Bucket *bucket);                              // copy the data necessary for the stat file(s)
+
     //***************************************************************|***********************************************************//
     // Base data access
     //***************************************************************|***********************************************************//
@@ -62,6 +64,24 @@ namespace buckettools
     
     const int dimension() const                                      // return the geometry dimension
     { return dimension_; }
+
+    const int timestep_count() const;                                // return the timestep count
+
+    int& timestep_count();                                           // return the timestep count
+
+    const double current_time() const;                               // return the current time
+
+    double& current_time();                                          // return the current time
+
+    const double finish_time() const;                                // return the finish time
+
+    const double timestep() const;                                   // return the timestep (as a double)
+
+    const int nonlinear_iterations() const;                          // return the number of nonlinear iterations requested
+
+    const int iteration_count() const;                               // return the number of nonlinear iterations taken
+
+    int& iteration_count();                                          // return the number of nonlinear iterations taken
 
     //***************************************************************|***********************************************************//
     // Mesh data access
@@ -123,6 +143,9 @@ namespace buckettools
 
     const bool contains_baseuflsymbol(const std::string &uflsymbol)  // return a boolean, true if the bucket contains a base ufl symbol
                                                         const;       //                 for the given ufl symbol false otherwise
+
+    void register_uflsymbol(const std::pair< std::string,            // register a (boost shared) pointer to a function with a ufl  
+                            GenericFunction_ptr > &uflfunctionpair); // symbol
 
     void register_uflsymbol(GenericFunction_ptr function,            // register a (boost shared) pointer to a function with a ufl
                             const std::string &uflsymbol);           // symbol
@@ -227,6 +250,18 @@ namespace buckettools
     int dimension_;                                                  // geometry dimension
                                                                      // (assumed size of various objects that don't state
                                                                      //  their own size explicitly)
+
+    
+    double_ptr current_time_, finish_time_;                          // the current and finish times of the simulation
+
+    int_ptr timestep_count_;                                         // the number of timesteps and number of nonlinear iterations taken
+
+    std::pair< std::string, Constant_ptr > timestep_;                // the timestep, represented as a dolfin constant so it can be used in
+                                                                     // the ufl (ufl symbol first member of pair)
+
+    int_ptr nonlinear_iterations_, iteration_count_;                    // the number of iterations requested and the number of nonlinear 
+                                                                     // iterations taken
+    
 
     //***************************************************************|***********************************************************//
     // Pointers data (continued)

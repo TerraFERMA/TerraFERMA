@@ -32,25 +32,19 @@ namespace buckettools
     
     DiagnosticsFile(const std::string &name);                         // specific constructor
  
-    ~DiagnosticsFile();                                      // default destructor
+    ~DiagnosticsFile();                                               // default destructor
     
     //***************************************************************|***********************************************************//
     // Header writing functions
     //***************************************************************|***********************************************************//
 
-    void write_header(const Bucket &bucket,                          // write header for the bucket, indicating if this is a dynamic
-                      const bool &timestepping);                     // simulation or not
+    void write_header(const Bucket &bucket);                         // write header for the bucket
 
     //***************************************************************|***********************************************************//
     // Data writing functions
     //***************************************************************|***********************************************************//
 
-    void write_data(Bucket &bucket);                                 // write data to file for a steady state simulation
-    
-    void write_data(const uint   &timestep,                          // write data to file for a dynamics simulation
-                    const double &elapsedtime, 
-                    const double &dt, 
-                    Bucket       &bucket);
+    void write_data(const Bucket &bucket);                           // write data to file for a simulation
     
   //*****************************************************************|***********************************************************//
   // Private functions
@@ -85,9 +79,9 @@ namespace buckettools
     // Data writing functions (continued)
     //***************************************************************|***********************************************************//
 
-    void data_bucket_(Bucket &bucket);                               // write the data for a steady state simulation
+    void data_bucket_(const Bucket &bucket);                         // write the data for a steady state simulation
 
-    void data_system_(const SystemBucket_ptr sys_ptr);                 // write the data for a system
+    void data_system_(const SystemBucket_ptr sys_ptr);               // write the data for a system
 
     void data_field_(FunctionBucket_const_it f_begin,                // write the data for a set of fields
                      FunctionBucket_const_it f_end);

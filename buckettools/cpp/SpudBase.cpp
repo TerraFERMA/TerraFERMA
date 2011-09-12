@@ -12,9 +12,9 @@ using namespace buckettools;
 //*******************************************************************|************************************************************//
 Expression_ptr buckettools::initialize_expression(const std::string 
                                                         &optionpath, 
-                                                  const int &size, 
+                                                  const int *size, 
                                                   const std::vector<int> 
-                                                        &shape)
+                                                        *shape)
 {
   Spud::OptionError serr;                                            // spud option error
   Expression_ptr expression;                                         // declare the pointer that will be returned
@@ -40,7 +40,10 @@ Expression_ptr buckettools::initialize_expression(const std::string
       std::vector<double> values;
       serr = Spud::get_option(constbuffer.str(), values); 
       spud_err(constbuffer.str(), serr);
-      assert(values.size()==size);
+      if(size)
+      {
+        assert(values.size()==*size);
+      }
       expression.reset(new dolfin::Constant(values));
     }
 //    else if (rank==2)
@@ -85,7 +88,8 @@ Expression_ptr buckettools::initialize_expression(const std::string
     }
     else if (rank==1)                                                // vector
     {
-      expression.reset(new buckettools::PythonExpression(size, pyfunction));
+      assert(size);
+      expression.reset(new buckettools::PythonExpression(*size, pyfunction));
     }
     else
     {
@@ -99,6 +103,33 @@ Expression_ptr buckettools::initialize_expression(const std::string
   
   return expression;                                                 // return the initialized expression
   
+}
+
+
+//*******************************************************************|************************************************************//
+// initialize an expression from an optionpath assuming the buckettools schema
+//*******************************************************************|************************************************************//
+Expression_ptr buckettools::initialize_expression(const std::string &optionpath)
+{ 
+  return initialize_expression(optionpath, NULL, NULL); 
+}
+
+//*******************************************************************|************************************************************//
+// initialize an expression from an optionpath assuming the buckettools schema
+//*******************************************************************|************************************************************//
+Expression_ptr buckettools::initialize_expression(const std::string &optionpath,
+                                     const int *size)
+{ 
+  return initialize_expression(optionpath, size, NULL); 
+}
+
+//*******************************************************************|************************************************************//
+// initialize an expression from an optionpath assuming the buckettools schema
+//*******************************************************************|************************************************************//
+Expression_ptr buckettools::initialize_expression(const std::string &optionpath,
+                                     const std::vector<int> *shape)
+{ 
+  return initialize_expression(optionpath, NULL, shape); 
 }
 
 

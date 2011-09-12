@@ -133,17 +133,11 @@ namespace buckettools
     std::map< std::string, std::string > detector_optionpaths_;      // a map from detector names to spud detector optionpaths
 
     //***************************************************************|***********************************************************//
-    // Functions used to run the model (continued)
-    //***************************************************************|***********************************************************//
-
-    void timestep_run_();                                            // run a dynamics simulation
-
-    void steady_run_();                                              // run a steady state simulation
-
-    //***************************************************************|***********************************************************//
     // Filling data (continued)
     //***************************************************************|***********************************************************//
 
+    void timestepping_fill_();                                       // fill the timestepping data
+ 
     void meshes_fill_(const std::string &optionpath);                // fill in the mesh data structures
     
     void systems_fill_(const std::string &optionpath);               // fill in information about the systems

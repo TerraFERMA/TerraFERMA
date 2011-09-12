@@ -37,8 +37,11 @@ FunctionBucket::~FunctionBucket()
 //*******************************************************************|************************************************************//
 void FunctionBucket::attach_functional_coeffs()
 {
-  (*(*system_).bucket()).attach_coeffs(functionals_begin(),
-                                                functionals_end());
+  if (system_)
+  {
+    (*(*system_).bucket()).attach_coeffs(functionals_begin(),
+                                                  functionals_end());
+  }
 }
 
 //*******************************************************************|************************************************************//
