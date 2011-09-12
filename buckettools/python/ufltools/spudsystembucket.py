@@ -40,14 +40,15 @@ class SpudSystemBucket(ufltools.systembucket.SystemBucket):
       del coeff
     
     self.special_coeffs = []
-    coeff_optionpath = "/timestepping/timestep/coefficient::Timestep"
-    coeff = ufltools.spud.SpudFunctionBucket()
-    # get all the information about this coefficient from the options dictionary
-    coeff.fill(coeff_optionpath, self, 0)
-    # let the system know about this coefficient
-    self.special_coeffs.append(coeff)
-    # remove the local copy of this coefficient
-    del coeff
+    if libspud.have_option("/timestepping"):
+      coeff_optionpath = "/timestepping/timestep/coefficient::Timestep"
+      coeff = ufltools.spud.SpudFunctionBucket()
+      # get all the information about this coefficient from the options dictionary
+      coeff.fill(coeff_optionpath, self, 0)
+      # let the system know about this coefficient
+      self.special_coeffs.append(coeff)
+      # remove the local copy of this coefficient
+      del coeff
     
     self.solvers = []
     for j in range(libspud.option_count(optionpath+"/nonlinear_solver")):
