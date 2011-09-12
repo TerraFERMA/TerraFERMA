@@ -92,27 +92,9 @@ const int Bucket::timestep_count() const
 }
 
 //*******************************************************************|************************************************************//
-// return the timestep count (by reference so it can be modified)
-//*******************************************************************|************************************************************//
-int& Bucket::timestep_count()
-{
-  assert(timestep_count_);
-  return *timestep_count_;
-}
-
-//*******************************************************************|************************************************************//
 // return the current time
 //*******************************************************************|************************************************************//
 const double Bucket::current_time() const
-{
-  assert(current_time_);
-  return *current_time_;
-}
-
-//*******************************************************************|************************************************************//
-// return the current time (by reference so it can be modified)
-//*******************************************************************|************************************************************//
-double& Bucket::current_time()
 {
   assert(current_time_);
   return *current_time_;
@@ -149,14 +131,6 @@ const int Bucket::nonlinear_iterations() const
 // return the number of nonlinear iterations taken
 //*******************************************************************|************************************************************//
 const int Bucket::iteration_count() const
-{
-  return *iteration_count_;
-}
-
-//*******************************************************************|************************************************************//
-// return the number of nonlinear iterations taken (by reference so it can be modified)
-//*******************************************************************|************************************************************//
-int& Bucket::iteration_count()
 {
   return *iteration_count_;
 }

@@ -68,20 +68,20 @@ void SpudBucket::run()
 
   do {                                                               // loop over time
 
-    for (iteration_count() = 0; \
-         iteration_count() < nonlinear_iterations(); 
-         iteration_count())                                          // loop over the nonlinear iterations
+    for (*iteration_count_ = 0; \
+         *iteration_count_ < nonlinear_iterations(); 
+         (*iteration_count_)++)                                        // loop over the nonlinear iterations
     {
       solve();                                                       // solve all systems in the bucket
     }
 
     update();                                                        // update all functions in the bucket
-    current_time() += timestep();                                     // increment time with the timestep
-    timestep_count()++;                                               // increment the number of timesteps taken
+    *current_time_ += timestep();                                     // increment time with the timestep
+    (*timestep_count_)++;                                               // increment the number of timesteps taken
 
     diagfile.write_data(*this);
 
-  } while (current_time_ < finish_time_);                            // syntax ensures at least one solve
+  } while (*current_time_ < finish_time());                            // syntax ensures at least one solve
 
   diagfile.close();                                                  // close the diagnostics
 
