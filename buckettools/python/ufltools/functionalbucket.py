@@ -4,7 +4,7 @@ import hashlib
 import shutil
 import sys
 
-class Functional:
+class FunctionalBucket:
   """A class that stores all the information necessary to write the ufl for a functional (i.e. scalar valued returning ufl)."""
 
   def __init__(self):
@@ -38,6 +38,23 @@ class Functional:
         for suffix in uflsymbol_suffixes():
           ufl.append(coefficient_ufl(coeff.symbol, suffix=suffix))
       ufl.append("\n")
+    ufl.append("\n")
+    # special_coeffs are only added for this system *not the other systems*
+    ufl.append(comment("Declaring special coefficients, such as the timestep."))
+    ufl.append("\n")
+    for coeff in self.function.system.special_coeffs:
+      if coeff.type == "Constant":
+        ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
+        for suffix in uflsymbol_suffixes():
+          ufl.append(coeff.constant_ufl(suffix=suffix))
+      else:
+        if coeff.type == "Function":
+          print "coefficient functionspaces not output for special coefficient functions"
+          sys.exit(1)
+        ufl += coeff.element_ufl()
+        ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
+        for suffix in uflsymbol_suffixes():
+          ufl.append(coefficient_ufl(coeff.symbol, suffix=suffix))
     ufl.append("\n")
     ufl.append(comment("Finished declaring functions for this system, start on other systems."))
     ufl.append("\n")

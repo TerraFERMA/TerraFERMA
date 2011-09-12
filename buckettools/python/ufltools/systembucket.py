@@ -1,6 +1,6 @@
 from ufltools.base import *
 
-class System:
+class SystemBucket:
   """A class that stores all the information necessary to write the ufl for a system (i.e. mixed function space)."""
 
   def __init__(self):
@@ -11,6 +11,7 @@ class System:
     self.symbol = None
     self.fields = None
     self.coeffs = None
+    self.special_coeffs = None  # these are constants declared outside systems but still need system information
     self.solvers = None
     self.bucket = None
 
@@ -38,6 +39,22 @@ class System:
         for suffix in uflsymbol_suffixes():
           ufl.append(coeff.constant_ufl(suffix=suffix))
       else:
+        ufl += coeff.element_ufl()
+        ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
+        for suffix in uflsymbol_suffixes():
+          ufl.append(coefficient_ufl(coeff.symbol, suffix=suffix))
+    ufl.append("\n")
+    # special_coeffs are only added for this system *not the other systems*
+    ufl.append(comment("Declaring special coefficients, such as the timestep."))
+    ufl.append("\n")
+    for coeff in self.special_coeffs:
+      if coeff.type == "Constant":
+        ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
+        for suffix in uflsymbol_suffixes():
+          ufl.append(coeff.constant_ufl(suffix=suffix))
+      else:
+        if coeff.type == "Function":
+          print "coefficient functionspaces not output for special coefficient functions"
         ufl += coeff.element_ufl()
         ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
         for suffix in uflsymbol_suffixes():

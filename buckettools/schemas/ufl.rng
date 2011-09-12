@@ -70,4 +70,13 @@ from this description.  No additional symbols will be automatically generated ba
       <ref name="anystring"/>
     </element>
   </define>
+  <!-- intended for coefficients outside of the systems -->
+  <define name="special_ufl_symbol">
+    <element name="ufl_symbol">
+      <a:documentation>The ufl symbol that will be used in ufl forms and functionals to describe the coefficient. 
+This ufl symbol must be unique across the entire options file as it may be used in any ufl form or functional
+written in this file.  No additional symbols will be augomatically generated based on this symbol.</a:documentation>
+      <ref name="anystring"/>
+    </element>
+  </define>
 </grammar>

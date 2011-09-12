@@ -1,33 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<grammar xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+<grammar xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0">
   <include href="spud_base.rng"/>
   <define name="timestepping">
     <element name="timestepping">
+      <a:documentation>Options for timestepping if this is a dynamic simulation (leave inactive for steady state simulations)</a:documentation>
       <element name="current_time">
+        <a:documentation>The current time at the start of the simulation</a:documentation>
         <ref name="real"/>
       </element>
       <element name="finish_time">
+        <a:documentation>The time at which the simulation should stop</a:documentation>
         <ref name="real"/>
       </element>
       <element name="timestep">
-        <element name="system">
-          <attribute name="name">
-            <data type="string"/>
-          </attribute>
-          <empty/>
-        </element>
+        <a:documentation>Options for the timestep</a:documentation>
         <element name="coefficient">
+          <a:documentation>Options describing a coefficient in this system</a:documentation>
           <attribute name="name">
-            <data type="string"/>
+            <value>Timestep</value>
           </attribute>
-          <empty/>
+          <ref name="special_ufl_symbol"/>
+          <element name="type">
+            <a:documentation>The type of coefficient.
+
+Constants are spatially constant expressions.</a:documentation>
+            <attribute name="name">
+              <value>Constant</value>
+            </attribute>
+            <element name="rank">
+              <a:documentation>The rank of the coefficient (scalar, rank 0).</a:documentation>
+              <attribute name="name">
+                <value>Scalar</value>
+              </attribute>
+              <ref name="scalar_coefficient_constant_options"/>
+            </element>
+          </element>
         </element>
       </element>
     </element>
   </define>
   <define name="nonlinear">
     <element name="nonlinear_systems">
+      <a:documentation>Options to perform multiple iterations per timestep (i.e. to solve the systems repeatedly)</a:documentation>
       <element name="nonlinear_iterations">
+        <a:documentation>The number of nonlinear iterations</a:documentation>
         <ref name="integer"/>
       </element>
     </element>

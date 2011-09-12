@@ -2,21 +2,33 @@ include "spud_base.rnc"
 
 timestepping =
    (
+      ## Options for timestepping if this is a dynamic simulation (leave inactive for steady state simulations)
       element timestepping {
+        ## The current time at the start of the simulation
         element current_time {
           real
         },
+        ## The time at which the simulation should stop
         element finish_time {
           real
         },
+        ## Options for the timestep
         element timestep {
-          element system {
-            attribute name{ xsd:string },
-            empty
-          },
+          ## Options describing a coefficient in this system
           element coefficient {
-            attribute name{ xsd:string },
-            empty
+            attribute name { "Timestep" },
+            special_ufl_symbol,
+            ## The type of coefficient.
+            ##
+            ## Constants are spatially constant expressions.
+            element type {
+              attribute name { "Constant" },
+              ## The rank of the coefficient (scalar, rank 0).
+              element rank {
+                attribute name { "Scalar" },
+                scalar_coefficient_constant_options
+              }
+            }
           }
         }
       }
@@ -24,7 +36,9 @@ timestepping =
 
 nonlinear =
    (
+      ## Options to perform multiple iterations per timestep (i.e. to solve the systems repeatedly)
       element nonlinear_systems {
+        ## The number of nonlinear iterations
         element nonlinear_iterations {
           integer
         }

@@ -2,7 +2,7 @@ import sys
 import libspud
 import ufltools.functionbucket
 
-class SpudFunction(ufltools.functionbucket.Function):
+class SpudFunctionBucket(ufltools.functionbucket.FunctionBucket):
   """A class that stores all the information necessary to write the ufl for a function (field or coefficient) 
      plus all the information necessary to populate that class using libspud.
      Note that the class has limited ufl production because much of this is system dependent."""
@@ -38,7 +38,7 @@ class SpudFunction(ufltools.functionbucket.Function):
     
     for k in range(libspud.option_count(optionpath+"/output/include_in_diagnostics/functional")):
       functional_optionpath = optionpath+"/output/include_in_diagnostics/functional["+`k`+"]"
-      functional = ufltools.spud.SpudFunctional()
+      functional = ufltools.spud.SpudFunctionalBucket()
       # get all the information about this functional from the options dictionary
       functional.fill(functional_optionpath, self)
       # let the field know about this functional

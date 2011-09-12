@@ -4,7 +4,7 @@ import subprocess
 import hashlib
 import shutil
 
-class Solver:
+class SolverBucket:
   """A class that stores all the information necessary to write the ufl for a system of forms (i.e. linear or bilinear) associated with a solver."""
 
   def __init__(self):

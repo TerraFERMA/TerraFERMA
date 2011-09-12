@@ -11,7 +11,7 @@ class SpudBucket(ufltools.bucket.Bucket):
     # loop over the systems in the options tree
     for i in range(libspud.option_count("/system")):
       system_optionpath = "/system["+`i`+"]"
-      system = ufltools.spud.SpudSystem()
+      system = ufltools.spud.SpudSystemBucket()
       # get all the information about this system from the options dictionary
       system.fill(system_optionpath, self)
       # let the bucket know about this system

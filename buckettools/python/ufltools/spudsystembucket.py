@@ -2,7 +2,7 @@ import ufltools.systembucket
 import ufltools.spud
 import libspud
 
-class SpudSystem(ufltools.systembucket.System):
+class SpudSystemBucket(ufltools.systembucket.SystemBucket):
   """A class that stores all the information necessary to write the ufl for a system (i.e. mixed function space) 
      plus all the information necessary to populate that class using libspud."""
   
@@ -20,7 +20,7 @@ class SpudSystem(ufltools.systembucket.System):
     self.fields = []
     for j in range(libspud.option_count(optionpath+"/field")):
       field_optionpath = optionpath+"/field["+`j`+"]"
-      field = ufltools.spud.SpudFunction()
+      field = ufltools.spud.SpudFunctionBucket()
       # get all the information about this field from the options dictionary
       field.fill(field_optionpath, self, j)
       # let the system know about this field
@@ -31,7 +31,7 @@ class SpudSystem(ufltools.systembucket.System):
     self.coeffs = []
     for j in range(libspud.option_count(optionpath+"/coefficient")):
       coeff_optionpath = optionpath+"/coefficient["+`j`+"]"
-      coeff = ufltools.spud.SpudFunction()
+      coeff = ufltools.spud.SpudFunctionBucket()
       # get all the information about this coefficient from the options dictionary
       coeff.fill(coeff_optionpath, self, j)
       # let the system know about this coefficient
@@ -39,10 +39,20 @@ class SpudSystem(ufltools.systembucket.System):
       # remove the local copy of this coefficient
       del coeff
     
+    self.special_coeffs = []
+    coeff_optionpath = "/timestepping/timestep/coefficient::Timestep"
+    coeff = ufltools.spud.SpudFunctionBucket()
+    # get all the information about this coefficient from the options dictionary
+    coeff.fill(coeff_optionpath, self, 0)
+    # let the system know about this coefficient
+    self.special_coeffs.append(coeff)
+    # remove the local copy of this coefficient
+    del coeff
+    
     self.solvers = []
     for j in range(libspud.option_count(optionpath+"/nonlinear_solver")):
       solver_optionpath = optionpath+"/nonlinear_solver["+`j`+"]"
-      solver = ufltools.spud.SpudSolver()
+      solver = ufltools.spud.SpudSolverBucket()
       # get all the information about this nonlinear solver from the options dictionary
       solver.fill(solver_optionpath, self)
       # let the system know about this solver

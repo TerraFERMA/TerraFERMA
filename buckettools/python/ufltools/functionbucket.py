@@ -1,7 +1,7 @@
 import sys
 from ufltools.base import *
 
-class Function:
+class FunctionBucket:
   """A class that stores all the information necessary to write the ufl for a function (field or coefficient).
      Note that the class has limited ufl production because much of this is system dependent."""
 
@@ -18,6 +18,7 @@ class Function:
     self.type = None
     self.system = None
     self.functionals = None
+    self.index = None
   
   def constant_ufl(self, suffix=""):
     """Returns a ufl string declaring a constant coefficient on a cell."""

@@ -79,3 +79,14 @@ functional_ufl_symbol =
     }
   )
 
+# intended for coefficients outside of the systems
+special_ufl_symbol =
+  (
+    ## The ufl symbol that will be used in ufl forms and functionals to describe the coefficient. 
+    ## This ufl symbol must be unique across the entire options file as it may be used in any ufl form or functional
+    ## written in this file.  No additional symbols will be augomatically generated based on this symbol.
+    element ufl_symbol {
+      anystring
+    }
+  )
+
