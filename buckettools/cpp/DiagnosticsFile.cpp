@@ -26,50 +26,29 @@ DiagnosticsFile::~DiagnosticsFile()
 }
 
 //*******************************************************************|************************************************************//
-// write a header for the model described in the given bucket, indicating if this is a dynamic simulation or not
+// write a header for the model described in the given bucket
 // FIXME: this will write a header for the bucket in its current state, if this is subsequently modified the header will be invalid
 //*******************************************************************|************************************************************//
-void DiagnosticsFile::write_header(const Bucket &bucket, 
-                                   const bool &timestepping)
+void DiagnosticsFile::write_header(const Bucket &bucket)
 {
   uint column = 1;                                                   // keep count of how many columns there are
   
   file_ << "<header>" << std::endl;                                  // initialize header xml
   header_constants_();                                               // write constant tags
-  if (timestepping)                                                  // if this is a timestepping simulation
-  {
-    header_timestep_(column);                                        // write tags for the timesteps
-  }
+  header_timestep_(column);                                          // write tags for the timesteps
   header_bucket_(bucket, column);                                    // write tags for the actual bucket variables - fields etc.
-  file_ << "</header>" << std::endl;                                 // finalize header xml
+  file_ << "</header>" << std::endl << std::flush;                   // finalize header xml
 }
 
 //*******************************************************************|************************************************************//
-// write data for the (presumed steady state) model described in the given bucket
+// write data for the model described in the given bucket
 // FIXME: this will write data for the bucket in its current state, if this is different to when the header was written the file
 // will be invalid
 //*******************************************************************|************************************************************//
-void DiagnosticsFile::write_data(Bucket &bucket)
+void DiagnosticsFile::write_data(const Bucket &bucket)
 {
   
-  data_bucket_(bucket);                                              // write the bucket data
-
-  file_ << std::endl << std::flush;                                  // flush the buffer
-  
-}
-
-//*******************************************************************|************************************************************//
-// write data for the (presumed dynamic) model described in the given bucket
-// FIXME: this will write data for the bucket in its current state, if this is different to when the header was written the file
-// will be invalid
-//*******************************************************************|************************************************************//
-void DiagnosticsFile::write_data(const uint   &timestep,
-                                 const double &elapsedtime, 
-                                 const double &dt, 
-                                 Bucket       &bucket)
-{
-  
-  data_timestep_(timestep, elapsedtime, dt);                        // write the timestepping information
+  data_timestep_(bucket);                        // write the timestepping information
   data_bucket_(bucket);                                             // write the bucket data
   
   file_ << std::endl << std::flush;                                 // flush the buffer
@@ -205,7 +184,7 @@ void DiagnosticsFile::header_functional_(const FunctionBucket_ptr f_ptr,
 // FIXME: this will write data for the bucket in its current state, if this has been modified since the header was written the file
 // will be invalid
 //*******************************************************************|************************************************************//
-void DiagnosticsFile::data_bucket_(Bucket &bucket)
+void DiagnosticsFile::data_bucket_(const Bucket &bucket)
 {
   
   file_.setf(std::ios::scientific);

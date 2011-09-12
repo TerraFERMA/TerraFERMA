@@ -65,8 +65,11 @@ void SpudFunctionBucket::coeff_fill(const uint &index)
   base_fill_(index);                                                 // fill the base data about the function bucket
                                                                      // (called from constructor instead?)
 
+  if(system_)                                                        // can't do this if this coefficient lives outside a system
+  { 
                                                                      // check we think this is a coefficient (not a foolproof test)
-  assert(Spud::have_option((*dynamic_cast<SpudSystemBucket*>(system_)).optionpath()+"/coefficient::"+name()));
+    assert(Spud::have_option((*dynamic_cast<SpudSystemBucket*>(system_)).optionpath()+"/coefficient::"+name()));
+  }
 
   initialize_expression_coeff_();                                    // initialize as a coefficient (doesn't do much for coefficient
                                                                      // functions)
@@ -110,7 +113,7 @@ void SpudFunctionBucket::initialize_function_coeff()
         buffer.str(""); buffer << optionpath() << "/type/rank/value["
                                                          << i << "]";
         Expression_ptr valueexp = initialize_expression(buffer.str(),// initialize an expression from the optionpath 
-                                                      size_, shape_);
+                                                      &size_, &shape_);
 
                                                                      // interpolate this expression onto the function
         (*boost::dynamic_pointer_cast< dolfin::Function >(function_)).interpolate(*valueexp);
@@ -389,7 +392,7 @@ void SpudFunctionBucket::bc_component_fill_(const std::string &optionpath,
        
        buffer.str(""); buffer << optionpath << "/type::Dirichlet";   // initialize an expression describing the function
        Expression_ptr bcexp =                                        // on this boundary condition, assuming it is of type
-                  initialize_expression(buffer.str(), size_, shape_);// Dirichlet
+                  initialize_expression(buffer.str(), &size_, &shape_);// Dirichlet
        
        namebuffer.str(""); namebuffer << bcname << "::" 
                                                        << *subcompid;// assemble a name for the bc (including the subcomponent id)
@@ -410,7 +413,7 @@ void SpudFunctionBucket::bc_component_fill_(const std::string &optionpath,
   {
     buffer.str(""); buffer << optionpath << "/type::Dirichlet";      // initialize an expression describing the field on the
     Expression_ptr bcexp =                                           // boundary
-                  initialize_expression(buffer.str(), size_, shape_);
+                  initialize_expression(buffer.str(), &size_, &shape_);
     
     register_bcexpression(bcexp, bcname);                            // register the expression in the function bucket
     
@@ -429,7 +432,7 @@ void SpudFunctionBucket::bc_component_fill_(const std::string &optionpath,
 //*******************************************************************|************************************************************//
 void SpudFunctionBucket::ic_fill_(const std::string &optionpath)
 {
-  icexpression_ = initialize_expression(optionpath, size_, shape_);  // intialize the expression (FIXME: still needs regions support!)
+  icexpression_ = initialize_expression(optionpath, &size_, &shape_);  // intialize the expression (FIXME: still needs regions support!)
 }
 
 //*******************************************************************|************************************************************//
@@ -457,7 +460,7 @@ void SpudFunctionBucket::initialize_expression_coeff_()
                                                         << i << "]";
 
         function_ = 
-                  initialize_expression(buffer.str(), size_, shape_);// initialize the function from the optionpath
+                  initialize_expression(buffer.str(), &size_, &shape_);// initialize the function from the optionpath
         oldfunction_ = function_;                                    // time varying not yet supported so grab a pointer for old
         iteratedfunction_ = function_;                               // and iterated
 
