@@ -15,11 +15,8 @@ int main(int argc, char* argv[])
   buckettools::SpudBucket bucket;
 
   bucket.fill();
-  bucket.output();
 
   bucket.run();
-
-  bucket.output();
 
   std::cout << bucket.str();
 
