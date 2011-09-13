@@ -66,6 +66,8 @@ void SpudBucket::run()
   diagfile.write_header(*this);
   diagfile.write_data(*this);
 
+  output();
+
   do {                                                               // loop over time
 
     for (*iteration_count_ = 0; \
@@ -80,6 +82,7 @@ void SpudBucket::run()
     (*timestep_count_)++;                                               // increment the number of timesteps taken
 
     diagfile.write_data(*this);
+    output();
 
   } while (*current_time_ < finish_time());                            // syntax ensures at least one solve
 
@@ -359,7 +362,7 @@ void SpudBucket::timestepping_fill_()
     spud_err(buffer.str(), serr);
 
     buffer.str(""); 
-    buffer << "/timestepping/timestep/coefficient::Timestep";
+    buffer << "/timestepping/timestep/coefficient::Timestep/type::Constant/rank::Scalar/value::WholeMesh";
     timestep_.second = boost::dynamic_pointer_cast< dolfin::Constant >(initialize_expression(buffer.str()));
   }
   else
