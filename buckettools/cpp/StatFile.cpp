@@ -1,5 +1,6 @@
 
 #include "StatFile.h"
+#include "Bucket.h"
 #include "builddefs.h"
 #include <cstdio>
 #include <stdlib.h>
@@ -31,10 +32,7 @@ StatFile::StatFile(const std::string &name) : name_(name)
 //*******************************************************************|************************************************************//
 StatFile::~StatFile()
 {
-  if (file_.is_open())
-  {
-    file_.close();                                                   // close the file_ member
-  }
+  close();                                                           // close the file_ member
 }
 
 //*******************************************************************|************************************************************//
@@ -126,19 +124,28 @@ void StatFile::tag_(const std::string &name,
 //*******************************************************************|************************************************************//
 // write data to the file for values relating to timestepping
 //*******************************************************************|************************************************************//
-void StatFile::data_timestep_(const uint   &timestep,
-                              const double &elapsedtime, 
-                              const double &dt)
+void StatFile::data_timestep_(const Bucket &bucket)
 {
   
   file_.setf(std::ios::scientific);
   file_.precision(10);
   
-  file_ << timestep << " ";  
-  file_ << elapsedtime << " ";
-  file_ << dt << " ";
+  file_ << bucket.timestep_count() << " ";  
+  file_ << bucket.current_time() << " ";
+  file_ << bucket.timestep() << " ";
   
   file_.unsetf(std::ios::scientific);
   
+}
+
+//*******************************************************************|************************************************************//
+// close the file_ (if open)
+//*******************************************************************|************************************************************//
+void StatFile::close()
+{
+  if (file_.is_open())
+  {
+    file_.close();                                                   // close the file_ member
+  }
 }
 

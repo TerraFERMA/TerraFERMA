@@ -83,6 +83,59 @@ void Bucket::attach_coeffs(Form_it f_begin, Form_it f_end)
 }
 
 //*******************************************************************|************************************************************//
+// return the timestep count
+//*******************************************************************|************************************************************//
+const int Bucket::timestep_count() const
+{
+  assert(timestep_count_);
+  return *timestep_count_;
+}
+
+//*******************************************************************|************************************************************//
+// return the current time
+//*******************************************************************|************************************************************//
+const double Bucket::current_time() const
+{
+  assert(current_time_);
+  return *current_time_;
+}
+
+//*******************************************************************|************************************************************//
+// return the finish time
+//*******************************************************************|************************************************************//
+const double Bucket::finish_time() const
+{
+  assert(finish_time_);
+  return *finish_time_;
+}
+
+//*******************************************************************|************************************************************//
+// return the timestep (as a double)
+//*******************************************************************|************************************************************//
+const double Bucket::timestep() const
+{
+  assert(timestep_.second);
+  return double(*(timestep_.second));
+}
+
+//*******************************************************************|************************************************************//
+// return the number of nonlinear iterations requested
+//*******************************************************************|************************************************************//
+const int Bucket::nonlinear_iterations() const
+{
+  assert(nonlinear_iterations_);
+  return *nonlinear_iterations_;
+}
+
+//*******************************************************************|************************************************************//
+// return the number of nonlinear iterations taken
+//*******************************************************************|************************************************************//
+const int Bucket::iteration_count() const
+{
+  return *iteration_count_;
+}
+
+//*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a dolfin mesh in the bucket data maps
 //*******************************************************************|************************************************************//
 void Bucket::register_mesh(Mesh_ptr mesh, const std::string &name)
@@ -316,6 +369,14 @@ const bool Bucket::contains_baseuflsymbol(
 {
   string_const_it s_it = baseuflsymbols_.find(uflsymbol);
   return s_it != baseuflsymbols_.end();
+}
+
+//*******************************************************************|************************************************************//
+// register a (boost shared) pointer to a function with the given ufl symbol in the bucket data maps
+//*******************************************************************|************************************************************//
+void Bucket::register_uflsymbol(const std::pair< std::string, GenericFunction_ptr > &uflfunctionpair)
+{
+  register_uflsymbol(uflfunctionpair.second, uflfunctionpair.first);
 }
 
 //*******************************************************************|************************************************************//
@@ -578,6 +639,12 @@ const std::string Bucket::uflsymbols_str(const int &indent) const
 //*******************************************************************|************************************************************//
 void Bucket::uflsymbols_fill_()
 {
+
+  if (!timestep_.first.empty())
+  {
+    register_uflsymbol(timestep_);            // register the timestep ufl symbol and function
+  }
+
   for (SystemBucket_const_it s_it = systems_begin();                 // loop over the systems
                                       s_it != systems_end(); s_it++)
   {

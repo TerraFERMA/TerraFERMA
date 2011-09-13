@@ -2,6 +2,7 @@
 #ifndef __STAT_FILE_H
 #define __STAT_FILE_H
 
+#include "Bucket.h"
 #include <cstdio>
 #include <fstream>
 #include <string>
@@ -35,6 +36,12 @@ namespace buckettools
     StatFile(const std::string &name);                                // specific constructor
     
     virtual ~StatFile();                                             // default destructor
+    
+    //***************************************************************|***********************************************************//
+    // Closing
+    //***************************************************************|***********************************************************//
+
+    void close();                                                    // close the file
     
   //*****************************************************************|***********************************************************//
   // Protected functions
@@ -85,9 +92,7 @@ namespace buckettools
     // Data writing functions
     //***************************************************************|***********************************************************//
 
-    void data_timestep_(const uint   &timestep,                      // write the data for timestepping for a dynamic simulation
-                        const double &elapsedtime, 
-                        const double &dt);
+    void data_timestep_(const Bucket &bucket);                       // write the data for timestepping for a dynamic simulation
     
   };
   
