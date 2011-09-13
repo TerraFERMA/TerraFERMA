@@ -23,47 +23,18 @@ import os
 import subprocess
 import tempfile
 import unittest
+import numpy
 
-try:
-  import numpy
-except ImportError:
-  debug.deprint("Warning: Failed to import numpy module")
+import buckettools.statfile as statfile
 
-import fluidity.diagnostics.debug as debug
-
-try:
-  from fluidity_tools import *
-except:
-  debug.deprint("Warning: Failed to import fluidity_tools module")
-  
-import fluidity.diagnostics.calc as calc
-import fluidity.diagnostics.filehandling as filehandling
-import fluidity.diagnostics.utils as utils
-  
-def FluidityBinary(binaries = ["dfluidity-debug", "dfluidity", "fluidity-debug", "fluidity"]):
-  """
-  Return the command used to call Fluidity
-  """
-
-  binary = None
-  
-  for possibleBinary in binaries:
-    process = subprocess.Popen(["which", possibleBinary], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-    process.wait()
-    if process.returncode == 0:
-      binary = possibleBinary
-      debug.dprint("Fluidity binary: " + str(process.stdout.readlines()[0]), newline = False)
-      break
-  
-  if binary is None:
-    raise Exception("Failed to find Fluidity binary")
-  
-  return binary
+import buckettools.diagnostics.debug as debug
+import buckettools.diagnostics.calc as calc
+import buckettools.diagnostics.utils as utils
   
 class Stat:
   """
-  Class for handling .stat files. Similiar to the dictionary returned by
-  stat_parser, but with some annoying features fixed.
+  Class for handling stat files. Similiar to the dictionary returned by
+  parser, but with some annoying features fixed.
   """
 
   def __init__(self, filename = None, delimiter = "%", includeMc = False, subsample = 1):
@@ -261,7 +232,7 @@ class Stat:
             if includeMc:
               # Add in this vector
               
-              # stat_parser gives this in an inconvenient matrix order. Take the
+              # parser gives this in an inconvenient matrix order. Take the
               # transpose here to make life easier.
               newS[str(key1)] = s[key1].transpose()
               
@@ -282,16 +253,12 @@ class Stat:
       return newS
         
     debug.dprint("Reading .stat file: " + filename)
-    if filehandling.FileExists(filename + ".dat"):
-      debug.dprint("Format: binary")
-    else:
-      debug.dprint("Format: plain text")
     if subsample == 1:
       # Handle this case separately, as it's convenient to be backwards
       # compatible
-      statParser = stat_parser(filename)
+      statParser = statfile.parser(filename)
     else:
-      statParser = stat_parser(filename, subsample = subsample)
+      statParser = statfile.parser(filename, subsample = subsample)
 
     self._s = ParseRawS(statParser, self._delimiter)
     
@@ -371,337 +338,3 @@ def JoinStat(*args):
   
   return output
                 
-def DetectorArrays(stat):
-  """
-  Return a dictionary of detector array lists contained in the supplied stat
-  """
-  
-  # Detector array data is divided in the stat into one path per array entry. We
-  # want to collapse this into a dictionary of one path per array. This involves
-  # lots of horrible parsing of stat paths.
-  
-  # Find all detector array names and the paths for each entry in the array
-  arrays = {}         # The arrays
-  notArrayNames = []  # List of candidate array names that are, in fact, not
-                      # detector array names
-  for path in stat.PathLists():  
-    if isinstance(stat[stat.FormPathFromList(path)], Stat):
-      # This isn't a leaf node
-      continue
-      
-    # Look for an array marker in the path. This appears as:
-    #   [path]%arrayname_index[%component]
-    # and for coordinates as:
-    #   arrayname_index[%component]
-    
-    if len(path) >= 2 and path[1] == "position":
-      # This might be a coordinate entry
-    
-      firstKey = path[0]
-      keySplit = firstKey.split("_")
-      # We have an entry in an array if:
-      #   1. We have more than one entry in the split
-      #   2. The final entry in the split contains one of zero (for scalars) or
-      #      two (for vector and tensors) array path delimiters
-      #   3. The first stat path split of the final entry is an integer (the
-      #      index)
-      if len(keySplit) <= 1 \
-        or not len(stat.SplitPath(keySplit[-1])) in [1, 2] \
-        or not utils.IsIntString(stat.SplitPath(keySplit[-1])[0]):
-        # This definitely can't be an entry in a detector array
-        continue
-        
-      # OK, we have something that looks a bit like an entry for a detector
-      # array
-      
-      # Find the array name and the index for this entry
-      arrayName = utils.FormLine([utils.FormLine(keySplit[:-1], delimiter = "_", newline = False)] + path[1:], delimiter = stat.GetDelimiter(), newline = False)
-      index = int(keySplit[-1])
-    else:    
-      # This might be a field entry
-    
-      finalKey = path[-1]   
-      keySplit = finalKey.split("_")
-      # We have an entry in an array if:
-      #   1. We have more than one entry in the split
-      #   2. The final entry in the split contains one of zero or one (for field
-      #      components) array path delimiters
-      #   3. The first stat path split of the final entry is an integer (the
-      #      index)
-      if len(keySplit) <= 1 \
-        or not len(stat.SplitPath(keySplit[-1])) in [1, 2] \
-        or not utils.IsIntString(stat.SplitPath(keySplit[-1])[0]):
-        # This definitely can't be an entry in a detector array
-        continue
-
-      # OK, we have something that looks a bit like an entry for a detector
-      # array
-      
-      # Find the array name and the index for this entry
-      arrayName = utils.FormLine(path[:-1] + [utils.FormLine(keySplit[:-1], delimiter = "_", newline = False)], delimiter = stat.GetDelimiter(), newline = False)
-      if len(stat.SplitPath(keySplit[-1])) > 1:
-        # This array name references a field component
-        
-        # We need to append the component to the array name. This needs to be
-        # added to the last but one part of the stat path (the final entry is the
-        # name of this detector array as configured in Fluidity).
-        splitName = stat.SplitPath(arrayName)
-        splitName[-2] = stat.FormPath(splitName[-2], stat.SplitPath(keySplit[-1])[1])
-        arrayName = stat.FormPathFromList(splitName)
-        index = int(stat.SplitPath(keySplit[-1])[0])
-      else:
-        # This array name references a field
-      
-        index = int(keySplit[-1])
-      
-    if arrayName in notArrayNames:
-      # We've already discovered that this candidate array name isn't in fact a
-      # detector array
-      continue
-              
-    if index <= 0:
-      # This isn't a valid index
-      
-      # This candidate array name isn't in fact a detector array
-      notArrayNames.append(arrayName)
-      if arrayName in arrays:
-        arrays.remove(arrayName)
-      continue
-    if arrayName in arrays and index in arrays[arrayName]:
-      # We've seen this index more than once for this array name
-    
-      # This candidate apparent array name isn't in fact a detector array
-      notArrayNames.append(arrayName)
-      arrays.remove(arrayName)
-      continue
-        
-    if arrayName in arrays:
-      arrays[arrayName][index] = stat[stat.FormPathFromList(path)]
-    else: 
-      # This is a new array name
-      arrays[arrayName] = {}
-      arrays[arrayName][index] = stat[stat.FormPathFromList(path)]
-  
-  # Convert the dictionaries of data to lists, and check for consecutive
-  # indices
-  for name in arrays:
-    array = arrays[name]
-    indices = array.keys()
-    data = [array[index] for index in indices]
-    indices, data = utils.KeyedSort(indices, data, returnSortedKeys = True)
-    arrays[name] = numpy.array(data)
-    
-    for i, index in enumerate(indices):
-      if not i + 1 == index:
-        # The indices are not consecutive from one. After all the hard work
-        # above, we still have an array name that isn't in fact a detector
-        # array.
-        arrays.remove(name)
-        break
-  
-  # Fantastic! We have our detectors dictionary!
-  debug.dprint("Detector keys:")
-  debug.dprint(arrays.keys())
-    
-  return arrays
-  
-def SplitVtuFilename(filename):
-  """
-  Split the supplied vtu filename into project, ID and file extension
-  """
-  
-  first = filehandling.StripFileExtension(filename)
-  ext = filehandling.FileExtension(filename)
-  
-  split = first.split("_") + [ext]
-  
-  idIndex = None
-  for i, val in enumerate(split[1:]):
-    if utils.IsIntString(val):
-      idIndex = i + 1
-      break
-  assert(not idIndex is None)
-  
-  project = utils.FormLine(split[:idIndex], delimiter = "_", newline = False)
-  id = int(split[idIndex])
-  ext = utils.FormLine([""] + split[idIndex + 1:len(split) - 1], delimiter = "_", newline = False) + split[-1]
-    
-  return project, id, ext
-  
-def VtuFilename(project, id, ext):
-  """
-  Create a vtu filename from a project, ID and file extension
-  """
-  
-  return project + "_" + str(id) + ext
-  
-def VtuFilenames(project, firstId, lastId = None, extension = ".vtu"):
-  """
-  Return vtu filenames for a Fluidity simulation, in the supplied range of IDs
-  """
-  
-  if lastId is None:
-    lastId = firstId
-  assert(lastId >= firstId)
-  
-  filenames = []
-  for id in range(firstId, lastId + 1):
-    filenames.append(project + "_" + str(id) + extension)
-  
-  return filenames
-
-def PVtuFilenames(project, firstId, lastId = None, extension = ".pvtu"):
-  """
-  Return pvtu filenames for a Fluidity simulation, in the supplied range of IDs
-  """
-  
-  return VtuFilenames(project, firstId, lastId = lastId, extension = extension)
-  
-def FindVtuFilenames(project, firstId, lastId = None, extensions = [".vtu", ".pvtu"]):
-  """
-  Find vtu filenames for a Fluidity simulation, in the supplied range of IDs
-  """
-  
-  if lastId is None:
-    lastId = firstId
-  assert(lastId >= firstId)
-        
-  filenames = []
-  for id in range(firstId, lastId + 1):
-    filename = project + "_" + str(id)
-    for i, ext in enumerate(extensions):
-      try:
-        os.stat(filename + ext)
-        filename += ext
-        break
-      except OSError:
-        pass
-      if i == len(extensions) - 1:
-        raise Exception("Failed to find input file with ID " + str(id))
-    filenames.append(filename)  
-  
-  return filenames
-
-def FindPvtuVtuFilenames(project, firstId, lastId = None, pvtuExtension = ".pvtu", vtuExtension = ".vtu"):
-  """
-  Find vtu filenames for a Fluidity simulation, in the supplied range of IDs,
-  retuning the vtus for each given pvtu filename
-  """
-  
-  pvtuFilenames = FindVtuFilenames(project, firstId, lastId = lastId, extensions = [pvtuExtension])
-  
-  filenames = []
-  for pvtuFilename in pvtuFilenames:
-    i = 0
-    while True:
-      filename = pvtuFilename[:-len(pvtuExtension)] + "_" + str(i) + vtuExtension
-      try:
-        os.stat(filename)
-        filenames.append(filename)
-        i += 1
-      except OSError:
-        break
-    if i == 0:
-      raise Exception("Failed to find vtus for pvtu " + pvtuFilename)
-    
-  return filenames
-  
-def FindMaxVtuId(project, extensions = [".vtu", ".pvtu"]):
-  """
-  Find the maximum Fluidity vtu ID for the supplied project name
-  """
-  
-  filenames = []
-  for ext in extensions:
-    filenames += glob.glob(project + "_?*" + ext)
-  
-  maxId = None
-  for filename in filenames:
-    id = filename[len(project) + 1:-len(filename.split(".")[-1]) - 1]
-    try:
-      id = int(id)
-    except ValueError:
-      continue
-      
-    if maxId is None:
-      maxId = id
-    else:
-      maxId = max(maxId, id)
-  
-  return maxId
-  
-def FindFinalVtu(project, extensions = [".vtu", ".pvtu"]):
-  """
-  Final the final Fluidity vtu for the supplied project name
-  """
-  
-  return FindVtuFilenames(project, FindMaxVtuId(project, extensions = extensions), extensions = extensions)[0]
-  
-def FindPFilenames(basename, extension):
-  filenames = []
-  i = 0
-  while True:
-    filename = basename + "_" + str(i)
-    if filehandling.FileExists(filename + extension):
-      filenames.append(filename)
-    else:
-      break
-    i += 1
-  
-  return filenames
-
-class fluiditytoolsUnittests(unittest.TestCase):
-  def testFluidityToolsSupport(self):
-    import fluidity_tools
-    
-    return
-    
-  def testSplitVtuFilename(self):
-    project, id, ext = SplitVtuFilename("project_0.vtu")
-    self.assertEquals(project, "project")
-    self.assertEquals(id, 0)
-    self.assertEquals(ext, ".vtu")
-    
-    project, id, ext = SplitVtuFilename("project_1.vtu")
-    self.assertEquals(project, "project")
-    self.assertEquals(id, 1)
-    self.assertEquals(ext, ".vtu")
-    
-    project, id, ext = SplitVtuFilename("project_-1.vtu")
-    self.assertEquals(project, "project")
-    self.assertEquals(id, -1)
-    self.assertEquals(ext, ".vtu")
-    
-    project, id, ext = SplitVtuFilename("project_-1_sub.vtu")
-    self.assertEquals(project, "project")
-    self.assertEquals(id, -1)
-    self.assertEquals(ext, "_sub.vtu")
-    
-    return
-    
-  def testFindVtuFilenames(self):
-    tempDir = tempfile.mkdtemp()
-    project = os.path.join(tempDir, "project")
-    for i in range(2, 4):
-      filehandling.Touch(project + "_" + str(i) + ".vtu")
-    filenames = FindVtuFilenames(project, firstId = 2, lastId = 3)
-    self.assertEquals(len(filenames), 2)
-    filehandling.Touch(project + "_4.pvtu")
-    filenames = FindVtuFilenames(project, firstId = 2, lastId = 4)
-    self.assertEquals(len(filenames), 3)
-    filehandling.Rmdir(tempDir, force = True)
-    
-    return
-  
-  def testFindPvtuVtuFilenames(self):
-    tempDir = tempfile.mkdtemp()
-    project = os.path.join(tempDir, "project")
-    for i in range(2, 4):
-      for j in range(3):
-        filehandling.Touch(project + "_" + str(i) + "_" + str(j) + ".vtu")
-      filehandling.Touch(project + "_" + str(i) + ".pvtu")
-    filenames = FindPvtuVtuFilenames(project, firstId = 2, lastId = 3)
-    self.assertEquals(len(filenames), 6)
-    filehandling.Rmdir(tempDir, force = True)
-    
-    return

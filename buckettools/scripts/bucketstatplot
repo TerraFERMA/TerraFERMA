@@ -13,13 +13,13 @@ import time
 
 import gtk
 
-import fluidity.diagnostics.debug as debug
-import fluidity.diagnostics.fluiditytools as fluidity_tools
-import fluidity.diagnostics.gui as gui
-import fluidity.diagnostics.plotting as plotting
+import buckettools.diagnostics.debug as debug
+import buckettools.diagnostics.tools as tools
+import buckettools.diagnostics.gui as gui
+import buckettools.diagnostics.plotting as plotting
 
 def Help():
-  debug.dprint("Usage: statplot [OPTIONS] FILENAME [FILENAME ...]\n" + \
+  debug.dprint("Usage: bucketstatplot [OPTIONS] FILENAME [FILENAME ...]\n" + \
                "\n" + \
                "Options:\n" + \
                "\n" + \
@@ -105,10 +105,10 @@ class StatplotWindow(gtk.Window):
       failcount = 0
       while failcount < 5:
         try:
-          stats.append(fluidity_tools.Stat(filename))
+          stats.append(tools.Stat(filename))
           break
         except TypeError, ValueError:
-          # We opened the .stat when it was being written to by fluidity
+          # We opened the stat when it was being written to
           time.sleep(0.2)
           failcount = failcount + 1
       if failcount == 5:
@@ -116,7 +116,7 @@ class StatplotWindow(gtk.Window):
     if len(stats) == 1:
       self._stat = stats[0]
     else:
-      self._stat = fluidity_tools.JoinStat(*stats)
+      self._stat = tools.JoinStat(*stats)
       
     return
     
