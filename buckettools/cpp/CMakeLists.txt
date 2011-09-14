@@ -52,7 +52,7 @@ include_directories("${PROJECT_SOURCE_DIR}/../include" ${PROJECT_BINARY_DIR})
 # include python
 include_directories(${PYTHON_INCLUDE_PATH})
 # generate a library - really the main point of this whole process
-add_library(buckettools_cpp Bucket.cpp SpudBucket.cpp SystemBucket.cpp SpudSystemBucket.cpp
+add_library(buckettools_cpp Usage.cpp Bucket.cpp SpudBucket.cpp SystemBucket.cpp SpudSystemBucket.cpp
                             FunctionBucket.cpp SpudFunctionBucket.cpp
                             SolverBucket.cpp SpudSolverBucket.cpp 
                             SpudBase.cpp PythonExpression.cpp PythonInstance.cpp

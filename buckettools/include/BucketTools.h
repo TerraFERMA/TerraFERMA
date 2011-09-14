@@ -19,5 +19,6 @@
 //#include "GenericDetectors.h"
 //#include "PointDetectors.h"
 //#include "PythonDetectors.h"
+#include "Usage.h"
 
 #endif
