@@ -70,8 +70,8 @@ void SpudBucket::run()
 
   do {                                                               // loop over time
 
-    std::cout << "Time: " << current_time() << std::endl << std::flush;
-    std::cout << "Timestep number: " << timestep_count() << std::endl << std::flush;
+    dolfin::log(dolfin::INFO, "Timestep number: %d", timestep_count());
+    dolfin::log(dolfin::INFO, "Time: %f", current_time());
 
     for (*iteration_count_ = 0; \
          *iteration_count_ < nonlinear_iterations(); 

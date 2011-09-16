@@ -19,7 +19,7 @@ PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f,
   dolfin::PETScVector rhs(pf), iteratedvec(px);
   bool reset_tensor = false;                                         // never reset the tensor
 
-  std::cout << "In FormFunction" << std::endl;                       // FIXME: dolfin info
+  dolfin::log(dolfin::INFO, "In FormFunction");                      // FIXME: dolfin info
 
   (*iteratedfunction).vector() = iteratedvec;                        // update the iterated system bucket function
 
@@ -49,7 +49,7 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
   dolfin::PETScMatrix matrix(pA), matrixpc(pB);
   bool reset_tensor = false;                                         // never reset the tensor
 
-  std::cout << "In FormJacobian" << std::endl;                       // FIXME: dolfin info
+  dolfin::log(dolfin::INFO, "In FormJacobian");                      // FIXME: dolfin info
 
   (*iteratedfunction).vector() = iteratedvec;                        // update the iterated system bucket function
 

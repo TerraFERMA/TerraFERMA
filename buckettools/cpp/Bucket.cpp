@@ -456,7 +456,7 @@ FunctionSpace_ptr Bucket::fetch_coefficientspace(
   FunctionSpace_const_it f_it = coefficientspaces_.find(uflsymbol);  // check if a functionspace with this uflsymbol already exists
   if (f_it == coefficientspaces_.end())
   {
-    std::cerr << coefficientspaces_str();                            // if it doesn't, output which coefficientspaces are available
+    dolfin::log(dolfin::ERROR, coefficientspaces_str());             // if it doesn't, output which coefficientspaces are available
     dolfin::error(                                                   // and issue an error
     "FunctionSpace with uflsymbol \"%s\" doesn't exist in system coefficientspaces.", 
                                     uflsymbol.c_str());

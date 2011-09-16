@@ -59,7 +59,7 @@ void SolverBucket::solve()
     CHKERRV(perr);
     SNESConvergedReason reason;                                      // check what the convergence reason was
     perr = SNESGetConvergedReason(snes_, &reason); CHKERRV(perr);     
-    std::cout << "SNESConvergedReason " << reason << std::endl;      // print - FIXME: proper logging here
+    dolfin::log(dolfin::INFO, "SNESConvergedReason %d", reason);                  // print 
     (*(*system_).function()).vector() = *work_;                      // update the function
   }
   else if (type()=="Picard")                                         // this is a hand-rolled picard iteration - FIXME: switch to enum
