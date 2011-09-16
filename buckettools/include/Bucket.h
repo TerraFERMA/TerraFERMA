@@ -67,11 +67,7 @@ namespace buckettools
 
     const int timestep_count() const;                                // return the timestep count
 
-    int& timestep_count();                                           // return the timestep count
-
     const double current_time() const;                               // return the current time
-
-    double& current_time();                                          // return the current time
 
     const double finish_time() const;                                // return the finish time
 
@@ -80,8 +76,6 @@ namespace buckettools
     const int nonlinear_iterations() const;                          // return the number of nonlinear iterations requested
 
     const int iteration_count() const;                               // return the number of nonlinear iterations taken
-
-    int& iteration_count();                                          // return the number of nonlinear iterations taken
 
     //***************************************************************|***********************************************************//
     // Mesh data access

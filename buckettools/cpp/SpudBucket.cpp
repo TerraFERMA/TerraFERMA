@@ -70,6 +70,9 @@ void SpudBucket::run()
 
   do {                                                               // loop over time
 
+    std::cout << "Time: " << current_time() << std::endl << std::flush;
+    std::cout << "Timestep number: " << timestep_count() << std::endl << std::flush;
+
     for (*iteration_count_ = 0; \
          *iteration_count_ < nonlinear_iterations(); 
          (*iteration_count_)++)                                      // loop over the nonlinear iterations
