@@ -4,6 +4,9 @@
 // #include "PythonDetectors.h"
 #include <dolfin.h>
 #include <string>
+#include "SignalHandler.h"
+#include "EventHandler.h"
+#include <signal.h>
 
 using namespace buckettools;
 
@@ -61,6 +64,20 @@ void Bucket::update()
   {
     (*(*s_it).second).update();
   }
+}
+
+//*******************************************************************|************************************************************//
+// return a boolean indicating if the simulation has finished or not (normally for reasons other than the time being complete)
+//*******************************************************************|************************************************************//
+bool Bucket::complete()
+{
+  bool completed = false;
+  if ((*(*SignalHandler::instance()).return_handler(SIGINT)).received())
+  {
+    dolfin::log(dolfin::ERROR, "SigInt received, terminating timeloop.");
+    completed = true;
+  }
+  return completed;
 }
 
 //*******************************************************************|************************************************************//
@@ -640,9 +657,9 @@ const std::string Bucket::uflsymbols_str(const int &indent) const
 void Bucket::uflsymbols_fill_()
 {
 
-  if (!timestep_.first.empty())
-  {
-    register_uflsymbol(timestep_);            // register the timestep ufl symbol and function
+  if (!timestep_.first.empty())                                      // if we've registered a timestep (i.e. this is a dynamic
+  {                                                                  // simulation)
+    register_uflsymbol(timestep_);                                   // register the timestep ufl symbol and function
   }
 
   for (SystemBucket_const_it s_it = systems_begin();                 // loop over the systems

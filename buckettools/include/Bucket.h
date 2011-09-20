@@ -47,6 +47,8 @@ namespace buckettools
 
     void update();                                                   // update the functions in the systems in this bucket
 
+    bool complete();                                                 // indicate if the simulation is complete or not
+
     //***************************************************************|***********************************************************//
     // Filling data
     //***************************************************************|***********************************************************//

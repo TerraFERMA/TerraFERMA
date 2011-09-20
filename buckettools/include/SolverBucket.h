@@ -145,6 +145,23 @@ namespace buckettools
 
     void empty_();                                                   // empty the class data structures
 
+  //*****************************************************************|***********************************************************//
+  // Private functions
+  //*****************************************************************|***********************************************************//
+
+  private:
+
+    //***************************************************************|***********************************************************//
+    // Solver convergence checking
+    //***************************************************************|***********************************************************//
+
+    void snes_check_convergence_();                                  // check snes convergence
+
+    void ksp_check_convergence_(KSP &ksp, int indent);               // check ksp convergence
+
+    void ksp_check_convergence_(KSP &ksp)                            // check ksp convergence (no indent)
+    { ksp_check_convergence_(ksp, 0); }
+
   };
 
   typedef boost::shared_ptr< SolverBucket > SolverBucket_ptr;        // define a (boost shared) pointer to the solver class type

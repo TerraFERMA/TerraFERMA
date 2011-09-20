@@ -68,6 +68,7 @@ void SpudBucket::run()
 
   output();
 
+  dolfin::log(dolfin::INFO, "Entering timeloop.");
   do {                                                               // loop over time
 
     dolfin::log(dolfin::INFO, "Timestep number: %d", timestep_count());
@@ -87,7 +88,13 @@ void SpudBucket::run()
     diagfile.write_data(*this);
     output();
 
+    if (complete())
+    {
+      break;
+    }
+
   } while (*current_time_ < finish_time());                          // syntax ensures at least one solve
+  dolfin::log(dolfin::INFO, "Finished timeloop.");
 
   diagfile.close();                                                  // close the diagnostics
 
@@ -148,6 +155,8 @@ void SpudBucket::fill()
   }
   
   detectors_fill_();                                                 // put the detectors in the bucket
+
+  dolfin::log(dolfin::DBG, str().c_str());
 
 }
 

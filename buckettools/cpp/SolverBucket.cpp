@@ -3,8 +3,10 @@
 #include "SolverBucket.h"
 #include "SystemBucket.h"
 #include "Bucket.h"
+#include "SignalHandler.h"
 #include <dolfin.h>
 #include <string>
+#include <signal.h>
 
 using namespace buckettools;
 
@@ -57,9 +59,7 @@ void SolverBucket::solve()
     *work_ = (*(*system_).function()).vector();                      // set the work vector to the function vector
     perr = SNESSolve(snes_, PETSC_NULL, *(*work_).vec());            // call petsc to perform a snes solve
     CHKERRV(perr);
-    SNESConvergedReason reason;                                      // check what the convergence reason was
-    perr = SNESGetConvergedReason(snes_, &reason); CHKERRV(perr);     
-    dolfin::log(dolfin::INFO, "SNESConvergedReason %d", reason);                  // print 
+    snes_check_convergence_();
     (*(*system_).function()).vector() = *work_;                      // update the function
   }
   else if (type()=="Picard")                                         // this is a hand-rolled picard iteration - FIXME: switch to enum
@@ -123,6 +123,7 @@ void SolverBucket::solve()
       *work_ = (*(*system_).iteratedfunction()).vector();            // set the work vector to the iterated function
       perr = KSPSolve(ksp_, *(*rhs_).vec(), *(*work_).vec());        // perform a linear solve
       CHKERRV(perr);
+      ksp_check_convergence_(ksp_);
       (*(*system_).iteratedfunction()).vector() = *work_;            // update the iterated function with the work vector
 
       assert(residual_);
@@ -354,6 +355,91 @@ const std::string SolverBucket::forms_str(const int &indent) const
     s << indentation << "Form " << (*f_it).first  << std::endl;
   }
   return s.str();
+}
+
+//*******************************************************************|************************************************************//
+// report the convergence of the snes solver
+//*******************************************************************|************************************************************//
+void SolverBucket::snes_check_convergence_()
+{
+  PetscErrorCode perr;                                               // petsc error code
+
+  assert(type()=="SNES");
+
+  dolfin::log(dolfin::INFO, "Convergence for %s::%s", 
+                          (*system_).name().c_str(), name().c_str());
+
+  SNESConvergedReason snesreason;                                    // check what the convergence reason was
+//  const char **snesprefix;
+//  perr = SNESGetOptionsPrefix(snes_, snesprefix); CHKERRV(perr);   // FIXME: segfaults!
+  perr = SNESGetConvergedReason(snes_, &snesreason); CHKERRV(perr);     
+  dolfin::log(dolfin::INFO, "SNESConvergedReason %d", snesreason);
+  if (snesreason<=0)
+  {
+    dolfin::log(dolfin::ERROR, "SNESConvergedReason <= 0, sending sig int.");
+    (*SignalHandler::instance()).dispatcher(SIGINT);
+  }
+
+  ksp_check_convergence_(ksp_, 1);
+
+}
+
+//*******************************************************************|************************************************************//
+// report the convergence of a ksp solver
+//*******************************************************************|************************************************************//
+void SolverBucket::ksp_check_convergence_(KSP &ksp, int indent)
+{
+  PetscErrorCode perr;                                               // petsc error code
+  std::string indentation (indent*2, ' ');
+
+  if (indent==0)
+  {
+    dolfin::log(dolfin::INFO, "Convergence for %s::%s", 
+                          (*system_).name().c_str(), name().c_str());
+  }
+
+  KSPConvergedReason kspreason;                                      // check what the convergence reason was
+  PetscInt kspiterations;
+  //const char **kspprefix;
+  //perr = KSPGetOptionsPrefix(ksp, kspprefix); CHKERRV(perr);       // FIXME: segfaults!
+  perr = KSPGetConvergedReason(ksp, &kspreason); CHKERRV(perr);     
+  perr = KSPGetIterationNumber(ksp, &kspiterations); CHKERRV(perr);     
+  dolfin::log(dolfin::INFO, "%sKSPConvergedReason %d", 
+                              indentation.c_str(), kspreason);
+  dolfin::log(dolfin::INFO, "%sKSP n/o iterations %d", 
+                              indentation.c_str(), kspiterations);
+  if (kspreason<=0)
+  {
+    dolfin::log(dolfin::ERROR, "KSPConvergedReason <= 0, sending sig int.");
+    (*SignalHandler::instance()).dispatcher(SIGINT);
+  }
+
+
+  indent++;
+
+  PC pc;
+  const PCType pctype;
+  perr = KSPGetPC(ksp, &pc); CHKERRV(perr);
+  perr = PCGetType(pc, &pctype); CHKERRV(perr);
+
+  if ((std::string)pctype=="ksp")
+  {
+    KSP subksp;                                                      // get the subksp from this pc
+    perr = PCKSPGetKSP(pc, &subksp); CHKERRV(perr);
+    ksp_check_convergence_(subksp, indent);
+  }
+  else if ((std::string)pctype=="fieldsplit")
+  {
+    KSP *subksps;                                                    // get the fieldsplit subksps
+    PetscInt nsubksps;
+    perr = PCFieldSplitGetSubKSP(pc, &nsubksps, &subksps); 
+    CHKERRV(perr); 
+    for (PetscInt i = 0; i < nsubksps; i++)
+    {
+      ksp_check_convergence_(subksps[i], indent);
+    }
+  }
+  
 }
 
 //*******************************************************************|************************************************************//

@@ -15,15 +15,17 @@ namespace buckettools
   // A collection of subroutines to help users at the command line
   //*****************************************************************|************************************************************//
 
-  void usage(char *cmd);                                               // print usage to std::cerr
+  void init(int argc, char** argv);                                  // parse command line arguments and initialize signal handling
 
-  void print_version(std::ostream& stream);                            // print version
+  void usage(char *cmd);                                             // print usage to std::cerr
 
-  void print_environment(std::ostream& stream);                        // print relevant environment variables
+  void print_version(std::ostream& stream);                          // print version
 
-  int parse_verbosity(const std::string &verbosity);                   // parse the verbosity command line argument
+  void print_environment(std::ostream& stream);                      // print relevant environment variables
 
-  void parse_arguments(int argc, char** argv);                         // parse command line arguments
+  int parse_verbosity(const std::string &verbosity);                 // parse the verbosity command line argument
+
+  void parse_arguments(int argc, char** argv);                       // parse command line arguments
 
 }
 

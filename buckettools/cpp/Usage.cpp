@@ -4,8 +4,25 @@
 #include <dolfin.h>
 #include <getopt.h>
 #include <spud>
+#include "SignalHandler.h"
+#include "EventHandler.h"
+#include "SigIntEventHandler.h"
+#include <signal.h>
 
 using namespace buckettools;
+
+//*******************************************************************|************************************************************//
+// parse the command line arguments and set up the signal handler
+//*******************************************************************|************************************************************//
+void buckettools::init(int argc, char** argv)
+{
+
+  parse_arguments(argc,argv);
+
+  SigIntEventHandler_ptr sigint_handler( new SigIntEventHandler );
+  (*SignalHandler::instance()).register_handler(SIGINT, sigint_handler);
+
+}
 
 //*******************************************************************|************************************************************//
 // print the recommended usage to std::err
