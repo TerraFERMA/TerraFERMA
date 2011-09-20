@@ -38,6 +38,16 @@ endif(NOT ${PYTHONLIBS_FOUND})
 
 include_directories(${PYTHON_INCLUDE_PATH})
 
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/../cmake/modules")
+
+find_package(Spud)
+
+if(NOT ${SPUD_FOUND})
+  message(FATAL_ERROR "Could not find Spud.")
+endif(NOT ${SPUD_FOUND})
+
+include_directories(${SPUD_INCLUDE_DIRS})
+
 add_subdirectory("${BUCKETTOOLS_DIR}/cpp" "buckettools_cpp")
 
 include_directories("${BUCKETTOOLS_DIR}/include")

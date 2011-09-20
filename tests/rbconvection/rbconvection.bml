@@ -293,7 +293,9 @@ aPC = derivative(rPC, us_i, us_a) + p_t*p_a*dx
             <max_iterations>
               <integer_value rank="0">100</integer_value>
             </max_iterations>
-            <monitors/>
+            <monitors>
+              <preconditioned_residual/>
+            </monitors>
           </iterative_method>
           <preconditioner name="fieldsplit">
             <composite_type name="multiplicative"/>

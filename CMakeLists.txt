@@ -41,6 +41,16 @@ endif(NOT ${PYTHONLIBS_FOUND})
 
 include_directories(${PYTHON_INCLUDE_PATH})
 
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules")
+
+find_package(Spud)
+
+if(NOT ${SPUD_FOUND})
+  message(FATAL_ERROR "Could not find Spud.")
+endif(NOT ${SPUD_FOUND})
+
+include_directories(${SPUD_INCLUDE_DIRS})
+
 set(OPTIONSFILE CACHE FILEPATH "Choose the input file.")
 
 if(NOT IS_ABSOLUTE ${OPTIONSFILE})
@@ -63,7 +73,7 @@ add_executable(${EXECUTABLE} "${PROJECT_SOURCE_DIR}/cpp/main.cpp")
 
 set (EXTRA_LIBS ${EXTRA_LIBS} buckettools_cpp buckettools_ufc)
 
-target_link_libraries(${EXECUTABLE} ${DOLFIN_LIBRARIES} ${DOLFIN_3RD_PARTY_LIBRARIES} ${EXTRA_LIBS} /usr/lib/libspud.a ${PYTHON_LIBRARIES})
+target_link_libraries(${EXECUTABLE} ${DOLFIN_LIBRARIES} ${DOLFIN_3RD_PARTY_LIBRARIES} ${EXTRA_LIBS} ${SPUD_LIBRARIES} ${PYTHON_LIBRARIES})
 
 add_custom_target(
   run
