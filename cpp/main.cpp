@@ -4,6 +4,7 @@
 
 int main(int argc, char* argv[])
 {
+
   buckettools::init(argc, argv);
 
   buckettools::SpudBucket bucket;
