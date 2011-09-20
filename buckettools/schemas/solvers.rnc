@@ -375,11 +375,6 @@ pclu_options =
       element preconditioner {
          attribute name { "lu" },
          (
-           ## Package to use for the factorization - petsc.
-           element factorization_package {
-             attribute name { "petsc" },
-             empty
-           }|
            ## Package to use for the factorization - umfpack.
            ##
            ## Useful for systems with a near zero pivot.
@@ -392,6 +387,11 @@ pclu_options =
            ## Useful for parallel direct solves (if installed on system).
            element factorization_package {
              attribute name { "mumps" },
+             empty
+           }|
+           ## Package to use for the factorization - petsc.
+           element factorization_package {
+             attribute name { "petsc" },
              empty
            }|
            ## Package to use for the factorization - any valid package.
@@ -516,14 +516,14 @@ pcfieldsplit_options =
       element preconditioner {
          attribute name { "fieldsplit" },
          (
-           ## Composite type of the fieldsplit preconditioner - additive - do not update off diagonal blocks.
-           element composite_type {
-             attribute name { "additive" },
-             empty
-           }|
            ## Composite type of the fieldsplit preconditioner - multiplicative - update off diagonal blocks.
            element composite_type {
              attribute name { "multiplicative" },
+             empty
+           }|
+           ## Composite type of the fieldsplit preconditioner - additive - do not update off diagonal blocks.
+           element composite_type {
+             attribute name { "additive" },
              empty
            }|
            ## Composite type of the fieldsplit preconditioner - symmetric_multiplicative - update off diagonal blocks.

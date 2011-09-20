@@ -37,6 +37,27 @@ Constants are spatially constant expressions.</a:documentation>
           </element>
         </element>
       </element>
+      <optional>
+        <element name="steady_state">
+          <a:documentation>Check for a steady state by comparing the previous timestep's values
+to the most recent compared to the given tolerance in the given norm</a:documentation>
+          <element name="tolerance">
+            <a:documentation>Tolerance in which to test for a steady state</a:documentation>
+            <ref name="real"/>
+          </element>
+          <element name="norm">
+            <a:documentation>Norm to test for a steady state in </a:documentation>
+            <!-- a hard coded string_value -->
+            <element name="string_value">
+              <choice>
+                <value>linf</value>
+                <value>l2</value>
+                <value>l1</value>
+              </choice>
+            </element>
+          </element>
+        </element>
+      </optional>
     </element>
   </define>
   <define name="nonlinear">

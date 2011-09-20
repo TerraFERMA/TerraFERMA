@@ -30,7 +30,22 @@ timestepping =
               }
             }
           }
-        }
+        },
+        ## Check for a steady state by comparing the previous timestep's values
+        ## to the most recent compared to the given tolerance in the given norm
+        element steady_state {
+          ## Tolerance in which to test for a steady state
+          element tolerance {
+            real
+          },
+          ## Norm to test for a steady state in 
+          element norm {
+            # a hard coded string_value
+            element string_value {
+              ( "linf" | "l2" | "l1" )
+            }
+          }
+        }?
       }
    )
 

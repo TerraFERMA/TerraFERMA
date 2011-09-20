@@ -438,13 +438,6 @@ This performs a complete, direct solve of the equation and should only be used i
       </attribute>
       <choice>
         <element name="factorization_package">
-          <a:documentation>Package to use for the factorization - petsc.</a:documentation>
-          <attribute name="name">
-            <value>petsc</value>
-          </attribute>
-          <empty/>
-        </element>
-        <element name="factorization_package">
           <a:documentation>Package to use for the factorization - umfpack.
 
 Useful for systems with a near zero pivot.</a:documentation>
@@ -459,6 +452,13 @@ Useful for systems with a near zero pivot.</a:documentation>
 Useful for parallel direct solves (if installed on system).</a:documentation>
           <attribute name="name">
             <value>mumps</value>
+          </attribute>
+          <empty/>
+        </element>
+        <element name="factorization_package">
+          <a:documentation>Package to use for the factorization - petsc.</a:documentation>
+          <attribute name="name">
+            <value>petsc</value>
           </attribute>
           <empty/>
         </element>
@@ -589,16 +589,16 @@ exact matrix inversion), or use fgmres in the outer solve.</a:documentation>
       </attribute>
       <choice>
         <element name="composite_type">
-          <a:documentation>Composite type of the fieldsplit preconditioner - additive - do not update off diagonal blocks.</a:documentation>
+          <a:documentation>Composite type of the fieldsplit preconditioner - multiplicative - update off diagonal blocks.</a:documentation>
           <attribute name="name">
-            <value>additive</value>
+            <value>multiplicative</value>
           </attribute>
           <empty/>
         </element>
         <element name="composite_type">
-          <a:documentation>Composite type of the fieldsplit preconditioner - multiplicative - update off diagonal blocks.</a:documentation>
+          <a:documentation>Composite type of the fieldsplit preconditioner - additive - do not update off diagonal blocks.</a:documentation>
           <attribute name="name">
-            <value>multiplicative</value>
+            <value>additive</value>
           </attribute>
           <empty/>
         </element>
