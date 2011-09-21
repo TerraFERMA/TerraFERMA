@@ -60,7 +60,7 @@
           </initial_condition>
         </rank>
       </type>
-      <output>
+      <diagnostics>
         <include_in_diagnostics>
           <functional name="Integral">
             <string_value lines="20" type="python">int = ss1*dx</string_value>
@@ -69,7 +69,7 @@
             </ufl_symbol>
           </functional>
         </include_in_diagnostics>
-      </output>
+      </diagnostics>
     </field>
     <field name="Field2">
       <ufl_symbol>
@@ -92,7 +92,7 @@
           </initial_condition>
         </rank>
       </type>
-      <output>
+      <diagnostics>
         <include_in_diagnostics>
           <functional name="Integral0">
             <string_value lines="20" type="python">int = ss2[0]*dx</string_value>
@@ -107,7 +107,7 @@
             </ufl_symbol>
           </functional>
         </include_in_diagnostics>
-      </output>
+      </diagnostics>
     </field>
     <coefficient name="Source1">
       <ufl_symbol>
@@ -122,7 +122,7 @@
           </value>
         </rank>
       </type>
-      <output>
+      <diagnostics>
         <include_in_diagnostics>
           <functional name="Integral">
             <string_value lines="20" type="python">int = ss1*dx</string_value>
@@ -131,7 +131,7 @@
             </ufl_symbol>
           </functional>
         </include_in_diagnostics>
-      </output>
+      </diagnostics>
     </coefficient>
     <coefficient name="Source2">
       <ufl_symbol>
@@ -146,7 +146,7 @@
           </value>
         </rank>
       </type>
-      <output>
+      <diagnostics>
         <include_in_diagnostics>
           <functional name="Integral0">
             <string_value lines="20" type="python">int = ss2[0]*dx</string_value>
@@ -161,7 +161,7 @@
             </ufl_symbol>
           </functional>
         </include_in_diagnostics>
-      </output>
+      </diagnostics>
     </coefficient>
     <nonlinear_solver name="SimpleSolver">
       <type name="SNES">
@@ -234,7 +234,7 @@ r = r1 + r2</string_value>
           </initial_condition>
         </rank>
       </type>
-      <output>
+      <diagnostics>
         <include_in_diagnostics>
           <functional name="Integral">
             <string_value lines="20" type="python">int = sp1*dx</string_value>
@@ -243,7 +243,7 @@ r = r1 + r2</string_value>
             </ufl_symbol>
           </functional>
         </include_in_diagnostics>
-      </output>
+      </diagnostics>
     </field>
     <field name="Field2">
       <ufl_symbol>
@@ -266,7 +266,7 @@ r = r1 + r2</string_value>
           </initial_condition>
         </rank>
       </type>
-      <output>
+      <diagnostics>
         <include_in_diagnostics>
           <functional name="Integral0">
             <string_value lines="20" type="python">int = sp2[0]*dx</string_value>
@@ -281,7 +281,7 @@ r = r1 + r2</string_value>
             </ufl_symbol>
           </functional>
         </include_in_diagnostics>
-      </output>
+      </diagnostics>
     </field>
     <coefficient name="Source1">
       <ufl_symbol>
@@ -296,7 +296,7 @@ r = r1 + r2</string_value>
           </value>
         </rank>
       </type>
-      <output>
+      <diagnostics>
         <include_in_diagnostics>
           <functional name="Integral">
             <string_value lines="20" type="python">int = sp1*dx</string_value>
@@ -305,7 +305,7 @@ r = r1 + r2</string_value>
             </ufl_symbol>
           </functional>
         </include_in_diagnostics>
-      </output>
+      </diagnostics>
     </coefficient>
     <coefficient name="Source2">
       <ufl_symbol>
@@ -320,7 +320,7 @@ r = r1 + r2</string_value>
           </value>
         </rank>
       </type>
-      <output>
+      <diagnostics>
         <include_in_diagnostics>
           <functional name="Integral0">
             <string_value lines="20" type="python">int = sp2[0]*dx</string_value>
@@ -335,7 +335,7 @@ r = r1 + r2</string_value>
             </ufl_symbol>
           </functional>
         </include_in_diagnostics>
-      </output>
+      </diagnostics>
     </coefficient>
     <nonlinear_solver name="SimpleSolver">
       <type name="Picard">

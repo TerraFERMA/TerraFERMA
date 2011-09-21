@@ -75,7 +75,7 @@
           </boundary_condition>
         </rank>
       </type>
-      <output>
+      <diagnostics>
         <include_in_diagnostics>
           <functional name="Integral">
             <string_value lines="20" type="python">int = s*dx</string_value>
@@ -84,7 +84,7 @@
             </ufl_symbol>
           </functional>
         </include_in_diagnostics>
-      </output>
+      </diagnostics>
     </field>
     <coefficient name="Source">
       <ufl_symbol>
