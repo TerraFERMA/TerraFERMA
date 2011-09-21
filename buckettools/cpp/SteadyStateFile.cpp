@@ -12,9 +12,9 @@ using namespace buckettools;
 //*******************************************************************|************************************************************//
 // specific constructor
 //*******************************************************************|************************************************************//
-SteadyStateFile::SteadyStateFile(const std::string &name) : StatFile(name)
+SteadyStateFile::SteadyStateFile(const std::string &name) : DiagnosticsFile(name)
 {
-                                                                     // do nothing... all handled by StatFile constructor
+                                                                     // do nothing... all handled by DiagnosticsFile constructor
 }
 
 //*******************************************************************|************************************************************//
@@ -22,7 +22,7 @@ SteadyStateFile::SteadyStateFile(const std::string &name) : StatFile(name)
 //*******************************************************************|************************************************************//
 SteadyStateFile::~SteadyStateFile()
 {
-                                                                     // do nothing... all handled by StatFile destructor
+                                                                     // do nothing... all handled by DiagnosticsFile destructor
 }
 
 //*******************************************************************|************************************************************//

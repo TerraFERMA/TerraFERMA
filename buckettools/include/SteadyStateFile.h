@@ -5,7 +5,7 @@
 #include <cstdio>
 #include <fstream>
 #include <string>
-#include "StatFile.h"
+#include "DiagnosticsFile.h"
 #include "Bucket.h"
 
 namespace buckettools
@@ -17,7 +17,7 @@ namespace buckettools
   // A derived class from the base statfile class intended for the output of diagnostics to file every dump period.
   // Statistics normally include things like function mins and maxes as well as functional output.
   //*****************************************************************|************************************************************//
-  class SteadyStateFile : public StatFile
+  class SteadyStateFile : public DiagnosticsFile
   {
 
   //*****************************************************************|***********************************************************//

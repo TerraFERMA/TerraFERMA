@@ -1,5 +1,5 @@
 
-#include "StatFile.h"
+#include "DiagnosticsFile.h"
 #include "Bucket.h"
 #include "builddefs.h"
 #include <cstdio>
@@ -14,7 +14,7 @@ using namespace buckettools;
 //*******************************************************************|************************************************************//
 // default constructor
 //*******************************************************************|************************************************************//
-StatFile::StatFile()
+DiagnosticsFile::DiagnosticsFile()
 {
                                                                      // do nothing
 }
@@ -22,7 +22,7 @@ StatFile::StatFile()
 //*******************************************************************|************************************************************//
 // specific constructor
 //*******************************************************************|************************************************************//
-StatFile::StatFile(const std::string &name) : name_(name)
+DiagnosticsFile::DiagnosticsFile(const std::string &name) : name_(name)
 {
   file_.open((char*)name.c_str());                                   // open the file_ member
 }
@@ -30,7 +30,7 @@ StatFile::StatFile(const std::string &name) : name_(name)
 //*******************************************************************|************************************************************//
 // default destructor
 //*******************************************************************|************************************************************//
-StatFile::~StatFile()
+DiagnosticsFile::~DiagnosticsFile()
 {
   close();                                                           // close the file_ member
 }
@@ -38,7 +38,7 @@ StatFile::~StatFile()
 //*******************************************************************|************************************************************//
 // write lines of the xml header for constants that do not vary throughout a simulation
 //*******************************************************************|************************************************************//
-void StatFile::header_constants_()
+void DiagnosticsFile::header_constants_()
 {
   std::string buffer;
   char * cbuffer;
@@ -71,7 +71,7 @@ void StatFile::header_constants_()
 //*******************************************************************|************************************************************//
 // write lines of the xml header for values relating to timestepping
 //*******************************************************************|************************************************************//
-void StatFile::header_timestep_(uint &column)
+void DiagnosticsFile::header_timestep_(uint &column)
 {
   
   tag_("timestep", column++, "value");                               // the timestep count (i.e. number of timesteps taken)
@@ -83,7 +83,7 @@ void StatFile::header_timestep_(uint &column)
 //*******************************************************************|************************************************************//
 // write an xml tag for a constant that does not vary throughout a simulation
 //*******************************************************************|************************************************************//
-void StatFile::constant_tag_(const std::string &name, 
+void DiagnosticsFile::constant_tag_(const std::string &name, 
                              const std::string &type, 
                              const std::string &value)
 {
@@ -98,7 +98,7 @@ void StatFile::constant_tag_(const std::string &name,
 //*******************************************************************|************************************************************//
 // write an xml tag for a variable in a simulation 
 //*******************************************************************|************************************************************//
-void StatFile::tag_(const std::string &name,
+void DiagnosticsFile::tag_(const std::string &name,
                     const uint &column,
                     const std::string &statistic,
                     const std::string &system,
@@ -124,7 +124,7 @@ void StatFile::tag_(const std::string &name,
 //*******************************************************************|************************************************************//
 // write data to the file for values relating to timestepping
 //*******************************************************************|************************************************************//
-void StatFile::data_timestep_(const Bucket &bucket)
+void DiagnosticsFile::data_timestep_(const Bucket &bucket)
 {
   
   file_.setf(std::ios::scientific);
@@ -141,7 +141,7 @@ void StatFile::data_timestep_(const Bucket &bucket)
 //*******************************************************************|************************************************************//
 // close the file_ (if open)
 //*******************************************************************|************************************************************//
-void StatFile::close()
+void DiagnosticsFile::close()
 {
   if (file_.is_open())
   {

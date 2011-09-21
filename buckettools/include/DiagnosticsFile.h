@@ -1,6 +1,6 @@
 
-#ifndef __STAT_FILE_H
-#define __STAT_FILE_H
+#ifndef __DIAGNOSTICS_FILE_H
+#define __DIAGNOSTICS_FILE_H
 
 #include "Bucket.h"
 #include <cstdio>
@@ -12,13 +12,13 @@ namespace buckettools
 {
 
   //*****************************************************************|************************************************************//
-  // StatFile class:
+  // DiagnosticsFile class:
   //
   // This is a base class, which provides simple functionality, for writing various pieces of output to file in a parsable
   // format (using an xml header).  Actual files for specific purposes (diagnostics, detectors etc.) should be defined in
   // classes derived from this base class.
   //*****************************************************************|************************************************************//
-  class StatFile
+  class DiagnosticsFile
   {
 
   //*****************************************************************|***********************************************************//
@@ -31,11 +31,11 @@ namespace buckettools
     // Constructors and destructors
     //***************************************************************|***********************************************************//
 
-    StatFile();                                                      // default constructor
+    DiagnosticsFile();                                                      // default constructor
     
-    StatFile(const std::string &name);                                // specific constructor
+    DiagnosticsFile(const std::string &name);                                // specific constructor
     
-    virtual ~StatFile();                                             // default destructor
+    virtual ~DiagnosticsFile();                                             // default destructor
     
     //***************************************************************|***********************************************************//
     // Closing

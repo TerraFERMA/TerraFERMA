@@ -6,12 +6,12 @@
 #include <cstdio>
 #include <fstream>
 #include <string>
-#include "StatFile.h"
+#include "DiagnosticsFile.h"
 
 namespace buckettools
 {
 
-  class DetectorsFile : public StatFile
+  class DetectorsFile : public DiagnosticsFile
   {
   public:
     

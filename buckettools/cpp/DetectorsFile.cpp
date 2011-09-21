@@ -8,9 +8,9 @@
 
 using namespace buckettools;
 
-DetectorsFile::DetectorsFile(const std::string name) : StatFile(name)
+DetectorsFile::DetectorsFile(const std::string name) : DiagnosticsFile(name)
 {
-  // Do nothing... all handled by StatFile constructor
+  // Do nothing... all handled by DiagnosticsFile constructor
 }
 
 void DetectorsFile::write_header(Bucket &bucket, 
