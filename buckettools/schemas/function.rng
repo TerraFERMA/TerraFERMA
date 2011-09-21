@@ -38,7 +38,7 @@ Fields may only be prognostic functions.</a:documentation>
           </element>
         </choice>
       </element>
-      <ref name="generic_function_diagnostics_options"/>
+      <ref name="field_diagnostics_options"/>
     </element>
   </define>
   <define name="coefficient_options">
@@ -140,7 +140,7 @@ Constants are spatially constant expressions.</a:documentation>
           </choice>
         </element>
       </choice>
-      <ref name="generic_function_diagnostics_options"/>
+      <ref name="coeff_diagnostics_options"/>
     </element>
   </define>
   <define name="scalar_field_function_options">
@@ -236,12 +236,12 @@ Constants are spatially constant expressions.</a:documentation>
     </attribute>
     <ref name="coeff_ufl_symbol"/>
   </define>
-  <define name="generic_function_diagnostics_options">
+  <define name="field_diagnostics_options">
     <element name="diagnostics">
       <a:documentation>Output options</a:documentation>
       <optional>
-        <element name="include_in_diagnostics">
-          <a:documentation>Include this field or coefficient in the diagnostic output file.
+        <element name="include_in_statistics">
+          <a:documentation>Include this field in the statistics output file.
 The minimum and maximum of functions is included.</a:documentation>
           <zeroOrMore>
             <ref name="functional_options"/>
@@ -250,13 +250,33 @@ The minimum and maximum of functions is included.</a:documentation>
       </optional>
       <optional>
         <element name="include_in_steadystate">
-          <a:documentation>Include this field or coefficient in the steady state check and output file.</a:documentation>
+          <a:documentation>Include this field in the steady state check and output file.</a:documentation>
           <empty/>
         </element>
       </optional>
       <optional>
         <element name="include_in_detectors">
-          <a:documentation>Include this field or coefficient in the detectors output file.</a:documentation>
+          <a:documentation>Include this field in the detectors output file.</a:documentation>
+          <empty/>
+        </element>
+      </optional>
+    </element>
+  </define>
+  <define name="coeff_diagnostics_options">
+    <element name="diagnostics">
+      <a:documentation>Output options</a:documentation>
+      <optional>
+        <element name="include_in_statistics">
+          <a:documentation>Include this coefficient in the statistics output file.
+The minimum and maximum of functions is included.</a:documentation>
+          <zeroOrMore>
+            <ref name="functional_options"/>
+          </zeroOrMore>
+        </element>
+      </optional>
+      <optional>
+        <element name="include_in_detectors">
+          <a:documentation>Include this coefficient in the detectors output file.</a:documentation>
           <empty/>
         </element>
       </optional>

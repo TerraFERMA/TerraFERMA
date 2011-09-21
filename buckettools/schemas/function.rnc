@@ -32,7 +32,7 @@ field_options =
           )
         }
       ),
-      generic_function_diagnostics_options
+      field_diagnostics_options
     }
   )
 
@@ -113,7 +113,7 @@ coefficient_options =
           )
         }
       ),
-      generic_function_diagnostics_options
+      coeff_diagnostics_options
     }
   )
 
@@ -192,20 +192,36 @@ coeff_header_options =
     coeff_ufl_symbol
   )
 
-generic_function_diagnostics_options = 
+field_diagnostics_options = 
   (
     ## Output options
     element diagnostics {
-      ## Include this field or coefficient in the diagnostic output file.
+      ## Include this field in the statistics output file.
       ## The minimum and maximum of functions is included.
-      element include_in_diagnostics {
+      element include_in_statistics {
         functional_options*
       }?,
-      ## Include this field or coefficient in the steady state check and output file.
+      ## Include this field in the steady state check and output file.
       element include_in_steadystate {
         empty
       }?,
-      ## Include this field or coefficient in the detectors output file.
+      ## Include this field in the detectors output file.
+      element include_in_detectors {
+        empty
+      }?
+    }
+  )
+
+coeff_diagnostics_options = 
+  (
+    ## Output options
+    element diagnostics {
+      ## Include this coefficient in the statistics output file.
+      ## The minimum and maximum of functions is included.
+      element include_in_statistics {
+        functional_options*
+      }?,
+      ## Include this coefficient in the detectors output file.
       element include_in_detectors {
         empty
       }?

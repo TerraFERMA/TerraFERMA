@@ -36,8 +36,8 @@ class SpudFunctionBucket(ufltools.functionbucket.FunctionBucket):
 
     self.functionals = []
     
-    for k in range(libspud.option_count(optionpath+"/diagnostics/include_in_diagnostics/functional")):
-      functional_optionpath = optionpath+"/diagnostics/include_in_diagnostics/functional["+`k`+"]"
+    for k in range(libspud.option_count(optionpath+"/diagnostics/include_in_statistics/functional")):
+      functional_optionpath = optionpath+"/diagnostics/include_in_statistics/functional["+`k`+"]"
       functional = ufltools.spud.SpudFunctionalBucket()
       # get all the information about this functional from the options dictionary
       functional.fill(functional_optionpath, self)
