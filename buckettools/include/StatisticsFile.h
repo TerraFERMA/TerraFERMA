@@ -12,12 +12,12 @@ namespace buckettools
 {
 
   //*****************************************************************|************************************************************//
-  // DiagnosticsFile class:
+  // StatisticsFile class:
   //
   // A derived class from the base statfile class intended for the output of diagnostics to file every dump period.
   // Statistics normally include things like function mins and maxes as well as functional output.
   //*****************************************************************|************************************************************//
-  class DiagnosticsFile : public StatFile
+  class StatisticsFile : public StatFile
   {
 
   //*****************************************************************|***********************************************************//
@@ -30,9 +30,9 @@ namespace buckettools
     // Constructors and destructors
     //***************************************************************|***********************************************************//
     
-    DiagnosticsFile(const std::string &name);                         // specific constructor
+    StatisticsFile(const std::string &name);                         // specific constructor
  
-    ~DiagnosticsFile();                                               // default destructor
+    ~StatisticsFile();                                               // default destructor
     
     //***************************************************************|***********************************************************//
     // Header writing functions

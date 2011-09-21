@@ -9,7 +9,7 @@
 #include "PythonDetectors.h"
 //#include "PythonExpression.h"
 //#include "InitialConditionExpression.h"
-#include "DiagnosticsFile.h"
+#include "StatisticsFile.h"
 #include <dolfin.h>
 #include <string>
 #include <spud>
@@ -62,9 +62,9 @@ void SpudBucket::run()
   serr = Spud::get_option(buffer.str(), basename); 
   spud_err(buffer.str(), serr);
 
-  DiagnosticsFile diagfile(basename+".stat");
-  diagfile.write_header(*this);
-  diagfile.write_data(*this);
+  StatisticsFile statfile(basename+".stat");
+  statfile.write_header(*this);
+  statfile.write_data(*this);
 
   output();
 
@@ -84,7 +84,7 @@ void SpudBucket::run()
     *current_time_ += timestep();                                    // increment time with the timestep
     (*timestep_count_)++;                                            // increment the number of timesteps taken
 
-    diagfile.write_data(*this);
+    statfile.write_data(*this);
     output();
 
     if (complete())
@@ -97,7 +97,7 @@ void SpudBucket::run()
   } while (*current_time_ < finish_time());                          // syntax ensures at least one solve
   dolfin::log(dolfin::INFO, "Finished timeloop.");
 
-  diagfile.close();                                                  // close the diagnostics
+  statfile.close();                                                  // close the diagnostics
 
 }
 

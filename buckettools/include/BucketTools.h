@@ -13,7 +13,7 @@
 #include "BoostTypes.h"
 #include "SpudBase.h"
 //#include "StatFile.h"
-#include "DiagnosticsFile.h"
+#include "StatisticsFile.h"
 //#include "DetectorsFile.h"
 //#include "PythonExpression.h"
 //#include "GenericDetectors.h"

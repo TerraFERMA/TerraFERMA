@@ -1,5 +1,5 @@
 
-#include "DiagnosticsFile.h"
+#include "StatisticsFile.h"
 #include "Bucket.h"
 #include <cstdio>
 #include <string>
@@ -12,7 +12,7 @@ using namespace buckettools;
 //*******************************************************************|************************************************************//
 // specific constructor
 //*******************************************************************|************************************************************//
-DiagnosticsFile::DiagnosticsFile(const std::string &name) : StatFile(name)
+StatisticsFile::StatisticsFile(const std::string &name) : StatFile(name)
 {
                                                                      // do nothing... all handled by StatFile constructor
 }
@@ -20,7 +20,7 @@ DiagnosticsFile::DiagnosticsFile(const std::string &name) : StatFile(name)
 //*******************************************************************|************************************************************//
 // default destructor
 //*******************************************************************|************************************************************//
-DiagnosticsFile::~DiagnosticsFile()
+StatisticsFile::~StatisticsFile()
 {
                                                                      // do nothing... all handled by StatFile destructor
 }
@@ -29,7 +29,7 @@ DiagnosticsFile::~DiagnosticsFile()
 // write a header for the model described in the given bucket
 // FIXME: this will write a header for the bucket in its current state, if this is subsequently modified the header will be invalid
 //*******************************************************************|************************************************************//
-void DiagnosticsFile::write_header(const Bucket &bucket)
+void StatisticsFile::write_header(const Bucket &bucket)
 {
   uint column = 1;                                                   // keep count of how many columns there are
   
@@ -45,7 +45,7 @@ void DiagnosticsFile::write_header(const Bucket &bucket)
 // FIXME: this will write data for the bucket in its current state, if this is different to when the header was written the file
 // will be invalid
 //*******************************************************************|************************************************************//
-void DiagnosticsFile::write_data(const Bucket &bucket)
+void StatisticsFile::write_data(const Bucket &bucket)
 {
   
   data_timestep_(bucket);                        // write the timestepping information
@@ -59,7 +59,7 @@ void DiagnosticsFile::write_data(const Bucket &bucket)
 // write a header for the model systems, fields and coefficients in the given bucket
 // FIXME: this will write a header for the bucket in its current state, if this is subsequently modified the header will be invalid
 //*******************************************************************|************************************************************//
-void DiagnosticsFile::header_bucket_(const Bucket &bucket, 
+void StatisticsFile::header_bucket_(const Bucket &bucket, 
                                      uint &column)
 {
 
@@ -81,7 +81,7 @@ void DiagnosticsFile::header_bucket_(const Bucket &bucket,
 // write a header for the model systems in the given bucket
 // FIXME: this will write a header for the bucket in its current state, if this is subsequently modified the header will be invalid
 //*******************************************************************|************************************************************//
-void DiagnosticsFile::header_system_(const SystemBucket_ptr sys_ptr, 
+void StatisticsFile::header_system_(const SystemBucket_ptr sys_ptr, 
                                      uint &column)
 {
   tag_((*sys_ptr).name(), column++, "max");
@@ -92,7 +92,7 @@ void DiagnosticsFile::header_system_(const SystemBucket_ptr sys_ptr,
 // write a header for a set of model fields
 // FIXME: this will write a header for the bucket in its current state, if this is subsequently modified the header will be invalid
 //*******************************************************************|************************************************************//
-void DiagnosticsFile::header_field_(FunctionBucket_const_it f_begin, 
+void StatisticsFile::header_field_(FunctionBucket_const_it f_begin, 
                                     FunctionBucket_const_it f_end, 
                                     uint &column)
 {
@@ -131,7 +131,7 @@ void DiagnosticsFile::header_field_(FunctionBucket_const_it f_begin,
       }
       else                                                           // unknown rank
       {
-        dolfin::error("In DiagnosticsFile::header_bucket_, unknown function rank.");
+        dolfin::error("In StatisticsFile::header_bucket_, unknown function rank.");
       }
 
       header_functional_((*f_it).second, 
@@ -147,7 +147,7 @@ void DiagnosticsFile::header_field_(FunctionBucket_const_it f_begin,
 // could be easily evaluated)
 // FIXME: this will write a header for the bucket in its current state, if this is subsequently modified the header will be invalid
 //*******************************************************************|************************************************************//
-void DiagnosticsFile::header_coeff_(FunctionBucket_const_it f_begin, 
+void StatisticsFile::header_coeff_(FunctionBucket_const_it f_begin, 
                                     FunctionBucket_const_it f_end, 
                                     uint &column)
 {
@@ -186,7 +186,7 @@ void DiagnosticsFile::header_coeff_(FunctionBucket_const_it f_begin,
       }
       else                                                           // unknown rank
       {
-        dolfin::error("In DiagnosticsFile::header_bucket_, unknown function rank.");
+        dolfin::error("In StatisticsFile::header_bucket_, unknown function rank.");
       }
 
       header_functional_((*f_it).second, 
@@ -200,7 +200,7 @@ void DiagnosticsFile::header_coeff_(FunctionBucket_const_it f_begin,
 // write a header for a set of model functionals
 // FIXME: this will write a header for the bucket in its current state, if this is subsequently modified the header will be invalid
 //*******************************************************************|************************************************************//
-void DiagnosticsFile::header_functional_(const FunctionBucket_ptr f_ptr, 
+void StatisticsFile::header_functional_(const FunctionBucket_ptr f_ptr, 
                                         Form_const_it f_begin, 
                                         Form_const_it f_end, 
                                         uint &column)
@@ -217,7 +217,7 @@ void DiagnosticsFile::header_functional_(const FunctionBucket_ptr f_ptr,
 // FIXME: this will write data for the bucket in its current state, if this has been modified since the header was written the file
 // will be invalid
 //*******************************************************************|************************************************************//
-void DiagnosticsFile::data_bucket_(const Bucket &bucket)
+void StatisticsFile::data_bucket_(const Bucket &bucket)
 {
   
   file_.setf(std::ios::scientific);
@@ -244,7 +244,7 @@ void DiagnosticsFile::data_bucket_(const Bucket &bucket)
 // FIXME: this will write data for the system in its current state, if this has been modified since the header was written the file
 // will be invalid
 //*******************************************************************|************************************************************//
-void DiagnosticsFile::data_system_(const SystemBucket_ptr sys_ptr)
+void StatisticsFile::data_system_(const SystemBucket_ptr sys_ptr)
 {
   file_ << (*(*sys_ptr).function()).vector().max() << " ";
   file_ << (*(*sys_ptr).function()).vector().min() << " ";
@@ -255,7 +255,7 @@ void DiagnosticsFile::data_system_(const SystemBucket_ptr sys_ptr)
 // FIXME: this will write data for the system in its current state, if this has been modified since the header was written the file
 // will be invalid
 //*******************************************************************|************************************************************//
-void DiagnosticsFile::data_field_(FunctionBucket_const_it f_begin, 
+void StatisticsFile::data_field_(FunctionBucket_const_it f_begin, 
                                   FunctionBucket_const_it f_end)
 {
   for (FunctionBucket_const_it f_it = f_begin; f_it != f_end;        // loop over the given fields
@@ -307,7 +307,7 @@ void DiagnosticsFile::data_field_(FunctionBucket_const_it f_begin,
       }
       else                                                           // unknown rank
       {
-        dolfin::error("In DiagnosticsFile::data_field_, unknown function rank.");
+        dolfin::error("In StatisticsFile::data_field_, unknown function rank.");
       }
 
       data_functional_((*(*f_it).second).functionals_begin(),        // wttie data for all functionals associated with this field
@@ -321,7 +321,7 @@ void DiagnosticsFile::data_field_(FunctionBucket_const_it f_begin,
 // FIXME: this will write data for the system in its current state, if this has been modified since the header was written the file
 // will be invalid
 //*******************************************************************|************************************************************//
-void DiagnosticsFile::data_coeff_(FunctionBucket_const_it f_begin, 
+void StatisticsFile::data_coeff_(FunctionBucket_const_it f_begin, 
                                   FunctionBucket_const_it f_end)
 {
   for (FunctionBucket_const_it f_it = f_begin; f_it != f_end;        // loop over the given coefficients
@@ -375,7 +375,7 @@ void DiagnosticsFile::data_coeff_(FunctionBucket_const_it f_begin,
         }
         else                                                         // unknown rank
         {
-          dolfin::error("In DiagnosticsFile::data_coeff_, unknown function rank.");
+          dolfin::error("In StatisticsFile::data_coeff_, unknown function rank.");
         }
       }
       else                                                           // no vector available
@@ -426,7 +426,7 @@ void DiagnosticsFile::data_coeff_(FunctionBucket_const_it f_begin,
         }
         else                                                         // unknown rank
         {
-          dolfin::error("In DiagnosticsFile::data_coeff_, unknown function rank.");
+          dolfin::error("In StatisticsFile::data_coeff_, unknown function rank.");
         }
       }
 
@@ -441,7 +441,7 @@ void DiagnosticsFile::data_coeff_(FunctionBucket_const_it f_begin,
 // FIXME: this will write data for the system in its current state, if this has been modified since the header was written the file
 // will be invalid
 //*******************************************************************|************************************************************//
-void DiagnosticsFile::data_functional_(Form_const_it s_begin, 
+void StatisticsFile::data_functional_(Form_const_it s_begin, 
                                        Form_const_it s_end)
 {
   for (Form_const_it s_it = s_begin; s_it != s_end; s_it++)          // loop over the given functionals
