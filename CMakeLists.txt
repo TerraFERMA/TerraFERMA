@@ -43,7 +43,7 @@ include_directories(${PYTHON_INCLUDE_PATH})
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules")
 
-find_package(Spud)
+find_package(Spud REQUIRED)
 
 if(NOT ${SPUD_FOUND})
   message(FATAL_ERROR "Could not find Spud.")
