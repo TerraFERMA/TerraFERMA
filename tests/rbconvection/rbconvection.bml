@@ -10,7 +10,7 @@
           <integer_value shape="2" dim1="2" rank="1">32 32</integer_value>
         </number_cells>
         <diagonal>
-          <string_value>right</string_value>
+          <string_value>crossed</string_value>
         </diagonal>
         <cell>
           <string_value>triangle</string_value>
@@ -180,7 +180,15 @@
         </rank>
       </type>
       <diagnostics>
-        <include_in_statistics/>
+        <include_in_statistics>
+          <functional name="Integral">
+            <string_value lines="20" type="python">int = p*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+          </functional>
+        </include_in_statistics>
+        <include_in_detectors/>
       </diagnostics>
     </field>
     <field name="Temperature">
@@ -264,18 +272,18 @@ r = rv + rp + rT</string_value>
           </ufl_symbol>
         </form>
         <form name="JacobianPC" rank="1">
-          <string_value lines="20" type="python">rPC = rv + rT
-
-aPC = derivative(rPC, us_i, us_a) + p_t*p_a*dx
-#aPC = derivative(r, us_i, us_a)</string_value>
+          <string_value lines="20" type="python">aPC = a + p_t*p_a*dx</string_value>
           <ufl_symbol>
             <string_value lines="1">aPC</string_value>
           </ufl_symbol>
         </form>
         <snes_type name="ls"/>
         <relative_error>
-          <real_value rank="0">1.e-10</real_value>
+          <real_value rank="0">1.e-7</real_value>
         </relative_error>
+        <absolute_error>
+          <real_value rank="0">1.e-11</real_value>
+        </absolute_error>
         <max_iterations>
           <integer_value rank="0">50</integer_value>
         </max_iterations>
@@ -288,7 +296,7 @@ aPC = derivative(rPC, us_i, us_a) + p_t*p_a*dx
               <integer_value rank="0">30</integer_value>
             </restart>
             <relative_error>
-              <real_value rank="0">1.e-6</real_value>
+              <real_value rank="0">5.e-4</real_value>
             </relative_error>
             <max_iterations>
               <integer_value rank="0">100</integer_value>
@@ -299,6 +307,71 @@ aPC = derivative(rPC, us_i, us_a) + p_t*p_a*dx
           </iterative_method>
           <preconditioner name="fieldsplit">
             <composite_type name="multiplicative"/>
+            <fieldsplit name="Stokes">
+              <field name="Pressure"/>
+              <field name="Velocity"/>
+              <linear_solver>
+                <iterative_method name="preonly"/>
+                <preconditioner name="fieldsplit">
+                  <composite_type name="multiplicative"/>
+                  <fieldsplit name="Pressure">
+                    <field name="Pressure"/>
+                    <linear_solver>
+                      <iterative_method name="cg">
+                        <relative_error>
+                          <real_value rank="0">1.e-6</real_value>
+                        </relative_error>
+                        <max_iterations>
+                          <integer_value rank="0">1000</integer_value>
+                        </max_iterations>
+                        <monitors/>
+                      </iterative_method>
+                      <preconditioner name="sor"/>
+                    </linear_solver>
+                  </fieldsplit>
+                  <fieldsplit name="Velocity">
+                    <field name="Velocity"/>
+                    <linear_solver>
+                      <iterative_method name="preonly"/>
+                      <preconditioner name="fieldsplit">
+                        <composite_type name="multiplicative"/>
+                        <fieldsplit name="Velocity0">
+                          <field name="Velocity">
+                            <components>
+                              <integer_value shape="1" rank="1">0</integer_value>
+                            </components>
+                          </field>
+                          <linear_solver>
+                            <iterative_method name="preonly"/>
+                            <preconditioner name="hypre">
+                              <hypre_type name="boomeramg"/>
+                            </preconditioner>
+                          </linear_solver>
+                        </fieldsplit>
+                        <fieldsplit name="Velocity1">
+                          <field name="Velocity">
+                            <components>
+                              <integer_value shape="1" rank="1">1</integer_value>
+                            </components>
+                          </field>
+                          <linear_solver>
+                            <iterative_method name="preonly"/>
+                            <preconditioner name="hypre">
+                              <hypre_type name="boomeramg"/>
+                            </preconditioner>
+                          </linear_solver>
+                        </fieldsplit>
+                      </preconditioner>
+                    </linear_solver>
+                  </fieldsplit>
+                </preconditioner>
+                <remove_null_space>
+                  <null_space name="Pressure">
+                    <field name="Pressure"/>
+                  </null_space>
+                </remove_null_space>
+              </linear_solver>
+            </fieldsplit>
             <fieldsplit name="Temperature">
               <field name="Temperature"/>
               <linear_solver>
@@ -307,31 +380,14 @@ aPC = derivative(rPC, us_i, us_a) + p_t*p_a*dx
                     <integer_value rank="0">30</integer_value>
                   </restart>
                   <relative_error>
-                    <real_value rank="0">1.e-6</real_value>
+                    <real_value rank="0">1.e-3</real_value>
                   </relative_error>
                   <max_iterations>
                     <integer_value rank="0">1000</integer_value>
                   </max_iterations>
-                  <monitors>
-                    <preconditioned_residual/>
-                  </monitors>
+                  <monitors/>
                 </iterative_method>
-                <preconditioner name="sor"/>
-              </linear_solver>
-            </fieldsplit>
-            <fieldsplit name="Stokes">
-              <field name="Velocity"/>
-              <field name="Pressure"/>
-              <linear_solver>
-                <iterative_method name="preonly"/>
-                <preconditioner name="lu">
-                  <factorization_package name="umfpack"/>
-                </preconditioner>
-                <remove_null_space>
-                  <null_space name="Pressure">
-                    <field name="Pressure"/>
-                  </null_space>
-                </remove_null_space>
+                <preconditioner name="ilu"/>
               </linear_solver>
             </fieldsplit>
           </preconditioner>
