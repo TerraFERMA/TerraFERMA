@@ -148,14 +148,14 @@
         </rank>
       </type>
       <diagnostics>
-        <include_in_diagnostics>
+        <include_in_statistics>
           <functional name="L2Norm">
             <string_value lines="20" type="python">int = inner(v,v)*dx</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
           </functional>
-        </include_in_diagnostics>
+        </include_in_statistics>
       </diagnostics>
     </field>
     <field name="Pressure">
@@ -180,7 +180,7 @@
         </rank>
       </type>
       <diagnostics>
-        <include_in_diagnostics/>
+        <include_in_statistics/>
       </diagnostics>
     </field>
     <field name="Temperature">
@@ -231,14 +231,14 @@
         </rank>
       </type>
       <diagnostics>
-        <include_in_diagnostics>
+        <include_in_statistics>
           <functional name="TopSurfaceIntegral">
             <string_value lines="20" type="python">int = T.dx(1)*ds(4)</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
           </functional>
-        </include_in_diagnostics>
+        </include_in_statistics>
       </diagnostics>
     </field>
     <nonlinear_solver name="Solver">
