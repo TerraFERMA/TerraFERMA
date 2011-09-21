@@ -63,7 +63,7 @@ namespace buckettools
     // Output functions
     //***************************************************************|***********************************************************//
 
-    const bool include_in_diagnostics() const;                       // return a boolean indicating if this function is to 
+    const bool include_in_statistics() const;                       // return a boolean indicating if this function is to 
                                                                      // be included in diagnostic output
     
     const bool include_in_steadystate() const;                       // return a boolean indicating if this function is to 

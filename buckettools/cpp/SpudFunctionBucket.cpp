@@ -154,9 +154,9 @@ void SpudFunctionBucket::register_functional(Form_ptr functional,
 //*******************************************************************|************************************************************//
 // return a boolean indicating if this function bucket should be included in diagnostic output
 //*******************************************************************|************************************************************//
-const bool SpudFunctionBucket::include_in_diagnostics() const
+const bool SpudFunctionBucket::include_in_statistics() const
 {
-  return Spud::have_option(optionpath()+"/diagnostics/include_in_diagnostics");
+  return Spud::have_option(optionpath()+"/diagnostics/include_in_statistics");
 }
 
 //*******************************************************************|************************************************************//
@@ -487,12 +487,12 @@ void SpudFunctionBucket::functionals_fill_()
   Spud::OptionError serr;                                            // spud error code
    
   buffer.str(""); buffer << optionpath() 
-                     << "/diagnostics/include_in_diagnostics/functional";
+                     << "/diagnostics/include_in_statistics/functional";
   int nfuncs = Spud::option_count(buffer.str());                     // find out how many functionals there are
   for (uint i = 0; i < nfuncs; i++)
   {
     buffer.str(""); buffer << optionpath()  
-        << "/diagnostics/include_in_diagnostics/functional[" << i << "]";
+        << "/diagnostics/include_in_statistics/functional[" << i << "]";
     std::string functionaloptionpath = buffer.str();
 
     std::string functionalname;                                      // the functional name

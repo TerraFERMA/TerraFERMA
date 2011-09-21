@@ -99,7 +99,7 @@ void DiagnosticsFile::header_field_(FunctionBucket_const_it f_begin,
   for (FunctionBucket_const_it f_it = f_begin; f_it != f_end;        // loop over the given fields
                                                       f_it++)
   {
-    if ((*(*f_it).second).include_in_diagnostics())                  // check they should be included
+    if ((*(*f_it).second).include_in_statistics())                  // check they should be included
     {                                                                // yes, then populate header with default stats (min and max)
       if ((*(*(*f_it).second).function()).value_rank()==0)           // scalar (no components)
       {
@@ -154,7 +154,7 @@ void DiagnosticsFile::header_coeff_(FunctionBucket_const_it f_begin,
   for (FunctionBucket_const_it f_it = f_begin; f_it != f_end;        // loop over the given coefficients
                                                             f_it++)
   {
-    if ((*(*f_it).second).include_in_diagnostics())                  // check if they are to be included or not
+    if ((*(*f_it).second).include_in_statistics())                  // check if they are to be included or not
     {
       if ((*(*(*f_it).second).function()).value_rank()==0)           // scalar (no components)
       {
@@ -261,7 +261,7 @@ void DiagnosticsFile::data_field_(FunctionBucket_const_it f_begin,
   for (FunctionBucket_const_it f_it = f_begin; f_it != f_end;        // loop over the given fields
                                                             f_it++)
   {
-    if ((*(*f_it).second).include_in_diagnostics())                  // check if they should be included in the diagnostics
+    if ((*(*f_it).second).include_in_statistics())                  // check if they should be included in the diagnostics
     {                                                                // yes, start with the default stats... min and max
       dolfin::Function func =                                        // take a deep copy of the subfunction so the vector is accessible
         *boost::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).function());
@@ -327,7 +327,7 @@ void DiagnosticsFile::data_coeff_(FunctionBucket_const_it f_begin,
   for (FunctionBucket_const_it f_it = f_begin; f_it != f_end;        // loop over the given coefficients
                                                             f_it++)
   {
-    if ((*(*f_it).second).include_in_diagnostics())                  // check if this coefficient is to be included in diagnostics
+    if ((*(*f_it).second).include_in_statistics())                  // check if this coefficient is to be included in diagnostics
     {
       if ((*(*f_it).second).type()=="Function")                      // this is a function coefficient so it has a vector member
       {

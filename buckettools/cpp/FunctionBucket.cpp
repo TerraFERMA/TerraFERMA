@@ -222,9 +222,9 @@ const std::string FunctionBucket::functionals_str(int indent) const
 // include this function in diagnostic output
 // this is a virtual function and should be implemented in the derived options class
 //*******************************************************************|************************************************************//
-const bool FunctionBucket::include_in_diagnostics() const
+const bool FunctionBucket::include_in_statistics() const
 {
-  dolfin::error("Failed to find virtual function include_in_diagnostics.");
+  dolfin::error("Failed to find virtual function include_in_statistics.");
   return false;
 }
 

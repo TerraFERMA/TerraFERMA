@@ -133,7 +133,7 @@ namespace buckettools
 
     void output();                                                   // output diagnostics about this function
 
-    virtual const bool include_in_diagnostics() const;               // return a boolean indicating if this function is included in 
+    virtual const bool include_in_statistics() const;                // return a boolean indicating if this function is included in 
                                                                      // diagnostic output
 
     virtual const bool include_in_steadystate() const;               // return a boolean indicating if this function is included in 

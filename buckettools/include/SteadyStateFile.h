@@ -15,7 +15,7 @@ namespace buckettools
   // SteadyStateFile class:
   //
   // A derived class from the base statfile class intended for the output of diagnostics to file every dump period.
-  // Statistics for this file are the change between timesteps.
+  // Statistics normally include things like function mins and maxes as well as functional output.
   //*****************************************************************|************************************************************//
   class SteadyStateFile : public StatFile
   {
@@ -56,7 +56,7 @@ namespace buckettools
     // Base data
     //***************************************************************|***********************************************************//
 
-    std::string norm_type_;                                          // norm type
+    std::string norm_type_;                                          // norm_type to report steady state in
 
     //***************************************************************|***********************************************************//
     // Header writing functions (continued)
@@ -69,6 +69,10 @@ namespace buckettools
                        FunctionBucket_const_it f_end, 
                        uint &column);
 
+    void header_coeff_(FunctionBucket_const_it f_begin,              // write the header for a set of coefficients
+                       FunctionBucket_const_it f_end, 
+                       uint &column);
+
     //***************************************************************|***********************************************************//
     // Data writing functions (continued)
     //***************************************************************|***********************************************************//
@@ -76,6 +80,9 @@ namespace buckettools
     void data_bucket_(const Bucket &bucket);                         // write the data for a steady state simulation
 
     void data_field_(FunctionBucket_const_it f_begin,                // write the data for a set of fields
+                     FunctionBucket_const_it f_end);
+
+    void data_coeff_(FunctionBucket_const_it f_begin,                // write the data for a set of coefficients
                      FunctionBucket_const_it f_end);
 
   };
