@@ -156,6 +156,39 @@ void DiagnosticsFile::header_coeff_(FunctionBucket_const_it f_begin,
   {
     if ((*(*f_it).second).include_in_diagnostics())                  // check if they are to be included or not
     {
+      if ((*(*(*f_it).second).function()).value_rank()==0)           // scalar (no components)
+      {
+        tag_((*(*f_it).second).name(), column++, "max", 
+                              (*(*(*f_it).second).system()).name());
+        tag_((*(*f_it).second).name(), column++, "min", 
+                              (*(*(*f_it).second).system()).name());
+      }
+      else if ((*(*(*f_it).second).function()).value_rank()==1)      // vector (value_size components)
+      {
+        int components = (*(*(*f_it).second).function()).value_size();
+        tag_((*(*f_it).second).name(), column, "max", 
+                  (*(*(*f_it).second).system()).name(), components);
+        column+=components;
+        tag_((*(*f_it).second).name(), column, "min", 
+                  (*(*(*f_it).second).system()).name(), components);
+        column+=components;
+      }
+      else if ((*(*(*f_it).second).function()).value_rank()==2)      // tensor (value_dimension product components)
+      {
+        int components = 
+          (*(*(*f_it).second).function()).value_dimension(0)*(*(*(*f_it).second).function()).value_dimension(1);
+        tag_((*(*f_it).second).name(), column, "max", 
+                  (*(*(*f_it).second).system()).name(), components);
+        column+=components;
+        tag_((*(*f_it).second).name(), column, "min", 
+                  (*(*(*f_it).second).system()).name(), components);
+        column+=components;
+      }
+      else                                                           // unknown rank
+      {
+        dolfin::error("In DiagnosticsFile::header_bucket_, unknown function rank.");
+      }
+
       header_functional_((*f_it).second, 
                         (*(*f_it).second).functionals_begin(),       // write a header for all the functionals associated with this
                         (*(*f_it).second).functionals_end(), column);// coefficient
@@ -239,7 +272,7 @@ void DiagnosticsFile::data_field_(FunctionBucket_const_it f_begin,
       }
       else if (func.value_rank()==1)                                 // vectors (multiple components)
       {
-        int components = (*(*(*f_it).second).function()).value_size();
+        int components = func.value_size();
         for (uint i = 0; i < components; i++)
         {
           dolfin::Function funccomp = func[i];                       // take a deep copy of the component of the subfunction
@@ -253,8 +286,8 @@ void DiagnosticsFile::data_field_(FunctionBucket_const_it f_begin,
       }
       else if (func.value_rank()==2)                                 // tensor (multiple components)
       {
-        int dim0 = (*(*(*f_it).second).function()).value_dimension(0);
-        int dim1 = (*(*(*f_it).second).function()).value_dimension(1);
+        int dim0 = func.value_dimension(0);
+        int dim1 = func.value_dimension(1);
         for (uint i = 0; i < dim0; i++)
         {
           for (uint j = 0; j < dim1; j++)
@@ -274,7 +307,7 @@ void DiagnosticsFile::data_field_(FunctionBucket_const_it f_begin,
       }
       else                                                           // unknown rank
       {
-        dolfin::error("In DiagnosticsFile::data_bucket_, unknown function rank.");
+        dolfin::error("In DiagnosticsFile::data_field_, unknown function rank.");
       }
 
       data_functional_((*(*f_it).second).functionals_begin(),        // wttie data for all functionals associated with this field
@@ -296,6 +329,107 @@ void DiagnosticsFile::data_coeff_(FunctionBucket_const_it f_begin,
   {
     if ((*(*f_it).second).include_in_diagnostics())                  // check if this coefficient is to be included in diagnostics
     {
+      if ((*(*f_it).second).type()=="Function")                      // this is a function coefficient so it has a vector member
+      {
+        dolfin::Function func =                                      // take a deep copy of the subfunction so the vector is accessible
+          *boost::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).function());
+        if (func.value_rank()==0)                                    // scalars (no components)
+        {
+          file_ << func.vector().max() << " ";
+          file_ << func.vector().min() << " ";
+        }
+        else if (func.value_rank()==1)                               // vectors (multiple components)
+        {
+          int components = func.value_size();
+          for (uint i = 0; i < components; i++)
+          {
+            dolfin::Function funccomp = func[i];                     // take a deep copy of the component of the subfunction
+            file_ << funccomp.vector().max() << " ";                 // maximum for all components
+          }
+          for (uint i = 0; i < components; i++)
+          {
+            dolfin::Function funccomp = func[i];                     // take a deep copy of the component of the subfunction
+            file_ << funccomp.vector().min() << " ";                 // minimum for all components
+          }
+        }
+        else if (func.value_rank()==2)                               // tensor (multiple components)
+        {
+          int dim0 = func.value_dimension(0);
+          int dim1 = func.value_dimension(1);
+          for (uint i = 0; i < dim0; i++)
+          {
+            for (uint j = 0; j < dim1; j++)
+            {
+              dolfin::Function funccomp = func[i][j];                // take a deep copy of the ijth component of the subfunction
+              file_ << funccomp.vector().max() << " ";               // maximum for all components
+            }
+          }
+          for (uint i = 0; i < dim0; i++)
+          {
+            for (uint j = 0; j < dim1; j++)
+            {
+              dolfin::Function funccomp = func[i][j];                // take a deep copy of the ijth component of the subfunction
+              file_ << funccomp.vector().min() << " ";               // minimum for all components
+            }
+          }
+        }
+        else                                                         // unknown rank
+        {
+          dolfin::error("In DiagnosticsFile::data_coeff_, unknown function rank.");
+        }
+      }
+      else                                                           // no vector available
+      {
+        Mesh_ptr mesh = (*(*(*f_it).second).system()).mesh();
+        GenericFunction_ptr func = (*(*f_it).second).function();
+        dolfin::Array< double > values((*mesh).num_vertices()*(*func).value_size());
+        (*func).compute_vertex_values(values, *mesh);
+        if ((*func).value_rank()==0)                                 // scalars (no components)
+        {
+          file_ << values.max() << " ";
+          file_ << values.min() << " ";
+        }
+        else if ((*func).value_rank()==1)                            // vectors (multiple components)
+        {
+          int components = (*func).value_size();
+          for (uint i = 0; i < components; i++)
+          {
+            file_ << *std::max_element(&values.data()[i*(*mesh).num_vertices()], 
+                &values.data()[(i+1)*(*mesh).num_vertices()]) << " ";// maximum for all components
+          }
+          for (uint i = 0; i < components; i++)
+          {
+            file_ << *std::min_element(&values.data()[i*(*mesh).num_vertices()], 
+                &values.data()[(i+1)*(*mesh).num_vertices()]) << " ";// maximum for all components
+          }
+        }
+        else if ((*func).value_rank()==2)                            // tensor (multiple components)
+        {
+          int dim0 = (*func).value_dimension(0);
+          int dim1 = (*func).value_dimension(1);
+          for (uint i = 0; i < dim0; i++)
+          {
+            for (uint j = 0; j < dim1; j++)
+            {
+              file_ << *std::max_element(&values.data()[(2*j+i)*(*mesh).num_vertices()], 
+                  &values.data()[(2*j+i+1)*(*mesh).num_vertices()]) << " ";// maximum for all components
+            }
+          }
+          for (uint i = 0; i < dim0; i++)
+          {
+            for (uint j = 0; j < dim1; j++)
+            {
+              file_ << *std::min_element(&values.data()[(2*j+i)*(*mesh).num_vertices()], 
+                  &values.data()[(2*j+i+1)*(*mesh).num_vertices()]) << " ";// maximum for all components
+            }
+          }
+        }
+        else                                                         // unknown rank
+        {
+          dolfin::error("In DiagnosticsFile::data_coeff_, unknown function rank.");
+        }
+      }
+
       data_functional_((*(*f_it).second).functionals_begin(),        // write data for all functionals associated with this
                               (*(*f_it).second).functionals_end());  // coefficient
     }

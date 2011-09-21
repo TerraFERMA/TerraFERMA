@@ -71,8 +71,8 @@ void SpudBucket::run()
   dolfin::log(dolfin::INFO, "Entering timeloop.");
   do {                                                               // loop over time
 
-    dolfin::log(dolfin::INFO, "Timestep number: %d", timestep_count());
-    dolfin::log(dolfin::INFO, "Time: %f", current_time());
+    dolfin::log(dolfin::INFO, "Timestep number: %d", timestep_count()+1);
+    dolfin::log(dolfin::INFO, "Time: %f", current_time()+timestep());
 
     for (*iteration_count_ = 0; \
          *iteration_count_ < nonlinear_iterations(); 
@@ -81,7 +81,6 @@ void SpudBucket::run()
       solve();                                                       // solve all systems in the bucket
     }
 
-    update();                                                        // update all functions in the bucket
     *current_time_ += timestep();                                    // increment time with the timestep
     (*timestep_count_)++;                                            // increment the number of timesteps taken
 
@@ -92,6 +91,8 @@ void SpudBucket::run()
     {
       break;
     }
+
+    update();                                                        // update all functions in the bucket
 
   } while (*current_time_ < finish_time());                          // syntax ensures at least one solve
   dolfin::log(dolfin::INFO, "Finished timeloop.");

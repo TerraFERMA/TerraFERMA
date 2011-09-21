@@ -136,6 +136,9 @@ namespace buckettools
     virtual const bool include_in_diagnostics() const;               // return a boolean indicating if this function is included in 
                                                                      // diagnostic output
 
+    virtual const bool include_in_steadystate() const;               // return a boolean indicating if this function is included in 
+                                                                     // diagnostic output
+
     virtual const std::string str() const                            // return a string describing the contents of this function
     { return str(0); }
 

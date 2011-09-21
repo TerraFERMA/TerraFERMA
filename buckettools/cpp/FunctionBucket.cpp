@@ -229,6 +229,16 @@ const bool FunctionBucket::include_in_diagnostics() const
 }
 
 //*******************************************************************|************************************************************//
+// include this function in steadystate output
+// this is a virtual function and should be implemented in the derived options class
+//*******************************************************************|************************************************************//
+const bool FunctionBucket::include_in_steadystate() const
+{
+  dolfin::error("Failed to find virtual function include_in_steadystate.");
+  return false;
+}
+
+//*******************************************************************|************************************************************//
 // empty the data structures in the function bucket
 //*******************************************************************|************************************************************//
 void FunctionBucket::empty_()
