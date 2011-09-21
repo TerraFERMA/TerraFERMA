@@ -38,7 +38,7 @@ Fields may only be prognostic functions.</a:documentation>
           </element>
         </choice>
       </element>
-      <ref name="generic_function_output_options"/>
+      <ref name="generic_function_diagnostics_options"/>
     </element>
   </define>
   <define name="coefficient_options">
@@ -140,7 +140,7 @@ Constants are spatially constant expressions.</a:documentation>
           </choice>
         </element>
       </choice>
-      <ref name="generic_function_output_options"/>
+      <ref name="generic_function_diagnostics_options"/>
     </element>
   </define>
   <define name="scalar_field_function_options">
@@ -236,17 +236,22 @@ Constants are spatially constant expressions.</a:documentation>
     </attribute>
     <ref name="coeff_ufl_symbol"/>
   </define>
-  <define name="generic_function_output_options">
-    <element name="output">
+  <define name="generic_function_diagnostics_options">
+    <element name="diagnostics">
       <a:documentation>Output options</a:documentation>
       <optional>
         <element name="include_in_diagnostics">
           <a:documentation>Include this field or coefficient in the diagnostic output file.
-The minimum and maximum of functions is included.  There is no automatic output for expressions or coefficients and only
-functionals defined below will be included.</a:documentation>
+The minimum and maximum of functions is included.</a:documentation>
           <zeroOrMore>
             <ref name="functional_options"/>
           </zeroOrMore>
+        </element>
+      </optional>
+      <optional>
+        <element name="include_in_steadystate">
+          <a:documentation>Include this field or coefficient in the steady state check and output file.</a:documentation>
+          <empty/>
         </element>
       </optional>
       <optional>
