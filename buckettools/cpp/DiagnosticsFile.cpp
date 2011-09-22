@@ -124,15 +124,15 @@ void DiagnosticsFile::tag_(const std::string &name,
 //*******************************************************************|************************************************************//
 // write data to the file for values relating to timestepping
 //*******************************************************************|************************************************************//
-void DiagnosticsFile::data_timestep_(const Bucket &bucket)
+void DiagnosticsFile::data_timestep_()
 {
   
   file_.setf(std::ios::scientific);
   file_.precision(10);
   
-  file_ << bucket.timestep_count() << " ";  
-  file_ << bucket.current_time() << " ";
-  file_ << bucket.timestep() << " ";
+  file_ << (*bucket_).timestep_count() << " ";  
+  file_ << (*bucket_).current_time() << " ";
+  file_ << (*bucket_).timestep() << " ";
   
   file_.unsetf(std::ios::scientific);
   

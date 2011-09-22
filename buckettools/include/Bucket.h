@@ -42,7 +42,7 @@ namespace buckettools
     // Functions used to run the model
     //***************************************************************|***********************************************************//
 
-    void run();                                              // run the model described in the bucket
+    void run();                                                      // run the model described in the bucket
  
     void solve();                                                    // solve all the systems in the bucket
 
@@ -56,7 +56,7 @@ namespace buckettools
 
     void attach_coeffs(Form_it f_begin, Form_it f_end);              // attach coefficients to the selected forms
 
-    // void copy_statdata(Bucket *bucket);                              // copy the data necessary for the stat file(s)
+    void copy_diagnostics(const Bucket &bucket);                     // copy the data necessary for the diagnostics data file(s)
 
     //***************************************************************|***********************************************************//
     // Base data access
@@ -212,29 +212,6 @@ namespace buckettools
                                                            const;    // bucket
 
   //*****************************************************************|***********************************************************//
-  // Private functions
-  //*****************************************************************|***********************************************************//
-
-  private:                                                           // only accessible to members of this class
-
-    //***************************************************************|***********************************************************//
-    // Base data
-    //***************************************************************|***********************************************************//
-
-    std::string name_;                                               // the name of the bucket
-    
-    //***************************************************************|***********************************************************//
-    // Pointers data
-    //***************************************************************|***********************************************************//
-
-    std::map< std::string, std::string > baseuflsymbols_;            // a map from derived ufl symbols to their base symbol
-    
-    std::map< std::string, GenericFunction_ptr > uflsymbols_;        // a map from derived ufl symbols to field and coefficient pointers
-
-    std::map< std::string, FunctionSpace_ptr > coefficientspaces_;   // a map from the base ufl symbol to a coefficient
-                                                                     // functionspace
-
-  //*****************************************************************|***********************************************************//
   // Protected functions
   //*****************************************************************|***********************************************************//
 
@@ -293,6 +270,29 @@ namespace buckettools
     //***************************************************************|***********************************************************//
 
     void empty_();                                                   // empty the maps contained in the bucket
+
+  //*****************************************************************|***********************************************************//
+  // Private functions
+  //*****************************************************************|***********************************************************//
+
+  private:                                                           // only accessible to members of this class
+
+    //***************************************************************|***********************************************************//
+    // Base data
+    //***************************************************************|***********************************************************//
+
+    std::string name_;                                               // the name of the bucket
+    
+    //***************************************************************|***********************************************************//
+    // Pointers data
+    //***************************************************************|***********************************************************//
+
+    std::map< std::string, std::string > baseuflsymbols_;            // a map from derived ufl symbols to their base symbol
+    
+    std::map< std::string, GenericFunction_ptr > uflsymbols_;        // a map from derived ufl symbols to field and coefficient pointers
+
+    std::map< std::string, FunctionSpace_ptr > coefficientspaces_;   // a map from the base ufl symbol to a coefficient
+                                                                     // functionspace
 
   };
 

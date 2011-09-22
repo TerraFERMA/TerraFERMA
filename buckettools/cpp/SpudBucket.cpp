@@ -102,7 +102,8 @@ void SpudBucket::fill()
   
   detectors_fill_();                                                 // put the detectors in the bucket
 
-  diagnostics_fill_();
+  diagnostics_fill_();                                               // this should be called last because it initializes the
+                                                                     // diagnostic files, which must use a complete bucket
 
   dolfin::log(dolfin::DBG, str().c_str());
 
@@ -722,6 +723,7 @@ void SpudBucket::diagnostics_fill_()
   spud_err(buffer.str(), serr);
 
   statfile_.reset( new StatisticsFile(basename+".stat") );
+  (*statfile_).write_header(*this);
 
   int npdets = Spud::option_count("/io/detectors/point");            // number of point detectors
   int nadets = Spud::option_count("/io/detectors/array");            // number of array detectors

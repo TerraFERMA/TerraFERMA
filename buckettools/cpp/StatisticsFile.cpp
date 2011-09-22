@@ -31,6 +31,9 @@ StatisticsFile::~StatisticsFile()
 //*******************************************************************|************************************************************//
 void StatisticsFile::write_header(const Bucket &bucket)
 {
+  bucket_.reset( new Bucket );
+  (*bucket_).copy_diagnostics(bucket);
+
   uint column = 1;                                                   // keep count of how many columns there are
   
   file_ << "<header>" << std::endl;                                  // initialize header xml
@@ -48,7 +51,7 @@ void StatisticsFile::write_header(const Bucket &bucket)
 void StatisticsFile::write_data(const Bucket &bucket)
 {
   
-  data_timestep_(bucket);                        // write the timestepping information
+  data_timestep_();                                                 // write the timestepping information
   data_bucket_(bucket);                                             // write the bucket data
   
   file_ << std::endl << std::flush;                                 // flush the buffer

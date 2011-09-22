@@ -42,9 +42,6 @@ void Bucket::run()
 {
   std::stringstream buffer;                                          // optionpath buffer
 
-  (*statfile_).write_header(*this);
-  (*statfile_).write_data(*this);
-
   output();
 
   dolfin::log(dolfin::INFO, "Entering timeloop.");
@@ -63,7 +60,6 @@ void Bucket::run()
     *current_time_ += timestep();                                    // increment time with the timestep
     (*timestep_count_)++;                                            // increment the number of timesteps taken
 
-    (*statfile_).write_data(*this);
     output();
 
     if (complete())
@@ -133,6 +129,21 @@ void Bucket::attach_coeffs(Form_it f_begin, Form_it f_end)
       (*(*f_it).second).set_coefficient(uflsymbol, function);        // attach that function as a coefficient
     }
   }
+}
+
+//*******************************************************************|************************************************************//
+// make a partial copy of the provided bucket with the data necessary for writing the diagnostics file(s)
+//*******************************************************************|************************************************************//
+void Bucket::copy_diagnostics(const Bucket &bucket)
+{
+
+  current_time_         = bucket.current_time_;
+  finish_time_          = bucket.finish_time_;
+  timestep_count_       = bucket.timestep_count_;
+  timestep_             = bucket.timestep_;
+  nonlinear_iterations_ = bucket.nonlinear_iterations_;
+  iteration_count_      = iteration_count_;
+
 }
 
 //*******************************************************************|************************************************************//
@@ -594,11 +605,15 @@ GenericDetectors_const_it Bucket::detectors_end() const
 //*******************************************************************|************************************************************//
 void Bucket::output()
 {
-  for (SystemBucket_it s_it = systems_begin(); s_it != systems_end(); 
+
+  (*statfile_).write_data(*this);                                    // write data to the statistics file
+
+  for (SystemBucket_it s_it = systems_begin(); s_it != systems_end();// loop over the systems
                                                               s_it++)
   {
-    (*(*s_it).second).output();
+    (*(*s_it).second).output();                                      // and output pvd files
   } 
+
 }
 
 //*******************************************************************|************************************************************//

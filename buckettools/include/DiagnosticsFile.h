@@ -11,6 +11,7 @@ namespace buckettools
 {
 
   class Bucket;
+  typedef boost::shared_ptr< Bucket > Bucket_ptr;
 
   //*****************************************************************|************************************************************//
   // DiagnosticsFile class:
@@ -60,6 +61,8 @@ namespace buckettools
 
     std::ofstream file_;                                             // file stream
 
+    Bucket_ptr bucket_;                                              // a partial copy of the bucket
+
     //***************************************************************|***********************************************************//
     // Header writing functions
     //***************************************************************|***********************************************************//
@@ -95,7 +98,7 @@ namespace buckettools
     // Data writing functions
     //***************************************************************|***********************************************************//
 
-    void data_timestep_(const Bucket &bucket);                       // write the data for timestepping for a dynamic simulation
+    void data_timestep_();                                           // write the data for timestepping for a dynamic simulation
     
   };
   
