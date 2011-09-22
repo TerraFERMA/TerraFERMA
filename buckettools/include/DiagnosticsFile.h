@@ -31,15 +31,17 @@ namespace buckettools
     // Constructors and destructors
     //***************************************************************|***********************************************************//
 
-    DiagnosticsFile();                                                      // default constructor
+    DiagnosticsFile();                                               // default constructor
     
-    DiagnosticsFile(const std::string &name);                                // specific constructor
+    DiagnosticsFile(const std::string &name);                        // specific constructor
     
-    virtual ~DiagnosticsFile();                                             // default destructor
+    virtual ~DiagnosticsFile();                                      // default destructor
     
     //***************************************************************|***********************************************************//
     // Closing
     //***************************************************************|***********************************************************//
+
+    const bool is_open() const;                                      // check if file is open
 
     void close();                                                    // close the file
     
@@ -96,5 +98,7 @@ namespace buckettools
     
   };
   
+  typedef boost::shared_ptr< DiagnosticsFile > DiagnosticsFile_ptr;  // define a boost shared ptr type for the class
+
 }
 #endif

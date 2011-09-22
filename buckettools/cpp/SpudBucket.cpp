@@ -4,12 +4,9 @@
 #include "SpudBase.h"
 #include "BoostTypes.h"
 #include "BucketDolfinBase.h"
-//#include "GenericDetectors.h"
 #include "PointDetectors.h"
 #include "PythonDetectors.h"
-//#include "PythonExpression.h"
-//#include "InitialConditionExpression.h"
-#include "StatisticsFile.h"
+//#include "StatisticsFile.h"
 #include <dolfin.h>
 #include <string>
 #include <spud>
@@ -47,58 +44,6 @@ SpudBucket::SpudBucket(const std::string &name, const std::string &optionpath) :
 SpudBucket::~SpudBucket()
 {
   empty_();                                                          // empty the data structures
-}
-
-//*******************************************************************|************************************************************//
-// run the model described by this bucket
-//*******************************************************************|************************************************************//
-void SpudBucket::run()
-{
-  std::stringstream buffer;                                          // optionpath buffer
-  Spud::OptionError serr;                                            // spud error code
-
-  std::string basename;                                              // get the output base name
-  buffer.str(""); buffer << "/io/output_base_name";
-  serr = Spud::get_option(buffer.str(), basename); 
-  spud_err(buffer.str(), serr);
-
-  StatisticsFile statfile(basename+".stat");
-  statfile.write_header(*this);
-  statfile.write_data(*this);
-
-  output();
-
-  dolfin::log(dolfin::INFO, "Entering timeloop.");
-  do {                                                               // loop over time
-
-    dolfin::log(dolfin::INFO, "Timestep number: %d", timestep_count()+1);
-    dolfin::log(dolfin::INFO, "Time: %f", current_time()+timestep());
-
-    for (*iteration_count_ = 0; \
-         *iteration_count_ < nonlinear_iterations(); 
-         (*iteration_count_)++)                                      // loop over the nonlinear iterations
-    {
-      solve();                                                       // solve all systems in the bucket
-    }
-
-    *current_time_ += timestep();                                    // increment time with the timestep
-    (*timestep_count_)++;                                            // increment the number of timesteps taken
-
-    statfile.write_data(*this);
-    output();
-
-    if (complete())
-    {
-      break;
-    }
-
-    update();                                                        // update all functions in the bucket
-
-  } while (*current_time_ < finish_time());                          // syntax ensures at least one solve
-  dolfin::log(dolfin::INFO, "Finished timeloop.");
-
-  statfile.close();                                                  // close the diagnostics
-
 }
 
 //*******************************************************************|************************************************************//
@@ -709,10 +654,11 @@ void SpudBucket::baseuflsymbols_fill_(const std::string &optionpath)
 //*******************************************************************|************************************************************//
 void SpudBucket::detectors_fill_()
 {
-  GenericDetectors_ptr det(new GenericDetectors());                  // initialize a pointer to a generic detector
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
   
+  GenericDetectors_ptr det(new GenericDetectors());                  // initialize a pointer to a generic detector
+
   int npdets = Spud::option_count("/io/detectors/point");            // number of point detectors
   for (uint i=0; i<npdets; i++)                                      // loop over point detectors
   {
@@ -760,6 +706,32 @@ void SpudBucket::detectors_fill_()
     det.reset(new PythonDetectors(no_det, dimension(), function, detname));
     register_detector(det, detname, detectorpath.str());             // register detector
   }  
+  
+}
+
+void SpudBucket::diagnostics_fill_()
+{
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud error code
+
+  std::string basename;                                              // get the output base name
+  buffer.str(""); buffer << "/io/output_base_name";
+  serr = Spud::get_option(buffer.str(), basename); 
+  spud_err(buffer.str(), serr);
+
+//  statfile_.reset( new StatisticsFile(basename+".stat") );
+
+  int npdets = Spud::option_count("/io/detectors/point");            // number of point detectors
+  int nadets = Spud::option_count("/io/detectors/array");            // number of array detectors
+  if ((npdets + nadets) > 0)
+  {
+//    detfile_.reset( new DetectorsFile(basename+".det") );
+  }
+
+//  if (Spud::have_option("/timestepping/steady_state"))
+//  {
+//    steadyfile_.reset( new SteadyStateFile(basename+".steady") );
+//  }
   
 }
 

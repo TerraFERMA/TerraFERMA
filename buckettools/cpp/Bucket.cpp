@@ -35,11 +35,46 @@ Bucket::~Bucket()
 }
 
 //*******************************************************************|************************************************************//
-// run the model
+// run the model described by this bucket
 //*******************************************************************|************************************************************//
 void Bucket::run()
 {
-  dolfin::error("Failed to find virtual function run.");             // require a function to be defined in a derived class
+  std::stringstream buffer;                                          // optionpath buffer
+
+//  (*statfile_).write_header(*this);
+//  (*statfile_).write_data(*this);
+
+  output();
+
+  dolfin::log(dolfin::INFO, "Entering timeloop.");
+  do {                                                               // loop over time
+
+    dolfin::log(dolfin::INFO, "Timestep number: %d", timestep_count()+1);
+    dolfin::log(dolfin::INFO, "Time: %f", current_time()+timestep());
+
+    for (*iteration_count_ = 0; \
+         *iteration_count_ < nonlinear_iterations(); 
+         (*iteration_count_)++)                                      // loop over the nonlinear iterations
+    {
+      solve();                                                       // solve all systems in the bucket
+    }
+
+    *current_time_ += timestep();                                    // increment time with the timestep
+    (*timestep_count_)++;                                            // increment the number of timesteps taken
+
+//    (*statfile_).write_data(*this);
+    output();
+
+    if (complete())
+    {
+      break;
+    }
+
+    update();                                                        // update all functions in the bucket
+
+  } while (*current_time_ < finish_time());                          // syntax ensures at least one solve
+  dolfin::log(dolfin::INFO, "Finished timeloop.");
+
 }
 
 //*******************************************************************|************************************************************//
@@ -709,6 +744,11 @@ void Bucket::empty_()
   uflsymbols_.clear();
   coefficientspaces_.clear();
   detectors_.clear();
+
+//  if(statfile_)
+//  {  
+//    (*statfile_).close();
+//  }
 }
 
 

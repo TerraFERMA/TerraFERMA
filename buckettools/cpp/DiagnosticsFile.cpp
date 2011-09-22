@@ -1,6 +1,5 @@
 
 #include "DiagnosticsFile.h"
-#include "Bucket.h"
 #include "builddefs.h"
 #include <cstdio>
 #include <stdlib.h>
@@ -139,11 +138,19 @@ void DiagnosticsFile::data_timestep_(const Bucket &bucket)
 }
 
 //*******************************************************************|************************************************************//
+// check if the file_ is open
+//*******************************************************************|************************************************************//
+const bool DiagnosticsFile::is_open() const
+{
+  return file_.is_open();
+}
+
+//*******************************************************************|************************************************************//
 // close the file_ (if open)
 //*******************************************************************|************************************************************//
 void DiagnosticsFile::close()
 {
-  if (file_.is_open())
+  if (is_open())
   {
     file_.close();                                                   // close the file_ member
   }

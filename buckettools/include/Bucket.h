@@ -5,6 +5,7 @@
 #include "GenericDetectors.h"
 #include "BoostTypes.h"
 #include "SystemBucket.h"
+//#include "StatisticsFile.h"
 #include <dolfin.h>
 
 namespace buckettools
@@ -41,7 +42,7 @@ namespace buckettools
     // Functions used to run the model
     //***************************************************************|***********************************************************//
 
-    virtual void run();                                              // run the model described in the bucket
+    void run();                                              // run the model described in the bucket
  
     void solve();                                                    // solve all the systems in the bucket
 
@@ -270,6 +271,16 @@ namespace buckettools
     std::map< int, SystemBucket_ptr > orderedsystems_;               // an ordered (user defined) map from system names to (boost
                                                                      // shared) pointers to systems
     std::map< std::string, GenericDetectors_ptr > detectors_;        // a map from detector set name to (boost shared) pointers to detectors
+
+    //***************************************************************|***********************************************************//
+    // Diagnostics data
+    //***************************************************************|***********************************************************//
+
+//    StatisticsFile_ptr statfile_;                                    // pointer to a statistics file
+
+//    DetectorsFile_ptr detfile_;                                      // pointer to a detectors file
+
+//    SteadyStateFile_ptr steadyfile_;                                 // pointer to a steady state file
 
     //***************************************************************|***********************************************************//
     // Filling data

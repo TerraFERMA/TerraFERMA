@@ -94,5 +94,7 @@ namespace buckettools
 
   };
   
+  typedef boost::shared_ptr< StatisticsFile > StatisticsFile_ptr;    // define a boost shared ptr type for the class
+
 }
 #endif

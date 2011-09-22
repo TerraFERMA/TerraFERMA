@@ -87,5 +87,7 @@ namespace buckettools
 
   };
   
+  typedef boost::shared_ptr< SteadyStateFile > SteadyStateFile_ptr;  // define a boost shared ptr type for the class
+
 }
 #endif
