@@ -6,6 +6,7 @@
 #include <string>
 #include "SignalHandler.h"
 #include "EventHandler.h"
+#include "StatisticsFile.h"
 #include <signal.h>
 
 using namespace buckettools;
@@ -41,8 +42,8 @@ void Bucket::run()
 {
   std::stringstream buffer;                                          // optionpath buffer
 
-//  (*statfile_).write_header(*this);
-//  (*statfile_).write_data(*this);
+  (*statfile_).write_header(*this);
+  (*statfile_).write_data(*this);
 
   output();
 
@@ -62,7 +63,7 @@ void Bucket::run()
     *current_time_ += timestep();                                    // increment time with the timestep
     (*timestep_count_)++;                                            // increment the number of timesteps taken
 
-//    (*statfile_).write_data(*this);
+    (*statfile_).write_data(*this);
     output();
 
     if (complete())
@@ -745,10 +746,10 @@ void Bucket::empty_()
   coefficientspaces_.clear();
   detectors_.clear();
 
-//  if(statfile_)
-//  {  
-//    (*statfile_).close();
-//  }
+  if(statfile_)
+  {  
+    (*statfile_).close();
+  }
 }
 
 

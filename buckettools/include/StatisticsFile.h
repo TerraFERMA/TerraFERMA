@@ -6,10 +6,21 @@
 #include <fstream>
 #include <string>
 #include "DiagnosticsFile.h"
-#include "Bucket.h"
 
 namespace buckettools
 {
+
+  //*****************************************************************|************************************************************//
+  // predeclarations: a circular dependency between the StatisticsFile class and the Bucket class requires a lot of predeclarations.
+  //*****************************************************************|************************************************************//
+  class Bucket;
+  class SystemBucket;
+  typedef boost::shared_ptr< SystemBucket > SystemBucket_ptr;
+  class FunctionBucket;
+  typedef boost::shared_ptr< FunctionBucket > FunctionBucket_ptr;
+  typedef std::map< std::string, FunctionBucket_ptr >::const_iterator FunctionBucket_const_it;
+  typedef boost::shared_ptr< dolfin::Form > Form_ptr;
+  typedef std::map< std::string, Form_ptr >::const_iterator Form_const_it;
 
   //*****************************************************************|************************************************************//
   // StatisticsFile class:

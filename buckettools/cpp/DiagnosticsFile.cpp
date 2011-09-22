@@ -1,5 +1,6 @@
 
 #include "DiagnosticsFile.h"
+#include "Bucket.h"
 #include "builddefs.h"
 #include <cstdio>
 #include <stdlib.h>

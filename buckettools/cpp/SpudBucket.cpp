@@ -6,7 +6,7 @@
 #include "BucketDolfinBase.h"
 #include "PointDetectors.h"
 #include "PythonDetectors.h"
-//#include "StatisticsFile.h"
+#include "StatisticsFile.h"
 #include <dolfin.h>
 #include <string>
 #include <spud>
@@ -101,6 +101,8 @@ void SpudBucket::fill()
   }
   
   detectors_fill_();                                                 // put the detectors in the bucket
+
+  diagnostics_fill_();
 
   dolfin::log(dolfin::DBG, str().c_str());
 
@@ -719,7 +721,7 @@ void SpudBucket::diagnostics_fill_()
   serr = Spud::get_option(buffer.str(), basename); 
   spud_err(buffer.str(), serr);
 
-//  statfile_.reset( new StatisticsFile(basename+".stat") );
+  statfile_.reset( new StatisticsFile(basename+".stat") );
 
   int npdets = Spud::option_count("/io/detectors/point");            // number of point detectors
   int nadets = Spud::option_count("/io/detectors/array");            // number of array detectors

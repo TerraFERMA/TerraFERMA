@@ -2,7 +2,6 @@
 #ifndef __DIAGNOSTICS_FILE_H
 #define __DIAGNOSTICS_FILE_H
 
-#include "Bucket.h"
 #include <cstdio>
 #include <fstream>
 #include <string>
@@ -10,6 +9,8 @@
 
 namespace buckettools
 {
+
+  class Bucket;
 
   //*****************************************************************|************************************************************//
   // DiagnosticsFile class:

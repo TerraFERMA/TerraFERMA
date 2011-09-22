@@ -5,7 +5,7 @@
 #include "GenericDetectors.h"
 #include "BoostTypes.h"
 #include "SystemBucket.h"
-//#include "StatisticsFile.h"
+#include "StatisticsFile.h"
 #include <dolfin.h>
 
 namespace buckettools
@@ -276,7 +276,7 @@ namespace buckettools
     // Diagnostics data
     //***************************************************************|***********************************************************//
 
-//    StatisticsFile_ptr statfile_;                                    // pointer to a statistics file
+    StatisticsFile_ptr statfile_;                                    // pointer to a statistics file
 
 //    DetectorsFile_ptr detfile_;                                      // pointer to a detectors file
 
