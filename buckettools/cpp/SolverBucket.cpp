@@ -209,11 +209,17 @@ void SolverBucket::attach_form_coeffs()
 //*******************************************************************|************************************************************//
 // make a partial copy of the provided solver bucket with the data necessary for writing the diagnostics file(s)
 //*******************************************************************|************************************************************//
-void SolverBucket::copy_diagnostics(const SolverBucket &solver)
+void SolverBucket::copy_diagnostics(SolverBucket_ptr &solver, SystemBucket_ptr &system) const
 {
 
-  name_ = solver.name_;
-  type_ = solver.type_;
+  if(!solver)
+  {
+    solver.reset( new SolverBucket(&(*system)) );
+  }
+
+  (*solver).name_ = name_;
+  (*solver).type_ = "Dummy";                                         // this is done to ensure that the petsc destroy routines
+                                                                     // are not called by the destructor
 
 }
 

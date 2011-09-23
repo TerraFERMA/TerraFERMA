@@ -27,32 +27,28 @@ StatisticsFile::~StatisticsFile()
 
 //*******************************************************************|************************************************************//
 // write a header for the model described in the given bucket
-// FIXME: this will write a header for the bucket in its current state, if this is subsequently modified the header will be invalid
 //*******************************************************************|************************************************************//
 void StatisticsFile::write_header(const Bucket &bucket)
 {
-  bucket_.reset( new Bucket );
-  (*bucket_).copy_diagnostics(bucket);
+  bucket.copy_diagnostics(bucket_);
 
   uint column = 1;                                                   // keep count of how many columns there are
   
   file_ << "<header>" << std::endl;                                  // initialize header xml
   header_constants_();                                               // write constant tags
   header_timestep_(column);                                          // write tags for the timesteps
-  header_bucket_(bucket, column);                                    // write tags for the actual bucket variables - fields etc.
+  header_bucket_(column);                                            // write tags for the actual bucket variables - fields etc.
   file_ << "</header>" << std::endl << std::flush;                   // finalize header xml
 }
 
 //*******************************************************************|************************************************************//
 // write data for the model described in the given bucket
-// FIXME: this will write data for the bucket in its current state, if this is different to when the header was written the file
-// will be invalid
 //*******************************************************************|************************************************************//
-void StatisticsFile::write_data(const Bucket &bucket)
+void StatisticsFile::write_data()
 {
   
   data_timestep_();                                                 // write the timestepping information
-  data_bucket_(bucket);                                             // write the bucket data
+  data_bucket_();                                                   // write the bucket data
   
   file_ << std::endl << std::flush;                                 // flush the buffer
   
@@ -60,10 +56,8 @@ void StatisticsFile::write_data(const Bucket &bucket)
 
 //*******************************************************************|************************************************************//
 // write a header for the model systems, fields and coefficients in the given bucket
-// FIXME: this will write a header for the bucket in its current state, if this is subsequently modified the header will be invalid
 //*******************************************************************|************************************************************//
-void StatisticsFile::header_bucket_(const Bucket &bucket, 
-                                     uint &column)
+void StatisticsFile::header_bucket_(uint &column)
 {
 
   for (SystemBucket_const_it sys_it = (*bucket_).systems_begin();        // loop over the systems
@@ -82,7 +76,6 @@ void StatisticsFile::header_bucket_(const Bucket &bucket,
 
 //*******************************************************************|************************************************************//
 // write a header for the model systems in the given bucket
-// FIXME: this will write a header for the bucket in its current state, if this is subsequently modified the header will be invalid
 //*******************************************************************|************************************************************//
 void StatisticsFile::header_system_(const SystemBucket_ptr sys_ptr, 
                                      uint &column)
@@ -93,7 +86,6 @@ void StatisticsFile::header_system_(const SystemBucket_ptr sys_ptr,
 
 //*******************************************************************|************************************************************//
 // write a header for a set of model fields
-// FIXME: this will write a header for the bucket in its current state, if this is subsequently modified the header will be invalid
 //*******************************************************************|************************************************************//
 void StatisticsFile::header_field_(FunctionBucket_const_it f_begin, 
                                     FunctionBucket_const_it f_end, 
@@ -148,7 +140,6 @@ void StatisticsFile::header_field_(FunctionBucket_const_it f_begin,
 // write a header for a set of model coefficients
 // these don't get automatic min and max as they're user prescribed (also only coefficient functions have a vector on which they
 // could be easily evaluated)
-// FIXME: this will write a header for the bucket in its current state, if this is subsequently modified the header will be invalid
 //*******************************************************************|************************************************************//
 void StatisticsFile::header_coeff_(FunctionBucket_const_it f_begin, 
                                     FunctionBucket_const_it f_end, 
@@ -201,7 +192,6 @@ void StatisticsFile::header_coeff_(FunctionBucket_const_it f_begin,
 
 //*******************************************************************|************************************************************//
 // write a header for a set of model functionals
-// FIXME: this will write a header for the bucket in its current state, if this is subsequently modified the header will be invalid
 //*******************************************************************|************************************************************//
 void StatisticsFile::header_functional_(const FunctionBucket_ptr f_ptr, 
                                         Form_const_it f_begin, 
@@ -217,10 +207,8 @@ void StatisticsFile::header_functional_(const FunctionBucket_ptr f_ptr,
 
 //*******************************************************************|************************************************************//
 // write data for the model systems, fields and coefficients in the given bucket
-// FIXME: this will write data for the bucket in its current state, if this has been modified since the header was written the file
-// will be invalid
 //*******************************************************************|************************************************************//
-void StatisticsFile::data_bucket_(const Bucket &bucket)
+void StatisticsFile::data_bucket_()
 {
   
   file_.setf(std::ios::scientific);
@@ -244,8 +232,6 @@ void StatisticsFile::data_bucket_(const Bucket &bucket)
 
 //*******************************************************************|************************************************************//
 // write data for a system
-// FIXME: this will write data for the system in its current state, if this has been modified since the header was written the file
-// will be invalid
 //*******************************************************************|************************************************************//
 void StatisticsFile::data_system_(const SystemBucket_ptr sys_ptr)
 {
@@ -255,8 +241,6 @@ void StatisticsFile::data_system_(const SystemBucket_ptr sys_ptr)
 
 //*******************************************************************|************************************************************//
 // write data for a set of fields
-// FIXME: this will write data for the system in its current state, if this has been modified since the header was written the file
-// will be invalid
 //*******************************************************************|************************************************************//
 void StatisticsFile::data_field_(FunctionBucket_const_it f_begin, 
                                   FunctionBucket_const_it f_end)
@@ -321,8 +305,6 @@ void StatisticsFile::data_field_(FunctionBucket_const_it f_begin,
 
 //*******************************************************************|************************************************************//
 // write data for a set of coefficients
-// FIXME: this will write data for the system in its current state, if this has been modified since the header was written the file
-// will be invalid
 //*******************************************************************|************************************************************//
 void StatisticsFile::data_coeff_(FunctionBucket_const_it f_begin, 
                                   FunctionBucket_const_it f_end)
@@ -441,8 +423,6 @@ void StatisticsFile::data_coeff_(FunctionBucket_const_it f_begin,
 
 //*******************************************************************|************************************************************//
 // write data for a set of functional forms
-// FIXME: this will write data for the system in its current state, if this has been modified since the header was written the file
-// will be invalid
 //*******************************************************************|************************************************************//
 void StatisticsFile::data_functional_(Form_const_it s_begin, 
                                        Form_const_it s_end)

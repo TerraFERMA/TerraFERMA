@@ -8,7 +8,10 @@
 namespace buckettools
 {
 
-  class SystemBucket;                                                // predeclaration
+  class SystemBucket;                                                // predeclare
+  typedef boost::shared_ptr< SystemBucket > SystemBucket_ptr;        // so we can predeclare a pointer to it
+  class FunctionBucket;                                              // predeclare the class itself
+  typedef boost::shared_ptr< FunctionBucket > FunctionBucket_ptr;    // so we can predeclare a pointer to it
   
   //*****************************************************************|************************************************************//
   // FunctionBucket class:
@@ -92,7 +95,8 @@ namespace buckettools
 
     void attach_functional_coeffs();                                 // attach the coefficients to the functionals of this function
 
-    void copy_diagnostics(const FunctionBucket &function);           // copy the data necessary for the diagnostics data file(s)
+    virtual void copy_diagnostics(FunctionBucket_ptr &function, 
+                                  SystemBucket_ptr &system) const;   // copy the data necessary for the diagnostics data file(s)
 
     //***************************************************************|***********************************************************//
     // Functional data access

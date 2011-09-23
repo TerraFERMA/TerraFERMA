@@ -131,6 +131,23 @@ void SpudFunctionBucket::initialize_function_coeff()
 }
 
 //*******************************************************************|************************************************************//
+// make a partial copy of the provided function bucket with the data necessary for writing the diagnostics file(s)
+//*******************************************************************|************************************************************//
+void SpudFunctionBucket::copy_diagnostics(FunctionBucket_ptr &function, SystemBucket_ptr &system) const
+{
+
+  if(!function)
+  {
+    function.reset( new SpudFunctionBucket(optionpath_, &(*system)) );
+  }
+
+  FunctionBucket::copy_diagnostics(function, system);
+
+  (*boost::dynamic_pointer_cast< SpudFunctionBucket >(function)).functional_optionpaths_ = functional_optionpaths_;
+
+}
+
+//*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a functional form in the function bucket data maps (with an optionpath as well)
 //*******************************************************************|************************************************************//
 void SpudFunctionBucket::register_functional(Form_ptr functional, 

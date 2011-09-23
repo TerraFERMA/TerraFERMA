@@ -47,21 +47,26 @@ void FunctionBucket::attach_functional_coeffs()
 //*******************************************************************|************************************************************//
 // make a partial copy of the provided function bucket with the data necessary for writing the diagnostics file(s)
 //*******************************************************************|************************************************************//
-void FunctionBucket::copy_diagnostics(const FunctionBucket &function)
+void FunctionBucket::copy_diagnostics(FunctionBucket_ptr &function, SystemBucket_ptr &system) const
 {
 
-  name_ = function.name_;
-  index_ = function.index_;
+  if(!function)
+  {
+    function.reset( new FunctionBucket(&(*system)) );
+  }
 
-  functionspace_ = function.functionspace_;
+  (*function).name_ = name_;
+  (*function).index_ = index_;
 
-  function_ = function.function_;
-  iteratedfunction_ = function.iteratedfunction_;
-  oldfunction_ = function.oldfunction_;
+  (*function).functionspace_ = functionspace_;
 
-  functionals_ = function.functionals_;
-  bcexpressions_ = function.bcexpressions_;
-  bcs_ = function.bcs_;
+  (*function).function_ = function_;
+  (*function).iteratedfunction_ = iteratedfunction_;
+  (*function).oldfunction_ = oldfunction_;
+
+  (*function).functionals_ = functionals_;
+  (*function).bcexpressions_ = bcexpressions_;
+  (*function).bcs_ = bcs_;
 
 }
 

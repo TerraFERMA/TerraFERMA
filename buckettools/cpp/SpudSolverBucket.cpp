@@ -28,7 +28,7 @@ SpudSolverBucket::SpudSolverBucket(const std::string &optionpath,
 //*******************************************************************|************************************************************//
 SpudSolverBucket::~SpudSolverBucket()
 {
-  empty_();                                                  // empty the data in the derived class
+  empty_();                                                          // empty the data in the derived class
 }
 
 //*******************************************************************|************************************************************//
@@ -111,6 +111,23 @@ void SpudSolverBucket::fill()
   {
     dolfin::error("Unknown solver type.");
   }
+
+}
+
+//*******************************************************************|************************************************************//
+// make a partial copy of the provided solver bucket with the data necessary for writing the diagnostics file(s)
+//*******************************************************************|************************************************************//
+void SpudSolverBucket::copy_diagnostics(SolverBucket_ptr &solver, SystemBucket_ptr &system) const
+{
+
+  if(!solver)
+  {
+    solver.reset( new SpudSolverBucket(optionpath_, &(*system)) );
+  }
+
+  SolverBucket::copy_diagnostics(solver, system);
+
+  (*boost::dynamic_pointer_cast< SpudSolverBucket >(solver)).form_optionpaths_ = form_optionpaths_;
 
 }
 

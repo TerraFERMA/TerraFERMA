@@ -10,6 +10,9 @@ namespace buckettools
 {
 
   class Bucket;                                                      // predeclaration
+  typedef boost::shared_ptr< Bucket > Bucket_ptr;                    // so we can predeclare a pointer to it
+  class SystemBucket;                                                // predeclare the class itself
+  typedef boost::shared_ptr< SystemBucket > SystemBucket_ptr;        // so we can predeclare a pointer to it
   
   //*****************************************************************|************************************************************//
   // SystemBucket class:
@@ -53,7 +56,8 @@ namespace buckettools
     void attach_and_initialize();                                    // attach functions to the forms and functionals
                                                                      // in the system and initialize the matrices
 
-    void copy_diagnostics(const SystemBucket &system);               // copy the data necessary for the diagnostics data file(s)
+    virtual void copy_diagnostics(SystemBucket_ptr &system, 
+                            Bucket_ptr &bucket) const;               // copy the data necessary for the diagnostics data file(s)
 
     //***************************************************************|***********************************************************//
     // Base data access

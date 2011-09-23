@@ -55,7 +55,7 @@ namespace buckettools
     // Data writing functions
     //***************************************************************|***********************************************************//
 
-    void write_data(const Bucket &bucket);                           // write data to file for a simulation
+    void write_data();                                               // write data to file for a simulation
     
   //*****************************************************************|***********************************************************//
   // Private functions
@@ -67,8 +67,8 @@ namespace buckettools
     // Header writing functions (continued)
     //***************************************************************|***********************************************************//
 
-    void header_bucket_(const Bucket &bucket,                        // write the header for the bucket (non-constant and 
-                        uint &column);                               // timestepping entries)
+    void header_bucket_(uint &column);                               // write the header for the bucket (non-constant and 
+                                                                     // timestepping entries)
 
     void header_system_(const SystemBucket_ptr sys_ptr,              // write the header for a system
                         uint &column);
@@ -90,7 +90,7 @@ namespace buckettools
     // Data writing functions (continued)
     //***************************************************************|***********************************************************//
 
-    void data_bucket_(const Bucket &bucket);                         // write the data for a steady state simulation
+    void data_bucket_();                                             // write the data for a steady state simulation
 
     void data_system_(const SystemBucket_ptr sys_ptr);               // write the data for a system
 

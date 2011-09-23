@@ -110,6 +110,25 @@ void SpudBucket::fill()
 }
 
 //*******************************************************************|************************************************************//
+// make a partial copy of the provided bucket with the data necessary for writing the diagnostics file(s)
+//*******************************************************************|************************************************************//
+void SpudBucket::copy_diagnostics(Bucket_ptr &bucket) const
+{
+
+  if(!bucket)
+  {
+    bucket.reset( new SpudBucket );
+  }
+
+  Bucket::copy_diagnostics(bucket);
+
+  (*boost::dynamic_pointer_cast< SpudBucket >(bucket)).optionpath_ = optionpath_;
+  (*boost::dynamic_pointer_cast< SpudBucket >(bucket)).mesh_optionpaths_ = mesh_optionpaths_;
+  (*boost::dynamic_pointer_cast< SpudBucket >(bucket)).detector_optionpaths_ = detector_optionpaths_;
+
+}
+
+//*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a dolfin mesh in the bucket (and spudbucket) data maps with a spud optionpath
 //*******************************************************************|************************************************************//
 void SpudBucket::register_mesh(Mesh_ptr mesh, 

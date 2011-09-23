@@ -39,6 +39,9 @@ namespace buckettools
 
     void fill();                                                     // fill in the data in the base solver bucket
 
+    void copy_diagnostics(SolverBucket_ptr &solver, 
+                                  SystemBucket_ptr &system) const;   // copy the data necessary for the diagnostics data file(s)
+
     //***************************************************************|***********************************************************//
     // Base data access
     //***************************************************************|***********************************************************//

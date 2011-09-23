@@ -51,6 +51,9 @@ namespace buckettools
 
     void initialize_function_coeff();                                // initialize this function assuming it's a coefficient function
 
+    void copy_diagnostics(FunctionBucket_ptr &function, 
+                                  SystemBucket_ptr &system) const;   // copy the data necessary for the diagnostics data file(s)
+
     //***************************************************************|***********************************************************//
     // Functional data access
     //***************************************************************|***********************************************************//

@@ -134,31 +134,36 @@ void Bucket::attach_coeffs(Form_it f_begin, Form_it f_end)
 //*******************************************************************|************************************************************//
 // make a partial copy of the provided bucket with the data necessary for writing the diagnostics file(s)
 //*******************************************************************|************************************************************//
-void Bucket::copy_diagnostics(const Bucket &bucket)
+void Bucket::copy_diagnostics(Bucket_ptr &bucket) const
 {
 
-  name_ = bucket.name_;
+  if(!bucket)
+  {
+    bucket.reset( new Bucket );
+  }
 
-  current_time_ = bucket.current_time_;
-  finish_time_ = bucket.finish_time_;
-  timestep_count_ = bucket.timestep_count_;
-  timestep_ = bucket.timestep_;
-  nonlinear_iterations_ = bucket.nonlinear_iterations_;
-  iteration_count_ = bucket.iteration_count_;
+  (*bucket).name_ = name_;
 
-  meshes_ = bucket.meshes_;
+  (*bucket).current_time_ = current_time_;
+  (*bucket).finish_time_ = finish_time_;
+  (*bucket).timestep_count_ = timestep_count_;
+  (*bucket).timestep_ = timestep_;
+  (*bucket).nonlinear_iterations_ = nonlinear_iterations_;
+  (*bucket).iteration_count_ = iteration_count_;
 
-  for (SystemBucket_const_it sys_it = bucket.systems_begin();        // loop over the systems
-                           sys_it != bucket.systems_end(); sys_it++)
+  (*bucket).meshes_ = meshes_;
+
+  for (SystemBucket_const_it sys_it = systems_begin();               // loop over the systems
+                           sys_it != systems_end(); sys_it++)
   {                                                                  
-    SystemBucket_ptr system(new SystemBucket(this));                 // create a new system
+    SystemBucket_ptr system;                                         // create a new system
     
-    (*system).copy_diagnostics((*(*sys_it).second));
+    (*(*sys_it).second).copy_diagnostics(system, bucket);
 
-    register_system(system, (*system).name());                       // put the system in the bucket
+    (*bucket).register_system(system, (*system).name());             // put the system in the bucket
   }                                                                  
 
-  detectors_ = bucket.detectors_;
+  (*bucket).detectors_ = detectors_;
 
 }
 
@@ -622,7 +627,7 @@ GenericDetectors_const_it Bucket::detectors_end() const
 void Bucket::output()
 {
 
-  (*statfile_).write_data(*this);                                    // write data to the statistics file
+  (*statfile_).write_data();                                         // write data to the statistics file
 
   for (SystemBucket_it s_it = systems_begin(); s_it != systems_end();// loop over the systems
                                                               s_it++)

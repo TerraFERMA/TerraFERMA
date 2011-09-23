@@ -58,45 +58,52 @@ void SystemBucket::update()
 //*******************************************************************|************************************************************//
 // make a partial copy of the provided system bucket with the data necessary for writing the diagnostics file(s)
 //*******************************************************************|************************************************************//
-void SystemBucket::copy_diagnostics(const SystemBucket &system)
+void SystemBucket::copy_diagnostics(SystemBucket_ptr &system, Bucket_ptr &bucket) const
 {
 
-  name_ = system.name_;
+  if(!system)
+  {
+    system.reset( new SystemBucket(&(*bucket)) );
+  }
 
-  functionspace_ = system.functionspace_;
+  (*system).name_ = name_;
 
-  function_ = system.function_;
-  iteratedfunction_ = system.iteratedfunction_;
-  oldfunction_ = system.oldfunction_;
+  (*system).mesh_ = mesh_;
 
-  for (FunctionBucket_const_it func_it = system.fields_begin();      // loop over the fields
-                           func_it != system.fields_end(); func_it++)
+  (*system).functionspace_ = functionspace_;
+
+  (*system).function_ = function_;
+  (*system).iteratedfunction_ = iteratedfunction_;
+  (*system).oldfunction_ = oldfunction_;
+
+  for (FunctionBucket_const_it func_it = fields_begin();             // loop over the fields
+                           func_it != fields_end(); func_it++)
   {                                                                  
-    FunctionBucket_ptr field(new FunctionBucket(this));              // create a new field
+    FunctionBucket_ptr field;                                        // create a new field
     
-    (*field).copy_diagnostics((*(*func_it).second));
+    (*(*func_it).second).copy_diagnostics(field, system);
 
-    register_field(field, (*field).name());                          // put the field in the bucket
+    (*system).register_field(field, (*field).name());                // put the field in the bucket
   }                                                                  
 
-  for (FunctionBucket_const_it func_it = system.coeffs_begin();      // loop over the fields
-                           func_it != system.coeffs_end(); func_it++)
+  for (FunctionBucket_const_it func_it = coeffs_begin();             // loop over the fields
+                           func_it != coeffs_end(); func_it++)
   {                                                                  
-    FunctionBucket_ptr coeff(new FunctionBucket(this));              // create a new coeff
+    FunctionBucket_ptr coeff;                                        // create a new coeff
   
-    (*coeff).copy_diagnostics((*(*func_it).second));
+    (*(*func_it).second).copy_diagnostics(coeff, system);
 
-    register_coeff(coeff, (*coeff).name());                          // put the coefficient in the bucket
+    (*system).register_coeff(coeff, (*coeff).name());                // put the coefficient in the bucket
   }                                                                  
 
-  for (SolverBucket_const_it solver_it = system.solvers_begin();     // loop over the solvers
-                      solver_it != system.solvers_end(); solver_it++)
+  for (SolverBucket_const_it solver_it = solvers_begin();            // loop over the solvers
+                      solver_it != solvers_end(); solver_it++)
   {                                                                  
-    SolverBucket_ptr solver(new SolverBucket(this));                 // create a new solver
+    SolverBucket_ptr solver;                                         // create a new solver
   
-    (*solver).copy_diagnostics((*(*solver_it).second));
+    (*(*solver_it).second).copy_diagnostics(solver, system);
 
-    register_solver(solver, (*solver).name());                       // put the coefficient in the bucket
+    (*system).register_solver(solver, (*solver).name());             // put the coefficient in the bucket
   }                                                                  
 
 }

@@ -8,7 +8,7 @@
 
 namespace buckettools
 {
-  
+
   //*****************************************************************|************************************************************//
   // SpudBucket class:
   //
@@ -44,6 +44,8 @@ namespace buckettools
 
     void fill();                                                     // fill the bucket data structures assuming the buckettools
                                                                      // spud schema
+
+    void copy_diagnostics(Bucket_ptr &bucket) const;                 // copy the data necessary for the diagnostics data file(s)
 
     //***************************************************************|***********************************************************//
     // Base data access

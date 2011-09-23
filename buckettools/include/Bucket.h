@@ -11,6 +11,9 @@
 namespace buckettools
 {
   
+  class Bucket;                                                      // predeclare the class itself
+  typedef boost::shared_ptr< Bucket > Bucket_ptr;                    // so we can predeclare a pointer to it
+  
   //*****************************************************************|************************************************************//
   // Bucket class:
   //
@@ -56,7 +59,7 @@ namespace buckettools
 
     void attach_coeffs(Form_it f_begin, Form_it f_end);              // attach coefficients to the selected forms
 
-    void copy_diagnostics(const Bucket &bucket);                     // copy the data necessary for the diagnostics data file(s)
+    virtual void copy_diagnostics(Bucket_ptr &bucket) const;         // copy the data necessary for the diagnostics data file(s)
 
     //***************************************************************|***********************************************************//
     // Base data access
