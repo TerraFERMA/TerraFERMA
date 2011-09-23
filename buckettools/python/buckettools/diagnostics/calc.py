@@ -22,7 +22,7 @@ import copy
 import math
 import unittest
 
-import fluidity.diagnostics.debug as debug
+import buckettools.diagnostics.debug as debug
 
 try:
   import numpy
@@ -41,8 +41,8 @@ try:
 except ImportError:
   debug.deprint("Warning: Failed to import vtk module")
 
-import fluidity.diagnostics.optimise as optimise
-import fluidity.diagnostics.utils as utils
+import buckettools.diagnostics.optimise as optimise
+import buckettools.diagnostics.utils as utils
 
 def NumpySupport():
   return "numpy" in globals()

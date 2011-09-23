@@ -22,7 +22,7 @@ import copy
 import time
 import unittest
 
-import fluidity.diagnostics.optimise as optimise
+import buckettools.diagnostics.optimise as optimise
 
 def IsIntString(string):
   """

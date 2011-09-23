@@ -21,9 +21,9 @@ GUI creation utilities
 import os
 import unittest
 
-import fluidity.diagnostics.debug as debug
-import fluidity.diagnostics.optimise as optimise
-import fluidity.diagnostics.utils as utils
+import buckettools.diagnostics.debug as debug
+import buckettools.diagnostics.optimise as optimise
+import buckettools.diagnostics.utils as utils
 
 def GuiDisabledByEnvironment():
   return "DIAGNOSTICS_GUI_DISABLED" in os.environ and os.environ["DIAGNOSTICS_GUI_DISABLED"]

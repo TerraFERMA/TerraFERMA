@@ -22,9 +22,9 @@ import os
 import tempfile
 import unittest
 
-import fluidity.diagnostics.debug as debug
-import fluidity.diagnostics.gui as gui
-import fluidity.diagnostics.utils as utils
+import buckettools.diagnostics.debug as debug
+import buckettools.diagnostics.gui as gui
+import buckettools.diagnostics.utils as utils
 
 if not gui.GuiDisabledByEnvironment():
   try:
@@ -52,8 +52,8 @@ if not gui.GuiDisabledByEnvironment():
   except ImportError:
     debug.deprint("Warning: Failed to import pylab module")
 
-import fluidity.diagnostics.filehandling as filehandling
-import fluidity.diagnostics.optimise as optimise
+import buckettools.diagnostics.filehandling as filehandling
+import buckettools.diagnostics.optimise as optimise
 
 class Plot:
   """
