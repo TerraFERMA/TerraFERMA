@@ -207,6 +207,17 @@ void SolverBucket::attach_form_coeffs()
 }
 
 //*******************************************************************|************************************************************//
+// make a partial copy of the provided solver bucket with the data necessary for writing the diagnostics file(s)
+//*******************************************************************|************************************************************//
+void SolverBucket::copy_diagnostics(const SolverBucket &solver)
+{
+
+  name_ = solver.name_;
+  type_ = solver.type_;
+
+}
+
+//*******************************************************************|************************************************************//
 // perform some preassembly on the matrices and complete the snes setup (including setting up the context)
 //*******************************************************************|************************************************************//
 void SolverBucket::initialize_matrices()

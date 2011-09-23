@@ -137,12 +137,28 @@ void Bucket::attach_coeffs(Form_it f_begin, Form_it f_end)
 void Bucket::copy_diagnostics(const Bucket &bucket)
 {
 
-  current_time_         = bucket.current_time_;
-  finish_time_          = bucket.finish_time_;
-  timestep_count_       = bucket.timestep_count_;
-  timestep_             = bucket.timestep_;
+  name_ = bucket.name_;
+
+  current_time_ = bucket.current_time_;
+  finish_time_ = bucket.finish_time_;
+  timestep_count_ = bucket.timestep_count_;
+  timestep_ = bucket.timestep_;
   nonlinear_iterations_ = bucket.nonlinear_iterations_;
-  iteration_count_      = iteration_count_;
+  iteration_count_ = bucket.iteration_count_;
+
+  meshes_ = bucket.meshes_;
+
+  for (SystemBucket_const_it sys_it = bucket.systems_begin();        // loop over the systems
+                           sys_it != bucket.systems_end(); sys_it++)
+  {                                                                  
+    SystemBucket_ptr system(new SystemBucket(this));                 // create a new system
+    
+    (*system).copy_diagnostics((*(*sys_it).second));
+
+    register_system(system, (*system).name());                       // put the system in the bucket
+  }                                                                  
+
+  detectors_ = bucket.detectors_;
 
 }
 

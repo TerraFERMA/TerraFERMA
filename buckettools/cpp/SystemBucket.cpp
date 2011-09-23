@@ -56,6 +56,52 @@ void SystemBucket::update()
 }
 
 //*******************************************************************|************************************************************//
+// make a partial copy of the provided system bucket with the data necessary for writing the diagnostics file(s)
+//*******************************************************************|************************************************************//
+void SystemBucket::copy_diagnostics(const SystemBucket &system)
+{
+
+  name_ = system.name_;
+
+  functionspace_ = system.functionspace_;
+
+  function_ = system.function_;
+  iteratedfunction_ = system.iteratedfunction_;
+  oldfunction_ = system.oldfunction_;
+
+  for (FunctionBucket_const_it func_it = system.fields_begin();      // loop over the fields
+                           func_it != system.fields_end(); func_it++)
+  {                                                                  
+    FunctionBucket_ptr field(new FunctionBucket(this));              // create a new field
+    
+    (*field).copy_diagnostics((*(*func_it).second));
+
+    register_field(field, (*field).name());                          // put the field in the bucket
+  }                                                                  
+
+  for (FunctionBucket_const_it func_it = system.coeffs_begin();      // loop over the fields
+                           func_it != system.coeffs_end(); func_it++)
+  {                                                                  
+    FunctionBucket_ptr coeff(new FunctionBucket(this));              // create a new coeff
+  
+    (*coeff).copy_diagnostics((*(*func_it).second));
+
+    register_coeff(coeff, (*coeff).name());                          // put the coefficient in the bucket
+  }                                                                  
+
+  for (SolverBucket_const_it solver_it = system.solvers_begin();     // loop over the solvers
+                      solver_it != system.solvers_end(); solver_it++)
+  {                                                                  
+    SolverBucket_ptr solver(new SolverBucket(this));                 // create a new solver
+  
+    (*solver).copy_diagnostics((*(*solver_it).second));
+
+    register_solver(solver, (*solver).name());                       // put the coefficient in the bucket
+  }                                                                  
+
+}
+
+//*******************************************************************|************************************************************//
 // attach coefficients to forms and functionals then initialize matrices described by this system's forms
 //*******************************************************************|************************************************************//
 void SystemBucket::attach_and_initialize()

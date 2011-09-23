@@ -53,6 +53,8 @@ namespace buckettools
     void attach_and_initialize();                                    // attach functions to the forms and functionals
                                                                      // in the system and initialize the matrices
 
+    void copy_diagnostics(const SystemBucket &system);               // copy the data necessary for the diagnostics data file(s)
+
     //***************************************************************|***********************************************************//
     // Base data access
     //***************************************************************|***********************************************************//

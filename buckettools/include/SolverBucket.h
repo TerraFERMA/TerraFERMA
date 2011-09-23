@@ -56,6 +56,8 @@ namespace buckettools
     void initialize_matrices();                                      // initialize the vectors and matrices (preassembly) described
                                                                      // by the forms in this solver
 
+    void copy_diagnostics(const SolverBucket &solver);               // copy the data necessary for the diagnostics data file(s)
+
     //***************************************************************|***********************************************************//
     // Base data access
     //***************************************************************|***********************************************************//

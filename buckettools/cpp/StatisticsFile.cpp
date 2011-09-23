@@ -66,8 +66,8 @@ void StatisticsFile::header_bucket_(const Bucket &bucket,
                                      uint &column)
 {
 
-  for (SystemBucket_const_it sys_it = bucket.systems_begin();        // loop over the systems
-                          sys_it != bucket.systems_end(); sys_it++)
+  for (SystemBucket_const_it sys_it = (*bucket_).systems_begin();        // loop over the systems
+                          sys_it != (*bucket_).systems_end(); sys_it++)
   {
     header_system_((*sys_it).second, column);                        // write the header for the system itself
 
@@ -226,8 +226,8 @@ void StatisticsFile::data_bucket_(const Bucket &bucket)
   file_.setf(std::ios::scientific);
   file_.precision(10);
   
-  for (SystemBucket_const_it sys_it = bucket.systems_begin(); 
-                          sys_it != bucket.systems_end(); sys_it++)
+  for (SystemBucket_const_it sys_it = (*bucket_).systems_begin(); 
+                          sys_it != (*bucket_).systems_end(); sys_it++)
   {
     data_system_((*sys_it).second);
 

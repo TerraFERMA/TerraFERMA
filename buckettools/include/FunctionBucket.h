@@ -92,6 +92,8 @@ namespace buckettools
 
     void attach_functional_coeffs();                                 // attach the coefficients to the functionals of this function
 
+    void copy_diagnostics(const FunctionBucket &function);           // copy the data necessary for the diagnostics data file(s)
+
     //***************************************************************|***********************************************************//
     // Functional data access
     //***************************************************************|***********************************************************//
