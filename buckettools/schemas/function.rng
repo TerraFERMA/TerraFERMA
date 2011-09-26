@@ -249,9 +249,19 @@ The minimum and maximum of functions is included.</a:documentation>
         </element>
       </optional>
       <optional>
-        <element name="include_in_steadystate">
+        <element name="include_in_steady_state">
           <a:documentation>Include this field in the steady state check and output file.</a:documentation>
-          <empty/>
+          <element name="norm">
+            <a:documentation>Norm to test for a steady state in </a:documentation>
+            <!-- a hard coded string_value -->
+            <element name="string_value">
+              <choice>
+                <value>linf</value>
+                <value>l2</value>
+                <value>l1</value>
+              </choice>
+            </element>
+          </element>
         </element>
       </optional>
       <optional>

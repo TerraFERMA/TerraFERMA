@@ -202,8 +202,14 @@ field_diagnostics_options =
         functional_options*
       }?,
       ## Include this field in the steady state check and output file.
-      element include_in_steadystate {
-        empty
+      element include_in_steady_state {
+        ## Norm to test for a steady state in 
+        element norm {
+          # a hard coded string_value
+          element string_value {
+            ( "linf" | "l2" | "l1" )
+          }
+        }
       }?,
       ## Include this field in the detectors output file.
       element include_in_detectors {

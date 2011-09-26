@@ -37,13 +37,6 @@ timestepping =
           ## Tolerance in which to test for a steady state
           element tolerance {
             real
-          },
-          ## Norm to test for a steady state in 
-          element norm {
-            # a hard coded string_value
-            element string_value {
-              ( "linf" | "l2" | "l1" )
-            }
           }
         }?
       }
