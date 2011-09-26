@@ -767,10 +767,11 @@ void SpudBucket::diagnostics_fill_()
 //    detfile_.reset( new DetectorsFile(basename+".det") );
   }
 
-//  if (Spud::have_option("/timestepping/steady_state"))
-//  {
-//    steadyfile_.reset( new SteadyStateFile(basename+".steady") );
-//  }
+  if (Spud::option_count("/system/field/diagnostics/include_in_steady_state")>0)
+  {
+    steadyfile_.reset( new SteadyStateFile(basename+".steady") );
+    (*steadyfile_).write_header(*this);
+  }
   
 }
 

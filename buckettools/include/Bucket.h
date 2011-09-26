@@ -6,6 +6,7 @@
 #include "BoostTypes.h"
 #include "SystemBucket.h"
 #include "StatisticsFile.h"
+#include "SteadyStateFile.h"
 #include <dolfin.h>
 
 namespace buckettools
@@ -263,7 +264,7 @@ namespace buckettools
 
 //    DetectorsFile_ptr detfile_;                                      // pointer to a detectors file
 
-//    SteadyStateFile_ptr steadyfile_;                                 // pointer to a steady state file
+    SteadyStateFile_ptr steadyfile_;                                 // pointer to a steady state file
 
     //***************************************************************|***********************************************************//
     // Filling data

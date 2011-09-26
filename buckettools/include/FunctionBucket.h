@@ -94,6 +94,9 @@ namespace buckettools
     const Expression_ptr icexpression() const                        // return a constant (boost shared) pointer to the initial
     { return icexpression_; }                                        // condition expression for this function
 
+    const std::string change_normtype() const                        // return the change norm type
+    { return change_normtype_; }
+
     //***************************************************************|***********************************************************//
     // Functions used to run the model
     //***************************************************************|***********************************************************//

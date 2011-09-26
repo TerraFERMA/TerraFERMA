@@ -6,10 +6,17 @@
 #include <fstream>
 #include <string>
 #include "DiagnosticsFile.h"
-#include "Bucket.h"
 
 namespace buckettools
 {
+
+  //*****************************************************************|************************************************************//
+  // predeclarations: a circular dependency between the StatisticsFile class and the Bucket class requires a lot of predeclarations.
+  //*****************************************************************|************************************************************//
+  class Bucket;
+  class FunctionBucket;
+  typedef boost::shared_ptr< FunctionBucket > FunctionBucket_ptr;
+  typedef std::map< std::string, FunctionBucket_ptr >::const_iterator FunctionBucket_const_it;
 
   //*****************************************************************|************************************************************//
   // SteadyStateFile class:
@@ -44,7 +51,7 @@ namespace buckettools
     // Data writing functions
     //***************************************************************|***********************************************************//
 
-    void write_data(const Bucket &bucket);                           // write data to file for a simulation
+    void write_data();                                               // write data to file for a simulation
     
   //*****************************************************************|***********************************************************//
   // Private functions
@@ -53,23 +60,13 @@ namespace buckettools
   private:                                                           // only available to this class
 
     //***************************************************************|***********************************************************//
-    // Base data
-    //***************************************************************|***********************************************************//
-
-    std::string norm_type_;                                          // norm_type to report steady state in
-
-    //***************************************************************|***********************************************************//
     // Header writing functions (continued)
     //***************************************************************|***********************************************************//
 
-    void header_bucket_(const Bucket &bucket,                        // write the header for the bucket (non-constant and 
-                        uint &column);                               // timestepping entries)
+    void header_bucket_(uint &column);                               // write the header for the bucket (non-constant and 
+                                                                     // timestepping entries)
 
     void header_field_(FunctionBucket_const_it f_begin,              // write the header for a set of fields
-                       FunctionBucket_const_it f_end, 
-                       uint &column);
-
-    void header_coeff_(FunctionBucket_const_it f_begin,              // write the header for a set of coefficients
                        FunctionBucket_const_it f_end, 
                        uint &column);
 
@@ -77,12 +74,9 @@ namespace buckettools
     // Data writing functions (continued)
     //***************************************************************|***********************************************************//
 
-    void data_bucket_(const Bucket &bucket);                         // write the data for a steady state simulation
+    void data_bucket_();                                             // write the data for a steady state simulation
 
     void data_field_(FunctionBucket_const_it f_begin,                // write the data for a set of fields
-                     FunctionBucket_const_it f_end);
-
-    void data_coeff_(FunctionBucket_const_it f_begin,                // write the data for a set of coefficients
                      FunctionBucket_const_it f_end);
 
   };
