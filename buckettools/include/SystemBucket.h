@@ -49,6 +49,12 @@ namespace buckettools
 
     void update();                                                   // update the functions in this system at the end of a timestep
 
+    const double maxchange();                                        // return the maximum change in the (requested) fields over the last timestep
+
+    void updatechange();                                             // update the change function
+
+    void resetchange();                                              // reset the change boolean
+
     //***************************************************************|***********************************************************//
     // Filling data
     //***************************************************************|***********************************************************//
@@ -83,6 +89,9 @@ namespace buckettools
 
     const Function_ptr iteratedfunction() const                      // return a (boost shared) pointer to the iterated system
     { return iteratedfunction_; }                                    // function
+
+    const Function_ptr changefunction() const                        // return a (boost shared) pointer to the change in the system
+    { return changefunction_; }                                      // function over a timestep
 
     Bucket* bucket()                                                 // return a pointer to the parent bucket
     { return bucket_; }
@@ -241,6 +250,10 @@ namespace buckettools
 
     Function_ptr function_, oldfunction_, iteratedfunction_;         // (boost shared) pointers to the system functions at different
                                                                      // time levels (old, iterated - most up to date -, base)
+
+    Function_ptr changefunction_;                                    // (boost shared) pointer to the change between timesteps
+
+    bool_ptr change_calculated_;                                     // indicate if the change has been recalculated recently
 
     //***************************************************************|***********************************************************//
     // Pointers data

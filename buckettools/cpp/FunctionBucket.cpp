@@ -33,6 +33,44 @@ FunctionBucket::~FunctionBucket()
 }
 
 //*******************************************************************|************************************************************//
+// return the change in this function over a timestep (only valid for fields and only valid after system changefunction has been
+// updated)
+//*******************************************************************|************************************************************//
+const double FunctionBucket::change()
+{
+  if(change_calculated_)
+  {
+    assert(change_);
+    if(!*change_calculated_)
+    {
+      assert(changefunction_);
+
+      dolfin::Function changefunc =                                    // take a deep copy of the subfunction so the vector is accessible
+        *boost::dynamic_pointer_cast< const dolfin::Function >(changefunction());
+      *change_ = changefunc.vector().norm(change_normtype_);
+
+      *change_calculated_=true;
+    }
+    return *change_;
+  }
+  else
+  {
+    return 0.0;
+  }
+}
+
+//*******************************************************************|************************************************************//
+// reset the change boolean
+//*******************************************************************|************************************************************//
+void FunctionBucket::resetchange()
+{
+  if(change_calculated_)
+  {
+    *change_calculated_=false;
+  }
+}
+
+//*******************************************************************|************************************************************//
 // loop over the functionals in this function bucket and attach the coefficients they request using the parent bucket data maps
 //*******************************************************************|************************************************************//
 void FunctionBucket::attach_functional_coeffs()
@@ -63,6 +101,11 @@ void FunctionBucket::copy_diagnostics(FunctionBucket_ptr &function, SystemBucket
   (*function).function_ = function_;
   (*function).iteratedfunction_ = iteratedfunction_;
   (*function).oldfunction_ = oldfunction_;
+
+  (*function).changefunction_ = changefunction_;
+  (*function).change_ = change_;
+  (*function).change_calculated_ = change_calculated_;
+  (*function).change_normtype_ = change_normtype_;
 
   (*function).functionals_ = functionals_;
   (*function).bcexpressions_ = bcexpressions_;

@@ -119,6 +119,8 @@ void SpudSystemBucket::base_fill_()
   spud_err(buffer.str(), serr);
   mesh_ = (*bucket_).fetch_mesh(meshname);                           // and extract it from the bucket
 
+  change_calculated_.reset( new bool(false) );                       // assume the change hasn't been calculated yet
+
 }
 
 //*******************************************************************|************************************************************//
@@ -143,6 +145,10 @@ void SpudSystemBucket::systemfunction_fill_()
   iteratedfunction_.reset( new dolfin::Function(functionspace_) );   // declare the iterated function on this functionspace
   buffer.str(""); buffer << name() << "::IteratedFunction";
   (*iteratedfunction_).rename( buffer.str(), buffer.str() );
+
+  changefunction_.reset( new dolfin::Function(functionspace_) );     // declare the change in the function between timesteps
+  buffer.str(""); buffer << name() << "::TimestepChange";
+  (*changefunction_).rename( buffer.str(), buffer.str() );
 
 }
 

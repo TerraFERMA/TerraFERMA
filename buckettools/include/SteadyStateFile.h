@@ -30,9 +30,9 @@ namespace buckettools
     // Constructors and destructors
     //***************************************************************|***********************************************************//
     
-    SteadyStateFile(const std::string &name);                         // specific constructor
+    SteadyStateFile(const std::string &name);                        // specific constructor
  
-    ~SteadyStateFile();                                               // default destructor
+    ~SteadyStateFile();                                              // default destructor
     
     //***************************************************************|***********************************************************//
     // Header writing functions

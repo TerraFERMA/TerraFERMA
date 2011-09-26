@@ -52,7 +52,63 @@ void SystemBucket::solve()
 //*******************************************************************|************************************************************//
 void SystemBucket::update()
 {
-  (*oldfunction_).vector() = (*function_).vector();
+
+  (*oldfunction_).vector() = (*function_).vector();                  // update the oldfunction to the new function value
+
+  resetchange();                                                     // reset the change booleans in the system and fields
+
+}
+
+//*******************************************************************|************************************************************//
+// return the maximum change in the requested fields of the system
+//*******************************************************************|************************************************************//
+const double SystemBucket::maxchange()
+{
+  double maxchange = 0.0;
+  updatechange();
+  for (FunctionBucket_it f_it = fields_begin(); 
+                                  f_it != fields_end(); f_it++)
+  {
+    if ((*(*f_it).second).include_in_steadystate())
+    {
+      double fieldchange = (*(*f_it).second).change();
+      dolfin::log(dolfin::DBG, "    steady state fieldchange = %f", fieldchange);
+      maxchange = std::max( fieldchange, maxchange );
+    }
+  }
+  return maxchange;
+}
+
+//*******************************************************************|************************************************************//
+// update the change function
+//*******************************************************************|************************************************************//
+void SystemBucket::updatechange()
+{
+  if (!*change_calculated_)
+  {
+    assert(changefunction_);
+
+    (*changefunction_).vector() = (*function_).vector();             // before updating the oldfunction to the new values
+    (*changefunction_).vector() -= (*oldfunction_).vector();         // update the change in the fields over this timesteps
+
+    *change_calculated_ = true;
+  }
+}
+
+//*******************************************************************|************************************************************//
+// reset the change function
+//*******************************************************************|************************************************************//
+void SystemBucket::resetchange()
+{
+  *change_calculated_ = false;
+  for (FunctionBucket_it f_it = fields_begin(); 
+                                  f_it != fields_end(); f_it++)
+  {
+    if ((*(*f_it).second).include_in_steadystate())
+    {
+      (*(*f_it).second).resetchange();
+    }
+  }
 }
 
 //*******************************************************************|************************************************************//
@@ -75,6 +131,9 @@ void SystemBucket::copy_diagnostics(SystemBucket_ptr &system, Bucket_ptr &bucket
   (*system).function_ = function_;
   (*system).iteratedfunction_ = iteratedfunction_;
   (*system).oldfunction_ = oldfunction_;
+
+  (*system).changefunction_ = changefunction_;
+  (*system).change_calculated_ = change_calculated_;
 
   for (FunctionBucket_const_it func_it = fields_begin();             // loop over the fields
                            func_it != fields_end(); func_it++)

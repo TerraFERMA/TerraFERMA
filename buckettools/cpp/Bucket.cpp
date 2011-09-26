@@ -45,7 +45,9 @@ void Bucket::run()
   output();
 
   dolfin::log(dolfin::INFO, "Entering timeloop.");
-  do {                                                               // loop over time
+  bool continue_timestepping = true;
+  while (continue_timestepping) 
+  {                                                                  // loop over time
 
     dolfin::log(dolfin::INFO, "Timestep number: %d", timestep_count()+1);
     dolfin::log(dolfin::INFO, "Time: %f", current_time()+timestep());
@@ -62,14 +64,12 @@ void Bucket::run()
 
     output();
 
-    if (complete())
-    {
-      break;
-    }
+    continue_timestepping = !complete();                             // this must be called before the update as it checks if a
+                                                                     // steady state has been attained
 
     update();                                                        // update all functions in the bucket
 
-  } while (*current_time_ < finish_time());                          // syntax ensures at least one solve
+  }                                                                  // syntax ensures at least one solve
   dolfin::log(dolfin::INFO, "Finished timeloop.");
 
 }
@@ -104,12 +104,50 @@ void Bucket::update()
 bool Bucket::complete()
 {
   bool completed = false;
+  
+  if (current_time() >= finish_time())
+  {
+    dolfin::log(dolfin::WARNING, "Finish time reached, terminating timeloop.");
+    completed = true;
+  }
+
+  if (steadystate())
+  {
+    dolfin::log(dolfin::WARNING, "Steady state attained, terminating timeloop.");
+    completed = true;
+  }
+
   if ((*(*SignalHandler::instance()).return_handler(SIGINT)).received())
   {
     dolfin::log(dolfin::ERROR, "SigInt received, terminating timeloop.");
     completed = true;
   }
+
   return completed;
+}
+
+//*******************************************************************|************************************************************//
+// return a boolean indicating if the simulation has reached a steady state or not
+//*******************************************************************|************************************************************//
+bool Bucket::steadystate()
+{
+  bool steady = false;
+
+  if (steadystate_tol_)
+  {
+    double maxchange = 0.0;
+    for (SystemBucket_it s_it = systems_begin(); 
+                                    s_it != systems_end(); s_it++)
+    {
+      double systemchange = (*(*s_it).second).maxchange();
+      dolfin::log(dolfin::DBG, "  steady state systemchange = %f", systemchange);
+      maxchange = std::max(systemchange, maxchange);
+    }
+    dolfin::log(dolfin::INFO, "steady state maxchange = %f", maxchange);
+    steady = (maxchange < *steadystate_tol_);
+  }
+
+  return steady;
 }
 
 //*******************************************************************|************************************************************//
@@ -164,6 +202,8 @@ void Bucket::copy_diagnostics(Bucket_ptr &bucket) const
   }                                                                  
 
   (*bucket).detectors_ = detectors_;
+
+  (*bucket).steadystate_tol_ = steadystate_tol_;
 
 }
 

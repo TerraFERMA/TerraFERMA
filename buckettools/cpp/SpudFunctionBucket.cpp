@@ -177,11 +177,11 @@ const bool SpudFunctionBucket::include_in_statistics() const
 }
 
 //*******************************************************************|************************************************************//
-// return a boolean indicating if this function bucket should be included in steadystate check and output
+// return a boolean indicating if this function bucket should be included in steady state check and output
 //*******************************************************************|************************************************************//
 const bool SpudFunctionBucket::include_in_steadystate() const
 {
-  return Spud::have_option(optionpath()+"/diagnostics/include_in_steadystate");
+  return Spud::have_option(optionpath()+"/diagnostics/include_in_steady_state");
 }
 
 //*******************************************************************|************************************************************//
@@ -300,6 +300,11 @@ void SpudFunctionBucket::initialize_field_()
     function_ = (*system_).function();                               // the function
     oldfunction_ = (*system_).oldfunction();                         // the old function
     iteratedfunction_ = (*system_).iteratedfunction();               // the iterated function
+
+    if (include_in_steadystate())
+    {
+      changefunction_ = (*system_).changefunction();                 // the change in the function between timesteps
+    }
   }
   else                                                               // yes, multiple fields in this system so we need to make
   {                                                                  // a subspace and subfunctions (dangerous, be careful!)
@@ -311,15 +316,39 @@ void SpudFunctionBucket::initialize_field_()
                                               dolfin::NoDeleter() );
     iteratedfunction_.reset( &(*(*system_).iteratedfunction())[index_], 
                                               dolfin::NoDeleter() ); // and the iterated function
+
+    if (include_in_steadystate())
+    {
+      changefunction_.reset( &(*(*system_).changefunction())[index_],
+                                              dolfin::NoDeleter() ); // and the change in the function between timesteps
+    }
   }
 
   buffer.str(""); buffer << (*system_).name() << "::" << name();     // rename the function as SystemName::FieldName
-  (*function_).rename(buffer.str(), buffer.str());                   // take a reference in the function bucket
+  (*function_).rename(buffer.str(), buffer.str());
+
   buffer.str(""); buffer << (*system_).name() << "::Old" << name();  // rename the old function as SystemName::OldFieldName
-  (*oldfunction_).rename(buffer.str(), buffer.str());                // take a reference in the function bucket
+  (*oldfunction_).rename(buffer.str(), buffer.str());
+
   buffer.str(""); buffer << (*system_).name() << "::Iterated"        // rename the iterated function as SystemName::IteratedFieldName
                                                          << name();  
-  (*iteratedfunction_).rename(buffer.str(), buffer.str());           // take a reference in the function bucket
+  (*iteratedfunction_).rename(buffer.str(), buffer.str());
+
+  if (include_in_steadystate())
+  {
+    buffer.str(""); buffer << (*system_).name() << "::TimestepChange"// rename the change function as SystemName::TimestepChangeFieldName
+                                                           << name();  
+    (*changefunction_).rename(buffer.str(), buffer.str());
+
+    change_.reset( new double(0.0) );
+
+    change_calculated_.reset( new bool(false) );
+
+    buffer.str(""); buffer << optionpath() 
+                      << "/diagnostics/include_in_steady_state/norm";
+    serr = Spud::get_option(buffer.str(), change_normtype_);
+    spud_err(buffer.str(), serr);
+  }
 
   buffer.str(""); buffer << optionpath()                             // find out how many strong bcs there are (weak bcs handled in
                                 << "/type/rank/boundary_condition";  // forms)

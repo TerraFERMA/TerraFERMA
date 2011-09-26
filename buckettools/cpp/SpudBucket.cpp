@@ -344,12 +344,28 @@ void SpudBucket::timestepping_fill_()
     buffer.str(""); 
     buffer << "/timestepping/timestep/coefficient::Timestep/type::Constant/rank::Scalar/value::WholeMesh";
     timestep_.second = boost::dynamic_pointer_cast< dolfin::Constant >(initialize_expression(buffer.str()));
+
+    buffer.str(""); buffer << "/timestepping/steady_state";
+    if (Spud::have_option(buffer.str()))
+    {
+      if (Spud::option_count("/system/field/diagnostics/include_in_steady_state")==0)
+      {
+        dolfin::error("Requested a steady state check but selected no field to include.");
+      }
+
+      steadystate_tol_.reset( new double );                          // get the steady state tolerance
+      buffer.str(""); buffer << "/timestepping/steady_state/tolerance";
+      serr = Spud::get_option(buffer.str(), *steadystate_tol_); 
+      spud_err(buffer.str(), serr);
+    }
+
   }
   else
   {
     timestep_.first = "";
     timestep_.second.reset( new dolfin::Constant(0.0) );
   }
+  
   
 }
 

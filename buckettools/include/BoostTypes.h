@@ -17,6 +17,7 @@ namespace buckettools {
 
   typedef boost::shared_ptr< int >    int_ptr;
   typedef boost::shared_ptr< double > double_ptr;
+  typedef boost::shared_ptr< bool >   bool_ptr;
 
   //*****************************************************************|************************************************************//
   // boost shared pointers to bucket objects

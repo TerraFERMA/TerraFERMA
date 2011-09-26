@@ -53,6 +53,8 @@ namespace buckettools
 
     bool complete();                                                 // indicate if the simulation is complete or not
 
+    bool steadystate();                                              // check if a steady state has been attained
+
     //***************************************************************|***********************************************************//
     // Filling data
     //***************************************************************|***********************************************************//
@@ -236,9 +238,10 @@ namespace buckettools
     std::pair< std::string, Constant_ptr > timestep_;                // the timestep, represented as a dolfin constant so it can be used in
                                                                      // the ufl (ufl symbol first member of pair)
 
-    int_ptr nonlinear_iterations_, iteration_count_;                    // the number of iterations requested and the number of nonlinear 
+    int_ptr nonlinear_iterations_, iteration_count_;                 // the number of iterations requested and the number of nonlinear 
                                                                      // iterations taken
     
+    double_ptr steadystate_tol_;                                     // the steady state tolerance
 
     //***************************************************************|***********************************************************//
     // Pointers data

@@ -77,7 +77,6 @@ namespace buckettools
                                                                      // so it will be necessary to make a deep copy to access
                                                                      // the vector
 
-    // Return the iteratedfunction_
     const GenericFunction_ptr iteratedfunction() const               // return a constant (boost shared) pointer to the iterated
     { return iteratedfunction_; }                                    // function (most up to date values within an iteration)
                                                                      // NOTE: if this is a field of a mixed
@@ -85,9 +84,23 @@ namespace buckettools
                                                                      // so it will be necessary to make a deep copy to access
                                                                      // the vector
 
-    // Return the icexpression_
+    const GenericFunction_ptr changefunction() const                 // return a constant (boost shared) pointer to the change
+    { return changefunction_; }                                      // function (change between timesteps)
+                                                                     // NOTE: if this is a field of a mixed
+                                                                     // system functionspace, this will return a subfunction
+                                                                     // so it will be necessary to make a deep copy to access
+                                                                     // the vector
+
     const Expression_ptr icexpression() const                        // return a constant (boost shared) pointer to the initial
     { return icexpression_; }                                        // condition expression for this function
+
+    //***************************************************************|***********************************************************//
+    // Functions used to run the model
+    //***************************************************************|***********************************************************//
+
+    const double change();                                           // return the change (in the selected norm) in a field over a timestep
+
+    void resetchange();                                              // reset the change boolean
 
     //***************************************************************|***********************************************************//
     // Filling data
@@ -181,6 +194,8 @@ namespace buckettools
 
     GenericFunction_ptr function_, oldfunction_, iteratedfunction_;  // (boost shared) pointers to different timelevel values of this function
 
+    GenericFunction_ptr changefunction_;                             // (boost shared) pointer to the change in the function over a timestep
+
     Expression_ptr icexpression_;                                    // (boost shared) pointer to an expression describing the initial condition
 
     int size_;                                                       // size of the function (most relevant for rank 1, vectors)
@@ -192,6 +207,12 @@ namespace buckettools
     std::string type_;                                               // a *string* describing the type of function (function, expression, constant)
     
     File_ptr pvdfile_;                                               // (boost shared) pointer to a pvd file output for this function
+
+    double_ptr change_;                                              // change in the function in a norm
+
+    bool_ptr change_calculated_;                                     // indicate if the change has been recalculated recently
+
+    std::string change_normtype_;                                    // norm type to evaluate the change in
 
     //***************************************************************|***********************************************************//
     // Pointers data
