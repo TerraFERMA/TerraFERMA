@@ -11,7 +11,7 @@ namespace buckettools
 {
 
   //*****************************************************************|************************************************************//
-  // predeclarations: a circular dependency between the StatisticsFile class and the Bucket class requires a lot of predeclarations.
+  // predeclarations: a circular dependency between the SteadyStateFile class and the Bucket class requires a lot of predeclarations.
   //*****************************************************************|************************************************************//
   class Bucket;
   class FunctionBucket;

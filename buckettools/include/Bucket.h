@@ -7,6 +7,7 @@
 #include "SystemBucket.h"
 #include "StatisticsFile.h"
 #include "SteadyStateFile.h"
+#include "DetectorsFile.h"
 #include <dolfin.h>
 
 namespace buckettools
@@ -262,7 +263,7 @@ namespace buckettools
 
     StatisticsFile_ptr statfile_;                                    // pointer to a statistics file
 
-//    DetectorsFile_ptr detfile_;                                      // pointer to a detectors file
+    DetectorsFile_ptr detfile_;                                      // pointer to a detectors file
 
     SteadyStateFile_ptr steadyfile_;                                 // pointer to a steady state file
 

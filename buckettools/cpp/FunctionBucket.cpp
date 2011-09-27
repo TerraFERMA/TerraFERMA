@@ -298,10 +298,20 @@ const bool FunctionBucket::include_in_statistics() const
 }
 
 //*******************************************************************|************************************************************//
-// include this function in steadystate output
+// include this function in steadystate output and checking
 // this is a virtual function and should be implemented in the derived options class
 //*******************************************************************|************************************************************//
 const bool FunctionBucket::include_in_steadystate() const
+{
+  dolfin::error("Failed to find virtual function include_in_steadystate.");
+  return false;
+}
+
+//*******************************************************************|************************************************************//
+// include this function in detectors output
+// this is a virtual function and should be implemented in the derived options class
+//*******************************************************************|************************************************************//
+const bool FunctionBucket::include_in_detectors() const
 {
   dolfin::error("Failed to find virtual function include_in_steadystate.");
   return false;

@@ -185,6 +185,14 @@ const bool SpudFunctionBucket::include_in_steadystate() const
 }
 
 //*******************************************************************|************************************************************//
+// return a boolean indicating if this function bucket should be included in detectors output
+//*******************************************************************|************************************************************//
+const bool SpudFunctionBucket::include_in_detectors() const
+{
+  return Spud::have_option(optionpath()+"/diagnostics/include_in_detectors");
+}
+
+//*******************************************************************|************************************************************//
 // return a string describing the contents of this function bucket
 //*******************************************************************|************************************************************//
 const std::string SpudFunctionBucket::str(int indent) const

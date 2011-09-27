@@ -764,7 +764,13 @@ void SpudBucket::diagnostics_fill_()
   int nadets = Spud::option_count("/io/detectors/array");            // number of array detectors
   if ((npdets + nadets) > 0)
   {
-//    detfile_.reset( new DetectorsFile(basename+".det") );
+    if (Spud::option_count("/system/field/diagnostics/include_in_detectors")==0)
+    {
+      dolfin::error("Requested detectors but selected no field to include.");
+    }
+
+    detfile_.reset( new DetectorsFile(basename+".det") );
+    (*detfile_).write_header(*this);
   }
 
   if (Spud::option_count("/system/field/diagnostics/include_in_steady_state")>0)

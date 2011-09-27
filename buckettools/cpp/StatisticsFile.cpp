@@ -65,10 +65,10 @@ void StatisticsFile::header_bucket_(uint &column)
   {
     header_system_((*sys_it).second, column);                        // write the header for the system itself
 
-    header_field_((*(*sys_it).second).fields_begin(),                // write the header for the fields in the system
+    header_func_((*(*sys_it).second).fields_begin(),                // write the header for the fields in the system
                           (*(*sys_it).second).fields_end(), column);
 
-    header_coeff_((*(*sys_it).second).coeffs_begin(),                // write the header for the coefficients in the system
+    header_func_((*(*sys_it).second).coeffs_begin(),                // write the header for the coefficients in the system
                           (*(*sys_it).second).coeffs_end(), column);
   }
 
@@ -87,14 +87,14 @@ void StatisticsFile::header_system_(const SystemBucket_ptr sys_ptr,
 //*******************************************************************|************************************************************//
 // write a header for a set of model fields
 //*******************************************************************|************************************************************//
-void StatisticsFile::header_field_(FunctionBucket_const_it f_begin, 
-                                    FunctionBucket_const_it f_end, 
-                                    uint &column)
+void StatisticsFile::header_func_(FunctionBucket_const_it f_begin, 
+                                  FunctionBucket_const_it f_end, 
+                                  uint &column)
 {
-  for (FunctionBucket_const_it f_it = f_begin; f_it != f_end;        // loop over the given fields
+  for (FunctionBucket_const_it f_it = f_begin; f_it != f_end;        // loop over the given functions
                                                       f_it++)
   {
-    if ((*(*f_it).second).include_in_statistics())                  // check they should be included
+    if ((*(*f_it).second).include_in_statistics())                   // check they should be included
     {                                                                // yes, then populate header with default stats (min and max)
       if ((*(*(*f_it).second).function()).value_rank()==0)           // scalar (no components)
       {
@@ -132,60 +132,6 @@ void StatisticsFile::header_field_(FunctionBucket_const_it f_begin,
       header_functional_((*f_it).second, 
                         (*(*f_it).second).functionals_begin(),       // write header for any functionals associated with this field
                         (*(*f_it).second).functionals_end(), column);
-    }
-  }
-}
-
-//*******************************************************************|************************************************************//
-// write a header for a set of model coefficients
-// these don't get automatic min and max as they're user prescribed (also only coefficient functions have a vector on which they
-// could be easily evaluated)
-//*******************************************************************|************************************************************//
-void StatisticsFile::header_coeff_(FunctionBucket_const_it f_begin, 
-                                    FunctionBucket_const_it f_end, 
-                                    uint &column)
-{
-  for (FunctionBucket_const_it f_it = f_begin; f_it != f_end;        // loop over the given coefficients
-                                                            f_it++)
-  {
-    if ((*(*f_it).second).include_in_statistics())                  // check if they are to be included or not
-    {
-      if ((*(*(*f_it).second).function()).value_rank()==0)           // scalar (no components)
-      {
-        tag_((*(*f_it).second).name(), column++, "max", 
-                              (*(*(*f_it).second).system()).name());
-        tag_((*(*f_it).second).name(), column++, "min", 
-                              (*(*(*f_it).second).system()).name());
-      }
-      else if ((*(*(*f_it).second).function()).value_rank()==1)      // vector (value_size components)
-      {
-        int components = (*(*(*f_it).second).function()).value_size();
-        tag_((*(*f_it).second).name(), column, "max", 
-                  (*(*(*f_it).second).system()).name(), components);
-        column+=components;
-        tag_((*(*f_it).second).name(), column, "min", 
-                  (*(*(*f_it).second).system()).name(), components);
-        column+=components;
-      }
-      else if ((*(*(*f_it).second).function()).value_rank()==2)      // tensor (value_dimension product components)
-      {
-        int components = 
-          (*(*(*f_it).second).function()).value_dimension(0)*(*(*(*f_it).second).function()).value_dimension(1);
-        tag_((*(*f_it).second).name(), column, "max", 
-                  (*(*(*f_it).second).system()).name(), components);
-        column+=components;
-        tag_((*(*f_it).second).name(), column, "min", 
-                  (*(*(*f_it).second).system()).name(), components);
-        column+=components;
-      }
-      else                                                           // unknown rank
-      {
-        dolfin::error("In StatisticsFile::header_bucket_, unknown function rank.");
-      }
-
-      header_functional_((*f_it).second, 
-                        (*(*f_it).second).functionals_begin(),       // write a header for all the functionals associated with this
-                        (*(*f_it).second).functionals_end(), column);// coefficient
     }
   }
 }

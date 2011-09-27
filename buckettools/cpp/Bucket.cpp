@@ -669,6 +669,11 @@ void Bucket::output()
 
   (*statfile_).write_data();                                         // write data to the statistics file
 
+  if (detfile_)
+  {
+    (*detfile_).write_data();                                        // write data to the detectors file
+  }
+
   if (steadyfile_ && timestep_count()>0)
   {
     (*steadyfile_).write_data();                                     // write data to the steady state file
