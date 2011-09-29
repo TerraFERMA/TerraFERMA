@@ -455,12 +455,12 @@ std::vector<BoundaryCondition_ptr>::const_iterator SystemBucket::bcs_end() const
 //*******************************************************************|************************************************************//
 // loop over the fields outputting pvd diagnostics for all the fields in this system
 //*******************************************************************|************************************************************//
-void SystemBucket::output()
+void SystemBucket::output(const bool &write_vis)
 {
   for (FunctionBucket_it f_it = fields_begin(); f_it != fields_end(); 
                                                               f_it++)
   {
-    (*(*f_it).second).output();
+    (*(*f_it).second).output(write_vis);
   }
 }
 

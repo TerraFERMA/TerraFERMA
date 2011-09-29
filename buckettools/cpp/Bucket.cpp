@@ -680,14 +680,11 @@ void Bucket::output()
     (*steadyfile_).write_data();                                     // write data to the steady state file
   }
 
-  if (write_vis)                                                     // FIXME: should be moved deeper
+  for (SystemBucket_it s_it = systems_begin(); s_it != systems_end();// loop over the systems
+                                                              s_it++)
   {
-    for (SystemBucket_it s_it = systems_begin(); s_it != systems_end();// loop over the systems
-                                                                s_it++)
-    {
-      (*(*s_it).second).output();                                    // and output pvd files
-    }
-  } 
+    (*(*s_it).second).output(write_vis);                             // and output pvd files
+  }
 
 }
 
