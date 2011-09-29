@@ -42,6 +42,15 @@
       <visualization_period_in_timesteps>
         <integer_value rank="0">5</integer_value>
       </visualization_period_in_timesteps>
+      <statistics_period>
+        <real_value rank="0">500</real_value>
+      </statistics_period>
+      <steady_state_period_in_timesteps>
+        <integer_value rank="0">3</integer_value>
+      </steady_state_period_in_timesteps>
+      <detectors_period_in_timesteps>
+        <integer_value rank="0">7</integer_value>
+      </detectors_period_in_timesteps>
     </dump_periods>
   </io>
   <timestepping>
