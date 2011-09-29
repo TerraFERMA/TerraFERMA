@@ -252,9 +252,10 @@ BoundaryCondition_const_it FunctionBucket::bcs_end() const
 //*******************************************************************|************************************************************//
 // output the current contents of the function to a pvd file (if associated)
 //*******************************************************************|************************************************************//
-void FunctionBucket::output(const bool &write_vis)
+void FunctionBucket::output(const int &location, const bool &write_vis)
 {
-  if (write_vis && pvdfile_)                                         // check a pvd file is associated
+  if ((write_vis && pvdfile_) || (location == OUTPUT_START) 
+                  || (location == OUTPUT_END))                       // check a pvd file is associated
   {
     *pvdfile_ << *boost::dynamic_pointer_cast< dolfin::Function >(function());
   }

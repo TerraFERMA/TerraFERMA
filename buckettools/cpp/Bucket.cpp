@@ -42,7 +42,7 @@ void Bucket::run()
 {
   std::stringstream buffer;                                          // optionpath buffer
 
-  output();
+  output(OUTPUT_START);
 
   dolfin::log(dolfin::INFO, "Entering timeloop.");
   bool continue_timestepping = true;
@@ -62,10 +62,15 @@ void Bucket::run()
     *current_time_ += timestep();                                    // increment time with the timestep
     (*timestep_count_)++;                                            // increment the number of timesteps taken
 
-    output();
-
-    continue_timestepping = !complete();                             // this must be called before the update as it checks if a
-                                                                     // steady state has been attained
+    if(complete())                                                   // this must be called before the update as it checks if a
+    {                                                                // steady state has been attained
+      output(OUTPUT_END);                                            // force an output at the end
+      continue_timestepping = false;                                 // signal to stop timestepping
+    }
+    else
+    {
+      output(OUTPUT_TIMELOOP);                                       // standard timeloop output
+    }
 
     update();                                                        // update all functions in the bucket
 
@@ -650,7 +655,7 @@ GenericDetectors_const_it Bucket::detectors_end() const
 //*******************************************************************|************************************************************//
 // loop over the systems in the bucket, telling each to output diagnostic data
 //*******************************************************************|************************************************************//
-void Bucket::output()
+void Bucket::output(const int &location)
 {
 
   bool write_vis = dump_(visualization_period_, visualization_dumptime_, 
@@ -665,17 +670,17 @@ void Bucket::output()
   bool write_det = dump_(detectors_period_, detectors_dumptime_, 
                          detectors_period_timesteps_);
 
-  if (write_stat)
+  if (write_stat || location==OUTPUT_START || location==OUTPUT_END)
   {
     (*statfile_).write_data();                                       // write data to the statistics file
   }
 
-  if (write_det && detfile_)
+  if ((write_det && detfile_) || location==OUTPUT_START || location==OUTPUT_END)
   {
     (*detfile_).write_data();                                        // write data to the detectors file
   }
 
-  if (write_steady && steadyfile_ && timestep_count()>0)
+  if (write_steady && steadyfile_ && location != OUTPUT_START)
   {
     (*steadyfile_).write_data();                                     // write data to the steady state file
   }
@@ -683,7 +688,7 @@ void Bucket::output()
   for (SystemBucket_it s_it = systems_begin(); s_it != systems_end();// loop over the systems
                                                               s_it++)
   {
-    (*(*s_it).second).output(write_vis);                             // and output pvd files
+    (*(*s_it).second).output(location, write_vis);                   // and output pvd files
   }
 
 }
@@ -881,7 +886,7 @@ bool Bucket::dump_(double_ptr dump_period,
     else
     {
       assert(previous_dump_time);
-      dumping = ((current_time()-*previous_dump_time) > *dump_period);
+      dumping = ((current_time()-*previous_dump_time) >= *dump_period);
       if (dumping)
       {
         *previous_dump_time = current_time();

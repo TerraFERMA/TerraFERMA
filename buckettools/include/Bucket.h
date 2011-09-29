@@ -16,6 +16,8 @@ namespace buckettools
   class Bucket;                                                      // predeclare the class itself
   typedef boost::shared_ptr< Bucket > Bucket_ptr;                    // so we can predeclare a pointer to it
   
+  enum output_location { OUTPUT_START, OUTPUT_TIMELOOP, OUTPUT_END };
+
   //*****************************************************************|************************************************************//
   // Bucket class:
   //
@@ -195,7 +197,7 @@ namespace buckettools
     // Output functions
     //***************************************************************|***********************************************************//
 
-    void output();                                                   // output diagnostics for the bucket
+    void output(const int &location);                                // output diagnostics for the bucket
 
     const std::string str() const;                                   // return a string describing the bucket contents
     
