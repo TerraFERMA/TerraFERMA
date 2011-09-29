@@ -66,13 +66,32 @@ void SolverBucket::solve()
   {
 
     uint it = 0;                                                     // an iteration counter
+
+    assert(residual_);                                               // we need to assemble the residual again here as it may depend
+                                                                     // on other systems that have been solved since the last call
+    dolfin::assemble(*res_, *residual_, false);                      // assemble the residual
+    for(std::vector<BoundaryCondition_ptr>::const_iterator bc = 
+                                    (*system_).bcs_begin(); 
+                                bc != (*system_).bcs_end(); bc++)
+    {                                                                // apply bcs to residual
+      (*(*bc)).apply(*res_, (*(*system_).iteratedfunction()).vector());
+    }
+
     double aerror = (*res_).norm("l2");                              // work out the initial absolute l2 error (this should be
                                                                      // initialized to the right value on the first pass and still
                                                                      // be the correct value from the previous sweep (if this stops
                                                                      // being the case it will be necessary to assemble the residual
                                                                      // here too)
     double aerror0 = aerror;                                         // record the initial absolute error
-    double rerror = aerror/aerror0;                                  // relative error, starts out as 1.
+    double rerror;
+    if(aerror==0.0)
+    {
+      rerror = aerror;                                               // relative error, starts out as 0 - won't iterate at all
+    }
+    else
+    {
+      rerror = aerror/aerror0;                                       // relative error, starts out as 1.
+    }
 
     dolfin::info("%u Error (absolute, relative) = %g, %g\n", 
                                               it, aerror, rerror);
