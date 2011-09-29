@@ -38,7 +38,11 @@
         </python>
       </array>
     </detectors>
-    <dump_periods/>
+    <dump_periods>
+      <visualization_period_in_timesteps>
+        <integer_value rank="0">5</integer_value>
+      </visualization_period_in_timesteps>
+    </dump_periods>
   </io>
   <timestepping>
     <current_time>
