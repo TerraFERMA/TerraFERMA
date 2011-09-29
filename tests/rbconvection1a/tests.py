@@ -37,3 +37,8 @@ def test_steady():
             steady["Stokes"]["Temperature"]["change(linf)"][-1])
   assert val < 1.e-5
 
+def test_div():
+  val = max(numpy.abs(stat["Divergence"]["Divergence"]["max"]).max(), \
+            numpy.abs(stat["Divergence"]["Divergence"]["min"]).min())
+  assert val < 1.e-8
+
