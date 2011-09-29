@@ -675,7 +675,7 @@ void Bucket::output(const int &location)
     (*statfile_).write_data();                                       // write data to the statistics file
   }
 
-  if ((write_det && detfile_) || location==OUTPUT_START || location==OUTPUT_END)
+  if (detfile_ && (write_det || location==OUTPUT_START || location==OUTPUT_END))
   {
     (*detfile_).write_data();                                        // write data to the detectors file
   }
