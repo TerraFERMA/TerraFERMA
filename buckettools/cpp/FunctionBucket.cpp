@@ -252,10 +252,9 @@ BoundaryCondition_const_it FunctionBucket::bcs_end() const
 //*******************************************************************|************************************************************//
 // output the current contents of the function to a pvd file (if associated)
 //*******************************************************************|************************************************************//
-void FunctionBucket::output(const int &location, const bool &write_vis)
+void FunctionBucket::output(const bool &write_vis)
 {
-  if ((write_vis && pvdfile_) || (location == OUTPUT_START) 
-                  || (location == OUTPUT_END))                       // check a pvd file is associated
+  if (pvdfile_ && write_vis)                                         // check a pvd file is associated
   {
     *pvdfile_ << *boost::dynamic_pointer_cast< dolfin::Function >(function());
   }
@@ -286,6 +285,16 @@ const std::string FunctionBucket::functionals_str(int indent) const
     s << indentation << "Functional " << (*f_it).first  << std::endl;
   }
   return s.str();
+}
+
+//*******************************************************************|************************************************************//
+// include this function in visualization output
+// this is a virtual function and should be implemented in the derived options class
+//*******************************************************************|************************************************************//
+const bool FunctionBucket::include_in_visualization() const
+{
+  dolfin::error("Failed to find virtual function include_in_visualization.");
+  return false;
 }
 
 //*******************************************************************|************************************************************//

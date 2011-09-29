@@ -44,6 +44,8 @@ void Bucket::run()
 
   output(OUTPUT_START);
 
+  solve_at_start_();
+
   dolfin::log(dolfin::INFO, "Entering timeloop.");
   bool continue_timestepping = true;
   while (continue_timestepping) 
@@ -56,7 +58,7 @@ void Bucket::run()
          *iteration_count_ < nonlinear_iterations(); 
          (*iteration_count_)++)                                      // loop over the nonlinear iterations
     {
-      solve();                                                       // solve all systems in the bucket
+      solve(SOLVE_TIMELOOP);                                         // solve all systems in the bucket
     }
 
     *current_time_ += timestep();                                    // increment time with the timestep
@@ -82,12 +84,15 @@ void Bucket::run()
 //*******************************************************************|************************************************************//
 // loop over the ordered systems in the bucket, calling solve on each of them
 //*******************************************************************|************************************************************//
-void Bucket::solve()
+void Bucket::solve(const int &location)
 {
   for (int_SystemBucket_const_it s_it = orderedsystems_begin(); 
                               s_it != orderedsystems_end(); s_it++)
   {
-    (*(*s_it).second).solve();
+    if((*(*s_it).second).solve_location()==location)
+    {
+      (*(*s_it).second).solve();
+    }
   }
 }
 
@@ -658,29 +663,59 @@ GenericDetectors_const_it Bucket::detectors_end() const
 void Bucket::output(const int &location)
 {
 
-  bool write_vis = dump_(visualization_period_, visualization_dumptime_, 
-                         visualization_period_timesteps_);
+  bool write_vis = (dump_(visualization_period_, visualization_dumptime_, 
+                         visualization_period_timesteps_) ||         // are we writing pvd files?
+                     location==OUTPUT_START || location==OUTPUT_END);// force output at start and end
 
-  bool write_stat = dump_(statistics_period_, statistics_dumptime_, 
-                          statistics_period_timesteps_);
+  bool write_stat = (dump_(statistics_period_, statistics_dumptime_, // are we writing the stat file? 
+                          statistics_period_timesteps_) ||          
+                     location==OUTPUT_START || location==OUTPUT_END);// force output at start and end
 
-  bool write_steady = dump_(steadystate_period_, steadystate_dumptime_, 
-                            steadystate_period_timesteps_);
+  bool write_steady = ((dump_(steadystate_period_, 
+                            steadystate_dumptime_,                   // are we writing the steady state file?
+                            steadystate_period_timesteps_) ||
+                      location==OUTPUT_END) &&                       // force output at end
+                      location !=OUTPUT_START);                      // prevent output at start
 
-  bool write_det = dump_(detectors_period_, detectors_dumptime_, 
-                         detectors_period_timesteps_);
+  bool write_det = (dump_(detectors_period_, detectors_dumptime_, 
+                         detectors_period_timesteps_) ||             // are we writing the detectors file?
+                     location==OUTPUT_START || location==OUTPUT_END);// force output at start and end
 
-  if (write_stat || location==OUTPUT_START || location==OUTPUT_END)
+  if (!write_vis && !write_stat && !write_steady && !write_det)      // if there's nothing to do, just return
+  {
+    return;
+  }  
+
+  if (location != OUTPUT_START)                                      // if we're not at the start of the simulation
+  {
+    for (int_SystemBucket_const_it s_it = orderedsystems_begin();    // loop over the systems (in order)
+                                s_it != orderedsystems_end(); s_it++)
+    {
+      if((*(*s_it).second).solve_location()==SOLVE_DIAGNOSTICS)      // find if any are meant to be solved before output
+      {                                                              // check it has fields included in the current output
+        if( (write_vis    && (*(*s_it).second).include_in_visualization()) ||
+            (write_stat   && (*(*s_it).second).include_in_statistics())    ||
+            (write_steady && (*(*s_it).second).include_in_steadystate())   ||
+            (write_det    && (*(*s_it).second).include_in_detectors())        )
+        {
+          (*(*s_it).second).solve();                                 // solve for those fields
+        }
+      }
+    }
+  }
+
+
+  if (write_stat)
   {
     (*statfile_).write_data();                                       // write data to the statistics file
   }
 
-  if (detfile_ && (write_det || location==OUTPUT_START || location==OUTPUT_END))
+  if (detfile_ && write_det)
   {
     (*detfile_).write_data();                                        // write data to the detectors file
   }
 
-  if (write_steady && steadyfile_ && location != OUTPUT_START)
+  if (steadyfile_ && write_steady)
   {
     (*steadyfile_).write_data();                                     // write data to the steady state file
   }
@@ -688,7 +723,7 @@ void Bucket::output(const int &location)
   for (SystemBucket_it s_it = systems_begin(); s_it != systems_end();// loop over the systems
                                                               s_it++)
   {
-    (*(*s_it).second).output(location, write_vis);                   // and output pvd files
+    (*(*s_it).second).output(write_vis);                             // and output pvd files
   }
 
 }
@@ -841,6 +876,29 @@ void Bucket::empty_()
   if(statfile_)
   {  
     (*statfile_).close();
+  }
+}
+
+//*******************************************************************|************************************************************//
+// loop over the ordered systems in the bucket, calling solve on each that has requested a solve at the start
+//*******************************************************************|************************************************************//
+void Bucket::solve_at_start_()
+{
+  bool systems_solved = false;
+
+  for (int_SystemBucket_const_it s_it = orderedsystems_begin(); 
+                              s_it != orderedsystems_end(); s_it++)
+  {
+    if((*(*s_it).second).solve_location()==SOLVE_START)
+    {
+      (*(*s_it).second).solve();
+      systems_solved = true;
+    }
+  }
+
+  if(systems_solved)
+  {
+    output(OUTPUT_START);
   }
 }
 

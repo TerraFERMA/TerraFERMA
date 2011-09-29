@@ -119,6 +119,26 @@ void SpudSystemBucket::base_fill_()
   spud_err(buffer.str(), serr);
   mesh_ = (*bucket_).fetch_mesh(meshname);                           // and extract it from the bucket
 
+  std::string location;
+  buffer.str(""); buffer << optionpath() << "/solve/name";
+  Spud::get_option(buffer.str(), location);
+  if (location=="in_timeloop")
+  {
+    solve_location_ = SOLVE_TIMELOOP;
+  }
+  else if (location=="at_start")
+  {
+    solve_location_ = SOLVE_START;
+  }
+  else if (location=="with_diagnostics")
+  {
+    solve_location_ = SOLVE_DIAGNOSTICS;
+  }
+  else
+  {
+    dolfin::error("Unknown solve location for system %s.", name().c_str());
+  }
+
   change_calculated_.reset( new bool(false) );                       // assume the change hasn't been calculated yet
 
 }

@@ -50,8 +50,11 @@ void SpudFunctionBucket::field_fill(const uint &index)
   functionals_fill_();                                               // fill in data about the functionals (doesn't attach
                                                                      // coefficients)
 
+  if(include_in_visualization())
+  {
                                                                      // initialize a pvd file (field specific so could be moved)
-  pvdfile_.reset( new dolfin::File((*system_).name()+"_"+name()+".pvd", "compressed") );
+    pvdfile_.reset( new dolfin::File((*(*system_).bucket()).output_basename()+"_"+(*system_).name()+"_"+name()+".pvd", "compressed") );
+  }
 
 }
 
@@ -166,6 +169,14 @@ void SpudFunctionBucket::register_functional(Form_ptr functional,
     functionals_[name]            = functional;                      // it not, insert the form into the maps
     functional_optionpaths_[name] = optionpath;                      // and its optionpath too
   }
+}
+
+//*******************************************************************|************************************************************//
+// return a boolean indicating if this function bucket should be included in visualization output
+//*******************************************************************|************************************************************//
+const bool SpudFunctionBucket::include_in_visualization() const
+{
+  return Spud::have_option(optionpath()+"/diagnostics/include_in_visualization");
 }
 
 //*******************************************************************|************************************************************//
