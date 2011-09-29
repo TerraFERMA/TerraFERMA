@@ -899,7 +899,7 @@ bool Bucket::dump_(double_ptr dump_period,
     }
     else
     {
-      dumping = ((*dump_period_timesteps)%timestep_count()==0);
+      dumping = (timestep_count()%(*dump_period_timesteps)==0);
     }
   }  
 
