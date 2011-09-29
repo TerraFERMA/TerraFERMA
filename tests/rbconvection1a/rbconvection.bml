@@ -38,6 +38,7 @@
         </python>
       </array>
     </detectors>
+    <dump_periods/>
   </io>
   <timestepping>
     <current_time>
