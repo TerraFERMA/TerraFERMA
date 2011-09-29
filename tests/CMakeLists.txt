@@ -57,11 +57,10 @@ add_subdirectory(projection_mixedelement)
 add_subdirectory(rbconvection_steadystate_split)
 add_subdirectory(rbconvection_steadystate)
 add_subdirectory(rbconvection1a)
-add_subdirectory(rbconvection2a)
 
 add_custom_target(run)
-add_dependencies(run poissonrun projectionrun rbconvectionsplitrun rbconvectioncoupledrun rbconvection1arun rbconvection2arun)
+add_dependencies(run poissonrun projectionrun rbconvectionsplitrun rbconvectioncoupledrun rbconvection1arun)
 
 add_custom_target(test)
-add_dependencies(test projectiontest rbconvectionsplittest rbconvectioncoupledtest rbconvection1atest rbconvection2atest)
+add_dependencies(test projectiontest rbconvectionsplittest rbconvectioncoupledtest rbconvection1atest)
 
