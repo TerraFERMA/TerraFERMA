@@ -5,7 +5,8 @@ io =
     ## Input/Output options
     element io {
       output_file_options,
-      detectors_options
+      detectors_options,
+      diagnostic_output_options
     }
   )
 
@@ -49,6 +50,68 @@ detectors_options =
           }
         }
       )*
+    }
+  )
+
+diagnostic_output_options =
+  (
+    element dump_periods {
+      (
+        ## Period in simulation time between outputs to the visualization (.pvd) file
+        ## 
+        ## Defaults to every timestep if unselected.
+        element visualization_period {
+          real
+        }|
+        ## Period in timesteps between outputs to the visualization (.pvd) file
+        ## 
+        ## Defaults to every timestep if unselected.
+        element visualization_period_in_timesteps {
+          integer
+        }
+      )?,
+      (
+        ## Period in simulation time between outputs to the statistics (.stat) file
+        ## 
+        ## Defaults to every timestep if unselected.
+        element statistics_period {
+          real
+        }|
+        ## Period in timesteps between outputs to the statistics (.stat) file
+        ## 
+        ## Defaults to every timestep if unselected.
+        element statistics_period_in_timesteps {
+          integer
+        }
+      )?,
+      (
+        ## Period in simulation time between outputs to the steady state (.steady) file
+        ## 
+        ## Defaults to every timestep if unselected.
+        element steady_state_period {
+          real
+        }|
+        ## Period in timesteps between outputs to the steady state (.steady) file
+        ## 
+        ## Defaults to every timestep if unselected.
+        element steady_state_period_in_timesteps {
+          integer
+        }
+      )?,
+      (
+        ## Period in simulation time between outputs to the detectors (.det) file
+        ## 
+        ## Defaults to every timestep if unselected.
+        element detectors_period {
+          real
+        }|
+        ## Period in timesteps between outputs to the detectors (.det) file
+        ## 
+        ## Defaults to every timestep if unselected.
+        element detectors_period_in_timesteps {
+          integer
+        }
+      )?
     }
   )
 
