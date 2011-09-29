@@ -27,6 +27,7 @@ The system name must be unique amongst any other systems.</a:documentation>
       <oneOrMore>
         <ref name="nonlinear_solver_options"/>
       </oneOrMore>
+      <ref name="solve_location"/>
     </element>
   </define>
   <define name="mesh_choice">
@@ -46,6 +47,28 @@ The actual mesh must be described above in /geometry/mesh.
 Use the automatically available name "Mesh."</a:documentation>
         <attribute name="name">
           <value>Mesh</value>
+        </attribute>
+        <empty/>
+      </element>
+    </choice>
+  </define>
+  <define name="solve_location">
+    <choice>
+      <element name="solve">
+        <attribute name="name">
+          <value>in_timeloop</value>
+        </attribute>
+        <empty/>
+      </element>
+      <element name="solve">
+        <attribute name="name">
+          <value>at_start</value>
+        </attribute>
+        <empty/>
+      </element>
+      <element name="solve">
+        <attribute name="name">
+          <value>with_diagnostics</value>
         </attribute>
         <empty/>
       </element>

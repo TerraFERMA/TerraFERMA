@@ -196,6 +196,10 @@ field_diagnostics_options =
   (
     ## Output options
     element diagnostics {
+      ## Include this field in the visualization output file.
+      element include_in_visualization {
+        empty
+      }?,
       ## Include this field in the statistics output file.
       ## The minimum and maximum of functions is included.
       element include_in_statistics {

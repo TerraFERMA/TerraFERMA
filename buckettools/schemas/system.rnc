@@ -18,7 +18,8 @@ system =
       system_ufl_symbol,
       field_options+,
       coefficient_options*,
-      nonlinear_solver_options+
+      nonlinear_solver_options+,
+      solve_location
     }
   )
 
@@ -37,6 +38,24 @@ mesh_choice =
       ## Use the automatically available name "Mesh."
       element mesh {
         attribute name { "Mesh" },
+        empty
+      }
+    )
+  )
+
+solve_location = 
+  (
+    (
+      element solve {
+        attribute name {"in_timeloop"},
+        empty
+      }|
+      element solve {
+        attribute name {"at_start"},
+        empty
+      }|
+      element solve {
+        attribute name {"with_diagnostics"},
         empty
       }
     )

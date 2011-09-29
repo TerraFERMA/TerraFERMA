@@ -240,6 +240,12 @@ Constants are spatially constant expressions.</a:documentation>
     <element name="diagnostics">
       <a:documentation>Output options</a:documentation>
       <optional>
+        <element name="include_in_visualization">
+          <a:documentation>Include this field in the visualization output file.</a:documentation>
+          <empty/>
+        </element>
+      </optional>
+      <optional>
         <element name="include_in_statistics">
           <a:documentation>Include this field in the statistics output file.
 The minimum and maximum of functions is included.</a:documentation>
