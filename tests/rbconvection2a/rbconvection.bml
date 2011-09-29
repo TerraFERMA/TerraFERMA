@@ -23,6 +23,7 @@
       <string_value lines="1">rbconvection</string_value>
     </output_base_name>
     <detectors/>
+    <dump_periods/>
   </io>
   <timestepping>
     <current_time>
@@ -357,5 +358,6 @@ r = rv + rp + rT</string_value>
         </linear_solver>
       </type>
     </nonlinear_solver>
+    <solve name="in_timeloop"/>
   </system>
 </bucket_options>

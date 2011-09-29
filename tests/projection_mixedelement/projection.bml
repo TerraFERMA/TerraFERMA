@@ -20,6 +20,7 @@
       <string_value lines="1">projection</string_value>
     </output_base_name>
     <detectors/>
+    <dump_periods/>
   </io>
   <system name="SNESProjection">
     <mesh name="Frank"/>
@@ -194,6 +195,7 @@ r = r1 + r2</string_value>
         </linear_solver>
       </type>
     </nonlinear_solver>
+    <solve name="in_timeloop"/>
   </system>
   <system name="PicardProjection">
     <mesh name="Frank"/>
@@ -373,5 +375,6 @@ F = F1 + F2</string_value>
         </linear_solver>
       </type>
     </nonlinear_solver>
+    <solve name="in_timeloop"/>
   </system>
 </bucket_options>
