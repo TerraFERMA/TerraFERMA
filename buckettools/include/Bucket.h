@@ -55,8 +55,6 @@ namespace buckettools
 
     bool complete();                                                 // indicate if the simulation is complete or not
 
-    bool steadystate();                                              // check if a steady state has been attained
-
     //***************************************************************|***********************************************************//
     // Filling data
     //***************************************************************|***********************************************************//
@@ -77,6 +75,8 @@ namespace buckettools
 
     const int timestep_count() const;                                // return the timestep count
 
+    const double start_time() const;                                 // return the current time
+
     const double current_time() const;                               // return the current time
 
     const double finish_time() const;                                // return the finish time
@@ -86,6 +86,9 @@ namespace buckettools
     const int nonlinear_iterations() const;                          // return the number of nonlinear iterations requested
 
     const int iteration_count() const;                               // return the number of nonlinear iterations taken
+
+    const std::string output_basename() const                        // return the output base name
+    { return output_basename_; }
 
     //***************************************************************|***********************************************************//
     // Mesh data access
@@ -231,9 +234,8 @@ namespace buckettools
     int dimension_;                                                  // geometry dimension
                                                                      // (assumed size of various objects that don't state
                                                                      //  their own size explicitly)
-
     
-    double_ptr current_time_, finish_time_;                          // the current and finish times of the simulation
+    double_ptr start_time_, current_time_, finish_time_;             // the current and finish times of the simulation
 
     int_ptr timestep_count_;                                         // the number of timesteps and number of nonlinear iterations taken
 
@@ -244,6 +246,19 @@ namespace buckettools
                                                                      // iterations taken
     
     double_ptr steadystate_tol_;                                     // the steady state tolerance
+
+    std::string output_basename_;                                    // the output base name
+
+    double_ptr visualization_period_, statistics_period_,            // dump periods
+               steadystate_period_, detectors_period_;
+
+    double_ptr visualization_dumptime_, statistics_dumptime_,        // dump periods
+               steadystate_dumptime_, detectors_dumptime_;
+
+    int_ptr visualization_period_timesteps_,                         // dump periods in timesteps
+            statistics_period_timesteps_,
+            steadystate_period_timesteps_, 
+            detectors_period_timesteps_;
 
     //***************************************************************|***********************************************************//
     // Pointers data
@@ -301,6 +316,16 @@ namespace buckettools
 
     std::map< std::string, FunctionSpace_ptr > coefficientspaces_;   // a map from the base ufl symbol to a coefficient
                                                                      // functionspace
+
+    //***************************************************************|***********************************************************//
+    // Functions used to run the model
+    //***************************************************************|***********************************************************//
+
+    bool steadystate_();                                             // check if a steady state has been attained
+
+    bool dump_(double_ptr dump_period, 
+               double_ptr previous_dump_time, 
+               int_ptr    dump_period_timestep);                     // indicate if diagnostic output should be performed 
 
   };
 

@@ -134,6 +134,8 @@ namespace buckettools
 
     void timestepping_fill_();                                       // fill the timestepping data
  
+    void output_fill_();                                             // fill the output data
+ 
     void meshes_fill_(const std::string &optionpath);                // fill in the mesh data structures
     
     void systems_fill_(const std::string &optionpath);               // fill in information about the systems

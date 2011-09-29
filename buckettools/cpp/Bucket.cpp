@@ -111,7 +111,7 @@ bool Bucket::complete()
     completed = true;
   }
 
-  if (steadystate())
+  if (steadystate_())
   {
     dolfin::log(dolfin::WARNING, "Steady state attained, terminating timeloop.");
     completed = true;
@@ -124,30 +124,6 @@ bool Bucket::complete()
   }
 
   return completed;
-}
-
-//*******************************************************************|************************************************************//
-// return a boolean indicating if the simulation has reached a steady state or not
-//*******************************************************************|************************************************************//
-bool Bucket::steadystate()
-{
-  bool steady = false;
-
-  if (steadystate_tol_)
-  {
-    double maxchange = 0.0;
-    for (SystemBucket_it s_it = systems_begin(); 
-                                    s_it != systems_end(); s_it++)
-    {
-      double systemchange = (*(*s_it).second).maxchange();
-      dolfin::log(dolfin::DBG, "  steady state systemchange = %f", systemchange);
-      maxchange = std::max(systemchange, maxchange);
-    }
-    dolfin::log(dolfin::INFO, "steady state maxchange = %f", maxchange);
-    steady = (maxchange < *steadystate_tol_);
-  }
-
-  return steady;
 }
 
 //*******************************************************************|************************************************************//
@@ -182,6 +158,7 @@ void Bucket::copy_diagnostics(Bucket_ptr &bucket) const
 
   (*bucket).name_ = name_;
 
+  (*bucket).start_time_ = start_time_;
   (*bucket).current_time_ = current_time_;
   (*bucket).finish_time_ = finish_time_;
   (*bucket).timestep_count_ = timestep_count_;
@@ -214,6 +191,15 @@ const int Bucket::timestep_count() const
 {
   assert(timestep_count_);
   return *timestep_count_;
+}
+
+//*******************************************************************|************************************************************//
+// return the start time
+//*******************************************************************|************************************************************//
+const double Bucket::start_time() const
+{
+  assert(start_time_);
+  return *start_time_;
 }
 
 //*******************************************************************|************************************************************//
@@ -667,22 +653,40 @@ GenericDetectors_const_it Bucket::detectors_end() const
 void Bucket::output()
 {
 
-  (*statfile_).write_data();                                         // write data to the statistics file
+  bool write_vis = dump_(visualization_period_, visualization_dumptime_, 
+                         visualization_period_timesteps_);
 
-  if (detfile_)
+  bool write_stat = dump_(statistics_period_, statistics_dumptime_, 
+                          statistics_period_timesteps_);
+
+  bool write_steady = dump_(steadystate_period_, steadystate_dumptime_, 
+                            steadystate_period_timesteps_);
+
+  bool write_det = dump_(detectors_period_, detectors_dumptime_, 
+                         detectors_period_timesteps_);
+
+  if (write_stat)
+  {
+    (*statfile_).write_data();                                       // write data to the statistics file
+  }
+
+  if (write_det && detfile_)
   {
     (*detfile_).write_data();                                        // write data to the detectors file
   }
 
-  if (steadyfile_ && timestep_count()>0)
+  if (write_steady && steadyfile_ && timestep_count()>0)
   {
     (*steadyfile_).write_data();                                     // write data to the steady state file
   }
 
-  for (SystemBucket_it s_it = systems_begin(); s_it != systems_end();// loop over the systems
-                                                              s_it++)
+  if (write_vis)                                                     // FIXME: should be moved deeper
   {
-    (*(*s_it).second).output();                                      // and output pvd files
+    for (SystemBucket_it s_it = systems_begin(); s_it != systems_end();// loop over the systems
+                                                                s_it++)
+    {
+      (*(*s_it).second).output();                                    // and output pvd files
+    }
   } 
 
 }
@@ -838,4 +842,67 @@ void Bucket::empty_()
   }
 }
 
+//*******************************************************************|************************************************************//
+// return a boolean indicating if the simulation has reached a steady state or not
+//*******************************************************************|************************************************************//
+bool Bucket::steadystate_()
+{
+  bool steady = false;
+
+  if (steadystate_tol_)
+  {
+    double maxchange = 0.0;
+    for (SystemBucket_it s_it = systems_begin(); 
+                                    s_it != systems_end(); s_it++)
+    {
+      double systemchange = (*(*s_it).second).maxchange();
+      dolfin::log(dolfin::DBG, "  steady state systemchange = %f", systemchange);
+      maxchange = std::max(systemchange, maxchange);
+    }
+    dolfin::log(dolfin::INFO, "steady state maxchange = %f", maxchange);
+    steady = (maxchange < *steadystate_tol_);
+  }
+
+  return steady;
+}
+
+//*******************************************************************|************************************************************//
+// return a boolean indicating if the simulation has finished or not (normally for reasons other than the time being complete)
+//*******************************************************************|************************************************************//
+bool Bucket::dump_(double_ptr dump_period, 
+                   double_ptr previous_dump_time, 
+                   int_ptr dump_period_timesteps)
+{
+  bool dumping = true;
+
+  if(dump_period)
+  {
+    if(current_time()==start_time()) 
+    {
+      dumping = true;
+    }
+    else
+    {
+      assert(previous_dump_time);
+      dumping = ((current_time()-*previous_dump_time) > *dump_period);
+      if (dumping)
+      {
+        *previous_dump_time = current_time();
+      }
+    }
+  }
+  else if(dump_period_timesteps)
+  {
+    if(timestep_count()==0)
+    {
+      dumping = true;
+    }
+    else
+    {
+      dumping = ((*dump_period_timesteps)%timestep_count()==0);
+    }
+  }  
+
+  return dumping;
+}
 
