@@ -187,7 +187,7 @@ namespace buckettools
     // Output functions
     //***************************************************************|***********************************************************//
 
-    void output();                                                   // output the diagnostics on this system
+    void output(const int &location, const bool &write_vis);         // output the diagnostics on this system
 
     virtual const std::string str() const                            // return a string describing the contents of the system
     { return str(0); }

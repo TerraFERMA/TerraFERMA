@@ -60,6 +60,8 @@ void SpudBucket::fill()
 
   timestepping_fill_();                                              // fill in the timestepping options (if there are any)
 
+  output_fill_();                                                    // fill in the output options (if there are any)
+
   buffer.str(""); buffer << optionpath() << "/geometry/mesh";        // put the meshes into the bucket
   int nmeshes = Spud::option_count(buffer.str());
   for (uint i = 0; i<nmeshes; i++)                                   // loop over the meshes defined in the options file
@@ -317,10 +319,12 @@ void SpudBucket::timestepping_fill_()
   iteration_count_.reset( new int );
   *iteration_count_ = 0;                                             // the number of iterations taken
 
-  current_time_.reset( new double );
+  start_time_.reset( new double );
   buffer.str(""); buffer << "/timestepping/current_time";            // get the current time
-  serr = Spud::get_option(buffer.str(), *current_time_, 0.0);        // may be non-zero at the start of simulations (e.g.
+  serr = Spud::get_option(buffer.str(), *start_time_, 0.0);        // may be non-zero at the start of simulations (e.g.
   spud_err(buffer.str(), serr);                                      // checkpoints) but assumed zero for steady simulations
+
+  current_time_.reset( new double(start_time()) );
 
   finish_time_.reset( new double );
   buffer.str(""); buffer << "/timestepping/finish_time";             // get the finish time (assumed zero for steady simulations)
@@ -366,6 +370,96 @@ void SpudBucket::timestepping_fill_()
     timestep_.second.reset( new dolfin::Constant(0.0) );
   }
   
+  
+}
+
+//*******************************************************************|************************************************************//
+// fill in any output data
+//*******************************************************************|************************************************************//
+void SpudBucket::output_fill_()
+{
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud option error
+  
+  buffer.str(""); buffer << "/io/output_base_name";                  // get the output base name
+  serr = Spud::get_option(buffer.str(), output_basename_); 
+  spud_err(buffer.str(), serr);
+
+  buffer.str(""); buffer << "/io/dump_periods/visualization_period"; // visualization period
+  if(Spud::have_option(buffer.str()))
+  {
+    visualization_period_.reset( new double );
+    serr = Spud::get_option(buffer.str(), *visualization_period_);
+    spud_err(buffer.str(), serr);
+
+    visualization_dumptime_.reset( new double(start_time()) );
+  }
+
+  buffer.str(""); buffer 
+            << "/io/dump_periods/visualization_period_in_timesteps"; // visualization period in timesteps
+  if(Spud::have_option(buffer.str()))
+  {
+    visualization_period_timesteps_.reset( new int );
+    serr = Spud::get_option(buffer.str(), *visualization_period_timesteps_);
+    spud_err(buffer.str(), serr);
+  }
+  
+  buffer.str(""); buffer << "/io/dump_periods/statistics_period";    // statistics period
+  if(Spud::have_option(buffer.str()))
+  {
+    statistics_period_.reset( new double );
+    serr = Spud::get_option(buffer.str(), *statistics_period_);
+    spud_err(buffer.str(), serr);
+
+    statistics_dumptime_.reset( new double(start_time()) );
+  }
+
+  buffer.str(""); buffer 
+            << "/io/dump_periods/statistics_period_in_timesteps";    // statistics period in timesteps
+  if(Spud::have_option(buffer.str()))
+  {
+    statistics_period_timesteps_.reset( new int );
+    serr = Spud::get_option(buffer.str(), *statistics_period_timesteps_);
+    spud_err(buffer.str(), serr);
+  }
+  
+  buffer.str(""); buffer << "/io/dump_periods/steady_state_period";  // statistics period
+  if(Spud::have_option(buffer.str()))
+  {
+    steadystate_period_.reset( new double );
+    serr = Spud::get_option(buffer.str(), *steadystate_period_);
+    spud_err(buffer.str(), serr);
+
+    steadystate_dumptime_.reset( new double(start_time()) );
+  }
+
+  buffer.str(""); buffer 
+            << "/io/dump_periods/steady_state_period_in_timesteps";  // statistics period in timesteps
+  if(Spud::have_option(buffer.str()))
+  {
+    steadystate_period_timesteps_.reset( new int );
+    serr = Spud::get_option(buffer.str(), *steadystate_period_timesteps_);
+    spud_err(buffer.str(), serr);
+  }
+  
+  buffer.str(""); buffer << "/io/dump_periods/detectors_period";     // statistics period
+  if(Spud::have_option(buffer.str()))
+  {
+    detectors_period_.reset( new double );
+    serr = Spud::get_option(buffer.str(), *detectors_period_);
+    spud_err(buffer.str(), serr);
+
+    detectors_dumptime_.reset( new double(start_time()) );
+  }
+
+  buffer.str(""); buffer 
+            << "/io/dump_periods/detectors_period_in_timesteps";     // statistics period in timesteps
+  if(Spud::have_option(buffer.str()))
+  {
+    detectors_period_timesteps_.reset( new int );
+    serr = Spud::get_option(buffer.str(), *detectors_period_timesteps_);
+    spud_err(buffer.str(), serr);
+  }
   
 }
 
@@ -752,12 +846,7 @@ void SpudBucket::diagnostics_fill_()
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
 
-  std::string basename;                                              // get the output base name
-  buffer.str(""); buffer << "/io/output_base_name";
-  serr = Spud::get_option(buffer.str(), basename); 
-  spud_err(buffer.str(), serr);
-
-  statfile_.reset( new StatisticsFile(basename+".stat") );
+  statfile_.reset( new StatisticsFile(output_basename()+".stat") );
   (*statfile_).write_header(*this);
 
   int npdets = Spud::option_count("/io/detectors/point");            // number of point detectors
@@ -769,13 +858,13 @@ void SpudBucket::diagnostics_fill_()
       dolfin::error("Requested detectors but selected no field to include.");
     }
 
-    detfile_.reset( new DetectorsFile(basename+".det") );
+    detfile_.reset( new DetectorsFile(output_basename()+".det") );
     (*detfile_).write_header(*this);
   }
 
   if (Spud::option_count("/system/field/diagnostics/include_in_steady_state")>0)
   {
-    steadyfile_.reset( new SteadyStateFile(basename+".steady") );
+    steadyfile_.reset( new SteadyStateFile(output_basename()+".steady") );
     (*steadyfile_).write_header(*this);
   }
   
