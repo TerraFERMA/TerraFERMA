@@ -63,6 +63,8 @@ namespace buckettools
 
     void attach_coeffs(Form_it f_begin, Form_it f_end);              // attach coefficients to the selected forms
 
+    void attach_coeffs(Form_ptr form);                               // attach coefficients to the selected form
+
     virtual void copy_diagnostics(Bucket_ptr &bucket) const;         // copy the data necessary for the diagnostics data file(s)
 
     //***************************************************************|***********************************************************//

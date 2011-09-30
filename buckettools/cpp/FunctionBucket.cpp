@@ -77,6 +77,18 @@ void FunctionBucket::attach_functional_coeffs()
 {
   if (system_)
   {
+    if (constantfunctional_)
+    {
+      (*(*system_).bucket()).attach_coeffs(constantfunctional_);
+      
+      double value = dolfin::assemble(*constantfunctional_);         // assemble the functional
+      
+      function_.reset( new dolfin::Constant(value) );
+      oldfunction_ = function_;
+      iteratedfunction_ = function_;
+
+    }
+
     (*(*system_).bucket()).attach_coeffs(functionals_begin(),
                                                   functionals_end());
   }

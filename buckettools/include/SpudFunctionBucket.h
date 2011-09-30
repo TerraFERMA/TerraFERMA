@@ -128,6 +128,8 @@ namespace buckettools
                             const MeshFunction_uint_ptr 
                                             &edgeidmeshfunction);
 
+    void constantfunctional_fill_();                                 // fill in the data for constant expressions defined by functionals
+
     void functionals_fill_();                                        // fill in the data for the functionals of this function
 
     //***************************************************************|***********************************************************//
