@@ -104,6 +104,8 @@ namespace buckettools
     const int solve_location() const                                 // return an integer describing where this system is solved
     { return solve_location_; }
 
+    const PETScVector_ptr residual_vector() const;                   // return the residual of the last solver in the system
+
     //***************************************************************|***********************************************************//
     // Field data access
     //***************************************************************|***********************************************************//

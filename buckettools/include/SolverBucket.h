@@ -72,6 +72,9 @@ namespace buckettools
     const std::string type() const                                   // return a string describing the solver type
     { return type_; }
 
+    const PETScVector_ptr residual_vector() const                    // return the residual of this solver
+    { return res_; }
+
     //***************************************************************|***********************************************************//
     // Form data access
     //***************************************************************|***********************************************************//

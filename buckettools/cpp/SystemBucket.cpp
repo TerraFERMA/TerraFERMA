@@ -184,6 +184,14 @@ void SystemBucket::attach_and_initialize()
 }
 
 //*******************************************************************|************************************************************//
+// return the residual associated with the last solver in this system
+//*******************************************************************|************************************************************//
+const PETScVector_ptr SystemBucket::residual_vector() const
+{
+  return (*(*(orderedsolvers_.lower_bound((int) solvers_.size()))).second).residual_vector();
+}
+
+//*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a field function bucket in the system bucket data maps
 //*******************************************************************|************************************************************//
 void SystemBucket::register_field(FunctionBucket_ptr field, const std::string &name)

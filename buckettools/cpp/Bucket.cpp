@@ -54,12 +54,7 @@ void Bucket::run()
     dolfin::log(dolfin::INFO, "Timestep number: %d", timestep_count()+1);
     dolfin::log(dolfin::INFO, "Time: %f", current_time()+timestep());
 
-    for (*iteration_count_ = 0; \
-         *iteration_count_ < nonlinear_iterations(); 
-         (*iteration_count_)++)                                      // loop over the nonlinear iterations
-    {
-      solve(SOLVE_TIMELOOP);                                         // solve all systems in the bucket
-    }
+    solve_in_timeloop_();
 
     *current_time_ += timestep();                                    // increment time with the timestep
     (*timestep_count_)++;                                            // increment the number of timesteps taken
@@ -899,6 +894,20 @@ void Bucket::solve_at_start_()
   if(systems_solved)
   {
     output(OUTPUT_START);
+  }
+}
+
+//*******************************************************************|************************************************************//
+// loop over the ordered systems in the bucket, calling solve on each that has requested a solve in the timeloop (within a nonlinear
+// systems iteration loop)
+//*******************************************************************|************************************************************//
+void Bucket::solve_in_timeloop_()
+{
+  for (*iteration_count_ = 0; \
+       *iteration_count_ < nonlinear_iterations(); 
+       (*iteration_count_)++)                                      // loop over the nonlinear iterations
+  {
+    solve(SOLVE_TIMELOOP);                                         // solve all systems in the bucket
   }
 }
 
