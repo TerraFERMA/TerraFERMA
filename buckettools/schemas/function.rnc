@@ -401,7 +401,7 @@ prescribed_constant_scalar =
     ## Options for the description of an expression over the domain
     element value {
       attribute name {"WholeMesh"},
-      prescribed_scalar_constant
+      prescribed_scalar_constant_w_functional
     }
   )
 
@@ -483,7 +483,13 @@ prescribed_scalar_constant =
       ## A constant scalar
       element constant {
         real
-      }|
+      }
+    )
+  )
+
+prescribed_scalar_functional =
+  (
+    (
       ## ufl code and symbol describing a functional.  This must return a single number, which is used to set a spatially constant coefficient value.
       element functional {
         attribute rank { "0" },
@@ -493,6 +499,8 @@ prescribed_scalar_constant =
     )
   )
 
+prescribed_scalar_constant_w_functional = prescribed_scalar_functional
+prescribed_scalar_constant_w_functional |= prescribed_scalar_constant
 
 prescribed_vector_constant = 
   (

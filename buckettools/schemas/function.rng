@@ -500,7 +500,7 @@ The minimum and maximum of functions is included.</a:documentation>
       <attribute name="name">
         <value>WholeMesh</value>
       </attribute>
-      <ref name="prescribed_scalar_constant"/>
+      <ref name="prescribed_scalar_constant_w_functional"/>
     </element>
   </define>
   <define name="prescribed_constant_vector">
@@ -588,20 +588,26 @@ The minimum and maximum of functions is included.</a:documentation>
     </choice>
   </define>
   <define name="prescribed_scalar_constant">
-    <choice>
-      <element name="constant">
-        <a:documentation>A constant scalar</a:documentation>
-        <ref name="real"/>
-      </element>
-      <element name="functional">
-        <a:documentation>ufl code and symbol describing a functional.  This must return a single number, which is used to set a spatially constant coefficient value.</a:documentation>
-        <attribute name="rank">
-          <value>0</value>
-        </attribute>
-        <ref name="python_code"/>
-        <ref name="functional_ufl_symbol"/>
-      </element>
-    </choice>
+    <element name="constant">
+      <a:documentation>A constant scalar</a:documentation>
+      <ref name="real"/>
+    </element>
+  </define>
+  <define name="prescribed_scalar_functional">
+    <element name="functional">
+      <a:documentation>ufl code and symbol describing a functional.  This must return a single number, which is used to set a spatially constant coefficient value.</a:documentation>
+      <attribute name="rank">
+        <value>0</value>
+      </attribute>
+      <ref name="python_code"/>
+      <ref name="functional_ufl_symbol"/>
+    </element>
+  </define>
+  <define name="prescribed_scalar_constant_w_functional">
+    <ref name="prescribed_scalar_functional"/>
+  </define>
+  <define name="prescribed_scalar_constant_w_functional" combine="choice">
+    <ref name="prescribed_scalar_constant"/>
   </define>
   <define name="prescribed_vector_constant">
     <choice>
