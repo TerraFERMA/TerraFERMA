@@ -224,6 +224,10 @@ void SpudSolverBucket::base_fill_()
   serr = Spud::get_option(buffer.str(), maxfes_, 10000); 
   spud_err(buffer.str(), serr);
 
+  buffer.str(""); buffer << optionpath() << 
+                                "/type/ignore_all_solver_failures";
+  ignore_failures_ = Spud::have_option(buffer.str());
+
 }
 
 //*******************************************************************|************************************************************//

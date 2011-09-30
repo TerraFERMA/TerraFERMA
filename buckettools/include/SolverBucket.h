@@ -136,6 +136,8 @@ namespace buckettools
 
     int minits_, maxits_, maxfes_;                                   // nonlinear solver iteration counts
 
+    bool ignore_failures_;                                           // ignore solver failures
+
     std::string name_;                                               // solver name
 
     std::string type_;                                               // solver type (string)

@@ -162,6 +162,22 @@ void SolverBucket::solve()
 
     }
 
+    if (it == maxits_ && rerror > rtol_ && aerror > atol_)
+    {
+      dolfin::log(dolfin::WARNING, "it = %d, maxits_ = %d", it, maxits_);
+      dolfin::log(dolfin::WARNING, "rerror = %f, rtol_ = %f", rerror, rtol_);
+      dolfin::log(dolfin::WARNING, "aerror = %f, atol_ = %f", aerror, atol_);
+      if (ignore_failures_)
+      {
+        dolfin::log(dolfin::WARNING, "Picard iterations failed to converge, ignoring.");
+      }
+      else
+      {
+        dolfin::log(dolfin::ERROR, "Picard iterations failed to converge, sending sig int.");
+        (*SignalHandler::instance()).dispatcher(SIGINT);
+      }
+    }
+
     (*(*system_).function()).vector() =                              // update the function values with the iterated values
                       (*(*system_).iteratedfunction()).vector();
 
@@ -406,14 +422,29 @@ void SolverBucket::snes_check_convergence_()
                           (*system_).name().c_str(), name().c_str());
 
   SNESConvergedReason snesreason;                                    // check what the convergence reason was
+  PetscInt snesiterations;
+  PetscInt sneslsiterations;
 //  const char **snesprefix;
 //  perr = SNESGetOptionsPrefix(snes_, snesprefix); CHKERRV(perr);   // FIXME: segfaults!
   perr = SNESGetConvergedReason(snes_, &snesreason); CHKERRV(perr);     
+  perr = SNESGetIterationNumber(snes_, &snesiterations); CHKERRV(perr);
+  perr = SNESGetLinearSolveIterations(snes_, &sneslsiterations);  CHKERRV(perr);
   dolfin::log(dolfin::INFO, "SNESConvergedReason %d", snesreason);
+  dolfin::log(dolfin::INFO, "SNES n/o iterations %d", 
+                              snesiterations);
+  dolfin::log(dolfin::INFO, "SNES n/o linear solver iterations %d", 
+                              sneslsiterations);
   if (snesreason<=0)
   {
-    dolfin::log(dolfin::ERROR, "SNESConvergedReason <= 0, sending sig int.");
-    (*SignalHandler::instance()).dispatcher(SIGINT);
+    if (ignore_failures_)
+    {
+      dolfin::log(dolfin::WARNING, "SNESConvergedReason <= 0, ignoring.");
+    }
+    else
+    {
+      dolfin::log(dolfin::ERROR, "SNESConvergedReason <= 0, sending sig int.");
+      (*SignalHandler::instance()).dispatcher(SIGINT);
+    }
   }
 
   ksp_check_convergence_(ksp_, 1);
@@ -446,8 +477,15 @@ void SolverBucket::ksp_check_convergence_(KSP &ksp, int indent)
                               indentation.c_str(), kspiterations);
   if (kspreason<=0)
   {
-    dolfin::log(dolfin::ERROR, "KSPConvergedReason <= 0, sending sig int.");
-    (*SignalHandler::instance()).dispatcher(SIGINT);
+    if (ignore_failures_)
+    {
+      dolfin::log(dolfin::WARNING, "KSPConvergedReason <= 0, ignoring.");
+    }
+    else
+    {
+      dolfin::log(dolfin::ERROR, "KSPConvergedReason <= 0, sending sig int.");
+      (*SignalHandler::instance()).dispatcher(SIGINT);
+    }
   }
 
 
