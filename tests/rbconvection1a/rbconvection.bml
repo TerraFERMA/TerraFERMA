@@ -294,6 +294,51 @@
         <include_in_detectors/>
       </diagnostics>
     </field>
+    <coefficient name="Dummy">
+      <ufl_symbol>
+        <string_value lines="1">dummy</string_value>
+      </ufl_symbol>
+      <type name="Function">
+        <rank name="Scalar" rank="0">
+          <element name="P0">
+            <family>
+              <string_value>DG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">0</integer_value>
+            </degree>
+          </element>
+          <value name="WholeMesh">
+            <constant>
+              <real_value rank="0">5.0</real_value>
+            </constant>
+          </value>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_statistics/>
+      </diagnostics>
+    </coefficient>
+    <coefficient name="Functional">
+      <ufl_symbol>
+        <string_value lines="1">func</string_value>
+      </ufl_symbol>
+      <type name="Constant">
+        <rank name="Scalar" rank="0">
+          <value name="WholeMesh">
+            <functional rank="0">
+              <string_value type="python" lines="20">int = dummy*dx</string_value>
+              <ufl_symbol>
+                <string_value lines="1">int</string_value>
+              </ufl_symbol>
+            </functional>
+          </value>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_statistics/>
+      </diagnostics>
+    </coefficient>
     <nonlinear_solver name="Solver">
       <type name="SNES">
         <form name="Residual" rank="0">
