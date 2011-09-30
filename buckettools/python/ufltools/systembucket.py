@@ -512,11 +512,11 @@ class SystemBucket:
     functionals_found = 0
     for c in range(len(self.coeffs)):
       if self.coeffs[c].functional:
-        functionals_found = functionals_found + 1
-        if c == 0:
+        if functionals_found == 0:
           cpp.append("      if (coefficientname ==  \""+self.coeffs[c].name+"\")\n")
         else:
           cpp.append("      else if (coefficientname ==  \""+self.coeffs[c].name+"\")\n")
+        functionals_found =+ 1
         cpp.append("      {\n")
         cpp.append("        functional.reset(new "+self.coeffs[c].functional.namespace()+"::Form_0(mesh));\n")
         cpp.append("      }\n")
