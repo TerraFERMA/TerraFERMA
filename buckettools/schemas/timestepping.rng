@@ -32,7 +32,7 @@ Constants are spatially constant expressions.</a:documentation>
               <attribute name="name">
                 <value>Scalar</value>
               </attribute>
-              <ref name="scalar_coefficient_constant_options"/>
+              <ref name="timestep_constant_options"/>
             </element>
           </element>
         </element>
@@ -47,6 +47,21 @@ to the most recent compared to the given tolerance in the given norm</a:document
           </element>
         </element>
       </optional>
+    </element>
+  </define>
+  <define name="timestep_constant_options">
+    <attribute name="rank">
+      <value>0</value>
+    </attribute>
+    <ref name="constant_timestep"/>
+  </define>
+  <define name="constant_timestep">
+    <element name="value">
+      <a:documentation>Options for the description of an expression over the domain</a:documentation>
+      <attribute name="name">
+        <value>WholeMesh</value>
+      </attribute>
+      <ref name="prescribed_scalar_constant"/>
     </element>
   </define>
   <define name="nonlinear">

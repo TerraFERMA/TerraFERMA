@@ -26,7 +26,7 @@ timestepping =
               ## The rank of the coefficient (scalar, rank 0).
               element rank {
                 attribute name { "Scalar" },
-                scalar_coefficient_constant_options
+                timestep_constant_options
               }
             }
           }
@@ -41,6 +41,21 @@ timestepping =
         }?
       }
    )
+
+timestep_constant_options =
+  (
+    attribute rank { "0" },
+    constant_timestep
+  )
+
+constant_timestep = 
+  (
+    ## Options for the description of an expression over the domain
+    element value {
+      attribute name {"WholeMesh"},
+      prescribed_scalar_constant
+    }
+  )
 
 nonlinear =
    (
