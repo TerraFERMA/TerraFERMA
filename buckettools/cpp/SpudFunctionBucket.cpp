@@ -533,14 +533,64 @@ void SpudFunctionBucket::initialize_expression_coeff_()
                                                         << i << "]";
 
         function_ = 
-                  initialize_expression(buffer.str(), &size_, &shape_);// initialize the function from the optionpath
+                initialize_expression(buffer.str(), &size_, &shape_);// initialize the function from the optionpath
+                                                                     // (this will do nothing for functionals)
         oldfunction_ = function_;                                    // time varying not yet supported so grab a pointer for old
         iteratedfunction_ = function_;                               // and iterated
+
+        buffer.str(""); buffer << optionpath() << "/type/rank/value[" 
+                                              << i << "]/functional";
+        if(Spud::have_option(buffer.str()))
+        {
+          constantfunctional_fill_();
+        }
 
 //      }
     }
   }
 
+}
+
+//*******************************************************************|************************************************************//
+// fill the details of a constant functional assuming the buckettools schema
+//*******************************************************************|************************************************************//
+void SpudFunctionBucket::constantfunctional_fill_()
+{
+  constantfunctional_ = ufc_fetch_functional((*system_).name(),      // get a pointer to the functional form from the ufc
+                        name(), (*system_).mesh());
+
+                                                                     // at this stage we cannot attach any coefficients to this
+                                                                     // functional because we do not necessarily have them all
+                                                                     // initialized yet so for the time being let's just grab any
+                                                                     // functionspaces for the coefficients that we can find...
+  uint ncoeff = (*constantfunctional_).num_coefficients();           // how many coefficients does this functional require?
+  for (uint i = 0; i < ncoeff; i++)
+  {
+    std::string uflsymbol = 
+                          (*constantfunctional_).coefficient_name(i);// what is the (possibly derived) ufl symbol for this
+                                                                     // coefficient
+    if ((*(*system_).bucket()).contains_baseuflsymbol(uflsymbol))    // a base ufl symbol was only inserted into the parent bucket's
+    {                                                                // if this is a coefficient function so we use this as an
+                                                                     // indicator or whether we need to grab the functionspace or
+                                                                     // not...
+      std::string baseuflsymbol =                                    // what is the base ufl symbol?
+            (*(*system_).bucket()).fetch_baseuflsymbol(uflsymbol);   // have we already registered a functionspace for this base ufl
+                                                                     // symbol?
+      if (!(*(*system_).bucket()).contains_coefficientspace(baseuflsymbol))
+      {                                                              // no...
+        FunctionSpace_ptr coefficientspace;
+        coefficientspace = 
+                         ufc_fetch_coefficientspace_from_functional( // take a pointer to the functionspace from the ufc
+                                      (*system_).name(), name(), 
+                                      baseuflsymbol, 
+                                      (*system_).mesh());
+        (*(*system_).bucket()).register_coefficientspace(            // and register it in the parent bucket's map
+                                      coefficientspace, 
+                                      baseuflsymbol);
+      }
+    }
+
+  }
 }
 
 //*******************************************************************|************************************************************//
@@ -589,7 +639,8 @@ void SpudFunctionBucket::functionals_fill_()
         if (!(*(*system_).bucket()).contains_coefficientspace(baseuflsymbol))
         {                                                            // no...
           FunctionSpace_ptr coefficientspace;
-          coefficientspace = ufc_fetch_coefficientspace(             // take a pointer to the functionspace from the ufc
+          coefficientspace = 
+                        ufc_fetch_coefficientspace_from_functional(  // take a pointer to the functionspace from the ufc
                                         (*system_).name(), name(), 
                                         functionalname, baseuflsymbol, 
                                         (*system_).mesh());

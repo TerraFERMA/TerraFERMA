@@ -20,18 +20,28 @@ namespace buckettools
                                       const std::string &solvername, // as above) 
                                       Mesh_ptr mesh);
 
-  FunctionSpace_ptr ufc_fetch_coefficientspace(const std::string     // return a (boost shared) pointer to a functionspace for a
+  FunctionSpace_ptr ufc_fetch_coefficientspace_from_solver(
+                                      const std::string              // return a (boost shared) pointer to a functionspace for a
                                             &systemname,             // coefficient function from a solver given a mesh, a solver name
                                       const std::string &solvername, // and a (base) ufl symbol
                                       const std::string &uflsymbol, 
                                       Mesh_ptr mesh);
 
-  FunctionSpace_ptr ufc_fetch_coefficientspace(const std::string     // return a (boost shared) pointer to a functionspace for a 
+  FunctionSpace_ptr ufc_fetch_coefficientspace_from_functional(
+                                      const std::string              // return a (boost shared) pointer to a functionspace for a 
                                             &systemname,             // coefficient function from a functional given a mesh, a
                                       const std::string              // function name, a functional name and a (base) ufl symbol
                                             &functionname, 
                                       const std::string 
                                             &funcionalname, 
+                                      const std::string &uflsymbol, 
+                                      Mesh_ptr mesh);
+
+  FunctionSpace_ptr ufc_fetch_coefficientspace_from_functional(
+                                      const std::string              // return a (boost shared) pointer to a functionspace for a 
+                                            &systemname,             // coefficient function from a constant functional given a mesh, a
+                                      const std::string              // function name and a (base) ufl symbol
+                                            &coefficientname, 
                                       const std::string &uflsymbol, 
                                       Mesh_ptr mesh);
 

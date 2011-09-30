@@ -19,9 +19,10 @@ Expression_ptr buckettools::initialize_expression(const std::string
   Spud::OptionError serr;                                            // spud option error
   Expression_ptr expression;                                         // declare the pointer that will be returned
   
-  std::stringstream constbuffer, pybuffer;                           // some string assembly streams
+  std::stringstream constbuffer, pybuffer, funcbuffer;               // some string assembly streams
   constbuffer.str(""); constbuffer << optionpath << "/constant";     // for a constant
   pybuffer.str(""); pybuffer << optionpath << "/python";             // for a python function
+  funcbuffer.str(""); funcbuffer << optionpath << "/functional";       // for a python function
   
   if (Spud::have_option(constbuffer.str()))                          // constant requested?
   {
@@ -95,6 +96,23 @@ Expression_ptr buckettools::initialize_expression(const std::string
     {
       dolfin::error("Don't deal with rank > 1 yet.");
     }
+  }
+  else if (Spud::have_option(funcbuffer.str()))                      // not much we can do for this case here
+  {                                                                  // except check it's a scalar and declare a constant
+
+                                                                     // rank of a functional isn't in the default spud base
+                                                                     // language so have added it... but it comes out as a string 
+                                                                     // of course!
+    std::stringstream buffer;
+    std::string rankstring;                                          // bit of a hack
+    buffer.str(""); buffer << funcbuffer.str() << "/rank";
+    serr = Spud::get_option(buffer.str(), rankstring); 
+    spud_err(buffer.str(), serr);
+    
+    int rank;
+    rank = atoi(rankstring.c_str());
+    assert(rank==0);
+
   }
   else                                                               // unknown expression type
   {
