@@ -214,6 +214,8 @@ namespace buckettools
     std::string rank_;                                               // a *string* describing the rank of the function
     
     std::string type_;                                               // a *string* describing the type of function (function, expression, constant)
+
+    Form_ptr constantfunctional_;                                    // a functional that can be used to set a constant function
     
     File_ptr pvdfile_;                                               // (boost shared) pointer to a pvd file output for this function
 
