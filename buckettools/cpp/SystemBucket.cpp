@@ -184,6 +184,14 @@ void SystemBucket::attach_and_initialize()
 }
 
 //*******************************************************************|************************************************************//
+// return the residual associated with the last solver in this system
+//*******************************************************************|************************************************************//
+const PETScVector_ptr SystemBucket::residual_vector() const
+{
+  return (*(*(orderedsolvers_.lower_bound((int) solvers_.size()))).second).residual_vector();
+}
+
+//*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a field function bucket in the system bucket data maps
 //*******************************************************************|************************************************************//
 void SystemBucket::register_field(FunctionBucket_ptr field, const std::string &name)
@@ -455,15 +463,87 @@ std::vector<BoundaryCondition_ptr>::const_iterator SystemBucket::bcs_end() const
 //*******************************************************************|************************************************************//
 // loop over the fields outputting pvd diagnostics for all the fields in this system
 //*******************************************************************|************************************************************//
-void SystemBucket::output(const int &location, const bool &write_vis)
+void SystemBucket::output(const bool &write_vis)
 {
   for (FunctionBucket_it f_it = fields_begin(); f_it != fields_end(); 
                                                               f_it++)
   {
-    (*(*f_it).second).output(location, write_vis);
+    (*(*f_it).second).output(write_vis);
   }
 }
 
+//*******************************************************************|************************************************************//
+// return a boolean indicating if this system has fields to be included in visualization output
+//*******************************************************************|************************************************************//
+const bool SystemBucket::include_in_visualization() const
+{
+  bool include = false;
+  for (FunctionBucket_const_it f_it = fields_begin(); f_it != fields_end(); 
+                                                              f_it++)
+  {
+    include = (*(*f_it).second).include_in_visualization();
+    if (include)
+    {
+      break;
+    }
+  }
+  return include;
+}
+    
+//*******************************************************************|************************************************************//
+// return a boolean indicating if this system has fields to be included in statistics output
+//*******************************************************************|************************************************************//
+const bool SystemBucket::include_in_statistics() const
+{
+  bool include = false;
+  for (FunctionBucket_const_it f_it = fields_begin(); f_it != fields_end(); 
+                                                              f_it++)
+  {
+    include = (*(*f_it).second).include_in_statistics();
+    if (include)
+    {
+      break;
+    }
+  }
+  return include;
+}
+    
+//*******************************************************************|************************************************************//
+// return a boolean indicating if this system has fields to be included in steady state output
+//*******************************************************************|************************************************************//
+const bool SystemBucket::include_in_steadystate() const
+{
+  bool include = false;
+  for (FunctionBucket_const_it f_it = fields_begin(); f_it != fields_end(); 
+                                                              f_it++)
+  {
+    include = (*(*f_it).second).include_in_steadystate();
+    if (include)
+    {
+      break;
+    }
+  }
+  return include;
+}
+   
+//*******************************************************************|************************************************************//
+// return a boolean indicating if this system has fields to be included in detectors output
+//*******************************************************************|************************************************************//
+const bool SystemBucket::include_in_detectors() const
+{
+  bool include = false;
+  for (FunctionBucket_const_it f_it = fields_begin(); f_it != fields_end(); 
+                                                              f_it++)
+  {
+    include = (*(*f_it).second).include_in_detectors();
+    if (include)
+    {
+      break;
+    }
+  }
+  return include;
+}
+    
 //*******************************************************************|************************************************************//
 // return a string describing the contents of the system
 //*******************************************************************|************************************************************//

@@ -153,7 +153,10 @@ namespace buckettools
     // Output functions
     //***************************************************************|***********************************************************//
 
-    void output(const int &location, const bool &write_vis);         // output diagnostics about this function
+    void output(const bool &write_vis);                              // output diagnostics about this function
+
+    virtual const bool include_in_visualization() const;             // return a boolean indicating if this function is included in 
+                                                                     // visualization output
 
     virtual const bool include_in_statistics() const;                // return a boolean indicating if this function is included in 
                                                                      // diagnostic output

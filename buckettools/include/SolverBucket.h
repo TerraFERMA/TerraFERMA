@@ -72,6 +72,9 @@ namespace buckettools
     const std::string type() const                                   // return a string describing the solver type
     { return type_; }
 
+    const PETScVector_ptr residual_vector() const                    // return the residual of this solver
+    { return res_; }
+
     //***************************************************************|***********************************************************//
     // Form data access
     //***************************************************************|***********************************************************//
@@ -132,6 +135,8 @@ namespace buckettools
     double rtol_, atol_, stol_;                                      // nonlinear solver tolerances
 
     int minits_, maxits_, maxfes_;                                   // nonlinear solver iteration counts
+
+    bool ignore_failures_;                                           // ignore solver failures
 
     std::string name_;                                               // solver name
 

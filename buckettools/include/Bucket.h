@@ -51,7 +51,7 @@ namespace buckettools
 
     void run();                                                      // run the model described in the bucket
  
-    void solve();                                                    // solve all the systems in the bucket
+    void solve(const int &location);                                 // solve all the systems in the bucket (depending on location)
 
     void update();                                                   // update the functions in the systems in this bucket
 
@@ -328,6 +328,12 @@ namespace buckettools
     bool dump_(double_ptr dump_period, 
                double_ptr previous_dump_time, 
                int_ptr    dump_period_timestep);                     // indicate if diagnostic output should be performed 
+
+    void solve_at_start_();                                          // solve the solvers in this system (in order at the start of a
+                                                                     // simulation)
+
+    void solve_in_timeloop_();                                       // solve the solvers in this system (in order during the
+                                                                     // timeloop of a simulation)
 
   };
 

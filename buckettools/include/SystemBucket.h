@@ -14,6 +14,8 @@ namespace buckettools
   class SystemBucket;                                                // predeclare the class itself
   typedef boost::shared_ptr< SystemBucket > SystemBucket_ptr;        // so we can predeclare a pointer to it
   
+  enum solve_location { SOLVE_START, SOLVE_TIMELOOP, SOLVE_DIAGNOSTICS };
+
   //*****************************************************************|************************************************************//
   // SystemBucket class:
   //
@@ -98,6 +100,11 @@ namespace buckettools
 
     const Bucket* bucket() const                                     // return a constant pointer to the parent bucket
     { return bucket_; }
+
+    const int solve_location() const                                 // return an integer describing where this system is solved
+    { return solve_location_; }
+
+    const PETScVector_ptr residual_vector() const;                   // return the residual of the last solver in the system
 
     //***************************************************************|***********************************************************//
     // Field data access
@@ -187,8 +194,20 @@ namespace buckettools
     // Output functions
     //***************************************************************|***********************************************************//
 
-    void output(const int &location, const bool &write_vis);         // output the diagnostics on this system
+    void output(const bool &write_vis);                              // output the diagnostics on this system
 
+    const bool include_in_visualization() const;                     // return a boolean indicating if this system has fields to 
+                                                                     // be included in diagnostic output
+    
+    const bool include_in_statistics() const;                        // return a boolean indicating if this system has fields to 
+                                                                     // be included in diagnostic output
+    
+    const bool include_in_steadystate() const;                       // return a boolean indicating if this system has fields to 
+                                                                     // be included in steadystate output
+    
+    const bool include_in_detectors() const;                         // return a boolean indicating if this system has fields to 
+                                                                     // be included in steadystate output
+    
     virtual const std::string str() const                            // return a string describing the contents of the system
     { return str(0); }
 
@@ -250,6 +269,8 @@ namespace buckettools
 
     Function_ptr function_, oldfunction_, iteratedfunction_;         // (boost shared) pointers to the system functions at different
                                                                      // time levels (old, iterated - most up to date -, base)
+
+    int solve_location_;                                             // when this system will be solved
 
     Function_ptr changefunction_;                                    // (boost shared) pointer to the change between timesteps
 
