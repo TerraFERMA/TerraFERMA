@@ -17,6 +17,7 @@ class FunctionBucket:
     self.symmetry = None
     self.type = None
     self.system = None
+    self.functional = None
     self.functionals = None
     self.index = None
   

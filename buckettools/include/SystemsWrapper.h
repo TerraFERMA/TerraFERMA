@@ -46,6 +46,10 @@ namespace buckettools
                           const std::string &functionalname, 
                           Mesh_ptr mesh);
 
+  Form_ptr ufc_fetch_functional(const std::string &systemname,       // return a (boost shared) pointer to a form for a constant
+                          const std::string &functionname,           // from a functional given a mesh and a function name
+                          Mesh_ptr mesh);
+
 }
 
 #endif

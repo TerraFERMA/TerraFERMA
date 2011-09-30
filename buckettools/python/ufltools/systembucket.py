@@ -202,6 +202,8 @@ class SystemBucket:
       for functional in field.functionals:
         cpp.append("#include \""+functional.namespace()+".h\"\n")
     for coeff in self.coeffs:
+      if coeff.functional:
+        cpp.append("#include \""+coeff.functional.namespace()+".h\"\n")
       for functional in coeff.functionals:
         cpp.append("#include \""+functional.namespace()+".h\"\n")
     for solver in self.solvers:
@@ -451,5 +453,35 @@ class SystemBucket:
     cpp.append("        dolfin::error(\"Unknown functionname in ufc_fetch_functional\");\n")
     cpp.append("      }\n")
     cpp.append("    }\n")
+    return cpp
+
+  def constantfunctional_cpp(self, index=0):
+    """Write an array of cpp strings describing the namespace of the constant coefficient functional ufls."""
+    cpp = []  
+    if index == 0:
+      cpp.append("    if (systemname ==  \""+self.name+"\")\n")
+    else:
+      cpp.append("    else if (systemname ==  \""+self.name+"\")\n")
+    cpp.append("    {\n")
+    functionals_found = 0
+    for c in range(len(self.coeffs)):
+      if self.coeffs[c].functional:
+        functionals_found = functionals_found + 1
+        if c == 0:
+          cpp.append("      if (functionname ==  \""+self.coeffs[c].name+"\")\n")
+        else:
+          cpp.append("      else if (functionname ==  \""+self.coeffs[c].name+"\")\n")
+        cpp.append("      {\n")
+        cpp.append("        functional.reset(new "+self.coeffs[c].functional.namespace()+"::Form_0(mesh));\n")
+        cpp.append("      }\n")
+    if functionals_found==0:
+      cpp.append("      dolfin::error(\"Unknown functionname in ufc_fetch_functional\");\n")
+      cpp.append("    }\n")
+    else:
+      cpp.append("      else\n")
+      cpp.append("      {\n")
+      cpp.append("        dolfin::error(\"Unknown functionname in ufc_fetch_functional\");\n")
+      cpp.append("      }\n")
+      cpp.append("    }\n")
     return cpp
 

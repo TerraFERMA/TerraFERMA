@@ -7,7 +7,10 @@ class SpudFunctionalBucket(ufltools.functionalbucket.FunctionalBucket):
 
   def fill(self, optionpath, function):
     """Fill a functional class with data describing that functional using libspud, the given optionpath and the function its based on."""
-    self.name     = libspud.get_option(optionpath+"/name")
+    try:
+      self.name   = libspud.get_option(optionpath+"/name")
+    except libspud.SpudKeyError:
+      self.name   = ""
     self.symbol   = libspud.get_option(optionpath+"/ufl_symbol")
     self.form     = libspud.get_option(optionpath)+"\n"
     self.function = function

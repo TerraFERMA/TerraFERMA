@@ -479,10 +479,17 @@ prescribed_expression_tensor =
 
 prescribed_scalar_constant =
   (
-    ## A constant scalar
-    element constant {
-      real
-    }
+    (
+      ## A constant scalar
+      element constant {
+        real
+      }|
+      ## ufl code and symbol describing a functional.  This must return a single number, which is used to set a spatially constant coefficient value.
+      element functional {
+        python_code,
+        functional_ufl_symbol
+      }
+    )
   )
 
 

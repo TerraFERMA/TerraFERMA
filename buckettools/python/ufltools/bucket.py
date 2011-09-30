@@ -16,6 +16,8 @@ class Bucket:
         for functional in field.functionals:
           functional.write_ufc()
       for coeff in system.coeffs:
+        if coeff.functional:
+          coeff.functional.write_ufc()
         for functional in coeff.functionals:
           functional.write_ufc()
       for solver in system.solvers:
@@ -76,6 +78,12 @@ class Bucket:
     functional_cpp.append("  {\n")
     functional_cpp.append("    Form_ptr functional;\n")
 
+    constantfunctional_cpp            = []
+    constantfunctional_cpp.append("  // A function to return a functional for a constant from a system-function set given a mesh.\n")
+    constantfunctional_cpp.append("  Form_ptr ufc_fetch_functional(const std::string &systemname, const std::string &functionname, Mesh_ptr mesh)\n")
+    constantfunctional_cpp.append("  {\n")
+    constantfunctional_cpp.append("    Form_ptr functional;\n")
+
     form_cpp = []
     form_cpp.append("  // A function to return a form for a solver from a system given a functionspace, a solvername, a solvertype and a formname.\n")
     form_cpp.append("  Form_ptr ufc_fetch_form(const std::string &systemname, const std::string &solvername, const std::string &solvertype, const std::string &formname, const FunctionSpace_ptr functionspace)\n")
@@ -90,6 +98,7 @@ class Bucket:
       solvercoefficientspace_cpp += system.solvercoefficientspace_cpp(index=s)
       functionalcoefficientspace_cpp += system.functionalcoefficientspace_cpp(index=s)
       functional_cpp += system.functional_cpp(index=s)
+      constantfunctional_cpp += system.constantfunctional_cpp(index=s)
       form_cpp += system.form_cpp(index=s)
       s += 1
 
@@ -128,6 +137,13 @@ class Bucket:
     functional_cpp.append("    return functional;\n")
     functional_cpp.append("  }\n")
 
+    constantfunctional_cpp.append("    else\n")
+    constantfunctional_cpp.append("    {\n")
+    constantfunctional_cpp.append("      dolfin::error(\"Unknown systemname in ufc_fetch_functional\");\n")
+    constantfunctional_cpp.append("    }\n")
+    constantfunctional_cpp.append("    return functional;\n")
+    constantfunctional_cpp.append("  }\n")
+
     form_cpp.append("    else\n")
     form_cpp.append("    {\n")
     form_cpp.append("      dolfin::error(\"Unknown systemname in ufc_fetch_form\");\n")
@@ -150,6 +166,8 @@ class Bucket:
     cpp += form_cpp
     cpp.append("\n")
     cpp += functional_cpp
+    cpp.append("\n")
+    cpp += constantfunctional_cpp
     cpp.append("}\n")
     cpp.append("\n")
     cpp.append("#endif\n")

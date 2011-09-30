@@ -18,9 +18,16 @@ class SpudFunctionBucket(ufltools.functionbucket.FunctionBucket):
     self.rank   = libspud.get_option(optionpath+"/type/rank/name")
     self.family   = None
     self.degree = None
+    self.functional = None
     if self.type != "Constant":
       self.family = libspud.get_option(optionpath+"/type/rank/element/family")
       self.degree = libspud.get_option(optionpath+"/type/rank/element/degree")
+    else:
+      if libspud.have_option(optionpath+"/type/rank/value/functional"):
+        functional_optionpath = optionpath+"/type/rank/value/functional"
+        functional = ufltools.spud.SpudFunctionalBucket()
+        functional.fill(functional_optionpath, self)
+        self.functional = functional
     
     self.size     = None
     self.shape    = None
