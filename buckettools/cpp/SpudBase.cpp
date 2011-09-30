@@ -113,8 +113,6 @@ Expression_ptr buckettools::initialize_expression(const std::string
     rank = atoi(rankstring.c_str());
     assert(rank==0);
 
-    expression.reset( new dolfin::Constant(0.0) );
-
   }
   else                                                               // unknown expression type
   {

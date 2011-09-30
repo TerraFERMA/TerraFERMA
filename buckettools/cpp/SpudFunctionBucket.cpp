@@ -534,6 +534,7 @@ void SpudFunctionBucket::initialize_expression_coeff_()
 
         function_ = 
                 initialize_expression(buffer.str(), &size_, &shape_);// initialize the function from the optionpath
+                                                                     // (this will do nothing for functionals)
         oldfunction_ = function_;                                    // time varying not yet supported so grab a pointer for old
         iteratedfunction_ = function_;                               // and iterated
 
