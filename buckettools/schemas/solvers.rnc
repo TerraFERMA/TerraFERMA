@@ -94,7 +94,8 @@ picard =
     ## Options describing a linear solver.
     element linear_solver {
       linear_solver_options
-    }
+    },
+    solver_failures
   )
 
 snes =
@@ -202,7 +203,8 @@ snes =
     ## Options describing a linear solver.
     element linear_solver {
       linear_solver_options
-    }
+    },
+    solver_failures
   )
 
 
@@ -235,6 +237,18 @@ linear_solver_options =
       ),
       generic_solver_options
    )
+
+solver_failures =
+  (
+    (
+      element never_ignore_solver_failures {
+        empty
+      }|
+      element ignore_all_solver_failures {
+        empty
+      }
+    )
+  )
 
 # ####################################################################
 #
