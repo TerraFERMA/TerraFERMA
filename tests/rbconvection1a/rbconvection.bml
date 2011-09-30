@@ -42,9 +42,6 @@
       <visualization_period_in_timesteps>
         <integer_value rank="0">5</integer_value>
       </visualization_period_in_timesteps>
-      <statistics_period>
-        <real_value rank="0">500</real_value>
-      </statistics_period>
       <steady_state_period_in_timesteps>
         <integer_value rank="0">3</integer_value>
       </steady_state_period_in_timesteps>
@@ -327,7 +324,7 @@
         <rank name="Scalar" rank="0">
           <value name="WholeMesh">
             <functional rank="0">
-              <string_value type="python" lines="20">int = dummy*dx</string_value>
+              <string_value lines="20" type="python">int = dummy*dx</string_value>
               <ufl_symbol>
                 <string_value lines="1">int</string_value>
               </ufl_symbol>
