@@ -533,11 +533,12 @@ void SpudFunctionBucket::initialize_expression_coeff_()
                                                         << i << "]";
 
         function_ = 
-                  initialize_expression(buffer.str(), &size_, &shape_);// initialize the function from the optionpath
+                initialize_expression(buffer.str(), &size_, &shape_);// initialize the function from the optionpath
         oldfunction_ = function_;                                    // time varying not yet supported so grab a pointer for old
         iteratedfunction_ = function_;                               // and iterated
 
-        buffer << "/functional";
+        buffer.str(""); buffer << optionpath() << "/type/rank/value[" 
+                                              << i << "]/functional";
         if(Spud::have_option(buffer.str()))
         {
           constantfunctional_fill_();
