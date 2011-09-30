@@ -30,6 +30,8 @@ class Bucket:
         for functional in field.functionals:
           functional.write_ufl()
       for coeff in system.coeffs:
+        if coeff.functional:
+          coeff.functional.write_ufl()
         for functional in coeff.functionals:
           functional.write_ufl()
       for solver in system.solvers:
@@ -62,15 +64,21 @@ class Bucket:
 
     solvercoefficientspace_cpp         = []
     solvercoefficientspace_cpp.append("  // A function to return a functionspace (for a coefficient) from a system given a mesh, a solvername and a uflsymbol.\n")
-    solvercoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace(const std::string &systemname, const std::string &solvername, const std::string &uflsymbol, Mesh_ptr mesh)\n")
+    solvercoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace_from_solver(const std::string &systemname, const std::string &solvername, const std::string &uflsymbol, Mesh_ptr mesh)\n")
     solvercoefficientspace_cpp.append("  {\n")
     solvercoefficientspace_cpp.append("    FunctionSpace_ptr coefficientspace;\n")
 
     functionalcoefficientspace_cpp         = []
     functionalcoefficientspace_cpp.append("  // A function to return a functionspace (for a coefficient) from a system given a mesh, a solvername and a uflsymbol.\n")
-    functionalcoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace(const std::string &systemname, const std::string &uflsymbol, const std::string &functionalname, const std::string &coefficientname, Mesh_ptr mesh)\n")
+    functionalcoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace_from_functional(const std::string &systemname, const std::string &functionname, const std::string &functionalname, const std::string &uflsymbol, Mesh_ptr mesh)\n")
     functionalcoefficientspace_cpp.append("  {\n")
     functionalcoefficientspace_cpp.append("    FunctionSpace_ptr coefficientspace;\n")
+
+    constantfunctionalcoefficientspace_cpp         = []
+    constantfunctionalcoefficientspace_cpp.append("  // A function to return a functionspace (for a coefficient) from a system given a mesh, a solvername and a uflsymbol.\n")
+    constantfunctionalcoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace_from_functional(const std::string &systemname, const std::string &coefficientname, const std::string &uflsymbol, Mesh_ptr mesh)\n")
+    constantfunctionalcoefficientspace_cpp.append("  {\n")
+    constantfunctionalcoefficientspace_cpp.append("    FunctionSpace_ptr coefficientspace;\n")
 
     functional_cpp            = []
     functional_cpp.append("  // A function to return a functional from a system-function set given a mesh and a functionalname.\n")
@@ -80,7 +88,7 @@ class Bucket:
 
     constantfunctional_cpp            = []
     constantfunctional_cpp.append("  // A function to return a functional for a constant from a system-function set given a mesh.\n")
-    constantfunctional_cpp.append("  Form_ptr ufc_fetch_functional(const std::string &systemname, const std::string &functionname, Mesh_ptr mesh)\n")
+    constantfunctional_cpp.append("  Form_ptr ufc_fetch_functional(const std::string &systemname, const std::string &coefficientname, Mesh_ptr mesh)\n")
     constantfunctional_cpp.append("  {\n")
     constantfunctional_cpp.append("    Form_ptr functional;\n")
 
@@ -97,6 +105,7 @@ class Bucket:
       solverfunctionspace_cpp += system.solverfunctionspace_cpp(index=s)
       solvercoefficientspace_cpp += system.solvercoefficientspace_cpp(index=s)
       functionalcoefficientspace_cpp += system.functionalcoefficientspace_cpp(index=s)
+      constantfunctionalcoefficientspace_cpp += system.constantfunctionalcoefficientspace_cpp(index=s)
       functional_cpp += system.functional_cpp(index=s)
       constantfunctional_cpp += system.constantfunctional_cpp(index=s)
       form_cpp += system.form_cpp(index=s)
@@ -118,17 +127,24 @@ class Bucket:
 
     solvercoefficientspace_cpp.append("    else\n")
     solvercoefficientspace_cpp.append("    {\n")
-    solvercoefficientspace_cpp.append("      dolfin::error(\"Unknown systemname in ufc_fetch_coefficientspace\");\n")
+    solvercoefficientspace_cpp.append("      dolfin::error(\"Unknown systemname in ufc_fetch_coefficientspace_from_solver\");\n")
     solvercoefficientspace_cpp.append("    }\n")
     solvercoefficientspace_cpp.append("    return coefficientspace;\n")
     solvercoefficientspace_cpp.append("  }\n")
 
     functionalcoefficientspace_cpp.append("    else\n")
     functionalcoefficientspace_cpp.append("    {\n")
-    functionalcoefficientspace_cpp.append("      dolfin::error(\"Unknown systemname in ufc_fetch_coefficientspace\");\n")
+    functionalcoefficientspace_cpp.append("      dolfin::error(\"Unknown systemname in ufc_fetch_coefficientspace_from_functional\");\n")
     functionalcoefficientspace_cpp.append("    }\n")
     functionalcoefficientspace_cpp.append("    return coefficientspace;\n")
     functionalcoefficientspace_cpp.append("  }\n")
+
+    constantfunctionalcoefficientspace_cpp.append("    else\n")
+    constantfunctionalcoefficientspace_cpp.append("    {\n")
+    constantfunctionalcoefficientspace_cpp.append("      dolfin::error(\"Unknown systemname in ufc_fetch_coefficientspace_from_functional\");\n")
+    constantfunctionalcoefficientspace_cpp.append("    }\n")
+    constantfunctionalcoefficientspace_cpp.append("    return coefficientspace;\n")
+    constantfunctionalcoefficientspace_cpp.append("  }\n")
 
     functional_cpp.append("    else\n")
     functional_cpp.append("    {\n")
@@ -162,6 +178,8 @@ class Bucket:
     cpp += solvercoefficientspace_cpp
     cpp.append("\n")
     cpp += functionalcoefficientspace_cpp
+    cpp.append("\n")
+    cpp += constantfunctionalcoefficientspace_cpp
     cpp.append("\n")
     cpp += form_cpp
     cpp.append("\n")

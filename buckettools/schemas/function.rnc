@@ -486,6 +486,7 @@ prescribed_scalar_constant =
       }|
       ## ufl code and symbol describing a functional.  This must return a single number, which is used to set a spatially constant coefficient value.
       element functional {
+        attribute rank { "0" },
         python_code,
         functional_ufl_symbol
       }

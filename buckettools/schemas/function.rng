@@ -595,6 +595,9 @@ The minimum and maximum of functions is included.</a:documentation>
       </element>
       <element name="functional">
         <a:documentation>ufl code and symbol describing a functional.  This must return a single number, which is used to set a spatially constant coefficient value.</a:documentation>
+        <attribute name="rank">
+          <value>0</value>
+        </attribute>
         <ref name="python_code"/>
         <ref name="functional_ufl_symbol"/>
       </element>
