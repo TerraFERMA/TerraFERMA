@@ -276,7 +276,7 @@ void SpudSolverBucket::forms_fill_()
         if (!(*(*system_).bucket()).contains_coefficientspace(baseuflsymbol))
         {                                                            // no...
           FunctionSpace_ptr coefficientspace;
-          coefficientspace = ufc_fetch_coefficientspace(             // take a pointer to the functionspace from the ufc
+          coefficientspace = ufc_fetch_coefficientspace_from_solver( // take a pointer to the functionspace from the ufc
                                         (*system_).name(), name(), 
                                         baseuflsymbol, 
                                         (*system_).mesh());
