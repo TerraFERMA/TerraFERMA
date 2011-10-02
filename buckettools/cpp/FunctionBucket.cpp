@@ -71,6 +71,26 @@ void FunctionBucket::resetchange()
 }
 
 //*******************************************************************|************************************************************//
+// update the timelevels of the system function
+//*******************************************************************|************************************************************//
+void FunctionBucket::update()
+{
+  *oldfunction_ = *function_;                                        // update the oldfunction to the new function value
+}
+
+//*******************************************************************|************************************************************//
+// update the timelevels of the system function
+//*******************************************************************|************************************************************//
+void FunctionBucket::update_constantfunctional()
+{
+  if (constantfunctional_)
+  {
+    double value = dolfin::assemble(*constantfunctional_);
+    *boost::dynamic_pointer_cast< dolfin::Constant >(function_) = value;
+  }
+}
+
+//*******************************************************************|************************************************************//
 // loop over the functionals in this function bucket and attach the coefficients they request using the parent bucket data maps
 //*******************************************************************|************************************************************//
 void FunctionBucket::attach_functional_coeffs()
@@ -80,13 +100,6 @@ void FunctionBucket::attach_functional_coeffs()
     if (constantfunctional_)
     {
       (*(*system_).bucket()).attach_coeffs(constantfunctional_);
-      
-      double value = dolfin::assemble(*constantfunctional_);         // assemble the functional
-      
-      function_.reset( new dolfin::Constant(value) );
-      oldfunction_ = function_;
-      iteratedfunction_ = function_;
-
     }
 
     (*(*system_).bucket()).attach_coeffs(functionals_begin(),

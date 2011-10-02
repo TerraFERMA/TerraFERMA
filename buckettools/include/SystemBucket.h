@@ -51,6 +51,8 @@ namespace buckettools
 
     void update();                                                   // update the functions in this system at the end of a timestep
 
+    void update_nonlinear();                                         // update the potentially nonlinear functions in this system
+
     const double maxchange();                                        // return the maximum change in the (requested) fields over the last timestep
 
     void updatechange();                                             // update the change function
@@ -127,6 +129,14 @@ namespace buckettools
 
     FunctionBucket_const_it fields_end() const;                      // return a constant iterator to the end of the fields
 
+    int_FunctionBucket_it orderedfields_begin();                     // return an iterator to the beginning of the ordered fields
+
+    int_FunctionBucket_const_it orderedfields_begin() const;         // return a constant iterator to the beginning of the ordered fields
+
+    int_FunctionBucket_it orderedfields_end();                       // return an iterator to the end of the ordered fields
+
+    int_FunctionBucket_const_it orderedfields_end() const;           // return a constant iterator to the end of the ordered fields
+
     //***************************************************************|***********************************************************//
     // Coefficient data access
     //***************************************************************|***********************************************************//
@@ -145,6 +155,14 @@ namespace buckettools
     FunctionBucket_it coeffs_end();                                  // return an iterator to the end of the coefficients
 
     FunctionBucket_const_it coeffs_end() const;                      // return a constant iterator to the end of the coefficients
+
+    int_FunctionBucket_it orderedcoeffs_begin();                     // return an iterator to the beginning of the ordered coeffs
+
+    int_FunctionBucket_const_it orderedcoeffs_begin() const;         // return a constant iterator to the beginning of the ordered coeffs
+
+    int_FunctionBucket_it orderedcoeffs_end();                       // return an iterator to the end of the ordered coeffs
+
+    int_FunctionBucket_const_it orderedcoeffs_end() const;           // return a constant iterator to the end of the ordered coeffs
 
     //***************************************************************|***********************************************************//
     // Solver bucket data access
@@ -282,13 +300,17 @@ namespace buckettools
 
     std::map< std::string, FunctionBucket_ptr > fields_;             // a map from field names to (boost shared) pointers to fields
     
+    std::map< int, FunctionBucket_ptr > orderedfields_;              // an ordered (user defined)  map to (boost shared) pointers to fields
+    
     std::map< std::string, FunctionBucket_ptr > coeffs_;             // a map from coefficient names to (boost shared) pointers to
                                                                      // coefficients
+
+    std::map< int, FunctionBucket_ptr > orderedcoeffs_;              // an ordered (user defined)  map to (boost shared) pointers to coeffs
     
     std::map< std::string, SolverBucket_ptr > solvers_;              // a map from solver bucket names to (boost shared) pointers to
                                                                      // solver buckets
 
-    std::map< int, SolverBucket_ptr > orderedsolvers_;               // an ordered (user defined) map from solver bucket names to
+    std::map< int, SolverBucket_ptr > orderedsolvers_;               // an ordered (user defined) map to
                                                                      // (boost shared) pointers to solver buckets
 
     std::vector< BoundaryCondition_ptr > bcs_;                       // a vector of (boost shared) poitners to bcs

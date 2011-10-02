@@ -41,21 +41,44 @@ void SystemBucket::solve()
                                 s_it != orderedsolvers_end(); s_it++)
   {
     (*(*s_it).second).solve();
+
+    // update_nonlinear...
   }
 }
 
 //*******************************************************************|************************************************************//
 // update the timelevels of the system function
-// this is only done for the system function at the moment as this is the only time dependent function
-// field functions are subfunctions and therefore require deep copies to be made anyway while coefficients are currently not
-// time dependent
 //*******************************************************************|************************************************************//
 void SystemBucket::update()
 {
 
   (*oldfunction_).vector() = (*function_).vector();                  // update the oldfunction to the new function value
 
+                                                                     // fields share a vector with the system function so no need to
+                                                                     // update them...
+  for (int_FunctionBucket_it f_it = orderedcoeffs_begin();           // so, let's just loop over coefficients
+                                f_it != orderedcoeffs_end(); f_it++)
+  {
+    (*(*f_it).second).update();                                      // and update them
+  }
+
+  update_nonlinear();                                                // update potentially nonlinear coefficients
+
   resetchange();                                                     // reset the change booleans in the system and fields
+
+}
+
+//*******************************************************************|************************************************************//
+// update the potentially nonlinear components of the system
+//*******************************************************************|************************************************************//
+void SystemBucket::update_nonlinear()
+{
+
+  for (int_FunctionBucket_it f_it = orderedcoeffs_begin();           // loop over coefficients again to update any constant
+                           f_it != orderedcoeffs_end(); f_it++)      // functionals
+  {
+    (*(*f_it).second).update_constantfunctional();                   // this does nothing to non constant functionals
+  }
 
 }
 
@@ -205,6 +228,8 @@ void SystemBucket::register_field(FunctionBucket_ptr field, const std::string &n
   else
   {
     fields_[name] = field;                                           // if not, add it to the fields_ map
+    orderedfields_[(int) fields_.size()] = field;                    // and into the orderedfields_ map, assuming that the
+                                                                     // insertion order is the order they are to be calculated
   }
 }
 
@@ -276,6 +301,38 @@ FunctionBucket_const_it SystemBucket::fields_end() const
 }
 
 //*******************************************************************|************************************************************//
+// return an iterator to the beginning of the orderedfields_ map
+//*******************************************************************|************************************************************//
+int_FunctionBucket_it SystemBucket::orderedfields_begin()
+{
+  return orderedfields_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the beginning of the orderedfields_ map
+//*******************************************************************|************************************************************//
+int_FunctionBucket_const_it SystemBucket::orderedfields_begin() const
+{
+  return orderedfields_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the end of the orderedfields_ map
+//*******************************************************************|************************************************************//
+int_FunctionBucket_it SystemBucket::orderedfields_end()
+{
+  return orderedfields_.end();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the end of the orderedfields_ map
+//*******************************************************************|************************************************************//
+int_FunctionBucket_const_it SystemBucket::orderedfields_end() const
+{
+  return orderedfields_.end();
+}
+
+//*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a coefficient function bucket in the system bucket data maps
 //*******************************************************************|************************************************************//
 void SystemBucket::register_coeff(FunctionBucket_ptr coeff, const std::string &name)
@@ -290,6 +347,8 @@ void SystemBucket::register_coeff(FunctionBucket_ptr coeff, const std::string &n
   else
   {
     coeffs_[name] = coeff;                                           // if it doesn't, register the function bucket
+    orderedcoeffs_[(int) coeffs_.size()] = coeff;                    // and into the orderedcoeffs_ map, assuming that the
+                                                                     // insertion order is the order they are to be calculated
   }
 }
 
@@ -341,6 +400,38 @@ FunctionBucket_it SystemBucket::coeffs_end()
 FunctionBucket_const_it SystemBucket::coeffs_end() const
 {
   return coeffs_.end();
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the beginning of the orderedcoeffs_ map
+//*******************************************************************|************************************************************//
+int_FunctionBucket_it SystemBucket::orderedcoeffs_begin()
+{
+  return orderedcoeffs_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the beginning of the orderedcoeffs_ map
+//*******************************************************************|************************************************************//
+int_FunctionBucket_const_it SystemBucket::orderedcoeffs_begin() const
+{
+  return orderedcoeffs_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the end of the orderedcoeffs_ map
+//*******************************************************************|************************************************************//
+int_FunctionBucket_it SystemBucket::orderedcoeffs_end()
+{
+  return orderedcoeffs_.end();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the end of the orderedcoeffs_ map
+//*******************************************************************|************************************************************//
+int_FunctionBucket_const_it SystemBucket::orderedcoeffs_end() const
+{
+  return orderedcoeffs_.end();
 }
 
 //*******************************************************************|************************************************************//
@@ -663,7 +754,9 @@ void SystemBucket::attach_solver_coeffs_(SolverBucket_it s_begin,
 void SystemBucket::empty_()
 {
   fields_.clear();
+  orderedfields_.clear();
   coeffs_.clear();
+  orderedcoeffs_.clear();
   solvers_.clear();
   orderedsolvers_.clear();
 }

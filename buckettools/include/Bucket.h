@@ -55,6 +55,8 @@ namespace buckettools
 
     void update();                                                   // update the functions in the systems in this bucket
 
+    void update_nonlinear();                                         // update the potentially nonlinear functions in the systems in this bucket
+
     bool complete();                                                 // indicate if the simulation is complete or not
 
     //***************************************************************|***********************************************************//

@@ -42,6 +42,8 @@ void Bucket::run()
 {
   std::stringstream buffer;                                          // optionpath buffer
 
+  update();
+
   output(OUTPUT_START);
 
   solve_at_start_();
@@ -100,6 +102,18 @@ void Bucket::update()
                              s_it != orderedsystems_end(); s_it++)
   {
     (*(*s_it).second).update();
+  }
+}
+
+//*******************************************************************|************************************************************//
+// loop over the ordered systems in the bucket, calling update_nonlinear on each of them
+//*******************************************************************|************************************************************//
+void Bucket::update_nonlinear()
+{
+  for (int_SystemBucket_const_it s_it = orderedsystems_begin(); 
+                             s_it != orderedsystems_end(); s_it++)
+  {
+    (*(*s_it).second).update_nonlinear();
   }
 }
 
@@ -913,9 +927,11 @@ void Bucket::solve_in_timeloop_()
 {
   for (*iteration_count_ = 0; \
        *iteration_count_ < nonlinear_iterations(); 
-       (*iteration_count_)++)                                      // loop over the nonlinear iterations
+       (*iteration_count_)++)                                        // loop over the nonlinear iterations
   {
-    solve(SOLVE_TIMELOOP);                                         // solve all systems in the bucket
+    solve(SOLVE_TIMELOOP);                                           // solve all systems in the bucket
+
+    update_nonlinear();
   }
 }
 

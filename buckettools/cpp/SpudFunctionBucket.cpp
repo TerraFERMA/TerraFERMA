@@ -101,6 +101,8 @@ void SpudFunctionBucket::initialize_function_coeff()
           (*(*system_).bucket()).fetch_coefficientspace(uflsymbol());// data maps
 
     function_.reset( new dolfin::Function(*coefficientspace) );      // allocate the function on this functionspace
+    oldfunction_.reset( new dolfin::Function(*coefficientspace) );   // allocate the function on this functionspace
+    iteratedfunction_.reset( new dolfin::Function(*coefficientspace) );// allocate the function on this functionspace
 
     buffer.str(""); buffer << optionpath() << "/type/rank/value";    // initialize the coefficient
     int nvs = Spud::option_count(buffer.str());
@@ -120,14 +122,12 @@ void SpudFunctionBucket::initialize_function_coeff()
 
                                                                      // interpolate this expression onto the function
         (*boost::dynamic_pointer_cast< dolfin::Function >(function_)).interpolate(*valueexp);
+        (*boost::dynamic_pointer_cast< dolfin::Function >(oldfunction_)).interpolate(*valueexp);
+        (*boost::dynamic_pointer_cast< dolfin::Function >(iteratedfunction_)).interpolate(*valueexp);
 
 //      }
     }
-                                                                     // don't currently support time varying coefficients so just
-                                                                     // point the old and iterated functions at the newly allocated
-                                                                     // function:
-    oldfunction_ = function_;                                        // old
-    iteratedfunction_ = function_;                                   // iterated
+
 
   }
 
@@ -534,9 +534,13 @@ void SpudFunctionBucket::initialize_expression_coeff_()
 
         function_ = 
                 initialize_expression(buffer.str(), &size_, &shape_);// initialize the function from the optionpath
-                                                                     // (this will do nothing for functionals)
-        oldfunction_ = function_;                                    // time varying not yet supported so grab a pointer for old
-        iteratedfunction_ = function_;                               // and iterated
+                                                                     // (this will do almost nothing for functionals)
+        oldfunction_ = 
+                initialize_expression(buffer.str(), &size_, &shape_);// initialize the function from the optionpath
+                                                                     // (this will do almost nothing for functionals)
+        iteratedfunction_ = 
+                initialize_expression(buffer.str(), &size_, &shape_);// initialize the function from the optionpath
+                                                                     // (this will do almost nothing for functionals)
 
         buffer.str(""); buffer << optionpath() << "/type/rank/value[" 
                                               << i << "]/functional";

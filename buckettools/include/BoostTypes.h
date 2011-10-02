@@ -77,6 +77,8 @@ namespace buckettools {
   typedef std::map< std::string, FunctionSpace_ptr >::const_iterator     FunctionSpace_const_it;
   typedef std::map< std::string, FunctionBucket_ptr >::iterator          FunctionBucket_it;
   typedef std::map< std::string, FunctionBucket_ptr >::const_iterator    FunctionBucket_const_it;
+  typedef std::map< int, FunctionBucket_ptr >::iterator                  int_FunctionBucket_it;
+  typedef std::map< int, FunctionBucket_ptr >::const_iterator            int_FunctionBucket_const_it;
   typedef std::map< std::string, SolverBucket_ptr >::iterator            SolverBucket_it;
   typedef std::map< std::string, SolverBucket_ptr >::const_iterator      SolverBucket_const_it;
   typedef std::map< int, SolverBucket_ptr >::iterator                    int_SolverBucket_it;
