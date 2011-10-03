@@ -41,8 +41,10 @@ DiagnosticsFile::~DiagnosticsFile()
 void DiagnosticsFile::header_constants_()
 {
   std::string buffer;
-  char * cbuffer;
+  const int maxlencbuffer=1024;
+  char cbuffer[maxlencbuffer];
   time_t rawtime;
+  int cerr;
   
   constant_tag_("HGChangesetId", "string", __HG_ID__);               // the mercurial changeset id
   
@@ -59,13 +61,17 @@ void DiagnosticsFile::header_constants_()
 //   buffer = static_cast<std::string>(cbuffer);
 //   constant_tag_("StartTime", "string", cbuffer);                      // the simulation start time
   
-//   cbuffer = getenv("HOSTNAME");
-//   if(cbuffer==NULL)
-//   {
-//     
-//   }
-//   buffer = static_cast<std::string>(cbuffer);
-//   constant_tag_("HostName", "string", cbuffer);                       // the hostname
+   cerr = gethostname(cbuffer, maxlencbuffer);
+   if(cerr==0)
+   {
+     buffer = static_cast<std::string>(cbuffer);
+     constant_tag_("HostName", "string", buffer);                    // the hostname
+   }
+   else
+   {
+     constant_tag_("HostName", "string", "not_defined");             // no hostname
+   }
+
 }
 
 //*******************************************************************|************************************************************//
