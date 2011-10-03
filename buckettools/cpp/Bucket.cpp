@@ -12,7 +12,7 @@
 
 using namespace buckettools;
 
-time_t Bucket::starttime_ = time(NULL);                              // initialize global static variable
+time_t Bucket::start_walltime_ = time(NULL);                         // initialize global static variable
 boost::timer Bucket::timer_;                                         // start timing the simulation
 
 //*******************************************************************|************************************************************//

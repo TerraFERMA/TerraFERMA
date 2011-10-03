@@ -54,7 +54,7 @@ void DiagnosticsFile::header_constants_()
   constant_tag_("CompileTime", "string", buffer.str());              // the comilation time
   
   buffer.str("");
-  buffer << ctime(((*bucket_).starttime()));
+  buffer << ctime(((*bucket_).start_walltime()));
   constant_tag_("StartTime", "string", 
                 buffer.str().substr( 0, buffer.str().length() - 1)); // the simulation start time
   
@@ -137,7 +137,7 @@ void DiagnosticsFile::data_timestep_()
   
   file_ << (*bucket_).timestep_count() << " ";  
   file_ << (*bucket_).current_time() << " ";
-  file_ << (*bucket_).elapsedtime() << " ";
+  file_ << (*bucket_).elapsed_walltime() << " ";
   file_ << (*bucket_).timestep() << " ";
   
   file_.unsetf(std::ios::scientific);

@@ -97,10 +97,10 @@ namespace buckettools
     const std::string output_basename() const                        // return the output base name
     { return output_basename_; }
 
-    static const time_t* starttime()                                 // return the start time
-    { return &starttime_; }
+    static const time_t* start_walltime()                            // return the start time
+    { return &start_walltime_; }
 
-    static const double elapsedtime()                                // return the start time
+    static const double elapsed_walltime()                           // return the start time
     { return timer_.elapsed(); }
 
     //***************************************************************|***********************************************************//
@@ -319,7 +319,7 @@ namespace buckettools
 
     std::string name_;                                               // the name of the bucket
 
-    static time_t starttime_;                                        // the start time                                    
+    static time_t start_walltime_;                                   // the start time                                    
 
     static boost::timer timer_;                                      // timer from the start of the simulation (init)
     
