@@ -40,37 +40,35 @@ DiagnosticsFile::~DiagnosticsFile()
 //*******************************************************************|************************************************************//
 void DiagnosticsFile::header_constants_()
 {
-  std::string buffer;
+  std::stringstream buffer;
   const int maxlencbuffer=1024;
   char cbuffer[maxlencbuffer];
-  time_t rawtime;
   int cerr;
   
   constant_tag_("HGChangesetId", "string", __HG_ID__);               // the mercurial changeset id
   
-  buffer  = __DATE__;
-  buffer += " ";
-  buffer += __TIME__;
-  constant_tag_("CompileTime", "string", buffer);                    // the comilation time
+  buffer.str("");
+  buffer << __DATE__;
+  buffer << " ";
+  buffer << __TIME__;
+  constant_tag_("CompileTime", "string", buffer.str());              // the comilation time
   
-//   cbuffer = ctime(&rawtime);
-//   if((*cbuffer+sizeof(&cbuffer)-1)=='\n')
-//   {
-//     (*cbuffer+sizeof(&cbuffer)-1) = '\0';
-//   }
-//   buffer = static_cast<std::string>(cbuffer);
-//   constant_tag_("StartTime", "string", cbuffer);                      // the simulation start time
+  buffer.str("");
+  buffer << ctime(((*bucket_).starttime()));
+  constant_tag_("StartTime", "string", 
+                buffer.str().substr( 0, buffer.str().length() - 1)); // the simulation start time
   
-   cerr = gethostname(cbuffer, maxlencbuffer);
-   if(cerr==0)
-   {
-     buffer = static_cast<std::string>(cbuffer);
-     constant_tag_("HostName", "string", buffer);                    // the hostname
-   }
-   else
-   {
-     constant_tag_("HostName", "string", "not_defined");             // no hostname
-   }
+  buffer.str("");
+  cerr = gethostname(cbuffer, maxlencbuffer);
+  if(cerr==0)
+  {
+    buffer << cbuffer;
+  }
+  else
+  {
+    buffer << "not_defined";
+  }
+  constant_tag_("HostName", "string", buffer.str());                 // the hostname
 
 }
 
@@ -82,6 +80,7 @@ void DiagnosticsFile::header_timestep_(uint &column)
   
   tag_("timestep", column++, "value");                               // the timestep count (i.e. number of timesteps taken)
   tag_("ElapsedTime", column++, "value");                            // the current time
+  tag_("ElapsedWallTime", column++, "value");                        // the elapsed wall time
   tag_("dt", column++, "value");                                     // the actual timestep
   
 }
@@ -138,6 +137,7 @@ void DiagnosticsFile::data_timestep_()
   
   file_ << (*bucket_).timestep_count() << " ";  
   file_ << (*bucket_).current_time() << " ";
+  file_ << (*bucket_).elapsedtime() << " ";
   file_ << (*bucket_).timestep() << " ";
   
   file_.unsetf(std::ios::scientific);

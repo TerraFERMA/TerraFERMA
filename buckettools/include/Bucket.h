@@ -9,6 +9,7 @@
 #include "SteadyStateFile.h"
 #include "DetectorsFile.h"
 #include <dolfin.h>
+#include <boost/timer.hpp>
 
 namespace buckettools
 {
@@ -95,6 +96,12 @@ namespace buckettools
 
     const std::string output_basename() const                        // return the output base name
     { return output_basename_; }
+
+    static const time_t* starttime()                                 // return the start time
+    { return &starttime_; }
+
+    static const double elapsedtime()                                // return the start time
+    { return timer_.elapsed(); }
 
     //***************************************************************|***********************************************************//
     // Mesh data access
@@ -311,6 +318,10 @@ namespace buckettools
     //***************************************************************|***********************************************************//
 
     std::string name_;                                               // the name of the bucket
+
+    static time_t starttime_;                                        // the start time                                    
+
+    static boost::timer timer_;                                      // timer from the start of the simulation (init)
     
     //***************************************************************|***********************************************************//
     // Pointers data (continued)
