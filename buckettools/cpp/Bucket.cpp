@@ -715,7 +715,7 @@ void Bucket::output(const int &location)
       if((*(*s_it).second).solve_location()==SOLVE_DIAGNOSTICS)      // find if any are meant to be solved before output
       {                                                              // check it has fields included in the current output
         if( (write_vis    && (*(*s_it).second).include_in_visualization()) ||
-            (write_stat   && (*(*s_it).second).include_in_statistics())    ||
+            (write_stat)                                                   ||// no extra checks as system stats always output 
             (write_steady && (*(*s_it).second).include_in_steadystate())   ||
             (write_det    && (*(*s_it).second).include_in_detectors())        )
         {
