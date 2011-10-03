@@ -19,9 +19,11 @@ PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f,
   dolfin::PETScVector rhs(pf), iteratedvec(px);
   bool reset_tensor = false;                                         // never reset the tensor
 
-  dolfin::log(dolfin::INFO, "In FormFunction");                      // FIXME: dolfin info
+  dolfin::log(dolfin::INFO, "In FormFunction");
 
   (*iteratedfunction).vector() = iteratedvec;                        // update the iterated system bucket function
+
+  (*(*snesctx).bucket).update_nonlinear();                           // update nonlinear coefficients
 
   dolfin::assemble(rhs, (*(*snesctx).linear), reset_tensor);         // assemble the rhs from the context linear form
   for(uint i = 0; i < bcs.size(); ++i)                               // loop over the bcs
@@ -49,9 +51,11 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
   dolfin::PETScMatrix matrix(pA), matrixpc(pB);
   bool reset_tensor = false;                                         // never reset the tensor
 
-  dolfin::log(dolfin::INFO, "In FormJacobian");                      // FIXME: dolfin info
+  dolfin::log(dolfin::INFO, "In FormJacobian");
 
   (*iteratedfunction).vector() = iteratedvec;                        // update the iterated system bucket function
+
+  (*(*snesctx).bucket).update_nonlinear();                           // update nonlinear coefficients
 
   dolfin::assemble(matrix, (*(*snesctx).bilinear), reset_tensor);    // assemble the matrix from the context bilinear form
   for(uint i = 0; i < bcs.size(); ++i)                               // loop over the bcs

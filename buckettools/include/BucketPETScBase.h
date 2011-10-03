@@ -4,6 +4,7 @@
 
 #include "BoostTypes.h"
 #include "petscsnes.h"
+#include "Bucket.h"
 
 namespace buckettools
 {
@@ -18,6 +19,7 @@ namespace buckettools
     Form_ptr bilinearpc;                                             // bilinear pc (may be null if not used)
     std::vector<BoundaryCondition_ptr> bcs;                          // bcs
     Function_ptr iteratedfunction;                                   // work function
+    Bucket *bucket;                                                  // pointer to bucket
   } SNESCtx;
 
   PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void* ctx);   // petsc snes callback function to form the residual

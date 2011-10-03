@@ -101,8 +101,8 @@ void SpudFunctionBucket::initialize_function_coeff()
           (*(*system_).bucket()).fetch_coefficientspace(uflsymbol());// data maps
 
     function_.reset( new dolfin::Function(*coefficientspace) );      // allocate the function on this functionspace
-    oldfunction_.reset( new dolfin::Function(*coefficientspace) );   // allocate the function on this functionspace
-    iteratedfunction_.reset( new dolfin::Function(*coefficientspace) );// allocate the function on this functionspace
+    oldfunction_.reset( new dolfin::Function(*coefficientspace) );   // allocate the old function on this functionspace
+    iteratedfunction_ = function_;                                   // just point this at the function
 
     buffer.str(""); buffer << optionpath() << "/type/rank/value";    // initialize the coefficient
     int nvs = Spud::option_count(buffer.str());
@@ -123,7 +123,6 @@ void SpudFunctionBucket::initialize_function_coeff()
                                                                      // interpolate this expression onto the function
         (*boost::dynamic_pointer_cast< dolfin::Function >(function_)).interpolate(*valueexp);
         (*boost::dynamic_pointer_cast< dolfin::Function >(oldfunction_)).interpolate(*valueexp);
-        (*boost::dynamic_pointer_cast< dolfin::Function >(iteratedfunction_)).interpolate(*valueexp);
 
 //      }
     }
@@ -538,9 +537,8 @@ void SpudFunctionBucket::initialize_expression_coeff_()
         oldfunction_ = 
                 initialize_expression(buffer.str(), &size_, &shape_);// initialize the function from the optionpath
                                                                      // (this will do almost nothing for functionals)
-        iteratedfunction_ = 
-                initialize_expression(buffer.str(), &size_, &shape_);// initialize the function from the optionpath
-                                                                     // (this will do almost nothing for functionals)
+
+        iteratedfunction_ = function_;                               // for now just point this at the function_
 
         buffer.str(""); buffer << optionpath() << "/type/rank/value[" 
                                               << i << "]/functional";

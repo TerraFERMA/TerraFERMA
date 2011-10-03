@@ -272,6 +272,7 @@ void SolverBucket::initialize_matrices()
     ctx_.bilinearpc   = bilinearpc_;
     ctx_.bcs          = (*system_).bcs();
     ctx_.iteratedfunction = (*system_).iteratedfunction();
+    ctx_.bucket       = (*system_).bucket();
   }
 
   assemble_bilinearforms(true);                                      // perform preassembly of the bilinear forms

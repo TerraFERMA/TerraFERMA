@@ -931,7 +931,7 @@ void Bucket::solve_in_timeloop_()
   {
     solve(SOLVE_TIMELOOP);                                           // solve all systems in the bucket
 
-    update_nonlinear();
+    //update_nonlinear();
   }
 }
 
