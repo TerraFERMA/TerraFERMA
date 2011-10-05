@@ -52,6 +52,7 @@ add_subdirectory("${BUCKETTOOLS_DIR}/cpp" "buckettools_cpp")
 
 include_directories("${BUCKETTOOLS_DIR}/include")
 
+add_subdirectory(courant_1d)
 add_subdirectory(poisson)
 add_subdirectory(projection_mixedelement)
 add_subdirectory(rbconvection_steadystate_split)
@@ -59,8 +60,8 @@ add_subdirectory(rbconvection_steadystate)
 add_subdirectory(rbconvection1a)
 
 add_custom_target(run)
-add_dependencies(run poissonrun projectionrun rbconvectionsplitrun rbconvectioncoupledrun rbconvection1arun)
+add_dependencies(run courant1drun poissonrun projectionrun rbconvectionsplitrun rbconvectioncoupledrun rbconvection1arun)
 
 add_custom_target(test)
-add_dependencies(test projectiontest rbconvectionsplittest rbconvectioncoupledtest rbconvection1atest)
+add_dependencies(test courant1dtest projectiontest rbconvectionsplittest rbconvectioncoupledtest rbconvection1atest)
 
