@@ -63,7 +63,7 @@ void StatisticsFile::header_bucket_(uint &column)
   for (SystemBucket_const_it sys_it = (*bucket_).systems_begin();        // loop over the systems
                           sys_it != (*bucket_).systems_end(); sys_it++)
   {
-    header_system_((*sys_it).second, column);                        // write the header for the system itself
+//    header_system_((*sys_it).second, column);                        // write the header for the system itself
 
     header_func_((*(*sys_it).second).fields_begin(),                // write the header for the fields in the system
                           (*(*sys_it).second).fields_end(), column);
@@ -163,7 +163,7 @@ void StatisticsFile::data_bucket_()
   for (SystemBucket_const_it sys_it = (*bucket_).systems_begin(); 
                           sys_it != (*bucket_).systems_end(); sys_it++)
   {
-    data_system_((*sys_it).second);
+//    data_system_((*sys_it).second);
 
     data_field_((*(*sys_it).second).fields_begin(), 
                                 (*(*sys_it).second).fields_end());
