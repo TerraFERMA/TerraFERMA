@@ -41,8 +41,6 @@ class Bucket:
     """Write a cpp header file describing all the namespaces in the bucket."""
  
     cpp       = []
-    cpp.append("#ifndef __SYSTEMS_WRAPPER_H\n")
-    cpp.append("#define __SYSTEMS_WRAPPER_H\n")
     cpp.append("\n")
     cpp.append("#include \"SystemsWrapper.h\"\n")
     cpp.append("#include \"BoostTypes.h\"\n")
@@ -188,7 +186,6 @@ class Bucket:
     cpp += constantfunctional_cpp
     cpp.append("}\n")
     cpp.append("\n")
-    cpp.append("#endif\n")
 
     filename = "SystemsWrapper.cpp"
     filehandle = file(filename+".temp", 'w')
