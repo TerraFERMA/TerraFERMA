@@ -501,7 +501,7 @@ void SpudBucket::meshes_fill_(const std::string &optionpath)
     std::ifstream file;                                              // a dummy file stream to test if files exist
                                                                      // (better way of doing this?)
     
-    filename.str(""); filename << basename << "_edge_subdomain.xml"; // check if the edge subdomain mesh function file exists
+    filename.str(""); filename << basename << "_facet_region.xml";   // check if the edge subdomain mesh function file exists
     file.open(filename.str().c_str(), std::ifstream::in);
     if (file)                                                        // if it does then attach it to the dolfin MeshData structure 
     {                                                                // using the dolfin reserved name for exterior facets
@@ -512,7 +512,7 @@ void SpudBucket::meshes_fill_(const std::string &optionpath)
       *meshfuncedgeids = edgeids;
     }
 
-    filename.str(""); filename << basename << "_cell_subdomain.xml"; // check if the edge subdomain mesh function file exists
+    filename.str(""); filename << basename << "_physical_region.xml";// check if the edge subdomain mesh function file exists
     file.open(filename.str().c_str(), std::ifstream::in);
     if (file)                                                        // if it does then attach it to the dolfin MeshData structure 
     {                                                                // using the dolfin reserved name for cell domains
