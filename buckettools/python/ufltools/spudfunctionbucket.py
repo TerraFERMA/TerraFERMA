@@ -22,12 +22,19 @@ class SpudFunctionBucket(ufltools.functionbucket.FunctionBucket):
     if self.type != "Constant":
       self.family = libspud.get_option(optionpath+"/type/rank/element/family")
       self.degree = libspud.get_option(optionpath+"/type/rank/element/degree")
-    else:
-      if libspud.have_option(optionpath+"/type/rank/value/functional"):
-        functional_optionpath = optionpath+"/type/rank/value/functional"
-        functional = ufltools.spud.SpudFunctionalBucket()
-        functional.fill(functional_optionpath, self)
-        self.functional = functional
+
+    if libspud.have_option(optionpath+"/type/rank/value/functional"):
+      functional_optionpath = optionpath+"/type/rank/value/functional"
+      functional = ufltools.spud.SpudFunctionalBucket()
+      functional.fill(functional_optionpath, self)
+      self.functional = functional
+    
+    if libspud.have_option(optionpath+"/type/rank/value/cpp"):
+      cpp_optionpath = optionpath+"/type/rank/value/cpp"
+      self.cpp = {}
+      self.cpp["members"]     = libspud.get_option(cpp_optionpath+"/members")
+      self.cpp["constructor"] = libspud.get_option(cpp_optionpath+"/constructor")
+      self.cpp["eval"]        = libspud.get_option(cpp_optionpath+"/eval")
     
     self.size     = None
     self.shape    = None

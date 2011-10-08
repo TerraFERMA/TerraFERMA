@@ -23,6 +23,13 @@ class Bucket:
       for solver in system.solvers:
         solver.write_ufc()
 
+  def write_cppexpressions(self):
+    """Write all cpp expression header files described by the bucket."""
+    for system in self.systems:
+      for coeff in system.coeffs:
+        if coeff.cpp:
+          coeff.write_cppexpressionheader()
+
   def write_ufl(self):
     """Write all ufl files described by the bucket."""
     for system in self.systems:
@@ -40,7 +47,7 @@ class Bucket:
   def write_cpp(self):
     """Write a cpp header file describing all the namespaces in the bucket."""
  
-    cpp       = []
+    cpp = []
     cpp.append("\n")
     cpp.append("#include \"SystemsWrapper.h\"\n")
     cpp.append("#include \"BoostTypes.h\"\n")
@@ -96,6 +103,12 @@ class Bucket:
     form_cpp.append("  {\n")
     form_cpp.append("    Form_ptr form;\n")
  
+    cppexpression_cpp = []
+    cppexpression_cpp.append("  // A function to return a form for a solver from a system given a functionspace, a solvername, a solvertype and a formname.\n")
+    cppexpression_cpp.append("  Expression_ptr cpp_fetch_expression(const std::string &systemname, const std::string &functionname, const uint &size, const std::vector<uint> &shape, const Bucket *bucket)\n")
+    cppexpression_cpp.append("  {\n")
+    cppexpression_cpp.append("    Expression_ptr expression;\n")
+ 
     s = 0
     for system in self.systems:
       include_cpp    += system.include_cpp()
@@ -107,6 +120,7 @@ class Bucket:
       functional_cpp += system.functional_cpp(index=s)
       constantfunctional_cpp += system.constantfunctional_cpp(index=s)
       form_cpp += system.form_cpp(index=s)
+      cppexpression_cpp += system.cppexpression_cpp(index=s)
       s += 1
 
     functionspace_cpp.append("    else\n")
@@ -165,6 +179,13 @@ class Bucket:
     form_cpp.append("    return form;\n")
     form_cpp.append("  }\n")
 
+    cppexpression_cpp.append("    else\n")
+    cppexpression_cpp.append("    {\n")
+    cppexpression_cpp.append("      dolfin::error(\"Unknown systemname in cpp_fetch_expression\");\n")
+    cppexpression_cpp.append("    }\n")
+    cppexpression_cpp.append("    return expression;\n")
+    cppexpression_cpp.append("  }\n")
+
     cpp += include_cpp
     cpp.append("\n")
     cpp.append("namespace buckettools\n")
@@ -184,6 +205,9 @@ class Bucket:
     cpp += functional_cpp
     cpp.append("\n")
     cpp += constantfunctional_cpp
+    cpp.append("\n")
+    cpp += cppexpression_cpp
+    cpp.append("\n")
     cpp.append("}\n")
     cpp.append("\n")
 

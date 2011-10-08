@@ -55,8 +55,6 @@ class SolverBucket:
     
   def write_ufc(self):
     """Write the system of forms to a ufl file."""
-    ufl = self.ufl()
-    
     self.write_ufl(suffix=".temp")
 
     filename = self.namespace()+".ufl"

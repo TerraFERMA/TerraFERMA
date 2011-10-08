@@ -107,8 +107,6 @@ class FunctionalBucket:
 
   def write_ufc(self):
     """Write the functional to a ufl file."""
-    ufl = self.ufl()
-
     self.write_ufl(suffix=".temp")
 
     filename = self.namespace()+".ufl"

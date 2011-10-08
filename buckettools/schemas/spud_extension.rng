@@ -77,4 +77,21 @@
     </element>
     <ref name="comment"/>
   </define>
+  <!-- cpp_code is just a long string -->
+  <define name="cpp_code">
+    <element name="string_value">
+      <attribute name="type">
+        <value>python</value>
+      </attribute>
+      <!--
+        Lines is a hint to the gui about the size of the text box.
+        It is not an enforced limit on string length.
+      -->
+      <attribute name="lines">
+        <value>20</value>
+      </attribute>
+      <data type="string"/>
+    </element>
+    <ref name="comment"/>
+  </define>
 </grammar>

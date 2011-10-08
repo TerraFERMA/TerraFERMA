@@ -583,7 +583,27 @@ prescribed_tensor_python =
     }
   )
 
-prescribed_scalar = prescribed_scalar_python
+
+prescribed_scalar_cpp =
+  (
+    ## A scalar described by some c++ code.
+    element cpp {
+      attribute rank { "0" },
+      element members {
+        cpp_code
+      },
+      element constructor {
+        cpp_code
+      },
+      element eval {
+        cpp_code
+      }
+    }
+  )
+
+
+prescribed_scalar = prescribed_scalar_cpp
+prescribed_scalar |= prescribed_scalar_python
 prescribed_scalar |= prescribed_scalar_constant
 
 prescribed_vector = prescribed_vector_python
