@@ -44,3 +44,17 @@ real_3_vector =
     comment
   )
 
+# cpp_code is just a long string
+cpp_code =
+  (
+    element string_value{
+      attribute type { "python" },
+      # Lines is a hint to the gui about the size of the text box.
+      # It is not an enforced limit on string length.
+      attribute lines { "20" },
+      xsd:string
+   },
+   comment
+  )
+
+

@@ -697,7 +697,27 @@ The return value must have the same shape as the tensor element.</a:documentatio
       <ref name="python_code"/>
     </element>
   </define>
+  <define name="prescribed_scalar_cpp">
+    <element name="cpp">
+      <a:documentation>A scalar described by some c++ code.</a:documentation>
+      <attribute name="rank">
+        <value>0</value>
+      </attribute>
+      <element name="members">
+        <ref name="cpp_code"/>
+      </element>
+      <element name="constructor">
+        <ref name="cpp_code"/>
+      </element>
+      <element name="eval">
+        <ref name="cpp_code"/>
+      </element>
+    </element>
+  </define>
   <define name="prescribed_scalar">
+    <ref name="prescribed_scalar_cpp"/>
+  </define>
+  <define name="prescribed_scalar" combine="choice">
     <ref name="prescribed_scalar_python"/>
   </define>
   <define name="prescribed_scalar" combine="choice">

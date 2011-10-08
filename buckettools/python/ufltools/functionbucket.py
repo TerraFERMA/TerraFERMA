@@ -1,5 +1,8 @@
-import sys
 from ufltools.base import *
+import subprocess
+import hashlib
+import shutil
+import sys
 
 class FunctionBucket:
   """A class that stores all the information necessary to write the ufl for a function (field or coefficient).
@@ -18,6 +21,7 @@ class FunctionBucket:
     self.type = None
     self.system = None
     self.functional = None
+    self.cpp = None
     self.functionals = None
     self.index = None
   
@@ -71,4 +75,104 @@ class FunctionBucket:
     cpp.append("          coefficientspace.reset(new "+self.system.name+solvername+"::CoefficientSpace_"+self.symbol+suffix+"(mesh));\n")
     cpp.append("        }\n")
     return cpp
+
+  def namespace(self):
+    return self.system.name+self.name
+
+  def cppexpression(self):
+    """Write the cpp expression to an array of cpp header strings."""
+    assert(self.cpp)
+    
+    cpp = []
+    cpp.append("#ifndef __"+self.namespace().upper()+"_EXPRESSION_H\n")
+    cpp.append("#define __"+self.namespace().upper()+"_EXPRESSION_H\n")
+    cpp.append("\n")
+    cpp.append("#include \"BoostTypes.h\"\n")
+    cpp.append("#include \"Bucket.h\"\n")
+    cpp.append("#include <dolfin.h>\n")
+    cpp.append("\n")
+
+    cpp.append("namespace buckettools\n")
+    cpp.append("{\n")
+    cpp.append("  //*****************************************************************|************************************************************//\n")
+    cpp.append("  // "+self.namespace()+" class:\n")
+    cpp.append("  //\n")
+    cpp.append("  // The "+self.namespace()+" class describes a derived dolfin Expression class that overloads\n")
+    cpp.append("  // the eval function using a user defined data.\n")
+    cpp.append("  //*****************************************************************|************************************************************//\n")
+    cpp.append("  class "+self.namespace()+" : public dolfin::Expression\n")
+    cpp.append("  {\n")
+    cpp.append("  \n")
+    cpp.append("  //*****************************************************************|***********************************************************//\n")
+    cpp.append("  // Publicly available functions\n")
+    cpp.append("  //*****************************************************************|***********************************************************//\n")
+    cpp.append("  \n")
+    cpp.append("  public:                                                            // available to everyone\n")
+    cpp.append("  \n")
+    if self.rank == "Scalar":
+      cpp.append("    "+self.namespace()+"(const Bucket *bucket) : dolfin::Expression(), bucket(bucket)\n")
+    elif self.rank == "Vector":
+      cpp.append("    "+self.namespace()+"(const uint &dim, const Bucket *bucket) : dolfin::Expression(dim), bucket(bucket)\n")
+    elif self.rank == "Tensor":
+      cpp.append("    "+self.namespace()+"(const std::vector<uint> &value_shape, const Bucket *bucket) : dolfin::Expression(value_shape), bucket(bucket)\n")
+    else:
+      print self.rank
+      print "Unknown rank."
+      sys.exit(1)
+    cpp.append("    {\n")
+    for line in self.cpp["constructor"].split("\n"):
+      cpp.append("      "+line+"\n")
+    cpp.append("    }\n")
+    cpp.append("    \n")
+    cpp.append("    void eval(dolfin::Array<double>& values, const dolfin::Array<double>& x, const ufc::cell &cell)\n")
+    cpp.append("    {\n")
+    for line in self.cpp["eval"].split("\n"):
+      cpp.append("      "+line+"\n")
+    cpp.append("    }\n")
+    cpp.append("  \n")
+    cpp.append("  //*****************************************************************|***********************************************************//\n")
+    cpp.append("  // Private functions\n")
+    cpp.append("  //*****************************************************************|***********************************************************//\n")
+    cpp.append("  \n")
+    cpp.append("  private:                                                           // only available to this class\n")
+    cpp.append("    \n")
+    cpp.append("    const Bucket *bucket;\n")
+    cpp.append("    \n")
+    for line in self.cpp["members"].split("\n"):
+      cpp.append("    "+line+"\n")
+    cpp.append("  \n")
+    cpp.append("  };\n")
+    cpp.append("  \n")
+    cpp.append("}\n")
+
+    cpp.append("\n")
+    cpp.append("#endif\n")
+    cpp.append("\n")
+
+    return cpp
+
+  def write_cppexpression(self, suffix=None):
+    """Write the cpp expression to a cpp header file."""
+    cpp = self.cppexpression()
+
+    filename   = self.namespace()+".h"
+    if suffix: filename += suffix 
+    filehandle = file(filename, 'w')
+    filehandle.writelines(cpp)
+    filehandle.close()
+
+  def write_cppexpressionheader(self):
+    """Write the cpp expression to a cpp header file (with md5 checksum)."""
+    self.write_cppexpression(suffix=".temp")
+
+    filename = self.namespace()+".h"
+
+    try:
+      checksum = hashlib.md5(open(filename).read()).hexdigest()
+    except:
+      checksum = None
+
+    if checksum != hashlib.md5(open(filename+".temp").read()).hexdigest():
+      # files have changed
+      shutil.copy(filename+".temp", filename)
 
