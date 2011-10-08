@@ -2,6 +2,7 @@
 #define __SYSTEMS_WRAPPER_H
 
 #include "BoostTypes.h"
+#include "Bucket.h"
 
 namespace buckettools
 {
@@ -59,6 +60,12 @@ namespace buckettools
   Form_ptr ufc_fetch_functional(const std::string &systemname,       // return a (boost shared) pointer to a form for a constant
                           const std::string &functionname,           // from a functional given a mesh and a function name
                           Mesh_ptr mesh);
+
+  Expression_ptr cpp_fetch_expression(const std::string &systemname, // return a (boost shared) pointer to an expression 
+                          const std::string &functionname,           // given a system and and a function name and a bucket
+                          const uint &size, 
+                          const std::vector<uint> &shape, 
+                          const Bucket *bucket);
 
 }
 
