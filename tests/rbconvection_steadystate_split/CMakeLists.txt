@@ -35,8 +35,6 @@ add_custom_target(
   DEPENDS ${EXECUTABLE}
   )
 
-set(RUNLIST ${RUNLIST} ${PREFIX}run)
-
 add_custom_target(
   ${PREFIX}test
   COMMAND py.test ${PROJECT_SOURCE_DIR}/tests.py 

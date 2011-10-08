@@ -35,5 +35,3 @@ add_custom_target(
   DEPENDS ${EXECUTABLE}
   )
 
-set(RUNLIST ${RUNLIST} ${PREFIX}run)
-

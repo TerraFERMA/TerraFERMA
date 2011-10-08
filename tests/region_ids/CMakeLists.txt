@@ -1,6 +1,7 @@
-set(EXECUTABLE "courant1d")
+set(EXECUTABLE "regionids")
 
-set(OPTIONSFILENAME "courant.bml")
+set(OPTIONSFILENAME "region_ids.bml")
+set(MESHBASENAME "region_id")
 
 set(PREFIX ${EXECUTABLE})
 
@@ -28,11 +29,23 @@ set (EXTRA_LIBS ${EXTRA_LIBS} buckettools_cpp ${PREFIX}buckettools_ufc)
 
 target_link_libraries(${EXECUTABLE} ${DOLFIN_LIBRARIES} ${DOLFIN_3RD_PARTY_LIBRARIES} ${EXTRA_LIBS} ${SPUD_LIBRARIES} ${PYTHON_LIBRARIES})
 
+# add a command that runs the mesh generation script
+add_custom_command(
+    OUTPUT ${PROJECT_BINARY_DIR}/${MESHBASENAME}.xml
+    COMMAND gmsh
+    ARGS -2 ${PROJECT_SOURCE_DIR}/${MESHBASENAME}.geo -o ${PROJECT_BINARY_DIR}/${MESHBASENAME}.msh
+    COMMAND dolfin-convert
+    ARGS ${PROJECT_BINARY_DIR}/${MESHBASENAME}.msh ${PROJECT_BINARY_DIR}/${MESHBASENAME}.xml
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+    DEPENDS ${PROJECT_SOURCE_DIR}/${MESHBASENAME}.geo
+    )
+ 
 add_custom_target(
   ${PREFIX}run
   COMMAND ${EXECUTABLE} -vINFO -l ${OPTIONSFILE} 
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   DEPENDS ${EXECUTABLE}
+  DEPENDS ${PROJECT_BINARY_DIR}/${MESHBASENAME}.xml
   )
 
 add_custom_target(
@@ -42,3 +55,4 @@ add_custom_target(
   DEPENDS ${PROJECT_SOURCE_DIR}/tests.py
   )
 add_dependencies(${PREFIX}test ${PREFIX}run)
+
