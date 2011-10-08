@@ -21,7 +21,7 @@
     <ref name="comment"/>
   </define>
   <define name="real_2_vector">
-    <element name="integer_value">
+    <element name="real_value">
       <attribute name="rank">
         <value>1</value>
       </attribute>
@@ -59,7 +59,7 @@
     <ref name="comment"/>
   </define>
   <define name="real_3_vector">
-    <element name="integer_value">
+    <element name="real_value">
       <attribute name="rank">
         <value>1</value>
       </attribute>

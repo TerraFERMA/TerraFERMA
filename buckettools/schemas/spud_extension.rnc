@@ -13,7 +13,7 @@ integer_2_vector =
 
 real_2_vector =
   (
-    element integer_value {
+    element real_value {
       attribute rank { "1" },
       attribute dim1 { "2" },
       attribute shape { xsd:integer },
@@ -35,7 +35,7 @@ integer_3_vector =
 
 real_3_vector =
   (
-    element integer_value {
+    element real_value {
       attribute rank { "1" },
       attribute dim1 { "3" },
       attribute shape { xsd:integer },
