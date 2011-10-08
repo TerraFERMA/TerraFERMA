@@ -27,11 +27,15 @@ include_directories(${DOLFIN_INCLUDE_DIRS} ${DOLFIN_3RD_PARTY_INCLUDE_DIRS})
 
 project(basebucket)
 
-set(EXECUTABLE "basebucket" CACHE STRING
-     "The name of the executable" FORCE)
+if (NOT EXECUTABLE)
+  set(EXECUTABLE "basebucket" CACHE STRING
+       "The name of the executable" FORCE)
+endif()
 
-set(BUCKETTOOLS_DIR "${PROJECT_SOURCE_DIR}/buckettools" CACHE PATH
-     "Location of buckettools." FORCE)
+if (NOT BUCKETTOOLS_DIR)
+  set(BUCKETTOOLS_DIR "${PROJECT_SOURCE_DIR}/buckettools" CACHE PATH
+       "Location of buckettools." FORCE)
+endif()
 
 find_package(PythonLibs)
 
