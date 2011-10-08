@@ -29,6 +29,8 @@ bucket = ufltools.spud.SpudBucket()
 bucket.fill()
 # write out the ufl files described by the options tree
 bucket.write_ufc()
+# write out the cpp expression header files described by the options tree
+bucket.write_cppexpressions()
 # write a cpp header file to wrap the namespaces of the corresponding ufc
 bucket.write_cpp()
 
