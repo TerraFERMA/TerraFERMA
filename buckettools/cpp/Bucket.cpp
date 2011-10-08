@@ -190,6 +190,7 @@ void Bucket::copy_diagnostics(Bucket_ptr &bucket) const
   (*bucket).name_ = name_;
 
   (*bucket).start_time_ = start_time_;
+  (*bucket).old_time_ = old_time_;
   (*bucket).current_time_ = current_time_;
   (*bucket).finish_time_ = finish_time_;
   (*bucket).timestep_count_ = timestep_count_;
@@ -231,6 +232,15 @@ const double Bucket::start_time() const
 {
   assert(start_time_);
   return *start_time_;
+}
+
+//*******************************************************************|************************************************************//
+// return the old time (from the previous timestep)
+//*******************************************************************|************************************************************//
+const double Bucket::old_time() const
+{
+  assert(old_time_);
+  return *old_time_;
 }
 
 //*******************************************************************|************************************************************//
@@ -964,7 +974,7 @@ bool Bucket::steadystate_()
 }
 
 //*******************************************************************|************************************************************//
-// return a boolean indicating if the simulation has finished or not (normally for reasons other than the time being complete)
+// return a boolean indicating if the simulation should output or not
 //*******************************************************************|************************************************************//
 bool Bucket::dump_(double_ptr dump_period, 
                    double_ptr previous_dump_time, 
@@ -974,7 +984,7 @@ bool Bucket::dump_(double_ptr dump_period,
 
   if(dump_period)
   {
-    if(current_time()==start_time()) 
+    if(current_time()==start_time())                                 // force output at start
     {
       dumping = true;
     }
@@ -990,7 +1000,7 @@ bool Bucket::dump_(double_ptr dump_period,
   }
   else if(dump_period_timesteps)
   {
-    if(timestep_count()==0)
+    if(timestep_count()==0)                                          // force output at start
     {
       dumping = true;
     }

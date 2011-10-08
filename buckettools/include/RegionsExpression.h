@@ -10,13 +10,12 @@ namespace buckettools
 {
 
   //*****************************************************************|************************************************************//
-  // InitalConditionExpression class:
+  // RegionsExpression class:
   //
-  // This class provides a method of looping over field initial conditions (as individual expressions)
-  // and setting a mixed function space to those initial conditions.
-  // It is a derived dolfin expression and overloads much functionality in that base class
+  // This class provides a method of overloading a dolfin Expression eval function by looping over cell ids and returning the results
+  // of individual expressions in each of those regions.
   //*****************************************************************|************************************************************//
-  class InitialConditionExpression : public dolfin::Expression
+  class RegionsExpression : public dolfin::Expression
   {
 
   //*****************************************************************|***********************************************************//
@@ -29,14 +28,23 @@ namespace buckettools
     // Constructors and destructors
     //***************************************************************|***********************************************************//
     
-    InitialConditionExpression(                                      // specific constructor (scalar)
-                      std::map< uint, Expression_ptr > expressions);
+    RegionsExpression(                                               // specific constructor (scalar)
+                      std::map< uint, Expression_ptr > expressions,
+                      MeshFunction_uint_ptr cell_ids);
     
-    InitialConditionExpression(const uint &dim,                      // specific constructor (vector)
-                      std::map< uint, Expression_ptr > expressions);
+    RegionsExpression(const uint &dim,                               // specific constructor (vector)
+                      std::map< uint, Expression_ptr > expressions,
+                      MeshFunction_uint_ptr cell_ids);
     
+    RegionsExpression(const uint &dim0, const uint &dim1,            // specific constructor (tensor)
+                      std::map< uint, Expression_ptr > expressions,
+                      MeshFunction_uint_ptr cell_ids);
     
-    virtual ~InitialConditionExpression();                           // default destructor
+    RegionsExpression(const std::vector<uint> &value_shape,          // specific constructor (alternate tensor)
+                      std::map< uint, Expression_ptr > expressions,
+                      MeshFunction_uint_ptr cell_ids);
+    
+    virtual ~RegionsExpression();                           // default destructor
     
     //***************************************************************|***********************************************************//
     // Overloaded base class functions
@@ -56,8 +64,10 @@ namespace buckettools
     // Pointers data
     //***************************************************************|***********************************************************//
 
-    std::map< uint, Expression_ptr > expressions_;                   // map from component to initial condition expression for a function
+    std::map< uint, Expression_ptr > expressions_;                   // map from region id to expression for that region
   
+    MeshFunction_uint_ptr cell_ids_;                                 // a (boost shared) pointer to a (uint) mesh function holding the cell ids
+
   };
 
 }

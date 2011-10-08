@@ -20,7 +20,10 @@ InitialConditionExpression::InitialConditionExpression(std::map< uint,
 //*******************************************************************|************************************************************//
 // specific constructor (vector)
 //*******************************************************************|************************************************************//
-InitialConditionExpression::InitialConditionExpression(uint dim, std::map< uint, Expression_ptr > expressions) : dolfin::Expression(dim), expressions_(expressions)
+InitialConditionExpression::InitialConditionExpression(const uint &dim, 
+                      std::map< uint, Expression_ptr > expressions) : 
+                      dolfin::Expression(dim), 
+                      expressions_(expressions)
 {
                                                                      // do nothing
 }
@@ -43,8 +46,7 @@ void InitialConditionExpression::eval(dolfin::Array<double>& values,
 {
   double zero = 0.0;                                                 // zero the full value array
   values=zero;
-  for (std::map< uint, Expression_ptr >::const_iterator expr =       // loop over the expressions in the map
-                    expressions_.begin();
+  for (uint_Expression_const_it expr = expressions_.begin();         // loop over the expressions in the map
                     expr != expressions_.end(); expr++)
   {
     dolfin::Array<double> tmp_values((*(*expr).second).value_size());// set up a temporary value array

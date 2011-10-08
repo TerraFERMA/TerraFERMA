@@ -219,6 +219,8 @@ namespace buckettools
     
     std::string type_;                                               // a *string* describing the type of function (function, expression, constant)
 
+    Expression_ptr coefficientfunction_;                             // an expression used to set the values of a coefficient functional
+
     Form_ptr constantfunctional_;                                    // a functional that can be used to set a constant function
     
     File_ptr pvdfile_;                                               // (boost shared) pointer to a pvd file output for this function

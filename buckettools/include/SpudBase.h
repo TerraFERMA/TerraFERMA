@@ -13,19 +13,6 @@ namespace buckettools
   // objects in the bucketools library
   //*****************************************************************|************************************************************//
 
-  Expression_ptr initialize_expression(const std::string &optionpath,// initialize an expression based on an optionpath (and a size
-                                       const int *size,              // and shape for vectors and tensors)
-                                       const std::vector<int>        // NOTE: this declaration has to come first!
-                                                            *shape);
-
-  Expression_ptr initialize_expression(const std::string &optionpath);// initialize an expression based on an optionpath
-
-  Expression_ptr initialize_expression(const std::string &optionpath,// initialize an expression based on an optionpath (and a size
-                                       const int *size);              // and shape for vectors)
-
-  Expression_ptr initialize_expression(const std::string &optionpath,// initialize an expression based on an optionpath (and a
-                                       const std::vector<int> *shape);// and shape for tensors)
-
   void spud_err(const std::string &optionpath,                       // translate the spud error codes into dolfin errors
                 const Spud::OptionError &error);
 

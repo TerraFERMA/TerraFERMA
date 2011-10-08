@@ -57,7 +57,7 @@ add_library(buckettools_cpp Usage.cpp SignalHandler.cpp SigIntEventHandler.cpp
                             FunctionBucket.cpp SpudFunctionBucket.cpp
                             SolverBucket.cpp SpudSolverBucket.cpp 
                             SpudBase.cpp PythonExpression.cpp PythonInstance.cpp
-                            InitialConditionExpression.cpp
+                            InitialConditionExpression.cpp RegionsExpression.cpp
                             GenericDetectors.cpp PointDetectors.cpp PythonDetectors.cpp
                             DiagnosticsFile.cpp StatisticsFile.cpp SteadyStateFile.cpp
                             DetectorsFile.cpp

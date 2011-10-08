@@ -8,6 +8,8 @@
 #include "SpudSystemBucket.h"
 #include "SpudBase.h"
 #include "SpudBucket.h"
+#include "PythonExpression.h"
+#include "RegionsExpression.h"
 
 using namespace buckettools;
 
@@ -105,28 +107,9 @@ void SpudFunctionBucket::initialize_function_coeff()
     iteratedfunction_ = function_;                                   // just point this at the function
 
     buffer.str(""); buffer << optionpath() << "/type/rank/value";    // initialize the coefficient
-    int nvs = Spud::option_count(buffer.str());
-    if (nvs > 1)
-    {
-      dolfin::error("Haven't thought about values over regions.");
-    }
-    else
-    {
-//      for (uint i = 0; i < nvs; i++)
-//      {
-        uint i = 0;
-        buffer.str(""); buffer << optionpath() << "/type/rank/value["
-                                                         << i << "]";
-        Expression_ptr valueexp = initialize_expression(buffer.str(),// initialize an expression from the optionpath 
-                                                      &size_, &shape_);
-
-                                                                     // interpolate this expression onto the function
-        (*boost::dynamic_pointer_cast< dolfin::Function >(function_)).interpolate(*valueexp);
-        (*boost::dynamic_pointer_cast< dolfin::Function >(oldfunction_)).interpolate(*valueexp);
-
-//      }
-    }
-
+    coefficientfunction_ = initialize_expression_over_regions_(buffer.str());
+    (*boost::dynamic_pointer_cast< dolfin::Function >(function_)).interpolate(*coefficientfunction_);
+    (*boost::dynamic_pointer_cast< dolfin::Function >(oldfunction_)).interpolate(*coefficientfunction_);
 
   }
 
@@ -386,22 +369,8 @@ void SpudFunctionBucket::initialize_field_()
     
   buffer.str(""); buffer << optionpath()                             // find out how many initial conditions we have
                                   << "/type/rank/initial_condition";
-  int nics = Spud::option_count(buffer.str());
-  if (nics > 1)
-  {
-    dolfin::error("Haven't thought about ics over regions.");
-  }
-  else
-  {
-//    for (uint i = 0; i < nics; i++)
-//    {
-      uint i = 0;
-      buffer.str(""); buffer << optionpath() 
-                      << "/type/rank/initial_condition[" << i << "]";
-      ic_fill_(buffer.str());                                        // fill in data about the field initial condition
-//    }
-  }
-   
+  icexpression_ = initialize_expression_over_regions_(buffer.str()); // intialize the expression
+  
 }
 
 //*******************************************************************|************************************************************//
@@ -463,8 +432,8 @@ void SpudFunctionBucket::bc_component_fill_(const std::string &optionpath,
                                     (*functionspace())[*subcompid];  // happily dolfin caches this for us
        
        buffer.str(""); buffer << optionpath << "/type::Dirichlet";   // initialize an expression describing the function
-       Expression_ptr bcexp =                                        // on this boundary condition, assuming it is of type
-                  initialize_expression(buffer.str(), &size_, &shape_);// Dirichlet
+       Expression_ptr bcexp = initialize_expression_(buffer.str());  // on this boundary condition, assuming it is of type
+                                                                     // Dirichlet
        
        namebuffer.str(""); namebuffer << bcname << "::" 
                                                        << *subcompid;// assemble a name for the bc (including the subcomponent id)
@@ -484,8 +453,7 @@ void SpudFunctionBucket::bc_component_fill_(const std::string &optionpath,
   else                                                               // no components (scalar or using all components)
   {
     buffer.str(""); buffer << optionpath << "/type::Dirichlet";      // initialize an expression describing the field on the
-    Expression_ptr bcexp =                                           // boundary
-                  initialize_expression(buffer.str(), &size_, &shape_);
+    Expression_ptr bcexp = initialize_expression_(buffer.str());     // boundary
     
     register_bcexpression(bcexp, bcname);                            // register the expression in the function bucket
     
@@ -500,14 +468,6 @@ void SpudFunctionBucket::bc_component_fill_(const std::string &optionpath,
 }
 
 //*******************************************************************|************************************************************//
-// fill the details of an initial condition assuming the buckettools schema
-//*******************************************************************|************************************************************//
-void SpudFunctionBucket::ic_fill_(const std::string &optionpath)
-{
-  icexpression_ = initialize_expression(optionpath, &size_, &shape_);  // intialize the expression (FIXME: still needs regions support!)
-}
-
-//*******************************************************************|************************************************************//
 // initialize a coefficient that is of type expression or constant
 //*******************************************************************|************************************************************//
 void SpudFunctionBucket::initialize_expression_coeff_()
@@ -517,37 +477,15 @@ void SpudFunctionBucket::initialize_expression_coeff_()
   if (type_=="Expression" || type_=="Constant")                      // only proceed for expressions and constants
   {
 
-    buffer.str(""); buffer << optionpath() << "/type/rank/value";    // find out how many value regions we have
-    int nvs = Spud::option_count(buffer.str());
-    if (nvs > 1)
+    buffer.str(""); buffer << optionpath() << "/type/rank/value";
+    function_ = initialize_expression_over_regions_(buffer.str());
+    oldfunction_ = initialize_expression_over_regions_(buffer.str());
+    iteratedfunction_ = function_;
+    
+    buffer.str(""); buffer << optionpath() << "/type/rank/value[0]/functional";
+    if(Spud::have_option(buffer.str()))
     {
-      dolfin::error("Haven't thought about values over regions.");
-    }
-    else
-    {
-//      for (uint i = 0; i < nvs; i++)
-//      {
-        uint i = 0;
-        buffer.str(""); buffer << optionpath() << "/type/rank/value[" 
-                                                        << i << "]";
-
-        function_ = 
-                initialize_expression(buffer.str(), &size_, &shape_);// initialize the function from the optionpath
-                                                                     // (this will do almost nothing for functionals)
-        oldfunction_ = 
-                initialize_expression(buffer.str(), &size_, &shape_);// initialize the function from the optionpath
-                                                                     // (this will do almost nothing for functionals)
-
-        iteratedfunction_ = function_;                               // for now just point this at the function_
-
-        buffer.str(""); buffer << optionpath() << "/type/rank/value[" 
-                                              << i << "]/functional";
-        if(Spud::have_option(buffer.str()))
-        {
-          constantfunctional_fill_();
-        }
-
-//      }
+      constantfunctional_fill_();
     }
   }
 
@@ -655,6 +593,213 @@ void SpudFunctionBucket::functionals_fill_()
     }
   }
 
+}
+
+//*******************************************************************|************************************************************//
+// initialize an expression over region ids from an optionpath assuming the buckettools schema
+//*******************************************************************|************************************************************//
+Expression_ptr SpudFunctionBucket::initialize_expression_over_regions_(
+                                       const std::string &optionpath)
+{
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud error code
+
+  Expression_ptr expression;
+
+  int nvs = Spud::option_count(optionpath);
+  if (nvs > 1)
+  {
+    std::map< uint, Expression_ptr > expressions;
+
+    int rank;
+    std::vector< uint > shape;
+
+    for (uint i = 0; i < nvs; i++)
+    {
+      buffer.str(""); buffer << optionpath << "[" << i << "]";
+      Expression_ptr tmpexpression = initialize_expression_(buffer.str());
+
+      if (i==0)                                                      // record the rank and shape of the expression
+      {
+        rank = (*tmpexpression).value_rank();
+        for (uint d = 0; d < rank; d++)
+        {
+          shape.push_back((*tmpexpression).value_dimension(d));
+        }
+      }
+      else                                                           // check its the same as previous expressions
+      {
+        assert(rank==(*tmpexpression).value_rank());
+        for (uint d = 0; d < rank; d++)
+        {
+          assert(shape[d]==(*tmpexpression).value_dimension(d));
+        }
+      }
+
+      buffer.str(""); buffer << optionpath << "[" << i << "]/region_ids";
+        
+      std::vector<int> regionids;
+      serr = Spud::get_option(buffer.str(), regionids);              // get the list of region ids
+      spud_err(buffer.str(), serr);
+    
+      for (std::vector<int>::const_iterator id = regionids.begin();
+                            id != regionids.end(); id++)
+      {
+        
+        uint_Expression_it e_it = expressions.find(*id);              // check if this component already exists
+        if (e_it != expressions.end())
+        {
+          dolfin::error(                                             // if it does, issue an error
+          "Expression for region id %d already exists in expressions map.", 
+                                                      *id);
+        }
+        else
+        {
+          expressions[*id] = tmpexpression;                          // if it doesn't, insert it into the map
+        }
+
+      }
+
+    }
+
+    MeshFunction_uint_ptr cell_ids = 
+          (*(*system_).mesh()).data().mesh_function("cell_domains");
+    if (rank==0)
+    {
+      expression.reset( new RegionsExpression(expressions, 
+                                                        cell_ids) );
+    }
+    else
+    {
+      expression.reset( new RegionsExpression(shape, expressions, 
+                                                        cell_ids) );
+    }
+
+  }
+  else
+  {
+    buffer.str(""); buffer << optionpath << "[0]";
+
+    expression = initialize_expression_(buffer.str());               // initialize the function from the optionpath
+
+  }
+
+  return expression;
+
+}
+
+//*******************************************************************|************************************************************//
+// initialize an expression from an optionpath assuming the buckettools schema
+//*******************************************************************|************************************************************//
+Expression_ptr SpudFunctionBucket::initialize_expression_(
+                                       const std::string &optionpath)
+{
+  Spud::OptionError serr;                                            // spud option error
+  Expression_ptr expression;                                         // declare the pointer that will be returned
+  
+  std::stringstream constbuffer, pybuffer, funcbuffer, cppbuffer;    // some string assembly streams
+  constbuffer.str(""); constbuffer << optionpath << "/constant";     // for a constant
+  pybuffer.str("");    pybuffer    << optionpath << "/python";       // for a python function
+  cppbuffer.str("");   cppbuffer   << optionpath << "/cpp";          // for a cpp expression
+  funcbuffer.str("");  funcbuffer  << optionpath << "/functional";   // for a functional
+  
+  if (Spud::have_option(constbuffer.str()))                          // constant requested?
+  {
+    int rank;
+    serr = Spud::get_option_rank(constbuffer.str(), rank);           // find out the rank
+    spud_err(constbuffer.str(), serr);
+    if(rank==0)                                                      // scalar
+    {
+      double value;
+      serr = Spud::get_option(constbuffer.str(), value); 
+      spud_err(constbuffer.str(), serr);
+      expression.reset( new dolfin::Constant(value) );
+    }
+    else if (rank==1)                                                // vector
+    {
+      std::vector<double> values;
+      serr = Spud::get_option(constbuffer.str(), values); 
+      spud_err(constbuffer.str(), serr);
+      assert(values.size()==size_);
+      expression.reset(new dolfin::Constant(values));
+    }
+//    else if (rank==2)
+//    {
+//      std::vector<int> value_shape;
+//      std::vector<double> values; // not sure this will work 
+//                                  // (might have to be std::vector< std::vector<double> >
+//                                  //  but this disagrees with the DOLFIN interface)
+//      serr = Spud::get_option_shape(constbuffer.str(), value_shape); spud_err(constbuffer.str(), serr);
+//      serr = Spud::get_option(constbuffer.str(), values); spud_err(constbuffer.str(), serr);
+//      expression.reset(new dolfin::Constant());
+//    }
+//    else
+//    {
+//      dolfin::error("Unknown rank in init_exp_");
+//    }
+    else                                                             // unable to deal with this rank
+    {
+      dolfin::error("Don't deal with rank > 1 yet.");
+    }
+  } 
+  else if (Spud::have_option(pybuffer.str()))                        // python requested
+  {
+    std::string pyfunction;                                          // the python function string
+    serr = Spud::get_option(pybuffer.str(), pyfunction); 
+    spud_err(pybuffer.str(), serr);
+    
+                                                                     // rank of a python function isn't in the default spud base
+                                                                     // language so have added it... but it comes out as a string 
+                                                                     // of course!
+    std::stringstream buffer;
+    std::string rankstring;                                          // bit of a hack
+    buffer.str(""); buffer << pybuffer.str() << "/rank";
+    serr = Spud::get_option(buffer.str(), rankstring); 
+    spud_err(buffer.str(), serr);
+    
+    int rank;
+    rank = atoi(rankstring.c_str());
+    if(rank==0)                                                      // scalar
+    {
+      expression.reset(new buckettools::PythonExpression(pyfunction));
+    }
+    else if (rank==1)                                                // vector
+    {
+      expression.reset(new buckettools::PythonExpression(size_, pyfunction));
+    }
+    else
+    {
+      dolfin::error("Don't deal with rank > 1 yet.");
+    }
+  }
+  else if (Spud::have_option(funcbuffer.str()))                      // not much we can do for this case here
+  {                                                                  // except check it's a scalar and declare a constant
+
+                                                                     // rank of a functional isn't in the default spud base
+                                                                     // language so have added it... but it comes out as a string 
+                                                                     // of course!
+    std::stringstream buffer;
+    std::string rankstring;                                          // bit of a hack
+    buffer.str(""); buffer << funcbuffer.str() << "/rank";
+    serr = Spud::get_option(buffer.str(), rankstring); 
+    spud_err(buffer.str(), serr);
+    
+    int rank;
+    rank = atoi(rankstring.c_str());
+    assert(rank==0);
+
+    expression.reset( new dolfin::Constant(0.0) );                   // can't set this to the correct value yet as it depends on
+                                                                     // having all its coefficients attached so for now just set it
+                                                                     // to zero
+
+  }
+  else                                                               // unknown expression type
+  {
+    dolfin::error("Unknown way of specifying expression.");
+  }
+  
+  return expression;                                                 // return the initialized expression
+  
 }
 
 //*******************************************************************|************************************************************//

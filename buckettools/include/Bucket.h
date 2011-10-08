@@ -84,6 +84,8 @@ namespace buckettools
 
     const double start_time() const;                                 // return the current time
 
+    const double old_time() const;                                   // return the old time (from the previous timestep)
+
     const double current_time() const;                               // return the current time
 
     const double finish_time() const;                                // return the finish time
@@ -248,7 +250,8 @@ namespace buckettools
                                                                      // (assumed size of various objects that don't state
                                                                      //  their own size explicitly)
     
-    double_ptr start_time_, current_time_, finish_time_;             // the current and finish times of the simulation
+    double_ptr start_time_, old_time_,
+                            current_time_, finish_time_;             // the current and finish times of the simulation
 
     int_ptr timestep_count_;                                         // the number of timesteps and number of nonlinear iterations taken
 

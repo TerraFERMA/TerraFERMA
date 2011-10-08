@@ -116,8 +116,6 @@ namespace buckettools
 
     void initialize_expression_coeff_();                             // initialize this function assuming its a coefficient expression
 
-    void ic_fill_(const std::string &optionpath);                    // fill in the initial condition data for this function
-
     void bc_fill_(const std::string &optionpath,                     // fill in the bc for this function
                   const MeshFunction_uint_ptr 
                                             &edgeidmeshfunction);
@@ -131,6 +129,12 @@ namespace buckettools
     void constantfunctional_fill_();                                 // fill in the data for constant expressions defined by functionals
 
     void functionals_fill_();                                        // fill in the data for the functionals of this function
+
+    Expression_ptr initialize_expression_over_regions_(
+                                      const std::string &optionpath);// initialize an expression over region ids based on an optionpath
+
+    Expression_ptr initialize_expression_(
+                                      const std::string &optionpath);// initialize an expression based on an optionpath
 
     //***************************************************************|***********************************************************//
     // Emptying data

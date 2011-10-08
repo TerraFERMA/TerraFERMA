@@ -346,8 +346,11 @@ void SpudBucket::timestepping_fill_()
     spud_err(buffer.str(), serr);
 
     buffer.str(""); 
-    buffer << "/timestepping/timestep/coefficient::Timestep/type::Constant/rank::Scalar/value::WholeMesh";
-    timestep_.second = boost::dynamic_pointer_cast< dolfin::Constant >(initialize_expression(buffer.str()));
+    double timestep_value;
+    buffer << "/timestepping/timestep/coefficient::Timestep/type::Constant/rank::Scalar/value::WholeMesh/constant";
+    serr = Spud::get_option(buffer.str(), timestep_value);
+    spud_err(buffer.str(), serr);
+    timestep_.second.reset( new dolfin::Constant(timestep_value) );
 
     buffer.str(""); buffer << "/timestepping/steady_state";
     if (Spud::have_option(buffer.str()))
