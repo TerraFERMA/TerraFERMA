@@ -37,19 +37,61 @@ GenericDetectors::~GenericDetectors()
 // base eval implementation - evaluates a function at the detector positions and returns a vector of arrays of values
 //*******************************************************************|************************************************************//
 void GenericDetectors::eval(std::vector< Array_double_ptr > &values,
-                            const dolfin::GenericFunction &function)
+                            const dolfin::GenericFunction &function,
+                            Mesh_ptr mesh)
 {
   Array_double_ptr 
             value(new dolfin::Array<double>(function.value_size())); // set up a pointer to be reset later to contain the
   
   assert(values.empty());                                            // check the values are empty
+
+  double* pos;
+  uint dim;
+  int id;
   
+  std::map< Mesh_ptr, std::vector< int > >::const_iterator c_it = cell_ids_.find(mesh);
+  bool have_cells = ( c_it != cell_ids_.end() );
+  std::vector< int > cellids;
+  if (have_cells)
+  {
+    cellids = (*c_it).second;
+  }
+
   for (uint i = 0; i<positions_.size(); i++)                         // loop over the detector positions
   {
     value.reset(new dolfin::Array<double>(function.value_size()));   // reset the value
-    function.eval(*value, *positions_[i]);                           // use the dolfin eval to evaluate the function
-    values.push_back(value);                                         // record the value
+
+    if( have_cells )
+    {
+      id = cellids[i];
+    }
+    else
+    {
+      pos = (*positions_[i]).data().get(); 
+      dim = (*positions_[i]).size();
+      const dolfin::Point point(dim, pos);
+      id = (*mesh).intersected_cell(point);
+      cellids.push_back(id);
+    }
+
+    if(id==-1)
+    {
+      dolfin::error("Unable to find cell in mesh.");
+    }
+    else
+    {
+      const dolfin::Cell cell(*mesh, id);
+      const dolfin::UFCCell ufc_cell(cell);
+      function.eval(*value, *positions_[i], ufc_cell);                 // use the dolfin eval to evaluate the function
+      values.push_back(value);                                         // record the value
+    }
   }
+
+  if (!have_cells)
+  {
+    cell_ids_[mesh] = cellids;
+  }
+
 }
 
 //*******************************************************************|************************************************************//

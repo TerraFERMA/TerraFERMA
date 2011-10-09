@@ -183,12 +183,14 @@ void DetectorsFile::data_bucket_()
     data_func_((*(*sys_it).second).fields_begin(),                   // write the data for the fields in the system
                (*(*sys_it).second).fields_end(), 
                (*bucket_).detectors_begin(), 
-               (*bucket_).detectors_end());
+               (*bucket_).detectors_end(),
+               (*(*sys_it).second).mesh());
 
     data_func_((*(*sys_it).second).coeffs_begin(),                   // write the data for the coefficients in the system
                (*(*sys_it).second).coeffs_end(), 
                (*bucket_).detectors_begin(),
-               (*bucket_).detectors_end());
+               (*bucket_).detectors_end(),
+               (*(*sys_it).second).mesh());
   }
 
   file_.unsetf(std::ios::scientific);
@@ -224,7 +226,8 @@ void DetectorsFile::data_detector_(GenericDetectors_const_it d_begin,
 void DetectorsFile::data_func_(FunctionBucket_const_it f_begin, 
                                FunctionBucket_const_it f_end, 
                                GenericDetectors_const_it d_begin,
-                               GenericDetectors_const_it d_end)
+                               GenericDetectors_const_it d_end,
+                               Mesh_ptr mesh)
 {
   
   for ( FunctionBucket_const_it f_it = f_begin; f_it != f_end; f_it++)
@@ -239,7 +242,7 @@ void DetectorsFile::data_func_(FunctionBucket_const_it f_begin,
         
         GenericFunction_ptr func = (*(*f_it).second).function();
 
-        (*(*d_it).second).eval(values, *func);
+        (*(*d_it).second).eval(values, *func, mesh);
         
         for (uint dim = 0; dim < (*func).value_size(); dim++)
         {

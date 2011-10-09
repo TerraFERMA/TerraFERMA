@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <fstream>
 #include <string>
+#include <dolfin.h>
 #include "DiagnosticsFile.h"
 
 namespace buckettools
@@ -22,6 +23,7 @@ namespace buckettools
   class GenericDetectors;
   typedef boost::shared_ptr< GenericDetectors > GenericDetectors_ptr;
   typedef std::map< std::string, GenericDetectors_ptr >::const_iterator GenericDetectors_const_it;
+  typedef boost::shared_ptr< dolfin::Mesh > Mesh_ptr;
 
   //*****************************************************************|************************************************************//
   // DetectorsFile class:
@@ -91,7 +93,8 @@ namespace buckettools
     void data_func_(FunctionBucket_const_it f_begin,
                     FunctionBucket_const_it f_end,
                     GenericDetectors_const_it d_begin,
-                    GenericDetectors_const_it d_end);
+                    GenericDetectors_const_it d_end,
+                    Mesh_ptr mesh);
     
 
   };

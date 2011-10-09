@@ -38,8 +38,9 @@ namespace buckettools
     //***************************************************************|***********************************************************//
 
     void eval(std::vector< Array_double_ptr > &values,               // base eval implementation, take values of a function at
-              const dolfin::GenericFunction &function);              // detector positions and returns values
-    
+              const dolfin::GenericFunction &function,               // detector positions and returns values
+              Mesh_ptr mesh);                                   
+
     //***************************************************************|***********************************************************//
     // Base data access
     //***************************************************************|***********************************************************//
@@ -85,6 +86,8 @@ namespace buckettools
     dolfin::uint                    number_detectors_,               // number of detectors
                                     meshdim_;                        // coordinate dimensions
     std::vector< Array_double_ptr > positions_;                      // vector of arrays giving locations of detectors
+
+    std::map< Mesh_ptr, std::vector< int > > cell_ids_;              // the cell ids for a particular mesh - not initialized until eval is called
     
     //***************************************************************|***********************************************************//
     // Emptying data
