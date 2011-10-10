@@ -13,7 +13,7 @@
           <real_value shape="2" dim1="2" rank="1">1. 1.</real_value>
         </upper_right>
         <number_cells>
-          <integer_value shape="2" dim1="2" rank="1">64 32</integer_value>
+          <integer_value shape="2" dim1="2" rank="1">128 64</integer_value>
         </number_cells>
         <diagonal>
           <string_value>left/right</string_value>
@@ -70,14 +70,49 @@
               <type name="Dirichlet">
                 <python rank="1">
                   <string_value lines="20" type="python">def val(x):
-  #  FIXME: vx should be
-  #lambda = 0.05
-  #vx = erf(x[0]/lambda)
-
-  eps = 1.e-16
-  vx = x[0]/(abs(x[0]+eps))
+  from math import erf
+  l = 0.05
+  vx = erf(x[0]/l)
   vy = 0.
   return [ vx, vy]</string_value>
+                </python>
+              </type>
+            </sub_components>
+          </boundary_condition>
+          <boundary_condition name="LeftX">
+            <boundary_ids>
+              <integer_value shape="1" rank="1">1</integer_value>
+            </boundary_ids>
+            <sub_components name="All">
+              <type name="Dirichlet">
+                <python rank="1">
+                  <string_value lines="20" type="python">def val(x):
+   from math import atan2, pi
+   X = x[0]
+   Z = 1. - x[1] 
+   R = X*X + Z*Z
+   vx= 2./pi*(atan2(X,Z)-X*Z/R)
+   vz =2./pi*Z*Z/R
+   return [vx,vz]</string_value>
+                </python>
+              </type>
+            </sub_components>
+          </boundary_condition>
+          <boundary_condition name="RightX">
+            <boundary_ids>
+              <integer_value shape="1" rank="1">2</integer_value>
+            </boundary_ids>
+            <sub_components name="All">
+              <type name="Dirichlet">
+                <python rank="1">
+                  <string_value lines="20" type="python">def val(x):
+   from math import atan2, pi
+   X = x[0]
+   Z = 1. - x[1] 
+   R = X*X + Z*Z
+   vx= 2./pi*(atan2(X,Z)-X*Z/R)
+   vz =2./pi*Z*Z/R
+   return [vx,vz]</string_value>
                 </python>
               </type>
             </sub_components>
@@ -177,11 +212,6 @@ r = rv + rp</string_value>
           <preconditioner name="lu">
             <factorization_package name="umfpack"/>
           </preconditioner>
-          <remove_null_space>
-            <null_space name="Pressure">
-              <field name="Pressure"/>
-            </null_space>
-          </remove_null_space>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
