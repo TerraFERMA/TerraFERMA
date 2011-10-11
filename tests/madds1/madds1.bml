@@ -16,7 +16,7 @@
           <integer_value shape="2" dim1="2" rank="1">128 64</integer_value>
         </number_cells>
         <diagonal>
-          <string_value>left/right</string_value>
+          <string_value>crossed</string_value>
         </diagonal>
         <cell>
           <string_value>triangle</string_value>
