@@ -953,7 +953,9 @@ void SpudSolverBucket::is_by_field_fill_(const std::string &optionpath, IS &is,
                                                                      // not occur in the parent indices 
     uint p_size = (*parent_indices).size();
     uint p_ind = 0;
+    uint p_reset = 0;
     std::vector<uint> tmp_child_indices;
+    bool extra = false;
     for (std::vector<uint>::const_iterator                           // loop over the child indices
                                         c_it = child_indices.begin(); 
                                         c_it != child_indices.end(); 
@@ -963,26 +965,39 @@ void SpudSolverBucket::is_by_field_fill_(const std::string &optionpath, IS &is,
       {                                                              // search parent_indices until the current child index is found
         p_ind++;
         if (p_ind == p_size)                                         // or we reach the end of the parent_indices...
-        {                                                            // and throw a warning
-          dolfin::log(dolfin::WARNING, 
-                      "WARNING: IS indices are not a subset of a parent fieldsplit, ignoring extra indices.");
+        {                                                            // and prepare to throw a warning
+          extra = true;
           break;
         }
       }
       if (p_ind == p_size)
       {
-        break;
+        p_ind = p_reset;
       }
-      tmp_child_indices.push_back(*c_it);                            // include indices that are in the parent
-      p_ind++;                                                       // indices shouldn't be repeated so increment the parent too
+      else
+      {
+        tmp_child_indices.push_back(*c_it);                          // include indices that are in the parent
+        p_ind++;                                                     // indices shouldn't be repeated so increment the parent too
+        p_reset = p_ind;                                             // this is where the next failed search should continue from
+        if (p_ind == p_size)                                         // we've reached the end
+        { 
+          break;                                            
+        }
+      }
     } 
 
+    if(extra)
+    {                                                                // child indices were ignored... give a warning
+      dolfin::log(dolfin::WARNING, 
+                  "WARNING: IS indices not a subset of parent fieldsplit, ignoring extra indices.");
+    }
     child_indices.clear();
     child_indices = tmp_child_indices;
                                  
   }
 
   PetscInt n=child_indices.size();                                   // setup a simpler structure for petsc
+  assert(n>0);
   PetscInt *indices;
   PetscMalloc(n*sizeof(PetscInt), &indices);
  
@@ -1031,7 +1046,13 @@ void SpudSolverBucket::is_by_field_fill_(const std::string &optionpath, IS &is,
   CHKERRV(perr);
   if (Spud::have_option(optionpath+"/monitors/view_index_set"))
   {
-    dolfin::log(dolfin::INFO, "ISView:");
+    buffer.str(""); buffer << optionpath << "/name";                 // IS Name
+    std::string isname;
+    serr = Spud::get_option(buffer.str(), isname);
+    spud_err(buffer.str(), serr);
+    
+    dolfin::log(dolfin::INFO, "ISView: %s (%s)", 
+                                isname.c_str(), optionpath.c_str());
     perr = ISView(is, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);      // isview?
   }
 
