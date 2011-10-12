@@ -50,7 +50,7 @@ add_custom_target(
 
 add_custom_target(
   ${PREFIX}test
-  COMMAND py.test ${PROJECT_SOURCE_DIR}/tests.py 
+  COMMAND py.test -v ${PROJECT_SOURCE_DIR}/tests.py 
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   DEPENDS ${PROJECT_SOURCE_DIR}/tests.py
   )
