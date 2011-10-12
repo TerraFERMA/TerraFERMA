@@ -201,7 +201,7 @@ r = rv + rp</string_value>
         <linear_solver>
           <iterative_method name="preonly"/>
           <preconditioner name="lu">
-            <factorization_package name="umfpack"/>
+            <factorization_package name="mumps"/>
           </preconditioner>
         </linear_solver>
         <never_ignore_solver_failures/>
