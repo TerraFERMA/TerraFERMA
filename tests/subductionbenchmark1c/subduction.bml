@@ -379,16 +379,58 @@ F = FT + Fv + Fp</string_value>
                   <integer_value shape="1" rank="1">3</integer_value>
                 </region_ids>
               </field>
-              <monitors/>
+              <monitors>
+                <view_index_set/>
+              </monitors>
               <linear_solver>
-                <iterative_method name="preonly"/>
-                <preconditioner name="lu">
-                  <factorization_package name="umfpack"/>
+                <iterative_method name="fgmres">
+                  <restart>
+                    <integer_value rank="0">30</integer_value>
+                  </restart>
+                  <relative_error>
+                    <real_value rank="0">1.e-12</real_value>
+                  </relative_error>
+                  <max_iterations>
+                    <integer_value rank="0">100</integer_value>
+                  </max_iterations>
+                  <monitors>
+                    <preconditioned_residual/>
+                  </monitors>
+                </iterative_method>
+                <preconditioner name="fieldsplit">
+                  <composite_type name="multiplicative"/>
+                  <fieldsplit name="Stokes">
+                    <field name="Pressure"/>
+                    <field name="Velocity"/>
+                    <monitors>
+                      <view_index_set/>
+                    </monitors>
+                    <linear_solver>
+                      <iterative_method name="preonly"/>
+                      <preconditioner name="lu">
+                        <factorization_package name="umfpack"/>
+                      </preconditioner>
+                    </linear_solver>
+                  </fieldsplit>
+                  <fieldsplit name="Temperature">
+                    <field name="Temperature"/>
+                    <monitors>
+                      <view_index_set/>
+                    </monitors>
+                    <linear_solver>
+                      <iterative_method name="preonly"/>
+                      <preconditioner name="lu">
+                        <factorization_package name="umfpack"/>
+                      </preconditioner>
+                    </linear_solver>
+                  </fieldsplit>
                 </preconditioner>
               </linear_solver>
             </fieldsplit>
             <fieldsplit name="EverythingElse">
-              <monitors/>
+              <monitors>
+                <view_index_set/>
+              </monitors>
               <linear_solver>
                 <iterative_method name="preonly"/>
                 <preconditioner name="jacobi"/>
@@ -474,9 +516,7 @@ r = d_t*d_a*dx_wedge - d_t*div(v_i)*dx_wedge</string_value>
                   <integer_value shape="1" rank="1">3</integer_value>
                 </region_ids>
               </field>
-              <monitors>
-                <view_index_set/>
-              </monitors>
+              <monitors/>
               <linear_solver>
                 <iterative_method name="preonly"/>
                 <preconditioner name="lu">
@@ -485,9 +525,7 @@ r = d_t*d_a*dx_wedge - d_t*div(v_i)*dx_wedge</string_value>
               </linear_solver>
             </fieldsplit>
             <fieldsplit name="NotWedge">
-              <monitors>
-                <view_index_set/>
-              </monitors>
+              <monitors/>
               <linear_solver>
                 <iterative_method name="preonly"/>
                 <preconditioner name="jacobi"/>

@@ -401,12 +401,14 @@ r = rv + rp + rT</string_value>
             <fieldsplit name="Stokes">
               <field name="Pressure"/>
               <field name="Velocity"/>
+              <monitors/>
               <linear_solver>
                 <iterative_method name="preonly"/>
                 <preconditioner name="fieldsplit">
                   <composite_type name="multiplicative"/>
                   <fieldsplit name="Pressure">
                     <field name="Pressure"/>
+                    <monitors/>
                     <linear_solver>
                       <iterative_method name="cg">
                         <relative_error>
@@ -422,6 +424,7 @@ r = rv + rp + rT</string_value>
                   </fieldsplit>
                   <fieldsplit name="Velocity">
                     <field name="Velocity"/>
+                    <monitors/>
                     <linear_solver>
                       <iterative_method name="preonly"/>
                       <preconditioner name="fieldsplit">
@@ -432,6 +435,7 @@ r = rv + rp + rT</string_value>
                               <integer_value shape="1" rank="1">0</integer_value>
                             </components>
                           </field>
+                          <monitors/>
                           <linear_solver>
                             <iterative_method name="preonly"/>
                             <preconditioner name="hypre">
@@ -445,6 +449,7 @@ r = rv + rp + rT</string_value>
                               <integer_value shape="1" rank="1">1</integer_value>
                             </components>
                           </field>
+                          <monitors/>
                           <linear_solver>
                             <iterative_method name="preonly"/>
                             <preconditioner name="hypre">
@@ -459,12 +464,14 @@ r = rv + rp + rT</string_value>
                 <remove_null_space>
                   <null_space name="Pressure">
                     <field name="Pressure"/>
+                    <monitors/>
                   </null_space>
                 </remove_null_space>
               </linear_solver>
             </fieldsplit>
             <fieldsplit name="Temperature">
               <field name="Temperature"/>
+              <monitors/>
               <linear_solver>
                 <iterative_method name="gmres">
                   <restart>
@@ -485,6 +492,7 @@ r = rv + rp + rT</string_value>
           <remove_null_space>
             <null_space name="Pressure">
               <field name="Pressure"/>
+              <monitors/>
             </null_space>
           </remove_null_space>
         </linear_solver>
