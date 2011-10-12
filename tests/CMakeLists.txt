@@ -58,6 +58,7 @@ add_subdirectory(projection_mixedelement)
 add_subdirectory(rbconvection_steadystate_split)
 add_subdirectory(rbconvection_steadystate)
 add_subdirectory(rbconvection1a)
+add_subdirectory(rbconvection2a)
 add_subdirectory(region_ids)
 add_subdirectory(subductionbenchmark1a)
 add_subdirectory(subductionbenchmark1b)
@@ -68,12 +69,13 @@ add_subdirectory(subductionbenchmark2a_split)
 add_subdirectory(subductionbenchmark2b)
 
 add_custom_target(run)
-add_dependencies(run courant1drun poissonrun projectionrun rbconvectionsplitrun rbconvectioncoupledrun rbconvection1arun
-regionidsrun subductionbenchmark1crun subductionbenchmark1brun subductionbenchmark1c_splitrun subductionbenchmark1arun
-subductionbenchmark2arun subductionbenchmark2a_splitrun subductionbenchmark2brun) 
+add_dependencies(run poissonrun)
 
 add_custom_target(test)
 add_dependencies(test courant1dtest projectiontest rbconvectionsplittest rbconvectioncoupledtest rbconvection1atest regionidstest
 subductionbenchmark1ctest subductionbenchmark1btest subductionbenchmark1c_splittest subductionbenchmark1atest
 subductionbenchmark2atest subductionbenchmark2a_splittest subductionbenchmark2btest)
+
+add_custom_target(mediumtest)
+add_dependencies(mediumtest rbconvection2atest)
 
