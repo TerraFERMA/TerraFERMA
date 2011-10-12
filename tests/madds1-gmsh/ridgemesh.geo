@@ -1,8 +1,8 @@
-cl1 = 0.1;
+cl1 = 0.05;
 Point(1) = {-1, 0, 0, cl1};
 Point(2) = {1, 0, 0, cl1};
 Point(3) = {1, 1, 0, cl1};
-Point(4) = {0, 1, 0, 0.01};
+Point(4) = {0, 1, 0, 0.1*cl1};
 Point(5) = {-1, 1, 0, cl1};
 Line(1) = {1, 2};
 Line(2) = {2, 3};
@@ -16,3 +16,6 @@ Physical Line(7) = {2};
 Physical Line(8) = {3, 4};
 Physical Line(9) = {5};
 Physical Surface(12) = {11};
+Field[1] = MathEval;
+Field[1].F = ".001+0.01*6*6*(x*x+(1-y)*(1-y))";
+Background Field = 1;
