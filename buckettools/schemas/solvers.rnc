@@ -39,7 +39,8 @@ picard =
       attribute name { "Bilinear" },
       attribute rank { "1" },
       python_code,
-      form_ufl_symbol
+      form_ufl_symbol,
+      ident_zeros
     },
     ## ufl code form describing a preconditioner bilinear form (must return a bilinear form).  
     ## Any system, field or coefficient ufl symbols defined in this options file may be used in this form as well as any symbols 
@@ -50,7 +51,8 @@ picard =
       attribute name { "BilinearPC" },
       attribute rank { "1" },
       python_code,
-      form_ufl_symbol
+      form_ufl_symbol,
+      ident_zeros
     }?,
     ## ufl code form describing a linear form (must return a linear form).  
     ## Any system, field or coefficient ufl symbols defined in this options file may be used in this form as well as any symbols 
@@ -122,7 +124,8 @@ snes =
       attribute name { "Jacobian" },
       attribute rank { "1" },
       python_code,
-      form_ufl_symbol
+      form_ufl_symbol,
+      ident_zeros
     },
     ## ufl code form describing a preconditioner jacobian bilinear form (must return a bilinear form).  
     ## Any system, field or coefficient ufl symbols defined in this options file may be used in this form as well as any symbols 
@@ -133,7 +136,8 @@ snes =
       attribute name { "JacobianPC" },
       attribute rank { "1" },
       python_code,
-      form_ufl_symbol
+      form_ufl_symbol,
+      ident_zeros
     }?,
     (
       ## The SNES type.  Line search.
@@ -207,6 +211,13 @@ snes =
     solver_failures
   )
 
+ident_zeros =
+  (
+    ## If this rank 1 form has zero rows, then place a 1. of the diagonal.
+    element ident_zeros {
+      empty
+    }?
+  )
 
 linear_solver_options =
    (
@@ -230,6 +241,7 @@ linear_solver_options =
          pclu_options|
          pcprometheus_options|
          pchypre_options|
+         pcjacobi_options|
          pcbjacobi_options|
          pcasm_options|
          pcksp_options|
@@ -443,6 +455,15 @@ pchypre_options =
       }
    )
 
+pcjacobi_options =
+   (
+      ## Jacobi
+      element preconditioner {
+         attribute name { "jacobi" },
+         empty
+      }
+   )
+
 pcbjacobi_options =
    (
       ## Block Jacobi
@@ -575,7 +596,13 @@ pcfieldsplit_options =
              element region_ids {
                integer_vector
              }?
-           }+,
+           }*,
+           element monitors {
+             ## Prints PETSc information about the index set describing this fieldsplit
+             element view_index_set {
+               empty
+             }?
+           },
            ## Solver options for the full solve done by this preconditioner
            element linear_solver {
              linear_solver_options
@@ -689,7 +716,13 @@ generic_solver_options =
              element region_ids {
                integer_vector
              }?
-           }+
+           }*,
+           element monitors {
+             ## Prints PETSc information about the index set describing this null space
+             element view_index_set {
+               empty
+             }?
+           }
          }+
       }?
    )
