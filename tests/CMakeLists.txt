@@ -59,10 +59,13 @@ add_subdirectory(rbconvection_steadystate_split)
 add_subdirectory(rbconvection_steadystate)
 add_subdirectory(rbconvection1a)
 add_subdirectory(region_ids)
+add_subdirectory(subductionbenchmark1c)
 
 add_custom_target(run)
-add_dependencies(run courant1drun poissonrun projectionrun rbconvectionsplitrun rbconvectioncoupledrun rbconvection1arun regionidsrun)
+add_dependencies(run courant1drun poissonrun projectionrun rbconvectionsplitrun rbconvectioncoupledrun rbconvection1arun
+regionidsrun subductionbenchmark1crun)
 
 add_custom_target(test)
-add_dependencies(test courant1dtest projectiontest rbconvectionsplittest rbconvectioncoupledtest rbconvection1atest regionidstest)
+add_dependencies(test courant1dtest projectiontest rbconvectionsplittest rbconvectioncoupledtest rbconvection1atest regionidstest
+subductionbenchmark1ctest)
 

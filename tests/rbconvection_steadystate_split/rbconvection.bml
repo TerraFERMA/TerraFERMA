@@ -81,6 +81,7 @@
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics>
           <functional name="TopSurfaceIntegral">
             <string_value lines="20" type="python">int = grad(T)[1]*ds(4)</string_value>
@@ -235,6 +236,7 @@ r = rT</string_value>
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics>
           <functional name="L2Norm">
             <string_value lines="20" type="python">int = inner(v,v)*dx</string_value>
