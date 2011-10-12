@@ -48,6 +48,7 @@ defined in the preamble above.</a:documentation>
       </attribute>
       <ref name="python_code"/>
       <ref name="form_ufl_symbol"/>
+      <ref name="ident_zeros"/>
     </element>
     <optional>
       <element name="form">
@@ -64,6 +65,7 @@ If undefined the bilinear form above will be used to precondition itself.</a:doc
         </attribute>
         <ref name="python_code"/>
         <ref name="form_ufl_symbol"/>
+        <ref name="ident_zeros"/>
       </element>
     </optional>
     <element name="form">
@@ -160,6 +162,7 @@ defined in the preamble and residual linear form above.</a:documentation>
       </attribute>
       <ref name="python_code"/>
       <ref name="form_ufl_symbol"/>
+      <ref name="ident_zeros"/>
     </element>
     <optional>
       <element name="form">
@@ -176,6 +179,7 @@ If undefined the jacobian bilinear form above will be used to precondition itsel
         </attribute>
         <ref name="python_code"/>
         <ref name="form_ufl_symbol"/>
+        <ref name="ident_zeros"/>
       </element>
     </optional>
     <choice>
@@ -269,6 +273,14 @@ the SNES solve. Some of those may really slow down your computation!</a:document
     </element>
     <ref name="solver_failures"/>
   </define>
+  <define name="ident_zeros">
+    <optional>
+      <element name="ident_zeros">
+        <a:documentation>If this rank 1 form has zero rows, then place a 1. of the diagonal.</a:documentation>
+        <empty/>
+      </element>
+    </optional>
+  </define>
   <define name="linear_solver_options">
     <choice>
       <a:documentation>Iterative (Krylov) method to solve the linear discretised equation
@@ -290,6 +302,7 @@ by the PETSc library. Many more methods are provided.</a:documentation>
       <ref name="pclu_options"/>
       <ref name="pcprometheus_options"/>
       <ref name="pchypre_options"/>
+      <ref name="pcjacobi_options"/>
       <ref name="pcbjacobi_options"/>
       <ref name="pcasm_options"/>
       <ref name="pcksp_options"/>
@@ -514,6 +527,15 @@ Useful for parallel direct solves (if installed on system).</a:documentation>
       </choice>
     </element>
   </define>
+  <define name="pcjacobi_options">
+    <element name="preconditioner">
+      <a:documentation>Jacobi</a:documentation>
+      <attribute name="name">
+        <value>jacobi</value>
+      </attribute>
+      <empty/>
+    </element>
+  </define>
   <define name="pcbjacobi_options">
     <element name="preconditioner">
       <a:documentation>Block Jacobi
@@ -645,7 +667,7 @@ inherited down the tree of splits).</a:documentation>
           <attribute name="name">
             <data type="string"/>
           </attribute>
-          <oneOrMore>
+          <zeroOrMore>
             <element name="field">
               <a:documentation>Field to include in this split.</a:documentation>
               <attribute name="name">
@@ -666,7 +688,15 @@ Defaults to all components if not selected.</a:documentation>
                 </element>
               </optional>
             </element>
-          </oneOrMore>
+          </zeroOrMore>
+          <element name="monitors">
+            <optional>
+              <element name="view_index_set">
+                <a:documentation>Prints PETSc information about the index set describing this fieldsplit</a:documentation>
+                <empty/>
+              </element>
+            </optional>
+          </element>
           <element name="linear_solver">
             <a:documentation>Solver options for the full solve done by this preconditioner</a:documentation>
             <ref name="linear_solver_options"/>
@@ -783,7 +813,7 @@ inherited down the tree).</a:documentation>
             <attribute name="name">
               <data type="string"/>
             </attribute>
-            <oneOrMore>
+            <zeroOrMore>
               <element name="field">
                 <a:documentation>Field to include in this null space.</a:documentation>
                 <attribute name="name">
@@ -806,7 +836,15 @@ Defaults to the whole mesh if left unspecified.</a:documentation>
                   </element>
                 </optional>
               </element>
-            </oneOrMore>
+            </zeroOrMore>
+            <element name="monitors">
+              <optional>
+                <element name="view_index_set">
+                  <a:documentation>Prints PETSc information about the index set describing this null space</a:documentation>
+                  <empty/>
+                </element>
+              </optional>
+            </element>
           </element>
         </oneOrMore>
       </element>
