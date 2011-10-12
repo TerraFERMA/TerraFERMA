@@ -62,6 +62,11 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
   {
     (*bcs[i]).apply(matrix);                                         // FIXME: will break symmetry?
   }
+  if ((*snesctx).ident_zeros)
+  {
+    matrix.ident_zeros();
+  }
+
   if ((*snesctx).bilinearpc)                                         // do we have a different bilinear pc form associated?
   {
     dolfin::assemble(matrixpc, (*(*snesctx).bilinearpc),             // assemble the matrix pc from the context bilinear pc form
@@ -69,6 +74,10 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
     for(uint i = 0; i < bcs.size(); ++i)                             // loop over the bcs
     {
       (*bcs[i]).apply(matrixpc);                                     // FIXME: will break symmetry
+    }
+    if ((*snesctx).ident_zeros_pc)
+    {
+      matrixpc.ident_zeros();
     }
   }
 

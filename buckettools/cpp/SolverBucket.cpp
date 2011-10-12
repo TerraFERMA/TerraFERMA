@@ -112,6 +112,10 @@ void SolverBucket::solve()
       {
         (*(*bc)).apply(*matrix_, *rhs_);                             // apply the bcs to the matrix and rhs (hopefully this
       }                                                              // maintains any symmetry)
+      if(ident_zeros_)
+      {
+        (*matrix_).ident_zeros();
+      }
 
       if (bilinearpc_)                                               // if there's a pc associated
       {
@@ -122,6 +126,11 @@ void SolverBucket::solve()
                                   bc != (*system_).bcs_end(); bc++)
         {
           (*(*bc)).apply(*matrixpc_, *rhs_);                         // apply the collected vector of system bcs
+        }
+
+        if(ident_zeros_pc_)
+        {
+          (*matrixpc_).ident_zeros();
         }
 
         perr = KSPSetOperators(ksp_, *(*matrix_).mat(),              // set the ksp operators with two matrices
@@ -222,6 +231,7 @@ void SolverBucket::assemble_bilinearforms(const bool &reset_tensor)
     matrix_.reset(new dolfin::PETScMatrix);                          // no, allocate one
   }
   dolfin::assemble(*matrix_, *bilinear_, reset_tensor);              // and assemble it
+                                                                     // don't think it's necessary to ident_zeros here?
 
   if(bilinearpc_)                                                    // do we have a pc form?
   {
@@ -230,6 +240,7 @@ void SolverBucket::assemble_bilinearforms(const bool &reset_tensor)
       matrixpc_.reset(new dolfin::PETScMatrix);                      // no, allocate one
     }
     dolfin::assemble(*matrixpc_, *bilinearpc_, reset_tensor);        // and assemble it
+                                                                     // don't think it's necessary to ident_zeros here?
   }
 }
 
@@ -269,7 +280,9 @@ void SolverBucket::initialize_matrices()
   {
     ctx_.linear       = linear_;
     ctx_.bilinear     = bilinear_;
+    ctx_.ident_zeros  = ident_zeros_;
     ctx_.bilinearpc   = bilinearpc_;
+    ctx_.ident_zeros_pc = ident_zeros_pc_;
     ctx_.bcs          = (*system_).bcs();
     ctx_.iteratedfunction = (*system_).iteratedfunction();
     ctx_.bucket       = (*system_).bucket();

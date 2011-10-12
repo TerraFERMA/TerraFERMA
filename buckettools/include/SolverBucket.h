@@ -136,6 +136,8 @@ namespace buckettools
 
     int minits_, maxits_, maxfes_;                                   // nonlinear solver iteration counts
 
+    bool ident_zeros_, ident_zeros_pc_;                              // replace zero rows with the identity (matrix and pc)
+
     bool ignore_failures_;                                           // ignore solver failures
 
     std::string name_;                                               // solver name

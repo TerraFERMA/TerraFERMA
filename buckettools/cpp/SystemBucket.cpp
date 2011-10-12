@@ -333,6 +333,14 @@ int_FunctionBucket_const_it SystemBucket::orderedfields_end() const
 }
 
 //*******************************************************************|************************************************************//
+// return the number of fields registered
+//*******************************************************************|************************************************************//
+const int SystemBucket::fields_size() const
+{
+  return fields_.size();
+}
+
+//*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a coefficient function bucket in the system bucket data maps
 //*******************************************************************|************************************************************//
 void SystemBucket::register_coeff(FunctionBucket_ptr coeff, const std::string &name)

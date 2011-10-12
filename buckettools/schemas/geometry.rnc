@@ -38,9 +38,12 @@ mesh_options =
        element source {
          attribute name { "File" },
          ## Input the basename (i.e. without the .xml) of a DOLFIN format mesh. 
-         ## If mesh function files basename_edge_subdomain.xml or basename_cell_subdomain.xml
+         ## If mesh function files basename_facet_region.xml or basename_physical_region.xml
          ## are found then these will also be automatically loaded and attached to the mesh
          ## as boundary and cell ids respectively.
+         ## 
+         ## Note that if ids are attached to the mesh they must be used in the forms (dx 
+         ## and/or ds will not work without id information - dx(id) and/or ds(id))
          element file {
            filename
          },

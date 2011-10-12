@@ -137,6 +137,8 @@ namespace buckettools
 
     int_FunctionBucket_const_it orderedfields_end() const;           // return a constant iterator to the end of the ordered fields
 
+    const int fields_size() const;                                   // return the number of fields
+
     //***************************************************************|***********************************************************//
     // Coefficient data access
     //***************************************************************|***********************************************************//

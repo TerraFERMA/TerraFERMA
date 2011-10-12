@@ -110,7 +110,8 @@ namespace buckettools
 
     void is_by_field_fill_(const std::string &optionpath, IS &is,    // set up a petsc index set
                            std::vector<uint> &child_indices,
-                           const std::vector<uint>* parent_indices);
+                           const std::vector<uint>* parent_indices,
+                           const std::vector<uint>* sibling_indices);
 
     //***************************************************************|***********************************************************//
     // Emptying data

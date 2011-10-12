@@ -16,7 +16,9 @@ namespace buckettools
   typedef struct {                                                   // a structure used to pass bucket data into snes callback functions
     Form_ptr linear;                                                 // linear form
     Form_ptr bilinear;                                               // bilinear form
+    bool ident_zeros;                                                // the matrix has zeros rows which should be identified
     Form_ptr bilinearpc;                                             // bilinear pc (may be null if not used)
+    bool ident_zeros_pc;                                             // the pc has zero rows which should be identified
     std::vector<BoundaryCondition_ptr> bcs;                          // bcs
     Function_ptr iteratedfunction;                                   // work function
     Bucket *bucket;                                                  // pointer to bucket

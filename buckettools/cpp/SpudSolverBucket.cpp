@@ -293,13 +293,24 @@ void SpudSolverBucket::forms_fill_()
                                                                      // depending on the type of solver we assign certain forms to
                                                                      // hardcoded names in the solver bucket (basically it depends
                                                                      // which are linear or bilinear)
+  ident_zeros_ = false;
+  ident_zeros_pc_ = false;
+
   if (type()=="SNES")                                                // snes solver type...
   {
     linear_      = fetch_form("Residual");
     bilinear_    = fetch_form("Jacobian");
+
+    buffer.str(""); buffer << optionpath() << "/type::SNES/form::Jacobian/ident_zeros";
+    ident_zeros_ = Spud::have_option(buffer.str());
+
     if (contains_form("JacobianPC"))                                 // is there a pc form?
     {
       bilinearpc_ = fetch_form("JacobianPC");                        // yes but
+
+      buffer.str(""); buffer << optionpath() << "/type::SNES/form::JacobianPC/ident_zeros";
+      ident_zeros_pc_ = Spud::have_option(buffer.str());
+
     }                                                                // otherwise bilinearpc_ is null (indicates self pcing)
                                                                      // residual_ is always a null pointer for snes
 
@@ -308,9 +319,17 @@ void SpudSolverBucket::forms_fill_()
   {
     linear_      = fetch_form("Linear");
     bilinear_    = fetch_form("Bilinear");
+
+    buffer.str(""); buffer << optionpath() << "/type::Picard/form::Bilinear/ident_zeros";
+    ident_zeros_ = Spud::have_option(buffer.str());
+
     if (contains_form("BilinearPC"))                                 // is there a pc form?
     {
       bilinearpc_ = fetch_form("BilinearPC");                        // yes but
+
+      buffer.str(""); buffer << optionpath() << "/type::Picard/form::BilinearPC/ident_zeros";
+      ident_zeros_pc_ = Spud::have_option(buffer.str());
+
     }                                                                // otherwise bilinearpc_ is null (indicates self pcing)
     residual_   = fetch_form("Residual");
 
@@ -419,16 +438,28 @@ void SpudSolverBucket::ksp_fill_(const std::string &optionpath, KSP &ksp,
 
     std::vector< PETScVector_ptr > nullvecs;                         // collect the null space vectors here (so we maintain a reference)
     Vec vecs[nnulls];                                                // and here (for the petsc interface)
+    std::vector<uint> prev_indices;
 
     for (uint i = 0; i<nnulls; i++)                                  // loop over the nullspaces
     {
       IS is;
-      std::vector<uint> indices;                                     // FIXME: don't really need these but the interface returns them!
-                                                                     // (these become the parent_indices in the fieldsplit setup)
+      std::vector<uint> indices;                                     // record the indices from each iteration so that overlapping
+                                                                     // null spaces may be avoided
+
       buffer.str(""); buffer << optionpath <<                        // optionpath of the nullspace
                         "/remove_null_space/null_space[" << i << "]";
-      is_by_field_fill_(buffer.str(), is,                            // create an is based on this optionpath (consistent schema
-                        indices, parent_indices);                    // with fieldsplit description)
+      if (i==0)
+      {
+        is_by_field_fill_(buffer.str(), is,                          // create an is based on this optionpath (consistent schema
+                          indices, parent_indices, NULL);            // with fieldsplit description)
+      }
+      else
+      {
+        is_by_field_fill_(buffer.str(), is,                          // create an is based on this optionpath (consistent schema
+                          indices, parent_indices, &prev_indices);   // with fieldsplit description)
+      }
+      prev_indices.clear();
+      prev_indices = indices;
 
       PETScVector_ptr nullvec( new dolfin::PETScVector(kspsize) );   // create a null vector for this null space
     
@@ -571,8 +602,18 @@ void SpudSolverBucket::pc_fieldsplit_fill_(const std::string &optionpath,
                                         "/fieldsplit[" << i << "]";
     std::vector<uint> indices;
     IS is;
-    is_by_field_fill_(buffer.str(), is,                              // setup an IS for each fieldsplit
-                      indices, parent_indices);
+    if (i==0)
+    {
+      is_by_field_fill_(buffer.str(), is,                            // setup an IS for each fieldsplit
+                        indices, parent_indices,
+                        NULL);
+    }
+    else
+    {
+      is_by_field_fill_(buffer.str(), is,                            // setup an IS for each fieldsplit
+                        indices, parent_indices,
+                        &(child_indices[i-1]));
+    }
     perr = PCFieldSplitSetIS(pc, is); CHKERRV(perr);                 // set the fs using that IS
     perr = ISDestroy(is); CHKERRV(perr);                             // destroy the IS, necessary?
     child_indices.push_back(indices);                                // record the indices of the global vector that made it into
@@ -611,7 +652,8 @@ void SpudSolverBucket::pc_fieldsplit_fill_(const std::string &optionpath,
 //*******************************************************************|************************************************************//
 void SpudSolverBucket::is_by_field_fill_(const std::string &optionpath, IS &is, 
                                          std::vector<uint> &child_indices, 
-                                         const std::vector<uint>* parent_indices)
+                                         const std::vector<uint>* parent_indices,
+                                         const std::vector<uint>* sibling_indices)
 {
 
   std::stringstream buffer;                                          // optionpath buffer
@@ -623,9 +665,30 @@ void SpudSolverBucket::is_by_field_fill_(const std::string &optionpath, IS &is,
 
   buffer.str(""); buffer << optionpath << "/field";                  // loop over the fields used to describe this IS
   int nfields = Spud::option_count(buffer.str());
-  for (uint i = 0; i < nfields; i++)
+
+  if (nfields==0)                                                    // if no fields have been specified...
   {
-    buffer.str(""); buffer << optionpath << "/field[" << i << "]";
+    boost::unordered_set<uint>  dof_set =                            // take the set of dof for this system
+            (*(*system_).functionspace()).dofmap().dofs();
+    for (boost::unordered_set<uint>::const_iterator                  // loop over the dof in the set
+                                    dof_it = dof_set.begin(); 
+                                    dof_it != dof_set.end(); 
+                                    dof_it++)
+    {                                                                // and insert them into the child_indices vector
+      if ((*dof_it >= ownership_range.first) &&                      // but first check that this process owns them
+                            (*dof_it < ownership_range.second))      // (in parallel)
+      {
+        child_indices.push_back(*dof_it);
+      }
+    }
+    
+  }
+
+  bool mixedsystem = (((*system_).fields_size())>1);
+
+  for (uint i = 0; i < nfields; i++)                                 // loop over the fields that have been specified
+  {                                                                  // (won't do anything in the case of nfields==0, where we've
+    buffer.str(""); buffer << optionpath << "/field[" << i << "]";   //  already included all dofs)
 
     std::string fieldname;
     buffer.str(""); buffer << optionpath << "/field[" << i <<        // get the field name
@@ -649,7 +712,6 @@ void SpudSolverBucket::is_by_field_fill_(const std::string &optionpath, IS &is,
 
       boost::unordered_set<uint> dof_set;                            // set up an unordered set of dof
 
-      // do we specify components of this field?
       buffer.str(""); buffer << optionpath << "/field[" << i <<      // are specific components of this field requested?
                                                     "]/components";
       if (Spud::have_option(buffer.str()))
@@ -661,7 +723,14 @@ void SpudSolverBucket::is_by_field_fill_(const std::string &optionpath, IS &is,
 
         std::vector<int>::iterator max_comp_it = 
               std::max_element(components.begin(), components.end());// check this component exists
-        assert(*max_comp_it < (*(*(*system_).functionspace())[fieldindex]).element().num_sub_elements());
+        if (mixedsystem)
+        {
+          assert(*max_comp_it < (*(*(*system_).functionspace())[fieldindex]).element().num_sub_elements());
+        }
+        else
+        {
+          assert(*max_comp_it < (*(*system_).functionspace()).element().num_sub_elements());
+        }
         
         for (dolfin::CellIterator cell(*mesh); !cell.end(); ++cell)  // loop over the cells in the mesh
         {
@@ -679,8 +748,17 @@ void SpudSolverBucket::is_by_field_fill_(const std::string &optionpath, IS &is,
                                       comp != components.end(); 
                                       comp++)
               {
-                std::vector<uint> dof_vec =                          // get the cell dof for the current component
-                    (*(*(*(*system_).functionspace())[fieldindex])[*comp]).dofmap().cell_dofs((*cell).index());
+                std::vector<uint> dof_vec;
+                if (mixedsystem)
+                {
+                  dof_vec =                                          // get the cell dof for the current component
+                      (*(*(*(*system_).functionspace())[fieldindex])[*comp]).dofmap().cell_dofs((*cell).index());
+                }
+                else
+                {
+                  dof_vec =                                          // get the cell dof for the current component
+                      (*(*(*system_).functionspace())[*comp]).dofmap().cell_dofs((*cell).index());
+                }
                 for (std::vector<uint>::const_iterator dof_it =      // loop over the cell dof for this component
                                               dof_vec.begin(); 
                                               dof_it < dof_vec.end(); 
@@ -706,8 +784,17 @@ void SpudSolverBucket::is_by_field_fill_(const std::string &optionpath, IS &is,
           {
             if(cellid==*id)                                          // check if this cell should be included
             {                                                        // yes...
-              std::vector<uint> dof_vec =                            // get the cell dof (potentially for all components)
-                (*(*(*system_).functionspace())[fieldindex]).dofmap().cell_dofs((*cell).index());
+              std::vector<uint> dof_vec;
+              if (mixedsystem)
+              {
+                dof_vec =                                            // get the cell dof (potentially for all components)
+                  (*(*(*system_).functionspace())[fieldindex]).dofmap().cell_dofs((*cell).index());
+              }
+              else
+              {
+                dof_vec =                                            // get the cell dof (potentially for all components)
+                  (*(*system_).functionspace()).dofmap().cell_dofs((*cell).index());
+              }
               for (std::vector<uint>::const_iterator dof_it =        // loop over the cell dof
                                       dof_vec.begin(); 
                                       dof_it < dof_vec.end(); 
@@ -743,22 +830,37 @@ void SpudSolverBucket::is_by_field_fill_(const std::string &optionpath, IS &is,
                                                       "]/components";
       if (Spud::have_option(buffer.str()))
       {                                                              // yes, there are components specified... **field+components**
-        // yes, get the components
         std::vector< int > components;
         serr = Spud::get_option(buffer.str(), components);           // get the components
         spud_err(buffer.str(), serr);
         
         std::vector<int>::iterator max_comp_it =                  
              std::max_element(components.begin(), components.end()); // check this component exists
-        assert(*max_comp_it < (*(*(*system_).functionspace())[fieldindex]).element().num_sub_elements());
+        if (mixedsystem)
+        {
+          assert(*max_comp_it < (*(*(*system_).functionspace())[fieldindex]).element().num_sub_elements());
+        }
+        else
+        {
+          assert(*max_comp_it < (*(*system_).functionspace()).element().num_sub_elements());
+        }
 
         for (std::vector<int>::const_iterator comp =                 // loop over the requested components
                                       components.begin(); 
                                       comp != components.end(); 
                                       comp++)
         {
-          boost::unordered_set<uint> dof_set =                       // take the set of dof for this component
-              (*(*(*(*system_).functionspace())[fieldindex])[*comp]).dofmap().dofs();
+          boost::unordered_set<uint> dof_set;
+          if (mixedsystem)
+          {
+            dof_set =                                                // take the set of dof for this component
+                (*(*(*(*system_).functionspace())[fieldindex])[*comp]).dofmap().dofs();
+          }
+          else
+          {
+            dof_set =                                                // take the set of dof for this component
+                (*(*(*system_).functionspace())[*comp]).dofmap().dofs();
+          }
           for (boost::unordered_set<uint>::const_iterator            // loop over the dof in the set
                                         dof_it = dof_set.begin(); 
                                         dof_it != dof_set.end(); 
@@ -774,8 +876,17 @@ void SpudSolverBucket::is_by_field_fill_(const std::string &optionpath, IS &is,
       }
       else
       {                                                              // no regions or components specified... **field**
-        boost::unordered_set<uint> dof_set =                         // take the set of dof for this field
-              (*(*(*system_).functionspace())[fieldindex]).dofmap().dofs();
+        boost::unordered_set<uint> dof_set;
+        if (mixedsystem)
+        {
+          dof_set =                                                  // take the set of dof for this field
+                (*(*(*system_).functionspace())[fieldindex]).dofmap().dofs();
+        }
+        else
+        {
+          dof_set =                                                  // take the set of dof for this field
+                (*(*system_).functionspace()).dofmap().dofs();
+        }
         for (boost::unordered_set<uint>::const_iterator              // loop over the dof in the set
                                         dof_it = dof_set.begin(); 
                                         dof_it != dof_set.end(); 
@@ -794,6 +905,82 @@ void SpudSolverBucket::is_by_field_fill_(const std::string &optionpath, IS &is,
                                                                      // FIXME: tidy up the above mess!
 
   std::sort(child_indices.begin(), child_indices.end());             // sort the vector of child_indices
+
+  if(sibling_indices)                                                // we have been passed a list of sibling indices...
+  {                                                                  // we wish to remove from the child_indices any indices that
+                                                                     // also occur in the sibling indices
+    uint c_size = child_indices.size();
+    uint c_ind = 0;
+    std::vector<uint> tmp_child_indices;
+    bool overlap = false;
+    for(std::vector<uint>::const_iterator                            // loop over the sibling indices
+                                   s_it = (*sibling_indices).begin();
+                                   s_it != (*sibling_indices).end();
+                                   s_it++)
+    {
+      while(child_indices[c_ind] != *s_it)                           // child_indices are sorted, so sibling_indices should be too
+      {                                                              // search child_indices until the current sibling index is found
+        tmp_child_indices.push_back(child_indices[c_ind]);           // include indices that aren't in the sibling
+        c_ind++;
+        if (c_ind == c_size)                                         // or we reach the end of the child_indices...
+        {
+          break;
+        }
+      }
+      if (c_ind == c_size)                                           // we've reached the end of the child indices so nothing more
+      {                                                              // to do
+        break;
+      }
+      else                                                           // we haven't reached the end of the child indices but found
+      {                                                              // a sibling index to ignore... give a warning
+        overlap = true;
+      }
+      c_ind++;                                                       // indices shouldn't be repeated so incredment the child too
+    }
+
+    if(overlap)
+    {                                                                // sibling indices were ignored... give a warning
+      dolfin::log(dolfin::WARNING, 
+                  "WARNING: IS indices overlap with sibling fieldsplit, ignoring overlapping indices.");
+    }
+    child_indices.clear();
+    child_indices = tmp_child_indices;
+                                 
+  }
+
+  if(parent_indices)                                                 // we have been passed a list of parent indices... 
+  {                                                                  // we wish to remove from the child_indices any indices that do
+                                                                     // not occur in the parent indices 
+    uint p_size = (*parent_indices).size();
+    uint p_ind = 0;
+    std::vector<uint> tmp_child_indices;
+    for (std::vector<uint>::const_iterator                           // loop over the child indices
+                                        c_it = child_indices.begin(); 
+                                        c_it != child_indices.end(); 
+                                        c_it++)
+    {
+      while ((*parent_indices)[p_ind] != *c_it)                      // child_indices is sorted, so parent_indices should be too...
+      {                                                              // search parent_indices until the current child index is found
+        p_ind++;
+        if (p_ind == p_size)                                         // or we reach the end of the parent_indices...
+        {                                                            // and throw a warning
+          dolfin::log(dolfin::WARNING, 
+                      "WARNING: IS indices are not a subset of a parent fieldsplit, ignoring extra indices.");
+          break;
+        }
+      }
+      if (p_ind == p_size)
+      {
+        break;
+      }
+      tmp_child_indices.push_back(*c_it);                            // include indices that are in the parent
+      p_ind++;                                                       // indices shouldn't be repeated so increment the parent too
+    } 
+
+    child_indices.clear();
+    child_indices = tmp_child_indices;
+                                 
+  }
 
   PetscInt n=child_indices.size();                                   // setup a simpler structure for petsc
   PetscInt *indices;
@@ -816,7 +1003,7 @@ void SpudSolverBucket::is_by_field_fill_(const std::string &optionpath, IS &is,
         p_ind++;
         if (p_ind == p_size)                                         // or we reach the end of the parent_indices...
         {                                                            // and throw an error
-          dolfin::error("IS indices are not a subset of a parent fieldsplit.");
+          dolfin::error("IS indices are not a subset of a parent fieldsplit, shouldn't happen here.");
         }
       }
       indices[ind] = p_ind;                                          // found the child index in the parent_indices so copy it into
@@ -824,8 +1011,7 @@ void SpudSolverBucket::is_by_field_fill_(const std::string &optionpath, IS &is,
       ind++;                                                         // increment the array index
       p_ind++;                                                       // indices shouldn't be repeated so increment the parent too
     } 
-    assert(ind<=n);                                                  // these will probably not be equal
-    n = ind;
+    assert(ind==n);                                                  // these should be equal
   }
   else
   {
@@ -843,7 +1029,11 @@ void SpudSolverBucket::is_by_field_fill_(const std::string &optionpath, IS &is,
 
   perr = ISCreateGeneral(PETSC_COMM_WORLD, n, indices, &is);         // create the general index set based on the indices
   CHKERRV(perr);
-  //perr = ISView(is, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);        // isview?  FIXME: add an option?
+  if (Spud::have_option(optionpath+"/monitors/view_index_set"))
+  {
+    dolfin::log(dolfin::INFO, "ISView:");
+    perr = ISView(is, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);      // isview?
+  }
 
   PetscFree(indices);                                                // free the PetscInt array of indices
    
