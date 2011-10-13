@@ -314,6 +314,7 @@ r = rv + rp</string_value>
           <remove_null_space>
             <null_space name="Pressure">
               <field name="Pressure"/>
+              <monitors/>
             </null_space>
           </remove_null_space>
         </linear_solver>

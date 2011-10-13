@@ -7,10 +7,10 @@
     <mesh name="Mesh">
       <source name="Rectangle">
         <lower_left>
-          <integer_value shape="2" dim1="2" rank="1">0.0 0.0</integer_value>
+          <real_value shape="2" dim1="2" rank="1">0.0 0.0</real_value>
         </lower_left>
         <upper_right>
-          <integer_value shape="2" dim1="2" rank="1">1.0 2.0</integer_value>
+          <real_value shape="2" dim1="2" rank="1">1.0 2.0</real_value>
         </upper_right>
         <number_cells>
           <integer_value shape="2" dim1="2" rank="1">10 20</integer_value>

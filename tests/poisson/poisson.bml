@@ -168,6 +168,7 @@
           </iterative_method>
           <preconditioner name="sor"/>
         </linear_solver>
+        <never_ignore_solver_failures/>
       </type>
     </nonlinear_solver>
     <solve name="in_timeloop"/>

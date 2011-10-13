@@ -52,6 +52,7 @@ add_subdirectory("${BUCKETTOOLS_DIR}/cpp" "buckettools_cpp")
 
 include_directories("${BUCKETTOOLS_DIR}/include")
 
+add_subdirectory(diamond_validation)
 add_subdirectory(courant_1d)
 add_subdirectory(adaptive_dt_1d)
 add_subdirectory(poisson)
@@ -73,8 +74,8 @@ add_custom_target(run)
 add_dependencies(run poisson_run)
 
 add_custom_target(test)
-add_dependencies(test courant_1d_test adaptive_dt_1d_test projection_mixedelement_test rbconvection_steadystate_split_test
-rbconvection_steadystate_test rbconvection1a_test region_ids_test
+add_dependencies(test diamond_validation_test courant_1d_test adaptive_dt_1d_test projection_mixedelement_test 
+rbconvection_steadystate_split_test rbconvection_steadystate_test rbconvection1a_test region_ids_test 
 subductionbenchmark1a_test subductionbenchmark1b_test subductionbenchmark1c_test subductionbenchmark1c_split_test
 subductionbenchmark2a_test subductionbenchmark2a_split_test subductionbenchmark2b_test)
 

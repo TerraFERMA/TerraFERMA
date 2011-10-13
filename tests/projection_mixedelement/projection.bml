@@ -193,6 +193,7 @@ r = r1 + r2</string_value>
           </iterative_method>
           <preconditioner name="sor"/>
         </linear_solver>
+        <never_ignore_solver_failures/>
       </type>
     </nonlinear_solver>
     <solve name="in_timeloop"/>
@@ -373,6 +374,7 @@ F = F1 + F2</string_value>
           </iterative_method>
           <preconditioner name="sor"/>
         </linear_solver>
+        <never_ignore_solver_failures/>
       </type>
     </nonlinear_solver>
     <solve name="in_timeloop"/>
