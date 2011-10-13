@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<grammar xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0">
+<grammar xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
   <include href="spud_base.rng"/>
   <define name="timestepping">
     <element name="timestepping">
@@ -36,6 +36,68 @@ Constants are spatially constant expressions.</a:documentation>
             </element>
           </element>
         </element>
+        <optional>
+          <element name="adaptive">
+            <a:documentation>Options to adapt the timestep based on a field in a system</a:documentation>
+            <oneOrMore>
+              <element name="constraint">
+                <a:documentation>Provide the name of a field (and the system it is described in) and its target maximum value.
+
+This should be a Courant number like field so that the timestep is calculated such that:
+
+dt = (current_dt*requested_maximum_value)/current_maximum_value
+
+If multiple constraints are provided the minimum timestep is taken.</a:documentation>
+                <attribute name="name">
+                  <data type="string"/>
+                </attribute>
+                <element name="system">
+                  <a:documentation>The system name</a:documentation>
+                  <attribute name="name">
+                    <data type="string"/>
+                  </attribute>
+                  <empty/>
+                </element>
+                <element name="field">
+                  <a:documentation>The field name</a:documentation>
+                  <attribute name="name">
+                    <data type="string"/>
+                  </attribute>
+                  <empty/>
+                </element>
+                <element name="requested_maximum_value">
+                  <a:documentation>The target maximum value requested for the above field</a:documentation>
+                  <ref name="real"/>
+                </element>
+              </element>
+            </oneOrMore>
+            <optional>
+              <choice>
+                <element name="adapt_period">
+                  <a:documentation>The period in simulation time at which the timestep is recalculated.
+
+Defaults to every timestep if not selected.</a:documentation>
+                  <ref name="real"/>
+                </element>
+                <element name="adapt_period_in_timesteps">
+                  <a:documentation>The number of timesteps between recalculations of the optimal timestep.
+
+Defaults to 1 (every timestep) if not selected.</a:documentation>
+                  <ref name="integer"/>
+                </element>
+              </choice>
+            </optional>
+            <optional>
+              <element name="increase_tolerance">
+                <a:documentation>The maximum ratio by which the timestep is allowed
+to increase in a timestep adapt. e.g., a value of
+1.1 indicates that the timestep may be increased by
+at most 10%.</a:documentation>
+                <ref name="real"/>
+              </element>
+            </optional>
+          </element>
+        </optional>
       </element>
       <optional>
         <element name="steady_state">

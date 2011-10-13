@@ -29,7 +29,55 @@ timestepping =
                 timestep_constant_options
               }
             }
-          }
+          },
+          ## Options to adapt the timestep based on a field in a system
+          element adaptive {
+            ## Provide the name of a field (and the system it is described in) and its target maximum value.
+            ##
+            ## This should be a Courant number like field so that the timestep is calculated such that:
+            ##
+            ## dt = (current_dt*requested_maximum_value)/current_maximum_value
+            ##
+            ## If multiple constraints are provided the minimum timestep is taken.
+            element constraint {
+              attribute name { xsd:string },
+              ## The system name
+              element system {
+                attribute name { xsd:string },
+                empty
+              },
+              ## The field name
+              element field {
+                attribute name { xsd:string },
+                empty
+              },
+              ## The target maximum value requested for the above field
+              element requested_maximum_value {
+                real
+              }
+            }+,
+            (
+              ## The period in simulation time at which the timestep is recalculated.
+              ##
+              ## Defaults to every timestep if not selected.
+              element adapt_period {
+                real
+              }|
+              ## The number of timesteps between recalculations of the optimal timestep.
+              ##
+              ## Defaults to 1 (every timestep) if not selected.
+              element adapt_period_in_timesteps {
+                integer
+              }
+            )?,
+            ## The maximum ratio by which the timestep is allowed
+            ## to increase in a timestep adapt. e.g., a value of
+            ## 1.1 indicates that the timestep may be increased by
+            ## at most 10%.
+            element increase_tolerance {
+              real
+            }?
+          }?
         },
         ## Check for a steady state by comparing the previous timestep's values
         ## to the most recent compared to the given tolerance in the given norm
