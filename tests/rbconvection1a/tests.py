@@ -9,11 +9,11 @@ steady = parser("rbconvection.steady")
 
 def test_timestepcount():
   val = stat["timestep"]["value"][-1]
-  assert abs(val - 66) < 1
+  assert abs(val - 30) < 1
 
 def test_elapsedtime():
   val = stat["ElapsedTime"]["value"][-1]
-  assert abs(val - 3.3e3) < 5.e1
+  assert abs(val - 1640.9259654) < 5.e1
 
 def test_v_rms():
   val = sqrt(stat["Stokes"]["Velocity"]["L2NormSquared"][-1])
