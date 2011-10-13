@@ -38,7 +38,7 @@ add_custom_command(
     )
  
 add_custom_target(
-  ${PREFIX}run
+  ${PREFIX}_run
   COMMAND ${EXECUTABLE} -vDBG -l ${OPTIONSFILE} 
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   DEPENDS ${EXECUTABLE}
@@ -46,10 +46,10 @@ add_custom_target(
   )
 
 add_custom_target(
-  ${PREFIX}test
+  ${PREFIX}_test
   COMMAND py.test -v ${PROJECT_SOURCE_DIR}/tests.py 
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   DEPENDS ${PROJECT_SOURCE_DIR}/tests.py
   )
-add_dependencies(${PREFIX}test ${PREFIX}run)
+add_dependencies(${PREFIX}_test ${PREFIX}_run)
 

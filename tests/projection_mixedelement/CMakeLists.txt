@@ -1,6 +1,6 @@
-set(EXECUTABLE "projection")
+set(EXECUTABLE "projection_mixedelement")
 
-set(OPTIONSFILENAME "${EXECUTABLE}.bml")
+set(OPTIONSFILENAME "projection.bml")
 
 set(PREFIX ${EXECUTABLE})
 
@@ -29,17 +29,17 @@ set (EXTRA_LIBS ${EXTRA_LIBS} buckettools_cpp ${PREFIX}buckettools_ufc)
 target_link_libraries(${EXECUTABLE} ${DOLFIN_LIBRARIES} ${DOLFIN_3RD_PARTY_LIBRARIES} ${EXTRA_LIBS} /usr/lib/libspud.a ${PYTHON_LIBRARIES})
 
 add_custom_target(
-  ${PREFIX}run
+  ${PREFIX}_run
   COMMAND ${EXECUTABLE} -vINFO -l ${OPTIONSFILE} 
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   DEPENDS ${EXECUTABLE}
   )
 
 add_custom_target(
-  ${PREFIX}test
+  ${PREFIX}_test
   COMMAND py.test -v ${PROJECT_SOURCE_DIR}/tests.py 
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   DEPENDS ${PROJECT_SOURCE_DIR}/tests.py
   )
-add_dependencies(${PREFIX}test ${PREFIX}run)
+add_dependencies(${PREFIX}_test ${PREFIX}_run)
 
