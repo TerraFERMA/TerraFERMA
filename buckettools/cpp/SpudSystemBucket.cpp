@@ -141,6 +141,8 @@ void SpudSystemBucket::base_fill_()
 
   change_calculated_.reset( new bool(false) );                       // assume the change hasn't been calculated yet
 
+  solved_.reset( new bool(false) );                                  // assume the system hasn't been solved yet
+
 }
 
 //*******************************************************************|************************************************************//

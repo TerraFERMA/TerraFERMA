@@ -44,6 +44,10 @@ void SystemBucket::solve()
 
     // update_nonlinear...
   }
+  if(solved_)
+  {
+    *solved_ = true;
+  }
 }
 
 //*******************************************************************|************************************************************//
@@ -65,6 +69,8 @@ void SystemBucket::update()
   update_nonlinear();                                                // update potentially nonlinear coefficients
 
   resetchange();                                                     // reset the change booleans in the system and fields
+
+  *solved_ = false;                                                  // reset the solved_ indicator to false for the next timestep
 
 }
 
@@ -157,6 +163,8 @@ void SystemBucket::copy_diagnostics(SystemBucket_ptr &system, Bucket_ptr &bucket
 
   (*system).changefunction_ = changefunction_;
   (*system).change_calculated_ = change_calculated_;
+
+  (*system).solved_ = solved_;
 
   for (FunctionBucket_const_it func_it = fields_begin();             // loop over the fields
                            func_it != fields_end(); func_it++)

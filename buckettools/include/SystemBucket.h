@@ -106,6 +106,9 @@ namespace buckettools
     const int solve_location() const                                 // return an integer describing where this system is solved
     { return solve_location_; }
 
+    const bool solved() const                                        // return a boolean indicating if this system has been solved
+    { return *solved_; }                                              // for or not
+
     const PETScVector_ptr residual_vector() const;                   // return the residual of the last solver in the system
 
     //***************************************************************|***********************************************************//
@@ -295,6 +298,8 @@ namespace buckettools
     Function_ptr changefunction_;                                    // (boost shared) pointer to the change between timesteps
 
     bool_ptr change_calculated_;                                     // indicate if the change has been recalculated recently
+
+    bool_ptr solved_;                                                // indicate if the system has been solved this timestep
 
     //***************************************************************|***********************************************************//
     // Pointers data

@@ -57,10 +57,11 @@ void Bucket::run()
   while (continue_timestepping) 
   {                                                                  // loop over time
 
-    dolfin::log(dolfin::INFO, "Timestep number: %d", timestep_count()+1);
-    dolfin::log(dolfin::INFO, "Time: %f", current_time()+timestep());
+    dolfin::log(dolfin::INFO, "Timestep number: %d", timestep_count());
+    dolfin::log(dolfin::INFO, "Time: %f", current_time());
+    dolfin::log(dolfin::INFO, "Timestep: %f", timestep());
 
-    solve_in_timeloop_();
+    solve_in_timeloop_();                                            // this is where the magic happens
 
     *current_time_ += timestep();                                    // increment time with the timestep
     (*timestep_count_)++;                                            // increment the number of timesteps taken
@@ -74,6 +75,8 @@ void Bucket::run()
     {
       output(OUTPUT_TIMELOOP);                                       // standard timeloop output
     }
+
+    update_timestep();                                               // update the timestep
 
     update();                                                        // update all functions in the bucket
 
@@ -103,10 +106,70 @@ void Bucket::solve(const int &location)
 void Bucket::update()
 {
   for (int_SystemBucket_const_it s_it = orderedsystems_begin(); 
-                             s_it != orderedsystems_end(); s_it++)
+                                 s_it != orderedsystems_end(); s_it++)
   {
     (*(*s_it).second).update();
   }
+}
+
+//*******************************************************************|************************************************************//
+// loop over the constraints, solving the listed systems and updating the timestep based on them
+//*******************************************************************|************************************************************//
+void Bucket::update_timestep()
+{
+  if (timestep_constraints_.size()==0) 
+  {
+    return;
+  }
+
+  bool adapt_dt = perform_action_(timestepadapt_period_, 
+                                  timestepadapt_time_, 
+                                  timestepadapt_period_timesteps_);  // do we want to update the timestep now
+
+  if (!adapt_dt)
+  {
+    return;
+  }
+
+  double new_dt = HUGE_VAL;
+                                 //  system name, field name   , requested maxval
+  std::vector< std::pair< std::pair< std::string, std::string >, double > >::const_iterator c_it;
+  for (c_it =  timestep_constraints_.begin(); 
+       c_it != timestep_constraints_.end(); 
+       c_it++)
+  {
+    double suggested_dt;
+
+    SystemBucket_ptr sysbucket = fetch_system((*c_it).first.first);
+    if(!(*sysbucket).solved())                                       // force a solve of the requested system if it hasn't already
+    {                                                                // been solved for this timestep
+      (*sysbucket).solve();
+    }
+
+    FunctionBucket_ptr funcbucket = (*sysbucket).fetch_field((*c_it).first.second);
+    dolfin::Function func =                                          // take a deep copy of the subfunction so the vector is accessible
+        *boost::dynamic_pointer_cast< const dolfin::Function >((*funcbucket).function());
+
+    double maxval = func.vector().max();                             // work out the current maximum value
+
+    if (maxval==0.0)
+    {
+      suggested_dt = HUGE_VAL;
+    }
+    else
+    { 
+      suggested_dt = ((*c_it).second*timestep())/maxval;
+    }
+    new_dt = std::min(suggested_dt, new_dt);
+  }
+
+  if (timestep_increasetol_)
+  {
+    new_dt = std::min(timestep()*(*timestep_increasetol_), new_dt);
+  }
+ 
+  *(timestep_.second) = new_dt;
+
 }
 
 //*******************************************************************|************************************************************//
@@ -694,21 +757,23 @@ GenericDetectors_const_it Bucket::detectors_end() const
 void Bucket::output(const int &location)
 {
 
-  bool write_vis = (dump_(visualization_period_, visualization_dumptime_, 
-                         visualization_period_timesteps_) ||         // are we writing pvd files?
+  bool write_vis = (perform_action_(visualization_period_, 
+                                    visualization_dumptime_, 
+                                  visualization_period_timesteps_) ||// are we writing pvd files?
                      location==OUTPUT_START || location==OUTPUT_END);// force output at start and end
 
-  bool write_stat = (dump_(statistics_period_, statistics_dumptime_, // are we writing the stat file? 
-                          statistics_period_timesteps_) ||          
+  bool write_stat = (perform_action_(statistics_period_, 
+                                     statistics_dumptime_,           // are we writing the stat file? 
+                                     statistics_period_timesteps_) ||          
                      location==OUTPUT_START || location==OUTPUT_END);// force output at start and end
 
-  bool write_steady = ((dump_(steadystate_period_, 
+  bool write_steady = ((perform_action_(steadystate_period_, 
                             steadystate_dumptime_,                   // are we writing the steady state file?
                             steadystate_period_timesteps_) ||
                       location==OUTPUT_END) &&                       // force output at end
                       location !=OUTPUT_START);                      // prevent output at start
 
-  bool write_det = (dump_(detectors_period_, detectors_dumptime_, 
+  bool write_det = (perform_action_(detectors_period_, detectors_dumptime_, 
                          detectors_period_timesteps_) ||             // are we writing the detectors file?
                      location==OUTPUT_START || location==OUTPUT_END);// force output at start and end
 
@@ -976,40 +1041,26 @@ bool Bucket::steadystate_()
 //*******************************************************************|************************************************************//
 // return a boolean indicating if the simulation should output or not
 //*******************************************************************|************************************************************//
-bool Bucket::dump_(double_ptr dump_period, 
-                   double_ptr previous_dump_time, 
-                   int_ptr dump_period_timesteps)
+bool Bucket::perform_action_(double_ptr action_period, 
+                             double_ptr previous_action_time, 
+                             int_ptr action_period_timesteps)
 {
-  bool dumping = true;
+  bool performing = true;
 
-  if(dump_period)
+  if(action_period)
   {
-    if(current_time()==start_time())                                 // force output at start
+    assert(previous_action_time);
+    performing = ((current_time()-*previous_action_time) >= *action_period);
+    if (performing)
     {
-      dumping = true;
-    }
-    else
-    {
-      assert(previous_dump_time);
-      dumping = ((current_time()-*previous_dump_time) >= *dump_period);
-      if (dumping)
-      {
-        *previous_dump_time = current_time();
-      }
+      *previous_action_time = current_time();
     }
   }
-  else if(dump_period_timesteps)
+  else if(action_period_timesteps)
   {
-    if(timestep_count()==0)                                          // force output at start
-    {
-      dumping = true;
-    }
-    else
-    {
-      dumping = (timestep_count()%(*dump_period_timesteps)==0);
-    }
+    performing = (timestep_count()%(*action_period_timesteps)==0);
   }  
 
-  return dumping;
+  return performing;
 }
 

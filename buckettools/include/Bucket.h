@@ -56,6 +56,8 @@ namespace buckettools
 
     void update();                                                   // update the functions in the systems in this bucket
 
+    void update_timestep();                                          // update the timestep
+
     void update_nonlinear();                                         // update the potentially nonlinear functions in the systems in this bucket
 
     bool complete();                                                 // indicate if the simulation is complete or not
@@ -258,6 +260,11 @@ namespace buckettools
     std::pair< std::string, Constant_ptr > timestep_;                // the timestep, represented as a dolfin constant so it can be used in
                                                                      // the ufl (ufl symbol first member of pair)
 
+    double_ptr timestep_increasetol_;                                // increase tolerance for the timestep
+
+    std::vector< std::pair< std::pair< std::string, std::string >, double > >// constraints on the timestep in <<system, field> name, max value > pairs
+                                              timestep_constraints_;
+
     int_ptr nonlinear_iterations_, iteration_count_;                 // the number of iterations requested and the number of nonlinear 
                                                                      // iterations taken
     
@@ -266,15 +273,18 @@ namespace buckettools
     std::string output_basename_;                                    // the output base name
 
     double_ptr visualization_period_, statistics_period_,            // dump periods
-               steadystate_period_, detectors_period_;
+               steadystate_period_, detectors_period_,
+               timestepadapt_period_;
 
     double_ptr visualization_dumptime_, statistics_dumptime_,        // dump periods
-               steadystate_dumptime_, detectors_dumptime_;
+               steadystate_dumptime_, detectors_dumptime_,
+               timestepadapt_time_;
 
     int_ptr visualization_period_timesteps_,                         // dump periods in timesteps
             statistics_period_timesteps_,
             steadystate_period_timesteps_, 
-            detectors_period_timesteps_;
+            detectors_period_timesteps_,
+            timestepadapt_period_timesteps_;
 
     //***************************************************************|***********************************************************//
     // Pointers data
@@ -343,9 +353,9 @@ namespace buckettools
 
     bool steadystate_();                                             // check if a steady state has been attained
 
-    bool dump_(double_ptr dump_period, 
-               double_ptr previous_dump_time, 
-               int_ptr    dump_period_timestep);                     // indicate if diagnostic output should be performed 
+    bool perform_action_(double_ptr action_period, 
+                         double_ptr previous_action_time, 
+                         int_ptr    action_period_timestep);         // indicate if an action should be performed based on periods
 
     void solve_at_start_();                                          // solve the solvers in this system (in order at the start of a
                                                                      // simulation)

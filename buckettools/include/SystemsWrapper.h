@@ -2,10 +2,14 @@
 #define __SYSTEMS_WRAPPER_H
 
 #include "BoostTypes.h"
-#include "Bucket.h"
 
 namespace buckettools
 {
+
+  class Bucket;                                                      // predeclaration to prevent dependencies of Bucket.h causing
+                                                                     // unnecessary recompilation of SystemsWrapper.cpp
+  
+
   //*****************************************************************|************************************************************//
   // Header definitions for code that is automatically generated on a per options file basis.
   // These functions provide an interface between the bucket and the ufc, which is model specific.

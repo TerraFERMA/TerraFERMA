@@ -54,6 +54,10 @@ void SolverBucket::solve()
 {
   PetscErrorCode perr;
 
+  dolfin::log(dolfin::INFO, "Solving for %s::%s using %s", 
+                          (*system_).name().c_str(), name().c_str(), 
+                          type().c_str());
+
   if (type()=="SNES")                                                // this is a petsc snes solver - FIXME: switch to an enumerated type
   {
     *work_ = (*(*system_).function()).vector();                      // set the work vector to the function vector

@@ -352,6 +352,66 @@ void SpudBucket::timestepping_fill_()
     spud_err(buffer.str(), serr);
     timestep_.second.reset( new dolfin::Constant(timestep_value) );
 
+    buffer.str(""); buffer << "/timestepping/timestep/adaptive";
+    if (Spud::have_option(buffer.str()))
+    {
+      
+      
+      buffer.str(""); buffer <<
+         "/timestepping/timestep/adaptive/constraint";               // constraints on which to adapt the timestep (required)
+      int nconstraints = Spud::option_count(buffer.str());
+      for (uint i = 0; i < nconstraints; i++)
+      {
+        buffer.str(""); buffer << 
+           "/timestepping/timestep/adaptive/constraint[" << i << "]";
+        
+        std::string sysname;
+        serr = Spud::get_option(buffer.str()+"/system/name", sysname);
+        spud_err(buffer.str()+"/system/name", serr);
+
+        std::string fieldname;
+        serr = Spud::get_option(buffer.str()+"/field/name", fieldname);
+        spud_err(buffer.str()+"/field/name", serr);
+
+        double maxvalue;
+        serr = Spud::get_option(buffer.str()+"/requested_maximum_value", maxvalue);
+        spud_err(buffer.str()+"/requested_maximum_value", serr);
+
+        timestep_constraints_.push_back(make_pair( make_pair(sysname, fieldname), maxvalue ));
+
+      }
+
+      buffer.str(""); buffer <<
+         "/timestepping/timestep/adaptive/adapt_period_in_timesteps";// timestep adapt period in timesteps
+      if(Spud::have_option(buffer.str()))
+      {
+        timestepadapt_period_timesteps_.reset( new int );
+        serr = Spud::get_option(buffer.str(), *timestepadapt_period_timesteps_);
+        spud_err(buffer.str(), serr);
+      }
+      
+      buffer.str(""); buffer << 
+                  "/timestepping/timestep/adaptive/adapt_period";    // timestep adapt period
+      if(Spud::have_option(buffer.str()))
+      {
+        timestepadapt_period_.reset( new double );
+        serr = Spud::get_option(buffer.str(), *timestepadapt_period_);
+        spud_err(buffer.str(), serr);
+
+        timestepadapt_time_.reset( new double(start_time()) );
+      }
+
+      buffer.str(""); buffer << 
+              "/timestepping/timestep/adaptive/increase_tolerance";  // timestep adapt period
+      if(Spud::have_option(buffer.str()))
+      {
+        timestep_increasetol_.reset( new double );
+        serr = Spud::get_option(buffer.str(), *timestep_increasetol_);
+        spud_err(buffer.str(), serr);
+      }
+
+    }
+
     buffer.str(""); buffer << "/timestepping/steady_state";
     if (Spud::have_option(buffer.str()))
     {
