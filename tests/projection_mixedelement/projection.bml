@@ -22,6 +22,30 @@
     <detectors/>
     <dump_periods/>
   </io>
+  <timestepping>
+    <current_time>
+      <real_value rank="0">0.0</real_value>
+    </current_time>
+    <finish_time>
+      <real_value rank="0">10.0</real_value>
+    </finish_time>
+    <timestep>
+      <coefficient name="Timestep">
+        <ufl_symbol>
+          <string_value lines="1">dt</string_value>
+        </ufl_symbol>
+        <type name="Constant">
+          <rank name="Scalar" rank="0">
+            <value name="WholeMesh">
+              <constant>
+                <real_value rank="0">1.0</real_value>
+              </constant>
+            </value>
+          </rank>
+        </type>
+      </coefficient>
+    </timestep>
+  </timestepping>
   <system name="SNESProjection">
     <mesh name="Frank"/>
     <ufl_symbol>
@@ -151,6 +175,36 @@
         </include_in_statistics>
       </diagnostics>
     </coefficient>
+    <coefficient name="Dummy">
+      <ufl_symbol>
+        <string_value lines="1">dummy</string_value>
+      </ufl_symbol>
+      <type name="Expression">
+        <rank name="Scalar" rank="0">
+          <element name="P0">
+            <family>
+              <string_value>DG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">0</integer_value>
+            </degree>
+          </element>
+          <value name="WholeMesh">
+            <python rank="0">
+              <string_value type="python" lines="20">global dummy
+dummy = 5
+dummy += 1
+
+def val(x):
+  return dummy</string_value>
+            </python>
+          </value>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_statistics/>
+      </diagnostics>
+    </coefficient>
     <nonlinear_solver name="SimpleSolver">
       <type name="SNES">
         <form name="Residual" rank="0">
@@ -173,6 +227,9 @@ r = r1 + r2</string_value>
         <relative_error>
           <real_value rank="0">1.e-10</real_value>
         </relative_error>
+        <absolute_error>
+          <real_value rank="0">1.e-10</real_value>
+        </absolute_error>
         <max_iterations>
           <integer_value rank="0">50</integer_value>
         </max_iterations>
@@ -327,6 +384,32 @@ r = r1 + r2</string_value>
         </include_in_statistics>
       </diagnostics>
     </coefficient>
+    <coefficient name="Dummy">
+      <ufl_symbol>
+        <string_value lines="1">dummy2</string_value>
+      </ufl_symbol>
+      <type name="Expression">
+        <rank name="Scalar" rank="0">
+          <element name="P0">
+            <family>
+              <string_value>DG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">0</integer_value>
+            </degree>
+          </element>
+          <value name="WholeMesh">
+            <python rank="0">
+              <string_value type="python" lines="20">def val(X):
+  return dummy</string_value>
+            </python>
+          </value>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_statistics/>
+      </diagnostics>
+    </coefficient>
     <nonlinear_solver name="SimpleSolver">
       <type name="Picard">
         <preamble>
@@ -357,6 +440,9 @@ F = F1 + F2</string_value>
         <relative_error>
           <real_value rank="0">1.e-10</real_value>
         </relative_error>
+        <absolute_error>
+          <real_value rank="0">1.e-10</real_value>
+        </absolute_error>
         <max_iterations>
           <integer_value rank="0">10</integer_value>
         </max_iterations>

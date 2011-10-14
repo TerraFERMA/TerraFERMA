@@ -52,6 +52,14 @@ def test_picard_source2_int_1():
   val = stat["PicardProjection"]["Source2"]["Integral1"][-1]
   assert val == 3000.0
 
+def test_picard_dummy_max():
+  val = stat["PicardProjection"]["Dummy"]["max"]
+  assert numpy.all(val == 6.0)
+
+def test_picard_dummy_min():
+  val = stat["PicardProjection"]["Dummy"]["min"]
+  assert numpy.all(val == 6.0)
+
 def test_snes_field1_min():
   val = stat["SNESProjection"]["Field1"]["min"][-1]
   assert val == 1000.0
@@ -99,4 +107,12 @@ def test_snes_field2_int_1():
 def test_snes_source2_int_1():
   val = stat["SNESProjection"]["Source2"]["Integral1"][-1]
   assert val == 3000.0
+
+def test_snes_dummy_max():
+  val = stat["SNESProjection"]["Dummy"]["max"]
+  assert numpy.all(val == 6.0)
+
+def test_snes_dummy_min():
+  val = stat["SNESProjection"]["Dummy"]["min"]
+  assert numpy.all(val == 6.0)
 
