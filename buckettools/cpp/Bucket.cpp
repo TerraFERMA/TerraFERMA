@@ -117,21 +117,34 @@ void Bucket::update()
 //*******************************************************************|************************************************************//
 void Bucket::update_timestep()
 {
-  if (timestep_constraints_.size()==0) 
+  if (timestep_constraints_.size()==0)                               // this indicates we don't have adaptive timestepping turned on
   {
-    return;
+    return;                                                          // so return
   }
+
+  bool zero_init_dt = ( (std::abs(timestep()) < DOLFIN_EPS)          // if the timestep is zero and
+                                   && (timestep_count()==1) );       // this is the end of the first timestep
+                                                                     // then we consider this a zero initial timestep simulation
+                                                                     // and force an adapt (and solve) regardless of the period
 
   bool adapt_dt = perform_action_(timestepadapt_period_, 
                                   timestepadapt_time_, 
                                   timestepadapt_period_timesteps_);  // do we want to update the timestep now
 
-  if (!adapt_dt)
+  if ((!adapt_dt) && (!zero_init_dt))
   {
     return;
   }
 
   double new_dt = HUGE_VAL;
+  dolfin::log(dolfin::INFO, "In update_timestep()");
+
+  if (zero_init_dt)                                                  // the timestep is zero initially so we'll get a 0.0 Courant
+  {                                                                  // like number... so set a dummy timestep of 1.0 for this
+    *(timestep_.second) = 1.0;                                       // calculation
+    dolfin::log(dolfin::INFO, "Forcing a timestep adapt as initial timestep is 0.0.");
+  }
+
                                  //  system name, field name   , requested maxval
   std::vector< std::pair< std::pair< std::string, std::string >, double > >::const_iterator c_it;
   for (c_it =  timestep_constraints_.begin(); 
@@ -141,10 +154,10 @@ void Bucket::update_timestep()
     double suggested_dt;
 
     SystemBucket_ptr sysbucket = fetch_system((*c_it).first.first);
-    if(!(*sysbucket).solved())                                       // force a solve of the requested system if it hasn't already
-    {                                                                // been solved for this timestep
-      (*sysbucket).solve();
-    }
+    if((!(*sysbucket).solved()) || zero_init_dt )                    // force a solve of the requested system if it hasn't already
+    {                                                                // been solved for this timestep or we've just set a dummy
+      (*sysbucket).solve();                                          // timestep of 1.0, which will have to be incorporated into the
+    }                                                                // new calculation
 
     FunctionBucket_ptr funcbucket = (*sysbucket).fetch_field((*c_it).first.second);
     dolfin::Function func =                                          // take a deep copy of the subfunction so the vector is accessible
