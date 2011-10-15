@@ -60,11 +60,6 @@ void SystemBucket::update()
 
                                                                      // fields share a vector with the system function so no need to
                                                                      // update them...
-  for (int_FunctionBucket_it f_it = orderedcoeffs_begin();           // so, let's just loop over coefficients
-                                f_it != orderedcoeffs_end(); f_it++)
-  {
-    (*(*f_it).second).update();                                      // and update them
-  }
 
   update_nonlinear();                                                // update potentially nonlinear coefficients
 

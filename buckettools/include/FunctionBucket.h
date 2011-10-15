@@ -105,8 +105,6 @@ namespace buckettools
 
     void resetchange();                                              // reset the change boolean
 
-    void update();                                                   // update the function timelevels
-
     void update_constantfunctional();                                // update the function if this is a constant functional coeff
 
     //***************************************************************|***********************************************************//

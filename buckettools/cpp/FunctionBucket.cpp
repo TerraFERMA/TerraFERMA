@@ -73,14 +73,6 @@ void FunctionBucket::resetchange()
 //*******************************************************************|************************************************************//
 // update the timelevels of the system function
 //*******************************************************************|************************************************************//
-void FunctionBucket::update()
-{
-  *oldfunction_ = *function_;                                        // update the oldfunction to the new function value
-}
-
-//*******************************************************************|************************************************************//
-// update the timelevels of the system function
-//*******************************************************************|************************************************************//
 void FunctionBucket::update_constantfunctional()
 {
   if (constantfunctional_)
