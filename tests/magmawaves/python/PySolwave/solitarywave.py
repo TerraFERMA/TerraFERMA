@@ -7,6 +7,7 @@ __copyright__ = "Copyright (C) 2010 Marc Spiegelman"
 __license__  = "GNU LGPL Version 2.1"
 
 from numpy import *
+from scipy.interpolate import interp1d
 import sys
 
 from magmasinc import solwave_mck, solwave_con, solwave_m1, solwave_gen
@@ -41,6 +42,7 @@ class SolitaryWave:
                 
         self.r = r
         self.f = f
+        self.finterp = interp1d(r,f, kind='cubic', fill_value=1.0)
 
     def eval(self,r):
         """ use sincinterp_e to return porosity at radius r"""
@@ -48,7 +50,14 @@ class SolitaryWave:
         f = sincinterp_e(self.r, self.f - 1.0, r) + 1.0
         return f
 
+
+    def interp(self,r):
+        """ use scipy interp1d cubic interpolation to return values"""
+        return self.finterp(r)
+
     
+
+        
         
 
                 

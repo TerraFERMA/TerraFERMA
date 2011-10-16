@@ -7,7 +7,7 @@
     <mesh name="Mesh">
       <source name="UnitSquare">
         <number_cells>
-          <integer_value shape="2" dim1="2" rank="1">32 32</integer_value>
+          <integer_value shape="2" dim1="2" rank="1">64 64</integer_value>
         </number_cells>
         <diagonal>
           <string_value>right/left</string_value>
@@ -29,7 +29,7 @@
     </detectors>
     <dump_periods>
       <visualization_period>
-        <real_value rank="0">0.025</real_value>
+        <real_value rank="0">0.05</real_value>
       </visualization_period>
       <statistics_period_in_timesteps>
         <integer_value rank="0">10</integer_value>
@@ -44,7 +44,7 @@
       <real_value rank="0">0.0</real_value>
     </current_time>
     <finish_time>
-      <real_value rank="0">1.</real_value>
+      <real_value rank="0">5.</real_value>
     </finish_time>
     <timestep>
       <coefficient name="Timestep">
@@ -147,7 +147,7 @@
             <python rank="0">
               <string_value lines="20" type="python"># Initialize to single solitary wave profile 
 # using PySolwave routines ... need to set python path appropriately 
-# this is painfully slow for a pointwise val
+# this is painfully slow for a pointwise val but works
 
 from solitarywave import *
 from numpy import array
@@ -156,8 +156,8 @@ from math import sqrt
 c = 5.                                 #Wave speed
 n = 3                                  # permeability exponent
 m = 0                                 # bulk-viscosity exponent
-d = 2                                 # dimension
-N = 200                              # number of collocation points
+d = 1                                  # dimension
+N = 400                              # number of collocation points
 swave = SolitaryWave(c,n,m,d,N)
 
 # location of solitary wave maximum
@@ -168,16 +168,17 @@ h_on_delta = 64.
 r_max = 25.
 
 def val(x):
-  global x0, h_on_delta, swave, sqrt, array, r_max
-  # 1-d waves
-  #r = h_on_delta*abs(x[1] - x0[1])
-  # 2-d waves
-  dx = x - x0
-  r = h_on_delta*sqrt(sum(dx*dx))
+  global x0, h_on_delta, swave, sqrt, array, r_max, d
+  if d == 1:
+     r = h_on_delta*abs(x[1] - x0[1]) # use 1-D waves
+  else: 
+     dx = x - x0  # use 2-D waves
+     r = h_on_delta*sqrt(sum(dx*dx))
   if r &lt;= r_max:
-    return swave.eval(array([r])) 
+     #return swave.eval(array([r])) 
+     return swave.interp(array([r]))	
   else:
-    return 1.0
+     return 1.0
 </string_value>
             </python>
           </initial_condition>
