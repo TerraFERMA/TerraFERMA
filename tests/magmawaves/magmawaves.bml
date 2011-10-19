@@ -274,9 +274,49 @@ r = rp + rf</string_value>
           <residual/>
         </monitors>
         <linear_solver>
-          <iterative_method name="preonly"/>
-          <preconditioner name="lu">
-            <factorization_package name="mumps"/>
+          <iterative_method name="gmres">
+            <restart>
+              <integer_value rank="0">30</integer_value>
+            </restart>
+            <relative_error>
+              <real_value rank="0">1.e-7</real_value>
+            </relative_error>
+            <max_iterations>
+              <integer_value rank="0">50</integer_value>
+            </max_iterations>
+            <monitors/>
+          </iterative_method>
+          <preconditioner name="fieldsplit">
+            <composite_type name="multiplicative"/>
+            <fieldsplit name="Pressure">
+              <field name="Pressure"/>
+              <monitors/>
+              <linear_solver>
+                <iterative_method name="preonly"/>
+                <preconditioner name="hypre">
+                  <hypre_type name="boomeramg"/>
+                </preconditioner>
+              </linear_solver>
+            </fieldsplit>
+            <fieldsplit name="Porosity">
+              <field name="Porosity"/>
+              <monitors/>
+              <linear_solver>
+                <iterative_method name="gmres">
+                  <restart>
+                    <integer_value rank="0">30</integer_value>
+                  </restart>
+                  <relative_error>
+                    <real_value rank="0">1.e-3</real_value>
+                  </relative_error>
+                  <max_iterations>
+                    <integer_value rank="0">50</integer_value>
+                  </max_iterations>
+                  <monitors/>
+                </iterative_method>
+                <preconditioner name="ilu"/>
+              </linear_solver>
+            </fieldsplit>
           </preconditioner>
         </linear_solver>
         <never_ignore_solver_failures/>

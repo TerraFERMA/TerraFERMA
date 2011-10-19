@@ -43,6 +43,6 @@ def test_timestep():
 
 def test_walltime():
   val = stat["ElapsedWallTime"]["value"][-1]
-  test = 622.
-  assert abs(val - test) < 30.
-  print "\tvalue=", val, "test=", test, " ",
+  test = 600.
+  assert abs(val) < test
+  print "\tvalue=", val, "< ", test, " ",
