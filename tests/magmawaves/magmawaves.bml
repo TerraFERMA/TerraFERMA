@@ -44,7 +44,7 @@
       <real_value rank="0">0.0</real_value>
     </current_time>
     <finish_time>
-      <real_value rank="0">5.</real_value>
+      <real_value rank="0">2.</real_value>
     </finish_time>
     <timestep>
       <coefficient name="Timestep">
@@ -147,7 +147,6 @@
             <python rank="0">
               <string_value lines="20" type="python"># Initialize to single solitary wave profile 
 # using PySolwave routines ... need to set python path appropriately 
-# this is painfully slow for a pointwise val but works
 
 from solitarywave import *
 from numpy import array
@@ -156,7 +155,7 @@ from math import sqrt
 c = 5.                                 #Wave speed
 n = 3                                  # permeability exponent
 m = 0                                 # bulk-viscosity exponent
-d = 1                                  # dimension
+d = 2                                  # dimension
 N = 400                              # number of collocation points
 swave = SolitaryWave(c,n,m,d,N)
 
@@ -178,8 +177,7 @@ def val(x):
      #return swave.eval(array([r])) 
      return swave.interp(array([r]))	
   else:
-     return 1.0
-</string_value>
+     return 1.0</string_value>
             </python>
           </initial_condition>
           <boundary_condition name="top">
