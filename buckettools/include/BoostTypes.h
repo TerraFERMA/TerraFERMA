@@ -40,7 +40,7 @@ namespace buckettools {
   typedef boost::shared_ptr< dolfin::Constant >                     Constant_ptr;
   typedef boost::shared_ptr< dolfin::Expression >                   Expression_ptr;
   typedef boost::shared_ptr< dolfin::Mesh >                         Mesh_ptr;
-  typedef boost::shared_ptr< dolfin::MeshFunction< dolfin::uint > > MeshFunction_uint_ptr;
+  typedef boost::shared_ptr< const dolfin::MeshFunction< dolfin::uint > > MeshFunction_uint_ptr;
   typedef boost::shared_ptr< dolfin::FunctionSpace >                FunctionSpace_ptr;
   typedef boost::shared_ptr< dolfin::Function >                     Function_ptr;
   typedef boost::shared_ptr< dolfin::BoundaryCondition >            BoundaryCondition_ptr;
