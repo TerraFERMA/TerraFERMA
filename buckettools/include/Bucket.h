@@ -86,9 +86,18 @@ namespace buckettools
 
     const double start_time() const;                                 // return the current time
 
+    const double_ptr start_time_ptr() const                          // return a (const boost shared) pointer to the start time
+    { return start_time_; }
+
     const double old_time() const;                                   // return the old time (from the previous timestep)
 
+    const double_ptr old_time_ptr() const                            // return a (const boost shared) pointer to the old time
+    { return old_time_; }
+
     const double current_time() const;                               // return the current time
+
+    const double_ptr current_time_ptr() const                        // return a (const boost shared) pointer to the current time
+    { return current_time_; }
 
     const double finish_time() const;                                // return the finish time
 

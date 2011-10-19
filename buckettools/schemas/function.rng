@@ -656,6 +656,14 @@ Functions should be of the form:
     # Function code
     return ... # Return value
 
+ for steady (time independent) expressions or 
+
+ def val(x,t):
+    # Function code
+    return ... # Return value
+
+ for time dependent expressions.
+
 The return value should be scalar.</a:documentation>
       <attribute name="rank">
         <value>0</value>
@@ -673,6 +681,14 @@ Functions should be of the form:
     # Function code
     return [..., ...] # Return value
 
+ for steady (time independent) expressions or 
+
+ def val(x,t):
+    # Function code
+    return [..., ...] # Return value
+
+ for time dependent expressions.
+
 The return value must have the same size as the vector element.</a:documentation>
       <attribute name="rank">
         <value>1</value>
@@ -689,6 +705,14 @@ Functions should be of the form:
  def val(x):
     # Function code
     return [[..., ...],[..., ...],...] # Return value
+
+ for steady (time independent) expressions or 
+
+ def val(x,t):
+    # Function code
+    return [[..., ...],[..., ...],...] # Return value
+
+ for time dependent expressions.
 
 The return value must have the same shape as the tensor element.</a:documentation>
       <attribute name="rank">

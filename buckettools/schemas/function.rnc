@@ -541,6 +541,14 @@ prescribed_scalar_python =
     ##     # Function code
     ##     return ... # Return value
     ##
+    ##  for steady (time independent) expressions or 
+    ##
+    ##  def val(x,t):
+    ##     # Function code
+    ##     return ... # Return value
+    ##
+    ##  for time dependent expressions.
+    ##
     ## The return value should be scalar.
     element python {
       attribute rank { "0" },
@@ -559,6 +567,14 @@ prescribed_vector_python =
     ##     # Function code
     ##     return [..., ...] # Return value
     ##
+    ##  for steady (time independent) expressions or 
+    ##
+    ##  def val(x,t):
+    ##     # Function code
+    ##     return [..., ...] # Return value
+    ##
+    ##  for time dependent expressions.
+    ##
     ## The return value must have the same size as the vector element.
     element python {
       attribute rank { "1" },
@@ -575,6 +591,14 @@ prescribed_tensor_python =
     ##  def val(x):
     ##     # Function code
     ##     return [[..., ...],[..., ...],...] # Return value
+    ##
+    ##  for steady (time independent) expressions or 
+    ##
+    ##  def val(x,t):
+    ##     # Function code
+    ##     return [[..., ...],[..., ...],...] # Return value
+    ##
+    ##  for time dependent expressions.
     ##
     ## The return value must have the same shape as the tensor element.
     element python {

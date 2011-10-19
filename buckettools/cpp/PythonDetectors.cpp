@@ -34,6 +34,9 @@ PythonDetectors::~PythonDetectors()
 //*******************************************************************|************************************************************//
 void PythonDetectors::init_()
 {
+
+  assert(pyinst_.number_arguments()==0);
+
   if(!positions_.empty())
   {
     dolfin::error("In PythonDetectors::init_ intializing already initialized detectors.");

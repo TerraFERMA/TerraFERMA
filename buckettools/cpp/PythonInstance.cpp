@@ -49,6 +49,15 @@ void PythonInstance::init_()
                                               pGlobals_, pLocals_);
   
   pFunc_ = PyDict_GetItemString(pLocals_, "val");                    // get the val function from the function string
+
+  std::stringstream pythonbuffer;                                    // set up a simple python command to check how many 
+  pythonbuffer << "import inspect" << std::endl                      // arguments the python function val has
+               << "_nargs = len(inspect.getargspec(val).args)" 
+               << std::endl;
+  PyObject* tmppCode = PyRun_String(pythonbuffer.str().c_str(),      // run the python commands
+                                Py_file_input, pGlobals_, pLocals_); 
+  PyObject* pnArgs = PyDict_GetItemString(pLocals_, "_nargs");       // retrieve the result, _nargs
+  nargs_ = PyInt_AsLong(pnArgs);                                     // recast it as an integer
   
   if (PyErr_Occurred()){                                             // check for errors in getting the function
     PyErr_Print();

@@ -43,6 +43,9 @@ namespace buckettools
 
     PyObject* call(PyObject *pArgs) const;                           // run the function contained in this python instance
 
+    const int number_arguments() const                               // return the number of arguments expected by this pythoninstance
+    { return nargs_; }
+
   //*****************************************************************|***********************************************************//
   // Private functions
   //*****************************************************************|***********************************************************//
@@ -56,6 +59,8 @@ namespace buckettools
     const std::string function_;                                     // the python function string
 
     PyObject *pMain_, *pGlobals_, *pLocals_, *pCode_, *pFunc_;       // python objects used to run the function (and cacheable between calls)
+
+    int nargs_;                                                      // the number of arguments this python function takes
     
     //***************************************************************|***********************************************************//
     // Initialization

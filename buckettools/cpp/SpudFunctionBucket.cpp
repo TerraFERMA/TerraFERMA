@@ -107,7 +107,7 @@ void SpudFunctionBucket::initialize_function_coeff()
     iteratedfunction_ = function_;                                   // just point this at the function
 
     buffer.str(""); buffer << optionpath() << "/type/rank/value";    // initialize the coefficient
-    coefficientfunction_ = initialize_expression_over_regions_(buffer.str());
+    coefficientfunction_ = initialize_expression_over_regions_(buffer.str(), (*(*system_).bucket()).current_time_ptr());
     (*boost::dynamic_pointer_cast< dolfin::Function >(function_)).interpolate(*coefficientfunction_);
     (*boost::dynamic_pointer_cast< dolfin::Function >(oldfunction_)).interpolate(*coefficientfunction_);
 
@@ -369,7 +369,8 @@ void SpudFunctionBucket::initialize_field_()
     
   buffer.str(""); buffer << optionpath()                             // find out how many initial conditions we have
                                   << "/type/rank/initial_condition";
-  icexpression_ = initialize_expression_over_regions_(buffer.str()); // intialize the expression
+  icexpression_ = initialize_expression_over_regions_(buffer.str(), 
+                           (*(*system_).bucket()).start_time_ptr()); // intialize the expression
   
 }
 
@@ -432,7 +433,8 @@ void SpudFunctionBucket::bc_component_fill_(const std::string &optionpath,
                                     (*functionspace())[*subcompid];  // happily dolfin caches this for us
        
        buffer.str(""); buffer << optionpath << "/type::Dirichlet";   // initialize an expression describing the function
-       Expression_ptr bcexp = initialize_expression_(buffer.str());  // on this boundary condition, assuming it is of type
+       Expression_ptr bcexp = initialize_expression_(buffer.str(), 
+                        (*(*system_).bucket()).current_time_ptr());  // on this boundary condition, assuming it is of type
                                                                      // Dirichlet
        
        namebuffer.str(""); namebuffer << bcname << "::" 
@@ -453,7 +455,8 @@ void SpudFunctionBucket::bc_component_fill_(const std::string &optionpath,
   else                                                               // no components (scalar or using all components)
   {
     buffer.str(""); buffer << optionpath << "/type::Dirichlet";      // initialize an expression describing the field on the
-    Expression_ptr bcexp = initialize_expression_(buffer.str());     // boundary
+    Expression_ptr bcexp = initialize_expression_(buffer.str(), 
+                     (*(*system_).bucket()).current_time_ptr());     // boundary
     
     register_bcexpression(bcexp, bcname);                            // register the expression in the function bucket
     
@@ -478,8 +481,8 @@ void SpudFunctionBucket::initialize_expression_coeff_()
   {
 
     buffer.str(""); buffer << optionpath() << "/type/rank/value";
-    function_ = initialize_expression_over_regions_(buffer.str());
-    oldfunction_ = initialize_expression_over_regions_(buffer.str());
+    function_ = initialize_expression_over_regions_(buffer.str(), (*(*system_).bucket()).current_time_ptr());
+    oldfunction_ = initialize_expression_over_regions_(buffer.str(), (*(*system_).bucket()).old_time_ptr());
     iteratedfunction_ = function_;
     
     buffer.str(""); buffer << optionpath() << "/type/rank/value[0]/functional";
@@ -599,7 +602,8 @@ void SpudFunctionBucket::functionals_fill_()
 // initialize an expression over region ids from an optionpath assuming the buckettools schema
 //*******************************************************************|************************************************************//
 Expression_ptr SpudFunctionBucket::initialize_expression_over_regions_(
-                                       const std::string &optionpath)
+                                       const std::string &optionpath,
+                                       const double_ptr time)
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
@@ -617,7 +621,7 @@ Expression_ptr SpudFunctionBucket::initialize_expression_over_regions_(
     for (uint i = 0; i < nvs; i++)
     {
       buffer.str(""); buffer << optionpath << "[" << i << "]";
-      Expression_ptr tmpexpression = initialize_expression_(buffer.str());
+      Expression_ptr tmpexpression = initialize_expression_(buffer.str(), time);
 
       if (i==0)                                                      // record the rank and shape of the expression
       {
@@ -680,7 +684,7 @@ Expression_ptr SpudFunctionBucket::initialize_expression_over_regions_(
   {
     buffer.str(""); buffer << optionpath << "[0]";
 
-    expression = initialize_expression_(buffer.str());               // initialize the function from the optionpath
+    expression = initialize_expression_(buffer.str(), time);         // initialize the function from the optionpath
 
   }
 
@@ -692,7 +696,8 @@ Expression_ptr SpudFunctionBucket::initialize_expression_over_regions_(
 // initialize an expression from an optionpath assuming the buckettools schema
 //*******************************************************************|************************************************************//
 Expression_ptr SpudFunctionBucket::initialize_expression_(
-                                       const std::string &optionpath)
+                                       const std::string &optionpath,
+                                       const double_ptr time)
 {
   Spud::OptionError serr;                                            // spud option error
   Expression_ptr expression;                                         // declare the pointer that will be returned
@@ -761,11 +766,11 @@ Expression_ptr SpudFunctionBucket::initialize_expression_(
     rank = atoi(rankstring.c_str());
     if(rank==0)                                                      // scalar
     {
-      expression.reset(new buckettools::PythonExpression(pyfunction));
+      expression.reset(new buckettools::PythonExpression(pyfunction, time));
     }
     else if (rank==1)                                                // vector
     {
-      expression.reset(new buckettools::PythonExpression(size_, pyfunction));
+      expression.reset(new buckettools::PythonExpression(size_, pyfunction, time));
     }
     else
     {
