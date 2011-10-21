@@ -60,6 +60,8 @@ namespace buckettools
 
     void update_nonlinear();                                         // update the potentially nonlinear functions in the systems in this bucket
 
+    void update_timedependent();                                     // update the potentially timedependent functions in the systems in this bucket
+
     bool complete();                                                 // indicate if the simulation is complete or not
 
     //***************************************************************|***********************************************************//

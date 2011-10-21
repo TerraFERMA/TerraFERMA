@@ -79,9 +79,23 @@ void FunctionBucket::update()
 }
 
 //*******************************************************************|************************************************************//
-// update the timelevels of the system function
+// update the potentially time dependent functions
 //*******************************************************************|************************************************************//
-void FunctionBucket::update_constantfunctional()
+void FunctionBucket::update_timedependent()
+{
+  if (coefficientfunction_)
+  {
+    (*boost::dynamic_pointer_cast< dolfin::Function >(oldfunction_)).vector() = 
+      (*boost::dynamic_pointer_cast< dolfin::Function >(function_)).vector();
+                                                                     // update the oldfunction to the new function value
+    (*boost::dynamic_pointer_cast< dolfin::Function >(function_)).interpolate(*coefficientfunction_);
+  }
+}
+
+//*******************************************************************|************************************************************//
+// update the potentially nonlinear functions
+//*******************************************************************|************************************************************//
+void FunctionBucket::update_nonlinear()
 {
   if (constantfunctional_)
   {

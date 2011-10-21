@@ -70,6 +70,9 @@ void Bucket::run()
     dolfin::log(dolfin::INFO, "Times: %f -> %f", old_time(), current_time());
     dolfin::log(dolfin::INFO, "Timestep: %f", timestep());
 
+    update_timedependent();                                          // now we know the new time, update functions that are
+                                                                     // potentially time dependent
+
     solve_in_timeloop_();                                            // this is where the magic happens
 
     if(complete())                                                   // this must be called before the update as it checks if a
@@ -189,6 +192,18 @@ void Bucket::update_timestep()
  
   *(timestep_.second) = new_dt;
 
+}
+
+//*******************************************************************|************************************************************//
+// loop over the ordered systems in the bucket, calling update_timedependent on each of them
+//*******************************************************************|************************************************************//
+void Bucket::update_timedependent()
+{
+  for (int_SystemBucket_const_it s_it = orderedsystems_begin(); 
+                             s_it != orderedsystems_end(); s_it++)
+  {
+    (*(*s_it).second).update_timedependent();
+  }
 }
 
 //*******************************************************************|************************************************************//

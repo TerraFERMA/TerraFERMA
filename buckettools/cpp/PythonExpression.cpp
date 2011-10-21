@@ -140,3 +140,11 @@ void PythonExpression::eval(dolfin::Array<double>& values,
   
 }
 
+//*******************************************************************|************************************************************//
+// return if this expression is time dependent or not
+//*******************************************************************|************************************************************//
+const bool PythonExpression::time_dependent() const
+{
+  return (pyinst_.number_arguments()==2);
+}
+

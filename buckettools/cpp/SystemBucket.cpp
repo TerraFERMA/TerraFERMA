@@ -75,6 +75,20 @@ void SystemBucket::update()
 }
 
 //*******************************************************************|************************************************************//
+// update the potentially time dependent components of the system
+//*******************************************************************|************************************************************//
+void SystemBucket::update_timedependent()
+{
+
+  for (int_FunctionBucket_it f_it = orderedcoeffs_begin();           // loop over coefficients again to update any constant
+                           f_it != orderedcoeffs_end(); f_it++)      // functionals
+  {
+    (*(*f_it).second).update_timedependent();                        // this does nothing to non constant functionals
+  }
+
+}
+
+//*******************************************************************|************************************************************//
 // update the potentially nonlinear components of the system
 //*******************************************************************|************************************************************//
 void SystemBucket::update_nonlinear()
@@ -83,7 +97,7 @@ void SystemBucket::update_nonlinear()
   for (int_FunctionBucket_it f_it = orderedcoeffs_begin();           // loop over coefficients again to update any constant
                            f_it != orderedcoeffs_end(); f_it++)      // functionals
   {
-    (*(*f_it).second).update_constantfunctional();                   // this does nothing to non constant functionals
+    (*(*f_it).second).update_nonlinear();                            // this does nothing to non constant functionals
   }
 
 }

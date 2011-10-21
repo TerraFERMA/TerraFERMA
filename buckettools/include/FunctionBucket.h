@@ -107,7 +107,9 @@ namespace buckettools
 
     void update();                                                   // update the function timelevels
 
-    void update_constantfunctional();                                // update the function if this is a constant functional coeff
+    void update_nonlinear();                                         // update this function if it is potentially nonlinear
+
+    void update_timedependent();                                     // update the function if it is potentially time dependent
 
     //***************************************************************|***********************************************************//
     // Filling data

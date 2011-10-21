@@ -541,7 +541,7 @@ prescribed_scalar_python =
     ##     # Function code
     ##     return ... # Return value
     ##
-    ##  for steady (time independent) expressions or 
+    ##  for steady (time independent) expressions or:
     ##
     ##  def val(x,t):
     ##     # Function code
@@ -567,7 +567,7 @@ prescribed_vector_python =
     ##     # Function code
     ##     return [..., ...] # Return value
     ##
-    ##  for steady (time independent) expressions or 
+    ##  for steady (time independent) expressions or:
     ##
     ##  def val(x,t):
     ##     # Function code
@@ -592,7 +592,7 @@ prescribed_tensor_python =
     ##     # Function code
     ##     return [[..., ...],[..., ...],...] # Return value
     ##
-    ##  for steady (time independent) expressions or 
+    ##  for steady (time independent) expressions or:
     ##
     ##  def val(x,t):
     ##     # Function code

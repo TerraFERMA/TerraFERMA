@@ -656,7 +656,7 @@ Functions should be of the form:
     # Function code
     return ... # Return value
 
- for steady (time independent) expressions or 
+ for steady (time independent) expressions or:
 
  def val(x,t):
     # Function code
@@ -681,7 +681,7 @@ Functions should be of the form:
     # Function code
     return [..., ...] # Return value
 
- for steady (time independent) expressions or 
+ for steady (time independent) expressions or:
 
  def val(x,t):
     # Function code
@@ -706,7 +706,7 @@ Functions should be of the form:
     # Function code
     return [[..., ...],[..., ...],...] # Return value
 
- for steady (time independent) expressions or 
+ for steady (time independent) expressions or:
 
  def val(x,t):
     # Function code
