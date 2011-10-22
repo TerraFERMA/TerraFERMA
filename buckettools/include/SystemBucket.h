@@ -53,6 +53,8 @@ namespace buckettools
 
     void update_nonlinear();                                         // update the potentially nonlinear functions in this system
 
+    void update_timedependent();                                     // update the potentially time dependent functions in this system
+
     const double maxchange();                                        // return the maximum change in the (requested) fields over the last timestep
 
     void updatechange();                                             // update the change function

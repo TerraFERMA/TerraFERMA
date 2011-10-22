@@ -324,7 +324,8 @@ void SpudBucket::timestepping_fill_()
   serr = Spud::get_option(buffer.str(), *start_time_, 0.0);          // may be non-zero at the start of simulations (e.g.
   spud_err(buffer.str(), serr);                                      // checkpoints) but assumed zero for steady simulations
 
-  current_time_.reset( new double(start_time()) );
+  current_time_.reset( new double(start_time()) );                   // initialize the current (n+1) and
+  old_time_.reset( new double(start_time()) );                       // old (n) times
 
   finish_time_.reset( new double );
   buffer.str(""); buffer << "/timestepping/finish_time";             // get the finish time (assumed zero for steady simulations)

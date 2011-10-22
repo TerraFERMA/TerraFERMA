@@ -57,14 +57,23 @@ void Bucket::run()
   while (continue_timestepping) 
   {                                                                  // loop over time
 
-    dolfin::log(dolfin::INFO, "Timestep number: %d", timestep_count());
-    dolfin::log(dolfin::INFO, "Time: %f", current_time());
+    *old_time_ = *current_time_;                                     // old time is now the previous time??
+    *current_time_ += timestep();                                    // increment time with the timestep 
+                                                                     // (we do this now so that time dependent expressions are
+                                                                     // evaluating at the right time, i.e. symbol_i, which is
+                                                                     // attached to current_time, is at the next
+                                                                     // time level, and symbol_n, which is attached to old_time
+                                                                     // is at the previous time level throughout the whole timestep)
+    (*timestep_count_)++;                                            // increment the number of timesteps taken
+
+    dolfin::log(dolfin::INFO, "Timestep numbers: %d -> %d", timestep_count()-1, timestep_count());
+    dolfin::log(dolfin::INFO, "Times: %f -> %f", old_time(), current_time());
     dolfin::log(dolfin::INFO, "Timestep: %f", timestep());
 
-    solve_in_timeloop_();                                            // this is where the magic happens
+    update_timedependent();                                          // now we know the new time, update functions that are
+                                                                     // potentially time dependent
 
-    *current_time_ += timestep();                                    // increment time with the timestep
-    (*timestep_count_)++;                                            // increment the number of timesteps taken
+    solve_in_timeloop_();                                            // this is where the magic happens
 
     if(complete())                                                   // this must be called before the update as it checks if a
     {                                                                // steady state has been attained
@@ -183,6 +192,18 @@ void Bucket::update_timestep()
  
   *(timestep_.second) = new_dt;
 
+}
+
+//*******************************************************************|************************************************************//
+// loop over the ordered systems in the bucket, calling update_timedependent on each of them
+//*******************************************************************|************************************************************//
+void Bucket::update_timedependent()
+{
+  for (int_SystemBucket_const_it s_it = orderedsystems_begin(); 
+                             s_it != orderedsystems_end(); s_it++)
+  {
+    (*(*s_it).second).update_timedependent();
+  }
 }
 
 //*******************************************************************|************************************************************//

@@ -10,22 +10,25 @@ using namespace buckettools;
 //*******************************************************************|************************************************************//
 // specific constructor (scalar)
 //*******************************************************************|************************************************************//
-PythonExpression::PythonExpression(const std::string &function) : 
+PythonExpression::PythonExpression(const std::string &function, const double_ptr time) : 
                                                 dolfin::Expression(), 
-                                                pyinst_(function)
+                                                pyinst_(function), 
+                                                time_(time)
 {
-                                                                     // do nothing
+  assert((pyinst_.number_arguments()==1)||(pyinst_.number_arguments()==2));
 }
 
 //*******************************************************************|************************************************************//
 // specific constructor (vector)
 //*******************************************************************|************************************************************//
 PythonExpression::PythonExpression(const uint &dim, 
-                                   const std::string &function) : 
+                                   const std::string &function,
+                                   const double_ptr time) : 
                                             dolfin::Expression(dim), 
-                                            pyinst_(function)
+                                            pyinst_(function),
+                                            time_(time)
 {
-                                                                     // do nothing
+  assert((pyinst_.number_arguments()==1)||(pyinst_.number_arguments()==2));
 }
 
 //*******************************************************************|************************************************************//
@@ -33,11 +36,13 @@ PythonExpression::PythonExpression(const uint &dim,
 //*******************************************************************|************************************************************//
 PythonExpression::PythonExpression(const uint &dim0, 
                                    const uint &dim1, 
-                                   const std::string &function) : 
+                                   const std::string &function,
+                                   const double_ptr time) : 
                                       dolfin::Expression(dim0, dim1),
-                                      pyinst_(function)
+                                      pyinst_(function),
+                                      time_(time)
 {
-                                                                     // do nothing
+  assert((pyinst_.number_arguments()==1)||(pyinst_.number_arguments()==2));
 }
 
 //*******************************************************************|************************************************************//
@@ -45,11 +50,13 @@ PythonExpression::PythonExpression(const uint &dim0,
 //*******************************************************************|************************************************************//
 PythonExpression::PythonExpression(const std::vector<uint> 
                                                       &value_shape, 
-                                   const std::string &function) : 
+                                   const std::string &function,
+                                   const double_ptr time) : 
                                      dolfin::Expression(value_shape), 
-                                     pyinst_(function)
+                                     pyinst_(function),
+                                     time_(time)
 {
-                                                                     // do nothing
+  assert((pyinst_.number_arguments()==1)||(pyinst_.number_arguments()==2));
 }
 
 //*******************************************************************|************************************************************//
@@ -66,7 +73,7 @@ PythonExpression::~PythonExpression()
 void PythonExpression::eval(dolfin::Array<double>& values, 
                             const dolfin::Array<double>& x) const
 {
-  PyObject *pArgs, *pPos, *px, *pResult;
+  PyObject *pArgs, *pPos, *pT, *px, *pResult;
   dolfin::uint meshdim, valdim;
   
   valdim = values.size();                                            // the size of the value space 
@@ -75,10 +82,14 @@ void PythonExpression::eval(dolfin::Array<double>& values,
   meshdim = x.size();                                                // the coordinates dimension
   pPos=PyTuple_New(meshdim);                                         // prepare a python tuple for the coordinates
   
-  pArgs = PyTuple_New(1);                                            // set up the input arguments tuple (just 1 argument now - can
-                                                                     // we tell this from what the user writes and decide how many 
-                                                                     // this should be?)
+  int nargs = pyinst_.number_arguments();
+  pArgs = PyTuple_New(nargs);                                        // set up the input arguments tuple
   PyTuple_SetItem(pArgs, 0, pPos);                                   // set the input argument to the coordinates
+  if (nargs==2)
+  {
+    pT=PyFloat_FromDouble(*time_);
+    PyTuple_SetItem(pArgs, 1, pT);
+  }
   
   if (PyErr_Occurred()){                                             // error check - in setting arguments
     PyErr_Print();
@@ -127,5 +138,13 @@ void PythonExpression::eval(dolfin::Array<double>& values,
   
   Py_DECREF(pArgs);                                                  // destroy the input arugments object
   
+}
+
+//*******************************************************************|************************************************************//
+// return if this expression is time dependent or not
+//*******************************************************************|************************************************************//
+const bool PythonExpression::time_dependent() const
+{
+  return (pyinst_.number_arguments()==2);
 }
 

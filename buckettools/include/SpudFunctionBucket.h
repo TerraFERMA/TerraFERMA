@@ -131,10 +131,22 @@ namespace buckettools
     void functionals_fill_();                                        // fill in the data for the functionals of this function
 
     Expression_ptr initialize_expression_over_regions_(
-                                      const std::string &optionpath);// initialize an expression over region ids based on an optionpath
+                                      const std::string &optionpath,
+                                      const double_ptr time);        // initialize an expression over region ids based on an optionpath
+
+    Expression_ptr initialize_expression_over_regions_(
+                                      const std::string &optionpath,
+                                      const double_ptr time,
+                                      bool *time_dependent);         // initialize an expression over region ids based on an optionpath
 
     Expression_ptr initialize_expression_(
-                                      const std::string &optionpath);// initialize an expression based on an optionpath
+                                      const std::string &optionpath,
+                                      const double_ptr time);        // initialize an expression based on an optionpath
+
+    Expression_ptr initialize_expression_(
+                                      const std::string &optionpath,
+                                      const double_ptr time,
+                                      bool *time_dependent);         // initialize an expression based on an optionpath
 
     //***************************************************************|***********************************************************//
     // Emptying data

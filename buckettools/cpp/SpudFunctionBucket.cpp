@@ -107,9 +107,20 @@ void SpudFunctionBucket::initialize_function_coeff()
     iteratedfunction_ = function_;                                   // just point this at the function
 
     buffer.str(""); buffer << optionpath() << "/type/rank/value";    // initialize the coefficient
-    coefficientfunction_ = initialize_expression_over_regions_(buffer.str());
-    (*boost::dynamic_pointer_cast< dolfin::Function >(function_)).interpolate(*coefficientfunction_);
-    (*boost::dynamic_pointer_cast< dolfin::Function >(oldfunction_)).interpolate(*coefficientfunction_);
+
+    bool time_dependent;
+    Expression_ptr tmpexpression = initialize_expression_over_regions_(
+                                   buffer.str(), 
+                                   (*(*system_).bucket()).current_time_ptr(), 
+                                   &time_dependent);
+
+    (*boost::dynamic_pointer_cast< dolfin::Function >(function_)).interpolate(*tmpexpression);
+    (*boost::dynamic_pointer_cast< dolfin::Function >(oldfunction_)).interpolate(*tmpexpression);
+
+    if (time_dependent)
+    {
+      coefficientfunction_ = tmpexpression;
+    }
 
   }
 
@@ -369,7 +380,8 @@ void SpudFunctionBucket::initialize_field_()
     
   buffer.str(""); buffer << optionpath()                             // find out how many initial conditions we have
                                   << "/type/rank/initial_condition";
-  icexpression_ = initialize_expression_over_regions_(buffer.str()); // intialize the expression
+  icexpression_ = initialize_expression_over_regions_(buffer.str(), 
+                           (*(*system_).bucket()).start_time_ptr()); // intialize the expression
   
 }
 
@@ -432,7 +444,8 @@ void SpudFunctionBucket::bc_component_fill_(const std::string &optionpath,
                                     (*functionspace())[*subcompid];  // happily dolfin caches this for us
        
        buffer.str(""); buffer << optionpath << "/type::Dirichlet";   // initialize an expression describing the function
-       Expression_ptr bcexp = initialize_expression_(buffer.str());  // on this boundary condition, assuming it is of type
+       Expression_ptr bcexp = initialize_expression_(buffer.str(), 
+                        (*(*system_).bucket()).current_time_ptr());  // on this boundary condition, assuming it is of type
                                                                      // Dirichlet
        
        namebuffer.str(""); namebuffer << bcname << "::" 
@@ -453,7 +466,8 @@ void SpudFunctionBucket::bc_component_fill_(const std::string &optionpath,
   else                                                               // no components (scalar or using all components)
   {
     buffer.str(""); buffer << optionpath << "/type::Dirichlet";      // initialize an expression describing the field on the
-    Expression_ptr bcexp = initialize_expression_(buffer.str());     // boundary
+    Expression_ptr bcexp = initialize_expression_(buffer.str(), 
+                     (*(*system_).bucket()).current_time_ptr());     // boundary
     
     register_bcexpression(bcexp, bcname);                            // register the expression in the function bucket
     
@@ -478,8 +492,8 @@ void SpudFunctionBucket::initialize_expression_coeff_()
   {
 
     buffer.str(""); buffer << optionpath() << "/type/rank/value";
-    function_ = initialize_expression_over_regions_(buffer.str());
-    oldfunction_ = initialize_expression_over_regions_(buffer.str());
+    function_ = initialize_expression_over_regions_(buffer.str(), (*(*system_).bucket()).current_time_ptr());
+    oldfunction_ = initialize_expression_over_regions_(buffer.str(), (*(*system_).bucket()).old_time_ptr());
     iteratedfunction_ = function_;
     
     buffer.str(""); buffer << optionpath() << "/type/rank/value[0]/functional";
@@ -599,7 +613,19 @@ void SpudFunctionBucket::functionals_fill_()
 // initialize an expression over region ids from an optionpath assuming the buckettools schema
 //*******************************************************************|************************************************************//
 Expression_ptr SpudFunctionBucket::initialize_expression_over_regions_(
-                                       const std::string &optionpath)
+                                       const std::string &optionpath,
+                                       const double_ptr time)
+{
+  return initialize_expression_over_regions_(optionpath, time, NULL);
+}
+
+//*******************************************************************|************************************************************//
+// initialize an expression over region ids from an optionpath assuming the buckettools schema
+//*******************************************************************|************************************************************//
+Expression_ptr SpudFunctionBucket::initialize_expression_over_regions_(
+                                       const std::string &optionpath,
+                                       const double_ptr time,
+                                       bool *time_dependent)
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
@@ -609,6 +635,11 @@ Expression_ptr SpudFunctionBucket::initialize_expression_over_regions_(
   int nvs = Spud::option_count(optionpath);
   if (nvs > 1)
   {
+    if (time_dependent)
+    {
+      *time_dependent = false;
+    }
+
     std::map< uint, Expression_ptr > expressions;
 
     int rank;
@@ -617,7 +648,18 @@ Expression_ptr SpudFunctionBucket::initialize_expression_over_regions_(
     for (uint i = 0; i < nvs; i++)
     {
       buffer.str(""); buffer << optionpath << "[" << i << "]";
-      Expression_ptr tmpexpression = initialize_expression_(buffer.str());
+      Expression_ptr tmpexpression;
+      if (time_dependent)
+      {
+        bool *tmp_time_dependent;
+        tmpexpression = initialize_expression_(
+                            buffer.str(), time, tmp_time_dependent);
+        *time_dependent = *time_dependent || *tmp_time_dependent;
+      }
+      else
+      {
+        tmpexpression = initialize_expression_(buffer.str(), time);
+      }
 
       if (i==0)                                                      // record the rank and shape of the expression
       {
@@ -680,7 +722,8 @@ Expression_ptr SpudFunctionBucket::initialize_expression_over_regions_(
   {
     buffer.str(""); buffer << optionpath << "[0]";
 
-    expression = initialize_expression_(buffer.str());               // initialize the function from the optionpath
+    expression = initialize_expression_(buffer.str(), time, 
+                                            time_dependent);         // initialize the function from the optionpath
 
   }
 
@@ -692,7 +735,19 @@ Expression_ptr SpudFunctionBucket::initialize_expression_over_regions_(
 // initialize an expression from an optionpath assuming the buckettools schema
 //*******************************************************************|************************************************************//
 Expression_ptr SpudFunctionBucket::initialize_expression_(
-                                       const std::string &optionpath)
+                                       const std::string &optionpath,
+                                       const double_ptr time)
+{
+  return initialize_expression_(optionpath, time, NULL);
+}
+
+//*******************************************************************|************************************************************//
+// initialize an expression from an optionpath assuming the buckettools schema
+//*******************************************************************|************************************************************//
+Expression_ptr SpudFunctionBucket::initialize_expression_(
+                                       const std::string &optionpath,
+                                       const double_ptr time,
+                                       bool *time_dependent)
 {
   Spud::OptionError serr;                                            // spud option error
   Expression_ptr expression;                                         // declare the pointer that will be returned
@@ -741,6 +796,12 @@ Expression_ptr SpudFunctionBucket::initialize_expression_(
     {
       dolfin::error("Don't deal with rank > 1 yet.");
     }
+
+    if (time_dependent)                                              // if we've asked if this expression is time dependent
+    {                                                                // ... it's not
+      *time_dependent = false;
+    }
+
   } 
   else if (Spud::have_option(pybuffer.str()))                        // python requested
   {
@@ -761,16 +822,22 @@ Expression_ptr SpudFunctionBucket::initialize_expression_(
     rank = atoi(rankstring.c_str());
     if(rank==0)                                                      // scalar
     {
-      expression.reset(new buckettools::PythonExpression(pyfunction));
+      expression.reset(new PythonExpression(pyfunction, time));
     }
     else if (rank==1)                                                // vector
     {
-      expression.reset(new buckettools::PythonExpression(size_, pyfunction));
+      expression.reset(new PythonExpression(size_, pyfunction, time));
     }
     else
     {
       dolfin::error("Don't deal with rank > 1 yet.");
     }
+
+    if (time_dependent)                                              // if we've asked if this expression is time dependent
+    {                                                                // ... it may be
+      *time_dependent = (*boost::dynamic_pointer_cast< PythonExpression >(expression)).time_dependent();
+    }
+
   }
   else if (Spud::have_option(funcbuffer.str()))                      // not much we can do for this case here
   {                                                                  // except check it's a scalar and declare a constant
@@ -791,6 +858,11 @@ Expression_ptr SpudFunctionBucket::initialize_expression_(
     expression.reset( new dolfin::Constant(0.0) );                   // can't set this to the correct value yet as it depends on
                                                                      // having all its coefficients attached so for now just set it
                                                                      // to zero
+
+    if (time_dependent)                                              // if we've asked if this expression is time dependent
+    {                                                                // ... assume it is (otherwise why would you be using a functional?)
+      *time_dependent = true;
+    }
 
   }
   else                                                               // unknown expression type
