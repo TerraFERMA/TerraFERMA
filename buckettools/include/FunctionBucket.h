@@ -105,8 +105,6 @@ namespace buckettools
 
     void resetchange();                                              // reset the change boolean
 
-    void update();                                                   // update the function timelevels
-
     void update_nonlinear();                                         // update this function if it is potentially nonlinear
 
     void update_timedependent();                                     // update the function if it is potentially time dependent
