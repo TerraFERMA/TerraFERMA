@@ -66,9 +66,18 @@
             </degree>
           </element>
           <initial_condition type="initial_condition" name="WholeMesh">
-            <constant>
-              <real_value rank="0">0.0</real_value>
-            </constant>
+            <cpp rank="0">
+              <members>
+                <string_value lines="20" type="python">GenericFunction_ptr pysource1;</string_value>
+              </members>
+              <initialization>
+                <string_value lines="20" type="python">pysource1 = bucket()-&gt;fetch_system("PicardProjection")-&gt;fetch_coeff("PySource1")-&gt;genericfunction_ptr(time());</string_value>
+              </initialization>
+              <eval>
+                <string_value lines="20" type="python">(*pysource1).eval(values, x, cell);
+values[0] = values[0]-2.0;</string_value>
+              </eval>
+            </cpp>
           </initial_condition>
           <boundary_condition name="All">
             <boundary_ids>
@@ -84,7 +93,8 @@
                     <string_value lines="20" type="python">pysource1 = bucket()-&gt;fetch_system("PicardProjection")-&gt;fetch_coeff("PySource1")-&gt;genericfunction_ptr(time());</string_value>
                   </initialization>
                   <eval>
-                    <string_value lines="20" type="python">(*pysource1).eval(values, x, cell);</string_value>
+                    <string_value lines="20" type="python">(*pysource1).eval(values, x, cell);
+values[0] = values[0]-2.0;</string_value>
                   </eval>
                 </cpp>
               </type>
@@ -93,6 +103,7 @@
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics>
           <functional name="Integral">
             <string_value lines="20" type="python">int = ss1*dx</string_value>
@@ -124,9 +135,19 @@
             </degree>
           </element>
           <initial_condition type="initial_condition" name="WholeMesh">
-            <constant name="dim">
-              <real_value shape="2" dim1="dim" rank="1">0.0 0.0</real_value>
-            </constant>
+            <cpp rank="1">
+              <members>
+                <string_value lines="20" type="python">GenericFunction_ptr pysource2;</string_value>
+              </members>
+              <initialization>
+                <string_value lines="20" type="python">pysource2 = bucket()-&gt;fetch_system("PicardProjection")-&gt;fetch_coeff("PySource2")-&gt;genericfunction_ptr(time());</string_value>
+              </initialization>
+              <eval>
+                <string_value lines="20" type="python">(*pysource2).eval(values, x, cell);
+values[0] = values[0]-2.0;
+values[1] = values[1]-2.0;</string_value>
+              </eval>
+            </cpp>
           </initial_condition>
           <boundary_condition name="All">
             <boundary_ids>
@@ -142,7 +163,9 @@
                     <string_value lines="20" type="python">pysource2 = bucket()-&gt;fetch_system("PicardProjection")-&gt;fetch_coeff("PySource2")-&gt;genericfunction_ptr(time());</string_value>
                   </initialization>
                   <eval>
-                    <string_value lines="20" type="python">(*pysource2).eval(values, x, cell);</string_value>
+                    <string_value lines="20" type="python">(*pysource2).eval(values, x, cell);
+values[0] = values[0]-2.0;
+values[1] = values[1]-2.0;</string_value>
                   </eval>
                 </cpp>
               </type>
@@ -151,6 +174,7 @@
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics>
           <functional name="Integral0">
             <string_value lines="20" type="python">int = ss2[0]*dx</string_value>
@@ -461,7 +485,7 @@ r = r1 + r2</string_value>
                     <string_value lines="20" type="python">// do nothing</string_value>
                   </initialization>
                   <eval>
-                    <string_value lines="20" type="python">values[0] = 100.0*(*time());</string_value>
+                    <string_value lines="20" type="python">values[0] = 100.0*(*time())+2.0;</string_value>
                   </eval>
                 </cpp>
               </type>
@@ -470,6 +494,7 @@ r = r1 + r2</string_value>
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics>
           <functional name="Integral">
             <string_value lines="20" type="python">int = sp1*dx</string_value>
@@ -519,8 +544,8 @@ r = r1 + r2</string_value>
                     <string_value lines="20" type="python">// do nothing</string_value>
                   </initialization>
                   <eval>
-                    <string_value lines="20" type="python">values[0] = 200.0*(*time());
-values[1] = 300.0*(*time());</string_value>
+                    <string_value lines="20" type="python">values[0] = 200.0*(*time())+2.0;
+values[1] = 300.0*(*time())+2.0;</string_value>
                   </eval>
                 </cpp>
               </type>
@@ -529,6 +554,7 @@ values[1] = 300.0*(*time());</string_value>
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics>
           <functional name="Integral0">
             <string_value lines="20" type="python">int = sp2[0]*dx</string_value>
@@ -678,7 +704,7 @@ values[1] = 300.0*(*time());</string_value>
           <value type="value" name="WholeMesh">
             <python rank="0">
               <string_value lines="20" type="python">def val(x,t):
-  return 100.0*t</string_value>
+  return 100.0*t+2.0</string_value>
             </python>
           </value>
         </rank>
@@ -717,7 +743,7 @@ values[1] = 300.0*(*time());</string_value>
           <value type="value" name="WholeMesh">
             <python rank="1">
               <string_value lines="20" type="python">def val(x,t):
-  return [200.0*t, 300.0*t]</string_value>
+  return [200.0*t+2.0, 300.0*t+2.0]</string_value>
             </python>
           </value>
         </rank>
@@ -771,7 +797,7 @@ values[1] = 300.0*(*time());</string_value>
                 <string_value lines="20" type="python">GenericFunction_ptr field1;</string_value>
               </members>
               <initialization>
-                <string_value lines="20" type="python">field1 = system()-&gt;fetch_field("Field1")-&gt;genericfunction_ptr(time());</string_value>
+                <string_value lines="20" type="python">field1 = bucket()-&gt;fetch_system("SNESProjection")-&gt;fetch_field("Field1")-&gt;genericfunction_ptr(time());</string_value>
               </initialization>
               <eval>
                 <string_value lines="20" type="python">(*field1).eval(values, x, cell);</string_value>
@@ -817,7 +843,7 @@ values[1] = 300.0*(*time());</string_value>
                 <string_value lines="20" type="python">GenericFunction_ptr field2;</string_value>
               </members>
               <initialization>
-                <string_value lines="20" type="python">field2 = system()-&gt;fetch_field("Field2")-&gt;genericfunction_ptr(time());</string_value>
+                <string_value lines="20" type="python">field2 = bucket()-&gt;fetch_system("SNESProjection")-&gt;fetch_field("Field2")-&gt;genericfunction_ptr(time());</string_value>
               </initialization>
               <eval>
                 <string_value lines="20" type="python">(*field2).eval(values, x, cell);</string_value>
