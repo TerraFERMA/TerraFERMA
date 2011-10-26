@@ -54,6 +54,16 @@ namespace buckettools
               const dolfin::Array<double>& x, 
               const ufc::cell &cell) const;
     
+    //***************************************************************|***********************************************************//
+    // Base data access
+    //***************************************************************|***********************************************************//
+
+    const std::map< uint, Expression_ptr> expressions() const        // return the map of expressions (const version)
+    { return expressions_; }
+    
+    std::map< uint, Expression_ptr> expressions()                    // return the map of expressions (non-const version)
+    { return expressions_; }
+    
   //*****************************************************************|***********************************************************//
   // Private functions
   //*****************************************************************|***********************************************************//

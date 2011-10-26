@@ -4,7 +4,8 @@
 #include <dolfin.h>
 #include <string>
 #include <spud>
-#include "SystemsWrapper.h"
+#include "SystemFunctionalsWrapper.h"
+#include "SystemExpressionsWrapper.h"
 #include "SpudSystemBucket.h"
 #include "SpudBase.h"
 #include "SpudBucket.h"
@@ -35,11 +36,9 @@ SpudFunctionBucket::~SpudFunctionBucket()
 //*******************************************************************|************************************************************//
 // fill the function bucket data structures assuming the buckettools schema and that this is a field
 //*******************************************************************|************************************************************//
-void SpudFunctionBucket::field_fill(const uint &index)
+void SpudFunctionBucket::fill_field(const uint &index)
 {
-  std::stringstream buffer;                                          // optionpath buffer
-
-  base_fill_(index);                                                 // fill the base data about the function bucket
+  fill_base_(index);                                                 // fill the base data about the function bucket
                                                                      // (could be called from constructor as it's common regardless
                                                                      // of functionbucket type)
 
@@ -47,14 +46,14 @@ void SpudFunctionBucket::field_fill(const uint &index)
                                                                      // sufficient)
   assert(Spud::have_option((*dynamic_cast<SpudSystemBucket*>(system_)).optionpath()+"/field::"+name()));
 
-  initialize_field_();                                               // initialize as a field
+  allocate_field_();                                                 // allocate as a field
 
-  functionals_fill_();                                               // fill in data about the functionals (doesn't attach
+  fill_functionals_();                                               // fill in data about the functionals (doesn't attach
                                                                      // coefficients)
 
   if(include_in_visualization())
   {
-                                                                     // initialize a pvd file (field specific so could be moved)
+                                                                     // allocate a pvd file (field specific so could be moved)
     pvdfile_.reset( new dolfin::File((*(*system_).bucket()).output_basename()+"_"+(*system_).name()+"_"+name()+".pvd", "compressed") );
   }
 
@@ -63,11 +62,9 @@ void SpudFunctionBucket::field_fill(const uint &index)
 //*******************************************************************|************************************************************//
 // fill the function bucket data structures assuming the buckettools schema and that this is a coefficient
 //*******************************************************************|************************************************************//
-void SpudFunctionBucket::coeff_fill(const uint &index)
+void SpudFunctionBucket::fill_coeff(const uint &index)
 {
-  std::stringstream buffer;                                          // optionpath buffer
-
-  base_fill_(index);                                                 // fill the base data about the function bucket
+  fill_base_(index);                                                 // fill the base data about the function bucket
                                                                      // (called from constructor instead?)
 
   if(system_)                                                        // can't do this if this coefficient lives outside a system
@@ -76,19 +73,18 @@ void SpudFunctionBucket::coeff_fill(const uint &index)
     assert(Spud::have_option((*dynamic_cast<SpudSystemBucket*>(system_)).optionpath()+"/coefficient::"+name()));
   }
 
-  initialize_expression_coeff_();                                    // initialize as a coefficient (doesn't do much for coefficient
+  allocate_coeff_expression_();                                      // allocate as a coefficient (doesn't do much for coefficient
                                                                      // functions)
 
-  functionals_fill_();                                               // fill in data about functionals (doesn't attach coefficients)
+  fill_functionals_();                                               // fill in data about functionals (doesn't attach coefficients)
 
 }
 
 //*******************************************************************|************************************************************//
-// initialize a coefficient that is of type function - left until almost last as we need a functionspace for it
+// allocate a coefficient that is of type function - left until almost last as we need a functionspace for it
 //*******************************************************************|************************************************************//
-void SpudFunctionBucket::initialize_function_coeff()
+void SpudFunctionBucket::allocate_coeff_function()
 {
-  std::stringstream buffer;                                          // optionpath buffer
 
   if (type_=="Function")                                             // only do this for coefficient functions
   {
@@ -106,24 +102,90 @@ void SpudFunctionBucket::initialize_function_coeff()
     oldfunction_.reset( new dolfin::Function(*coefficientspace) );   // allocate the old function on this functionspace
     iteratedfunction_ = function_;                                   // just point this at the function
 
-    buffer.str(""); buffer << optionpath() << "/type/rank/value";    // initialize the coefficient
+                                                                     // can't initialize this yet (it may depend on other
+                                                                     // expressions through a user defined cpp expression) so just
+                                                                     // zero if for now and we'll intialize it later, once we're
+                                                                     // allowed to call eval for the first time
+    (*boost::dynamic_pointer_cast< dolfin::Function >(function_)).vector().zero();
+    (*boost::dynamic_pointer_cast< dolfin::Function >(oldfunction_)).vector().zero();
+
+  }
+
+}
+
+//*******************************************************************|************************************************************//
+// initialize the function bucket data structures (mostly expressions) assuming the buckettools schema and that this is a field
+//*******************************************************************|************************************************************//
+void SpudFunctionBucket::initialize_field()
+{
+  std::stringstream buffer;                                          // optionpath buffer
+
+  buffer.str(""); buffer << optionpath()                             // find out how many strong bcs there are (weak bcs handled in
+                                << "/type/rank/boundary_condition";  // forms)
+  int nbcs = Spud::option_count(buffer.str());
+  for (uint i = 0; i < nbcs; i++)                                    // loop over the bcs
+  {
+    buffer.str(""); buffer << optionpath() 
+                  << "/type/rank/boundary_condition[" << i << "]";
+    initialize_bc_(buffer.str());                                    // and initialize the expressions describing the bc
+  }
+    
+  buffer.str(""); buffer << optionpath()                             // find out how many initial conditions we have
+                                  << "/type/rank/initial_condition";
+  initialize_expression_over_regions_(icexpression_, buffer.str());  // intialize the expression
+  
+}
+
+//*******************************************************************|************************************************************//
+// initialize the function bucket data structures (mostly expressions) assuming the buckettools schema and that this is a coefficient
+//*******************************************************************|************************************************************//
+void SpudFunctionBucket::initialize_coeff_expression()
+{
+  std::stringstream buffer;                                          // optionpath buffer
+
+  if (type_=="Expression" || type_=="Constant")                      // only proceed for expressions and constants
+  {
+
+    buffer.str(""); buffer << optionpath() << "/type/rank/value";
+    initialize_expression_over_regions_(
+        boost::dynamic_pointer_cast< dolfin::Expression >(function_), 
+                                                   buffer.str());    // iteratedfunction_ points at this too so doesn't need
+                                                                     // initializing
+    initialize_expression_over_regions_(
+        boost::dynamic_pointer_cast< dolfin::Expression >(oldfunction_), 
+                                                   buffer.str());
+    
+  }
+}
+
+//*******************************************************************|************************************************************//
+// initialize the function bucket data structures (mostly expressions) assuming the buckettools schema and that this is a coefficient
+//*******************************************************************|************************************************************//
+void SpudFunctionBucket::initialize_coeff_function()
+{
+  std::stringstream buffer;                                          // optionpath buffer
+
+  if (type_=="Function")                                             // only proceed for coefficient functions
+  {
+    buffer.str(""); buffer << optionpath() << "/type/rank/value";
 
     bool time_dependent;
-    Expression_ptr tmpexpression = initialize_expression_over_regions_(
+    Expression_ptr tmpexpression = allocate_expression_over_regions_(
                                    buffer.str(), 
                                    (*(*system_).bucket()).current_time_ptr(), 
                                    &time_dependent);
 
+    initialize_expression_over_regions_(tmpexpression, buffer.str());
+
     (*boost::dynamic_pointer_cast< dolfin::Function >(function_)).interpolate(*tmpexpression);
     (*boost::dynamic_pointer_cast< dolfin::Function >(oldfunction_)).interpolate(*tmpexpression);
-
+                                                                     // iteratedfunction_ points at function_
     if (time_dependent)
     {
-      coefficientfunction_ = tmpexpression;
+      coefficientfunction_ = tmpexpression;                          // we'll need this again
     }
 
   }
-
 }
 
 //*******************************************************************|************************************************************//
@@ -232,7 +294,7 @@ const std::string SpudFunctionBucket::functionals_str(const int &indent)
 //*******************************************************************|************************************************************//
 // fill the function bucket base data assuming the buckettools schema (common for fields and coefficients)
 //*******************************************************************|************************************************************//
-void SpudFunctionBucket::base_fill_(const uint &index)
+void SpudFunctionBucket::fill_base_(const uint &index)
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
@@ -289,9 +351,9 @@ void SpudFunctionBucket::base_fill_(const uint &index)
 }
 
 //*******************************************************************|************************************************************//
-// initialize a field assuming the base data has already been filled and using a buckettools spud schema
+// allocate a field assuming the base data has already been filled and using a buckettools spud schema
 //*******************************************************************|************************************************************//
-void SpudFunctionBucket::initialize_field_()
+void SpudFunctionBucket::allocate_field_()
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
@@ -374,21 +436,21 @@ void SpudFunctionBucket::initialize_field_()
     {
       buffer.str(""); buffer << optionpath() 
                     << "/type/rank/boundary_condition[" << i << "]";
-      bc_fill_(buffer.str(), edgeidmeshfunction);                    // and fill in details about the bc
+      fill_bc_(buffer.str(), edgeidmeshfunction);                    // and fill in details about the bc
     }
   }
     
   buffer.str(""); buffer << optionpath()                             // find out how many initial conditions we have
                                   << "/type/rank/initial_condition";
-  icexpression_ = initialize_expression_over_regions_(buffer.str(), 
-                           (*(*system_).bucket()).start_time_ptr()); // intialize the expression
+  icexpression_ = allocate_expression_over_regions_(buffer.str(), 
+                           (*(*system_).bucket()).start_time_ptr()); // allocate the expression
   
 }
 
 //*******************************************************************|************************************************************//
 // fill the details of a bc assuming the buckettools schema and given a set of edge ids in a mesh function
 //*******************************************************************|************************************************************//
-void SpudFunctionBucket::bc_fill_(const std::string &optionpath,
+void SpudFunctionBucket::fill_bc_(const std::string &optionpath,
                                   const MeshFunction_uint_ptr &edgeidmeshfunction)
 {
   std::stringstream buffer;                                          // optionpath buffer
@@ -410,7 +472,7 @@ void SpudFunctionBucket::bc_fill_(const std::string &optionpath,
   {
     buffer.str(""); buffer << optionpath << "/sub_components[" 
                                                         << i << "]";
-    bc_component_fill_(buffer.str(), bcname, bcids,                  // initialize this component
+    fill_bc_component_(buffer.str(), bcname, bcids,                  // initialize this component
                                       edgeidmeshfunction);
   }
 }
@@ -419,7 +481,7 @@ void SpudFunctionBucket::bc_fill_(const std::string &optionpath,
 // fill the details of a component of a bc on some boundary ids  assuming the buckettools schema and given a set of edge ids in a 
 // mesh function
 //*******************************************************************|************************************************************//
-void SpudFunctionBucket::bc_component_fill_(const std::string &optionpath,
+void SpudFunctionBucket::fill_bc_component_(const std::string &optionpath,
                                             const std::string &bcname,
                                             const std::vector<int> &bcids,
                                             const MeshFunction_uint_ptr &edgeidmeshfunction)
@@ -428,6 +490,17 @@ void SpudFunctionBucket::bc_component_fill_(const std::string &optionpath,
   Spud::OptionError serr;                                            // spud error code
   std::stringstream namebuffer;                                      // a buffer to assemble this bc's component name
 
+  std::string compname;
+  buffer.str(""); buffer << optionpath << "/name";
+  serr = Spud::get_option(buffer.str(), compname);                   // get the name of these subcomponents
+  namebuffer.str(""); namebuffer << bcname << compname;              // assemble a name for the bc expression
+
+  buffer.str(""); buffer << optionpath << "/type::Dirichlet";        // initialize an expression describing the function
+  Expression_ptr bcexp = allocate_expression_(buffer.str(), 
+                   namebuffer.str(), 
+                   (*(*system_).bucket()).current_time_ptr());       // on this boundary condition, assuming it is of type
+  register_bcexpression(bcexp, namebuffer.str());                    // register the expression in the function bucket maps
+       
   buffer.str(""); buffer << optionpath << "/components";             // do we have any components (i.e. could be scalar)?
   if (Spud::have_option(buffer.str()))
   {                                                                  // FIXME: tensorial components assumed broken!
@@ -443,15 +516,6 @@ void SpudFunctionBucket::bc_component_fill_(const std::string &optionpath,
        FunctionSpace_ptr subfunctionspace =                          // grab the subspace from the field functionspace
                                     (*functionspace())[*subcompid];  // happily dolfin caches this for us
        
-       buffer.str(""); buffer << optionpath << "/type::Dirichlet";   // initialize an expression describing the function
-       Expression_ptr bcexp = initialize_expression_(buffer.str(), 
-                        (*(*system_).bucket()).current_time_ptr());  // on this boundary condition, assuming it is of type
-                                                                     // Dirichlet
-       
-       namebuffer.str(""); namebuffer << bcname << "::" 
-                                                       << *subcompid;// assemble a name for the bc (including the subcomponent id)
-       register_bcexpression(bcexp, namebuffer.str());               // register the expression in the function bucket maps
-       
        for (std::vector<int>::const_iterator bcid = bcids.begin();   // loop over the boundary ids
                                           bcid < bcids.end(); bcid++)
        {                                                             // create a new bc on each boundary id for this subcomponent
@@ -465,12 +529,6 @@ void SpudFunctionBucket::bc_component_fill_(const std::string &optionpath,
   }
   else                                                               // no components (scalar or using all components)
   {
-    buffer.str(""); buffer << optionpath << "/type::Dirichlet";      // initialize an expression describing the field on the
-    Expression_ptr bcexp = initialize_expression_(buffer.str(), 
-                     (*(*system_).bucket()).current_time_ptr());     // boundary
-    
-    register_bcexpression(bcexp, bcname);                            // register the expression in the function bucket
-    
     for (std::vector<int>::const_iterator bcid = bcids.begin();      // loop over the boundary ids
                                           bcid < bcids.end(); bcid++)
     {                                                                // create a bc on each boundary id for all components
@@ -482,9 +540,55 @@ void SpudFunctionBucket::bc_component_fill_(const std::string &optionpath,
 }
 
 //*******************************************************************|************************************************************//
+// fill the details of a bc assuming the buckettools schema and given a set of edge ids in a mesh function
+//*******************************************************************|************************************************************//
+void SpudFunctionBucket::initialize_bc_(const std::string &optionpath)
+{
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud error code
+  
+  std::string bcname;                                                // bc name
+  buffer.str(""); buffer << optionpath << "/name";
+  serr = Spud::get_option(buffer.str(), bcname); 
+  spud_err(buffer.str(), serr);
+  
+  buffer.str(""); buffer << optionpath << "/sub_components";         // how many subcomponents exist?
+  int nsubcomp = Spud::option_count(buffer.str());
+  for (uint i = 0; i < nsubcomp; i++)                                // loop over the subcomponents
+  {
+    buffer.str(""); buffer << optionpath << "/sub_components[" 
+                                                        << i << "]";
+    initialize_bc_component_(buffer.str(), bcname);                  // initialize this component
+  }
+}
+
+//*******************************************************************|************************************************************//
+// initialize the expression for a component of a bc assuming the buckettools schema
+//*******************************************************************|************************************************************//
+void SpudFunctionBucket::initialize_bc_component_(const std::string &optionpath,
+                                                  const std::string &bcname)
+{
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud error code
+  std::stringstream namebuffer;                                      // a buffer to assemble this bc's component name
+
+  std::string compname;
+  buffer.str(""); buffer << optionpath << "/name";
+  serr = Spud::get_option(buffer.str(), compname);                   // get the name of these subcomponents
+  namebuffer.str(""); namebuffer << bcname << compname;              // assemble a name for the bc expression
+
+  Expression_ptr bcexpression = fetch_bcexpression(namebuffer.str());// fetch the bc expression in the function bucket maps
+  buffer.str(""); buffer << optionpath << "/type::Dirichlet";        // initialize the expression describing the bc component
+                                                                     // (assuming it is of type Dirichlet)
+  initialize_expression_(bcexpression, buffer.str(), 
+                         namebuffer.str());
+       
+}
+
+//*******************************************************************|************************************************************//
 // initialize a coefficient that is of type expression or constant
 //*******************************************************************|************************************************************//
-void SpudFunctionBucket::initialize_expression_coeff_()
+void SpudFunctionBucket::allocate_coeff_expression_()
 {
   std::stringstream buffer;                                          // optionpath buffer
 
@@ -492,14 +596,14 @@ void SpudFunctionBucket::initialize_expression_coeff_()
   {
 
     buffer.str(""); buffer << optionpath() << "/type/rank/value";
-    function_ = initialize_expression_over_regions_(buffer.str(), (*(*system_).bucket()).current_time_ptr());
-    oldfunction_ = initialize_expression_over_regions_(buffer.str(), (*(*system_).bucket()).old_time_ptr());
+    function_ = allocate_expression_over_regions_(buffer.str(), (*(*system_).bucket()).current_time_ptr());
+    oldfunction_ = allocate_expression_over_regions_(buffer.str(), (*(*system_).bucket()).old_time_ptr());
     iteratedfunction_ = function_;
     
     buffer.str(""); buffer << optionpath() << "/type/rank/value[0]/functional";
     if(Spud::have_option(buffer.str()))
     {
-      constantfunctional_fill_();
+      fill_constantfunctional_();
     }
   }
 
@@ -508,7 +612,7 @@ void SpudFunctionBucket::initialize_expression_coeff_()
 //*******************************************************************|************************************************************//
 // fill the details of a constant functional assuming the buckettools schema
 //*******************************************************************|************************************************************//
-void SpudFunctionBucket::constantfunctional_fill_()
+void SpudFunctionBucket::fill_constantfunctional_()
 {
   constantfunctional_ = ufc_fetch_functional((*system_).name(),      // get a pointer to the functional form from the ufc
                         name(), (*system_).mesh());
@@ -550,7 +654,7 @@ void SpudFunctionBucket::constantfunctional_fill_()
 //*******************************************************************|************************************************************//
 // fill the details of any functionals associated with this field or coefficient assuming the buckettools schema
 //*******************************************************************|************************************************************//
-void SpudFunctionBucket::functionals_fill_()
+void SpudFunctionBucket::fill_functionals_()
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
@@ -610,19 +714,19 @@ void SpudFunctionBucket::functionals_fill_()
 }
 
 //*******************************************************************|************************************************************//
-// initialize an expression over region ids from an optionpath assuming the buckettools schema
+// allocate an expression over region ids from an optionpath assuming the buckettools schema
 //*******************************************************************|************************************************************//
-Expression_ptr SpudFunctionBucket::initialize_expression_over_regions_(
+Expression_ptr SpudFunctionBucket::allocate_expression_over_regions_(
                                        const std::string &optionpath,
                                        const double_ptr time)
 {
-  return initialize_expression_over_regions_(optionpath, time, NULL);
+  return allocate_expression_over_regions_(optionpath, time, NULL);
 }
 
 //*******************************************************************|************************************************************//
-// initialize an expression over region ids from an optionpath assuming the buckettools schema
+// allocate an expression over region ids from an optionpath assuming the buckettools schema
 //*******************************************************************|************************************************************//
-Expression_ptr SpudFunctionBucket::initialize_expression_over_regions_(
+Expression_ptr SpudFunctionBucket::allocate_expression_over_regions_(
                                        const std::string &optionpath,
                                        const double_ptr time,
                                        bool *time_dependent)
@@ -647,18 +751,24 @@ Expression_ptr SpudFunctionBucket::initialize_expression_over_regions_(
 
     for (uint i = 0; i < nvs; i++)
     {
+      std::string expressionname;
+      buffer.str(""); buffer << optionpath << "[" << i << "]/name";
+      serr = Spud::get_option(buffer.str(), expressionname);         // get the name of this expression
+      
       buffer.str(""); buffer << optionpath << "[" << i << "]";
       Expression_ptr tmpexpression;
       if (time_dependent)
       {
         bool *tmp_time_dependent;
-        tmpexpression = initialize_expression_(
-                            buffer.str(), time, tmp_time_dependent);
+        tmpexpression = allocate_expression_(
+                            buffer.str(), expressionname, time, 
+                                                tmp_time_dependent);
         *time_dependent = *time_dependent || *tmp_time_dependent;
       }
       else
       {
-        tmpexpression = initialize_expression_(buffer.str(), time);
+        tmpexpression = allocate_expression_(buffer.str(), 
+                                              expressionname, time);
       }
 
       if (i==0)                                                      // record the rank and shape of the expression
@@ -720,10 +830,14 @@ Expression_ptr SpudFunctionBucket::initialize_expression_over_regions_(
   }
   else
   {
+    std::string expressionname;
+    buffer.str(""); buffer << optionpath << "[0]/name";
+    serr = Spud::get_option(buffer.str(), expressionname);           // get the name of this expression (probably WholeMesh)
+
     buffer.str(""); buffer << optionpath << "[0]";
 
-    expression = initialize_expression_(buffer.str(), time, 
-                                            time_dependent);         // initialize the function from the optionpath
+    expression = allocate_expression_(buffer.str(), expressionname,
+                                      time, time_dependent);         // allocate the function from the optionpath
 
   }
 
@@ -734,21 +848,24 @@ Expression_ptr SpudFunctionBucket::initialize_expression_over_regions_(
 //*******************************************************************|************************************************************//
 // initialize an expression from an optionpath assuming the buckettools schema
 //*******************************************************************|************************************************************//
-Expression_ptr SpudFunctionBucket::initialize_expression_(
+Expression_ptr SpudFunctionBucket::allocate_expression_(
                                        const std::string &optionpath,
+                                       const std::string &expressionname,
                                        const double_ptr time)
 {
-  return initialize_expression_(optionpath, time, NULL);
+  return allocate_expression_(optionpath, expressionname, time, NULL);
 }
 
 //*******************************************************************|************************************************************//
 // initialize an expression from an optionpath assuming the buckettools schema
 //*******************************************************************|************************************************************//
-Expression_ptr SpudFunctionBucket::initialize_expression_(
+Expression_ptr SpudFunctionBucket::allocate_expression_(
                                        const std::string &optionpath,
+                                       const std::string &expressionname,
                                        const double_ptr time,
                                        bool *time_dependent)
 {
+  std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud option error
   Expression_ptr expression;                                         // declare the pointer that will be returned
   
@@ -812,7 +929,6 @@ Expression_ptr SpudFunctionBucket::initialize_expression_(
                                                                      // rank of a python function isn't in the default spud base
                                                                      // language so have added it... but it comes out as a string 
                                                                      // of course!
-    std::stringstream buffer;
     std::string rankstring;                                          // bit of a hack
     buffer.str(""); buffer << pybuffer.str() << "/rank";
     serr = Spud::get_option(buffer.str(), rankstring); 
@@ -845,7 +961,6 @@ Expression_ptr SpudFunctionBucket::initialize_expression_(
                                                                      // rank of a functional isn't in the default spud base
                                                                      // language so have added it... but it comes out as a string 
                                                                      // of course!
-    std::stringstream buffer;
     std::string rankstring;                                          // bit of a hack
     buffer.str(""); buffer << funcbuffer.str() << "/rank";
     serr = Spud::get_option(buffer.str(), rankstring); 
@@ -865,12 +980,144 @@ Expression_ptr SpudFunctionBucket::initialize_expression_(
     }
 
   }
+  else if (Spud::have_option(cppbuffer.str()))                       // not much we can do for this case here except call the constructor
+  {
+
+    std::string typestring;
+    buffer.str(""); buffer << optionpath << "/type";                 // work out what type this expression is (initial_condition,
+                                                                     // boundary_condition, value) based on an attribute included in
+                                                                     // the schema.  This helps minimize the likelihood of namespace
+                                                                     // overlap between different cpp expressions
+    serr = Spud::get_option(buffer.str(), typestring); 
+    spud_err(buffer.str(), serr);
+
+    expression = cpp_fetch_expression((*system()).name(), name(), 
+                                       typestring, expressionname, 
+                                       size_, shape_, 
+                                       (*system()).bucket(), 
+                                       system(), time);
+
+    if (time_dependent)                                              // if we've asked if this expression is time dependent
+    {                                                                // ... assume it is (otherwise why would you be using a functional?)
+      *time_dependent = true;
+    }
+
+  }
   else                                                               // unknown expression type
   {
     dolfin::error("Unknown way of specifying expression.");
   }
   
-  return expression;                                                 // return the initialized expression
+  return expression;                                                 // return the allocated expression
+  
+}
+
+//*******************************************************************|************************************************************//
+// allocate an expression over region ids from an optionpath assuming the buckettools schema
+//*******************************************************************|************************************************************//
+void SpudFunctionBucket::initialize_expression_over_regions_(
+                                       Expression_ptr expression,
+                                       const std::string &optionpath)
+{
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud error code
+
+  int nvs = Spud::option_count(optionpath);
+  if (nvs > 1)
+  {
+    std::map< uint, Expression_ptr > expressions = 
+      (*boost::dynamic_pointer_cast< RegionsExpression >(expression)).expressions();
+
+    for (uint i = 0; i < nvs; i++)
+    {
+      std::string expressionname;
+      buffer.str(""); buffer << optionpath << "[" << i << "]/name";
+      serr = Spud::get_option(buffer.str(), expressionname);         // get the name of this expression
+      
+      buffer.str(""); buffer << optionpath << "[" << i << "]/region_ids";
+      std::vector<int> regionids;
+      serr = Spud::get_option(buffer.str(), regionids);              // get the list of region ids
+      spud_err(buffer.str(), serr);
+    
+      uint_Expression_const_it e_it = expressions.find(regionids[0]);
+      if (e_it == expressions.end())
+      {
+        dolfin::error("Unknown region id %d in RegionsExpression map", regionids[0]);
+      }
+      else
+      {
+        buffer.str(""); buffer << optionpath << "[" << i << "]";
+        initialize_expression_((*e_it).second, buffer.str(), expressionname);
+      }
+
+    }
+
+  }
+  else
+  {
+    std::string expressionname;
+    buffer.str(""); buffer << optionpath << "[0]/name";
+    serr = Spud::get_option(buffer.str(), expressionname);           // get the name of this expression (probably WholeMesh)
+
+    buffer.str(""); buffer << optionpath << "[0]";
+
+    initialize_expression_(expression, buffer.str(), expressionname);// initialize the expression from the optionpath
+
+  }
+
+}
+
+//*******************************************************************|************************************************************//
+// initialize an expression from an optionpath assuming the buckettools schema
+//*******************************************************************|************************************************************//
+void SpudFunctionBucket::initialize_expression_(
+                                       Expression_ptr expression,
+                                       const std::string &optionpath,
+                                       const std::string &expressionname)
+{
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud option error
+
+  std::stringstream constbuffer, pybuffer, funcbuffer, cppbuffer;    // some string assembly streams
+  cppbuffer.str("");   cppbuffer   << optionpath << "/cpp";          // for a cpp expression
+  funcbuffer.str("");  funcbuffer  << optionpath << "/functional";   // for a functional
+
+                                                                     // nothing to do here for python or constant as they are
+                                                                     // already automaticall initialized... magic!
+
+  if (Spud::have_option(funcbuffer.str()))                           // constant functionals
+  {                                      
+
+    assert(constantfunctional_);                                     // this should be valid as this option is only available for
+                                                                     // Constant coefficients (i.e. not with multiple regions or
+                                                                     // for boundary or initial conditions), hence we should always
+                                                                     // be evaluating a value expression...
+    std::string typestring;
+    buffer.str(""); buffer << optionpath << "/type";                 // work out what type this expression is for assertion
+    serr = Spud::get_option(buffer.str(), typestring); 
+    spud_err(buffer.str(), serr);
+
+    assert(typestring=="value");                                     // double check it's a value expression
+
+    double value = dolfin::assemble(*constantfunctional_);
+    *boost::dynamic_pointer_cast< dolfin::Constant >(function_) = value;
+
+  }
+  else if (Spud::have_option(cppbuffer.str()))                       // cpp expressions
+  {
+
+    std::string typestring;
+    buffer.str(""); buffer << optionpath << "/type";                 // work out what type this expression is (initial_condition,
+                                                                     // boundary_condition, value) based on an attribute included in
+                                                                     // the schema.  This helps minimize the likelihood of namespace
+                                                                     // overlap between different cpp expressions
+    serr = Spud::get_option(buffer.str(), typestring); 
+    spud_err(buffer.str(), serr);
+
+    cpp_init_expression(expression, (*system()).name(), name(), 
+                                     typestring, expressionname);
+
+  }
   
 }
 

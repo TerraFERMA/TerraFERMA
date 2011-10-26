@@ -231,6 +231,24 @@ void FunctionBucket::register_bcexpression(Expression_ptr bcexpression, const st
 }
 
 //*******************************************************************|************************************************************//
+// return a (boost shared) pointer to a bc expression form from the function bucket data maps
+//*******************************************************************|************************************************************//
+Expression_ptr FunctionBucket::fetch_bcexpression(const std::string &name)
+{
+  Expression_it e_it = bcexpressions_.find(name);                    // check if the name already exists
+  if (e_it == bcexpressions_.end())
+  {
+    dolfin::error(                                                   // if it doesn't, issue an error
+            "BCExpression named \"%s\" does not exist in function.", 
+                                                      name.c_str());
+  }
+  else
+  {
+    return (*e_it).second;                                           // if it does, return it
+  }
+}
+
+//*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a bc in the function bucket data maps
 //*******************************************************************|************************************************************//
 void FunctionBucket::register_bc(BoundaryCondition_ptr bc, const std::string &name)

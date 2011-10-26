@@ -253,11 +253,13 @@ initial_condition_scalar =
     ## Options for the description of the initial condition over the whole domain
     element initial_condition {
       attribute name {"WholeMesh"},
+      attribute type {"initial_condition"},
       prescribed_scalar
     }|
     ## Options for the description of the initial condition over a subset of the whole domain
     element initial_condition {
       attribute name { xsd:string },
+      attribute type {"initial_condition"},
       ## A list of the region ids (physical ids in gmsh) that this  condition applies to
       element region_ids {
         integer_vector
@@ -271,11 +273,13 @@ initial_condition_vector =
     ## Options for the description of the initial condition over the whole domain
     element initial_condition {
       attribute name {"WholeMesh"},
+      attribute type {"initial_condition"},
       prescribed_vector
     }|
     ## Options for the description of the initial condition over a subset of the whole domain
     element initial_condition {
       attribute name { xsd:string },
+      attribute type {"initial_condition"},
       ## A list of the region ids (physical ids in gmsh) that this condition applies to
       element region_ids {
         integer_vector
@@ -289,11 +293,13 @@ initial_condition_tensor =
     ## Options for the description of the initial condition over the whole domain
     element initial_condition {
       attribute name {"WholeMesh"},
+      attribute type {"initial_condition"},
       prescribed_tensor
     }|
     ## Options for the description of the initial condition over a subset of the whole domain
     element initial_condition {
       attribute name { xsd:string },
+      attribute type {"initial_condition"},
       ## A list of the region ids (physical ids in gmsh) that this condition applies to
       element region_ids {
         integer_vector
@@ -317,6 +323,7 @@ boundary_condition_scalar =
         ## The boundary condition type (only strong Dirichlet available).
         element type {
           attribute name {"Dirichlet"},
+          attribute type {"boundary_condition"},
           prescribed_scalar
         }
       }
@@ -339,6 +346,7 @@ boundary_condition_vector =
           ## The boundary condition type (only strong Dirichlet available).
           element type {
             attribute name {"Dirichlet"},
+            attribute type {"boundary_condition"},
             prescribed_vector
           }
         }|
@@ -352,6 +360,7 @@ boundary_condition_vector =
           ## The boundary condition type (only strong Dirichlet available).
           element type {
             attribute name {"Dirichlet"},
+            attribute type {"boundary_condition"},
             prescribed_scalar
           }
         }
@@ -375,6 +384,7 @@ boundary_condition_tensor =
           ## The boundary condition type (only strong Dirichlet available).
           element type {
             attribute name {"Dirichlet"},
+            attribute type {"boundary_condition"},
             prescribed_tensor
           }
         }|
@@ -389,6 +399,7 @@ boundary_condition_tensor =
           ## The boundary condition type (only strong Dirichlet available).
           element type {
             attribute name {"Dirichlet"},
+            attribute type {"boundary_condition"},
             prescribed_scalar
           }
         }
@@ -401,6 +412,7 @@ prescribed_constant_scalar =
     ## Options for the description of an expression over the domain
     element value {
       attribute name {"WholeMesh"},
+      attribute type {"value"},
       prescribed_scalar_constant_w_functional
     }
   )
@@ -410,6 +422,7 @@ prescribed_constant_vector =
     ## Options for the description of an expression over the domain
     element value {
       attribute name {"WholeMesh"},
+      attribute type {"value"},
       prescribed_vector_constant
     }
   )
@@ -419,6 +432,7 @@ prescribed_constant_tensor =
     ## Options for the description of an expression over the domain
     element value {
       attribute name {"WholeMesh"},
+      attribute type {"value"},
       prescribed_tensor_constant
     }
   )
@@ -428,11 +442,13 @@ prescribed_expression_scalar =
     ## Options for the description of an expression over the domain
     element value {
       attribute name {"WholeMesh"},
+      attribute type {"value"},
       prescribed_scalar
     }|
     ## Options for the description of an expression over regions
     element value {
       attribute name { xsd:string },
+      attribute type {"value"},
       ## A list of the region ids (physical ids in gmsh) that this expression applies to
       element region_ids {
         integer_vector
@@ -446,11 +462,13 @@ prescribed_expression_vector =
     ## Options for the description of an expression over the domain
     element value {
       attribute name {"WholeMesh"},
+      attribute type {"value"},
       prescribed_vector
     }|
     ## Options for the description of an expression over regions
     element value {
       attribute name { xsd:string },
+      attribute type {"value"},
       ## A list of the region ids (physical ids in gmsh) that this expression applies to
       element region_ids {
         integer_vector
@@ -464,11 +482,13 @@ prescribed_expression_tensor =
     ## Options for the description of an expression over the domain
     element value {
       attribute name {"WholeMesh"},
+      attribute type {"value"},
       prescribed_tensor
     }|
     ## Options for the description of an expression over regions
     element value {
       attribute name { xsd:string },
+      attribute type {"value"},
       ## A list of the region ids (physical ids in gmsh) that this expression applies to
       element region_ids {
         integer_vector
@@ -613,10 +633,53 @@ prescribed_scalar_cpp =
     ## A scalar described by some c++ code.
     element cpp {
       attribute rank { "0" },
+      element include {
+        cpp_code
+      }?,
       element members {
         cpp_code
       },
-      element constructor {
+      element initialization {
+        cpp_code
+      },
+      element eval {
+        cpp_code
+      }
+    }
+  )
+
+prescribed_vector_cpp =
+  (
+    ## A vector described by some c++ code.
+    element cpp {
+      attribute rank { "1" },
+      element include {
+        cpp_code
+      }?,
+      element members {
+        cpp_code
+      },
+      element initialization {
+        cpp_code
+      },
+      element eval {
+        cpp_code
+      }
+    }
+  )
+
+prescribed_tensor_cpp =
+  (
+    ## A tensor described by some c++ code.
+    element cpp {
+      attribute rank { "2" },
+      element include {
+        cpp_code
+      }?,
+      element members {
+        cpp_code
+      },
+      element initialization {
         cpp_code
       },
       element eval {
@@ -630,9 +693,11 @@ prescribed_scalar = prescribed_scalar_cpp
 prescribed_scalar |= prescribed_scalar_python
 prescribed_scalar |= prescribed_scalar_constant
 
-prescribed_vector = prescribed_vector_python
+prescribed_vector = prescribed_vector_cpp
+prescribed_vector |= prescribed_vector_python
 prescribed_vector |= prescribed_vector_constant
 
-prescribed_tensor = prescribed_tensor_python
+prescribed_tensor = prescribed_tensor_cpp
+prescribed_tensor |= prescribed_tensor_python
 prescribed_tensor |= prescribed_tensor_constant
 

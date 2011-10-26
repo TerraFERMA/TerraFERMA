@@ -23,6 +23,8 @@ namespace buckettools {
   // boost shared pointers to bucket objects
   //*****************************************************************|************************************************************//
 
+  class Bucket;                                                      // predeclaration
+  typedef boost::shared_ptr< Bucket >           Bucket_ptr;
   class SystemBucket;                                                // predeclaration
   typedef boost::shared_ptr< SystemBucket >     SystemBucket_ptr;
   class FunctionBucket;                                              // predeclaration

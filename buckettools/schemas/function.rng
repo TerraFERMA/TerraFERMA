@@ -315,12 +315,18 @@ The minimum and maximum of functions is included.</a:documentation>
         <attribute name="name">
           <value>WholeMesh</value>
         </attribute>
+        <attribute name="type">
+          <value>initial_condition</value>
+        </attribute>
         <ref name="prescribed_scalar"/>
       </element>
       <element name="initial_condition">
         <a:documentation>Options for the description of the initial condition over a subset of the whole domain</a:documentation>
         <attribute name="name">
           <data type="string"/>
+        </attribute>
+        <attribute name="type">
+          <value>initial_condition</value>
         </attribute>
         <element name="region_ids">
           <a:documentation>A list of the region ids (physical ids in gmsh) that this  condition applies to</a:documentation>
@@ -337,12 +343,18 @@ The minimum and maximum of functions is included.</a:documentation>
         <attribute name="name">
           <value>WholeMesh</value>
         </attribute>
+        <attribute name="type">
+          <value>initial_condition</value>
+        </attribute>
         <ref name="prescribed_vector"/>
       </element>
       <element name="initial_condition">
         <a:documentation>Options for the description of the initial condition over a subset of the whole domain</a:documentation>
         <attribute name="name">
           <data type="string"/>
+        </attribute>
+        <attribute name="type">
+          <value>initial_condition</value>
         </attribute>
         <element name="region_ids">
           <a:documentation>A list of the region ids (physical ids in gmsh) that this condition applies to</a:documentation>
@@ -359,12 +371,18 @@ The minimum and maximum of functions is included.</a:documentation>
         <attribute name="name">
           <value>WholeMesh</value>
         </attribute>
+        <attribute name="type">
+          <value>initial_condition</value>
+        </attribute>
         <ref name="prescribed_tensor"/>
       </element>
       <element name="initial_condition">
         <a:documentation>Options for the description of the initial condition over a subset of the whole domain</a:documentation>
         <attribute name="name">
           <data type="string"/>
+        </attribute>
+        <attribute name="type">
+          <value>initial_condition</value>
         </attribute>
         <element name="region_ids">
           <a:documentation>A list of the region ids (physical ids in gmsh) that this condition applies to</a:documentation>
@@ -394,6 +412,9 @@ The minimum and maximum of functions is included.</a:documentation>
           <attribute name="name">
             <value>Dirichlet</value>
           </attribute>
+          <attribute name="type">
+            <value>boundary_condition</value>
+          </attribute>
           <ref name="prescribed_scalar"/>
         </element>
       </element>
@@ -421,6 +442,9 @@ The minimum and maximum of functions is included.</a:documentation>
               <attribute name="name">
                 <value>Dirichlet</value>
               </attribute>
+              <attribute name="type">
+                <value>boundary_condition</value>
+              </attribute>
               <ref name="prescribed_vector"/>
             </element>
           </element>
@@ -437,6 +461,9 @@ The minimum and maximum of functions is included.</a:documentation>
               <a:documentation>The boundary condition type (only strong Dirichlet available).</a:documentation>
               <attribute name="name">
                 <value>Dirichlet</value>
+              </attribute>
+              <attribute name="type">
+                <value>boundary_condition</value>
               </attribute>
               <ref name="prescribed_scalar"/>
             </element>
@@ -467,6 +494,9 @@ The minimum and maximum of functions is included.</a:documentation>
               <attribute name="name">
                 <value>Dirichlet</value>
               </attribute>
+              <attribute name="type">
+                <value>boundary_condition</value>
+              </attribute>
               <ref name="prescribed_tensor"/>
             </element>
           </element>
@@ -487,6 +517,9 @@ The minimum and maximum of functions is included.</a:documentation>
               <attribute name="name">
                 <value>Dirichlet</value>
               </attribute>
+              <attribute name="type">
+                <value>boundary_condition</value>
+              </attribute>
               <ref name="prescribed_scalar"/>
             </element>
           </element>
@@ -500,6 +533,9 @@ The minimum and maximum of functions is included.</a:documentation>
       <attribute name="name">
         <value>WholeMesh</value>
       </attribute>
+      <attribute name="type">
+        <value>value</value>
+      </attribute>
       <ref name="prescribed_scalar_constant_w_functional"/>
     </element>
   </define>
@@ -509,6 +545,9 @@ The minimum and maximum of functions is included.</a:documentation>
       <attribute name="name">
         <value>WholeMesh</value>
       </attribute>
+      <attribute name="type">
+        <value>value</value>
+      </attribute>
       <ref name="prescribed_vector_constant"/>
     </element>
   </define>
@@ -517,6 +556,9 @@ The minimum and maximum of functions is included.</a:documentation>
       <a:documentation>Options for the description of an expression over the domain</a:documentation>
       <attribute name="name">
         <value>WholeMesh</value>
+      </attribute>
+      <attribute name="type">
+        <value>value</value>
       </attribute>
       <ref name="prescribed_tensor_constant"/>
     </element>
@@ -528,12 +570,18 @@ The minimum and maximum of functions is included.</a:documentation>
         <attribute name="name">
           <value>WholeMesh</value>
         </attribute>
+        <attribute name="type">
+          <value>value</value>
+        </attribute>
         <ref name="prescribed_scalar"/>
       </element>
       <element name="value">
         <a:documentation>Options for the description of an expression over regions</a:documentation>
         <attribute name="name">
           <data type="string"/>
+        </attribute>
+        <attribute name="type">
+          <value>value</value>
         </attribute>
         <element name="region_ids">
           <a:documentation>A list of the region ids (physical ids in gmsh) that this expression applies to</a:documentation>
@@ -550,12 +598,18 @@ The minimum and maximum of functions is included.</a:documentation>
         <attribute name="name">
           <value>WholeMesh</value>
         </attribute>
+        <attribute name="type">
+          <value>value</value>
+        </attribute>
         <ref name="prescribed_vector"/>
       </element>
       <element name="value">
         <a:documentation>Options for the description of an expression over regions</a:documentation>
         <attribute name="name">
           <data type="string"/>
+        </attribute>
+        <attribute name="type">
+          <value>value</value>
         </attribute>
         <element name="region_ids">
           <a:documentation>A list of the region ids (physical ids in gmsh) that this expression applies to</a:documentation>
@@ -572,12 +626,18 @@ The minimum and maximum of functions is included.</a:documentation>
         <attribute name="name">
           <value>WholeMesh</value>
         </attribute>
+        <attribute name="type">
+          <value>value</value>
+        </attribute>
         <ref name="prescribed_tensor"/>
       </element>
       <element name="value">
         <a:documentation>Options for the description of an expression over regions</a:documentation>
         <attribute name="name">
           <data type="string"/>
+        </attribute>
+        <attribute name="type">
+          <value>value</value>
         </attribute>
         <element name="region_ids">
           <a:documentation>A list of the region ids (physical ids in gmsh) that this expression applies to</a:documentation>
@@ -727,10 +787,59 @@ The return value must have the same shape as the tensor element.</a:documentatio
       <attribute name="rank">
         <value>0</value>
       </attribute>
+      <optional>
+        <element name="include">
+          <ref name="cpp_code"/>
+        </element>
+      </optional>
       <element name="members">
         <ref name="cpp_code"/>
       </element>
-      <element name="constructor">
+      <element name="initialization">
+        <ref name="cpp_code"/>
+      </element>
+      <element name="eval">
+        <ref name="cpp_code"/>
+      </element>
+    </element>
+  </define>
+  <define name="prescribed_vector_cpp">
+    <element name="cpp">
+      <a:documentation>A vector described by some c++ code.</a:documentation>
+      <attribute name="rank">
+        <value>1</value>
+      </attribute>
+      <optional>
+        <element name="include">
+          <ref name="cpp_code"/>
+        </element>
+      </optional>
+      <element name="members">
+        <ref name="cpp_code"/>
+      </element>
+      <element name="initialization">
+        <ref name="cpp_code"/>
+      </element>
+      <element name="eval">
+        <ref name="cpp_code"/>
+      </element>
+    </element>
+  </define>
+  <define name="prescribed_tensor_cpp">
+    <element name="cpp">
+      <a:documentation>A tensor described by some c++ code.</a:documentation>
+      <attribute name="rank">
+        <value>2</value>
+      </attribute>
+      <optional>
+        <element name="include">
+          <ref name="cpp_code"/>
+        </element>
+      </optional>
+      <element name="members">
+        <ref name="cpp_code"/>
+      </element>
+      <element name="initialization">
         <ref name="cpp_code"/>
       </element>
       <element name="eval">
@@ -748,12 +857,18 @@ The return value must have the same shape as the tensor element.</a:documentatio
     <ref name="prescribed_scalar_constant"/>
   </define>
   <define name="prescribed_vector">
+    <ref name="prescribed_vector_cpp"/>
+  </define>
+  <define name="prescribed_vector" combine="choice">
     <ref name="prescribed_vector_python"/>
   </define>
   <define name="prescribed_vector" combine="choice">
     <ref name="prescribed_vector_constant"/>
   </define>
   <define name="prescribed_tensor">
+    <ref name="prescribed_tensor_cpp"/>
+  </define>
+  <define name="prescribed_tensor" combine="choice">
     <ref name="prescribed_tensor_python"/>
   </define>
   <define name="prescribed_tensor" combine="choice">

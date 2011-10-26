@@ -65,9 +65,6 @@ namespace buckettools
     // Filling data
     //***************************************************************|***********************************************************//
 
-    void attach_and_initialize();                                    // attach functions to the forms and functionals
-                                                                     // in the system and initialize the matrices
-
     virtual void copy_diagnostics(SystemBucket_ptr &system, 
                             Bucket_ptr &bucket) const;               // copy the data necessary for the diagnostics data file(s)
 
@@ -98,6 +95,9 @@ namespace buckettools
 
     const Function_ptr changefunction() const                        // return a (boost shared) pointer to the change in the system
     { return changefunction_; }                                      // function over a timestep
+
+    const Expression_ptr icexpression() const                        // return a constant (boost shared) pointer to the initial
+    { return icexpression_; }                                        // condition expression for this system
 
     Bucket* bucket()                                                 // return a pointer to the parent bucket
     { return bucket_; }
@@ -153,6 +153,9 @@ namespace buckettools
 
     FunctionBucket_ptr fetch_coeff(const std::string &name);         // return a (boost shared) pointer to a coefficient with the
                                                                      // given name
+
+    const FunctionBucket_ptr fetch_coeff(const std::string &name)    // return a constant (boost shared) pointer to a coefficient with the
+                                                          const;     // given name
 
     FunctionBucket_it coeffs_begin();                                // return an iterator to the beginning of the coefficients
 
@@ -278,6 +281,14 @@ namespace buckettools
     void collect_bcs_();                                             // collect a vector of (boost shared) pointers bcs from the
                                                                      // fields
 
+    void collect_ics_(const uint &component,                         // collect the field initial conditions into an initial 
+                      const std::map< uint, Expression_ptr >         // condition expression
+                                                  &icexpressions);
+
+    void apply_ic_();                                                // apply the initial conditions to the system function
+
+    void apply_bc_();                                                // apply the bcs to the system function
+
     //***************************************************************|***********************************************************//
     // Base data
     //***************************************************************|***********************************************************//
@@ -294,6 +305,8 @@ namespace buckettools
 
     Function_ptr function_, oldfunction_, iteratedfunction_;         // (boost shared) pointers to the system functions at different
                                                                      // time levels (old, iterated - most up to date -, base)
+
+    Expression_ptr icexpression_;                                    // (boost shared) pointer to an expression describing the initial condition
 
     int solve_location_;                                             // when this system will be solved
 

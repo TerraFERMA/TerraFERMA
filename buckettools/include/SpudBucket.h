@@ -132,19 +132,19 @@ namespace buckettools
     // Filling data (continued)
     //***************************************************************|***********************************************************//
 
-    void timestepping_fill_();                                       // fill the timestepping data
+    void fill_timestepping_();                                       // fill the timestepping data
  
-    void output_fill_();                                             // fill the output data
+    void fill_output_();                                             // fill the output data
  
-    void meshes_fill_(const std::string &optionpath);                // fill in the mesh data structures
+    void fill_meshes_(const std::string &optionpath);                // fill in the mesh data structures
     
-    void systems_fill_(const std::string &optionpath);               // fill in information about the systems
+    void fill_systems_(const std::string &optionpath);               // fill in information about the systems
 
-    void baseuflsymbols_fill_(const std::string &optionpath);        // fill the ufl symbol maps
+    void fill_baseuflsymbols_(const std::string &optionpath);        // fill the ufl symbol maps
 
-    void detectors_fill_();                                          // fill the detectors
+    void fill_detectors_();                                          // fill the detectors
  
-    void diagnostics_fill_();                                        // fill the detectors
+    void fill_diagnostics_();                                        // fill the detectors
  
     //***************************************************************|***********************************************************//
     // Emptying data

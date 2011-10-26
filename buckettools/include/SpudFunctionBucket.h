@@ -45,11 +45,17 @@ namespace buckettools
     // Filling data
     //***************************************************************|***********************************************************//
 
-    void field_fill(const uint &index);                              // fill this function assuming it's a field
+    void fill_field(const uint &index);                              // fill this function assuming it's a field
 
-    void coeff_fill(const uint &index);                              // fill this function assuming it's a coefficient
+    void fill_coeff(const uint &index);                              // fill this function assuming it's a coefficient
 
-    void initialize_function_coeff();                                // initialize this function assuming it's a coefficient function
+    void allocate_coeff_function();                                  // allocate this function assuming it's a coefficient function
+
+    void initialize_field();                                         // initialize the expressions associated with a field
+
+    void initialize_coeff_expression();                              // initialize the expressions associated with a field
+
+    void initialize_coeff_function();                                // initialize the expressions associated with a field
 
     void copy_diagnostics(FunctionBucket_ptr &function, 
                                   SystemBucket_ptr &system) const;   // copy the data necessary for the diagnostics data file(s)
@@ -110,43 +116,58 @@ namespace buckettools
     // Filling data
     //***************************************************************|***********************************************************//
 
-    void base_fill_(const uint &index);                              // fill the base data of this function
+    void fill_base_(const uint &index);                              // fill the base data of this function
  
-    void initialize_field_();                                        // initialize this function assuming its a field
+    void allocate_field_();                                          // allocate this function assuming its a field
 
-    void initialize_expression_coeff_();                             // initialize this function assuming its a coefficient expression
+    void allocate_coeff_expression_();                               // allocate this function assuming its a coefficient expression
 
-    void bc_fill_(const std::string &optionpath,                     // fill in the bc for this function
+    void fill_bc_(const std::string &optionpath,                     // fill in the bc for this function
                   const MeshFunction_uint_ptr 
                                             &edgeidmeshfunction);
 
-    void bc_component_fill_(const std::string &optionpath,           // fill in the bc data for a component of this function
+    void fill_bc_component_(const std::string &optionpath,           // fill in the bc data for a component of this function
                             const std::string &bcname,
                             const std::vector<int> &bcids,
                             const MeshFunction_uint_ptr 
                                             &edgeidmeshfunction);
 
-    void constantfunctional_fill_();                                 // fill in the data for constant expressions defined by functionals
+    void initialize_bc_(const std::string &optionpath);              // fill in the bc for this function
 
-    void functionals_fill_();                                        // fill in the data for the functionals of this function
+    void initialize_bc_component_(const std::string &optionpath,     // fill in the bc data for a component of this function
+                                  const std::string &bcname);
 
-    Expression_ptr initialize_expression_over_regions_(
+    void fill_constantfunctional_();                                 // fill in the data for constant expressions defined by functionals
+
+    void fill_functionals_();                                        // fill in the data for the functionals of this function
+
+    Expression_ptr allocate_expression_over_regions_(
                                       const std::string &optionpath,
-                                      const double_ptr time);        // initialize an expression over region ids based on an optionpath
+                                      const double_ptr time);        // allocate an expression over region ids based on an optionpath
 
-    Expression_ptr initialize_expression_over_regions_(
-                                      const std::string &optionpath,
-                                      const double_ptr time,
-                                      bool *time_dependent);         // initialize an expression over region ids based on an optionpath
-
-    Expression_ptr initialize_expression_(
-                                      const std::string &optionpath,
-                                      const double_ptr time);        // initialize an expression based on an optionpath
-
-    Expression_ptr initialize_expression_(
+    Expression_ptr allocate_expression_over_regions_(
                                       const std::string &optionpath,
                                       const double_ptr time,
-                                      bool *time_dependent);         // initialize an expression based on an optionpath
+                                      bool *time_dependent);         // allocate an expression over region ids based on an optionpath
+
+    Expression_ptr allocate_expression_(
+                                      const std::string &optionpath,
+                                      const std::string &expressionname,
+                                      const double_ptr time);        // allocate an expression based on an optionpath
+
+    Expression_ptr allocate_expression_(
+                                      const std::string &optionpath,
+                                      const std::string &expressionname,
+                                      const double_ptr time,
+                                      bool *time_dependent);         // allocate an expression based on an optionpath
+
+    void initialize_expression_over_regions_(
+                                      Expression_ptr expression,
+                                      const std::string &optionpath);// allocate an expression over region ids based on an optionpath
+
+    void initialize_expression_(Expression_ptr expression,
+                                const std::string &optionpath,
+                                const std::string &expressionname);  // allocate an expression based on an optionpath
 
     //***************************************************************|***********************************************************//
     // Emptying data

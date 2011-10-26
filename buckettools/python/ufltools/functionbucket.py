@@ -79,100 +79,94 @@ class FunctionBucket:
   def namespace(self):
     return self.system.name+self.name
 
-  def cppexpression(self):
-    """Write the cpp expression to an array of cpp header strings."""
-    assert(self.cpp)
-    
+  def cppexpression_cpp(self, index=0):
+    """Write an array of cpp strings describing the namespace of the cpp expressions under this function."""
     cpp = []
-    cpp.append("#ifndef __"+self.namespace().upper()+"_EXPRESSION_H\n")
-    cpp.append("#define __"+self.namespace().upper()+"_EXPRESSION_H\n")
-    cpp.append("\n")
-    cpp.append("#include \"BoostTypes.h\"\n")
-    cpp.append("#include \"Bucket.h\"\n")
-    cpp.append("#include <dolfin.h>\n")
-    cpp.append("\n")
-
-    cpp.append("namespace buckettools\n")
-    cpp.append("{\n")
-    cpp.append("  //*****************************************************************|************************************************************//\n")
-    cpp.append("  // "+self.namespace()+" class:\n")
-    cpp.append("  //\n")
-    cpp.append("  // The "+self.namespace()+" class describes a derived dolfin Expression class that overloads\n")
-    cpp.append("  // the eval function using a user defined data.\n")
-    cpp.append("  //*****************************************************************|************************************************************//\n")
-    cpp.append("  class "+self.namespace()+" : public dolfin::Expression\n")
-    cpp.append("  {\n")
-    cpp.append("  \n")
-    cpp.append("  //*****************************************************************|***********************************************************//\n")
-    cpp.append("  // Publicly available functions\n")
-    cpp.append("  //*****************************************************************|***********************************************************//\n")
-    cpp.append("  \n")
-    cpp.append("  public:                                                            // available to everyone\n")
-    cpp.append("  \n")
-    if self.rank == "Scalar":
-      cpp.append("    "+self.namespace()+"(const Bucket *bucket) : dolfin::Expression(), bucket(bucket)\n")
-    elif self.rank == "Vector":
-      cpp.append("    "+self.namespace()+"(const uint &dim, const Bucket *bucket) : dolfin::Expression(dim), bucket(bucket)\n")
-    elif self.rank == "Tensor":
-      cpp.append("    "+self.namespace()+"(const std::vector<uint> &value_shape, const Bucket *bucket) : dolfin::Expression(value_shape), bucket(bucket)\n")
+    if index == 0:
+      cpp.append("      if (functionname == \""+self.name+"\")\n")
     else:
-      print self.rank
-      print "Unknown rank."
-      sys.exit(1)
-    cpp.append("    {\n")
-    for line in self.cpp["constructor"].split("\n"):
-      cpp.append("      "+line+"\n")
-    cpp.append("    }\n")
-    cpp.append("    \n")
-    cpp.append("    void eval(dolfin::Array<double>& values, const dolfin::Array<double>& x, const ufc::cell &cell)\n")
-    cpp.append("    {\n")
-    for line in self.cpp["eval"].split("\n"):
-      cpp.append("      "+line+"\n")
-    cpp.append("    }\n")
-    cpp.append("  \n")
-    cpp.append("  //*****************************************************************|***********************************************************//\n")
-    cpp.append("  // Private functions\n")
-    cpp.append("  //*****************************************************************|***********************************************************//\n")
-    cpp.append("  \n")
-    cpp.append("  private:                                                           // only available to this class\n")
-    cpp.append("    \n")
-    cpp.append("    const Bucket *bucket;\n")
-    cpp.append("    \n")
-    for line in self.cpp["members"].split("\n"):
-      cpp.append("    "+line+"\n")
-    cpp.append("  \n")
-    cpp.append("  };\n")
-    cpp.append("  \n")
-    cpp.append("}\n")
+      cpp.append("      else if (functionname ==  \""+self.name+"\")\n")
+    cpp.append("      {\n")
+    cpp.append("        if (expressiontype == \"initial_condition\")\n")
+    cpp.append("        {\n")
+    cpp += self.cppexpressiontype_cpp("initial_condition")
+    cpp.append("        }\n")
+    cpp.append("        else if (expressiontype == \"boundary_condition\")\n")
+    cpp.append("        {\n")
+    cpp += self.cppexpressiontype_cpp("boundary_condition")
+    cpp.append("        }\n")
+    cpp.append("        else if (expressiontype == \"value\")\n")
+    cpp.append("        {\n")
+    cpp += self.cppexpressiontype_cpp("value")
+    cpp.append("        }\n")
+    cpp.append("        else\n")
+    cpp.append("        {\n")
+    cpp.append("          dolfin::error(\"Unknown expressiontype in cpp_fetch_expression.\");\n")
+    cpp.append("        }\n")
+    cpp.append("      }\n")
+    return cpp
 
-    cpp.append("\n")
-    cpp.append("#endif\n")
-    cpp.append("\n")
+  def cppexpressiontype_cpp(self, basetype):
+    """Write an array of cpp strings describing the namespace of the cpp expressions of a particular basetype under this function."""
+    cpp = []
+
+    expressions_found = 0
+    for e in range(len(self.cpp)):
+      if self.cpp[e].basetype==basetype:
+        cpp += self.cpp[e].cppexpression_cpp(index=expressions_found)
+        expressions_found += 1
+    if expressions_found==0:
+      cpp.append("          dolfin::error(\"Unknown expressionname in cpp_fetch_expression.\");\n")
+    else:
+      cpp.append("          else\n")
+      cpp.append("          {\n")
+      cpp.append("            dolfin::error(\"Unknown expressionname in cpp_fetch_expression.\");\n")
+      cpp.append("          }\n")
 
     return cpp
 
-  def write_cppexpression(self, suffix=None):
-    """Write the cpp expression to a cpp header file."""
-    cpp = self.cppexpression()
+  def cppexpression_init(self, index=0):
+    """Write an array of cpp strings recasting an expression into the namespace of a cpp expression under this function."""
+    cpp = []
+    if index == 0:
+      cpp.append("      if (functionname == \""+self.name+"\")\n")
+    else:
+      cpp.append("      else if (functionname ==  \""+self.name+"\")\n")
+    cpp.append("      {\n")
+    cpp.append("        if (expressiontype == \"initial_condition\")\n")
+    cpp.append("        {\n")
+    cpp += self.cppexpressiontype_init("initial_condition")
+    cpp.append("        }\n")
+    cpp.append("        else if (expressiontype == \"boundary_condition\")\n")
+    cpp.append("        {\n")
+    cpp += self.cppexpressiontype_init("boundary_condition")
+    cpp.append("        }\n")
+    cpp.append("        else if (expressiontype == \"value\")\n")
+    cpp.append("        {\n")
+    cpp += self.cppexpressiontype_init("value")
+    cpp.append("        }\n")
+    cpp.append("        else\n")
+    cpp.append("        {\n")
+    cpp.append("          dolfin::error(\"Unknown expressiontype in cpp_init_expression.\");\n")
+    cpp.append("        }\n")
+    cpp.append("      }\n")
+    return cpp
 
-    filename   = self.namespace()+".h"
-    if suffix: filename += suffix 
-    filehandle = file(filename, 'w')
-    filehandle.writelines(cpp)
-    filehandle.close()
+  def cppexpressiontype_init(self, basetype):
+    """Write an array of cpp strings recasting an expression into the namespace of a cpp expression of a particular basetype under this function."""
+    cpp = []
 
-  def write_cppexpressionheader(self):
-    """Write the cpp expression to a cpp header file (with md5 checksum)."""
-    self.write_cppexpression(suffix=".temp")
+    expressions_found = 0
+    for e in range(len(self.cpp)):
+      if self.cpp[e].basetype==basetype:
+        cpp += self.cpp[e].cppexpression_init(index=expressions_found)
+        expressions_found += 1
+    if expressions_found==0:
+      cpp.append("          dolfin::error(\"Unknown expressionname in cpp_fetch_expression.\");\n")
+    else:
+      cpp.append("          else\n")
+      cpp.append("          {\n")
+      cpp.append("            dolfin::error(\"Unknown expressionname in cpp_fetch_expression.\");\n")
+      cpp.append("          }\n")
 
-    filename = self.namespace()+".h"
-
-    try:
-      checksum = hashlib.md5(open(filename).read()).hexdigest()
-    except:
-      checksum = None
-
-    if checksum != hashlib.md5(open(filename+".temp").read()).hexdigest():
-      # files have changed
-      shutil.copy(filename+".temp", filename)
-
+    return cpp

@@ -323,7 +323,7 @@ namespace buckettools
     // Filling data
     //***************************************************************|***********************************************************//
 
-    void uflsymbols_fill_();                                         // fill the ufl symbol data structures
+    void fill_uflsymbols_();                                         // fill the ufl symbol data structures
 
     //***************************************************************|***********************************************************//
     // Emptying data

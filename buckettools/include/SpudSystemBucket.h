@@ -39,7 +39,10 @@ namespace buckettools
 
     void fill();                                                     // fill the system assuming a buckettools spud schema
 
-    void funccoeffs_fill();                                          // fill in the coefficient functions
+    void allocate_coeff_function();                                  // allocate the coefficient functions
+
+    void initialize();                                               // attach functions to the forms and functionals
+                                                                     // in the system and initialize the expressions and matrices
 
     void copy_diagnostics(SystemBucket_ptr &system, 
                             Bucket_ptr &bucket) const;               // copy the data necessary for the diagnostics data file(s)
@@ -77,20 +80,15 @@ namespace buckettools
     // Filling data (continued)
     //***************************************************************|***********************************************************//
 
-    void base_fill_();                                               // fill in the base information about the system
+    void fill_base_();                                               // fill in the base information about the system
 
-    void systemfunction_fill_();                                     // fill in the system function information
+    void fill_systemfunction_();                                     // fill in the system function information
 
-    void fields_fill_();                                             // fill in the data about the system fields (subfunctions)
+    void fill_fields_();                                             // fill in the data about the system fields (subfunctions)
 
-    void apply_ic_(const uint &component, const std::map< uint,      // apply the initial conditions to the system function
-                                  Expression_ptr > &icexpressions);
+    void fill_coeffs_();                                             // fill in the coefficient information
 
-    void apply_bc_();                                                // apply the bcs to the system function
-
-    void expcoeffs_fill_();                                          // fill in the coefficient expression information
-
-    void solvers_fill_();                                            // fill in the solver bucket information
+    void fill_solvers_();                                            // fill in the solver bucket information
 
   };
  

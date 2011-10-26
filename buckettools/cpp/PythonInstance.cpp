@@ -36,7 +36,7 @@ PyObject* PythonInstance::call(PyObject *pArgs) const
 //*******************************************************************|************************************************************//
 void PythonInstance::init_()
 {
-  if(not Py_IsInitialized())
+  if(!Py_IsInitialized())
   {
     Py_Initialize();                                                 // if python isn't initialized, do it now
   }

@@ -142,6 +142,8 @@ namespace buckettools
     void register_bcexpression(Expression_ptr bcexpression,          // register an expression for a bc in this function
                                           const std::string &name);
 
+    Expression_ptr fetch_bcexpression(const std::string &name);      // return a (boost shared) pointer to a bc expression with the given name
+
     void register_bc(BoundaryCondition_ptr bc, 
                                         const std::string &name);    // register a bc in this function
 

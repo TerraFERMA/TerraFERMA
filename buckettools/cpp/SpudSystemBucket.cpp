@@ -1,8 +1,7 @@
 
 #include "BoostTypes.h"
-#include "InitialConditionExpression.h"
 #include "SpudSystemBucket.h"
-#include "SystemsWrapper.h"
+#include "SystemSolversWrapper.h"
 #include "SpudBase.h"
 #include "SpudFunctionBucket.h"
 #include "SpudSolverBucket.h"
@@ -36,34 +35,80 @@ SpudSystemBucket::~SpudSystemBucket()
 //*******************************************************************|************************************************************//
 void SpudSystemBucket::fill()
 {
-  base_fill_();                                                      // fill in the base data (could be called from the
+  fill_base_();                                                      // fill in the base data (could be called from the
                                                                      // constructor?)
 
-  systemfunction_fill_();                                            // register the functionspace and system functions
+  fill_systemfunction_();                                            // register the functionspace and system functions
 
-  fields_fill_();                                                    // initialize the fields (subfunctions) of this system
+  fill_fields_();                                                    // initialize the fields (subfunctions) of this system
  
-  expcoeffs_fill_();                                                 // initialize the coefficient expressions (and constants)
+  fill_coeffs_();                                                    // initialize the coefficient expressions (and constants)
                                                                      // (can't do coefficient functions now because it's unlikely we 
                                                                      // have all the coefficient functionspaces)
 
-  solvers_fill_();                                                   // initialize the nonlinear solvers in this system
+  fill_solvers_();                                                   // initialize the nonlinear solvers in this system
 
 }
 
 //*******************************************************************|************************************************************//
-// loop over the coefficients and initialize any that are coefficient functions
+// loop over the coefficients and allocate any that are coefficient functions
 //*******************************************************************|************************************************************//
-void SpudSystemBucket::funccoeffs_fill()
+void SpudSystemBucket::allocate_coeff_function()
 {
   
   for (FunctionBucket_it f_it = coeffs_begin(); f_it != coeffs_end();// loop over all coefficients
                                                               f_it++) 
   {                                                                  // recast as a spud derived class and initialize
-    (*(boost::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).initialize_function_coeff();
+    (*(boost::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).allocate_coeff_function();
   }                                                                  // (check that this is a coefficient function within this
                                                                      // function)
 
+}
+
+//*******************************************************************|************************************************************//
+// attach coefficients to forms and functionals then initialize matrices described by this system's forms
+//*******************************************************************|************************************************************//
+void SpudSystemBucket::initialize()
+{
+  dolfin::info("Attaching coeffs for system %s", name().c_str());
+  attach_all_coeffs_();                                              // attach the coefficients to form and functionals
+
+  for (FunctionBucket_it f_it = fields_begin(); f_it != fields_end();
+                                                              f_it++)
+  {
+    (*(boost::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).initialize_field();
+  } 
+
+  for (FunctionBucket_it f_it = coeffs_begin(); f_it != coeffs_end();
+                                                              f_it++)
+  {
+    (*(boost::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).initialize_coeff_expression();
+  } 
+
+                                                                     // after this point, we are allowed to start calling evals on
+                                                                     // some of the expressions that have just been initialized
+                                                                     // (this wasn't allowed up until now as all cpp expressions
+                                                                     // potentially need initializing before eval will return the
+                                                                     // right answer)
+                                                                     // NOTE: even now there are potential inter dependencies! We
+                                                                     // just deal with them by evaluating things in the order the
+                                                                     // user specified.
+
+  for (FunctionBucket_it f_it = coeffs_begin(); f_it != coeffs_end();
+                                                              f_it++)
+  {
+    (*(boost::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).initialize_coeff_function();
+  } 
+
+  apply_ic_();                                                       // apply the initial condition to the system function
+  apply_bc_();                                                       // apply the boundary conditions we just collected
+
+  for (SolverBucket_it s_it = solvers_begin(); s_it != solvers_end();// loop over the solver buckets
+                                                              s_it++)
+  {
+    (*(*s_it).second).initialize_matrices();                         // perform a preassembly of all the matrices to set up
+                                                                     // sparsities etc.
+  }
 }
 
 //*******************************************************************|************************************************************//
@@ -100,7 +145,7 @@ const std::string SpudSystemBucket::str(int indent) const
 //*******************************************************************|************************************************************//
 // fill the system bucket base data 
 //*******************************************************************|************************************************************//
-void SpudSystemBucket::base_fill_()
+void SpudSystemBucket::fill_base_()
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
@@ -148,7 +193,7 @@ void SpudSystemBucket::base_fill_()
 //*******************************************************************|************************************************************//
 // fill the system functionspace and function data 
 //*******************************************************************|************************************************************//
-void SpudSystemBucket::systemfunction_fill_()
+void SpudSystemBucket::fill_systemfunction_()
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
@@ -177,7 +222,7 @@ void SpudSystemBucket::systemfunction_fill_()
 //*******************************************************************|************************************************************//
 // fill in the data about each field (or subfunction) of this system 
 //*******************************************************************|************************************************************//
-void SpudSystemBucket::fields_fill_()
+void SpudSystemBucket::fill_fields_()
 {
   std::stringstream buffer;                                          // optionpath buffer
 
@@ -195,7 +240,7 @@ void SpudSystemBucket::fields_fill_()
                                                                      // declare a new field function bucket assuming this system is
                                                                      // its parent
     SpudFunctionBucket_ptr field(new SpudFunctionBucket( buffer.str(), this ));
-    (*field).field_fill(i);                                          // fill in this field (providing its index in the system)
+    (*field).fill_field(i);                                          // fill in this field (providing its index in the system)
     register_field(field, (*field).name());                          // register this field in the system bucket
                                   
                                                                      // insert the field's initial condition expression into a 
@@ -217,50 +262,14 @@ void SpudSystemBucket::fields_fill_()
   }
 
   collect_bcs_();                                                    // collect all the bcs together for convenience later
-  apply_ic_(component, icexpressions);                               // apply the initial condition to the system function
-  apply_bc_();                                                       // apply the boundary conditions we just collected
+  collect_ics_(component, icexpressions);                            // collect all the ics together into a new initial condition expression
 
-}
-
-//*******************************************************************|************************************************************//
-// given a map from components to field initial condition expressions initialize the system with a combined initial condition
-//*******************************************************************|************************************************************//
-void SpudSystemBucket::apply_ic_(const uint &component, 
-              const std::map< uint, Expression_ptr > &icexpressions)
-{
-  Expression_ptr ic;
-  if (component==1)
-  {
-    ic.reset( new InitialConditionExpression(icexpressions) );       // the system function is scalar so set up a scalar ic expression
-  }
-  else
-  {                                                                  // multiple components so set up a multi-component ic
-                                                                     // expression
-    ic.reset( new InitialConditionExpression(component, icexpressions));
-  }
-  (*oldfunction_).interpolate(*ic);                                  // interpolate the initial condition onto the old function
-  (*iteratedfunction_).vector() = (*oldfunction_).vector();          // set the iterated function vector to the old function vector
-  (*function_).vector() = (*oldfunction_).vector();                  // set the function vector to the old function vector
-}
-
-//*******************************************************************|************************************************************//
-// apply the vector of system boundary conditions to the system function vectors to ensure consisten initial and boundary conditions
-//*******************************************************************|************************************************************//
-void SpudSystemBucket::apply_bc_()
-{
-  for (std::vector<BoundaryCondition_ptr>::const_iterator            // loop over the vector of bcs
-                            bc = bcs_begin(); bc != bcs_end(); bc++)
-  {
-    (*(*bc)).apply((*oldfunction_).vector());
-    (*(*bc)).apply((*iteratedfunction_).vector());
-    (*(*bc)).apply((*function_).vector());
-  }
 }
 
 //*******************************************************************|************************************************************//
 // fill in the data about each coefficient expression (or constant) of this system 
 //*******************************************************************|************************************************************//
-void SpudSystemBucket::expcoeffs_fill_()
+void SpudSystemBucket::fill_coeffs_()
 {
   std::stringstream buffer;                                          // optionpath buffer
   
@@ -274,7 +283,7 @@ void SpudSystemBucket::expcoeffs_fill_()
                                                                      // initialize a new function bucket for this coefficient
                                                                      // (regardless of type!) assuming this system is its parent
     SpudFunctionBucket_ptr coeff( new SpudFunctionBucket( buffer.str(), this ) );
-    (*coeff).coeff_fill(i);                                          // fill the coefficient (this won't do much for coefficient
+    (*coeff).fill_coeff(i);                                          // fill the coefficient (this won't do much for coefficient
                                                                      // functions)
     register_coeff(coeff, (*coeff).name());                          // register this coefficient in the system
 
@@ -285,7 +294,7 @@ void SpudSystemBucket::expcoeffs_fill_()
 //*******************************************************************|************************************************************//
 // fill in the data about each solver of this system 
 //*******************************************************************|************************************************************//
-void SpudSystemBucket::solvers_fill_()
+void SpudSystemBucket::fill_solvers_()
 {
   std::stringstream buffer;                                          // optionpath buffer
   

@@ -23,19 +23,6 @@ class SpudFunctionBucket(ufltools.functionbucket.FunctionBucket):
       self.family = libspud.get_option(optionpath+"/type/rank/element/family")
       self.degree = libspud.get_option(optionpath+"/type/rank/element/degree")
 
-    if libspud.have_option(optionpath+"/type/rank/value/functional"):
-      functional_optionpath = optionpath+"/type/rank/value/functional"
-      functional = ufltools.spud.SpudFunctionalBucket()
-      functional.fill(functional_optionpath, self)
-      self.functional = functional
-    
-    if libspud.have_option(optionpath+"/type/rank/value/cpp"):
-      cpp_optionpath = optionpath+"/type/rank/value/cpp"
-      self.cpp = {}
-      self.cpp["members"]     = libspud.get_option(cpp_optionpath+"/members")
-      self.cpp["constructor"] = libspud.get_option(cpp_optionpath+"/constructor")
-      self.cpp["eval"]        = libspud.get_option(cpp_optionpath+"/eval")
-    
     self.size     = None
     self.shape    = None
     self.symmetry = None
@@ -48,8 +35,58 @@ class SpudFunctionBucket(ufltools.functionbucket.FunctionBucket):
       if libspud.have_option(optionpath+"/type/rank/element/symmetry"):
         self.symmetry = True
 
-    self.functionals = []
+    # this should be restricted by the schema to Constant coefficients:
+    if libspud.have_option(optionpath+"/type/rank/value/functional"):
+      functional_optionpath = optionpath+"/type/rank/value/functional"
+      functional = ufltools.spud.SpudFunctionalBucket()
+      functional.fill(functional_optionpath, self)
+      self.functional = functional
     
+    self.cpp = []
+    for k in range(libspud.option_count(optionpath+"/type/rank/initial_condition")):
+      cpp_optionpath = optionpath+"/type/rank/initial_condition["+`k`+"]"
+      if libspud.have_option(cpp_optionpath+"/cpp"):
+        cpp_name = libspud.get_option(cpp_optionpath+"/name")
+        cppexpression = ufltools.spud.SpudCppExpressionBucket()
+        # get all the information about this expression from the options dictionary
+        cppexpression.fill(cpp_optionpath, cpp_name, self)
+        # let the field know about this cpp expression
+        self.cpp.append(cppexpression)
+        # done with this expression
+        del cppexpression
+
+    for j in range(libspud.option_count(optionpath+"/type/rank/boundary_condition")):
+      bc_optionpath = optionpath+"/type/rank/boundary_condition["+`j`+"]"
+      bc_name = libspud.get_option(bc_optionpath+"/name")
+      for k in range(libspud.option_count(bc_optionpath+"/sub_components")):
+        bc_comp_optionpath = bc_optionpath+"/sub_components["+`k`+"]"
+        bc_comp_name = libspud.get_option(bc_comp_optionpath+"/name")
+        
+        cpp_optionpath = bc_comp_optionpath+"/type"
+        if libspud.have_option(cpp_optionpath+"/cpp"):
+          cpp_name = bc_name + bc_comp_name
+          
+          cppexpression = ufltools.spud.SpudCppExpressionBucket()
+          # get all the information about this expression from the options dictionary
+          cppexpression.fill(cpp_optionpath, cpp_name, self)
+          # let the field know about this cpp expression
+          self.cpp.append(cppexpression)
+          # done with this expression
+          del cppexpression
+
+    for k in range(libspud.option_count(optionpath+"/type/rank/value")):
+      cpp_optionpath = optionpath+"/type/rank/value["+`k`+"]"
+      if libspud.have_option(cpp_optionpath+"/cpp"):
+        cpp_name = libspud.get_option(cpp_optionpath+"/name")
+        cppexpression = ufltools.spud.SpudCppExpressionBucket()
+        # get all the information about this expression from the options dictionary
+        cppexpression.fill(cpp_optionpath, cpp_name, self)
+        # let the field know about this cpp expression
+        self.cpp.append(cppexpression)
+        # done with this expression
+        del cppexpression
+
+    self.functionals = []
     for k in range(libspud.option_count(optionpath+"/diagnostics/include_in_statistics/functional")):
       functional_optionpath = optionpath+"/diagnostics/include_in_statistics/functional["+`k`+"]"
       functional = ufltools.spud.SpudFunctionalBucket()

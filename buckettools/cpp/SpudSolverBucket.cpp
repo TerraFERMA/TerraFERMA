@@ -4,7 +4,7 @@
 #include <dolfin.h>
 #include <string>
 #include <spud>
-#include "SystemsWrapper.h"
+#include "SystemSolversWrapper.h"
 #include "SpudSystemBucket.h"
 #include "SpudBase.h"
 #include "SpudBucket.h"
@@ -40,9 +40,9 @@ void SpudSolverBucket::fill()
   Spud::OptionError serr;                                            // spud error code
   PetscErrorCode perr;                                               // petsc error code
 
-  base_fill_();                                                      // fill the base solver data: type, name etc.
+  fill_base_();                                                      // fill the base solver data: type, name etc.
 
-  forms_fill_();                                                     // fill the forms data
+  fill_forms_();                                                     // fill the forms data
 
   std::stringstream prefix;                                          // prefix buffer
   prefix.str(""); prefix << (*system_).name() << "_" << name() << "_";
@@ -91,7 +91,7 @@ void SpudSolverBucket::fill()
                                                                      // to start setting up the ksp inside the snes
     
     buffer.str(""); buffer << optionpath() << "/type/linear_solver"; // the ksp solver path
-    ksp_fill_(buffer.str(), ksp_, prefix.str());                           // can then be used to fill the ksp data
+    fill_ksp_(buffer.str(), ksp_, prefix.str());                     // can then be used to fill the ksp data
 
     perr = SNESView(snes_, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr); // turn on snesview so we get some debugging info
 
@@ -102,7 +102,7 @@ void SpudSolverBucket::fill()
     perr = KSPCreate(PETSC_COMM_WORLD, &ksp_); CHKERRV(perr);        // create a ksp object from the variable in the solverbucket
 
     buffer.str(""); buffer << optionpath() << "/type/linear_solver"; // figure out the linear solver optionspath
-    ksp_fill_(buffer.str(), ksp_, prefix.str());                           // fill the ksp data
+    fill_ksp_(buffer.str(), ksp_, prefix.str());                     // fill the ksp data
 
     perr = KSPView(ksp_, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);   // turn on kspview so we get some debugging info
 
@@ -186,7 +186,7 @@ const std::string SpudSolverBucket::forms_str(const int &indent) const
 //*******************************************************************|************************************************************//
 // fill the solver bucket base data assuming the buckettools schema (common for all solver types)
 //*******************************************************************|************************************************************//
-void SpudSolverBucket::base_fill_()
+void SpudSolverBucket::fill_base_()
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
@@ -233,7 +233,7 @@ void SpudSolverBucket::base_fill_()
 //*******************************************************************|************************************************************//
 // fill the forms in solver bucket assuming the buckettools schema (common for all solver types)
 //*******************************************************************|************************************************************//
-void SpudSolverBucket::forms_fill_()
+void SpudSolverBucket::fill_forms_()
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
@@ -345,7 +345,7 @@ void SpudSolverBucket::forms_fill_()
 // fill a ksp object from the options tree (not necessarily the main solver bucket ksp_ object as this routine may be called
 // recursively for ksp and fieldsplit pc types)
 //*******************************************************************|************************************************************//
-void SpudSolverBucket::ksp_fill_(const std::string &optionpath, KSP &ksp, 
+void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp, 
                                  const std::string prefix,
                                  const std::vector<uint>* parent_indices)
 {
@@ -450,12 +450,12 @@ void SpudSolverBucket::ksp_fill_(const std::string &optionpath, KSP &ksp,
                         "/remove_null_space/null_space[" << i << "]";
       if (i==0)
       {
-        is_by_field_fill_(buffer.str(), is,                          // create an is based on this optionpath (consistent schema
+        fill_is_by_field_(buffer.str(), is,                          // create an is based on this optionpath (consistent schema
                           indices, parent_indices, NULL);            // with fieldsplit description)
       }
       else
       {
-        is_by_field_fill_(buffer.str(), is,                          // create an is based on this optionpath (consistent schema
+        fill_is_by_field_(buffer.str(), is,                          // create an is based on this optionpath (consistent schema
                           indices, parent_indices, &prev_indices);   // with fieldsplit description)
       }
       prev_indices.clear();
@@ -517,12 +517,12 @@ void SpudSolverBucket::ksp_fill_(const std::string &optionpath, KSP &ksp,
                                     "/preconditioner/linear_solver";
     KSP subksp;                                                      // create a subksp from this pc
     perr = PCKSPGetKSP(pc, &subksp); CHKERRV(perr);
-    ksp_fill_(buffer.str(), subksp, prefix+"subksp_", parent_indices);// recursively fill the ksp data (i.e. go back to this routine)
+    fill_ksp_(buffer.str(), subksp, prefix+"subksp_", parent_indices);// recursively fill the ksp data (i.e. go back to this routine)
   }
   else if (preconditioner=="fieldsplit")                             // if the pc is a fieldsplit
   {
     buffer.str(""); buffer << optionpath << "/preconditioner";
-    pc_fieldsplit_fill_(buffer.str(), pc, prefix, parent_indices);   // fill the fieldsplit data (will end up back here again
+    fill_pc_fieldsplit_(buffer.str(), pc, prefix, parent_indices);   // fill the fieldsplit data (will end up back here again
                                                                      // eventually)
   }
   else if (preconditioner=="lu")                                     // if the pc is direct
@@ -544,7 +544,7 @@ void SpudSolverBucket::ksp_fill_(const std::string &optionpath, KSP &ksp,
 //*******************************************************************|************************************************************//
 // fill a pc object from the options tree assuming its a fieldsplit pc
 //*******************************************************************|************************************************************//
-void SpudSolverBucket::pc_fieldsplit_fill_(const std::string &optionpath, 
+void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath, 
                                            PC &pc, const std::string prefix,
                                            const std::vector<uint>* parent_indices)
 {
@@ -604,13 +604,13 @@ void SpudSolverBucket::pc_fieldsplit_fill_(const std::string &optionpath,
     IS is;
     if (i==0)
     {
-      is_by_field_fill_(buffer.str(), is,                            // setup an IS for each fieldsplit
+      fill_is_by_field_(buffer.str(), is,                            // setup an IS for each fieldsplit
                         indices, parent_indices,
                         NULL);
     }
     else
     {
-      is_by_field_fill_(buffer.str(), is,                            // setup an IS for each fieldsplit
+      fill_is_by_field_(buffer.str(), is,                            // setup an IS for each fieldsplit
                         indices, parent_indices,
                         &(child_indices[i-1]));
     }
@@ -636,7 +636,7 @@ void SpudSolverBucket::pc_fieldsplit_fill_(const std::string &optionpath,
 
     buffer.str(""); buffer << optionpath << "/fieldsplit[" 
                                         << i << "]/linear_solver";
-    ksp_fill_(buffer.str(), subksps[i], prefix+fsname+"_", 
+    fill_ksp_(buffer.str(), subksps[i], prefix+fsname+"_", 
                                                 &child_indices[i]);  // recurse and fill in the data on each subksp but passing down
                                                                      // the child_indices as the new parent_indices
   }
@@ -650,7 +650,7 @@ void SpudSolverBucket::pc_fieldsplit_fill_(const std::string &optionpath,
 // additionally the resulting IS is checked for consistency with any parents in the tree and will fail if a full description is
 // not given
 //*******************************************************************|************************************************************//
-void SpudSolverBucket::is_by_field_fill_(const std::string &optionpath, IS &is, 
+void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is, 
                                          std::vector<uint> &child_indices, 
                                          const std::vector<uint>* parent_indices,
                                          const std::vector<uint>* sibling_indices)

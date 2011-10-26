@@ -195,10 +195,11 @@ class SystemBucket:
     ufl.append(ufl_line)
     return ufl
 
-  def include_cpp(self):
+  def include_systemfunctionals_cpp(self):
     """Write an array of cpp strings including the namespaces of the system ufls."""
     cpp = []
     for field in self.fields:
+      # should not have individual functional as this is restricted to Constant coeffs
       for functional in field.functionals:
         cpp.append("#include \""+functional.namespace()+".h\"\n")
     for coeff in self.coeffs:
@@ -206,10 +207,24 @@ class SystemBucket:
         cpp.append("#include \""+coeff.functional.namespace()+".h\"\n")
       for functional in coeff.functionals:
         cpp.append("#include \""+functional.namespace()+".h\"\n")
-      if coeff.cpp:
-        cpp.append("#include \""+coeff.namespace()+".h\"\n")
+    return cpp
+
+  def include_systemsolvers_cpp(self):
+    """Write an array of cpp strings including the namespaces of the system ufls."""
+    cpp = []
     for solver in self.solvers:
       cpp.append("#include \""+solver.namespace()+".h\"\n")
+    return cpp
+
+  def include_systemexpressions_cpp(self):
+    """Write an array of cpp strings including the namespaces of the system ufls."""
+    cpp = []
+    for field in self.fields:
+      for cppexpression in field.cpp:
+        cpp.append("#include \""+cppexpression.namespace()+".h\"\n")
+    for coeff in self.coeffs:
+      for cppexpression in coeff.cpp:
+        cpp.append("#include \""+cppexpression.namespace()+".h\"\n")
     return cpp
 
   def functionspace_cpp(self, index=0):
@@ -536,39 +551,52 @@ class SystemBucket:
   def cppexpression_cpp(self, index=0):
     """Write an array of cpp strings describing the namespace of the cpp expressions."""
     cpp = []  
+    
+    if index == 0:
+      cpp.append("    if (systemname ==  \""+self.name+"\")\n")
+    else:
+      cpp.append("    else if (systemname ==  \""+self.name+"\")\n")
+    cpp.append("    {\n")
+    functions = 0
+    for c in range(len(self.fields)):
+      cpp += self.fields[c].cppexpression_cpp(index=c)
+    for c in range(len(self.coeffs)):
+      cpp += self.coeffs[c].cppexpression_cpp(index=c+len(self.fields))
+    if (len(self.fields)+len(self.coeffs))==0:
+      cpp.append("      dolfin::error(\"Unknown functionname in cpp_fetch_expression.\");\n")
+      cpp.append("    }\n")
+    else:
+      cpp.append("      else\n")
+      cpp.append("      {\n")
+      cpp.append("        dolfin::error(\"Unknown functionname in cpp_fetch_expression.\");\n")
+      cpp.append("      }\n")
+      cpp.append("    }\n")
+    
+    return cpp
+
+  def cppexpression_init(self, index=0):
+    """Write an array of cpp strings describing the namespace of the cpp expressions."""
+    cpp = []  
+    
     if index == 0:
       cpp.append("    if (systemname ==  \""+self.name+"\")\n")
     else:
       cpp.append("    else if (systemname ==  \""+self.name+"\")\n")
     cpp.append("    {\n")
     expressions_found = 0
+    for c in range(len(self.fields)):
+      cpp += self.fields[c].cppexpression_init(index=c)
     for c in range(len(self.coeffs)):
-      if self.coeffs[c].cpp:
-        if expressions_found == 0:
-          cpp.append("      if (functionname ==  \""+self.coeffs[c].name+"\")\n")
-        else:
-          cpp.append("      else if (functionname ==  \""+self.coeffs[c].name+"\")\n")
-        expressions_found =+ 1
-        cpp.append("      {\n")
-        if self.coeffs[c].rank == "Scalar":
-          cpp.append("        expression.reset(new "+self.coeffs[c].namespace()+"(bucket));\n")
-        elif self.coeffs[c].rank == "Vector":
-          cpp.append("        expression.reset(new "+self.coeffs[c].namespace()+"(size, bucket));\n")
-        elif self.coeffs[c].rank == "Tensor":
-          cpp.append("        expression.reset(new "+self.coeffs[c].namespace()+"(shape, bucket));\n")
-        else:
-          print self.rank
-          print "Unknown rank."
-          sys.exit(1)
-        cpp.append("      }\n")
-    if expressions_found==0:
-      cpp.append("      dolfin::error(\"Unknown functionname in cpp_fetch_expression\");\n")
+      cpp += self.coeffs[c].cppexpression_init(index=c+len(self.fields))
+    if (len(self.fields)+len(self.coeffs))==0:
+      cpp.append("      dolfin::error(\"Unknown functionname in cpp_init_expression.\");\n")
       cpp.append("    }\n")
     else:
       cpp.append("      else\n")
       cpp.append("      {\n")
-      cpp.append("        dolfin::error(\"Unknown functionname in cpp_fetch_expression\");\n")
+      cpp.append("        dolfin::error(\"Unknown functionname in cpp_init_expression.\");\n")
       cpp.append("      }\n")
       cpp.append("    }\n")
+    
     return cpp
 

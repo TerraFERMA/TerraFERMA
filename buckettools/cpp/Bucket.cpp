@@ -947,7 +947,7 @@ const std::string Bucket::uflsymbols_str(const int &indent) const
 //*******************************************************************|************************************************************//
 // after having filled the system and function buckets loop over them and register their functions with their uflsymbols 
 //*******************************************************************|************************************************************//
-void Bucket::uflsymbols_fill_()
+void Bucket::fill_uflsymbols_()
 {
 
   if (!timestep_.first.empty())                                      // if we've registered a timestep (i.e. this is a dynamic

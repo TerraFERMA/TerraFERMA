@@ -58,9 +58,9 @@ void SpudBucket::fill()
   serr = Spud::get_option(buffer.str(), dimension_);                 // systems (we assume this is the length of things that do
   spud_err(buffer.str(), serr);                                      // not have them independently specified)
 
-  timestepping_fill_();                                              // fill in the timestepping options (if there are any)
+  fill_timestepping_();                                              // fill in the timestepping options (if there are any)
 
-  output_fill_();                                                    // fill in the output options (if there are any)
+  fill_output_();                                                    // fill in the output options (if there are any)
 
   buffer.str(""); buffer << optionpath() << "/geometry/mesh";        // put the meshes into the bucket
   int nmeshes = Spud::option_count(buffer.str());
@@ -68,7 +68,7 @@ void SpudBucket::fill()
   {
     buffer.str(""); buffer << optionpath() << "/geometry/mesh[" 
                                                         << i << "]";
-    meshes_fill_(buffer.str());
+    fill_meshes_(buffer.str());
   }
   
   buffer.str(""); buffer << optionpath() << "/system";
@@ -76,35 +76,35 @@ void SpudBucket::fill()
   for (uint i = 0; i<nsystems; i++)                                  // loop over the systems registering the base uflsymbols of any
   {                                                                  // coefficient functions contained in them
     buffer.str(""); buffer << optionpath() << "/system[" << i << "]";
-    baseuflsymbols_fill_(buffer.str());
+    fill_baseuflsymbols_(buffer.str());
   }
 
   for (uint i = 0; i<nsystems; i++)                                  // loop over the systems *again*, this time filling all the
   {                                                                  // systems data into the bucket data structures
     buffer.str(""); buffer << optionpath() << "/system[" << i << "]";
-    systems_fill_(buffer.str());
+    fill_systems_(buffer.str());
   }
 
   for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *third* time, this time filling
                                   sys_it != systems_end(); sys_it++) // in the data for the coefficient functions contained within
   {                                                                  // them
-    (*boost::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).funccoeffs_fill();
+    (*boost::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).allocate_coeff_function();
   }                                                                  // we couldn't do this before because we might not have had
                                                                      // the right functionspace available
   
-  uflsymbols_fill_();                                                // now all the functions in the systems are complete we can 
+  fill_uflsymbols_();                                                // now all the functions in the systems are complete we can 
                                                                      // register them in the bucket so it's easy to attach them
                                                                      // to the forms and functionals
 
   for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *fourth* time, attaching the
                                   sys_it != systems_end(); sys_it++) // coefficients to the forms and functionals and initializing
   {                                                                  // the matrices by performing a preassembly step on them
-    (*(*sys_it).second).attach_and_initialize();
+    (*boost::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).initialize();
   }
   
-  detectors_fill_();                                                 // put the detectors in the bucket
+  fill_detectors_();                                                 // put the detectors in the bucket
 
-  diagnostics_fill_();                                               // this should be called last because it initializes the
+  fill_diagnostics_();                                               // this should be called last because it initializes the
                                                                      // diagnostic files, which must use a complete bucket
 
   dolfin::log(dolfin::DBG, str().c_str());
@@ -309,7 +309,7 @@ const std::string SpudBucket::detectors_str(const int &indent) const
 //*******************************************************************|************************************************************//
 // fill in any timestepping data or set up dummy values instead (zero essentially)
 //*******************************************************************|************************************************************//
-void SpudBucket::timestepping_fill_()
+void SpudBucket::fill_timestepping_()
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud option error
@@ -440,7 +440,7 @@ void SpudBucket::timestepping_fill_()
 //*******************************************************************|************************************************************//
 // fill in any output data
 //*******************************************************************|************************************************************//
-void SpudBucket::output_fill_()
+void SpudBucket::fill_output_()
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud option error
@@ -530,7 +530,7 @@ void SpudBucket::output_fill_()
 //*******************************************************************|************************************************************//
 // create or get from a file a dolfin mesh object and insert it into the bucket data structures
 //*******************************************************************|************************************************************//
-void SpudBucket::meshes_fill_(const std::string &optionpath)
+void SpudBucket::fill_meshes_(const std::string &optionpath)
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
@@ -805,7 +805,7 @@ void SpudBucket::meshes_fill_(const std::string &optionpath)
 //*******************************************************************|************************************************************//
 // create a new system, fill it and put it into the bucket
 //*******************************************************************|************************************************************//
-void SpudBucket::systems_fill_(const std::string &optionpath)
+void SpudBucket::fill_systems_(const std::string &optionpath)
 {
   SpudSystemBucket_ptr system(new SpudSystemBucket(optionpath,       // create a new system (assumed to be a spudsystem with this 
                                                             this));  // bucket as a parent)
@@ -818,7 +818,7 @@ void SpudBucket::systems_fill_(const std::string &optionpath)
 //*******************************************************************|************************************************************//
 // loop over the systems defined in the options dictionary and register the base uflsymbols for all coefficient functions
 //*******************************************************************|************************************************************//
-void SpudBucket::baseuflsymbols_fill_(const std::string &optionpath)
+void SpudBucket::fill_baseuflsymbols_(const std::string &optionpath)
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
@@ -848,7 +848,7 @@ void SpudBucket::baseuflsymbols_fill_(const std::string &optionpath)
 //*******************************************************************|************************************************************//
 // loop over the detectors defined in the options dictionary and set up the requested detectors
 //*******************************************************************|************************************************************//
-void SpudBucket::detectors_fill_()
+void SpudBucket::fill_detectors_()
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
@@ -905,7 +905,10 @@ void SpudBucket::detectors_fill_()
   
 }
 
-void SpudBucket::diagnostics_fill_()
+//*******************************************************************|************************************************************//
+// initialize the data structures for diagnostic output
+//*******************************************************************|************************************************************//
+void SpudBucket::fill_diagnostics_()
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code

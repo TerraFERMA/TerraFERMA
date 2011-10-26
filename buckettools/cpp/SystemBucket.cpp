@@ -1,5 +1,6 @@
 
 #include "BoostTypes.h"
+#include "InitialConditionExpression.h"
 #include "SystemBucket.h"
 #include "FunctionBucket.h"
 #include "SolverBucket.h"
@@ -189,7 +190,7 @@ void SystemBucket::copy_diagnostics(SystemBucket_ptr &system, Bucket_ptr &bucket
                            func_it != coeffs_end(); func_it++)
   {                                                                  
     FunctionBucket_ptr coeff;                                        // create a new coeff
-  
+
     (*(*func_it).second).copy_diagnostics(coeff, system);
 
     (*system).register_coeff(coeff, (*coeff).name());                // put the coefficient in the bucket
@@ -205,22 +206,6 @@ void SystemBucket::copy_diagnostics(SystemBucket_ptr &system, Bucket_ptr &bucket
     (*system).register_solver(solver, (*solver).name());             // put the coefficient in the bucket
   }                                                                  
 
-}
-
-//*******************************************************************|************************************************************//
-// attach coefficients to forms and functionals then initialize matrices described by this system's forms
-//*******************************************************************|************************************************************//
-void SystemBucket::attach_and_initialize()
-{
-  dolfin::info("Attaching coeffs for system %s", name().c_str());
-  attach_all_coeffs_();                                              // attach the coefficients to form and functionals
-
-  for (SolverBucket_it s_it = solvers_begin(); s_it != solvers_end();// loop over the solver buckets
-                                                              s_it++)
-  {
-    (*(*s_it).second).initialize_matrices();                         // perform a preassembly of all the matrices to set up
-                                                                     // sparsities etc.
-  }
 }
 
 //*******************************************************************|************************************************************//
@@ -258,7 +243,7 @@ FunctionBucket_ptr SystemBucket::fetch_field(const std::string &name)
   FunctionBucket_it f_it = fields_.find(name);                       // check if name already exists
   if (f_it == fields_.end())
   {
-    dolfin::error("Field named \"%s\" does not exists in system.",   // if it doesn't, issue an error
+    dolfin::error("Field named \"%s\" does not exist in system.",    // if it doesn't, issue an error
                                                     name.c_str());
   }
   else
@@ -275,7 +260,7 @@ const FunctionBucket_ptr SystemBucket::fetch_field(const std::string &name) cons
   FunctionBucket_const_it f_it = fields_.find(name);                 // check if name already exists
   if (f_it == fields_.end())
   {
-    dolfin::error("Field named \"%s\" does not exists in system.",   // if it doesn't, issue an error
+    dolfin::error("Field named \"%s\" does not exist in system.",    // if it doesn't, issue an error
                                                     name.c_str());
   }
   else
@@ -386,7 +371,25 @@ FunctionBucket_ptr SystemBucket::fetch_coeff(const std::string &name)
   if (f_it == coeffs_.end())
   {
     dolfin::error(                                                   // if it doesn't, issue an error
-            "Coefficient named \"%s\" does not exists in system.", 
+            "Coefficient named \"%s\" does not exist in system.", 
+                                                    name.c_str());
+  }
+  else
+  {
+    return (*f_it).second;                                           // if it does, return the coefficient
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return a constant (boost shared) pointer to a coefficient function bucket in the system bucket data maps
+//*******************************************************************|************************************************************//
+const FunctionBucket_ptr SystemBucket::fetch_coeff(const std::string &name) const
+{
+  FunctionBucket_const_it f_it = coeffs_.find(name);                 // check if the name already exists
+  if (f_it == coeffs_.end())
+  {
+    dolfin::error(                                                   // if it doesn't, issue an error
+            "Coefficient named \"%s\" does not exist in system.", 
                                                     name.c_str());
   }
   else
@@ -734,6 +737,47 @@ void SystemBucket::collect_bcs_()
     {
       bcs_.push_back((*b_it).second);                                // add the bcs to a std vector
     }
+  }
+}
+
+//*******************************************************************|************************************************************//
+// given a map from components to field initial condition expressions initialize the system initial condition expression
+//*******************************************************************|************************************************************//
+void SystemBucket::collect_ics_(const uint &component, 
+              const std::map< uint, Expression_ptr > &icexpressions)
+{
+  if (component==1)
+  {
+    icexpression_.reset(new InitialConditionExpression(icexpressions));// the system function is scalar so set up a scalar ic expression
+  }
+  else
+  {                                                                  // multiple components so set up a multi-component ic
+                                                                     // expression
+    icexpression_.reset( new InitialConditionExpression(component, icexpressions));
+  }
+}
+
+//*******************************************************************|************************************************************//
+// initialize the system with a combined initial condition (calls eval)
+//*******************************************************************|************************************************************//
+void SystemBucket::apply_ic_()
+{
+  (*oldfunction_).interpolate(*icexpression_);                       // interpolate the initial condition onto the old function
+  (*iteratedfunction_).vector() = (*oldfunction_).vector();          // set the iterated function vector to the old function vector
+  (*function_).vector() = (*oldfunction_).vector();                  // set the function vector to the old function vector
+}
+
+//*******************************************************************|************************************************************//
+// apply the vector of system boundary conditions to the system function vectors to ensure consisten initial and boundary conditions
+//*******************************************************************|************************************************************//
+void SystemBucket::apply_bc_()
+{
+  for (std::vector<BoundaryCondition_ptr>::const_iterator            // loop over the vector of bcs
+                            bc = bcs_begin(); bc != bcs_end(); bc++)
+  {
+    (*(*bc)).apply((*oldfunction_).vector());
+    (*(*bc)).apply((*iteratedfunction_).vector());
+    (*(*bc)).apply((*function_).vector());
   }
 }
 

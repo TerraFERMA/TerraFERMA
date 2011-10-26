@@ -92,23 +92,23 @@ namespace buckettools
     // Filling data (continued)
     //***************************************************************|***********************************************************//
 
-    void base_fill_();                                               // fill the base data of the solver bucket
+    void fill_base_();                                               // fill the base data of the solver bucket
  
-    void forms_fill_();                                              // fill the form data of the solver bucket
+    void fill_forms_();                                              // fill the form data of the solver bucket
 
-    void ksp_fill_(const std::string &optionpath, KSP &ksp, 
+    void fill_ksp_(const std::string &optionpath, KSP &ksp, 
                                   const std::string prefix)          // fill the information about a parent ksp
-    { ksp_fill_(optionpath, ksp, prefix, NULL); }
+    { fill_ksp_(optionpath, ksp, prefix, NULL); }
 
-    void ksp_fill_(const std::string &optionpath, KSP &ksp,          // fill the information about a child ksp
+    void fill_ksp_(const std::string &optionpath, KSP &ksp,          // fill the information about a child ksp
                          const std::string prefix, 
                          const std::vector<uint>* parent_indices);
 
-    void pc_fieldsplit_fill_(const std::string &optionpath, PC &pc,  // fill the information about a fieldsplit pc
+    void fill_pc_fieldsplit_(const std::string &optionpath, PC &pc,  // fill the information about a fieldsplit pc
                          const std::string prefix, 
                          const std::vector<uint>* parent_indices);
 
-    void is_by_field_fill_(const std::string &optionpath, IS &is,    // set up a petsc index set
+    void fill_is_by_field_(const std::string &optionpath, IS &is,    // set up a petsc index set
                            std::vector<uint> &child_indices,
                            const std::vector<uint>* parent_indices,
                            const std::vector<uint>* sibling_indices);
