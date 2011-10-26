@@ -45,6 +45,20 @@ const GenericFunction_ptr FunctionBucket::genericfunction_ptr(const double_ptr t
   {
     return oldfunction_;
   }
+  else if (time == (*(*system()).bucket()).start_time_ptr())
+  {
+    if (icexpression_)
+    {
+      return icexpression_;                                          // if possible, return the initial condition expression
+    }
+    else                                                             // but coefficients don't have icexpressions so let's assume
+    {                                                                // we're only evaluating this as an initial condition...
+      assert((*time-DOLFIN_EPS)<=(*(*system()).bucket()).old_time());// check we're at the old time and this is valid (FIXME: not a
+                                                                     // sufficient check as this should only be called in the 
+                                                                     // initialization routine, where this is guaranteed anyway!)
+      return oldfunction_;
+    }
+  }
   else
   {
     dolfin::error("Unknown time pointer when returning function in genericfunction(time).");
