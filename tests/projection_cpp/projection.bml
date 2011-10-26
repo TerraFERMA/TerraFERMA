@@ -76,10 +76,17 @@
             </boundary_ids>
             <sub_components name="All">
               <type type="boundary_condition" name="Dirichlet">
-                <python rank="0">
-                  <string_value lines="20" type="python">def val(x,t):
-  return 100.0*t</string_value>
-                </python>
+                <cpp rank="0">
+                  <members>
+                    <string_value lines="20" type="python">// do nothing</string_value>
+                  </members>
+                  <initialization>
+                    <string_value lines="20" type="python">// do nothing</string_value>
+                  </initialization>
+                  <eval>
+                    <string_value lines="20" type="python">values[0] = 100.0*(*time());</string_value>
+                  </eval>
+                </cpp>
               </type>
             </sub_components>
           </boundary_condition>
@@ -127,10 +134,18 @@
             </boundary_ids>
             <sub_components name="All">
               <type type="boundary_condition" name="Dirichlet">
-                <python rank="1">
-                  <string_value lines="20" type="python">def val(x,t):
-  return [200.0*t, 300.0*t]</string_value>
-                </python>
+                <cpp rank="1">
+                  <members>
+                    <string_value lines="20" type="python">// do nothing</string_value>
+                  </members>
+                  <initialization>
+                    <string_value lines="20" type="python">// do nothing</string_value>
+                  </initialization>
+                  <eval>
+                    <string_value lines="20" type="python">values[0] = 200.0*(*time());
+values[1] = 300.0*(*time());</string_value>
+                  </eval>
+                </cpp>
               </type>
             </sub_components>
           </boundary_condition>
@@ -165,9 +180,9 @@
         </include_in_statistics>
       </diagnostics>
     </field>
-    <coefficient name="Source1">
+    <coefficient name="PySource1">
       <ufl_symbol>
-        <string_value lines="1">fs1</string_value>
+        <string_value lines="1">pfs1</string_value>
       </ufl_symbol>
       <type name="Function">
         <rank name="Scalar" rank="0">
@@ -184,6 +199,103 @@
               <string_value lines="20" type="python">def val(x,t):
   return 100.0*t</string_value>
             </python>
+          </value>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_statistics>
+          <functional name="Integral">
+            <string_value lines="20" type="python">int = pfs1*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+          </functional>
+          <functional name="OldIntegral">
+            <string_value lines="20" type="python">int = pfs1_n*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+          </functional>
+        </include_in_statistics>
+      </diagnostics>
+    </coefficient>
+    <coefficient name="PySource2">
+      <ufl_symbol>
+        <string_value lines="1">pfs2</string_value>
+      </ufl_symbol>
+      <type name="Function">
+        <rank name="Vector" rank="1">
+          <element name="P0">
+            <family>
+              <string_value>DG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">0</integer_value>
+            </degree>
+          </element>
+          <value type="value" name="WholeMesh">
+            <python rank="1">
+              <string_value lines="20" type="python">def val(x,t):
+  return [200.0*t, 300.0*t]</string_value>
+            </python>
+          </value>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_statistics>
+          <functional name="Integral0">
+            <string_value lines="20" type="python">int = pfs2[0]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+          </functional>
+          <functional name="Integral1">
+            <string_value lines="20" type="python">int = pfs2[1]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+          </functional>
+          <functional name="OldIntegral0">
+            <string_value lines="20" type="python">int = pfs2_n[0]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+          </functional>
+          <functional name="OldIntegral1">
+            <string_value lines="20" type="python">int = pfs2_n[1]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+          </functional>
+        </include_in_statistics>
+      </diagnostics>
+    </coefficient>
+    <coefficient name="Source1">
+      <ufl_symbol>
+        <string_value lines="1">fs1</string_value>
+      </ufl_symbol>
+      <type name="Function">
+        <rank name="Scalar" rank="0">
+          <element name="P0">
+            <family>
+              <string_value>DG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">0</integer_value>
+            </degree>
+          </element>
+          <value type="value" name="WholeMesh">
+            <cpp rank="0">
+              <members>
+                <string_value lines="20" type="python">// do nothing</string_value>
+              </members>
+              <initialization>
+                <string_value lines="20" type="python">// do nothing</string_value>
+              </initialization>
+              <eval>
+                <string_value lines="20" type="python">values[0] = 100.0*(*time());</string_value>
+              </eval>
+            </cpp>
           </value>
         </rank>
       </type>
@@ -219,10 +331,18 @@
             </degree>
           </element>
           <value type="value" name="WholeMesh">
-            <python rank="1">
-              <string_value lines="20" type="python">def val(x,t):
-  return [200.0*t, 300.0*t]</string_value>
-            </python>
+            <cpp rank="1">
+              <members>
+                <string_value lines="20" type="python">// do nothing</string_value>
+              </members>
+              <initialization>
+                <string_value lines="20" type="python">// do nothing</string_value>
+              </initialization>
+              <eval>
+                <string_value lines="20" type="python">values[0] = 200.0*(*time());
+values[1] = 300.0*(*time());</string_value>
+              </eval>
+            </cpp>
           </value>
         </rank>
       </type>
@@ -329,19 +449,6 @@ r = r1 + r2</string_value>
               <real_value rank="0">0.0</real_value>
             </constant>
           </initial_condition>
-          <boundary_condition name="All">
-            <boundary_ids>
-              <integer_value shape="4" rank="1">7 8 9 10</integer_value>
-            </boundary_ids>
-            <sub_components name="All">
-              <type type="boundary_condition" name="Dirichlet">
-                <python rank="0">
-                  <string_value lines="20" type="python">def val(x,t):
-  return 100.0*t</string_value>
-                </python>
-              </type>
-            </sub_components>
-          </boundary_condition>
         </rank>
       </type>
       <diagnostics>
@@ -380,19 +487,6 @@ r = r1 + r2</string_value>
               <real_value shape="2" dim1="dim" rank="1">0.0 0.0</real_value>
             </constant>
           </initial_condition>
-          <boundary_condition name="All">
-            <boundary_ids>
-              <integer_value shape="4" rank="1">7 8 9 10</integer_value>
-            </boundary_ids>
-            <sub_components name="All">
-              <type type="boundary_condition" name="Dirichlet">
-                <python rank="1">
-                  <string_value lines="20" type="python">def val(x,t):
-  return [200.0*t, 300.0*t]</string_value>
-                </python>
-              </type>
-            </sub_components>
-          </boundary_condition>
         </rank>
       </type>
       <diagnostics>
@@ -439,10 +533,20 @@ r = r1 + r2</string_value>
             </degree>
           </element>
           <value type="value" name="WholeMesh">
-            <python rank="0">
-              <string_value lines="20" type="python">def val(x,t):
-  return 100.0*t</string_value>
-            </python>
+            <cpp rank="0">
+              <members>
+                <string_value lines="20" type="python">GenericFunction_ptr pysource1;</string_value>
+              </members>
+              <initialization>
+                <string_value lines="20" type="python">pysource1 = system()-&gt;fetch_coeff("PySource1")-&gt;function();
+std::cout &lt;&lt; "HELLO..." &lt;&lt; std::endl;
+std::cout &lt;&lt; time() &lt;&lt; std::endl;</string_value>
+              </initialization>
+              <eval>
+                <string_value lines="20" type="python">//(*pysource1).eval(values, x, cell);
+values[0] = 100.0*(*time());</string_value>
+              </eval>
+            </cpp>
           </value>
         </rank>
       </type>
@@ -478,10 +582,18 @@ r = r1 + r2</string_value>
             </degree>
           </element>
           <value type="value" name="WholeMesh">
-            <python rank="1">
-              <string_value lines="20" type="python">def val(x,t):
-  return [200.0*t, 300.0*t]</string_value>
-            </python>
+            <cpp rank="1">
+              <members>
+                <string_value lines="20" type="python">// do nothing</string_value>
+              </members>
+              <initialization>
+                <string_value lines="20" type="python">// do nothing</string_value>
+              </initialization>
+              <eval>
+                <string_value lines="20" type="python">values[0] = 200.0*(*time());
+values[1] = 300.0*(*time());</string_value>
+              </eval>
+            </cpp>
           </value>
         </rank>
       </type>
@@ -507,6 +619,96 @@ r = r1 + r2</string_value>
           </functional>
           <functional name="OldIntegral1">
             <string_value lines="20" type="python">int = fp2_n[1]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+          </functional>
+        </include_in_statistics>
+      </diagnostics>
+    </coefficient>
+    <coefficient name="PySource1">
+      <ufl_symbol>
+        <string_value lines="1">pfp1</string_value>
+      </ufl_symbol>
+      <type name="Expression">
+        <rank name="Scalar" rank="0">
+          <element name="P0">
+            <family>
+              <string_value>DG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">0</integer_value>
+            </degree>
+          </element>
+          <value type="value" name="WholeMesh">
+            <python rank="0">
+              <string_value lines="20" type="python">def val(x,t):
+  return 100.0*t</string_value>
+            </python>
+          </value>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_statistics>
+          <functional name="Integral">
+            <string_value lines="20" type="python">int = pfp1*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+          </functional>
+          <functional name="OldIntegral">
+            <string_value lines="20" type="python">int = pfp1_n*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+          </functional>
+        </include_in_statistics>
+      </diagnostics>
+    </coefficient>
+    <coefficient name="PySource2">
+      <ufl_symbol>
+        <string_value lines="1">pfp2</string_value>
+      </ufl_symbol>
+      <type name="Expression">
+        <rank name="Vector" rank="1">
+          <element name="P0">
+            <family>
+              <string_value>DG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">0</integer_value>
+            </degree>
+          </element>
+          <value type="value" name="WholeMesh">
+            <python rank="1">
+              <string_value lines="20" type="python">def val(x,t):
+  return [200.0*t, 300.0*t]</string_value>
+            </python>
+          </value>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_statistics>
+          <functional name="Integral0">
+            <string_value lines="20" type="python">int = pfp2[0]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+          </functional>
+          <functional name="Integral1">
+            <string_value lines="20" type="python">int = pfp2[1]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+          </functional>
+          <functional name="OldIntegral0">
+            <string_value lines="20" type="python">int = pfp2_n[0]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+          </functional>
+          <functional name="OldIntegral1">
+            <string_value lines="20" type="python">int = pfp2_n[1]*dx</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>

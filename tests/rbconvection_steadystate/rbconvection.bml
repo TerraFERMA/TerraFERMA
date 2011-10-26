@@ -44,7 +44,7 @@
               <integer_value rank="0">2</integer_value>
             </degree>
           </element>
-          <initial_condition name="WholeMesh">
+          <initial_condition type="initial_condition" name="WholeMesh">
             <constant name="dim">
               <real_value shape="2" dim1="dim" rank="1">0.0 0.0</real_value>
             </constant>
@@ -57,7 +57,7 @@
               <components>
                 <integer_value shape="1" rank="1">0</integer_value>
               </components>
-              <type name="Dirichlet">
+              <type type="boundary_condition" name="Dirichlet">
                 <constant>
                   <real_value rank="0">0</real_value>
                 </constant>
@@ -72,7 +72,7 @@
               <components>
                 <integer_value shape="1" rank="1">0</integer_value>
               </components>
-              <type name="Dirichlet">
+              <type type="boundary_condition" name="Dirichlet">
                 <constant>
                   <real_value rank="0">0</real_value>
                 </constant>
@@ -87,7 +87,7 @@
               <components>
                 <integer_value shape="1" rank="1">1</integer_value>
               </components>
-              <type name="Dirichlet">
+              <type type="boundary_condition" name="Dirichlet">
                 <constant>
                   <real_value rank="0">0</real_value>
                 </constant>
@@ -102,7 +102,7 @@
               <components>
                 <integer_value shape="1" rank="1">1</integer_value>
               </components>
-              <type name="Dirichlet">
+              <type type="boundary_condition" name="Dirichlet">
                 <constant>
                   <real_value rank="0">0</real_value>
                 </constant>
@@ -136,7 +136,7 @@
               <integer_value rank="0">1</integer_value>
             </degree>
           </element>
-          <initial_condition name="WholeMesh">
+          <initial_condition type="initial_condition" name="WholeMesh">
             <constant>
               <real_value rank="0">0.0</real_value>
             </constant>
@@ -161,7 +161,7 @@
               <integer_value rank="0">2</integer_value>
             </degree>
           </element>
-          <initial_condition name="WholeMesh">
+          <initial_condition type="initial_condition" name="WholeMesh">
             <constant>
               <real_value rank="0">0.0</real_value>
             </constant>
@@ -171,7 +171,7 @@
               <integer_value shape="1" rank="1">4</integer_value>
             </boundary_ids>
             <sub_components name="All">
-              <type name="Dirichlet">
+              <type type="boundary_condition" name="Dirichlet">
                 <constant>
                   <real_value rank="0">0.0</real_value>
                 </constant>
@@ -183,7 +183,7 @@
               <integer_value shape="1" rank="1">3</integer_value>
             </boundary_ids>
             <sub_components name="All">
-              <type name="Dirichlet">
+              <type type="boundary_condition" name="Dirichlet">
                 <constant>
                   <real_value rank="0">1.0</real_value>
                 </constant>
@@ -209,7 +209,7 @@
       </ufl_symbol>
       <type name="Constant">
         <rank name="Scalar" rank="0">
-          <value name="WholeMesh">
+          <value type="value" name="WholeMesh">
             <constant>
               <real_value rank="0">0.0</real_value>
             </constant>

@@ -1,4 +1,4 @@
-set(EXECUTABLE "projection_timedependent")
+set(EXECUTABLE "projection_cpp")
 
 set(OPTIONSFILENAME "projection.bml")
 set(MESHBASENAME "square")

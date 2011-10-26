@@ -44,7 +44,7 @@
               <integer_value rank="0">1</integer_value>
             </degree>
           </element>
-          <initial_condition name="WholeMesh">
+          <initial_condition type="initial_condition" name="WholeMesh">
             <constant>
               <real_value rank="0">0.0</real_value>
             </constant>
@@ -54,7 +54,7 @@
               <integer_value shape="2" rank="1">2 1</integer_value>
             </boundary_ids>
             <sub_components name="All">
-              <type name="Dirichlet">
+              <type type="boundary_condition" name="Dirichlet">
                 <constant>
                   <real_value rank="0">0.0</real_value>
                 </constant>
@@ -89,7 +89,7 @@
               <integer_value rank="0">1</integer_value>
             </degree>
           </element>
-          <value name="WholeMesh">
+          <value type="value" name="WholeMesh">
             <python rank="0">
               <string_value lines="20" type="python">def val(x):
   from math import exp
@@ -116,7 +116,7 @@
               <integer_value rank="0">1</integer_value>
             </degree>
           </element>
-          <value name="WholeMesh">
+          <value type="value" name="WholeMesh">
             <python rank="0">
               <string_value lines="20" type="python">def val(x):
   from math import sin

@@ -72,7 +72,7 @@
               <integer_value rank="0">2</integer_value>
             </degree>
           </element>
-          <initial_condition name="WholeMesh">
+          <initial_condition type="initial_condition" name="WholeMesh">
             <constant>
               <real_value rank="0">273.0</real_value>
             </constant>
@@ -82,7 +82,7 @@
               <integer_value shape="1" rank="1">1</integer_value>
             </boundary_ids>
             <sub_components name="All">
-              <type name="Dirichlet">
+              <type type="boundary_condition" name="Dirichlet">
                 <constant>
                   <real_value rank="0">273.</real_value>
                 </constant>
@@ -94,7 +94,7 @@
               <integer_value shape="1" rank="1">5</integer_value>
             </boundary_ids>
             <sub_components name="All">
-              <type name="Dirichlet">
+              <type type="boundary_condition" name="Dirichlet">
                 <constant>
                   <real_value rank="0">1573.0</real_value>
                 </constant>
@@ -106,7 +106,7 @@
               <integer_value shape="1" rank="1">2</integer_value>
             </boundary_ids>
             <sub_components name="All">
-              <type name="Dirichlet">
+              <type type="boundary_condition" name="Dirichlet">
                 <python rank="0">
                   <string_value lines="20" type="python">def val(X):
   t_50 = 50.0*1.e6*365*24*60*60
@@ -144,7 +144,7 @@
               <integer_value shape="1" rank="1">6</integer_value>
             </boundary_ids>
             <sub_components name="All">
-              <type name="Dirichlet">
+              <type type="boundary_condition" name="Dirichlet">
                 <python rank="0">
                   <string_value lines="20" type="python">def val(X):
   crust_grad = 0.026*1000.0
@@ -177,7 +177,7 @@
               <integer_value rank="0">2</integer_value>
             </degree>
           </element>
-          <initial_condition name="NotWedge">
+          <initial_condition type="initial_condition" name="NotWedge">
             <region_ids>
               <integer_value shape="2" rank="1">1 2</integer_value>
             </region_ids>
@@ -185,7 +185,7 @@
               <real_value shape="2" dim1="dim" rank="1">0.0 0.0</real_value>
             </constant>
           </initial_condition>
-          <initial_condition name="Wedge">
+          <initial_condition type="initial_condition" name="Wedge">
             <region_ids>
               <integer_value shape="1" rank="1">3</integer_value>
             </region_ids>
@@ -215,7 +215,7 @@
               <integer_value shape="1" rank="1">8</integer_value>
             </boundary_ids>
             <sub_components name="All">
-              <type name="Dirichlet">
+              <type type="boundary_condition" name="Dirichlet">
                 <constant name="dim">
                   <real_value shape="2" dim1="dim" rank="1">0.7071067811865476 -0.7071067811865476</real_value>
                 </constant>
@@ -227,7 +227,7 @@
               <integer_value shape="1" rank="1">9</integer_value>
             </boundary_ids>
             <sub_components name="All">
-              <type name="Dirichlet">
+              <type type="boundary_condition" name="Dirichlet">
                 <constant name="dim">
                   <real_value shape="2" dim1="dim" rank="1">0.0 0.0</real_value>
                 </constant>
@@ -255,7 +255,7 @@
               <integer_value rank="0">1</integer_value>
             </degree>
           </element>
-          <initial_condition name="WholeMesh">
+          <initial_condition type="initial_condition" name="WholeMesh">
             <constant>
               <real_value rank="0">0.0</real_value>
             </constant>
@@ -281,7 +281,7 @@
               <integer_value rank="0">2</integer_value>
             </degree>
           </element>
-          <value name="WholeMesh">
+          <value type="value" name="WholeMesh">
             <constant name="dim">
               <real_value shape="2" dim1="dim" rank="1">0.7071067811865476 -0.7071067811865476</real_value>
             </constant>
@@ -298,7 +298,7 @@
       </ufl_symbol>
       <type name="Constant">
         <rank name="Scalar" rank="0">
-          <value name="WholeMesh">
+          <value type="value" name="WholeMesh">
             <constant>
               <real_value rank="0">0.0</real_value>
             </constant>
@@ -427,7 +427,7 @@ F = FT + Fv + Fp</string_value>
               <integer_value rank="0">1</integer_value>
             </degree>
           </element>
-          <initial_condition name="WholeMesh">
+          <initial_condition type="initial_condition" name="WholeMesh">
             <constant>
               <real_value rank="0">0.0</real_value>
             </constant>

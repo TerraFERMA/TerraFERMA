@@ -54,7 +54,7 @@
               <integer_value rank="0">1</integer_value>
             </degree>
           </element>
-          <initial_condition name="Lower">
+          <initial_condition type="initial_condition" name="Lower">
             <region_ids>
               <integer_value shape="1" rank="1">35</integer_value>
             </region_ids>
@@ -62,7 +62,7 @@
               <real_value rank="0">35</real_value>
             </constant>
           </initial_condition>
-          <initial_condition name="LowerMiddle">
+          <initial_condition type="initial_condition" name="LowerMiddle">
             <region_ids>
               <integer_value shape="1" rank="1">34</integer_value>
             </region_ids>
@@ -70,7 +70,7 @@
               <real_value rank="0">34</real_value>
             </constant>
           </initial_condition>
-          <initial_condition name="UpperMiddle">
+          <initial_condition type="initial_condition" name="UpperMiddle">
             <region_ids>
               <integer_value shape="1" rank="1">33</integer_value>
             </region_ids>
@@ -78,7 +78,7 @@
               <real_value rank="0">33</real_value>
             </constant>
           </initial_condition>
-          <initial_condition name="Upper">
+          <initial_condition type="initial_condition" name="Upper">
             <region_ids>
               <integer_value shape="1" rank="1">32</integer_value>
             </region_ids>
@@ -108,7 +108,7 @@
               <integer_value rank="0">1</integer_value>
             </degree>
           </element>
-          <value name="Lower">
+          <value type="value" name="Lower">
             <region_ids>
               <integer_value shape="1" rank="1">35</integer_value>
             </region_ids>
@@ -116,7 +116,7 @@
               <real_value rank="0">35</real_value>
             </constant>
           </value>
-          <value name="LowerMiddle">
+          <value type="value" name="LowerMiddle">
             <region_ids>
               <integer_value shape="1" rank="1">34</integer_value>
             </region_ids>
@@ -124,7 +124,7 @@
               <real_value rank="0">34</real_value>
             </constant>
           </value>
-          <value name="UpperMiddle">
+          <value type="value" name="UpperMiddle">
             <region_ids>
               <integer_value shape="1" rank="1">33</integer_value>
             </region_ids>
@@ -132,7 +132,7 @@
               <real_value rank="0">33</real_value>
             </constant>
           </value>
-          <value name="Upper">
+          <value type="value" name="Upper">
             <region_ids>
               <integer_value shape="1" rank="1">32</integer_value>
             </region_ids>

@@ -65,7 +65,7 @@
               <integer_value rank="0">0</integer_value>
             </degree>
           </element>
-          <initial_condition name="WholeMesh">
+          <initial_condition type="initial_condition" name="WholeMesh">
             <constant>
               <real_value rank="0">0.0</real_value>
             </constant>
@@ -83,7 +83,7 @@
       </ufl_symbol>
       <type name="Constant">
         <rank name="Scalar" rank="0">
-          <value name="WholeMesh">
+          <value type="value" name="WholeMesh">
             <constant>
               <real_value rank="0">-1.0</real_value>
             </constant>
