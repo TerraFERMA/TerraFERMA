@@ -33,6 +33,25 @@ FunctionBucket::~FunctionBucket()
 }
 
 //*******************************************************************|************************************************************//
+// return a pointer to a generic function, which one depends on the time
+//*******************************************************************|************************************************************//
+const GenericFunction_ptr FunctionBucket::genericfunction_ptr(const double_ptr time) const
+{
+  if (time == (*(*system()).bucket()).current_time_ptr())
+  {
+    return iteratedfunction_;
+  }
+  else if (time == (*(*system()).bucket()).old_time_ptr())
+  {
+    return oldfunction_;
+  }
+  else
+  {
+    dolfin::error("Unknown time pointer when returning function in genericfunction(time).");
+  }
+}
+
+//*******************************************************************|************************************************************//
 // return the change in this function over a timestep (only valid for fields and only valid after system changefunction has been
 // updated)
 //*******************************************************************|************************************************************//

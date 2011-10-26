@@ -628,63 +628,121 @@ prescribed_tensor_python =
   )
 
 
+prescribed_cpp = 
+  (
+    ## Additional headers that are required for this expression.
+    ##
+    ##
+    ## These should be listed including an include statement, e.g.:
+    ## #include <string>
+    ## #include "example.h"
+    ##
+    ##
+    ## The expression will automatically include:
+    ##
+    ## #include "BoostTypes.h"
+    ##
+    ## #include "Bucket.h"
+    ##
+    ## #include "SystemBucket.h"
+    ##
+    ## #include <dolfin.h>
+    element include {
+      cpp_code
+    }?,
+    ## Private members of this expression. These are variables that will be used in the eval
+    ## function for this expression but that you don't want initialized at every call to the eval
+    ## (expensive).  They should therefore be declared here and initialized in the initialization 
+    ## routines below.
+    ##
+    ## The use of underscores at the end of variable names is discouraged as these are frequesntly used for 
+    ## automatically generated variables.  Additionally the overloaded dolfin eval interface provides
+    ## variables named values, x and cell, so these should not be used to avoid confusion.
+    element members {
+      cpp_code
+    },
+    ## Initialization routine for the private members declared above.
+    ##
+    ##
+    ## This initialization has full access to publicly accessible members of the bucket through
+    ## the automatically provided bucket() function, which returns a pointer to the bucket class.  
+    ## A shortcut to the members of this system is provided through the system() function, which 
+    ## returns a pointer to this system class.  Finally, a boost shared pointer to the time is
+    ## provided through the time() function.
+    ##
+    ##
+    ## The recommended way of accessing functions is through the function_ptr(time()) interface for
+    ## systems and the genericfunction_ptr(time()) interface for fields and coefficients.  These return
+    ## a boost shared pointer to a dolfin function or generic function respectively.  Importantly however,
+    ## the time() argument will ensure that when this expression is evaluated the appropriate timelevel of 
+    ## dependent function or generic function is also used. *time() may also be used to make the expression
+    ## dependent on time.
+    ##
+    ##
+    ## For example, to extract a boost shared pointer to a generic function for a coefficient called 
+    ## "ExampleCoefficient", we should have declared in the members section above:
+    ##
+    ## boost::shared_pointer< dolfin::GenericFunction > examplecoeff;
+    ##
+    ## or (utilizing the typedefs available to us through BoostTypes.h:
+    ##
+    ## GenericFunction_ptr examplecoeff;
+    ##
+    ##
+    ## Then, in this initialization function, we could extract the appropriate time level of that 
+    ## coefficient from the "ExampleSystem" system using:
+    ##
+    ## examplecoeff = bucket()->fetch_system("ExampleSystem")->fetch_coefficient("ExampleCoefficient")->genericfunction_ptr(time())
+    ##
+    ## or, if "ExampleSystem" is the current system, using the shortcut:
+    ##
+    ## examplecoeff = system()->fetch_coefficient("ExampleCoefficient")->genericfunction_ptr(time())
+    ##
+    element initialization {
+      cpp_code
+    },
+    ## Overload the eval subroutine for this expression.  This has the standard interface for DOLFIN 
+    ## expressions, i.e.:
+    ##
+    ## void eval(dolfin::Array<double>& values, const dolfin::Array<double>& x, const ufc::cell &cell) const
+    ##
+    ##
+    ## To automatically evaluate and return the values of the "ExampleCoefficient" in the example in the 
+    ## initialization section, all that would be required to write here is:
+    ##
+    ## examplecoeff.eval(values, x, cell);
+    ##
+    ## (assuming examplecoeff and this expression are of appropriately matched rank, shape and size).
+    ##
+    element eval {
+      cpp_code
+    }
+  )
+
 prescribed_scalar_cpp =
   (
-    ## A scalar described by some c++ code.
+    ## A scalar described by a derived dolfin expression using c++ code.
     element cpp {
       attribute rank { "0" },
-      element include {
-        cpp_code
-      }?,
-      element members {
-        cpp_code
-      },
-      element initialization {
-        cpp_code
-      },
-      element eval {
-        cpp_code
-      }
+      prescribed_cpp
     }
   )
 
 prescribed_vector_cpp =
   (
-    ## A vector described by some c++ code.
+    ## A vector described by a derived dolfin expression using c++ code.
     element cpp {
       attribute rank { "1" },
-      element include {
-        cpp_code
-      }?,
-      element members {
-        cpp_code
-      },
-      element initialization {
-        cpp_code
-      },
-      element eval {
-        cpp_code
-      }
+      prescribed_cpp
     }
   )
 
 prescribed_tensor_cpp =
   (
-    ## A tensor described by some c++ code.
+    ## A tensor described by a derived dolfin expression using c++ code.
     element cpp {
       attribute rank { "2" },
-      element include {
-        cpp_code
-      }?,
-      element members {
-        cpp_code
-      },
-      element initialization {
-        cpp_code
-      },
-      element eval {
-        cpp_code
-      }
+      prescribed_cpp
     }
   )
 

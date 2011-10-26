@@ -72,6 +72,8 @@ namespace buckettools
     // Base data access
     //***************************************************************|***********************************************************//
 
+    const Function_ptr function_ptr(const double_ptr time) const;    // return a (boost shared) pointer to the system function
+
     const std::string name() const                                   // return the name of this system
     { return name_; }
 

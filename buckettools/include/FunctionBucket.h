@@ -42,6 +42,13 @@ namespace buckettools
     // Base data access
     //***************************************************************|***********************************************************//
 
+    const GenericFunction_ptr genericfunction_ptr(                   // return a constant (boost shared) pointer to the 
+                                       const double_ptr time) const; // old or iterated function depending on the time pointer provided
+                                                                     // NOTE: if this is a field of a mixed
+                                                                     // system functionspace, this will return a subfunction
+                                                                     // so it will be necessary to make a deep copy to access
+                                                                     // the vector
+
     const std::string name() const                                   // return a constant string giving the function name
     { return name_; }
 

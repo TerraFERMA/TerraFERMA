@@ -209,6 +209,25 @@ void SystemBucket::copy_diagnostics(SystemBucket_ptr &system, Bucket_ptr &bucket
 }
 
 //*******************************************************************|************************************************************//
+// return a pointer to a generic function, which one depends on the time
+//*******************************************************************|************************************************************//
+const Function_ptr SystemBucket::function_ptr(const double_ptr time) const
+{
+  if (time == (*bucket()).current_time_ptr())
+  {
+    return iteratedfunction_;
+  }
+  else if (time == (*bucket()).old_time_ptr())
+  {
+    return oldfunction_;
+  }
+  else
+  {
+    dolfin::error("Unknown time pointer when returning function in genericfunction(time).");
+  }
+}
+
+//*******************************************************************|************************************************************//
 // return the residual associated with the last solver in this system
 //*******************************************************************|************************************************************//
 const PETScVector_ptr SystemBucket::residual_vector() const
