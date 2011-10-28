@@ -570,16 +570,8 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
 
       dolfin::MeshFunction<dolfin::uint> edgeids(*mesh, filename.str());
 
-      const uint D = mesh->topology().dim();
-
-      mesh->domains().markers_shared_ptr(D-1).reset( new dolfin::MeshValueCollection<dolfin::uint>(edgeids) );
-
-      std::cerr << mesh->domains().markers(D-1).str(false) << std::endl;
-      if(!mesh->domains().facet_domains(*mesh))
-        dolfin::error("No facet_domains found.");
-
-      //(*mesh).domains().markers_shared_ptr(mesh->topology().dim()-1).reset( new dolfin::MeshValueCollection<dolfin::uint>(edgeids) );
-
+      const uint D = (*mesh).topology().dim();
+      (*mesh).domains().markers(D-1) = edgeids;
     }
 
     filename.str(""); filename << basename << "_physical_region.xml";// check if the edge subdomain mesh function file exists
@@ -590,7 +582,8 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
 
       dolfin::MeshFunction<dolfin::uint> cellids(*mesh, filename.str());
 
-      (*mesh).domains().markers_shared_ptr((*mesh).topology().dim()).reset( new dolfin::MeshValueCollection<dolfin::uint>(cellids) );
+      const uint D = (*mesh).topology().dim();
+      (*mesh).domains().markers(D) = cellids;
     }
 
   }
@@ -610,13 +603,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     left.mark(edgeids, 1);
     right.mark(edgeids, 2);
 
-    dolfin::MeshValueCollection<dolfin::uint> edgecoll(edgeids);
-    dolfin::log(dolfin::INFO, "%s", edgecoll.str(false).c_str());
-    dolfin::log(dolfin::INFO, "%s", ((*mesh).domains().markers(0)).str(false).c_str());
-    boost::shared_ptr< dolfin::MeshValueCollection<dolfin::uint> > meshedgecoll = (*mesh).domains().markers_shared_ptr(0);
-    dolfin::log(dolfin::INFO, "%s", (*meshedgecoll).str(false).c_str());
-    dolfin::log(dolfin::INFO, "%s", ((*mesh).domains().markers(0)).str(false).c_str());
-    //dolfin::log(dolfin::INFO, "%s", (*(*mesh).domains().facet_domains(*mesh)).str(true).c_str());
+    (*mesh).domains().markers(0) = edgeids;
   }
   else if (source=="Interval")                                       // source is an internally generated dolfin mesh
   {
@@ -644,7 +631,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     left.mark(edgeids, 1);
     right.mark(edgeids, 2);
 
-    (*mesh).domains().markers_shared_ptr(0).reset( new dolfin::MeshValueCollection<dolfin::uint>(edgeids) );
+    (*mesh).domains().markers(0) = edgeids;
   }
   else if (source=="UnitSquare")                                     // source is an internally generated dolfin mesh
   {
@@ -671,7 +658,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     bottom.mark(edgeids, 3);
     top.mark(edgeids, 4);
 
-    (*mesh).domains().markers_shared_ptr(1).reset( new dolfin::MeshValueCollection<dolfin::uint>(edgeids) );
+    (*mesh).domains().markers(1) = edgeids;
   }
   else if (source=="Rectangle")                                      // source is an internally generated dolfin mesh
   {
@@ -710,7 +697,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     bottom.mark(edgeids, 3);
     top.mark(edgeids, 4);
 
-    (*mesh).domains().markers_shared_ptr(1).reset( new dolfin::MeshValueCollection<dolfin::uint>(edgeids) );
+    (*mesh).domains().markers(1) = edgeids;
   }
   else if (source=="UnitCircle")                                     // source is an internally generated dolfin mesh
   {
@@ -759,7 +746,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     back.mark(edgeids, 5);
     front.mark(edgeids, 6);
 
-    (*mesh).domains().markers_shared_ptr(2).reset( new dolfin::MeshValueCollection<dolfin::uint>(edgeids) );
+    (*mesh).domains().markers(2) = edgeids;
   }
   else if (source=="Box")                                            // source is an internally generated dolfin mesh
   {
@@ -803,7 +790,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     back.mark(edgeids, 5);
     front.mark(edgeids, 6);
 
-    (*mesh).domains().markers_shared_ptr(2).reset( new dolfin::MeshValueCollection<dolfin::uint>(edgeids) );
+    (*mesh).domains().markers(2) = edgeids;
   }
   else if (source=="UnitSphere")                                     // source is an internally generated dolfin mesh
   {
