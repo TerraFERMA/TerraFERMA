@@ -78,11 +78,13 @@ void Bucket::run()
     if(complete())                                                   // this must be called before the update as it checks if a
     {                                                                // steady state has been attained
       output(OUTPUT_END);                                            // force an output at the end
+      checkpoint(CHECKPOINT_END);                                    // force a checkpoint at the end (if checkpointing is on)
       continue_timestepping = false;                                 // signal to stop timestepping
     }
     else
     {
       output(OUTPUT_TIMELOOP);                                       // standard timeloop output
+      checkpoint(CHECKPOINT_TIMELOOP);                               // standard checkpointing
     }
 
     update_timestep();                                               // update the timestep
@@ -294,6 +296,7 @@ void Bucket::copy_diagnostics(Bucket_ptr &bucket) const
   (*bucket).timestep_ = timestep_;
   (*bucket).nonlinear_iterations_ = nonlinear_iterations_;
   (*bucket).iteration_count_ = iteration_count_;
+  (*bucket).checkpoint_count_ = checkpoint_count_;
 
   (*bucket).meshes_ = meshes_;
 
@@ -382,6 +385,15 @@ const int Bucket::nonlinear_iterations() const
 const int Bucket::iteration_count() const
 {
   return *iteration_count_;
+}
+
+//*******************************************************************|************************************************************//
+// return the checkpoint count
+//*******************************************************************|************************************************************//
+const int Bucket::checkpoint_count() const
+{
+  assert(checkpoint_count_);
+  return *checkpoint_count_;
 }
 
 //*******************************************************************|************************************************************//
@@ -859,6 +871,39 @@ void Bucket::output(const int &location)
 }
 
 //*******************************************************************|************************************************************//
+// loop over the systems in the bucket, telling each to output diagnostic data
+//*******************************************************************|************************************************************//
+void Bucket::checkpoint(const int &location)
+{
+
+  bool checkpoint;
+  if (location==CHECKPOINT_END)
+  {
+    checkpoint = (checkpoint_period_||checkpoint_period_timesteps_); // one of these will be associated if we've selected
+                                                                     // checkpointing, if we have we force it at the end
+  }
+  else
+  {
+    checkpoint = perform_action_(checkpoint_period_, 
+                                 checkpoint_time_, 
+                                 checkpoint_period_timesteps_,
+                                 false);                             // are we checkpointing?
+  }
+
+  if (!checkpoint)                                                   // if there's nothing to do, just return
+  {
+    return;
+  }  
+
+  dolfin::log(dolfin::INFO, "Checkpointing simulation.");
+
+  checkpoint_options_();
+
+  (*checkpoint_count_)++;
+
+}
+
+//*******************************************************************|************************************************************//
 // return a string describing the contents of the bucket
 //*******************************************************************|************************************************************//
 const std::string Bucket::str() const 
@@ -1010,6 +1055,57 @@ void Bucket::empty_()
 }
 
 //*******************************************************************|************************************************************//
+// return a boolean indicating if the simulation has reached a steady state or not
+//*******************************************************************|************************************************************//
+bool Bucket::steadystate_()
+{
+  bool steady = false;
+
+  if (steadystate_tol_)
+  {
+    double maxchange = 0.0;
+    for (SystemBucket_it s_it = systems_begin(); 
+                                    s_it != systems_end(); s_it++)
+    {
+      double systemchange = (*(*s_it).second).maxchange();
+      dolfin::log(dolfin::DBG, "  steady state systemchange = %f", systemchange);
+      maxchange = std::max(systemchange, maxchange);
+    }
+    dolfin::log(dolfin::INFO, "steady state maxchange = %f", maxchange);
+    steady = (maxchange < *steadystate_tol_);
+  }
+
+  return steady;
+}
+
+//*******************************************************************|************************************************************//
+// return a boolean indicating if the simulation should output or not
+//*******************************************************************|************************************************************//
+bool Bucket::perform_action_(double_ptr action_period, 
+                             double_ptr previous_action_time, 
+                             int_ptr    action_period_timesteps,
+                             bool       default_action)
+{
+  bool performing = default_action;
+
+  if(action_period)
+  {
+    assert(previous_action_time);
+    performing = ((current_time()-*previous_action_time) >= *action_period);
+    if (performing)
+    {
+      *previous_action_time = current_time();
+    }
+  }
+  else if(action_period_timesteps)
+  {
+    performing = (timestep_count()%(*action_period_timesteps)==0);
+  }  
+
+  return performing;
+}
+
+//*******************************************************************|************************************************************//
 // loop over the ordered systems in the bucket, calling solve on each that has requested a solve at the start
 //*******************************************************************|************************************************************//
 void Bucket::solve_at_start_()
@@ -1049,52 +1145,10 @@ void Bucket::solve_in_timeloop_()
 }
 
 //*******************************************************************|************************************************************//
-// return a boolean indicating if the simulation has reached a steady state or not
+// virtual checkpointing of options
 //*******************************************************************|************************************************************//
-bool Bucket::steadystate_()
+void Bucket::checkpoint_options_()
 {
-  bool steady = false;
-
-  if (steadystate_tol_)
-  {
-    double maxchange = 0.0;
-    for (SystemBucket_it s_it = systems_begin(); 
-                                    s_it != systems_end(); s_it++)
-    {
-      double systemchange = (*(*s_it).second).maxchange();
-      dolfin::log(dolfin::DBG, "  steady state systemchange = %f", systemchange);
-      maxchange = std::max(systemchange, maxchange);
-    }
-    dolfin::log(dolfin::INFO, "steady state maxchange = %f", maxchange);
-    steady = (maxchange < *steadystate_tol_);
-  }
-
-  return steady;
-}
-
-//*******************************************************************|************************************************************//
-// return a boolean indicating if the simulation should output or not
-//*******************************************************************|************************************************************//
-bool Bucket::perform_action_(double_ptr action_period, 
-                             double_ptr previous_action_time, 
-                             int_ptr action_period_timesteps)
-{
-  bool performing = true;
-
-  if(action_period)
-  {
-    assert(previous_action_time);
-    performing = ((current_time()-*previous_action_time) >= *action_period);
-    if (performing)
-    {
-      *previous_action_time = current_time();
-    }
-  }
-  else if(action_period_timesteps)
-  {
-    performing = (timestep_count()%(*action_period_timesteps)==0);
-  }  
-
-  return performing;
+  dolfin::error("Failed to find virtual function checkpoint_options_.");
 }
 

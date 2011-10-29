@@ -6,7 +6,8 @@ io =
     element io {
       output_file_options,
       detectors_options,
-      diagnostic_output_options
+      diagnostic_output_options,
+      checkpointing_options
     }
   )
 
@@ -55,6 +56,12 @@ detectors_options =
 
 diagnostic_output_options =
   (
+    ## Options to control the period between dumps of diagnostic data.
+    ##
+    ## NOTE that unless fields and coefficients are explicitly included in diagnostic output
+    ## then information about them will not appear in the data, regardless of the periods set.  
+    ## i.e. even setting the dump_period to every timestep will produce no output if no fields 
+    ## or coefficients are selected to be included!
     element dump_periods {
       (
         ## Period in simulation time between outputs to the visualization (.pvd) file
@@ -113,5 +120,26 @@ diagnostic_output_options =
         }
       )?
     }
+  )
+
+checkpointing_options =
+  (
+    ## Options to enable checkpointing
+    element checkpointing {
+      (
+        ## Period in simulation time between checkpoints.
+        ## 
+        ## Defaults to every timestep if unselected.
+        element checkpoint_period {
+          real
+        }|
+        ## Period in timesteps between checkpoints.
+        ## 
+        ## Defaults to every timestep if unselected.
+        element checkpoint_period_in_timesteps {
+          integer
+        }
+      )
+    }?
   )
 

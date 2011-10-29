@@ -487,7 +487,7 @@ void SpudBucket::fill_output_()
     spud_err(buffer.str(), serr);
   }
   
-  buffer.str(""); buffer << "/io/dump_periods/steady_state_period";  // statistics period
+  buffer.str(""); buffer << "/io/dump_periods/steady_state_period";  // steady state period
   if(Spud::have_option(buffer.str()))
   {
     steadystate_period_.reset( new double );
@@ -498,7 +498,7 @@ void SpudBucket::fill_output_()
   }
 
   buffer.str(""); buffer 
-            << "/io/dump_periods/steady_state_period_in_timesteps";  // statistics period in timesteps
+            << "/io/dump_periods/steady_state_period_in_timesteps";  // steady state period in timesteps
   if(Spud::have_option(buffer.str()))
   {
     steadystate_period_timesteps_.reset( new int );
@@ -506,7 +506,7 @@ void SpudBucket::fill_output_()
     spud_err(buffer.str(), serr);
   }
   
-  buffer.str(""); buffer << "/io/dump_periods/detectors_period";     // statistics period
+  buffer.str(""); buffer << "/io/dump_periods/detectors_period";     // detectors period
   if(Spud::have_option(buffer.str()))
   {
     detectors_period_.reset( new double );
@@ -517,7 +517,7 @@ void SpudBucket::fill_output_()
   }
 
   buffer.str(""); buffer 
-            << "/io/dump_periods/detectors_period_in_timesteps";     // statistics period in timesteps
+            << "/io/dump_periods/detectors_period_in_timesteps";     // detectors period in timesteps
   if(Spud::have_option(buffer.str()))
   {
     detectors_period_timesteps_.reset( new int );
@@ -525,6 +525,28 @@ void SpudBucket::fill_output_()
     spud_err(buffer.str(), serr);
   }
   
+  buffer.str(""); buffer << "/io/checkpointing/checkpoint_period";   // checkpoint period
+  if(Spud::have_option(buffer.str()))
+  {
+    checkpoint_period_.reset( new double );
+    serr = Spud::get_option(buffer.str(), *checkpoint_period_);
+    spud_err(buffer.str(), serr);
+
+    checkpoint_time_.reset( new double(start_time()) );
+    checkpoint_count_.reset( new int(0) );
+  }
+
+  buffer.str(""); buffer 
+            << "/io/checkpointing/checkpoint_period_in_timesteps";   // checkpoint period in timesteps
+  if(Spud::have_option(buffer.str()))
+  {
+    checkpoint_period_timesteps_.reset( new int );
+    serr = Spud::get_option(buffer.str(), *checkpoint_period_timesteps_);
+    spud_err(buffer.str(), serr);
+
+    checkpoint_count_.reset( new int(0) );
+  }
+
 }
 
 //*******************************************************************|************************************************************//
@@ -911,7 +933,6 @@ void SpudBucket::fill_detectors_()
 void SpudBucket::fill_diagnostics_()
 {
   std::stringstream buffer;                                          // optionpath buffer
-  Spud::OptionError serr;                                            // spud error code
 
   statfile_.reset( new StatisticsFile(output_basename()+".stat") );
   (*statfile_).write_header(*this);
@@ -935,6 +956,33 @@ void SpudBucket::fill_diagnostics_()
     (*steadyfile_).write_header(*this);
   }
   
+}
+
+//*******************************************************************|************************************************************//
+// checkpoint the options file
+//*******************************************************************|************************************************************//
+void SpudBucket::checkpoint_options_()
+{
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud error code
+  std::stringstream namebuffer;
+
+  buffer.str(""); buffer << "/io/output_base_name";
+  namebuffer.str(""); namebuffer << output_basename() 
+                                 << "_checkpoint";
+  serr = Spud::set_option(buffer.str(), namebuffer.str());
+  spud_err(buffer.str(), serr);
+
+  namebuffer.str(""); namebuffer << output_basename() 
+                                 << "_checkpoint_" 
+                                 << checkpoint_count() 
+                                 << ".bml";
+  Spud::write_options(namebuffer.str());
+  
+  buffer.str(""); buffer << "/io/output_base_name";
+  serr = Spud::set_option(buffer.str(), output_basename());
+  spud_err(buffer.str(), serr);
+
 }
 
 //*******************************************************************|************************************************************//

@@ -7,6 +7,7 @@
       <ref name="output_file_options"/>
       <ref name="detectors_options"/>
       <ref name="diagnostic_output_options"/>
+      <ref name="checkpointing_options"/>
     </element>
   </define>
   <define name="output_file_options">
@@ -56,6 +57,12 @@ The return value must have length number_of_detectors (above).</a:documentation>
   </define>
   <define name="diagnostic_output_options">
     <element name="dump_periods">
+      <a:documentation>Options to control the period between dumps of diagnostic data.
+
+NOTE that unless fields and coefficients are explicitly included in diagnostic output
+then information about them will not appear in the data, regardless of the periods set.  
+i.e. even setting the dump_period to every timestep will produce no output if no fields 
+or coefficients are selected to be included!</a:documentation>
       <optional>
         <choice>
           <element name="visualization_period">
@@ -121,5 +128,26 @@ Defaults to every timestep if unselected.</a:documentation>
         </choice>
       </optional>
     </element>
+  </define>
+  <define name="checkpointing_options">
+    <optional>
+      <element name="checkpointing">
+        <a:documentation>Options to enable checkpointing</a:documentation>
+        <choice>
+          <element name="checkpoint_period">
+            <a:documentation>Period in simulation time between checkpoints.
+
+Defaults to every timestep if unselected.</a:documentation>
+            <ref name="real"/>
+          </element>
+          <element name="checkpoint_period_in_timesteps">
+            <a:documentation>Period in timesteps between checkpoints.
+
+Defaults to every timestep if unselected.</a:documentation>
+            <ref name="integer"/>
+          </element>
+        </choice>
+      </element>
+    </optional>
   </define>
 </grammar>

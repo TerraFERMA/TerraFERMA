@@ -19,6 +19,8 @@ namespace buckettools
   
   enum output_location { OUTPUT_START, OUTPUT_TIMELOOP, OUTPUT_END };
 
+  enum checkpoint_location { CHECKPOINT_TIMELOOP, CHECKPOINT_END };
+
   //*****************************************************************|************************************************************//
   // Bucket class:
   //
@@ -117,6 +119,8 @@ namespace buckettools
 
     static const double elapsed_walltime()                           // return the start time
     { return timer_.elapsed(); }
+
+    const int checkpoint_count() const;                              // return the checkpoint count
 
     //***************************************************************|***********************************************************//
     // Mesh data access
@@ -225,6 +229,8 @@ namespace buckettools
 
     void output(const int &location);                                // output diagnostics for the bucket
 
+    void checkpoint(const int &location);                            // checkpoint the bucket
+
     const std::string str() const;                                   // return a string describing the bucket contents
     
     virtual const std::string meshes_str() const                     // return a string describing the meshes in the bucket
@@ -285,17 +291,20 @@ namespace buckettools
 
     double_ptr visualization_period_, statistics_period_,            // dump periods
                steadystate_period_, detectors_period_,
-               timestepadapt_period_;
+               timestepadapt_period_, checkpoint_period_;
 
     double_ptr visualization_dumptime_, statistics_dumptime_,        // dump periods
                steadystate_dumptime_, detectors_dumptime_,
-               timestepadapt_time_;
+               timestepadapt_time_, checkpoint_time_;
 
     int_ptr visualization_period_timesteps_,                         // dump periods in timesteps
             statistics_period_timesteps_,
             steadystate_period_timesteps_, 
             detectors_period_timesteps_,
-            timestepadapt_period_timesteps_;
+            timestepadapt_period_timesteps_,
+            checkpoint_period_timesteps_;
+
+    int_ptr checkpoint_count_;                                       // the checkpoint count
 
     //***************************************************************|***********************************************************//
     // Pointers data
@@ -366,13 +375,20 @@ namespace buckettools
 
     bool perform_action_(double_ptr action_period, 
                          double_ptr previous_action_time, 
-                         int_ptr    action_period_timestep);         // indicate if an action should be performed based on periods
+                         int_ptr    action_period_timestep,
+                         bool       default_action=true);            // indicate if an action should be performed based on periods
 
     void solve_at_start_();                                          // solve the solvers in this system (in order at the start of a
                                                                      // simulation)
 
     void solve_in_timeloop_();                                       // solve the solvers in this system (in order during the
                                                                      // timeloop of a simulation)
+
+    //***************************************************************|***********************************************************//
+    // Output functions (continued)
+    //***************************************************************|***********************************************************//
+
+    virtual void checkpoint_options_();                              // checkpoint the options system for the bucket
 
   };
 
