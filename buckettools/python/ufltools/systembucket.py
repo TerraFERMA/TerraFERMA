@@ -93,6 +93,7 @@ class SystemBucket:
   def element_ufl(self):
     """Write an array of ufl strings describing the (potentially mixed) element of a system."""
     ufl = []
+    if len(self.fields)==0: return ufl
     if len(self.fields)==1:
       ufl.append(comment("System element is not mixed"))
       ufl.append(equal_ufl(self.symbol, self.fields[0].symbol, suffix="_e")+"\n")
@@ -110,6 +111,7 @@ class SystemBucket:
   def test_ufl(self):
     """Write an array of ufl strings describing the (potentially mixed) test space of a system."""
     ufl = []
+    if len(self.fields)==0: return ufl
     if len(self.fields)==1:
       ufl.append(declaration_comment("Test space", self.fields[0].type, self.fields[0].name))
       ufl.append(testfunction_ufl(self.fields[0].symbol))
@@ -125,6 +127,7 @@ class SystemBucket:
   def trial_ufl(self):
     """Write an array of ufl strings describing the (potentially mixed) trial space of a system."""
     ufl = []
+    if len(self.fields)==0: return ufl
     if len(self.fields)==1:
       ufl.append(declaration_comment("Trial space", self.fields[0].type, self.fields[0].name))
       ufl.append(trialfunction_ufl(self.fields[0].symbol))
@@ -140,6 +143,7 @@ class SystemBucket:
   def function_ufl(self):
     """Write an array of ufl strings describing the (potentially mixed) field values of a system."""
     ufl = []
+    if len(self.fields)==0: return ufl
     if len(self.fields)==1:
       ufl.append(declaration_comment("Value", self.fields[0].type, self.fields[0].name))
       ufl.append(coefficient_ufl(self.fields[0].symbol))
@@ -155,6 +159,7 @@ class SystemBucket:
   def iterate_ufl(self):
     """Write an array of ufl strings describing the (potentially mixed) iterated field values of a system."""
     ufl = []
+    if len(self.fields)==0: return ufl
     if len(self.fields)==1:
       ufl.append(declaration_comment("Last iteration value", self.fields[0].type, self.fields[0].name))
       ufl.append(coefficient_ufl(self.fields[0].symbol, suffix="_i"))
@@ -170,6 +175,7 @@ class SystemBucket:
   def old_ufl(self):
     """Write an array of ufl strings describing the (potentially mixed) old field values of a system."""
     ufl = []
+    if len(self.fields)==0: return ufl
     if len(self.fields)==1:
       ufl.append(declaration_comment("Previous time-level value", self.fields[0].type, self.fields[0].name))
       ufl.append(coefficient_ufl(self.fields[0].symbol, suffix="_n"))
@@ -236,7 +242,10 @@ class SystemBucket:
       cpp.append("    else if (systemname ==  \""+self.name+"\")\n")
     cpp.append("    {\n")
     cpp.append("      // All solvers within a system should return the same functionspace so just take the first one\n")
-    cpp.append(self.solvers[0].functionspace_cpp_no_if())
+    if len(self.solvers)==0:
+      cpp.append("      dolfin::error(\"Unknown system functionspace in ufc_fetch_functionspace\");\n")
+    else:
+      cpp.append(self.solvers[0].functionspace_cpp_no_if())
     cpp.append("    }\n")
     return cpp
 
@@ -251,10 +260,13 @@ class SystemBucket:
     cpp.append("      // All solvers within a system should return the same functionspace\n")
     for s in range(len(self.solvers)):
       cpp += self.solvers[s].functionspace_cpp(index=s)
-    cpp.append("      else\n")
-    cpp.append("      {\n")
-    cpp.append("        dolfin::error(\"Unknown solvername in ufc_fetch_functionspace\");\n")
-    cpp.append("      }\n")
+    if len(self.solvers)==0:
+      cpp.append("      dolfin::error(\"No solvers in system in ufc_fetch_functionspace\");\n")
+    else:
+      cpp.append("      else\n")
+      cpp.append("      {\n")
+      cpp.append("        dolfin::error(\"Unknown solvername in ufc_fetch_functionspace\");\n")
+      cpp.append("      }\n")
     cpp.append("    }\n")
     return cpp
 
@@ -305,7 +317,10 @@ class SystemBucket:
         cpp.append("        }\n")
         cpp.append("      }\n")
     for c in range(len(self.coeffs)):
-      cpp.append("      else if (functionname ==  \""+self.coeffs[c].name+"\")\n")
+      if c+len(self.fields) == 0:
+        cpp.append("      if (functionname ==  \""+self.coeffs[c].name+"\")\n")
+      else:
+        cpp.append("      else if (functionname ==  \""+self.coeffs[c].name+"\")\n")
       cpp.append("      {\n")
       if len(self.coeffs[c].functionals)==0:
         cpp.append("        dolfin::error(\"Unknown functionalname in ufc_fetch_coefficientspace_from_functional\");\n")
@@ -428,10 +443,13 @@ class SystemBucket:
           cpp.append("          dolfin::error(\"Unknown uflsymbol in ufc_fetch_coefficientspace_from_solver\");\n")
           cpp.append("        }\n")
           cpp.append("      }\n")
-    cpp.append("      else\n")
-    cpp.append("      {\n")
-    cpp.append("        dolfin::error(\"Unknown solvername in ufc_fetch_coefficientspace_from_solver\");\n")
-    cpp.append("      }\n")
+    if len(self.solvers)==0:
+      cpp.append("      dolfin::error(\"No solver in system in ufc_fetch_coefficientspace_from_solver\");\n")
+    else:
+      cpp.append("      else\n")
+      cpp.append("      {\n")
+      cpp.append("        dolfin::error(\"Unknown solvername in ufc_fetch_coefficientspace_from_solver\");\n")
+      cpp.append("      }\n")
     cpp.append("    }\n")
     return cpp
 
@@ -462,10 +480,13 @@ class SystemBucket:
       cpp.append("          dolfin::error(\"Unknown solvertype in ufc_fetch_form\");\n")
       cpp.append("        }\n")
       cpp.append("      }\n")
-    cpp.append("      else\n")
-    cpp.append("      {\n")
-    cpp.append("        dolfin::error(\"Unknown systemname in ufc_fetch_form\");\n")
-    cpp.append("      }\n")
+    if len(self.solvers)==0:
+      cpp.append("      dolfin::error(\"No solver in system in ufc_fetch_form\");\n")
+    else:
+      cpp.append("      else\n")
+      cpp.append("      {\n")
+      cpp.append("        dolfin::error(\"Unknown systemname in ufc_fetch_form\");\n")
+      cpp.append("      }\n")
     cpp.append("    }\n")
     return cpp
 

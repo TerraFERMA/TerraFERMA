@@ -16,9 +16,9 @@ system =
       attribute name { xsd:string },
       mesh_choice,
       system_ufl_symbol,
-      field_options+,
+      field_options*,
       coefficient_options*,
-      nonlinear_solver_options+,
+      nonlinear_solver_options*,
       solve_location
     }
   )

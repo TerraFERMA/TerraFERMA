@@ -100,8 +100,11 @@ void SpudSystemBucket::initialize()
     (*(boost::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).initialize_coeff_function();
   } 
 
-  apply_ic_();                                                       // apply the initial condition to the system function
-  apply_bc_();                                                       // apply the boundary conditions we just collected
+  if (fields_size()>0)
+  {
+    apply_ic_();                                                     // apply the initial condition to the system function
+    apply_bc_();                                                     // apply the boundary conditions we just collected
+  }
 
   for (SolverBucket_it s_it = solvers_begin(); s_it != solvers_end();// loop over the solver buckets
                                                               s_it++)
@@ -197,6 +200,13 @@ void SpudSystemBucket::fill_systemfunction_()
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
+
+  buffer.str("");  buffer << optionpath() << "/field";               // find out how many fields we have
+  int nfields = Spud::option_count(buffer.str());
+  if (nfields==0)                                                    // and don't do anything if there are no fields
+  {
+    return;
+  }
 
   functionspace_ = ufc_fetch_functionspace(name(), mesh());          // fetch the first functionspace we can grab from the ufc 
                                                                      // for this system
