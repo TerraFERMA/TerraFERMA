@@ -973,6 +973,19 @@ void SpudBucket::checkpoint_options_()
   serr = Spud::set_option(buffer.str(), namebuffer.str());
   spud_err(buffer.str(), serr);
 
+  buffer.str(""); buffer << "/timestepping";                         // is this a timestepping simulation?
+  if (Spud::have_option(buffer.str()))
+  {
+    buffer.str(""); buffer << "/timestepping/current_time";          // set the current time
+    serr = Spud::set_option(buffer.str(), current_time());
+    spud_err(buffer.str(), serr);
+
+    buffer.str(""); 
+    buffer << "/timestepping/timestep/coefficient::Timestep/type::Constant/rank::Scalar/value::WholeMesh/constant";
+    serr = Spud::set_option(buffer.str(), timestep());
+    spud_err(buffer.str(), serr);
+  }
+
   namebuffer.str(""); namebuffer << output_basename() 
                                  << "_checkpoint_" 
                                  << checkpoint_count() 
