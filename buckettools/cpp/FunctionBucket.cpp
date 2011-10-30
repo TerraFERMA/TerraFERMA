@@ -66,6 +66,162 @@ const GenericFunction_ptr FunctionBucket::genericfunction_ptr(const double_ptr t
 }
 
 //*******************************************************************|************************************************************//
+// return the maximum of the function bucket at the given time
+//*******************************************************************|************************************************************//
+const double FunctionBucket::max(const double_ptr time, const int *index0, const int *index1) const
+{
+  const GenericFunction_ptr function = genericfunction_ptr(time);
+  double maxvalue;
+
+  if (  functiontype_==FUNCTIONBUCKET_FIELD || 
+      ((functiontype_==FUNCTIONBUCKET_COEFF)&&(type()=="Function")) )
+  {
+    dolfin::Function func =                                        // take a deep copy of the subfunction so the vector is accessible
+      *boost::dynamic_pointer_cast< const dolfin::Function >(function);
+
+    if (index0 && index1)
+    {
+      assert(func.value_rank()==2);
+      assert(*index0 < (*function).value_dimension(0));
+      assert(*index1 < (*function).value_dimension(1));
+
+      dolfin::Function funccomp = func[*index0][*index1];
+      maxvalue = funccomp.vector().max();
+    }
+    else if (index0)
+    {
+      assert(func.value_rank()==1);
+      assert(*index0 < (*function).value_size());
+
+      dolfin::Function funccomp = func[*index0];
+      maxvalue = funccomp.vector().max();
+    }
+    else
+    {
+      maxvalue = func.vector().max();
+    }
+  }
+  else
+  {
+    Mesh_ptr mesh = (*system()).mesh();
+    const int nvert = (*mesh).num_vertices();
+    dolfin::Array< double > values(nvert*(*function).value_size());
+    (*function).compute_vertex_values(values, *mesh);
+
+    if (index0 && index1)
+    {
+      assert((*function).value_rank()==2);
+      assert(*index0 < (*function).value_dimension(0));
+      assert(*index1 < (*function).value_dimension(1));
+
+      maxvalue = *std::max_element(&values.data()[(2*(*index1)+(*index0))*nvert], 
+                  &values.data()[(2*(*index1)+(*index0)+1)*nvert]);  // maximum for requested component
+    }
+    else if (index0)
+    {
+      assert((*function).value_rank()==1);
+      assert(*index0 < (*function).value_size());
+
+      maxvalue = *std::max_element(&values.data()[(*index0)*nvert], 
+                  &values.data()[((*index0)+1)*nvert]);              // maximum for requested component
+    }
+    else
+    {
+      maxvalue = values.max();
+    }
+  }
+
+  return maxvalue;
+  
+}
+
+//*******************************************************************|************************************************************//
+// return the minimum of the function bucket at the given time
+//*******************************************************************|************************************************************//
+const double FunctionBucket::min(const double_ptr time, const int *index0, const int *index1) const
+{
+  const GenericFunction_ptr function = genericfunction_ptr(time);
+  double minvalue;
+
+  if (  functiontype_==FUNCTIONBUCKET_FIELD || 
+      ((functiontype_==FUNCTIONBUCKET_COEFF)&&(type()=="Function")) )
+  {
+    dolfin::Function func =                                        // take a deep copy of the subfunction so the vector is accessible
+      *boost::dynamic_pointer_cast< const dolfin::Function >(function);
+
+    if (index0 && index1)
+    {
+      assert(func.value_rank()==2);
+      assert(*index0 < (*function).value_dimension(0));
+      assert(*index1 < (*function).value_dimension(1));
+
+      dolfin::Function funccomp = func[*index0][*index1];
+      minvalue = funccomp.vector().min();
+    }
+    else if (index0)
+    {
+      assert(func.value_rank()==1);
+      assert(*index0 < (*function).value_size());
+
+      dolfin::Function funccomp = func[*index0];
+      minvalue = funccomp.vector().min();
+    }
+    else
+    {
+      minvalue = func.vector().min();
+    }
+  }
+  else
+  {
+    Mesh_ptr mesh = (*system()).mesh();
+    const int nvert = (*mesh).num_vertices();
+    dolfin::Array< double > values(nvert*(*function).value_size());
+    (*function).compute_vertex_values(values, *mesh);
+
+    if (index0 && index1)
+    {
+      assert((*function).value_rank()==2);
+      assert(*index0 < (*function).value_dimension(0));
+      assert(*index1 < (*function).value_dimension(1));
+
+      minvalue = *std::min_element(&values.data()[(2*(*index1)+(*index0))*nvert], 
+                  &values.data()[(2*(*index1)+(*index0)+1)*nvert]);  // minimum for requested component
+    }
+    else if (index0)
+    {
+      assert((*function).value_rank()==1);
+      assert(*index0 < (*function).value_size());
+
+      minvalue = *std::min_element(&values.data()[(*index0)*nvert], 
+                  &values.data()[((*index0)+1)*nvert]);              // minimum for requested component
+    }
+    else
+    {
+      minvalue = values.min();
+    }
+  }
+
+  return minvalue;
+  
+}
+
+//*******************************************************************|************************************************************//
+// return the maximum of the function at the current time
+//*******************************************************************|************************************************************//
+const double FunctionBucket::functionmax() const
+{
+  return max((*(*system()).bucket()).current_time_ptr());
+}
+
+//*******************************************************************|************************************************************//
+// return the minimum of the function at the current time
+//*******************************************************************|************************************************************//
+const double FunctionBucket::functionmin() const
+{
+  return min((*(*system()).bucket()).current_time_ptr());
+}
+
+//*******************************************************************|************************************************************//
 // return the change in this function over a timestep (only valid for fields and only valid after system changefunction has been
 // updated)
 //*******************************************************************|************************************************************//
@@ -100,6 +256,37 @@ void FunctionBucket::resetchange()
   if(change_calculated_)
   {
     *change_calculated_=false;
+  }
+}
+
+
+//*******************************************************************|************************************************************//
+// refresh this functionbucket if it "needs" it
+//*******************************************************************|************************************************************//
+void FunctionBucket::refresh(const bool &force)
+{
+  if (functiontype_==FUNCTIONBUCKET_FIELD)
+  {
+    if( (!(*system()).solved()) || force )                           // solve the field's system if it hasn't already
+    {                                                                // been solved for this timestep or we're forcing it
+      (*system()).solve();
+    }
+  }
+  else if (functiontype_==FUNCTIONBUCKET_COEFF)
+  {
+    if (coefficientfunction_)
+    {
+      (*boost::dynamic_pointer_cast< dolfin::Function >(function_)).interpolate(*coefficientfunction_);
+    }
+    if (constantfunctional_)
+    {
+      double value = dolfin::assemble(*constantfunctional_);
+      *boost::dynamic_pointer_cast< dolfin::Constant >(function_) = value;
+    }
+  }
+  else
+  {
+    dolfin::error("Unknown FunctionBucket type.");
   }
 }
 

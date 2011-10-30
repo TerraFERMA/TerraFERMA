@@ -46,11 +46,22 @@ timestepping =
                 attribute name { xsd:string },
                 empty
               },
-              ## The field name
-              element field {
-                attribute name { xsd:string },
-                empty
-              },
+              (
+                ## The field name
+                ##
+                ## Field is assumed to be Scalar.
+                element field {
+                  attribute name { xsd:string },
+                  empty
+                }|
+                ## The coefficient name
+                ##
+                ## Coefficient is assumed to be Scalar.
+                element coefficient {
+                  attribute name { xsd:string },
+                  empty
+                }
+              ),
               ## The target maximum value requested for the above field
               element requested_maximum_value {
                 real

@@ -57,8 +57,11 @@ void SystemBucket::solve()
 void SystemBucket::update()
 {
 
-  (*oldfunction_).vector() = (*function_).vector();                  // update the oldfunction to the new function value
-
+  if (function_)
+  {
+    (*oldfunction_).vector() = (*function_).vector();                // update the oldfunction to the new function value
+  }
+  
                                                                      // fields share a vector with the system function so no need to
                                                                      // update them...
 

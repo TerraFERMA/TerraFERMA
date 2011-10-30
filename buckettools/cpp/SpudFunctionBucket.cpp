@@ -38,6 +38,8 @@ SpudFunctionBucket::~SpudFunctionBucket()
 //*******************************************************************|************************************************************//
 void SpudFunctionBucket::fill_field(const uint &index)
 {
+  functiontype_ = FUNCTIONBUCKET_FIELD;                              // this is a field
+
   fill_base_(index);                                                 // fill the base data about the function bucket
                                                                      // (could be called from constructor as it's common regardless
                                                                      // of functionbucket type)
@@ -64,6 +66,8 @@ void SpudFunctionBucket::fill_field(const uint &index)
 //*******************************************************************|************************************************************//
 void SpudFunctionBucket::fill_coeff(const uint &index)
 {
+  functiontype_ = FUNCTIONBUCKET_COEFF;                              // this is a coefficient
+
   fill_base_(index);                                                 // fill the base data about the function bucket
                                                                      // (called from constructor instead?)
 

@@ -18,15 +18,15 @@ The system name must be unique amongst any other systems.</a:documentation>
       </attribute>
       <ref name="mesh_choice"/>
       <ref name="system_ufl_symbol"/>
-      <oneOrMore>
+      <zeroOrMore>
         <ref name="field_options"/>
-      </oneOrMore>
+      </zeroOrMore>
       <zeroOrMore>
         <ref name="coefficient_options"/>
       </zeroOrMore>
-      <oneOrMore>
+      <zeroOrMore>
         <ref name="nonlinear_solver_options"/>
-      </oneOrMore>
+      </zeroOrMore>
       <ref name="solve_location"/>
     </element>
   </define>

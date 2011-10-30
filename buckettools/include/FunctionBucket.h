@@ -13,6 +13,8 @@ namespace buckettools
   class FunctionBucket;                                              // predeclare the class itself
   typedef boost::shared_ptr< FunctionBucket > FunctionBucket_ptr;    // so we can predeclare a pointer to it
   
+  enum solve_location { FUNCTIONBUCKET_FIELD, FUNCTIONBUCKET_COEFF };
+
   //*****************************************************************|************************************************************//
   // FunctionBucket class:
   //
@@ -49,6 +51,28 @@ namespace buckettools
                                                                      // so it will be necessary to make a deep copy to access
                                                                      // the vector
 
+    const double max(const double_ptr time, const int* index0, 
+                                            const int* index1) const;// max of the function at the given time
+
+    const double max(const double_ptr time, const int* index0) const
+    { return max(time, index0, NULL); }
+
+    const double max(const double_ptr time) const
+    { return max(time, NULL, NULL); }
+
+    const double min(const double_ptr time, const int* index0, 
+                                            const int* index1) const;// min of the function at the given time
+
+    const double min(const double_ptr time, const int* index0) const
+    { return min(time, index0, NULL); }
+
+    const double min(const double_ptr time) const
+    { return min(time, NULL, NULL); }
+
+    const double functionmax() const;                                // max of the function
+
+    const double functionmin() const;                                // min of the function
+
     const std::string name() const                                   // return a constant string giving the function name
     { return name_; }
 
@@ -60,6 +84,9 @@ namespace buckettools
 
     const uint index() const                                         // return a constant unsigned integer to the index of this
     { return index_; }                                               // function in the parent system
+
+    SystemBucket* system()                                           // return a pointer to the parent system
+    { return system_; }
 
     const SystemBucket* system() const                               // return a constant pointer to the parent system
     { return system_; }
@@ -111,6 +138,9 @@ namespace buckettools
     const double change();                                           // return the change (in the selected norm) in a field over a timestep
 
     void resetchange();                                              // reset the change boolean
+
+    void refresh(const bool &force=false);                           // refresh this function bucket - this may call solvers so 
+                                                                     // its not recommened to call loosely
 
     void update_nonlinear();                                         // update this function if it is potentially nonlinear
 
@@ -226,6 +256,8 @@ namespace buckettools
 
     std::string rank_;                                               // a *string* describing the rank of the function
     
+    int functiontype_;                                               // a *integer* describing the type of function bucket (field or coefficient)
+
     std::string type_;                                               // a *string* describing the type of function (function, expression, constant)
 
     Expression_ptr coefficientfunction_;                             // an expression used to set the values of a coefficient functional
