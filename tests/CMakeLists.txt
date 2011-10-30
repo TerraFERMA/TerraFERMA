@@ -56,6 +56,7 @@ add_subdirectory(diamond_validation)
 add_subdirectory(courant_1d)
 add_subdirectory(alt_courant_1d)
 add_subdirectory(adaptive_dt_1d)
+add_subdirectory(alt_adaptive_dt_1d)
 add_subdirectory(poisson)
 add_subdirectory(projection_mixedelement)
 add_subdirectory(projection_timedependent)
@@ -77,7 +78,7 @@ add_custom_target(run)
 add_dependencies(run poisson_run)
 
 add_custom_target(test)
-add_dependencies(test diamond_validation_test courant_1d_test alt_courant_1d adaptive_dt_1d_test 
+add_dependencies(test diamond_validation_test courant_1d_test alt_courant_1d adaptive_dt_1d_test alt_adaptive_dt_1d_test
 projection_mixedelement_test projection_timedependent_test projection_cpp_test
 rbconvection_steadystate_split_test rbconvection_steadystate_test rbconvection1a_test region_ids_test 
 subductionbenchmark1a_test subductionbenchmark1b_test subductionbenchmark1c_test subductionbenchmark1c_split_test
