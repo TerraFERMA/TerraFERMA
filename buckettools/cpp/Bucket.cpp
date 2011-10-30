@@ -140,8 +140,7 @@ void Bucket::update_timestep()
 
   bool adapt_dt = perform_action_(timestepadapt_period_, 
                                   timestepadapt_time_, 
-                                  timestepadapt_period_timesteps_,
-                                  false);                            // do we want to update the timestep now
+                                  timestepadapt_period_timesteps_);  // do we want to update the timestep now
 
   if ((!adapt_dt) && (!zero_init_dt))
   {
