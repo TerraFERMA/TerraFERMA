@@ -279,7 +279,7 @@ namespace buckettools
 
     double_ptr timestep_increasetol_;                                // increase tolerance for the timestep
 
-    std::vector< std::pair< std::pair< std::string, std::string >, double > >// constraints on the timestep in <<system, field> name, max value > pairs
+    std::vector< std::pair< FunctionBucket_ptr, double > >           // constraints on the timestep in < FunctionBucket_ptr, max value > pairs
                                               timestep_constraints_;
 
     int_ptr nonlinear_iterations_, iteration_count_;                 // the number of iterations requested and the number of nonlinear 

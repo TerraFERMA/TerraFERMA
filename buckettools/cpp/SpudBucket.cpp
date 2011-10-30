@@ -96,6 +96,10 @@ void SpudBucket::fill()
                                                                      // register them in the bucket so it's easy to attach them
                                                                      // to the forms and functionals
 
+  fill_adaptivetimestepping_();                                      // fill in the adaptive timestepping options (if there are any)
+                                                                     // this can also be done now because all relevant pointers should be
+                                                                     // allocated
+
   for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *fourth* time, attaching the
                                   sys_it != systems_end(); sys_it++) // coefficients to the forms and functionals and initializing
   {                                                                  // the matrices by performing a preassembly step on them
@@ -307,7 +311,7 @@ const std::string SpudBucket::detectors_str(const int &indent) const
 }
 
 //*******************************************************************|************************************************************//
-// fill in any timestepping data or set up dummy values instead (zero essentially)
+// fill in any timestepping data (except adaptive stuff) or set up dummy values instead (zero essentially)
 //*******************************************************************|************************************************************//
 void SpudBucket::fill_timestepping_()
 {
@@ -353,66 +357,6 @@ void SpudBucket::fill_timestepping_()
     spud_err(buffer.str(), serr);
     timestep_.second.reset( new dolfin::Constant(timestep_value) );
 
-    buffer.str(""); buffer << "/timestepping/timestep/adaptive";
-    if (Spud::have_option(buffer.str()))
-    {
-      
-      
-      buffer.str(""); buffer <<
-         "/timestepping/timestep/adaptive/constraint";               // constraints on which to adapt the timestep (required)
-      int nconstraints = Spud::option_count(buffer.str());
-      for (uint i = 0; i < nconstraints; i++)
-      {
-        buffer.str(""); buffer << 
-           "/timestepping/timestep/adaptive/constraint[" << i << "]";
-        
-        std::string sysname;
-        serr = Spud::get_option(buffer.str()+"/system/name", sysname);
-        spud_err(buffer.str()+"/system/name", serr);
-
-        std::string fieldname;
-        serr = Spud::get_option(buffer.str()+"/field/name", fieldname);
-        spud_err(buffer.str()+"/field/name", serr);
-
-        double maxvalue;
-        serr = Spud::get_option(buffer.str()+"/requested_maximum_value", maxvalue);
-        spud_err(buffer.str()+"/requested_maximum_value", serr);
-
-        timestep_constraints_.push_back(make_pair( make_pair(sysname, fieldname), maxvalue ));
-
-      }
-
-      buffer.str(""); buffer <<
-         "/timestepping/timestep/adaptive/adapt_period_in_timesteps";// timestep adapt period in timesteps
-      if(Spud::have_option(buffer.str()))
-      {
-        timestepadapt_period_timesteps_.reset( new int );
-        serr = Spud::get_option(buffer.str(), *timestepadapt_period_timesteps_);
-        spud_err(buffer.str(), serr);
-      }
-      
-      buffer.str(""); buffer << 
-                  "/timestepping/timestep/adaptive/adapt_period";    // timestep adapt period
-      if(Spud::have_option(buffer.str()))
-      {
-        timestepadapt_period_.reset( new double );
-        serr = Spud::get_option(buffer.str(), *timestepadapt_period_);
-        spud_err(buffer.str(), serr);
-
-        timestepadapt_time_.reset( new double(start_time()) );
-      }
-
-      buffer.str(""); buffer << 
-              "/timestepping/timestep/adaptive/increase_tolerance";  // timestep adapt period
-      if(Spud::have_option(buffer.str()))
-      {
-        timestep_increasetol_.reset( new double );
-        serr = Spud::get_option(buffer.str(), *timestep_increasetol_);
-        spud_err(buffer.str(), serr);
-      }
-
-    }
-
     buffer.str(""); buffer << "/timestepping/steady_state";
     if (Spud::have_option(buffer.str()))
     {
@@ -434,6 +378,87 @@ void SpudBucket::fill_timestepping_()
     timestep_.second.reset( new dolfin::Constant(0.0) );
   }
   
+  
+}
+
+//*******************************************************************|************************************************************//
+// fill in any adaptive timestepping data 
+//*******************************************************************|************************************************************//
+void SpudBucket::fill_adaptivetimestepping_()
+{
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud option error
+  
+  buffer.str(""); buffer << "/timestepping/timestep/adaptive";
+  if (Spud::have_option(buffer.str()))
+  {
+    
+    
+    buffer.str(""); buffer <<
+       "/timestepping/timestep/adaptive/constraint";               // constraints on which to adapt the timestep (required)
+    int nconstraints = Spud::option_count(buffer.str());
+    for (uint i = 0; i < nconstraints; i++)
+    {
+      buffer.str(""); buffer << 
+         "/timestepping/timestep/adaptive/constraint[" << i << "]";
+      
+      std::string sysname;
+      serr = Spud::get_option(buffer.str()+"/system/name", sysname);
+      spud_err(buffer.str()+"/system/name", serr);
+
+      std::string functionname;
+      FunctionBucket_ptr function;
+      if (Spud::have_option(buffer.str()+"/field/name"))
+      {
+        serr = Spud::get_option(buffer.str()+"/field/name", functionname);
+        spud_err(buffer.str()+"/field/name", serr);
+        function = (*fetch_system(sysname)).fetch_field(functionname);
+      }
+      else
+      {
+        serr = Spud::get_option(buffer.str()+"/coefficient/name", functionname);
+        spud_err(buffer.str()+"/coefficient/name", serr);
+        function = (*fetch_system(sysname)).fetch_coeff(functionname);
+      }
+
+      double maxvalue;
+      serr = Spud::get_option(buffer.str()+"/requested_maximum_value", maxvalue);
+      spud_err(buffer.str()+"/requested_maximum_value", serr);
+
+      timestep_constraints_.push_back(std::make_pair( function, maxvalue ));
+
+    }
+
+    buffer.str(""); buffer <<
+       "/timestepping/timestep/adaptive/adapt_period_in_timesteps";// timestep adapt period in timesteps
+    if(Spud::have_option(buffer.str()))
+    {
+      timestepadapt_period_timesteps_.reset( new int );
+      serr = Spud::get_option(buffer.str(), *timestepadapt_period_timesteps_);
+      spud_err(buffer.str(), serr);
+    }
+    
+    buffer.str(""); buffer << 
+                "/timestepping/timestep/adaptive/adapt_period";    // timestep adapt period
+    if(Spud::have_option(buffer.str()))
+    {
+      timestepadapt_period_.reset( new double );
+      serr = Spud::get_option(buffer.str(), *timestepadapt_period_);
+      spud_err(buffer.str(), serr);
+
+      timestepadapt_time_.reset( new double(start_time()) );
+    }
+
+    buffer.str(""); buffer << 
+            "/timestepping/timestep/adaptive/increase_tolerance";  // timestep adapt period
+    if(Spud::have_option(buffer.str()))
+    {
+      timestep_increasetol_.reset( new double );
+      serr = Spud::get_option(buffer.str(), *timestep_increasetol_);
+      spud_err(buffer.str(), serr);
+    }
+
+  }
   
 }
 

@@ -14,7 +14,7 @@ namespace buckettools
   class SystemBucket;                                                // predeclare the class itself
   typedef boost::shared_ptr< SystemBucket > SystemBucket_ptr;        // so we can predeclare a pointer to it
   
-  enum solve_location { SOLVE_START, SOLVE_TIMELOOP, SOLVE_DIAGNOSTICS };
+  enum functionbucket_type { SOLVE_START, SOLVE_TIMELOOP, SOLVE_DIAGNOSTICS };
 
   //*****************************************************************|************************************************************//
   // SystemBucket class:

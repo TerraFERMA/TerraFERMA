@@ -140,7 +140,8 @@ void Bucket::update_timestep()
 
   bool adapt_dt = perform_action_(timestepadapt_period_, 
                                   timestepadapt_time_, 
-                                  timestepadapt_period_timesteps_);  // do we want to update the timestep now
+                                  timestepadapt_period_timesteps_,
+                                  false);                            // do we want to update the timestep now
 
   if ((!adapt_dt) && (!zero_init_dt))
   {
@@ -156,25 +157,15 @@ void Bucket::update_timestep()
     dolfin::log(dolfin::INFO, "Forcing a timestep adapt as initial timestep is 0.0.");
   }
 
-                                 //  system name, field name   , requested maxval
-  std::vector< std::pair< std::pair< std::string, std::string >, double > >::const_iterator c_it;
+  std::vector< std::pair< FunctionBucket_ptr, double > >::const_iterator c_it;
   for (c_it =  timestep_constraints_.begin(); 
        c_it != timestep_constraints_.end(); 
        c_it++)
   {
     double suggested_dt;
 
-    SystemBucket_ptr sysbucket = fetch_system((*c_it).first.first);
-    if((!(*sysbucket).solved()) || zero_init_dt )                    // force a solve of the requested system if it hasn't already
-    {                                                                // been solved for this timestep or we've just set a dummy
-      (*sysbucket).solve();                                          // timestep of 1.0, which will have to be incorporated into the
-    }                                                                // new calculation
-
-    FunctionBucket_ptr funcbucket = (*sysbucket).fetch_field((*c_it).first.second);
-    dolfin::Function func =                                          // take a deep copy of the subfunction so the vector is accessible
-        *boost::dynamic_pointer_cast< const dolfin::Function >((*funcbucket).function());
-
-    double maxval = func.vector().max();                             // work out the current maximum value
+    (*(*c_it).first).refresh(zero_init_dt);
+    const double maxval = (*(*c_it).first).functionmax();
 
     if (maxval==0.0)
     {
