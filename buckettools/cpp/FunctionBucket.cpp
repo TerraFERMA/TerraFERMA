@@ -86,7 +86,7 @@ const double FunctionBucket::max(const double_ptr time, const int *index0, const
       assert(*index1 < (*function).value_dimension(1));
 
       dolfin::Function funccomp = func[*index0][*index1];
-      maxvalue = funccomp.vector().max();
+      maxvalue = (*funccomp.vector()).max();
     }
     else if (index0)
     {
@@ -94,11 +94,11 @@ const double FunctionBucket::max(const double_ptr time, const int *index0, const
       assert(*index0 < (*function).value_size());
 
       dolfin::Function funccomp = func[*index0];
-      maxvalue = funccomp.vector().max();
+      maxvalue = (*funccomp.vector()).max();
     }
     else
     {
-      maxvalue = func.vector().max();
+      maxvalue = (*func.vector()).max();
     }
   }
   else
@@ -156,7 +156,7 @@ const double FunctionBucket::min(const double_ptr time, const int *index0, const
       assert(*index1 < (*function).value_dimension(1));
 
       dolfin::Function funccomp = func[*index0][*index1];
-      minvalue = funccomp.vector().min();
+      minvalue = (*funccomp.vector()).min();
     }
     else if (index0)
     {
@@ -164,11 +164,11 @@ const double FunctionBucket::min(const double_ptr time, const int *index0, const
       assert(*index0 < (*function).value_size());
 
       dolfin::Function funccomp = func[*index0];
-      minvalue = funccomp.vector().min();
+      minvalue = (*funccomp.vector()).min();
     }
     else
     {
-      minvalue = func.vector().min();
+      minvalue = (*func.vector()).min();
     }
   }
   else
