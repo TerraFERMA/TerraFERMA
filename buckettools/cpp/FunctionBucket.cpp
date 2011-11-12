@@ -236,7 +236,7 @@ const double FunctionBucket::change()
 
       dolfin::Function changefunc =                                    // take a deep copy of the subfunction so the vector is accessible
         *boost::dynamic_pointer_cast< const dolfin::Function >(changefunction());
-      *change_ = changefunc.vector().norm(change_normtype_);
+      *change_ = (*changefunc.vector()).norm(change_normtype_);
 
       *change_calculated_=true;
     }
@@ -297,8 +297,8 @@ void FunctionBucket::update_timedependent()
 {
   if (coefficientfunction_)
   {
-    (*boost::dynamic_pointer_cast< dolfin::Function >(oldfunction_)).vector() = 
-      (*boost::dynamic_pointer_cast< dolfin::Function >(function_)).vector();
+    (*(*boost::dynamic_pointer_cast< dolfin::Function >(oldfunction_)).vector()) = 
+      (*(*boost::dynamic_pointer_cast< dolfin::Function >(function_)).vector());
                                                                      // update the oldfunction to the new function value
     (*boost::dynamic_pointer_cast< dolfin::Function >(function_)).interpolate(*coefficientfunction_);
   }

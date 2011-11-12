@@ -110,8 +110,8 @@ void SpudFunctionBucket::allocate_coeff_function()
                                                                      // expressions through a user defined cpp expression) so just
                                                                      // zero if for now and we'll intialize it later, once we're
                                                                      // allowed to call eval for the first time
-    (*boost::dynamic_pointer_cast< dolfin::Function >(function_)).vector().zero();
-    (*boost::dynamic_pointer_cast< dolfin::Function >(oldfunction_)).vector().zero();
+    (*(*boost::dynamic_pointer_cast< dolfin::Function >(function_)).vector()).zero();
+    (*(*boost::dynamic_pointer_cast< dolfin::Function >(oldfunction_)).vector()).zero();
 
   }
 
@@ -433,8 +433,8 @@ void SpudFunctionBucket::allocate_field_()
   int nbcs = Spud::option_count(buffer.str());
   if (nbcs > 0)                                                      // if we have any...
   {
-    MeshFunction_uint_ptr edgeidmeshfunction =                       // get the edge id mesh function
-      (*(*system_).mesh()).data().mesh_function("exterior_facet_domains");
+    MeshFunction_uint_ptr edgeidmeshfunction =                       // get the edge id mesh function 
+          (*(*system_).mesh()).domains().facet_domains((*(*system_).mesh()));
 
     for (uint i = 0; i < nbcs; i++)                                  // loop over the bcs
     {
@@ -819,7 +819,7 @@ Expression_ptr SpudFunctionBucket::allocate_expression_over_regions_(
     }
 
     MeshFunction_uint_ptr cell_ids = 
-          (*(*system_).mesh()).data().mesh_function("cell_domains");
+          (*(*system_).mesh()).domains().cell_domains((*(*system_).mesh()));
     if (rank==0)
     {
       expression.reset( new RegionsExpression(expressions, 
