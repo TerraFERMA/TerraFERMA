@@ -172,7 +172,7 @@ void Bucket::update_timestep()
     dolfin::Function func =                                          // take a deep copy of the subfunction so the vector is accessible
         *boost::dynamic_pointer_cast< const dolfin::Function >((*funcbucket).function());
 
-    double maxval = func.vector().max();                             // work out the current maximum value
+    double maxval = (*func.vector()).max();                          // work out the current maximum value
 
     if (maxval==0.0)
     {

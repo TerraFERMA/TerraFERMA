@@ -57,7 +57,7 @@ void SystemBucket::solve()
 void SystemBucket::update()
 {
 
-  (*oldfunction_).vector() = (*function_).vector();                  // update the oldfunction to the new function value
+  (*(*oldfunction_).vector()) = (*(*function_).vector());            // update the oldfunction to the new function value
 
                                                                      // fields share a vector with the system function so no need to
                                                                      // update them...
@@ -127,8 +127,8 @@ void SystemBucket::updatechange()
   {
     assert(changefunction_);
 
-    (*changefunction_).vector() = (*function_).vector();             // before updating the oldfunction to the new values
-    (*changefunction_).vector() -= (*oldfunction_).vector();         // update the change in the fields over this timesteps
+    (*(*changefunction_).vector()) = (*(*function_).vector());       // before updating the oldfunction to the new values
+    (*(*changefunction_).vector()) -= (*(*oldfunction_).vector());   // update the change in the fields over this timesteps
 
     *change_calculated_ = true;
   }
@@ -782,8 +782,8 @@ void SystemBucket::collect_ics_(const uint &component,
 void SystemBucket::apply_ic_()
 {
   (*oldfunction_).interpolate(*icexpression_);                       // interpolate the initial condition onto the old function
-  (*iteratedfunction_).vector() = (*oldfunction_).vector();          // set the iterated function vector to the old function vector
-  (*function_).vector() = (*oldfunction_).vector();                  // set the function vector to the old function vector
+  (*(*iteratedfunction_).vector()) = (*(*oldfunction_).vector());    // set the iterated function vector to the old function vector
+  (*(*function_).vector()) = (*(*oldfunction_).vector());            // set the function vector to the old function vector
 }
 
 //*******************************************************************|************************************************************//
@@ -794,9 +794,9 @@ void SystemBucket::apply_bc_()
   for (std::vector<BoundaryCondition_ptr>::const_iterator            // loop over the vector of bcs
                             bc = bcs_begin(); bc != bcs_end(); bc++)
   {
-    (*(*bc)).apply((*oldfunction_).vector());
-    (*(*bc)).apply((*iteratedfunction_).vector());
-    (*(*bc)).apply((*function_).vector());
+    (*(*bc)).apply((*(*oldfunction_).vector()));
+    (*(*bc)).apply((*(*iteratedfunction_).vector()));
+    (*(*bc)).apply((*(*function_).vector()));
   }
 }
 

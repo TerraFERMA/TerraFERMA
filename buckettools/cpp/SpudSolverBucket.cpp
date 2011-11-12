@@ -433,7 +433,7 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
     }                                                                // FIXME: broken in parallel!
     else
     {                                                                 
-      kspsize = (*(*system_).function()).vector().size();            // otherwise, this is quite easy - just the size of the parent
+      kspsize = (*(*(*system_).function()).vector()).size();         // otherwise, this is quite easy - just the size of the parent
     }                                                                // system function
 
     std::vector< PETScVector_ptr > nullvecs;                         // collect the null space vectors here (so we maintain a reference)

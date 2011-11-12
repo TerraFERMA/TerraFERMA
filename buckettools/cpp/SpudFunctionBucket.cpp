@@ -106,8 +106,8 @@ void SpudFunctionBucket::allocate_coeff_function()
                                                                      // expressions through a user defined cpp expression) so just
                                                                      // zero if for now and we'll intialize it later, once we're
                                                                      // allowed to call eval for the first time
-    (*boost::dynamic_pointer_cast< dolfin::Function >(function_)).vector().zero();
-    (*boost::dynamic_pointer_cast< dolfin::Function >(oldfunction_)).vector().zero();
+    (*(*boost::dynamic_pointer_cast< dolfin::Function >(function_)).vector()).zero();
+    (*(*boost::dynamic_pointer_cast< dolfin::Function >(oldfunction_)).vector()).zero();
 
   }
 

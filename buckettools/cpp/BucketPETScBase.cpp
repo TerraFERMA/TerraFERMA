@@ -21,7 +21,7 @@ PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f,
 
   dolfin::log(dolfin::INFO, "In FormFunction");
 
-  (*iteratedfunction).vector() = iteratedvec;                        // update the iterated system bucket function
+  (*(*iteratedfunction).vector()) = iteratedvec;                     // update the iterated system bucket function
 
   (*(*snesctx).bucket).update_nonlinear();                           // update nonlinear coefficients
 
@@ -53,7 +53,7 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
 
   dolfin::log(dolfin::INFO, "In FormJacobian");
 
-  (*iteratedfunction).vector() = iteratedvec;                        // update the iterated system bucket function
+  (*(*iteratedfunction).vector()) = iteratedvec;                     // update the iterated system bucket function
 
   (*(*snesctx).bucket).update_nonlinear();                           // update nonlinear coefficients
 
