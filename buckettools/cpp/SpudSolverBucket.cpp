@@ -661,7 +661,7 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
   PetscErrorCode perr;                                               // petsc error code
 
   std::pair<uint, uint> ownership_range =                            // the parallel ownership range of the system functionspace
-          (*(*system_).functionspace()).dofmap().ownership_range();
+          (*(*(*system_).functionspace()).dofmap()).ownership_range();
 
   buffer.str(""); buffer << optionpath << "/field";                  // loop over the fields used to describe this IS
   int nfields = Spud::option_count(buffer.str());
@@ -669,7 +669,7 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
   if (nfields==0)                                                    // if no fields have been specified...
   {
     boost::unordered_set<uint>  dof_set =                            // take the set of dof for this system
-            (*(*system_).functionspace()).dofmap().dofs();
+            (*(*(*system_).functionspace()).dofmap()).dofs();
     for (boost::unordered_set<uint>::const_iterator                  // loop over the dof in the set
                                     dof_it = dof_set.begin(); 
                                     dof_it != dof_set.end(); 
@@ -725,11 +725,11 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
               std::max_element(components.begin(), components.end());// check this component exists
         if (mixedsystem)
         {
-          assert(*max_comp_it < (*(*(*system_).functionspace())[fieldindex]).element().num_sub_elements());
+          assert(*max_comp_it < (*(*(*(*system_).functionspace())[fieldindex]).element()).num_sub_elements());
         }
         else
         {
-          assert(*max_comp_it < (*(*system_).functionspace()).element().num_sub_elements());
+          assert(*max_comp_it < (*(*(*system_).functionspace()).element()).num_sub_elements());
         }
         
         for (dolfin::CellIterator cell(*mesh); !cell.end(); ++cell)  // loop over the cells in the mesh
@@ -752,12 +752,12 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
                 if (mixedsystem)
                 {
                   dof_vec =                                          // get the cell dof for the current component
-                      (*(*(*(*system_).functionspace())[fieldindex])[*comp]).dofmap().cell_dofs((*cell).index());
+                      (*(*(*(*(*system_).functionspace())[fieldindex])[*comp]).dofmap()).cell_dofs((*cell).index());
                 }
                 else
                 {
                   dof_vec =                                          // get the cell dof for the current component
-                      (*(*(*system_).functionspace())[*comp]).dofmap().cell_dofs((*cell).index());
+                      (*(*(*(*system_).functionspace())[*comp]).dofmap()).cell_dofs((*cell).index());
                 }
                 for (std::vector<uint>::const_iterator dof_it =      // loop over the cell dof for this component
                                               dof_vec.begin(); 
@@ -788,12 +788,12 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
               if (mixedsystem)
               {
                 dof_vec =                                            // get the cell dof (potentially for all components)
-                  (*(*(*system_).functionspace())[fieldindex]).dofmap().cell_dofs((*cell).index());
+                  (*(*(*(*system_).functionspace())[fieldindex]).dofmap()).cell_dofs((*cell).index());
               }
               else
               {
                 dof_vec =                                            // get the cell dof (potentially for all components)
-                  (*(*system_).functionspace()).dofmap().cell_dofs((*cell).index());
+                  (*(*(*system_).functionspace()).dofmap()).cell_dofs((*cell).index());
               }
               for (std::vector<uint>::const_iterator dof_it =        // loop over the cell dof
                                       dof_vec.begin(); 
@@ -838,11 +838,11 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
              std::max_element(components.begin(), components.end()); // check this component exists
         if (mixedsystem)
         {
-          assert(*max_comp_it < (*(*(*system_).functionspace())[fieldindex]).element().num_sub_elements());
+          assert(*max_comp_it < (*(*(*(*system_).functionspace())[fieldindex]).element()).num_sub_elements());
         }
         else
         {
-          assert(*max_comp_it < (*(*system_).functionspace()).element().num_sub_elements());
+          assert(*max_comp_it < (*(*(*system_).functionspace()).element()).num_sub_elements());
         }
 
         for (std::vector<int>::const_iterator comp =                 // loop over the requested components
@@ -854,12 +854,12 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
           if (mixedsystem)
           {
             dof_set =                                                // take the set of dof for this component
-                (*(*(*(*system_).functionspace())[fieldindex])[*comp]).dofmap().dofs();
+                (*(*(*(*(*system_).functionspace())[fieldindex])[*comp]).dofmap()).dofs();
           }
           else
           {
             dof_set =                                                // take the set of dof for this component
-                (*(*(*system_).functionspace())[*comp]).dofmap().dofs();
+                (*(*(*(*system_).functionspace())[*comp]).dofmap()).dofs();
           }
           for (boost::unordered_set<uint>::const_iterator            // loop over the dof in the set
                                         dof_it = dof_set.begin(); 
@@ -880,12 +880,12 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
         if (mixedsystem)
         {
           dof_set =                                                  // take the set of dof for this field
-                (*(*(*system_).functionspace())[fieldindex]).dofmap().dofs();
+                (*(*(*(*system_).functionspace())[fieldindex]).dofmap()).dofs();
         }
         else
         {
           dof_set =                                                  // take the set of dof for this field
-                (*(*system_).functionspace()).dofmap().dofs();
+                (*(*(*system_).functionspace()).dofmap()).dofs();
         }
         for (boost::unordered_set<uint>::const_iterator              // loop over the dof in the set
                                         dof_it = dof_set.begin(); 
