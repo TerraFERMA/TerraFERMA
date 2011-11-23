@@ -192,6 +192,14 @@ namespace buckettools
 
     BoundaryCondition_const_it bcs_end() const;                      // return a constant iterator to the end of the bcs of this function
 
+    int_BoundaryCondition_it orderedbcs_begin();                     // return an iterator to the beginning of the ordered bcs of this function
+
+    int_BoundaryCondition_const_it orderedbcs_begin() const;         // return a constant iterator to the beginning of the ordered bcs of this function
+
+    int_BoundaryCondition_it orderedbcs_end();                       // return an iterator to the end of the ordered bcs of this function
+
+    int_BoundaryCondition_const_it orderedbcs_end() const;           // return a constant iterator to the end of the ordered bcs of this function
+
     //***************************************************************|***********************************************************//
     // Output functions
     //***************************************************************|***********************************************************//
@@ -281,6 +289,8 @@ namespace buckettools
     std::map< std::string, Expression_ptr > bcexpressions_;          // map from bc names to bc expression (boost shared) pointers
     
     std::map< std::string, BoundaryCondition_ptr > bcs_;             // map from bc::id names to (boost shared) pointers to bcs
+    
+    std::map< int, BoundaryCondition_ptr > orderedbcs_;              // map from int to (boost shared) pointers to bcs
     
     //***************************************************************|***********************************************************//
     // Emptying data

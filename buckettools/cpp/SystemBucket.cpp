@@ -750,12 +750,12 @@ const std::string SystemBucket::solvers_str(const int &indent) const
 //*******************************************************************|************************************************************//
 void SystemBucket::collect_bcs_()
 {
-  for (FunctionBucket_const_it f_it = fields_begin();                // loop over all the fields
-                                        f_it != fields_end(); f_it++)
+  for (int_FunctionBucket_const_it f_it = orderedfields_begin();     // loop over all the fields
+                                f_it != orderedfields_end(); f_it++)
   {
-    for (BoundaryCondition_const_it                                  // loop over all the bcs
-          b_it = (*(*f_it).second).bcs_begin(); 
-          b_it != (*(*f_it).second).bcs_end(); b_it++)
+    for (int_BoundaryCondition_const_it                              // loop over all the bcs
+          b_it = (*(*f_it).second).orderedbcs_begin(); 
+          b_it != (*(*f_it).second).orderedbcs_end(); b_it++)
     {
       bcs_.push_back((*b_it).second);                                // add the bcs to a std vector
     }

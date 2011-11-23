@@ -483,6 +483,7 @@ void FunctionBucket::register_bc(BoundaryCondition_ptr bc, const std::string &na
   else
   {
     bcs_[name] = bc;                                                 // if not, register the bc
+    orderedbcs_[(int) bcs_.size()] = bc;                             // also insert it in the order it was registered in the 
   }
 }
 
@@ -516,6 +517,38 @@ BoundaryCondition_it FunctionBucket::bcs_end()
 BoundaryCondition_const_it FunctionBucket::bcs_end() const
 {
   return bcs_.end();
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the beginning of the orderedbcs_ map
+//*******************************************************************|************************************************************//
+int_BoundaryCondition_it FunctionBucket::orderedbcs_begin()
+{
+  return orderedbcs_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the beginning of the orderedbcs_ map
+//*******************************************************************|************************************************************//
+int_BoundaryCondition_const_it FunctionBucket::orderedbcs_begin() const
+{
+  return orderedbcs_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the end of the orderedbcs_ map
+//*******************************************************************|************************************************************//
+int_BoundaryCondition_it FunctionBucket::orderedbcs_end()
+{
+  return orderedbcs_.end();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the end of the orderedbcs_ map
+//*******************************************************************|************************************************************//
+int_BoundaryCondition_const_it FunctionBucket::orderedbcs_end() const
+{
+  return orderedbcs_.end();
 }
 
 //*******************************************************************|************************************************************//
@@ -604,5 +637,6 @@ void FunctionBucket::empty_()
   functionals_.clear();
   bcexpressions_.clear();
   bcs_.clear();
+  orderedbcs_.clear();
 }
 
