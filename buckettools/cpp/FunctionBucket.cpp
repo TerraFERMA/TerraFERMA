@@ -86,7 +86,7 @@ const double FunctionBucket::max(const double_ptr time, const int *index0, const
       assert(*index1 < (*function).value_dimension(1));
 
       dolfin::Function funccomp = func[*index0][*index1];
-      maxvalue = funccomp.vector().max();
+      maxvalue = (*funccomp.vector()).max();
     }
     else if (index0)
     {
@@ -94,11 +94,11 @@ const double FunctionBucket::max(const double_ptr time, const int *index0, const
       assert(*index0 < (*function).value_size());
 
       dolfin::Function funccomp = func[*index0];
-      maxvalue = funccomp.vector().max();
+      maxvalue = (*funccomp.vector()).max();
     }
     else
     {
-      maxvalue = func.vector().max();
+      maxvalue = (*func.vector()).max();
     }
   }
   else
@@ -156,7 +156,7 @@ const double FunctionBucket::min(const double_ptr time, const int *index0, const
       assert(*index1 < (*function).value_dimension(1));
 
       dolfin::Function funccomp = func[*index0][*index1];
-      minvalue = funccomp.vector().min();
+      minvalue = (*funccomp.vector()).min();
     }
     else if (index0)
     {
@@ -164,11 +164,11 @@ const double FunctionBucket::min(const double_ptr time, const int *index0, const
       assert(*index0 < (*function).value_size());
 
       dolfin::Function funccomp = func[*index0];
-      minvalue = funccomp.vector().min();
+      minvalue = (*funccomp.vector()).min();
     }
     else
     {
-      minvalue = func.vector().min();
+      minvalue = (*func.vector()).min();
     }
   }
   else
@@ -236,7 +236,7 @@ const double FunctionBucket::change()
 
       dolfin::Function changefunc =                                    // take a deep copy of the subfunction so the vector is accessible
         *boost::dynamic_pointer_cast< const dolfin::Function >(changefunction());
-      *change_ = changefunc.vector().norm(change_normtype_);
+      *change_ = (*changefunc.vector()).norm(change_normtype_);
 
       *change_calculated_=true;
     }
@@ -297,8 +297,8 @@ void FunctionBucket::update_timedependent()
 {
   if (coefficientfunction_)
   {
-    (*boost::dynamic_pointer_cast< dolfin::Function >(oldfunction_)).vector() = 
-      (*boost::dynamic_pointer_cast< dolfin::Function >(function_)).vector();
+    (*(*boost::dynamic_pointer_cast< dolfin::Function >(oldfunction_)).vector()) = 
+      (*(*boost::dynamic_pointer_cast< dolfin::Function >(function_)).vector());
                                                                      // update the oldfunction to the new function value
     (*boost::dynamic_pointer_cast< dolfin::Function >(function_)).interpolate(*coefficientfunction_);
   }

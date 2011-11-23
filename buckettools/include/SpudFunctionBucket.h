@@ -122,15 +122,11 @@ namespace buckettools
 
     void allocate_coeff_expression_();                               // allocate this function assuming its a coefficient expression
 
-    void fill_bc_(const std::string &optionpath,                     // fill in the bc for this function
-                  const MeshFunction_uint_ptr 
-                                            &edgeidmeshfunction);
+    void fill_bc_(const std::string &optionpath);                    // fill in the bc for this function
 
     void fill_bc_component_(const std::string &optionpath,           // fill in the bc data for a component of this function
                             const std::string &bcname,
-                            const std::vector<int> &bcids,
-                            const MeshFunction_uint_ptr 
-                                            &edgeidmeshfunction);
+                            const std::vector<int> &bcids);
 
     void initialize_bc_(const std::string &optionpath);              // fill in the bc for this function
 

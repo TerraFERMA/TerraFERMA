@@ -110,8 +110,8 @@ void SpudFunctionBucket::allocate_coeff_function()
                                                                      // expressions through a user defined cpp expression) so just
                                                                      // zero if for now and we'll intialize it later, once we're
                                                                      // allowed to call eval for the first time
-    (*boost::dynamic_pointer_cast< dolfin::Function >(function_)).vector().zero();
-    (*boost::dynamic_pointer_cast< dolfin::Function >(oldfunction_)).vector().zero();
+    (*(*boost::dynamic_pointer_cast< dolfin::Function >(function_)).vector()).zero();
+    (*(*boost::dynamic_pointer_cast< dolfin::Function >(oldfunction_)).vector()).zero();
 
   }
 
@@ -433,14 +433,11 @@ void SpudFunctionBucket::allocate_field_()
   int nbcs = Spud::option_count(buffer.str());
   if (nbcs > 0)                                                      // if we have any...
   {
-    MeshFunction_uint_ptr edgeidmeshfunction =                       // get the edge id mesh function
-      (*(*system_).mesh()).data().mesh_function("exterior_facet_domains");
-
     for (uint i = 0; i < nbcs; i++)                                  // loop over the bcs
     {
       buffer.str(""); buffer << optionpath() 
                     << "/type/rank/boundary_condition[" << i << "]";
-      fill_bc_(buffer.str(), edgeidmeshfunction);                    // and fill in details about the bc
+      fill_bc_(buffer.str());                                        // and fill in details about the bc
     }
   }
     
@@ -454,8 +451,7 @@ void SpudFunctionBucket::allocate_field_()
 //*******************************************************************|************************************************************//
 // fill the details of a bc assuming the buckettools schema and given a set of edge ids in a mesh function
 //*******************************************************************|************************************************************//
-void SpudFunctionBucket::fill_bc_(const std::string &optionpath,
-                                  const MeshFunction_uint_ptr &edgeidmeshfunction)
+void SpudFunctionBucket::fill_bc_(const std::string &optionpath)
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
@@ -476,8 +472,7 @@ void SpudFunctionBucket::fill_bc_(const std::string &optionpath,
   {
     buffer.str(""); buffer << optionpath << "/sub_components[" 
                                                         << i << "]";
-    fill_bc_component_(buffer.str(), bcname, bcids,                  // initialize this component
-                                      edgeidmeshfunction);
+    fill_bc_component_(buffer.str(), bcname, bcids);                 // initialize this component
   }
 }
 
@@ -487,8 +482,7 @@ void SpudFunctionBucket::fill_bc_(const std::string &optionpath,
 //*******************************************************************|************************************************************//
 void SpudFunctionBucket::fill_bc_component_(const std::string &optionpath,
                                             const std::string &bcname,
-                                            const std::vector<int> &bcids,
-                                            const MeshFunction_uint_ptr &edgeidmeshfunction)
+                                            const std::vector<int> &bcids)
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
@@ -523,7 +517,7 @@ void SpudFunctionBucket::fill_bc_component_(const std::string &optionpath,
        for (std::vector<int>::const_iterator bcid = bcids.begin();   // loop over the boundary ids
                                           bcid < bcids.end(); bcid++)
        {                                                             // create a new bc on each boundary id for this subcomponent
-         BoundaryCondition_ptr bc(new dolfin::DirichletBC(*subfunctionspace, *bcexp, *edgeidmeshfunction, *bcid));
+         BoundaryCondition_ptr bc(new dolfin::DirichletBC(*subfunctionspace, *bcexp, *bcid));
          namebuffer.str(""); namebuffer << bcname << "::" 
                                       << *subcompid << "::" << *bcid;// assemble a name incorporating the boundary id
          register_bc(bc, namebuffer.str());                          // register the bc in the function bucket
@@ -536,7 +530,7 @@ void SpudFunctionBucket::fill_bc_component_(const std::string &optionpath,
     for (std::vector<int>::const_iterator bcid = bcids.begin();      // loop over the boundary ids
                                           bcid < bcids.end(); bcid++)
     {                                                                // create a bc on each boundary id for all components
-      BoundaryCondition_ptr bc(new dolfin::DirichletBC(*functionspace(), *bcexp, *edgeidmeshfunction, *bcid));
+      BoundaryCondition_ptr bc(new dolfin::DirichletBC(*functionspace(), *bcexp, *bcid));
       namebuffer.str(""); namebuffer << bcname << "::" << *bcid;     // assemble a name for this bc incorporating the boundary id
       register_bc(bc, namebuffer.str());                             // register the bc in the function bucket
     }
@@ -819,7 +813,7 @@ Expression_ptr SpudFunctionBucket::allocate_expression_over_regions_(
     }
 
     MeshFunction_uint_ptr cell_ids = 
-          (*(*system_).mesh()).data().mesh_function("cell_domains");
+          (*(*system_).mesh()).domains().cell_domains((*(*system_).mesh()));
     if (rank==0)
     {
       expression.reset( new RegionsExpression(expressions, 

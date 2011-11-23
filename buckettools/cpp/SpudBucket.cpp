@@ -614,10 +614,11 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     if (file)                                                        // if it does then attach it to the dolfin MeshData structure 
     {                                                                // using the dolfin reserved name for exterior facets
       file.close();
-      MeshFunction_uint_ptr meshfuncedgeids = 
-        (*mesh).data().create_mesh_function("exterior_facet_domains");
+
       dolfin::MeshFunction<dolfin::uint> edgeids(*mesh, filename.str());
-      *meshfuncedgeids = edgeids;
+
+      const uint D = (*mesh).topology().dim();
+      (*mesh).domains().markers(D-1) = edgeids;
     }
 
     filename.str(""); filename << basename << "_physical_region.xml";// check if the edge subdomain mesh function file exists
@@ -625,10 +626,11 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     if (file)                                                        // if it does then attach it to the dolfin MeshData structure 
     {                                                                // using the dolfin reserved name for cell domains
       file.close();
-      MeshFunction_uint_ptr meshfunccellids = 
-        (*mesh).data().create_mesh_function("cell_domains");
+
       dolfin::MeshFunction<dolfin::uint> cellids(*mesh, filename.str());
-      *meshfunccellids = cellids;
+
+      const uint D = (*mesh).topology().dim();
+      (*mesh).domains().markers(D) = cellids;
     }
 
   }
@@ -641,13 +643,14 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     
     mesh.reset( new dolfin::UnitInterval(cells) );
 
-    MeshFunction_uint_ptr meshfuncedgeids = 
-      (*mesh).data().create_mesh_function("exterior_facet_domains", 0);
     Side left(0, 0.0);
     Side right(0, 1.0);
-    (*meshfuncedgeids).set_all(0);
-    left.mark(*meshfuncedgeids, 1);
-    right.mark(*meshfuncedgeids, 2);
+
+    dolfin::MeshFunction<dolfin::uint> edgeids(*mesh, 0, 0);
+    left.mark(edgeids, 1);
+    right.mark(edgeids, 2);
+
+    (*mesh).domains().markers(0) = edgeids;
   }
   else if (source=="Interval")                                       // source is an internally generated dolfin mesh
   {
@@ -668,13 +671,14 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     
     mesh.reset( new dolfin::Interval(cells, leftx, rightx) );
 
-    MeshFunction_uint_ptr meshfuncedgeids = 
-      (*mesh).data().create_mesh_function("exterior_facet_domains", 0);
     Side left(0, leftx);
     Side right(0, rightx);
-    (*meshfuncedgeids).set_all(0);
-    left.mark(*meshfuncedgeids, 1);
-    right.mark(*meshfuncedgeids, 2);
+
+    dolfin::MeshFunction<dolfin::uint> edgeids(*mesh, 0, 0);
+    left.mark(edgeids, 1);
+    right.mark(edgeids, 2);
+
+    (*mesh).domains().markers(0) = edgeids;
   }
   else if (source=="UnitSquare")                                     // source is an internally generated dolfin mesh
   {
@@ -690,17 +694,18 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     
     mesh.reset( new dolfin::UnitSquare(cells[0], cells[1], diagonal) );
 
-    MeshFunction_uint_ptr meshfuncedgeids = 
-      (*mesh).data().create_mesh_function("exterior_facet_domains", 1);
     Side left(0, 0.0);
     Side right(0, 1.0);
     Side bottom(1, 0.0);
     Side top(1, 1.0);
-    (*meshfuncedgeids).set_all(0);
-    left.mark(*meshfuncedgeids, 1);
-    right.mark(*meshfuncedgeids, 2);
-    bottom.mark(*meshfuncedgeids, 3);
-    top.mark(*meshfuncedgeids, 4);
+
+    dolfin::MeshFunction<dolfin::uint> edgeids(*mesh, 1, 0);
+    left.mark(edgeids, 1);
+    right.mark(edgeids, 2);
+    bottom.mark(edgeids, 3);
+    top.mark(edgeids, 4);
+
+    (*mesh).domains().markers(1) = edgeids;
   }
   else if (source=="Rectangle")                                      // source is an internally generated dolfin mesh
   {
@@ -728,17 +733,18 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
                                     upperright[0], upperright[1], 
                                     cells[0], cells[1], diagonal));
 
-    MeshFunction_uint_ptr meshfuncedgeids = 
-      (*mesh).data().create_mesh_function("exterior_facet_domains", 1);
     Side left(0, lowerleft[0]);
     Side right(0, upperright[0]);
     Side bottom(1, lowerleft[1]);
     Side top(1, upperright[1]);
-    (*meshfuncedgeids).set_all(0);
-    left.mark(*meshfuncedgeids, 1);
-    right.mark(*meshfuncedgeids, 2);
-    bottom.mark(*meshfuncedgeids, 3);
-    top.mark(*meshfuncedgeids, 4);
+
+    dolfin::MeshFunction<dolfin::uint> edgeids(*mesh, 1, 0);
+    left.mark(edgeids, 1);
+    right.mark(edgeids, 2);
+    bottom.mark(edgeids, 3);
+    top.mark(edgeids, 4);
+
+    (*mesh).domains().markers(1) = edgeids;
   }
   else if (source=="UnitCircle")                                     // source is an internally generated dolfin mesh
   {
@@ -772,21 +778,22 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
                                      cells[1], 
                                      cells[2]) );
 
-    MeshFunction_uint_ptr meshfuncedgeids = 
-      (*mesh).data().create_mesh_function("exterior_facet_domains", 2);
     Side left(0, 0.0);
     Side right(0, 1.0);
     Side bottom(2, 0.0);
     Side top(2, 1.0);
     Side back(1, 0.0);
     Side front(1, 1.0);
-    (*meshfuncedgeids).set_all(0);
-    left.mark(*meshfuncedgeids, 1);
-    right.mark(*meshfuncedgeids, 2);
-    bottom.mark(*meshfuncedgeids, 3);
-    top.mark(*meshfuncedgeids, 4);
-    back.mark(*meshfuncedgeids, 5);
-    front.mark(*meshfuncedgeids, 6);
+
+    dolfin::MeshFunction<dolfin::uint> edgeids(*mesh, 2, 0);
+    left.mark(edgeids, 1);
+    right.mark(edgeids, 2);
+    bottom.mark(edgeids, 3);
+    top.mark(edgeids, 4);
+    back.mark(edgeids, 5);
+    front.mark(edgeids, 6);
+
+    (*mesh).domains().markers(2) = edgeids;
   }
   else if (source=="Box")                                            // source is an internally generated dolfin mesh
   {
@@ -815,21 +822,22 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
                                 upperfrontright[2], 
                                 cells[0], cells[1], cells[2]) );
 
-    MeshFunction_uint_ptr meshfuncedgeids = 
-      (*mesh).data().create_mesh_function("exterior_facet_domains", 2);
     Side left(0, lowerbackleft[0]);
     Side right(0, upperfrontright[0]);
     Side bottom(2, lowerbackleft[2]);
     Side top(2, upperfrontright[2]);
     Side back(1, lowerbackleft[1]);
     Side front(1, upperfrontright[1]);
-    (*meshfuncedgeids).set_all(0);
-    left.mark(*meshfuncedgeids, 1);
-    right.mark(*meshfuncedgeids, 2);
-    bottom.mark(*meshfuncedgeids, 3);
-    top.mark(*meshfuncedgeids, 4);
-    back.mark(*meshfuncedgeids, 5);
-    front.mark(*meshfuncedgeids, 6);
+
+    dolfin::MeshFunction<dolfin::uint> edgeids(*mesh, 2, 0);
+    left.mark(edgeids, 1);
+    right.mark(edgeids, 2);
+    bottom.mark(edgeids, 3);
+    top.mark(edgeids, 4);
+    back.mark(edgeids, 5);
+    front.mark(edgeids, 6);
+
+    (*mesh).domains().markers(2) = edgeids;
   }
   else if (source=="UnitSphere")                                     // source is an internally generated dolfin mesh
   {

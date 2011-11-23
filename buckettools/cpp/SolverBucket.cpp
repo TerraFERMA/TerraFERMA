@@ -60,11 +60,11 @@ void SolverBucket::solve()
 
   if (type()=="SNES")                                                // this is a petsc snes solver - FIXME: switch to an enumerated type
   {
-    *work_ = (*(*system_).function()).vector();                      // set the work vector to the function vector
+    *work_ = (*(*(*system_).function()).vector());                   // set the work vector to the function vector
     perr = SNESSolve(snes_, PETSC_NULL, *(*work_).vec());            // call petsc to perform a snes solve
     CHKERRV(perr);
     snes_check_convergence_();
-    (*(*system_).function()).vector() = *work_;                      // update the function
+    (*(*(*system_).function()).vector()) = *work_;                   // update the function
   }
   else if (type()=="Picard")                                         // this is a hand-rolled picard iteration - FIXME: switch to enum
   {
@@ -78,7 +78,7 @@ void SolverBucket::solve()
                                     (*system_).bcs_begin(); 
                                 bc != (*system_).bcs_end(); bc++)
     {                                                                // apply bcs to residual
-      (*(*bc)).apply(*res_, (*(*system_).iteratedfunction()).vector());
+      (*(*bc)).apply(*res_, (*(*(*system_).iteratedfunction()).vector()));
     }
 
     double aerror = (*res_).norm("l2");                              // work out the initial absolute l2 error (this should be
@@ -100,8 +100,8 @@ void SolverBucket::solve()
     dolfin::info("%u Error (absolute, relative) = %g, %g\n", 
                                               it, aerror, rerror);
 
-    (*(*system_).iteratedfunction()).vector() =                      // system iterated function gets set to the function values
-                                  (*(*system_).function()).vector();
+    (*(*(*system_).iteratedfunction()).vector()) =                   // system iterated function gets set to the function values
+                                (*(*(*system_).function()).vector());
 
     while (it < minits_ ||                                           // loop for the minimum number of iterations or
           (it < maxits_ && rerror > rtol_ && aerror > atol_))        // until the max is reached or a tolerance criterion is
@@ -152,11 +152,11 @@ void SolverBucket::solve()
 
       perr = KSPSetUp(ksp_); CHKERRV(perr);                          // set up the ksp
 
-      *work_ = (*(*system_).iteratedfunction()).vector();            // set the work vector to the iterated function
+      *work_ = (*(*(*system_).iteratedfunction()).vector());         // set the work vector to the iterated function
       perr = KSPSolve(ksp_, *(*rhs_).vec(), *(*work_).vec());        // perform a linear solve
       CHKERRV(perr);
       ksp_check_convergence_(ksp_);
-      (*(*system_).iteratedfunction()).vector() = *work_;            // update the iterated function with the work vector
+      (*(*(*system_).iteratedfunction()).vector()) = *work_;         // update the iterated function with the work vector
 
       assert(residual_);
       dolfin::assemble(*res_, *residual_, false);                    // assemble the residual
@@ -164,7 +164,7 @@ void SolverBucket::solve()
                                       (*system_).bcs_begin(); 
                                   bc != (*system_).bcs_end(); bc++)
       {                                                              // apply bcs to residual
-        (*(*bc)).apply(*res_, (*(*system_).iteratedfunction()).vector());
+        (*(*bc)).apply(*res_, (*(*(*system_).iteratedfunction()).vector()));
       }
 
       aerror = (*res_).norm("l2");                                   // work out absolute error
@@ -191,8 +191,8 @@ void SolverBucket::solve()
       }
     }
 
-    (*(*system_).function()).vector() =                              // update the function values with the iterated values
-                      (*(*system_).iteratedfunction()).vector();
+    (*(*(*system_).function()).vector()) =                              // update the function values with the iterated values
+                      (*(*(*system_).iteratedfunction()).vector());
 
   }
   else                                                               // don't know what solver type this is
@@ -295,7 +295,7 @@ void SolverBucket::initialize_matrices()
   assemble_bilinearforms(true);                                      // perform preassembly of the bilinear forms
   assemble_linearforms(true);                                        // perform preassembly of the linear forms
   
-  uint syssize = (*(*system_).function()).vector().size();           // set up a work vector of the correct (system) size
+  uint syssize = (*(*(*system_).function()).vector()).size();        // set up a work vector of the correct (system) size
   work_.reset( new dolfin::PETScVector(syssize) ); 
 
   if(type()=="SNES")                                                 // again, if the type is snes complete the set up
