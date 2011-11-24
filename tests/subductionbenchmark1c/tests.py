@@ -23,3 +23,10 @@ def test_T_wedge():
   assert abs(val - test) < 1.0
   print "\tvalue=", val, "test=", test, " ",
 
+def test_runtime():
+  val = det["ElapsedWallTime"]["value"][-1]
+  test = 10.
+  assert ( val <= test)
+  print "\tElapsed Time= ",val," s ",
+
+  
