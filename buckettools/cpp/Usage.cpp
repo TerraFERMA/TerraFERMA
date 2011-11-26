@@ -85,7 +85,11 @@ void buckettools::print_environment(std::ostream& stream)
 int buckettools::parse_verbosity(const std::string &verbosity)
 {
   int v;
-  if (verbosity=="ERROR")
+  if (verbosity=="CRITICAL")
+  {
+    v = dolfin::CRITICAL;
+  }
+  else if (verbosity=="ERROR")
   {
     v = dolfin::ERROR;
   }
@@ -96,6 +100,14 @@ int buckettools::parse_verbosity(const std::string &verbosity)
   else if (verbosity=="INFO")
   {
     v = dolfin::INFO;
+  }
+  else if (verbosity=="PROGRESS")
+  {
+    v = dolfin::PROGRESS;
+  }
+  else if (verbosity=="TRACE")
+  {
+    v = dolfin::TRACE;
   }
   else if (verbosity=="DEBUG")
   {
