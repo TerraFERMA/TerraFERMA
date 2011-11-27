@@ -135,15 +135,11 @@ Defaults to every timestep if unselected.</a:documentation>
         <a:documentation>Options to enable checkpointing</a:documentation>
         <choice>
           <element name="checkpoint_period">
-            <a:documentation>Period in simulation time between checkpoints.
-
-Defaults to every timestep if unselected.</a:documentation>
+            <a:documentation>Period in simulation time between checkpoints.</a:documentation>
             <ref name="real"/>
           </element>
           <element name="checkpoint_period_in_timesteps">
-            <a:documentation>Period in timesteps between checkpoints.
-
-Defaults to every timestep if unselected.</a:documentation>
+            <a:documentation>Period in timesteps between checkpoints.</a:documentation>
             <ref name="integer"/>
           </element>
         </choice>

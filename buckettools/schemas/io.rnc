@@ -128,14 +128,10 @@ checkpointing_options =
     element checkpointing {
       (
         ## Period in simulation time between checkpoints.
-        ## 
-        ## Defaults to every timestep if unselected.
         element checkpoint_period {
           real
         }|
         ## Period in timesteps between checkpoints.
-        ## 
-        ## Defaults to every timestep if unselected.
         element checkpoint_period_in_timesteps {
           integer
         }
