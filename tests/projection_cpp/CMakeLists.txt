@@ -27,7 +27,7 @@ add_executable(${EXECUTABLE} "${PROJECT_SOURCE_DIR}/../../cpp/main.cpp")
 
 set (EXTRA_LIBS ${EXTRA_LIBS} buckettools_cpp ${PREFIX}buckettools_ufc)
 
-target_link_libraries(${EXECUTABLE} ${DOLFIN_LIBRARIES} ${DOLFIN_3RD_PARTY_LIBRARIES} ${EXTRA_LIBS} /usr/lib/libspud.a ${PYTHON_LIBRARIES})
+target_link_libraries(${EXECUTABLE} ${DOLFIN_LIBRARIES} ${DOLFIN_3RD_PARTY_LIBRARIES} ${EXTRA_LIBS} ${SPUD_LIBRARIES} ${PYTHON_LIBRARIES})
 
 # add a command that runs the mesh generation script
 add_custom_command(

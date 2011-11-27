@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<dolfin xmlns:dolfin="http://fenicsproject.org">
+  <function_data size="31">
+    <dof index="0" value="499.99999999999545" cell_index="0" cell_dof_index="0" />
+    <dof index="1" value="499.99999999999545" cell_index="0" cell_dof_index="1" />
+    <dof index="2" value="499.99999999999545" cell_index="1" cell_dof_index="0" />
+    <dof index="3" value="499.99999999999545" cell_index="1" cell_dof_index="1" />
+    <dof index="4" value="499.99999999999841" cell_index="0" cell_dof_index="2" />
+    <dof index="5" value="999.99999999999091" cell_index="0" cell_dof_index="3" />
+    <dof index="6" value="999.99999999999091" cell_index="0" cell_dof_index="4" />
+    <dof index="7" value="999.99999999999091" cell_index="1" cell_dof_index="3" />
+    <dof index="8" value="999.99999999999091" cell_index="1" cell_dof_index="4" />
+    <dof index="9" value="999.99999999999022" cell_index="0" cell_dof_index="5" />
+    <dof index="10" value="999.99999999999341" cell_index="0" cell_dof_index="6" />
+    <dof index="11" value="1000.0000000000093" cell_index="0" cell_dof_index="7" />
+    <dof index="12" value="999.99999999999091" cell_index="0" cell_dof_index="8" />
+    <dof index="13" value="999.99999999998522" cell_index="1" cell_dof_index="6" />
+    <dof index="14" value="999.99999999994907" cell_index="1" cell_dof_index="7" />
+    <dof index="15" value="999.99999999999091" cell_index="1" cell_dof_index="8" />
+    <dof index="16" value="999.99999999999091" cell_index="2" cell_dof_index="8" />
+    <dof index="17" value="999.99999999999091" cell_index="3" cell_dof_index="8" />
+    <dof index="18" value="1499.9999999999864" cell_index="0" cell_dof_index="9" />
+    <dof index="19" value="1499.9999999999864" cell_index="0" cell_dof_index="10" />
+    <dof index="20" value="1499.9999999999864" cell_index="1" cell_dof_index="9" />
+    <dof index="21" value="1499.9999999999864" cell_index="1" cell_dof_index="10" />
+    <dof index="22" value="1499.9999999999852" cell_index="0" cell_dof_index="11" />
+    <dof index="23" value="1499.9999999999902" cell_index="0" cell_dof_index="12" />
+    <dof index="24" value="1500.0000000000136" cell_index="0" cell_dof_index="13" />
+    <dof index="25" value="1499.9999999999864" cell_index="0" cell_dof_index="14" />
+    <dof index="26" value="1499.9999999999777" cell_index="1" cell_dof_index="12" />
+    <dof index="27" value="1499.9999999999231" cell_index="1" cell_dof_index="13" />
+    <dof index="28" value="1499.9999999999864" cell_index="1" cell_dof_index="14" />
+    <dof index="29" value="1499.9999999999864" cell_index="2" cell_dof_index="14" />
+    <dof index="30" value="1499.9999999999864" cell_index="3" cell_dof_index="14" />
+  </function_data>
+</dolfin>
