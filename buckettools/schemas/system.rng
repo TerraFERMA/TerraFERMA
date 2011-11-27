@@ -72,6 +72,12 @@ Use the automatically available name "Mesh."</a:documentation>
         </attribute>
         <empty/>
       </element>
+      <element name="solve">
+        <attribute name="name">
+          <value>never</value>
+        </attribute>
+        <empty/>
+      </element>
     </choice>
   </define>
 </grammar>

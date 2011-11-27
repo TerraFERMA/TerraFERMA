@@ -44,8 +44,6 @@ Bucket::~Bucket()
 //*******************************************************************|************************************************************//
 void Bucket::run()
 {
-  std::stringstream buffer;                                          // optionpath buffer
-
   update();
 
   output(OUTPUT_START);
@@ -862,7 +860,6 @@ void Bucket::output(const int &location)
 //*******************************************************************|************************************************************//
 void Bucket::checkpoint(const int &location)
 {
-
   bool checkpoint;
   if (location==CHECKPOINT_END)
   {
@@ -883,6 +880,13 @@ void Bucket::checkpoint(const int &location)
   }  
 
   dolfin::log(dolfin::INFO, "Checkpointing simulation.");
+
+  
+  for (SystemBucket_it s_it = systems_begin(); 
+                                  s_it != systems_end(); s_it++)
+  {
+    (*(*s_it).second).checkpoint();
+  }
 
   checkpoint_options_();
 

@@ -14,7 +14,7 @@ namespace buckettools
   class SystemBucket;                                                // predeclare the class itself
   typedef boost::shared_ptr< SystemBucket > SystemBucket_ptr;        // so we can predeclare a pointer to it
   
-  enum functionbucket_type { SOLVE_START, SOLVE_TIMELOOP, SOLVE_DIAGNOSTICS };
+  enum functionbucket_type { SOLVE_START, SOLVE_TIMELOOP, SOLVE_DIAGNOSTICS, SOLVE_NEVER };
 
   //*****************************************************************|************************************************************//
   // SystemBucket class:
@@ -100,6 +100,12 @@ namespace buckettools
 
     const Expression_ptr icexpression() const                        // return a constant (boost shared) pointer to the initial
     { return icexpression_; }                                        // condition expression for this system
+
+    const File_ptr icfile() const                                    // return a constant (boost shared) pointer to the initial
+    { return icfile_; }                                              // condition file for this system
+
+    File_ptr& icfile()                                                // return a (boost shared) pointer to the initial
+    { return icfile_; }                                              // condition file for this system
 
     Bucket* bucket()                                                 // return a pointer to the parent bucket
     { return bucket_; }
@@ -247,20 +253,22 @@ namespace buckettools
     virtual const std::string fields_str() const                     // return a string describing the fields in the system
     { return fields_str(0); }
 
-    virtual const std::string fields_str(const int &indent) const;          // return an indented string describing the fields in the
+    virtual const std::string fields_str(const int &indent) const;   // return an indented string describing the fields in the
                                                                      // system
 
     virtual const std::string coeffs_str() const                     // return a string describing the coefficients in the system
     { return coeffs_str(0); }
 
-    virtual const std::string coeffs_str(const int &indent) const;          // return an indented string describing the fields in the
+    virtual const std::string coeffs_str(const int &indent) const;   // return an indented string describing the fields in the
                                                                      // system
 
     virtual const std::string solvers_str() const                    // return a string describing the solver buckets in the system
     { return coeffs_str(0); }
 
-    virtual const std::string solvers_str(const int &indent) const;         // return an indented string describing the solver buckets in
+    virtual const std::string solvers_str(const int &indent) const;  // return an indented string describing the solver buckets in
                                                                      // the system
+
+    void checkpoint();                                               // checkpoint the system
 
   //*****************************************************************|***********************************************************//
   // Protected functions
@@ -310,6 +318,8 @@ namespace buckettools
 
     Expression_ptr icexpression_;                                    // (boost shared) pointer to an expression describing the initial condition
 
+    File_ptr icfile_;                                                // (boost shared) pointer to a file containing a checkpointed ic
+
     int solve_location_;                                             // when this system will be solved
 
     Function_ptr changefunction_;                                    // (boost shared) pointer to the change between timesteps
@@ -338,6 +348,12 @@ namespace buckettools
                                                                      // (boost shared) pointers to solver buckets
 
     std::vector< BoundaryCondition_ptr > bcs_;                       // a vector of (boost shared) poitners to bcs
+
+    //***************************************************************|***********************************************************//
+    // Output functions (continued)
+    //***************************************************************|***********************************************************//
+
+    virtual void checkpoint_options_();                              // checkpoint the options system for the systembucket
 
     //***************************************************************|***********************************************************//
     // Emptying data

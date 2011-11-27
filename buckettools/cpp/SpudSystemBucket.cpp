@@ -146,6 +146,24 @@ const std::string SpudSystemBucket::str(int indent) const
 }
 
 //*******************************************************************|************************************************************//
+// checkpoint the options file
+//*******************************************************************|************************************************************//
+void SpudSystemBucket::checkpoint_options_()
+{
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud error code
+
+  if (solve_location()==SOLVE_START)                                 // do not solve again if this system was only meant to be
+  {                                                                  // solved once
+    std::string location = "never";
+    buffer.str(""); buffer << optionpath() << "/solve/name";
+    serr = Spud::set_option_attribute(buffer.str(), location);
+    spud_err(buffer.str(), serr);
+  }
+
+}
+
+//*******************************************************************|************************************************************//
 // fill the system bucket base data 
 //*******************************************************************|************************************************************//
 void SpudSystemBucket::fill_base_()
@@ -169,7 +187,8 @@ void SpudSystemBucket::fill_base_()
 
   std::string location;
   buffer.str(""); buffer << optionpath() << "/solve/name";
-  Spud::get_option(buffer.str(), location);
+  serr = Spud::get_option(buffer.str(), location);
+  spud_err(buffer.str(), serr);
   if (location=="in_timeloop")
   {
     solve_location_ = SOLVE_TIMELOOP;
@@ -181,6 +200,10 @@ void SpudSystemBucket::fill_base_()
   else if (location=="with_diagnostics")
   {
     solve_location_ = SOLVE_DIAGNOSTICS;
+  }
+  else if (location=="never")
+  {
+    solve_location_ = SOLVE_NEVER;
   }
   else
   {
@@ -253,26 +276,32 @@ void SpudSystemBucket::fill_fields_()
     (*field).fill_field(i);                                          // fill in this field (providing its index in the system)
     register_field(field, (*field).name());                          // register this field in the system bucket
                                   
+    if ((*field).icexpression())
+    {
                                                                      // insert the field's initial condition expression into a 
                                                                      // temporary system map:
-    uint_Expression_it e_it = icexpressions.find(component);         // check if this component already exists
-    if (e_it != icexpressions.end())
-    {
-      dolfin::error(                                                 // if it does, issue an error
-      "IC Expression with component number %d already exists in icexpressions map.", 
-                                                        component);
-    }
-    else
-    {
-      icexpressions[component] = (*field).icexpression();            // if it doesn't, insert it into the map
-    }
+      uint_Expression_it e_it = icexpressions.find(component);       // check if this component already exists
+      if (e_it != icexpressions.end())
+      {
+        dolfin::error(                                               // if it does, issue an error
+        "IC Expression with component number %d already exists in icexpressions map.", 
+                                                          component);
+      }
+      else
+      {
+        icexpressions[component] = (*field).icexpression();          // if it doesn't, insert it into the map
+      }
 
-    component += (*(*field).icexpression()).value_size();            // increment the component count by the size of this field
+      component += (*(*field).icexpression()).value_size();          // increment the component count by the size of this field
                                                                      // (i.e. no. of scalar components)
+    }
   }
 
   collect_bcs_();                                                    // collect all the bcs together for convenience later
-  collect_ics_(component, icexpressions);                            // collect all the ics together into a new initial condition expression
+  if (!icexpressions.empty())
+  {
+    collect_ics_(component, icexpressions);                          // collect all the ics together into a new initial condition expression
+  }
 
 }
 

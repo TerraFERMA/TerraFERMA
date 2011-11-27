@@ -57,6 +57,10 @@ solve_location =
       element solve {
         attribute name {"with_diagnostics"},
         empty
+      }|
+      element solve {
+        attribute name {"never"},
+        empty
       }
     )
   )

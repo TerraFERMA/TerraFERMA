@@ -254,7 +254,7 @@ initial_condition_scalar =
     element initial_condition {
       attribute name {"WholeMesh"},
       attribute type {"initial_condition"},
-      prescribed_scalar
+      prescribed_scalar_w_file
     }|
     ## Options for the description of the initial condition over a subset of the whole domain
     element initial_condition {
@@ -274,7 +274,7 @@ initial_condition_vector =
     element initial_condition {
       attribute name {"WholeMesh"},
       attribute type {"initial_condition"},
-      prescribed_vector
+      prescribed_vector_w_file
     }|
     ## Options for the description of the initial condition over a subset of the whole domain
     element initial_condition {
@@ -294,7 +294,7 @@ initial_condition_tensor =
     element initial_condition {
       attribute name {"WholeMesh"},
       attribute type {"initial_condition"},
-      prescribed_tensor
+      prescribed_tensor_w_file
     }|
     ## Options for the description of the initial condition over a subset of the whole domain
     element initial_condition {
@@ -746,16 +746,33 @@ prescribed_tensor_cpp =
     }
   )
 
+prescribed_file = 
+  (
+    ## Give the name of a checkpoint file.  All fields in a system must share this file
+    ## and the functionspace must be identical to the original system's functionspace.
+    element file {
+      anystring
+    }
+  )
 
 prescribed_scalar = prescribed_scalar_cpp
 prescribed_scalar |= prescribed_scalar_python
 prescribed_scalar |= prescribed_scalar_constant
 
+prescribed_scalar_w_file = prescribed_file
+prescribed_scalar_w_file |= prescribed_scalar
+
 prescribed_vector = prescribed_vector_cpp
 prescribed_vector |= prescribed_vector_python
 prescribed_vector |= prescribed_vector_constant
 
+prescribed_vector_w_file = prescribed_file
+prescribed_vector_w_file |= prescribed_vector
+
 prescribed_tensor = prescribed_tensor_cpp
 prescribed_tensor |= prescribed_tensor_python
 prescribed_tensor |= prescribed_tensor_constant
+
+prescribed_tensor_w_file = prescribed_file
+prescribed_tensor_w_file |= prescribed_tensor
 

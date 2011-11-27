@@ -590,6 +590,14 @@ const std::string FunctionBucket::functionals_str(int indent) const
 }
 
 //*******************************************************************|************************************************************//
+// checkpoint the functionbucket
+//*******************************************************************|************************************************************//
+void FunctionBucket::checkpoint()
+{
+  checkpoint_options_();
+}
+
+//*******************************************************************|************************************************************//
 // include this function in visualization output
 // this is a virtual function and should be implemented in the derived options class
 //*******************************************************************|************************************************************//
@@ -627,6 +635,14 @@ const bool FunctionBucket::include_in_detectors() const
 {
   dolfin::error("Failed to find virtual function include_in_steadystate.");
   return false;
+}
+
+//*******************************************************************|************************************************************//
+// virtual checkpointing of options
+//*******************************************************************|************************************************************//
+void FunctionBucket::checkpoint_options_()
+{
+  dolfin::error("Failed to find virtual function checkpoint_options_.");
 }
 
 //*******************************************************************|************************************************************//

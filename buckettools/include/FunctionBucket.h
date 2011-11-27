@@ -230,6 +230,8 @@ namespace buckettools
     virtual const std::string functionals_str(int indent) const;     // return an indented string describing the functionals 
                                                                      // of this function
 
+    void checkpoint();                                               // checkpoint the functionbucket
+
   //*****************************************************************|***********************************************************//
   // Protected functions
   //*****************************************************************|***********************************************************//
@@ -292,6 +294,12 @@ namespace buckettools
     
     std::map< int, BoundaryCondition_ptr > orderedbcs_;              // map from int to (boost shared) pointers to bcs
     
+    //***************************************************************|***********************************************************//
+    // Output functions (continued)
+    //***************************************************************|***********************************************************//
+
+    virtual void checkpoint_options_();                              // checkpoint the options system for the functionbucket
+
     //***************************************************************|***********************************************************//
     // Emptying data
     //***************************************************************|***********************************************************//

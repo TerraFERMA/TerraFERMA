@@ -318,7 +318,7 @@ The minimum and maximum of functions is included.</a:documentation>
         <attribute name="type">
           <value>initial_condition</value>
         </attribute>
-        <ref name="prescribed_scalar"/>
+        <ref name="prescribed_scalar_w_file"/>
       </element>
       <element name="initial_condition">
         <a:documentation>Options for the description of the initial condition over a subset of the whole domain</a:documentation>
@@ -346,7 +346,7 @@ The minimum and maximum of functions is included.</a:documentation>
         <attribute name="type">
           <value>initial_condition</value>
         </attribute>
-        <ref name="prescribed_vector"/>
+        <ref name="prescribed_vector_w_file"/>
       </element>
       <element name="initial_condition">
         <a:documentation>Options for the description of the initial condition over a subset of the whole domain</a:documentation>
@@ -374,7 +374,7 @@ The minimum and maximum of functions is included.</a:documentation>
         <attribute name="type">
           <value>initial_condition</value>
         </attribute>
-        <ref name="prescribed_tensor"/>
+        <ref name="prescribed_tensor_w_file"/>
       </element>
       <element name="initial_condition">
         <a:documentation>Options for the description of the initial condition over a subset of the whole domain</a:documentation>
@@ -899,6 +899,13 @@ examplecoeff.eval(values, x, cell);
       <ref name="prescribed_cpp"/>
     </element>
   </define>
+  <define name="prescribed_file">
+    <element name="file">
+      <a:documentation>Give the name of a checkpoint file.  All fields in a system must share this file
+and the functionspace must be identical to the original system's functionspace.</a:documentation>
+      <ref name="anystring"/>
+    </element>
+  </define>
   <define name="prescribed_scalar">
     <ref name="prescribed_scalar_cpp"/>
   </define>
@@ -907,6 +914,12 @@ examplecoeff.eval(values, x, cell);
   </define>
   <define name="prescribed_scalar" combine="choice">
     <ref name="prescribed_scalar_constant"/>
+  </define>
+  <define name="prescribed_scalar_w_file">
+    <ref name="prescribed_file"/>
+  </define>
+  <define name="prescribed_scalar_w_file" combine="choice">
+    <ref name="prescribed_scalar"/>
   </define>
   <define name="prescribed_vector">
     <ref name="prescribed_vector_cpp"/>
@@ -917,6 +930,12 @@ examplecoeff.eval(values, x, cell);
   <define name="prescribed_vector" combine="choice">
     <ref name="prescribed_vector_constant"/>
   </define>
+  <define name="prescribed_vector_w_file">
+    <ref name="prescribed_file"/>
+  </define>
+  <define name="prescribed_vector_w_file" combine="choice">
+    <ref name="prescribed_vector"/>
+  </define>
   <define name="prescribed_tensor">
     <ref name="prescribed_tensor_cpp"/>
   </define>
@@ -925,5 +944,11 @@ examplecoeff.eval(values, x, cell);
   </define>
   <define name="prescribed_tensor" combine="choice">
     <ref name="prescribed_tensor_constant"/>
+  </define>
+  <define name="prescribed_tensor_w_file">
+    <ref name="prescribed_file"/>
+  </define>
+  <define name="prescribed_tensor_w_file" combine="choice">
+    <ref name="prescribed_tensor"/>
   </define>
 </grammar>

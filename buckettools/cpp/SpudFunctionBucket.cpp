@@ -134,9 +134,14 @@ void SpudFunctionBucket::initialize_field()
     initialize_bc_(buffer.str());                                    // and initialize the expressions describing the bc
   }
     
-  buffer.str(""); buffer << optionpath()                             // find out how many initial conditions we have
-                                  << "/type/rank/initial_condition";
-  initialize_expression_over_regions_(icexpression_, buffer.str());  // intialize the expression
+  buffer.str(""); buffer << optionpath() 
+                   << "/type/rank/initial_condition::WholeMesh/file";
+  if(!Spud::have_option(buffer.str()))
+  {
+    buffer.str(""); buffer << optionpath()                           // find out how many initial conditions we have
+                                    << "/type/rank/initial_condition";
+    initialize_expression_over_regions_(icexpression_, buffer.str());// intialize the expression
+  }
   
 }
 
@@ -441,11 +446,26 @@ void SpudFunctionBucket::allocate_field_()
     }
   }
     
-  buffer.str(""); buffer << optionpath()                             // find out how many initial conditions we have
-                                  << "/type/rank/initial_condition";
-  icexpression_ = allocate_expression_over_regions_(buffer.str(), 
-                           (*(*system_).bucket()).start_time_ptr()); // allocate the expression
-  
+  buffer.str(""); buffer << optionpath() 
+                   << "/type/rank/initial_condition::WholeMesh/file";
+  if(Spud::have_option(buffer.str()))
+  {
+    std::string icfilename;
+    serr = Spud::get_option(buffer.str(), icfilename);
+    spud_err(buffer.str(), serr);
+    if (!(*system()).icfile())                                       // if there's no icfile_ associated with the system
+    {
+      assert(index()==0);
+      (*system()).icfile().reset( new dolfin::File(icfilename) );
+    }
+  }
+  else
+  {
+    buffer.str(""); buffer << optionpath()                           // find out how many initial conditions we have
+                                   << "/type/rank/initial_condition";
+    icexpression_ = allocate_expression_over_regions_(buffer.str(), 
+                            (*(*system_).bucket()).start_time_ptr());// allocate the expression
+  }
 }
 
 //*******************************************************************|************************************************************//
@@ -1117,6 +1137,40 @@ void SpudFunctionBucket::initialize_expression_(
 
   }
   
+}
+
+//*******************************************************************|************************************************************//
+// checkpoint the options file
+//*******************************************************************|************************************************************//
+void SpudFunctionBucket::checkpoint_options_()
+{
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud error code
+  std::stringstream namebuffer;
+
+  namebuffer.str(""); namebuffer << (*(*system()).bucket()).output_basename() << "_" 
+                                 << (*system()).name() << "_" 
+                                 << (*(*system()).bucket()).checkpoint_count() << ".xml";
+  buffer.str(""); buffer << optionpath() 
+                                  << "/type[0]/rank[0]/initial_condition";
+  int nics = Spud::option_count(buffer.str());
+  for (uint i = 0; i < nics; i++)
+  {
+    buffer.str(""); buffer << optionpath() << "/type[0]/rank[0]/initial_condition[" << i << "]";
+    serr = Spud::delete_option(buffer.str());
+    spud_err(buffer.str(), serr);
+  }
+
+  buffer.str(""); buffer << optionpath() 
+                                  << "/type[0]/rank[0]/initial_condition::WholeMesh/file";
+  serr = Spud::set_option(buffer.str(), namebuffer.str());
+  spud_err(buffer.str(), serr, Spud::SPUD_NEW_KEY_WARNING);
+
+  buffer.str(""); buffer << optionpath() 
+                                  << "/type[0]/rank[0]/initial_condition::WholeMesh/type";
+  serr = Spud::set_option_attribute(buffer.str(), "initial_condition");
+  spud_err(buffer.str(), serr);
+
 }
 
 //*******************************************************************|************************************************************//

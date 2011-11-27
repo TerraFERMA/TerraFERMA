@@ -14,7 +14,8 @@ namespace buckettools
   //*****************************************************************|************************************************************//
 
   void spud_err(const std::string &optionpath,                       // translate the spud error codes into dolfin errors
-                const Spud::OptionError &error);
+                const Spud::OptionError &error,
+                const Spud::OptionError accept=Spud::SPUD_NO_ERROR);
 
 }
 

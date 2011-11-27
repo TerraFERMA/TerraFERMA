@@ -166,10 +166,16 @@ namespace buckettools
                                 const std::string &expressionname);  // allocate an expression based on an optionpath
 
     //***************************************************************|***********************************************************//
+    // Output functions (continued)
+    //***************************************************************|***********************************************************//
+
+    void checkpoint_options_();                                      // checkpoint the options system for the spudfunctionbucket
+
+    //***************************************************************|***********************************************************//
     // Emptying data
     //***************************************************************|***********************************************************//
 
-    void empty_();                                           // empty the data structures of this function bucket
+    void empty_();                                                   // empty the data structures of this function bucket
 
   };
  

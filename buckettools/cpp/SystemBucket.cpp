@@ -746,6 +746,29 @@ const std::string SystemBucket::solvers_str(const int &indent) const
 }
 
 //*******************************************************************|************************************************************//
+// checkpoint the system
+//*******************************************************************|************************************************************//
+void SystemBucket::checkpoint()
+{
+  std::stringstream buffer;                                          // optionpath buffer
+
+  buffer.str(""); buffer << (*bucket()).output_basename() << "_" 
+                         << name() << "_" 
+                         << (*bucket()).checkpoint_count() << ".xml";
+  dolfin::File sysfile(buffer.str());
+  sysfile << *function();
+
+  for (FunctionBucket_it f_it = fields_begin();
+                         f_it != fields_end(); f_it++)
+  {
+    (*(*f_it).second).checkpoint();
+  }
+
+  checkpoint_options_();
+
+}
+
+//*******************************************************************|************************************************************//
 // loop over all the fields in this system, collecting their bcs into a single vector of system bcs
 //*******************************************************************|************************************************************//
 void SystemBucket::collect_bcs_()
@@ -784,7 +807,18 @@ void SystemBucket::collect_ics_(const uint &component,
 //*******************************************************************|************************************************************//
 void SystemBucket::apply_ic_()
 {
-  (*oldfunction_).interpolate(*icexpression_);                       // interpolate the initial condition onto the old function
+  if (icexpression_)
+  {
+    (*oldfunction_).interpolate(*icexpression_);                     // interpolate the initial condition onto the old function
+  }
+  else if (icfile_)
+  {
+    (*icfile()) >> (*oldfunction_);
+  }
+  else
+  {
+    dolfin::error("Unknown way of applying initial condition.");
+  }
   (*(*iteratedfunction_).vector()) = (*(*oldfunction_).vector());    // set the iterated function vector to the old function vector
   (*(*function_).vector()) = (*(*oldfunction_).vector());            // set the function vector to the old function vector
 }
@@ -837,6 +871,14 @@ void SystemBucket::attach_solver_coeffs_(SolverBucket_it s_begin,
   {
     (*(*s_it).second).attach_form_coeffs();                          // attach coefficients to the forms of this solver bucket
   }
+}
+
+//*******************************************************************|************************************************************//
+// virtual checkpointing of options
+//*******************************************************************|************************************************************//
+void SystemBucket::checkpoint_options_()
+{
+  dolfin::error("Failed to find virtual function checkpoint_options_.");
 }
 
 //*******************************************************************|************************************************************//

@@ -90,6 +90,12 @@ namespace buckettools
 
     void fill_solvers_();                                            // fill in the solver bucket information
 
+    //***************************************************************|***********************************************************//
+    // Output functions (continued)
+    //***************************************************************|***********************************************************//
+
+    void checkpoint_options_();                                      // checkpoint the options system for the spudsystembucket
+
   };
  
   typedef boost::shared_ptr< SpudSystemBucket > SpudSystemBucket_ptr;// define a (boost shared) pointer type for the spud system
