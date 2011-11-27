@@ -1154,7 +1154,7 @@ void SpudFunctionBucket::checkpoint_options_()
   buffer.str(""); buffer << optionpath() 
                                   << "/type[0]/rank[0]/initial_condition";
   int nics = Spud::option_count(buffer.str());
-  for (uint i = 0; i < nics; i++)
+  for (int i = nics-1; i >= 0; i--)
   {
     buffer.str(""); buffer << optionpath() << "/type[0]/rank[0]/initial_condition[" << i << "]";
     serr = Spud::delete_option(buffer.str());
@@ -1169,7 +1169,7 @@ void SpudFunctionBucket::checkpoint_options_()
   buffer.str(""); buffer << optionpath() 
                                   << "/type[0]/rank[0]/initial_condition::WholeMesh/type";
   serr = Spud::set_option_attribute(buffer.str(), "initial_condition");
-  spud_err(buffer.str(), serr);
+  spud_err(buffer.str(), serr, Spud::SPUD_NEW_KEY_WARNING);
 
 }
 
