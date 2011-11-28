@@ -42,7 +42,7 @@ add_custom_command(
  
 add_custom_target(
   ${PREFIX}_run
-  COMMAND ${EXECUTABLE} -vINFO -l ${OPTIONSFILE} 
+  COMMAND ${EXECUTABLE} -v${LOGLEVEL} -l ${OPTIONSFILE} 
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   DEPENDS ${EXECUTABLE}
   DEPENDS ${PROJECT_BINARY_DIR}/${MESHBASENAME}.xml
@@ -50,7 +50,7 @@ add_custom_target(
 
 add_custom_target(
   ${PREFIX}_test
-  COMMAND py.test -v ${PROJECT_SOURCE_DIR}/tests.py 
+  COMMAND py.test -vs ${PROJECT_SOURCE_DIR}/tests.py 
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   DEPENDS ${PROJECT_SOURCE_DIR}/tests.py
   )

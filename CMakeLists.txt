@@ -32,6 +32,11 @@ if (NOT EXECUTABLE)
        "The name of the executable" FORCE)
 endif()
 
+if (NOT LOGLEVEL)
+  set(LOGLEVEL "INFO" CACHE STRING
+       "The log level used in the run target, options are: DBG, TRACE, PROGRESS, INFO, WARNING, ERROR, CRITICAL." FORCE)
+endif()
+
 if (NOT BUCKETTOOLS_DIR)
   set(BUCKETTOOLS_DIR "${PROJECT_SOURCE_DIR}/buckettools" CACHE PATH
        "Location of buckettools." FORCE)
@@ -81,7 +86,7 @@ target_link_libraries(${EXECUTABLE} ${DOLFIN_LIBRARIES} ${DOLFIN_3RD_PARTY_LIBRA
 
 add_custom_target(
   run
-  COMMAND ${EXECUTABLE} -vDBG -l ${OPTIONSFILE} 
+  COMMAND ${EXECUTABLE} -v${LOGLEVEL} -l ${OPTIONSFILE} 
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   DEPENDS ${EXECUTABLE}
   )

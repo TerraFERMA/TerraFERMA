@@ -18,6 +18,11 @@ if (NOT CMAKE_BUILD_TYPE)
     "Choose the type of build, options are: Debug MinSizeRel Release RelWithDebInfo." FORCE)
 endif()
 
+if (NOT LOGLEVEL)
+  set(LOGLEVEL "INFO" CACHE STRING
+       "The log level that should be used in run targets, options are: DBG, TRACE, PROGRESS, INFO, WARNING, ERROR, CRITICAL." FORCE)
+endif()
+
 # Compiler definitions
 add_definitions(${DOLFIN_CXX_DEFINITIONS})
 

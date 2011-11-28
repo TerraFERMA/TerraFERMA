@@ -30,7 +30,7 @@ target_link_libraries(${EXECUTABLE} ${DOLFIN_LIBRARIES} ${DOLFIN_3RD_PARTY_LIBRA
 
 add_custom_target(
   ${PREFIX}_run
-  COMMAND ${EXECUTABLE} -vINFO -l ${OPTIONSFILE} 
+  COMMAND ${EXECUTABLE} -v${LOGLEVEL} -l ${OPTIONSFILE} 
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   DEPENDS ${EXECUTABLE}
   )
@@ -39,7 +39,7 @@ set(RUNLIST ${RUNLIST} ${PREFIX}_run)
 
 add_custom_target(
   ${PREFIX}_test
-  COMMAND py.test -v ${PROJECT_SOURCE_DIR}/tests.py 
+  COMMAND py.test -vs ${PROJECT_SOURCE_DIR}/tests.py 
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   DEPENDS ${PROJECT_SOURCE_DIR}/tests.py
   )
