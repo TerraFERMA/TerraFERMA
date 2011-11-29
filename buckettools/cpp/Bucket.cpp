@@ -582,7 +582,7 @@ void Bucket::register_baseuflsymbol(const std::string &baseuflsymbol,
   if (s_it != baseuflsymbols_.end())
   {
     dolfin::error(                                                   // if it does, issue an error
-            "Name with ufl symbol \"%s\" already exists in system.", 
+            "Name with ufl symbol \"%s\" already exists in the bucket.", 
                                               uflsymbol.c_str());
   }
   else
@@ -601,7 +601,7 @@ const std::string Bucket::fetch_baseuflsymbol(
   if (s_it == baseuflsymbols_.end())
   {
     dolfin::error(                                                   // if it doesn't, issue an error
-            "Name with uflsymbol \"%s\" does not exist in system.", 
+            "Name with uflsymbol \"%s\" does not exist in the bucket.", 
                                                 uflsymbol.c_str());
   }
   else
@@ -638,7 +638,7 @@ void Bucket::register_uflsymbol(GenericFunction_ptr function,
   if (g_it != uflsymbols_.end())
   {
     dolfin::error(                                                   // if it does, issue an error
-    "GenericFunction with ufl symbol \"%s\" already exists in system.", 
+    "GenericFunction with ufl symbol \"%s\" already exists in the bucket.", 
                                   uflsymbol.c_str());
   }
   else
@@ -657,7 +657,7 @@ GenericFunction_ptr Bucket::fetch_uflsymbol(
   if (g_it == uflsymbols_.end())
   {
     dolfin::error(                                                   // if it doesn't, issue an error
-    "GenericFunction with uflsymbol \"%s\" does not exist in system.", 
+    "GenericFunction with uflsymbol \"%s\" does not exist in the bucket.", 
                                           uflsymbol.c_str());
   }
   else
@@ -677,7 +677,7 @@ void Bucket::register_coefficientspace(
   if (f_it != coefficientspaces_.end())
   {
     dolfin::error(                                                   // if it does, issue an error
-    "FunctionSpace with uflsymbol \"%s\" already exists in system coefficientspaces.", 
+    "FunctionSpace with uflsymbol \"%s\" already exists in the bucket coefficientspaces.", 
                                               uflsymbol.c_str());
   }
   else
@@ -707,7 +707,7 @@ FunctionSpace_ptr Bucket::fetch_coefficientspace(
   {
     dolfin::log(dolfin::ERROR, coefficientspaces_str());             // if it doesn't, output which coefficientspaces are available
     dolfin::error(                                                   // and issue an error
-    "FunctionSpace with uflsymbol \"%s\" doesn't exist in system coefficientspaces.", 
+    "FunctionSpace with uflsymbol \"%s\" doesn't exist in the bucket coefficientspaces.", 
                                     uflsymbol.c_str());
   }
   else
