@@ -161,6 +161,7 @@
         <include_in_visualization/>
         <include_in_statistics/>
         <include_in_detectors/>
+        <include_residual_in_visualization/>
       </diagnostics>
     </field>
     <field name="Velocity">
@@ -239,6 +240,7 @@
       <diagnostics>
         <include_in_visualization/>
         <include_in_statistics/>
+        <include_residual_in_visualization/>
       </diagnostics>
     </field>
     <field name="Pressure">
@@ -265,6 +267,7 @@
       <diagnostics>
         <include_in_visualization/>
         <include_in_statistics/>
+        <include_residual_in_visualization/>
       </diagnostics>
     </field>
     <coefficient name="PlateVelocity">
