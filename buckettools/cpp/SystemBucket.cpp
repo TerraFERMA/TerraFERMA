@@ -43,8 +43,10 @@ void SystemBucket::solve()
   {
     (*(*s_it).second).solve();
 
+    (*(*residualfunction_).vector()) = (*boost::dynamic_pointer_cast< dolfin::GenericVector >((*(*s_it).second).residual_vector()));
     // update_nonlinear...
   }
+
   if(solved_)
   {
     *solved_ = true;
@@ -188,6 +190,8 @@ void SystemBucket::copy_diagnostics(SystemBucket_ptr &system, Bucket_ptr &bucket
 
   (*system).changefunction_ = changefunction_;
   (*system).change_calculated_ = change_calculated_;
+
+  (*system).residualfunction_ = residualfunction_;
 
   (*system).solved_ = solved_;
 
@@ -634,7 +638,7 @@ const bool SystemBucket::include_in_visualization() const
   for (FunctionBucket_const_it f_it = fields_begin(); f_it != fields_end(); 
                                                               f_it++)
   {
-    include = (*(*f_it).second).include_in_visualization();
+    include = (*(*f_it).second).include_in_visualization() || (*(*f_it).second).include_residual_in_visualization();
     if (include)
     {
       break;

@@ -59,6 +59,12 @@ void SpudFunctionBucket::fill_field(const uint &index)
     pvdfile_.reset( new dolfin::File((*(*system_).bucket()).output_basename()+"_"+(*system_).name()+"_"+name()+".pvd", "compressed") );
   }
 
+  if(include_residual_in_visualization())
+  {
+                                                                     // allocate a pvd file (field specific so could be moved)
+    respvdfile_.reset( new dolfin::File((*(*system_).bucket()).output_basename()+"_"+(*system_).name()+"_"+name()+"_residual.pvd", "compressed") );
+  }
+
 }
 
 //*******************************************************************|************************************************************//
@@ -244,6 +250,14 @@ const bool SpudFunctionBucket::include_in_visualization() const
 }
 
 //*******************************************************************|************************************************************//
+// return a boolean indicating if the residual of this function bucket should be included in visualization output
+//*******************************************************************|************************************************************//
+const bool SpudFunctionBucket::include_residual_in_visualization() const
+{
+  return Spud::have_option(optionpath()+"/diagnostics/include_residual_in_visualization");
+}
+
+//*******************************************************************|************************************************************//
 // return a boolean indicating if this function bucket should be included in diagnostic output
 //*******************************************************************|************************************************************//
 const bool SpudFunctionBucket::include_in_statistics() const
@@ -388,6 +402,9 @@ void SpudFunctionBucket::allocate_field_()
     {
       changefunction_ = (*system_).changefunction();                 // the change in the function between timesteps
     }
+
+    residualfunction_ = (*system_).residualfunction();
+
   }
   else                                                               // yes, multiple fields in this system so we need to make
   {                                                                  // a subspace and subfunctions (dangerous, be careful!)
@@ -405,6 +422,9 @@ void SpudFunctionBucket::allocate_field_()
       changefunction_.reset( &(*(*system_).changefunction())[index_],
                                               dolfin::NoDeleter() ); // and the change in the function between timesteps
     }
+
+    residualfunction_.reset( &(*(*system_).residualfunction())[index_],
+                                              dolfin::NoDeleter() );
   }
 
   buffer.str(""); buffer << (*system_).name() << "::" << name();     // rename the function as SystemName::FieldName
@@ -416,6 +436,10 @@ void SpudFunctionBucket::allocate_field_()
   buffer.str(""); buffer << (*system_).name() << "::Iterated"        // rename the iterated function as SystemName::IteratedFieldName
                                                          << name();  
   (*iteratedfunction_).rename(buffer.str(), buffer.str());
+
+  buffer.str(""); buffer << (*system_).name() << "::Residual"        // rename the residual function as SystemName::ResidualFieldName
+                                                         << name();  
+  (*residualfunction_).rename(buffer.str(), buffer.str());
 
   if (include_in_steadystate())
   {

@@ -392,6 +392,8 @@ void FunctionBucket::copy_diagnostics(FunctionBucket_ptr &function, SystemBucket
   (*function).change_calculated_ = change_calculated_;
   (*function).change_normtype_ = change_normtype_;
 
+  (*function).residualfunction_ = residualfunction_;
+
   (*function).functionals_ = functionals_;
   (*function).bcexpressions_ = bcexpressions_;
   (*function).bcs_ = bcs_;
@@ -590,9 +592,16 @@ int_BoundaryCondition_const_it FunctionBucket::orderedbcs_end() const
 //*******************************************************************|************************************************************//
 void FunctionBucket::output(const bool &write_vis)
 {
-  if (pvdfile_ && write_vis)                                         // check a pvd file is associated
+  if (write_vis)
   {
-    *pvdfile_ << *boost::dynamic_pointer_cast< dolfin::Function >(function());
+    if (pvdfile_)                                                    // check a pvd file is associated
+    {
+      *pvdfile_ << *boost::dynamic_pointer_cast< dolfin::Function >(function());
+    }
+    if (respvdfile_)                                                 // check a residual pvd file is associated
+    {
+      *respvdfile_ << *boost::dynamic_pointer_cast< dolfin::Function >(residualfunction());
+    }
   }
 }
 
@@ -638,6 +647,16 @@ void FunctionBucket::checkpoint()
 const bool FunctionBucket::include_in_visualization() const
 {
   dolfin::error("Failed to find virtual function include_in_visualization.");
+  return false;
+}
+
+//*******************************************************************|************************************************************//
+// include the residual of this function in visualization output
+// this is a virtual function and should be implemented in the derived options class
+//*******************************************************************|************************************************************//
+const bool FunctionBucket::include_residual_in_visualization() const
+{
+  dolfin::error("Failed to find virtual function include_residual_in_visualization.");
   return false;
 }
 

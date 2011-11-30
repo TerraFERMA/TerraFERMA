@@ -100,6 +100,9 @@ namespace buckettools
     const Function_ptr changefunction() const                        // return a (boost shared) pointer to the change in the system
     { return changefunction_; }                                      // function over a timestep
 
+    const Function_ptr residualfunction() const                      // return a (boost shared) pointer to the residual in the system
+    { return residualfunction_; }                                    // function
+
     const Expression_ptr icexpression() const                        // return a constant (boost shared) pointer to the initial
     { return icexpression_; }                                        // condition expression for this system
 
@@ -329,6 +332,8 @@ namespace buckettools
     bool_ptr change_calculated_;                                     // indicate if the change has been recalculated recently
 
     bool_ptr solved_;                                                // indicate if the system has been solved this timestep
+
+    Function_ptr residualfunction_;                                  // (boost shared) pointer to the residual of the system
 
     //***************************************************************|***********************************************************//
     // Pointers data

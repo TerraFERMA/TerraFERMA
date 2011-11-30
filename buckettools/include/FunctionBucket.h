@@ -125,6 +125,13 @@ namespace buckettools
                                                                      // so it will be necessary to make a deep copy to access
                                                                      // the vector
 
+    const GenericFunction_ptr residualfunction() const               // return a constant (boost shared) pointer to the residual
+    { return residualfunction_; }                                    // function
+                                                                     // NOTE: if this is a field of a mixed
+                                                                     // system functionspace, this will return a subfunction
+                                                                     // so it will be necessary to make a deep copy to access
+                                                                     // the vector
+
     const Expression_ptr icexpression() const                        // return a constant (boost shared) pointer to the initial
     { return icexpression_; }                                        // condition expression for this function
 
@@ -211,14 +218,17 @@ namespace buckettools
     virtual const bool include_in_visualization() const;             // return a boolean indicating if this function is included in 
                                                                      // visualization output
 
+    virtual const bool include_residual_in_visualization() const;    // return a boolean indicating if the residual of this function is included in 
+                                                                     // visualization output
+
     virtual const bool include_in_statistics() const;                // return a boolean indicating if this function is included in 
                                                                      // diagnostic output
 
     virtual const bool include_in_steadystate() const;               // return a boolean indicating if this function is included in 
-                                                                     // diagnostic output
+                                                                     // steady state output
 
     virtual const bool include_in_detectors() const;                 // return a boolean indicating if this function is included in 
-                                                                     // diagnostic output
+                                                                     // detectors output
 
     virtual const std::string str() const                            // return a string describing the contents of this function
     { return str(0); }
@@ -260,6 +270,8 @@ namespace buckettools
 
     GenericFunction_ptr changefunction_;                             // (boost shared) pointer to the change in the function over a timestep
 
+    GenericFunction_ptr residualfunction_;                           // (boost shared) pointer to the residual in the function (only fields)
+
     Expression_ptr icexpression_;                                    // (boost shared) pointer to an expression describing the initial condition
 
     int size_;                                                       // size of the function (most relevant for rank 1, vectors)
@@ -276,7 +288,7 @@ namespace buckettools
 
     Form_ptr constantfunctional_;                                    // a functional that can be used to set a constant function
     
-    File_ptr pvdfile_;                                               // (boost shared) pointer to a pvd file output for this function
+    File_ptr pvdfile_, respvdfile_;                                  // (boost shared) pointer to a pvd file output for this function
 
     double_ptr change_;                                              // change in the function in a norm
 
