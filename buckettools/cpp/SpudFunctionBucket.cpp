@@ -803,11 +803,11 @@ Expression_ptr SpudFunctionBucket::allocate_expression_over_regions_(
       Expression_ptr tmpexpression;
       if (time_dependent)
       {
-        bool *tmp_time_dependent;
+        bool tmp_time_dependent;
         tmpexpression = allocate_expression_(
                             buffer.str(), expressionname, time, 
-                                                tmp_time_dependent);
-        *time_dependent = *time_dependent || *tmp_time_dependent;
+                                                &tmp_time_dependent);
+        *time_dependent = *time_dependent || tmp_time_dependent;
       }
       else
       {
