@@ -236,6 +236,10 @@ field_diagnostics_options =
       ## Include this field in the detectors output file.
       element include_in_detectors {
         empty
+      }?,
+      ## Include the residual of this field in a visualization output file.
+      element include_residual_in_visualization {
+        empty
       }?
     }
   )

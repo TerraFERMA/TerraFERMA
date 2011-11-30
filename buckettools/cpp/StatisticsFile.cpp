@@ -102,6 +102,13 @@ void StatisticsFile::header_func_(FunctionBucket_const_it f_begin,
                               (*(*(*f_it).second).system()).name());
         tag_((*(*f_it).second).name(), column++, "min", 
                               (*(*(*f_it).second).system()).name());
+        if ((*(*f_it).second).residualfunction())                    // all fields should get in here
+        {
+          tag_((*(*f_it).second).name(), column++, "res_max", 
+                                (*(*(*f_it).second).system()).name());
+          tag_((*(*f_it).second).name(), column++, "res_min", 
+                                (*(*(*f_it).second).system()).name());
+        }
       }
       else if ((*(*(*f_it).second).function()).value_rank()==1)      // vector (value_size components)
       {
@@ -112,6 +119,15 @@ void StatisticsFile::header_func_(FunctionBucket_const_it f_begin,
         tag_((*(*f_it).second).name(), column, "min", 
                   (*(*(*f_it).second).system()).name(), components);
         column+=components;
+        if ((*(*f_it).second).residualfunction())                    // all fields should get in here
+        {
+          tag_((*(*f_it).second).name(), column, "res_max", 
+                    (*(*(*f_it).second).system()).name(), components);
+          column+=components;
+          tag_((*(*f_it).second).name(), column, "res_min", 
+                    (*(*(*f_it).second).system()).name(), components);
+          column+=components;
+        }
       }
       else if ((*(*(*f_it).second).function()).value_rank()==2)      // tensor (value_dimension product components)
       {
@@ -123,6 +139,15 @@ void StatisticsFile::header_func_(FunctionBucket_const_it f_begin,
         tag_((*(*f_it).second).name(), column, "min", 
                   (*(*(*f_it).second).system()).name(), components);
         column+=components;
+        if ((*(*f_it).second).residualfunction())                    // all fields should get in here
+        {
+          tag_((*(*f_it).second).name(), column, "res_max", 
+                    (*(*(*f_it).second).system()).name(), components);
+          column+=components;
+          tag_((*(*f_it).second).name(), column, "res_min", 
+                    (*(*(*f_it).second).system()).name(), components);
+          column+=components;
+        }
       }
       else                                                           // unknown rank
       {
@@ -194,27 +219,45 @@ void StatisticsFile::data_field_(FunctionBucket_const_it f_begin,
   for (FunctionBucket_const_it f_it = f_begin; f_it != f_end;        // loop over the given fields
                                                             f_it++)
   {
-    if ((*(*f_it).second).include_in_statistics())                  // check if they should be included in the diagnostics
+    if ((*(*f_it).second).include_in_statistics())                   // check if they should be included in the diagnostics
     {                                                                // yes, start with the default stats... min and max
       dolfin::Function func =                                        // take a deep copy of the subfunction so the vector is accessible
         *boost::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).function());
+      dolfin::Function resfunc =                                     // take a deep copy of the subfunction so the vector is accessible
+        *boost::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).residualfunction());
       if (func.value_rank()==0)                                      // scalars (no components)
       {
         file_ << (*func.vector()).max() << " ";
         file_ << (*func.vector()).min() << " ";
+
+        file_ << (*resfunc.vector()).max() << " ";
+        file_ << (*resfunc.vector()).min() << " ";
       }
       else if (func.value_rank()==1)                                 // vectors (multiple components)
       {
         int components = func.value_size();
         for (uint i = 0; i < components; i++)
         {
-          dolfin::Function funccomp = func[i];                       // take a deep copy of the component of the subfunction
+          dolfin::Function funccomp = func[i];                                        // take a deep copy of the component of the subfunction
           file_ << (*funccomp.vector()).max() << " ";                // maximum for all components
         }
+
         for (uint i = 0; i < components; i++)
         {
           dolfin::Function funccomp = func[i];                       // take a deep copy of the component of the subfunction
           file_ << (*funccomp.vector()).min() << " ";                // minimum for all components
+        }
+
+        for (uint i = 0; i < components; i++)
+        {
+          dolfin::Function resfunccomp = resfunc[i];
+          file_ << (*resfunccomp.vector()).max() << " ";             // maximum for all components
+        }
+
+        for (uint i = 0; i < components; i++)
+        {
+          dolfin::Function resfunccomp = resfunc[i];                 // take a deep copy of the component of the subfunction
+          file_ << (*resfunccomp.vector()).min() << " ";             // minimum for all components
         }
       }
       else if (func.value_rank()==2)                                 // tensor (multiple components)
@@ -229,12 +272,31 @@ void StatisticsFile::data_field_(FunctionBucket_const_it f_begin,
             file_ << (*funccomp.vector()).max() << " ";              // maximum for all components
           }
         }
+
         for (uint i = 0; i < dim0; i++)
         {
           for (uint j = 0; j < dim1; j++)
           {
             dolfin::Function funccomp = func[i][j];                  // take a deep copy of the ijth component of the subfunction
             file_ << (*funccomp.vector()).min() << " ";              // minimum for all components
+          }
+        }
+
+        for (uint i = 0; i < dim0; i++)
+        {
+          for (uint j = 0; j < dim1; j++)
+          {
+            dolfin::Function resfunccomp = resfunc[i][j];            // take a deep copy of the ijth component of the subfunction
+            file_ << (*resfunccomp.vector()).max() << " ";           // maximum for all components
+          }
+        }
+
+        for (uint i = 0; i < dim0; i++)
+        {
+          for (uint j = 0; j < dim1; j++)
+          {
+            dolfin::Function resfunccomp = resfunc[i][j];            // take a deep copy of the ijth component of the subfunction
+            file_ << (*resfunccomp.vector()).min() << " ";           // minimum for all components
           }
         }
       }

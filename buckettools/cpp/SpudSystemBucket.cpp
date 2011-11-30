@@ -250,6 +250,10 @@ void SpudSystemBucket::fill_systemfunction_()
   buffer.str(""); buffer << name() << "::TimestepChange";
   (*changefunction_).rename( buffer.str(), buffer.str() );
 
+  residualfunction_.reset( new dolfin::Function(functionspace_) );   // declare the residual of the system as a function
+  buffer.str(""); buffer << name() << "::Residual";
+  (*residualfunction_).rename( buffer.str(), buffer.str() );
+
 }
 
 //*******************************************************************|************************************************************//
