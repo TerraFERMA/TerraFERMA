@@ -317,6 +317,40 @@ void FunctionBucket::update_nonlinear()
 }
 
 //*******************************************************************|************************************************************//
+// cap the values in the vector associated with this functionspace
+//*******************************************************************|************************************************************//
+void FunctionBucket::cap_values()
+{
+  if (lower_cap_ || upper_cap_)
+  {
+    boost::unordered_set<uint> dofs = (*(*functionspace()).dofmap()).dofs();
+
+    boost::unordered_set<uint>::const_iterator dof;
+    for (dof = dofs.begin(); dof != dofs.end(); dof++)
+    {
+      if(upper_cap_)
+      {
+        if ((*(*(*system()).function()).vector())[*dof] > *upper_cap_)
+        {
+          (*(*(*system()).function()).vector()).setitem(*dof, *upper_cap_);
+        }
+      }
+
+      if(lower_cap_)
+      {
+        if ((*(*(*system()).function()).vector())[*dof] < *lower_cap_)
+        {
+          (*(*(*system()).function()).vector()).setitem(*dof, *lower_cap_);
+        }
+      }
+
+      (*(*(*system()).function()).vector()).apply("insert");
+    }
+ 
+  }
+}
+
+//*******************************************************************|************************************************************//
 // loop over the functionals in this function bucket and attach the coefficients they request using the parent bucket data maps
 //*******************************************************************|************************************************************//
 void FunctionBucket::attach_functional_coeffs()

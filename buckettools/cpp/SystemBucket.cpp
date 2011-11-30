@@ -154,6 +154,18 @@ void SystemBucket::resetchange()
 }
 
 //*******************************************************************|************************************************************//
+// cap the value of the fields in this system
+//*******************************************************************|************************************************************//
+void SystemBucket::cap_values()
+{
+  for (FunctionBucket_it f_it = fields_begin();
+                                  f_it != fields_end(); f_it++)
+  {
+    (*(*f_it).second).cap_values();
+  }
+}
+
+//*******************************************************************|************************************************************//
 // make a partial copy of the provided system bucket with the data necessary for writing the diagnostics file(s)
 //*******************************************************************|************************************************************//
 void SystemBucket::copy_diagnostics(SystemBucket_ptr &system, Bucket_ptr &bucket) const

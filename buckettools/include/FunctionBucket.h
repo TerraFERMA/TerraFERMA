@@ -146,6 +146,8 @@ namespace buckettools
 
     void update_timedependent();                                     // update the function if it is potentially time dependent
 
+    void cap_values();                                               // cap the values in the system vector associated with a field
+
     //***************************************************************|***********************************************************//
     // Filling data
     //***************************************************************|***********************************************************//
@@ -281,6 +283,8 @@ namespace buckettools
     bool_ptr change_calculated_;                                     // indicate if the change has been recalculated recently
 
     std::string change_normtype_;                                    // norm type to evaluate the change in
+
+    double_ptr lower_cap_, upper_cap_;                               // caps on a field
 
     //***************************************************************|***********************************************************//
     // Pointers data

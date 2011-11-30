@@ -122,7 +122,8 @@ scalar_field_function_options =
     attribute rank { "0" },
     element_options_scalar,
     initial_condition_scalar+,
-    boundary_condition_scalar*
+    boundary_condition_scalar*,
+    field_manipulation_options
   )
 
 vector_field_function_options =
@@ -130,7 +131,8 @@ vector_field_function_options =
     attribute rank { "1" },
     element_options_vector,
     initial_condition_vector+,
-    boundary_condition_vector*
+    boundary_condition_vector*,
+    field_manipulation_options
   )
 
 tensor_field_function_options =
@@ -138,7 +140,23 @@ tensor_field_function_options =
     attribute rank { "2" },
     element_options_tensor,
     initial_condition_tensor+,
-    boundary_condition_tensor*
+    boundary_condition_tensor*,
+    field_manipulation_options
+  )
+
+field_manipulation_options = 
+  (
+    ## Cap the values of the field after every solve
+    element cap_values {
+      ## Do not let the maximum value exceed this cap
+      element upper_cap {
+        real
+      }?,
+      ## Do not let the minimum value fall below this cap
+      element lower_cap {
+        real
+      }?
+    }?
   )
 
 scalar_coefficient_function_expression_options =

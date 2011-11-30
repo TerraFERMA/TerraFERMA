@@ -154,6 +154,7 @@ Constants are spatially constant expressions.</a:documentation>
     <zeroOrMore>
       <ref name="boundary_condition_scalar"/>
     </zeroOrMore>
+    <ref name="field_manipulation_options"/>
   </define>
   <define name="vector_field_function_options">
     <attribute name="rank">
@@ -166,6 +167,7 @@ Constants are spatially constant expressions.</a:documentation>
     <zeroOrMore>
       <ref name="boundary_condition_vector"/>
     </zeroOrMore>
+    <ref name="field_manipulation_options"/>
   </define>
   <define name="tensor_field_function_options">
     <attribute name="rank">
@@ -178,6 +180,26 @@ Constants are spatially constant expressions.</a:documentation>
     <zeroOrMore>
       <ref name="boundary_condition_tensor"/>
     </zeroOrMore>
+    <ref name="field_manipulation_options"/>
+  </define>
+  <define name="field_manipulation_options">
+    <optional>
+      <element name="cap_values">
+        <a:documentation>Cap the values of the field after every solve</a:documentation>
+        <optional>
+          <element name="upper_cap">
+            <a:documentation>Do not let the maximum value exceed this cap</a:documentation>
+            <ref name="real"/>
+          </element>
+        </optional>
+        <optional>
+          <element name="lower_cap">
+            <a:documentation>Do not let the minimum value fall below this cap</a:documentation>
+            <ref name="real"/>
+          </element>
+        </optional>
+      </element>
+    </optional>
   </define>
   <define name="scalar_coefficient_function_expression_options">
     <attribute name="rank">

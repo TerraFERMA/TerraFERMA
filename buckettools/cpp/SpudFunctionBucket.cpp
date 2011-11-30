@@ -466,6 +466,32 @@ void SpudFunctionBucket::allocate_field_()
     icexpression_ = allocate_expression_over_regions_(buffer.str(), 
                             (*(*system_).bucket()).start_time_ptr());// allocate the expression
   }
+
+  buffer.str(""); buffer << optionpath() 
+                   << "/type/rank/cap_values";
+  if(Spud::have_option(buffer.str()))
+  {
+    buffer.str(""); buffer << optionpath() 
+                     << "/type/rank/cap_values/upper_cap";
+    if(Spud::have_option(buffer.str()))
+    {
+      upper_cap_.reset( new double );
+      serr = Spud::get_option(buffer.str(), *upper_cap_);
+      spud_err(buffer.str(), serr);
+    }
+    
+    buffer.str(""); buffer << optionpath() 
+                     << "/type/rank/cap_values/lower_cap";
+    if(Spud::have_option(buffer.str()))
+    {
+      lower_cap_.reset( new double );
+      serr = Spud::get_option(buffer.str(), *lower_cap_);
+      spud_err(buffer.str(), serr);
+    }
+
+  }
+  
+
 }
 
 //*******************************************************************|************************************************************//

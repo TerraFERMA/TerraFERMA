@@ -237,6 +237,18 @@ bool Bucket::complete()
 }
 
 //*******************************************************************|************************************************************//
+// cap the value of the fields in the systems of this bucket
+//*******************************************************************|************************************************************//
+void Bucket::cap_values()
+{
+  for (SystemBucket_it s_it = systems_begin();
+                              s_it != systems_end(); s_it++)
+  {
+    (*(*s_it).second).cap_values();
+  }
+}
+
+//*******************************************************************|************************************************************//
 // loop over the selected forms and attach the coefficients they request using the bucket data maps
 //*******************************************************************|************************************************************//
 void Bucket::attach_coeffs(Form_it f_begin, Form_it f_end)
@@ -1130,6 +1142,9 @@ void Bucket::solve_in_timeloop_()
        (*iteration_count_)++)                                        // loop over the nonlinear iterations
   {
     solve(SOLVE_TIMELOOP);                                           // solve all systems in the bucket
+
+    cap_values();                                                    // if fields have requested that their values are capped, do it
+                                                                     // now (move inside the solve?)
 
     //update_nonlinear();
   }
