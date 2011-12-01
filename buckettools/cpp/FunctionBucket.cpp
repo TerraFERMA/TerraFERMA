@@ -596,11 +596,13 @@ void FunctionBucket::output(const bool &write_vis)
   {
     if (pvdfile_)                                                    // check a pvd file is associated
     {
-      *pvdfile_ << *boost::dynamic_pointer_cast< dolfin::Function >(function());
+      *pvdfile_ << std::make_pair(&(*boost::dynamic_pointer_cast< dolfin::Function >(function())),
+                                  (*(*system()).bucket()).current_time());
     }
     if (respvdfile_)                                                 // check a residual pvd file is associated
     {
-      *respvdfile_ << *boost::dynamic_pointer_cast< dolfin::Function >(residualfunction());
+      *respvdfile_ << std::make_pair(&(*boost::dynamic_pointer_cast< dolfin::Function >(residualfunction())),
+                                     (*(*system()).bucket()).current_time());
     }
   }
 }
