@@ -86,7 +86,7 @@ class FunctionalBucket:
     ufl.append("\n")
     if self.function.system.bucket.parameters:
       ufl.append(comment("Global preamble"))
-      ufl.append(self.system.bucket.parameters+"\n")
+      ufl.append(self.function.system.bucket.parameters+"\n")
     ufl.append("\n")
     ufl.append(declaration_comment("Form", "form", self.name))
     ufl.append(self.form)
