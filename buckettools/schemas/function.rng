@@ -300,7 +300,7 @@ The minimum and maximum of functions is included.</a:documentation>
       </optional>
       <optional>
         <element name="include_residual_in_visualization">
-          <a:documentation>Include the residual of this field in the visualization output file.</a:documentation>
+          <a:documentation>Include the residual of this field in a visualization output file.</a:documentation>
           <empty/>
         </element>
       </optional>

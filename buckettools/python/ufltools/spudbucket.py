@@ -8,6 +8,10 @@ class SpudBucket(ufltools.bucket.Bucket):
 
     self.systems = []
 
+    parameters_optionpath = "/global_parameters/ufl"
+    if libspud.have_option(parameters_optionpath):
+      self.parameters = libspud.get_option(parameters_optionpath)
+
     # loop over the systems in the options tree
     for i in range(libspud.option_count("/system")):
       system_optionpath = "/system["+`i`+"]"

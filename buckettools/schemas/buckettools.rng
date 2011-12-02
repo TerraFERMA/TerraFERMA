@@ -35,10 +35,23 @@ Black options are active.</a:documentation>
         <!-- in timestepping.rnc -->
         <ref name="nonlinear"/>
       </optional>
+      <ref name="global_parameters"/>
       <oneOrMore>
         <!-- in system.rnc -->
         <ref name="system"/>
       </oneOrMore>
     </element>
   </start>
+  <define name="global_parameters">
+    <element name="global_parameters">
+      <a:documentation>Global parameter options</a:documentation>
+      <optional>
+        <element name="ufl">
+          <a:documentation>global ufl code preamble to all forms defined below.  
+Any system, field or coefficient ufl symbols defined in this options file may be used in this ufl.</a:documentation>
+          <ref name="python_code"/>
+        </element>
+      </optional>
+    </element>
+  </define>
 </grammar>

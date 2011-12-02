@@ -22,6 +22,11 @@ class SolverBucket:
     """Write the system of forms to an array."""
     ufl = []
     ufl += self.system.functions_ufl()
+    
+    if self.system.bucket.parameters:
+      ufl.append(comment("Global preamble"))
+      ufl.append(self.system.bucket.parameters+"\n")
+    
     if self.preamble:
       ufl.append(comment("Form preamble"))
       ufl.append(self.preamble+"\n")

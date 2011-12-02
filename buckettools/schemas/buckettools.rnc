@@ -31,8 +31,20 @@ start =
          timestepping?,
          # in timestepping.rnc
          nonlinear?,
+         global_parameters,
          # in system.rnc
          system+
       }
    )
 
+global_parameters = 
+   (
+     ## Global parameter options
+     element global_parameters {
+       ## global ufl code preamble to all forms defined below.  
+       ## Any system, field or coefficient ufl symbols defined in this options file may be used in this ufl.
+       element ufl {
+         python_code 
+       }?
+     }
+   )

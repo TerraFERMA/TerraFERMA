@@ -7,6 +7,7 @@ class Bucket:
 
   def __init__(self):
     """Define the expected members of the bucket class - only one really."""
+    self.parameters = None
     self.systems = None
 
   def write_ufc(self):
