@@ -35,6 +35,7 @@
     </detectors>
     <dump_periods/>
   </io>
+  <global_parameters/>
   <system name="Regions">
     <mesh name="Mesh"/>
     <ufl_symbol>

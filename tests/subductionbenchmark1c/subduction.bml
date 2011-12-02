@@ -53,6 +53,14 @@
     </detectors>
     <dump_periods/>
   </io>
+  <global_parameters>
+    <ufl>
+      <string_value type="python" lines="20">dx_plate = dx(1)
+dx_slab  = dx(2)
+dx_wedge = dx(3)
+</string_value>
+    </ufl>
+  </global_parameters>
   <system name="Solid">
     <mesh name="Mesh"/>
     <ufl_symbol>
@@ -316,10 +324,6 @@ kappa = 0.7272e-6
 kappaprime = kappa/(d*v0)
 
 etaprime = 1.0
-
-dx_plate = dx(1)
-dx_slab  = dx(2)
-dx_wedge = dx(3)
 
 FT_plate = inner(grad(T_t), kappaprime*grad(T_a))*dx_plate
 FT_wedge = T_t*inner(v_i, grad(T_a))*dx_wedge + inner(grad(T_t), kappaprime*grad(T_a))*dx_wedge

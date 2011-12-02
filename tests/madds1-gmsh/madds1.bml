@@ -29,6 +29,7 @@
     </detectors>
     <dump_periods/>
   </io>
+  <global_parameters/>
   <system name="Stokes">
     <mesh name="Mesh"/>
     <ufl_symbol>

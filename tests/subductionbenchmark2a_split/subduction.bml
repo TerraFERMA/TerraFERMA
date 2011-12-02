@@ -58,6 +58,7 @@
       <integer_value rank="0">15</integer_value>
     </nonlinear_iterations>
   </nonlinear_systems>
+  <global_parameters/>
   <system name="Stokes">
     <mesh name="Mesh"/>
     <ufl_symbol>

@@ -46,6 +46,7 @@
       </coefficient>
     </timestep>
   </timestepping>
+  <global_parameters/>
   <system name="CourantNumber">
     <mesh name="Mesh"/>
     <ufl_symbol>

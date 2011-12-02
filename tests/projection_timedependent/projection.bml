@@ -51,6 +51,7 @@
       </coefficient>
     </timestep>
   </timestepping>
+  <global_parameters/>
   <system name="SNESProjection">
     <mesh name="Mesh"/>
     <ufl_symbol>

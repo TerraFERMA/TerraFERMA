@@ -78,6 +78,7 @@
       </adaptive>
     </timestep>
   </timestepping>
+  <global_parameters/>
   <system name="magma">
     <mesh name="Mesh"/>
     <ufl_symbol>

@@ -53,6 +53,7 @@
     </detectors>
     <dump_periods/>
   </io>
+  <global_parameters/>
   <system name="Temperature">
     <mesh name="Mesh"/>
     <ufl_symbol>

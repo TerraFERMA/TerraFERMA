@@ -58,6 +58,7 @@
       </checkpoint_period_in_timesteps>
     </checkpointing>
   </io>
+  <global_parameters/>
   <system name="Solid">
     <mesh name="Mesh"/>
     <ufl_symbol>
