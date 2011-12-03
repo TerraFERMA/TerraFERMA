@@ -870,8 +870,8 @@ Expression_ptr SpudFunctionBucket::allocate_expression_over_regions_(
         if (e_it != expressions.end())
         {
           dolfin::error(                                             // if it does, issue an error
-          "Expression for region id %d already exists in expressions map.", 
-                                                      *id);
+          "Expression for region id %d defined multiple times in expression for %s.", 
+                                                      *id, name().c_str());
         }
         else
         {
