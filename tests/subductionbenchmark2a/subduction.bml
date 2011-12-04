@@ -24,9 +24,6 @@
         <real_value shape="2" dim1="dim" rank="1">60 -60</real_value>
       </point>
       <array name="Wedge">
-        <number_of_detectors>
-          <integer_value rank="0">78</integer_value>
-        </number_of_detectors>
         <python>
           <string_value lines="20" type="python">def val():
   from numpy import arange
@@ -38,9 +35,6 @@
         </python>
       </array>
       <array name="Slab">
-        <number_of_detectors>
-          <integer_value rank="0">36</integer_value>
-        </number_of_detectors>
         <python>
           <string_value lines="20" type="python">def val():
   from numpy import arange
@@ -371,7 +365,7 @@ F = FT + Fv + Fp</string_value>
           </ufl_symbol>
         </form>
         <relative_error>
-          <real_value rank="0">1.e-6</real_value>
+          <real_value rank="0">1.e-9</real_value>
         </relative_error>
         <max_iterations>
           <integer_value rank="0">100</integer_value>

@@ -33,9 +33,6 @@
         <real_value shape="2" dim1="dim" rank="1">0.5 0.5</real_value>
       </point>
       <array name="Array">
-        <number_of_detectors>
-          <integer_value rank="0">129</integer_value>
-        </number_of_detectors>
         <python>
           <string_value lines="20" type="python">def val():
   from numpy import arange

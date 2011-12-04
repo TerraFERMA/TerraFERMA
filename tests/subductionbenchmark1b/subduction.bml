@@ -24,9 +24,6 @@
         <real_value shape="2" dim1="dim" rank="1">60 -60</real_value>
       </point>
       <array name="Wedge">
-        <number_of_detectors>
-          <integer_value rank="0">78</integer_value>
-        </number_of_detectors>
         <python>
           <string_value lines="20" type="python">def val():
   from numpy import arange
@@ -38,9 +35,6 @@
         </python>
       </array>
       <array name="Slab">
-        <number_of_detectors>
-          <integer_value rank="0">36</integer_value>
-        </number_of_detectors>
         <python>
           <string_value lines="20" type="python">def val():
   from numpy import arange
