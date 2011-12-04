@@ -33,11 +33,6 @@
             <attribute name="name">
               <data type="string"/>
             </attribute>
-            <element name="number_of_detectors">
-              <a:documentation>The number of detectors returned by
-the python function (below)</a:documentation>
-              <ref name="integer"/>
-            </element>
             <element name="python">
               <a:documentation>Python function prescribing detector positions.
 
@@ -47,7 +42,7 @@ Functions should be of the form:
     # Function code
     return # Return value
 
-The return value must have length number_of_detectors (above).</a:documentation>
+The return value must have length &gt; 0 and each entry must be of the same dimension as the mesh.</a:documentation>
               <ref name="python_code"/>
             </element>
           </element>

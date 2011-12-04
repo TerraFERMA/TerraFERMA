@@ -938,11 +938,6 @@ void SpudBucket::fill_detectors_()
     detectorpath.str(""); detectorpath << "/io/detectors/array[" 
                                                         << i << "]";
     
-    int no_det;                                                      // number of detectors in array
-    buffer.str(""); buffer << detectorpath.str() << "/number_of_detectors";
-    serr = Spud::get_option(buffer.str(), no_det);
-    spud_err(buffer.str(), serr);
-
     std::string detname;                                             // detector array name
     buffer.str(""); buffer << detectorpath.str() << "/name";
     serr = Spud::get_option(buffer.str(), detname);
@@ -954,7 +949,7 @@ void SpudBucket::fill_detectors_()
     spud_err(buffer.str(), serr);
     
                                                                      // create python detectors array
-    det.reset(new PythonDetectors(no_det, dimension(), function, detname));
+    det.reset(new PythonDetectors(dimension(), function, detname));
     register_detector(det, detname, detectorpath.str());             // register detector
   }  
   

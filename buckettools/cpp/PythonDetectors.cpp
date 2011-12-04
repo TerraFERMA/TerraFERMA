@@ -11,11 +11,10 @@ using namespace buckettools;
 //*******************************************************************|************************************************************//
 // specific constructor
 //*******************************************************************|************************************************************//
-PythonDetectors::PythonDetectors(const uint &number_detectors, 
-                                 const uint &meshdim, 
+PythonDetectors::PythonDetectors(const uint &meshdim, 
                                  const std::string &function, 
                                  const std::string &name) : 
-                  GenericDetectors(number_detectors, meshdim, name), 
+                  GenericDetectors(-1, meshdim, name),               // don't know size yet
                   pyinst_(function)
 {
   init_();                                                           // initialize
@@ -56,12 +55,23 @@ void PythonDetectors::init_()
     PyErr_Print();
     dolfin::error("In PythonDetectors::init_ evaluating pResult");
   }
+
+  number_detectors_ = PyObject_Length(pResult);                      // find out how many detectors we have
+  assert(size()!=-1);
+  assert(size()>0);
     
-  for (dolfin::uint i = 0; i<number_detectors_; i++)                 // loop over the array of detectors
+  if (PyErr_Occurred()){                                             // check for errors evaluating user code
+    PyErr_Print();
+    dolfin::error("In PythonDetectors::init_ evaluating pResult");
+  }
+    
+  for (dolfin::uint i = 0; i<size(); i++)                            // loop over the array of detectors
   {
     pResultItem = PySequence_GetItem(pResult, i);                    // get an item out of the sequence of the results
     
     point.reset(new dolfin::Array<double>(meshdim_));                // set the item as a new dolfin array
+
+    assert(PyObject_Length(pResultItem)==meshdim_);                  // check this item in the list is meshdim_ long
     
     for (dolfin::uint j = 0; j<meshdim_; j++)                        // loop over the coordinate dimension
     {

@@ -32,11 +32,6 @@ detectors_options =
         ## Define an array of detectors using python.  The name of the array must be unique amongst all detectors.
         element array {
           attribute name { xsd:string },
-          ## The number of detectors returned by
-          ## the python function (below)
-          element number_of_detectors {
-            integer
-          },
           ## Python function prescribing detector positions.
           ##
           ## Functions should be of the form:
@@ -45,7 +40,7 @@ detectors_options =
           ##     # Function code
           ##     return # Return value
           ##
-          ## The return value must have length number_of_detectors (above).
+          ## The return value must have length > 0 and each entry must be of the same dimension as the mesh.
           element python {
             python_code
           }

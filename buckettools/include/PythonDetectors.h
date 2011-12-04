@@ -27,8 +27,7 @@ namespace buckettools
     // Constructors and destructors
     //***************************************************************|***********************************************************//
 
-    PythonDetectors(const uint &number_detectors, 
-                    const uint &meshdim, 
+    PythonDetectors(const uint &meshdim, 
                     const std::string &function, 
                     const std::string &name);
     
