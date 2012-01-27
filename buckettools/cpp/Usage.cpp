@@ -8,6 +8,7 @@
 #include "EventHandler.h"
 #include "SigIntEventHandler.h"
 #include <signal.h>
+#include <cstdio>
 
 using namespace buckettools;
 
