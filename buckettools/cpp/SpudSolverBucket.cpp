@@ -484,8 +484,16 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
                            *(*nullvec).vec(), INSERT_VALUES, 
                            SCATTER_FORWARD); 
       CHKERRV(perr);
+      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
+      perr = VecScatterDestroy(&scatter); CHKERRV(perr);              // necessary or taken care of when object leaves scope?
+      #else
       perr = VecScatterDestroy(scatter); CHKERRV(perr);              // necessary or taken care of when object leaves scope?
+      #endif
+      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
+      perr = ISDestroy(&is); CHKERRV(perr);                           // necessary or taken care of when object leaves scope?
+      #else
       perr = ISDestroy(is); CHKERRV(perr);                           // necessary or taken care of when object leaves scope?
+      #endif
       (*nullvec).apply("");                                          // finish assembly of the null vector, just in case
 
       nullvecs.push_back(nullvec);                                   // keep the null vector in scope by grabbing a reference to it
@@ -499,7 +507,11 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
                                                         vecs, &SP); 
     CHKERRV(perr);
     perr = KSPSetNullSpace(ksp, SP); CHKERRV(perr);                  // attach it to the ksp
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
+    perr = MatNullSpaceDestroy(&SP); CHKERRV(perr);                   // destroy the null space object, necessary?
+    #else
     perr = MatNullSpaceDestroy(SP); CHKERRV(perr);                   // destroy the null space object, necessary?
+    #endif
   }
 
   std::string preconditioner;
@@ -614,8 +626,24 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
                         indices, parent_indices,
                         &(child_indices[i-1]));
     }
+
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
+    buffer.str(""); buffer << optionpath << 
+                                        "/fieldsplit[" 
+                                         << i << "]/name";
+    std::string fsname;
+    serr = Spud::get_option(buffer.str(), fsname);
+    spud_err(buffer.str(), serr);
+    
+    buffer.str(""); buffer << prefix << fsname;
+    perr = PCFieldSplitSetIS(pc, buffer.str().c_str(), is);          // set the fs using that IS
+    CHKERRV(perr);
+    perr = ISDestroy(&is); CHKERRV(perr);                            // destroy the IS, necessary?
+    #else
     perr = PCFieldSplitSetIS(pc, is); CHKERRV(perr);                 // set the fs using that IS
     perr = ISDestroy(is); CHKERRV(perr);                             // destroy the IS, necessary?
+    #endif
+
     child_indices.push_back(indices);                                // record the indices of the global vector that made it into
   }                                                                  // IS (and hence the fieldsplit)
 
@@ -1042,7 +1070,12 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
     assert(ind==n);                                                  // these should be equal
   }
 
+  #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
+  perr = ISCreateGeneral(PETSC_COMM_WORLD, n, indices, 
+                                    PETSC_OWN_POINTER, &is);         // create the general index set based on the indices
+  #else
   perr = ISCreateGeneral(PETSC_COMM_WORLD, n, indices, &is);         // create the general index set based on the indices
+  #endif
   CHKERRV(perr);
   if (Spud::have_option(optionpath+"/monitors/view_index_set"))
   {
@@ -1056,7 +1089,10 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
     perr = ISView(is, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);      // isview?
   }
 
+  #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
+  #else
   PetscFree(indices);                                                // free the PetscInt array of indices
+  #endif
    
 }
 

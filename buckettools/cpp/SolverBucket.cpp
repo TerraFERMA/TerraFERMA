@@ -37,12 +37,20 @@ SolverBucket::~SolverBucket()
 
   if(type()=="SNES")
   {
-    perr = SNESDestroy(snes_); CHKERRV(perr);                        // destroy the snes object
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
+    perr = SNESDestroy(&snes_); CHKERRV(perr);                        // destroy the snes object
+    #else
+    perr = SNESDestroy(snes_); CHKERRV(perr);                         // destroy the snes object
+    #endif
   }
 
   if(type()=="Picard")
   {
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
+    perr = KSPDestroy(&ksp_); CHKERRV(perr);                          // destroy the ksp object
+    #else
     perr = KSPDestroy(ksp_); CHKERRV(perr);                          // destroy the ksp object
+    #endif
   }
 
 }
