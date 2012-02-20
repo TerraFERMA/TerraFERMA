@@ -302,7 +302,9 @@ r = rv + rp + rT</string_value>
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
-        <snes_type name="ls"/>
+        <snes_type name="ls">
+          <ls_type name="cubic"/>
+        </snes_type>
         <relative_error>
           <real_value rank="0">1.e-5</real_value>
         </relative_error>
@@ -349,7 +351,9 @@ r = rv + rp + rT</string_value>
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
-        <snes_type name="ls"/>
+        <snes_type name="ls">
+          <ls_type name="cubic"/>
+        </snes_type>
         <relative_error>
           <real_value rank="0">1.e-7</real_value>
         </relative_error>

@@ -399,7 +399,9 @@ F = FT + Fv + Fp</string_value>
           </ufl_symbol>
           <ident_zeros/>
         </form>
-        <snes_type name="ls"/>
+        <snes_type name="ls">
+          <ls_type name="cubic"/>
+        </snes_type>
         <relative_error>
           <real_value rank="0">1.e-14</real_value>
         </relative_error>
