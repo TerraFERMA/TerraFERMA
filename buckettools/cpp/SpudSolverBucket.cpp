@@ -65,6 +65,63 @@ void SpudSolverBucket::fill()
     spud_err(buffer.str(), serr);
     perr = SNESSetType(snes_, snestype.c_str()); CHKERRV(perr); 
 
+    if(snestype=="ls")
+    {
+      std::string lstype;
+      buffer.str(""); buffer << optionpath() << "/type/snes_type::ls/ls_type/name";
+      serr = Spud::get_option(buffer.str(), lstype);                // set the snes type... cubic is the most common
+      spud_err(buffer.str(), serr);
+      if (lstype=="cubic")
+      {
+        perr = SNESLineSearchSet(snes_, SNESLineSearchCubic, PETSC_NULL); CHKERRV(perr); 
+      }
+      else if (lstype=="quadratic")
+      {
+        perr = SNESLineSearchSet(snes_, SNESLineSearchQuadratic, PETSC_NULL); CHKERRV(perr); 
+      }
+      else if (lstype=="basic")
+      {
+        perr = SNESLineSearchSet(snes_, SNESLineSearchNo, PETSC_NULL); CHKERRV(perr); 
+      }
+      else if (lstype=="basicnonorms")
+      {
+        perr = SNESLineSearchSet(snes_, SNESLineSearchNoNorms, PETSC_NULL); CHKERRV(perr); 
+      }
+      else
+      {
+        dolfin::error("Unknown snes ls type.");
+      }
+
+      buffer.str(""); buffer << optionpath() << "/type/snes_type::ls/alpha";
+      double alpha;
+      serr = Spud::get_option(buffer.str(), alpha, 1.e-4);
+      spud_err(buffer.str(), serr);
+
+      buffer.str(""); buffer << optionpath() << "/type/snes_type::ls/max_step";
+      double maxstep;
+      serr = Spud::get_option(buffer.str(), maxstep, 1.e8);
+      spud_err(buffer.str(), serr);
+       
+      buffer.str(""); buffer << optionpath() << "/type/snes_type::ls/min_lambda";
+      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
+      #else
+      if (Spud::have_option(buffer.str()))
+      {
+        dolfin::error("Cannot set snes ls min_lambda with PETSc < 3.2.");
+      }
+      #endif
+      double minlambda;
+      serr = Spud::get_option(buffer.str(), minlambda, 1.e-12);
+      spud_err(buffer.str(), serr);
+
+      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
+      perr = SNESLineSearchSetParams(snes_, alpha, maxstep, minlambda); CHKERRV(perr);
+      #else
+      perr = SNESLineSearchSetParams(snes_, alpha, maxstep); CHKERRV(perr);
+      #endif
+       
+    }
+
     buffer.str(""); buffer << optionpath() 
                                         << "/type/monitors/residual";
     if (Spud::have_option(buffer.str()))

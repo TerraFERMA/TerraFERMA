@@ -188,7 +188,76 @@ If undefined the jacobian bilinear form above will be used to precondition itsel
         <attribute name="name">
           <value>ls</value>
         </attribute>
-        <empty/>
+        <choice>
+          <element name="ls_type">
+            <a:documentation>Performs a cubic line search (default line search method).</a:documentation>
+            <attribute name="name">
+              <value>cubic</value>
+            </attribute>
+            <empty/>
+          </element>
+          <element name="ls_type">
+            <a:documentation>Performs a quadratic line search.</a:documentation>
+            <attribute name="name">
+              <value>quadratic</value>
+            </attribute>
+            <empty/>
+          </element>
+          <element name="ls_type">
+            <a:documentation>This routine is not a line search at all; it simply uses the full Newton step.  
+Thus, this routine is intended to serve as a template and is not recommended for general use.</a:documentation>
+            <attribute name="name">
+              <value>basic</value>
+            </attribute>
+            <empty/>
+          </element>
+          <element name="ls_type">
+            <a:documentation>This routine is not a line search at all; it simply uses the full Newton step.  
+This version does not even compute the norm of the function or search direction; 
+this is intended only when you know the full step is fine and are not checking for 
+convergence of the nonlinear iteration (for example, you are running always for a 
+fixed number of Newton steps).</a:documentation>
+            <attribute name="name">
+              <value>basicnonorms</value>
+            </attribute>
+            <empty/>
+          </element>
+        </choice>
+        <optional>
+          <element name="alpha">
+            <a:documentation>The scalar such that .5*f_{n+1} . f_{n+1} &lt;= .5*f_n . f_n - alpha |p_n . J . f_n|.
+
+We are finding the zero of f() so the one dimensional minimization problem we are 
+solving in the line search is minimize .5*f(x_n + lambda*step_direction) . f(x_n + lambda*step_direction)
+
+Defaults to 1.e-4 if unset.</a:documentation>
+            <ref name="real"/>
+          </element>
+        </optional>
+        <optional>
+          <element name="max_step">
+            <a:documentation>The maximum norm of the update vector.
+
+We are finding the zero of f() so the one dimensional minimization problem we are 
+solving in the line search is minimize .5*f(x_n + lambda*step_direction) . f(x_n + lambda*step_direction)
+
+Defaults to 1.e8 if unset.</a:documentation>
+            <ref name="real"/>
+          </element>
+        </optional>
+        <optional>
+          <element name="min_lambda">
+            <a:documentation>lambda is not allowed to be smaller than minlambda/( max_i y[i]/x[i]).
+
+We are finding the zero of f() so the one dimensional minimization problem we are 
+solving in the line search is minimize .5*f(x_n + lambda*step_direction) . f(x_n + lambda*step_direction)
+
+NOTE: setting this parameter is only available when using PETSc &gt;= 3.2, it will error with older versions.
+
+Defaults to 1.e-12 if unset.</a:documentation>
+            <ref name="real"/>
+          </element>
+        </optional>
       </element>
       <element name="snes_type">
         <a:documentation>The SNES type.</a:documentation>
