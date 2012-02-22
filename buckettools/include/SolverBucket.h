@@ -75,6 +75,8 @@ namespace buckettools
     const PETScVector_ptr residual_vector() const                    // return the residual of this solver
     { return res_; }
 
+    const int picard_iteration_count() const;                        // return the number of Picard iterations taken
+
     //***************************************************************|***********************************************************//
     // Form data access
     //***************************************************************|***********************************************************//
@@ -135,6 +137,8 @@ namespace buckettools
     double rtol_, atol_, stol_;                                      // nonlinear solver tolerances
 
     int minits_, maxits_, maxfes_;                                   // nonlinear solver iteration counts
+
+    int_ptr picard_iteration_count_;                                 // nonlinear iterations taken (*only for Picard*)
 
     bool ident_zeros_, ident_zeros_pc_;                              // replace zero rows with the identity (matrix and pc)
 

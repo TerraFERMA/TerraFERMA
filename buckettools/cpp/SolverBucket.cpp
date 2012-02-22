@@ -77,7 +77,7 @@ void SolverBucket::solve()
   else if (type()=="Picard")                                         // this is a hand-rolled picard iteration - FIXME: switch to enum
   {
 
-    uint it = 0;                                                     // an iteration counter
+    *picard_iteration_count_ = 0;                                    // an iteration counter
 
     assert(residual_);                                               // we need to assemble the residual again here as it may depend
                                                                      // on other systems that have been solved since the last call
@@ -105,16 +105,17 @@ void SolverBucket::solve()
       rerror = aerror/aerror0;                                       // relative error, starts out as 1.
     }
 
-    dolfin::info("%u Error (absolute, relative) = %g, %g\n", 
-                                              it, aerror, rerror);
+    dolfin::info("  %u Picard Residual Norm (absolute, relative) = %g, %g\n", 
+                                    picard_iteration_count(), aerror, rerror);
 
     (*(*(*system_).iteratedfunction()).vector()) =                   // system iterated function gets set to the function values
                                 (*(*(*system_).function()).vector());
 
-    while (it < minits_ ||                                           // loop for the minimum number of iterations or
-          (it < maxits_ && rerror > rtol_ && aerror > atol_))        // until the max is reached or a tolerance criterion is
+    while (picard_iteration_count() < minits_ ||                     // loop for the minimum number of iterations or
+          (picard_iteration_count() < maxits_ &&                     // up to the maximum number of iterations 
+                           rerror > rtol_ && aerror > atol_))        // until the max is reached or a tolerance criterion is
     {                                                                // satisfied
-      it++;                                                          // increment iteration counter
+      (*picard_iteration_count_)++;                                  // increment iteration counter
 
       dolfin::assemble(*matrix_, *bilinear_, false);                 // assemble bilinear form
       dolfin::assemble(*rhs_, *linear_, false);                      // assemble linear form
@@ -178,14 +179,14 @@ void SolverBucket::solve()
       aerror = (*res_).norm("l2");                                   // work out absolute error
       rerror = aerror/aerror0;                                       // and relative error
       dolfin::info("%u Error (absolute, relative) = %g, %g\n", 
-                                            it, aerror, rerror);
+                          picard_iteration_count(), aerror, rerror);
                                                                      // and decide to loop or not...
 
     }
 
-    if (it == maxits_ && rerror > rtol_ && aerror > atol_)
+    if (picard_iteration_count() == maxits_ && rerror > rtol_ && aerror > atol_)
     {
-      dolfin::log(dolfin::WARNING, "it = %d, maxits_ = %d", it, maxits_);
+      dolfin::log(dolfin::WARNING, "it = %d, maxits_ = %d", picard_iteration_count(), maxits_);
       dolfin::log(dolfin::WARNING, "rerror = %f, rtol_ = %f", rerror, rtol_);
       dolfin::log(dolfin::WARNING, "aerror = %f, atol_ = %f", aerror, atol_);
       if (ignore_failures_)
@@ -275,6 +276,7 @@ void SolverBucket::copy_diagnostics(SolverBucket_ptr &solver, SystemBucket_ptr &
     solver.reset( new SolverBucket(&(*system)) );
   }
 
+  (*solver).picard_iteration_count_ = picard_iteration_count_;
   (*solver).name_ = name_;
   (*solver).type_ = "Dummy";                                         // this is done to ensure that the petsc destroy routines
                                                                      // are not called by the destructor
@@ -331,6 +333,14 @@ void SolverBucket::initialize_matrices()
 
   }
 
+}
+
+//*******************************************************************|************************************************************//
+// return the number of Picard nonlinear iterations taken
+//*******************************************************************|************************************************************//
+const int SolverBucket::picard_iteration_count() const
+{
+  return *picard_iteration_count_;
 }
 
 //*******************************************************************|************************************************************//

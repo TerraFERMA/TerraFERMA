@@ -158,6 +158,9 @@ void SpudSolverBucket::fill()
 
     perr = KSPCreate(PETSC_COMM_WORLD, &ksp_); CHKERRV(perr);        // create a ksp object from the variable in the solverbucket
 
+    picard_iteration_count_.reset( new int );
+    *picard_iteration_count_ = 0;
+
     buffer.str(""); buffer << optionpath() << "/type/linear_solver"; // figure out the linear solver optionspath
     fill_ksp_(buffer.str(), ksp_, prefix.str());                     // fill the ksp data
 
