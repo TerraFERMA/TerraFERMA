@@ -128,10 +128,8 @@ const double SystemBucket::maxchange()
 //*******************************************************************|************************************************************//
 void SystemBucket::updatechange()
 {
-  if (!*change_calculated_)
+  if (!*change_calculated_ && changefunction_)                       // changefunction_ won't be associated for systems with no fields
   {
-    assert(changefunction_);
-
     (*(*changefunction_).vector()) = (*(*function_).vector());       // before updating the oldfunction to the new values
     (*(*changefunction_).vector()) -= (*(*oldfunction_).vector());   // update the change in the fields over this timesteps
 

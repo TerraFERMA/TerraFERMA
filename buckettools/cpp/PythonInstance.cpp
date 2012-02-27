@@ -48,6 +48,11 @@ void PythonInstance::init_()
   pCode_ = PyRun_String((char*)function_.c_str(), Py_file_input,     // run the function string 
                                               pGlobals_, pLocals_);
   
+  if (PyErr_Occurred()){                                             // check for errors in getting the function
+    PyErr_Print();
+    dolfin::error("In PythonInstance::init_");
+  }
+
   pFunc_ = PyDict_GetItemString(pLocals_, "val");                    // get the val function from the function string
 
   std::stringstream pythonbuffer;                                    // set up a simple python command to check how many 
