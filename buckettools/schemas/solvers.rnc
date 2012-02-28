@@ -93,6 +93,14 @@ picard =
     element min_iterations {
       integer
     }?,
+    ## Options to give extra information for each iteration of the
+    ## the Picard solve. Some of those may really slow down your computation!
+    element monitors {
+       ## Print norms of vectors and matrices to stdout log
+       element norms {
+          empty
+       }?
+    },
     ## Options describing a linear solver.
     element linear_solver {
       linear_solver_options
@@ -256,6 +264,10 @@ snes =
        }?,
        ## Plot a graph of the solution with each iteration.
        element solution_graph {
+          empty
+       }?,
+       ## Print norms of vectors and matrices to stdout log
+       element norms {
           empty
        }?
     },

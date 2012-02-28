@@ -77,6 +77,9 @@ namespace buckettools
 
     const int picard_iteration_count() const;                        // return the number of Picard iterations taken
 
+    const bool monitor_norms() const                                 // return true if norms should be monitored in nonlinear iterations
+    { return monitornorms_; }
+
     //***************************************************************|***********************************************************//
     // Form data access
     //***************************************************************|***********************************************************//
@@ -149,6 +152,8 @@ namespace buckettools
     std::string type_;                                               // solver type (string)
 
     SystemBucket* system_;                                           // parent system
+
+    bool monitornorms_;                                              // monitor the norms in nonlinear iterations
 
     //***************************************************************|***********************************************************//
     // Pointers data

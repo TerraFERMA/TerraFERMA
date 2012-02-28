@@ -288,6 +288,10 @@ void SpudSolverBucket::fill_base_()
                                 "/type/ignore_all_solver_failures";
   ignore_failures_ = Spud::have_option(buffer.str());
 
+  buffer.str(""); buffer << optionpath() << 
+                                "/type/monitors/norms";
+  monitornorms_ = Spud::have_option(buffer.str());
+
 }
 
 //*******************************************************************|************************************************************//

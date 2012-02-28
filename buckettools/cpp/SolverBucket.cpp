@@ -159,6 +159,38 @@ void SolverBucket::solve()
         CHKERRV(perr);
       }
 
+      if (monitor_norms())
+      {
+        PetscReal norm;
+
+        perr = VecNorm(*(*rhs_).vec(),NORM_2,&norm); CHKERRV(perr);
+        dolfin::log(dolfin::get_log_level(), "Picard: 2-norm rhs = %f", norm);
+
+        perr = VecNorm(*(*rhs_).vec(),NORM_INFINITY,&norm); CHKERRV(perr);
+        dolfin::log(dolfin::get_log_level(), "Picard: inf-norm rhs = %f", norm);
+
+        perr = VecNorm(*(*work_).vec(),NORM_2,&norm); CHKERRV(perr);
+        dolfin::log(dolfin::get_log_level(), "Picard: 2-norm work = %f", norm);
+
+        perr = VecNorm(*(*work_).vec(),NORM_INFINITY,&norm); CHKERRV(perr);
+        dolfin::log(dolfin::get_log_level(), "Picard: inf-norm work = %f", norm);
+
+        perr = MatNorm(*(*matrix_).mat(),NORM_FROBENIUS,&norm); CHKERRV(perr);
+        dolfin::log(dolfin::get_log_level(), "Picard: Frobenius norm matrix = %f", norm);
+
+        perr = MatNorm(*(*matrix_).mat(),NORM_INFINITY,&norm); CHKERRV(perr);
+        dolfin::log(dolfin::get_log_level(), "Picard: inf-norm matrix = %f", norm);
+
+        if (bilinearpc_)
+        {
+          perr = MatNorm(*(*matrixpc_).mat(),NORM_FROBENIUS,&norm); CHKERRV(perr);
+          dolfin::log(dolfin::get_log_level(), "Picard: Frobenius norm matrix pc = %f", norm);
+
+          perr = MatNorm(*(*matrixpc_).mat(),NORM_INFINITY,&norm); CHKERRV(perr);
+          dolfin::log(dolfin::get_log_level(), "Picard: inf-norm matrix pc = %f", norm);
+        }
+      }
+
       perr = KSPSetUp(ksp_); CHKERRV(perr);                          // set up the ksp
 
       *work_ = (*(*(*system_).iteratedfunction()).vector());         // set the work vector to the iterated function
@@ -178,7 +210,7 @@ void SolverBucket::solve()
 
       aerror = (*res_).norm("l2");                                   // work out absolute error
       rerror = aerror/aerror0;                                       // and relative error
-      dolfin::info("%u Error (absolute, relative) = %g, %g\n", 
+      dolfin::info("  %u Picard Residual Norm (absolute, relative) = %g, %g\n", 
                           picard_iteration_count(), aerror, rerror);
                                                                      // and decide to loop or not...
 
@@ -300,6 +332,7 @@ void SolverBucket::initialize_matrices()
     ctx_.bcs          = (*system_).bcs();
     ctx_.iteratedfunction = (*system_).iteratedfunction();
     ctx_.bucket       = (*system_).bucket();
+    ctx_.solver       = this;
   }
 
   assemble_bilinearforms(true);                                      // perform preassembly of the bilinear forms

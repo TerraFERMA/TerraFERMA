@@ -34,7 +34,8 @@ void buckettools::usage(char *cmd)
   std::cerr << std::endl << std::endl << "Usage: " << cmd << " [options ...] [simulation-file]" << std::endl
       << std::endl << "Options:" << std::endl
       <<" -h, --help" << std::endl << "\tHelp! Prints this message."  << std::endl
-      <<" -l, --log" << std::endl << "\tCreate log and error file for each process." << std::endl
+      <<" -l, --log" << std::endl << "\tCreate log (redirects stdout) and error (redirects stderr) file for each process." << std::endl
+      <<" -p, --petsc-info" << std::endl << "\tPETSc verbose output to stdout." << std::endl
       <<" -v <level>, --verbose" << std::endl << "\tVerbose output to stdout, default level dolfin::WARNING (30)." << std::endl
       <<" -V, --version" << std::endl << "\tVersion information ." << std::endl;
   return;
@@ -131,11 +132,12 @@ int buckettools::parse_verbosity(const std::string &verbosity)
 void buckettools::parse_arguments(int argc, char** argv)
 {
   struct option long_options[] = {                                   // a structure linking long option names with their short equivalents
-    {"help",    no_argument,       0, 'h'},
-    {"log",     no_argument,       0, 'l'},
-    {"verbose", optional_argument, 0, 'v'},
-    {"version", no_argument,       0, 'V'},
-    {0,         0,                 0, 0}                             // terminated with an array of zeros
+    {"help",       no_argument,       0, 'h'},
+    {"log",        no_argument,       0, 'l'},
+    {"petsc-info", no_argument,       0, 'p'},
+    {"verbose",    optional_argument, 0, 'v'},
+    {"version",    no_argument,       0, 'V'},
+    {0,            0,                 0, 0}                             // terminated with an array of zeros
   };
   int option_index = 0;
   int verbosity;
@@ -151,7 +153,7 @@ void buckettools::parse_arguments(int argc, char** argv)
 
   dolfin::init(petscargc, petscargv);
 
-  while ((c = getopt_long(argc, argv, "hlv::V", long_options, &option_index))!=-1){
+  while ((c = getopt_long(argc, argv, "hlpv::V", long_options, &option_index))!=-1){
     switch (c){
     case 'h':
       command_line_options["help"] = "";
@@ -159,6 +161,10 @@ void buckettools::parse_arguments(int argc, char** argv)
 
     case 'l':
       command_line_options["log"] = "";
+      break;
+
+    case 'p':
+      command_line_options["petsc-info"] = "";
       break;
 
     case 'v':
@@ -198,6 +204,12 @@ void buckettools::parse_arguments(int argc, char** argv)
 
   dolfin::set_log_active(true);
   dolfin::set_log_level(verbosity);
+
+  if(command_line_options.count("petsc-info"))                       // petsc-info
+  {
+    PetscErrorCode perr;                                             // petsc error code
+    perr = PetscInfoAllow(PETSC_TRUE, PETSC_NULL); CHKERRV(perr);
+  }
 
   if(command_line_options.count("log"))                              // std::err/std::out
   {

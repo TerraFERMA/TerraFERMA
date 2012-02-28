@@ -22,6 +22,7 @@ namespace buckettools
     std::vector<BoundaryCondition_ptr> bcs;                          // bcs
     Function_ptr iteratedfunction;                                   // work function
     Bucket *bucket;                                                  // pointer to bucket
+    SolverBucket *solver;                                            // pointer to solver
   } SNESCtx;
 
   PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void* ctx);   // petsc snes callback function to form the residual
