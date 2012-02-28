@@ -278,6 +278,7 @@ F = FT</string_value>
         <max_iterations>
           <integer_value rank="0">10</integer_value>
         </max_iterations>
+        <monitors/>
         <linear_solver>
           <iterative_method name="preonly"/>
           <preconditioner name="lu">

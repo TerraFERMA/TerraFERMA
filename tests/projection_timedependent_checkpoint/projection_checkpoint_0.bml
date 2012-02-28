@@ -558,6 +558,7 @@ F = F1 + F2</string_value>
         <max_iterations>
           <integer_value rank="0">10</integer_value>
         </max_iterations>
+        <monitors/>
         <linear_solver>
           <iterative_method name="cg">
             <relative_error>

@@ -225,6 +225,7 @@ F = Fv + Fp</string_value>
         <max_iterations>
           <integer_value rank="0">10</integer_value>
         </max_iterations>
+        <monitors/>
         <linear_solver>
           <iterative_method name="preonly"/>
           <preconditioner name="lu">
@@ -430,6 +431,7 @@ F = FT</string_value>
         <max_iterations>
           <integer_value rank="0">10</integer_value>
         </max_iterations>
+        <monitors/>
         <linear_solver>
           <iterative_method name="preonly"/>
           <preconditioner name="lu">
@@ -504,6 +506,7 @@ r = d_t*d_a*dx_wedge - d_t*div(v_i)*dx_wedge</string_value>
         <max_iterations>
           <integer_value rank="0">1</integer_value>
         </max_iterations>
+        <monitors/>
         <linear_solver>
           <iterative_method name="preonly"/>
           <preconditioner name="fieldsplit">

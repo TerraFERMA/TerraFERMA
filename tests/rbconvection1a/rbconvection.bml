@@ -389,6 +389,7 @@ r = rv + rp + rT</string_value>
         </max_iterations>
         <monitors>
           <residual/>
+          <norms/>
         </monitors>
         <linear_solver>
           <iterative_method name="fgmres">
@@ -570,6 +571,9 @@ r = rv + rp + rT</string_value>
         <max_iterations>
           <integer_value rank="0">1</integer_value>
         </max_iterations>
+        <monitors>
+          <norms/>
+        </monitors>
         <linear_solver>
           <iterative_method name="cg">
             <relative_error>
@@ -656,6 +660,7 @@ r = c_t*c_a*dx - c_t('+')*vout('+')*dt('+')*dS - c_t('-')*vout('-')*dt('-')*dS -
         <max_iterations>
           <integer_value rank="0">1</integer_value>
         </max_iterations>
+        <monitors/>
         <linear_solver>
           <iterative_method name="preonly"/>
           <preconditioner name="jacobi"/>
@@ -728,6 +733,7 @@ r = adt_t*adt_a*dx - adt_t*recc*dx</string_value>
         <max_iterations>
           <integer_value rank="0">1</integer_value>
         </max_iterations>
+        <monitors/>
         <linear_solver>
           <iterative_method name="preonly"/>
           <preconditioner name="jacobi"/>
