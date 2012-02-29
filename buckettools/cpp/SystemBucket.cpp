@@ -764,16 +764,21 @@ const std::string SystemBucket::solvers_str(const int &indent) const
 //*******************************************************************|************************************************************//
 void SystemBucket::checkpoint()
 {
-  std::stringstream buffer;                                          // optionpath buffer
+  if (function())
+  {
 
-  buffer.str(""); buffer << (*bucket()).output_basename() << "_" 
-                         << name() << "_" 
-                         << (*bucket()).checkpoint_count() << ".xml";
-  dolfin::File sysfile(buffer.str());
-  sysfile << *function();
+    std::stringstream buffer;                                        // optionpath buffer
 
-  for (FunctionBucket_it f_it = fields_begin();
-                         f_it != fields_end(); f_it++)
+    buffer.str(""); buffer << (*bucket()).output_basename() << "_" 
+                           << name() << "_" 
+                           << (*bucket()).checkpoint_count() << ".xml";
+    dolfin::File sysfile(buffer.str());
+    sysfile << *function();
+
+  }
+
+  for (FunctionBucket_it f_it = fields_begin();                      // if there's no function then there should be no fields
+                         f_it != fields_end(); f_it++)               // so this is a bit redundant outside the above if statement
   {
     (*(*f_it).second).checkpoint();
   }
