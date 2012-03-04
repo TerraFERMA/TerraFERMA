@@ -121,7 +121,7 @@
         <include_in_visualization/>
         <include_in_statistics>
           <functional name="IntegralPressure">
-            <string_value lines="20" type="python">int = p*dx</string_value>
+            <string_value lines="20" type="code" language="python">int = p*dx</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
@@ -146,7 +146,7 @@
           </element>
           <initial_condition type="initial_condition" name="WholeMesh">
             <python rank="0">
-              <string_value lines="20" type="python"># Initialize to single solitary wave profile 
+              <string_value lines="20" type="code" language="python"># Initialize to single solitary wave profile 
 # using PySolwave routines ... need to set python path appropriately 
 
 from solitarywave import *
@@ -199,7 +199,7 @@ def val(x):
         <include_in_visualization/>
         <include_in_statistics>
           <functional name="Integral">
-            <string_value lines="20" type="python">int = f*dx</string_value>
+            <string_value lines="20" type="code" language="python">int = f*dx</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
@@ -231,7 +231,7 @@ def val(x):
     <nonlinear_solver name="Solver">
       <type name="SNES">
         <form name="Residual" rank="0">
-          <string_value lines="20" type="python"># h_on_delta: height of domain in compaction lengths
+          <string_value lines="20" type="code" language="python"># h_on_delta: height of domain in compaction lengths
 h_on_delta = 64.
 hsquared = h_on_delta**2
 
@@ -256,7 +256,7 @@ r = rp + rf</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
-          <string_value lines="20" type="python">a = derivative(r, us_i, us_a)</string_value>
+          <string_value lines="20" type="code" language="python">a = derivative(r, us_i, us_a)</string_value>
           <ufl_symbol>
             <string_value lines="1">a</string_value>
           </ufl_symbol>
@@ -361,26 +361,26 @@ r = rp + rf</string_value>
     <nonlinear_solver name="Solver">
       <type name="Picard">
         <preamble>
-          <string_value lines="20" type="python">n = c_e.cell().n
+          <string_value lines="20" type="code" language="python">n = c_e.cell().n
 vn = dot(W, n)
 vout = 0.5*(vn + abs(vn))
 
 r = c_t*c_a*dx - c_t('+')*vout('+')*dt('+')*dS - c_t('-')*vout('-')*dt('-')*dS - c_t*vout*dt*ds(1) - c_t*vout*dt*ds(2) - c_t*vout*dt*ds(3) - c_t*vout*dt*ds(4)</string_value>
         </preamble>
         <form name="Bilinear" rank="1">
-          <string_value lines="20" type="python">a = lhs(r)</string_value>
+          <string_value lines="20" type="code" language="python">a = lhs(r)</string_value>
           <ufl_symbol>
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
         <form name="Linear" rank="0">
-          <string_value lines="20" type="python">L = rhs(r)</string_value>
+          <string_value lines="20" type="code" language="python">L = rhs(r)</string_value>
           <ufl_symbol>
             <string_value lines="1">L</string_value>
           </ufl_symbol>
         </form>
         <form name="Residual" rank="0">
-          <string_value lines="20" type="python">res = action(a, uc_i) - L</string_value>
+          <string_value lines="20" type="code" language="python">res = action(a, uc_i) - L</string_value>
           <ufl_symbol>
             <string_value lines="1">res</string_value>
           </ufl_symbol>

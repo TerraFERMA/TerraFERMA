@@ -76,7 +76,7 @@
       <diagnostics>
         <include_in_statistics>
           <functional name="Integral">
-            <string_value lines="20" type="python">int = ss1*dx</string_value>
+            <string_value lines="20" type="code" language="python">int = ss1*dx</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
@@ -108,13 +108,13 @@
       <diagnostics>
         <include_in_statistics>
           <functional name="Integral0">
-            <string_value lines="20" type="python">int = ss2[0]*dx</string_value>
+            <string_value lines="20" type="code" language="python">int = ss2[0]*dx</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
           </functional>
           <functional name="Integral1">
-            <string_value lines="20" type="python">int = ss2[1]*dx</string_value>
+            <string_value lines="20" type="code" language="python">int = ss2[1]*dx</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
@@ -138,7 +138,7 @@
       <diagnostics>
         <include_in_statistics>
           <functional name="Integral">
-            <string_value lines="20" type="python">int = ss1*dx</string_value>
+            <string_value lines="20" type="code" language="python">int = ss1*dx</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
@@ -162,13 +162,13 @@
       <diagnostics>
         <include_in_statistics>
           <functional name="Integral0">
-            <string_value lines="20" type="python">int = ss2[0]*dx</string_value>
+            <string_value lines="20" type="code" language="python">int = ss2[0]*dx</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
           </functional>
           <functional name="Integral1">
-            <string_value lines="20" type="python">int = ss2[1]*dx</string_value>
+            <string_value lines="20" type="code" language="python">int = ss2[1]*dx</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
@@ -192,7 +192,7 @@
           </element>
           <value type="value" name="WholeMesh">
             <python rank="0">
-              <string_value lines="20" type="python">dummy = 5
+              <string_value lines="20" type="code" language="python">dummy = 5
 dummy += 1
 
 def val(x):
@@ -209,7 +209,7 @@ def val(x):
     <nonlinear_solver name="SimpleSolver">
       <type name="SNES">
         <form name="Residual" rank="0">
-          <string_value lines="20" type="python">r1 = ss1_t*(ss1_i-fs1)*dx
+          <string_value lines="20" type="code" language="python">r1 = ss1_t*(ss1_i-fs1)*dx
 r20 = ss2_t[0]*(ss2_i[0]-fs2[0])*dx
 r21 = ss2_t[1]*(ss2_i[1]-fs2[1])*dx
 r2 = r20 + r21
@@ -219,7 +219,7 @@ r = r1 + r2</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
-          <string_value lines="20" type="python">a = derivative(r, us_i)</string_value>
+          <string_value lines="20" type="code" language="python">a = derivative(r, us_i)</string_value>
           <ufl_symbol>
             <string_value lines="1">a</string_value>
           </ufl_symbol>
@@ -287,7 +287,7 @@ r = r1 + r2</string_value>
       <diagnostics>
         <include_in_statistics>
           <functional name="Integral">
-            <string_value lines="20" type="python">int = sp1*dx</string_value>
+            <string_value lines="20" type="code" language="python">int = sp1*dx</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
@@ -319,13 +319,13 @@ r = r1 + r2</string_value>
       <diagnostics>
         <include_in_statistics>
           <functional name="Integral0">
-            <string_value lines="20" type="python">int = sp2[0]*dx</string_value>
+            <string_value lines="20" type="code" language="python">int = sp2[0]*dx</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
           </functional>
           <functional name="Integral1">
-            <string_value lines="20" type="python">int = sp2[1]*dx</string_value>
+            <string_value lines="20" type="code" language="python">int = sp2[1]*dx</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
@@ -349,7 +349,7 @@ r = r1 + r2</string_value>
       <diagnostics>
         <include_in_statistics>
           <functional name="Integral">
-            <string_value lines="20" type="python">int = sp1*dx</string_value>
+            <string_value lines="20" type="code" language="python">int = sp1*dx</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
@@ -373,13 +373,13 @@ r = r1 + r2</string_value>
       <diagnostics>
         <include_in_statistics>
           <functional name="Integral0">
-            <string_value lines="20" type="python">int = sp2[0]*dx</string_value>
+            <string_value lines="20" type="code" language="python">int = sp2[0]*dx</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
           </functional>
           <functional name="Integral1">
-            <string_value lines="20" type="python">int = sp2[1]*dx</string_value>
+            <string_value lines="20" type="code" language="python">int = sp2[1]*dx</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
@@ -403,7 +403,7 @@ r = r1 + r2</string_value>
           </element>
           <value type="value" name="WholeMesh">
             <python rank="0">
-              <string_value lines="20" type="python">def val(X):
+              <string_value lines="20" type="code" language="python">def val(X):
   global dummy
   return dummy</string_value>
             </python>
@@ -417,26 +417,26 @@ r = r1 + r2</string_value>
     <nonlinear_solver name="SimpleSolver">
       <type name="Picard">
         <preamble>
-          <string_value lines="20" type="python">F1 = sp1_t*(sp1_a-fp1)*dx
+          <string_value lines="20" type="code" language="python">F1 = sp1_t*(sp1_a-fp1)*dx
 F20 = sp2_t[0]*(sp2_a[0]-fp2[0])*dx
 F21 = sp2_t[1]*(sp2_a[1]-fp2[1])*dx
 F2 = F20 + F21
 F = F1 + F2</string_value>
         </preamble>
         <form name="Bilinear" rank="1">
-          <string_value lines="20" type="python">a = lhs(F)</string_value>
+          <string_value lines="20" type="code" language="python">a = lhs(F)</string_value>
           <ufl_symbol>
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
         <form name="Linear" rank="0">
-          <string_value lines="20" type="python">L = rhs(F)</string_value>
+          <string_value lines="20" type="code" language="python">L = rhs(F)</string_value>
           <ufl_symbol>
             <string_value lines="1">L</string_value>
           </ufl_symbol>
         </form>
         <form name="Residual" rank="0">
-          <string_value lines="20" type="python">r = action(a, up_i) - L</string_value>
+          <string_value lines="20" type="code" language="python">r = action(a, up_i) - L</string_value>
           <ufl_symbol>
             <string_value lines="1">r</string_value>
           </ufl_symbol>

@@ -113,26 +113,26 @@
     <nonlinear_solver name="Solver">
       <type name="Picard">
         <preamble>
-          <string_value lines="20" type="python">n = c_e.cell().n
+          <string_value lines="20" type="code" language="python">n = c_e.cell().n
 vn = dot(v_i,n)
 vout = 0.5*(vn + abs(vn))
 
 r = c_t*c_a*dx - c_t('+')*vout('+')*dt('+')*dS - c_t('-')*vout('-')*dt('-')*dS - c_t*vout*dt*ds(1) - c_t*vout*dt*ds(2)</string_value>
         </preamble>
         <form name="Bilinear" rank="1">
-          <string_value lines="20" type="python">a = lhs(r)</string_value>
+          <string_value lines="20" type="code" language="python">a = lhs(r)</string_value>
           <ufl_symbol>
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
         <form name="Linear" rank="0">
-          <string_value lines="20" type="python">L = rhs(r)</string_value>
+          <string_value lines="20" type="code" language="python">L = rhs(r)</string_value>
           <ufl_symbol>
             <string_value lines="1">L</string_value>
           </ufl_symbol>
         </form>
         <form name="Residual" rank="0">
-          <string_value lines="20" type="python">res = action(a, uc_i) - L</string_value>
+          <string_value lines="20" type="code" language="python">res = action(a, uc_i) - L</string_value>
           <ufl_symbol>
             <string_value lines="1">res</string_value>
           </ufl_symbol>
