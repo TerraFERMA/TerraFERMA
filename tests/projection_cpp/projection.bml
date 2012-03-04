@@ -69,13 +69,13 @@
           <initial_condition type="initial_condition" name="WholeMesh">
             <cpp rank="0">
               <members>
-                <string_value lines="20" type="python">GenericFunction_ptr pysource1;</string_value>
+                <string_value lines="20" type="code" language="cpp">GenericFunction_ptr pysource1;</string_value>
               </members>
               <initialization>
-                <string_value lines="20" type="python">pysource1 = bucket()-&gt;fetch_system("PicardProjection")-&gt;fetch_coeff("PySource1")-&gt;genericfunction_ptr(time());</string_value>
+                <string_value lines="20" type="code" language="cpp">pysource1 = bucket()-&gt;fetch_system("PicardProjection")-&gt;fetch_coeff("PySource1")-&gt;genericfunction_ptr(time());</string_value>
               </initialization>
               <eval>
-                <string_value lines="20" type="python">(*pysource1).eval(values, x, cell);
+                <string_value lines="20" type="code" language="cpp">(*pysource1).eval(values, x, cell);
 values[0] = values[0]-2.0;</string_value>
               </eval>
             </cpp>
@@ -88,13 +88,13 @@ values[0] = values[0]-2.0;</string_value>
               <type type="boundary_condition" name="Dirichlet">
                 <cpp rank="0">
                   <members>
-                    <string_value lines="20" type="python">GenericFunction_ptr pysource1;</string_value>
+                    <string_value lines="20" type="code" language="cpp">GenericFunction_ptr pysource1;</string_value>
                   </members>
                   <initialization>
-                    <string_value lines="20" type="python">pysource1 = bucket()-&gt;fetch_system("PicardProjection")-&gt;fetch_coeff("PySource1")-&gt;genericfunction_ptr(time());</string_value>
+                    <string_value lines="20" type="code" language="cpp">pysource1 = bucket()-&gt;fetch_system("PicardProjection")-&gt;fetch_coeff("PySource1")-&gt;genericfunction_ptr(time());</string_value>
                   </initialization>
                   <eval>
-                    <string_value lines="20" type="python">(*pysource1).eval(values, x, cell);
+                    <string_value lines="20" type="code" language="cpp">(*pysource1).eval(values, x, cell);
 values[0] = values[0]-2.0;</string_value>
                   </eval>
                 </cpp>
@@ -138,13 +138,13 @@ values[0] = values[0]-2.0;</string_value>
           <initial_condition type="initial_condition" name="WholeMesh">
             <cpp rank="1">
               <members>
-                <string_value lines="20" type="python">GenericFunction_ptr pysource2;</string_value>
+                <string_value lines="20" type="code" language="cpp">GenericFunction_ptr pysource2;</string_value>
               </members>
               <initialization>
-                <string_value lines="20" type="python">pysource2 = bucket()-&gt;fetch_system("PicardProjection")-&gt;fetch_coeff("PySource2")-&gt;genericfunction_ptr(time());</string_value>
+                <string_value lines="20" type="code" language="cpp">pysource2 = bucket()-&gt;fetch_system("PicardProjection")-&gt;fetch_coeff("PySource2")-&gt;genericfunction_ptr(time());</string_value>
               </initialization>
               <eval>
-                <string_value lines="20" type="python">(*pysource2).eval(values, x, cell);
+                <string_value lines="20" type="code" language="cpp">(*pysource2).eval(values, x, cell);
 values[0] = values[0]-2.0;
 values[1] = values[1]-2.0;</string_value>
               </eval>
@@ -158,13 +158,13 @@ values[1] = values[1]-2.0;</string_value>
               <type type="boundary_condition" name="Dirichlet">
                 <cpp rank="1">
                   <members>
-                    <string_value lines="20" type="python">GenericFunction_ptr pysource2;</string_value>
+                    <string_value lines="20" type="code" language="cpp">GenericFunction_ptr pysource2;</string_value>
                   </members>
                   <initialization>
-                    <string_value lines="20" type="python">pysource2 = bucket()-&gt;fetch_system("PicardProjection")-&gt;fetch_coeff("PySource2")-&gt;genericfunction_ptr(time());</string_value>
+                    <string_value lines="20" type="code" language="cpp">pysource2 = bucket()-&gt;fetch_system("PicardProjection")-&gt;fetch_coeff("PySource2")-&gt;genericfunction_ptr(time());</string_value>
                   </initialization>
                   <eval>
-                    <string_value lines="20" type="python">(*pysource2).eval(values, x, cell);
+                    <string_value lines="20" type="code" language="cpp">(*pysource2).eval(values, x, cell);
 values[0] = values[0]-2.0;
 values[1] = values[1]-2.0;</string_value>
                   </eval>
@@ -311,13 +311,13 @@ values[1] = values[1]-2.0;</string_value>
           <value type="value" name="WholeMesh">
             <cpp rank="0">
               <members>
-                <string_value lines="20" type="python">GenericFunction_ptr pysource1;</string_value>
+                <string_value lines="20" type="code" language="cpp">GenericFunction_ptr pysource1;</string_value>
               </members>
               <initialization>
-                <string_value lines="20" type="python">pysource1 = system()-&gt;fetch_coeff("PySource1")-&gt;genericfunction_ptr(time());</string_value>
+                <string_value lines="20" type="code" language="cpp">pysource1 = system()-&gt;fetch_coeff("PySource1")-&gt;genericfunction_ptr(time());</string_value>
               </initialization>
               <eval>
-                <string_value lines="20" type="python">(*pysource1).eval(values, x, cell);</string_value>
+                <string_value lines="20" type="code" language="cpp">(*pysource1).eval(values, x, cell);</string_value>
               </eval>
             </cpp>
           </value>
@@ -357,13 +357,13 @@ values[1] = values[1]-2.0;</string_value>
           <value type="value" name="WholeMesh">
             <cpp rank="1">
               <members>
-                <string_value lines="20" type="python">GenericFunction_ptr pysource2;</string_value>
+                <string_value lines="20" type="code" language="cpp">GenericFunction_ptr pysource2;</string_value>
               </members>
               <initialization>
-                <string_value lines="20" type="python">pysource2 = system()-&gt;fetch_coeff("PySource2")-&gt;genericfunction_ptr(time());</string_value>
+                <string_value lines="20" type="code" language="cpp">pysource2 = system()-&gt;fetch_coeff("PySource2")-&gt;genericfunction_ptr(time());</string_value>
               </initialization>
               <eval>
-                <string_value lines="20" type="python">(*pysource2).eval(values, x, cell);</string_value>
+                <string_value lines="20" type="code" language="cpp">(*pysource2).eval(values, x, cell);</string_value>
               </eval>
             </cpp>
           </value>
@@ -482,13 +482,13 @@ r = r1 + r2</string_value>
               <type type="boundary_condition" name="Dirichlet">
                 <cpp rank="0">
                   <members>
-                    <string_value lines="20" type="python">// do nothing</string_value>
+                    <string_value lines="20" type="code" language="cpp">// do nothing</string_value>
                   </members>
                   <initialization>
-                    <string_value lines="20" type="python">// do nothing</string_value>
+                    <string_value lines="20" type="code" language="cpp">// do nothing</string_value>
                   </initialization>
                   <eval>
-                    <string_value lines="20" type="python">values[0] = 100.0*(*time())+2.0;</string_value>
+                    <string_value lines="20" type="code" language="cpp">values[0] = 100.0*(*time())+2.0;</string_value>
                   </eval>
                 </cpp>
               </type>
@@ -541,13 +541,13 @@ r = r1 + r2</string_value>
               <type type="boundary_condition" name="Dirichlet">
                 <cpp rank="1">
                   <members>
-                    <string_value lines="20" type="python">// do nothing</string_value>
+                    <string_value lines="20" type="code" language="cpp">// do nothing</string_value>
                   </members>
                   <initialization>
-                    <string_value lines="20" type="python">// do nothing</string_value>
+                    <string_value lines="20" type="code" language="cpp">// do nothing</string_value>
                   </initialization>
                   <eval>
-                    <string_value lines="20" type="python">values[0] = 200.0*(*time())+2.0;
+                    <string_value lines="20" type="code" language="cpp">values[0] = 200.0*(*time())+2.0;
 values[1] = 300.0*(*time())+2.0;</string_value>
                   </eval>
                 </cpp>
@@ -603,13 +603,13 @@ values[1] = 300.0*(*time())+2.0;</string_value>
           <value type="value" name="WholeMesh">
             <cpp rank="0">
               <members>
-                <string_value lines="20" type="python">GenericFunction_ptr pysource1;</string_value>
+                <string_value lines="20" type="code" language="cpp">GenericFunction_ptr pysource1;</string_value>
               </members>
               <initialization>
-                <string_value lines="20" type="python">pysource1 = system()-&gt;fetch_coeff("PySource1")-&gt;genericfunction_ptr(time());</string_value>
+                <string_value lines="20" type="code" language="cpp">pysource1 = system()-&gt;fetch_coeff("PySource1")-&gt;genericfunction_ptr(time());</string_value>
               </initialization>
               <eval>
-                <string_value lines="20" type="python">(*pysource1).eval(values, x, cell);</string_value>
+                <string_value lines="20" type="code" language="cpp">(*pysource1).eval(values, x, cell);</string_value>
               </eval>
             </cpp>
           </value>
@@ -649,13 +649,13 @@ values[1] = 300.0*(*time())+2.0;</string_value>
           <value type="value" name="WholeMesh">
             <cpp rank="1">
               <members>
-                <string_value lines="20" type="python">GenericFunction_ptr pysource2;</string_value>
+                <string_value lines="20" type="code" language="cpp">GenericFunction_ptr pysource2;</string_value>
               </members>
               <initialization>
-                <string_value lines="20" type="python">pysource2 = system()-&gt;fetch_coeff("PySource2")-&gt;genericfunction_ptr(time());</string_value>
+                <string_value lines="20" type="code" language="cpp">pysource2 = system()-&gt;fetch_coeff("PySource2")-&gt;genericfunction_ptr(time());</string_value>
               </initialization>
               <eval>
-                <string_value lines="20" type="python">(*pysource2).eval(values, x, cell);</string_value>
+                <string_value lines="20" type="code" language="cpp">(*pysource2).eval(values, x, cell);</string_value>
               </eval>
             </cpp>
           </value>
@@ -797,13 +797,13 @@ values[1] = 300.0*(*time())+2.0;</string_value>
           <value type="value" name="WholeMesh">
             <cpp rank="0">
               <members>
-                <string_value lines="20" type="python">GenericFunction_ptr field1;</string_value>
+                <string_value lines="20" type="code" language="cpp">GenericFunction_ptr field1;</string_value>
               </members>
               <initialization>
-                <string_value lines="20" type="python">field1 = bucket()-&gt;fetch_system("SNESProjection")-&gt;fetch_field("Field1")-&gt;genericfunction_ptr(time());</string_value>
+                <string_value lines="20" type="code" language="cpp">field1 = bucket()-&gt;fetch_system("SNESProjection")-&gt;fetch_field("Field1")-&gt;genericfunction_ptr(time());</string_value>
               </initialization>
               <eval>
-                <string_value lines="20" type="python">(*field1).eval(values, x, cell);</string_value>
+                <string_value lines="20" type="code" language="cpp">(*field1).eval(values, x, cell);</string_value>
               </eval>
             </cpp>
           </value>
@@ -843,13 +843,13 @@ values[1] = 300.0*(*time())+2.0;</string_value>
           <value type="value" name="WholeMesh">
             <cpp rank="1">
               <members>
-                <string_value lines="20" type="python">GenericFunction_ptr field2;</string_value>
+                <string_value lines="20" type="code" language="cpp">GenericFunction_ptr field2;</string_value>
               </members>
               <initialization>
-                <string_value lines="20" type="python">field2 = bucket()-&gt;fetch_system("SNESProjection")-&gt;fetch_field("Field2")-&gt;genericfunction_ptr(time());</string_value>
+                <string_value lines="20" type="code" language="cpp">field2 = bucket()-&gt;fetch_system("SNESProjection")-&gt;fetch_field("Field2")-&gt;genericfunction_ptr(time());</string_value>
               </initialization>
               <eval>
-                <string_value lines="20" type="python">(*field2).eval(values, x, cell);</string_value>
+                <string_value lines="20" type="code" language="cpp">(*field2).eval(values, x, cell);</string_value>
               </eval>
             </cpp>
           </value>

@@ -86,13 +86,13 @@
           <value type="value" name="WholeMesh">
             <cpp rank="0">
               <members>
-                <string_value lines="20" type="python">GenericFunction_ptr v;</string_value>
+                <string_value lines="20" type="code" language="cpp">GenericFunction_ptr v;</string_value>
               </members>
               <initialization>
-                <string_value lines="20" type="python">v = system()-&gt;fetch_coeff("Velocity")-&gt;genericfunction_ptr(time());</string_value>
+                <string_value lines="20" type="code" language="cpp">v = system()-&gt;fetch_coeff("Velocity")-&gt;genericfunction_ptr(time());</string_value>
               </initialization>
               <eval>
-                <string_value lines="20" type="python">const dolfin::Cell dcell((*system()-&gt;mesh()), cell.index);
+                <string_value lines="20" type="code" language="cpp">const dolfin::Cell dcell((*system()-&gt;mesh()), cell.index);
 dolfin::Array&lt;double&gt; v_values(1);
 v-&gt;eval(v_values, x, cell);
 values[0] = (std::abs(v_values.max())*bucket()-&gt;timestep())/dcell.diameter();</string_value>
