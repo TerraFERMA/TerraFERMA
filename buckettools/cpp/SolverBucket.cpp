@@ -85,8 +85,15 @@ void SolverBucket::solve()
     for(std::vector<BoundaryCondition_ptr>::const_iterator bc = 
                                     (*system_).bcs_begin(); 
                                 bc != (*system_).bcs_end(); bc++)
-    {                                                                // apply bcs to residual
+    {                                                                // apply bcs to residuall (should we do this?!)
       (*(*bc)).apply(*res_, (*(*(*system_).iteratedfunction()).vector()));
+    }
+
+    for(std::vector<ReferencePoints_ptr>::const_iterator p = 
+                                    (*system_).points_begin(); 
+                                p != (*system_).points_end(); p++)
+    {                                                                // apply reference points to residual (should we do this?!)
+      (*(*p)).apply(*res_, (*(*(*system_).iteratedfunction()).vector()));
     }
 
     double aerror = (*res_).norm("l2");                              // work out the initial absolute l2 error (this should be
@@ -123,8 +130,14 @@ void SolverBucket::solve()
                                       (*system_).bcs_begin(); 
                                   bc != (*system_).bcs_end(); bc++)
       {
-        (*(*bc)).apply(*matrix_, *rhs_);                             // apply the bcs to the matrix and rhs (hopefully this
-      }                                                              // maintains any symmetry)
+        (*(*bc)).apply(*matrix_, *rhs_);                             // apply the bcs to the matrix and rhs 
+      }
+      for(std::vector<ReferencePoints_ptr>::const_iterator p =       // loop over the collected vector of system reference points
+                                      (*system_).points_begin(); 
+                                  p != (*system_).points_end(); p++)
+      {
+        (*(*p)).apply(*matrix_, *rhs_);                              // apply the reference points to the matrix and rhs
+      }
       if(ident_zeros_)
       {
         (*matrix_).ident_zeros();
@@ -139,6 +152,13 @@ void SolverBucket::solve()
                                   bc != (*system_).bcs_end(); bc++)
         {
           (*(*bc)).apply(*matrixpc_, *rhs_);                         // apply the collected vector of system bcs
+        }
+
+        for(std::vector<ReferencePoints_ptr>::const_iterator p =     // loop over the collected vector of system reference points
+                                        (*system_).points_begin(); 
+                                    p != (*system_).points_end(); p++)
+        {
+          (*(*p)).apply(*matrixpc_, *rhs_);                          // apply the reference points to the matrix and rhs
         }
 
         if(ident_zeros_pc_)
@@ -204,8 +224,14 @@ void SolverBucket::solve()
       for(std::vector<BoundaryCondition_ptr>::const_iterator bc = 
                                       (*system_).bcs_begin(); 
                                   bc != (*system_).bcs_end(); bc++)
-      {                                                              // apply bcs to residual
+      {                                                              // apply bcs to residual (should we do this?!)
         (*(*bc)).apply(*res_, (*(*(*system_).iteratedfunction()).vector()));
+      }
+      for(std::vector<ReferencePoints_ptr>::const_iterator p = 
+                                      (*system_).points_begin(); 
+                                  p != (*system_).points_end(); p++)
+      {                                                              // apply reference points to residual (should we do this?!)
+        (*(*p)).apply(*res_, (*(*(*system_).iteratedfunction()).vector()));
       }
 
       aerror = (*res_).norm("l2");                                   // work out absolute error
@@ -330,6 +356,7 @@ void SolverBucket::initialize_matrices()
     ctx_.bilinearpc   = bilinearpc_;
     ctx_.ident_zeros_pc = ident_zeros_pc_;
     ctx_.bcs          = (*system_).bcs();
+    ctx_.points       = (*system_).points();
     ctx_.iteratedfunction = (*system_).iteratedfunction();
     ctx_.bucket       = (*system_).bucket();
     ctx_.solver       = this;

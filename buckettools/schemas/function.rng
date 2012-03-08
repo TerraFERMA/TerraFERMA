@@ -154,6 +154,9 @@ Constants are spatially constant expressions.</a:documentation>
     <zeroOrMore>
       <ref name="boundary_condition_scalar"/>
     </zeroOrMore>
+    <optional>
+      <ref name="reference_point_scalar"/>
+    </optional>
     <ref name="field_manipulation_options"/>
   </define>
   <define name="vector_field_function_options">
@@ -167,6 +170,9 @@ Constants are spatially constant expressions.</a:documentation>
     <zeroOrMore>
       <ref name="boundary_condition_vector"/>
     </zeroOrMore>
+    <zeroOrMore>
+      <ref name="reference_point_tensor"/>
+    </zeroOrMore>
     <ref name="field_manipulation_options"/>
   </define>
   <define name="tensor_field_function_options">
@@ -179,6 +185,9 @@ Constants are spatially constant expressions.</a:documentation>
     </oneOrMore>
     <zeroOrMore>
       <ref name="boundary_condition_tensor"/>
+    </zeroOrMore>
+    <zeroOrMore>
+      <ref name="reference_point_tensor"/>
     </zeroOrMore>
     <ref name="field_manipulation_options"/>
   </define>
@@ -535,9 +544,6 @@ The minimum and maximum of functions is included.</a:documentation>
             </attribute>
             <element name="components">
               <a:documentation>A list of the tensor components to which this boundary condition applies (indexes from 0 by row first)</a:documentation>
-              <attribute name="name">
-                <data type="string"/>
-              </attribute>
               <ref name="integer_vector"/>
             </element>
             <element name="type">
@@ -554,6 +560,86 @@ The minimum and maximum of functions is included.</a:documentation>
         </choice>
       </oneOrMore>
     </element>
+  </define>
+  <define name="reference_point_scalar">
+    <element name="reference_point">
+      <a:documentation>Options for the description of a reference point at which field values are zeroed.</a:documentation>
+      <attribute name="name">
+        <value>Point</value>
+      </attribute>
+      <element name="coordinates">
+        <a:documentation>The coordinates of the reference point.  The node nearest these coordinates will be used.</a:documentation>
+        <ref name="real_dim_vector"/>
+      </element>
+      <element name="sub_components">
+        <a:documentation>There are no sub components to a scalar so this is just a dummy tree level for consistency with a vector function.</a:documentation>
+        <attribute name="name">
+          <value>All</value>
+        </attribute>
+        <empty/>
+      </element>
+    </element>
+  </define>
+  <define name="reference_point_tensor">
+    <choice>
+      <element name="reference_point">
+        <a:documentation>Options for the description of a reference point at which field values are zeroed.</a:documentation>
+        <attribute name="name">
+          <value>Point</value>
+        </attribute>
+        <element name="coordinates">
+          <a:documentation>The coordinates of the reference point.  The node nearest these coordinates will be used.</a:documentation>
+          <ref name="real_dim_vector"/>
+        </element>
+        <choice>
+          <element name="sub_components">
+            <a:documentation>Zero all the vector/tensor components at this reference point.</a:documentation>
+            <attribute name="name">
+              <value>All</value>
+            </attribute>
+            <empty/>
+          </element>
+          <element name="sub_components">
+            <a:documentation>Zero a subset of the vector/tensor components at this reference point.</a:documentation>
+            <attribute name="name">
+              <value>Subset</value>
+            </attribute>
+            <element name="components">
+              <a:documentation>A list of the vector/tensor components to which this reference point applies (indexes from 0 by row first for tensors).</a:documentation>
+              <ref name="integer_vector"/>
+            </element>
+          </element>
+        </choice>
+      </element>
+      <element name="reference_point">
+        <attribute name="name">
+          <data type="string"/>
+        </attribute>
+        <element name="coordinates">
+          <a:documentation>The coordinates of the reference point.  The node nearest these coordinates will be used.</a:documentation>
+          <ref name="real_dim_vector"/>
+        </element>
+        <choice>
+          <element name="sub_components">
+            <a:documentation>Zero a subset of the vector/tensor components at this reference point.</a:documentation>
+            <attribute name="name">
+              <value>Subset</value>
+            </attribute>
+            <element name="components">
+              <a:documentation>A list of the vector/tensor components to which this reference point applies (indexes from 0 by row first for tensors).</a:documentation>
+              <ref name="integer_vector"/>
+            </element>
+          </element>
+          <element name="sub_components">
+            <a:documentation>Zero all the vector/tensor components at this reference point.</a:documentation>
+            <attribute name="name">
+              <value>All</value>
+            </attribute>
+            <empty/>
+          </element>
+        </choice>
+      </element>
+    </choice>
   </define>
   <define name="prescribed_constant_scalar">
     <element name="value">

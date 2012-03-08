@@ -86,6 +86,8 @@ namespace buckettools
 
     void fill_fields_();                                             // fill in the data about the system fields (subfunctions)
 
+    void fill_points_();                                             // fill in the data about the system points
+
     void fill_coeffs_();                                             // fill in the coefficient information
 
     void fill_solvers_();                                            // fill in the solver bucket information

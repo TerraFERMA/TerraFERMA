@@ -4,6 +4,7 @@
 
 #include "BoostTypes.h"
 #include "FunctionBucket.h"
+#include "ReferencePoints.h"
 #include <dolfin.h>
 
 namespace buckettools
@@ -232,6 +233,24 @@ namespace buckettools
     { return bcs_; }
     
     //***************************************************************|***********************************************************//
+    // Reference point data access
+    //***************************************************************|***********************************************************//
+
+    std::vector<ReferencePoints_ptr>::iterator points_begin();        // return an iterator to the beginning of the system reference
+                                                                     // points
+
+    std::vector<ReferencePoints_ptr>::const_iterator points_begin()   // return a constant iterator to the beginning of the system
+                                                          const;     // reference points
+
+    std::vector<ReferencePoints_ptr>::iterator points_end();          // return an iterator to the end of the system reference points
+
+    std::vector<ReferencePoints_ptr>::const_iterator points_end()     // return a constant iterator to the end of the system
+                                                          const;     // reference points
+
+    const std::vector< ReferencePoints_ptr > points() const           // return a constant vector of system reference points
+    { return points_; }
+    
+    //***************************************************************|***********************************************************//
     // Output functions
     //***************************************************************|***********************************************************//
 
@@ -304,6 +323,8 @@ namespace buckettools
 
     void apply_bc_();                                                // apply the bcs to the system function
 
+    void apply_referencepoints_();                                   // apply the reference points to the system function
+
     //***************************************************************|***********************************************************//
     // Base data
     //***************************************************************|***********************************************************//
@@ -355,6 +376,8 @@ namespace buckettools
                                                                      // (boost shared) pointers to solver buckets
 
     std::vector< BoundaryCondition_ptr > bcs_;                       // a vector of (boost shared) poitners to bcs
+
+    std::vector< ReferencePoints_ptr > points_;                       // a vector of (boost shared) poitners to reference points
 
     //***************************************************************|***********************************************************//
     // Output functions (continued)

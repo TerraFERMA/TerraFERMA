@@ -41,6 +41,8 @@ void SpudSystemBucket::fill()
   fill_systemfunction_();                                            // register the functionspace and system functions
 
   fill_fields_();                                                    // initialize the fields (subfunctions) of this system
+
+  fill_points_();                                                    // initialize the reference point array of this system
  
   fill_coeffs_();                                                    // initialize the coefficient expressions (and constants)
                                                                      // (can't do coefficient functions now because it's unlikely we 
@@ -104,6 +106,7 @@ void SpudSystemBucket::initialize()
   {
     apply_ic_();                                                     // apply the initial condition to the system function
     apply_bc_();                                                     // apply the boundary conditions we just collected
+    apply_referencepoints_();                                        // apply the reference points we just collected
   }
 
   for (SolverBucket_it s_it = solvers_begin(); s_it != solvers_end();// loop over the solver buckets
@@ -307,6 +310,23 @@ void SpudSystemBucket::fill_fields_()
     collect_ics_(component, icexpressions);                          // collect all the ics together into a new initial condition expression
   }
 
+}
+
+//*******************************************************************|************************************************************//
+// fill in the data about the system points (just grabs them from the fields)
+//*******************************************************************|************************************************************//
+void SpudSystemBucket::fill_points_()
+{
+  for (int_FunctionBucket_const_it f_it = orderedfields_begin();     // loop over all the fields
+                                f_it != orderedfields_end(); f_it++)
+  {
+    for (ReferencePoints_const_it                                     // loop over all the points
+          p_it = (*(*f_it).second).points_begin(); 
+          p_it != (*(*f_it).second).points_end(); p_it++)
+    {
+      points_.push_back((*p_it).second);                             // add the point to a std vector
+    }
+  }
 }
 
 //*******************************************************************|************************************************************//

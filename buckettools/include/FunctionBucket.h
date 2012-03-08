@@ -210,6 +210,21 @@ namespace buckettools
     int_BoundaryCondition_const_it orderedbcs_end() const;           // return a constant iterator to the end of the ordered bcs of this function
 
     //***************************************************************|***********************************************************//
+    // Reference point data access
+    //***************************************************************|***********************************************************//
+
+    void register_point(ReferencePoints_ptr point, 
+                                        const std::string &name);    // register a point in this function
+
+    ReferencePoints_it points_begin();                                // return an iterator to the beginning of the points of this function
+
+    ReferencePoints_const_it points_begin() const;                    // return a constant iterator to the beginning of the points of this function
+
+    ReferencePoints_it points_end();                                  // return an iterator to the end of the points of this function
+
+    ReferencePoints_const_it points_end() const;                      // return a constant iterator to the end of the points of this function
+
+    //***************************************************************|***********************************************************//
     // Output functions
     //***************************************************************|***********************************************************//
 
@@ -316,6 +331,8 @@ namespace buckettools
 
     virtual void checkpoint_options_();                              // checkpoint the options system for the functionbucket
 
+    std::map< std::string, ReferencePoints_ptr > points_;            // map from bc::id names to (boost shared) pointers to bcs
+    
     //***************************************************************|***********************************************************//
     // Emptying data
     //***************************************************************|***********************************************************//

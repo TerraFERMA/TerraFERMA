@@ -123,6 +123,7 @@ scalar_field_function_options =
     element_options_scalar,
     initial_condition_scalar+,
     boundary_condition_scalar*,
+    reference_point_scalar?,
     field_manipulation_options
   )
 
@@ -132,6 +133,7 @@ vector_field_function_options =
     element_options_vector,
     initial_condition_vector+,
     boundary_condition_vector*,
+    reference_point_tensor*,
     field_manipulation_options
   )
 
@@ -141,6 +143,7 @@ tensor_field_function_options =
     element_options_tensor,
     initial_condition_tensor+,
     boundary_condition_tensor*,
+    reference_point_tensor*,
     field_manipulation_options
   )
 
@@ -415,7 +418,6 @@ boundary_condition_tensor =
           attribute name { xsd:string },
           ## A list of the tensor components to which this boundary condition applies (indexes from 0 by row first)
           element components {
-            attribute name { xsd:string },
             integer_vector
           },
           ## The boundary condition type (only strong Dirichlet available).
@@ -426,6 +428,72 @@ boundary_condition_tensor =
           }
         }
       )+
+    }
+  )
+
+reference_point_scalar = 
+  (
+    ## Options for the description of a reference point at which field values are zeroed.
+    element reference_point {
+      attribute name { "Point" },
+      ## The coordinates of the reference point.  The node nearest these coordinates will be used.
+      element coordinates {
+        real_dim_vector
+      },
+      ## There are no sub components to a scalar so this is just a dummy tree level for consistency with a vector function.
+      element sub_components {
+        attribute name {"All"},
+        empty
+      }
+    }
+  )
+
+reference_point_tensor = 
+  (
+    ## Options for the description of a reference point at which field values are zeroed.
+    element reference_point {
+      attribute name { "Point" },
+      ## The coordinates of the reference point.  The node nearest these coordinates will be used.
+      element coordinates {
+        real_dim_vector
+      },
+      (
+        ## Zero all the vector/tensor components at this reference point.
+        element sub_components {
+          attribute name {"All"},
+          empty
+        }|
+        ## Zero a subset of the vector/tensor components at this reference point.
+        element sub_components {
+          attribute name { "Subset" },
+          ## A list of the vector/tensor components to which this reference point applies (indexes from 0 by row first for tensors).
+          element components {
+            integer_vector
+          }
+        }
+      )
+    }|
+    element reference_point {
+      attribute name {xsd:string },
+      ## The coordinates of the reference point.  The node nearest these coordinates will be used.
+      element coordinates {
+        real_dim_vector
+      },
+      (
+        ## Zero a subset of the vector/tensor components at this reference point.
+        element sub_components {
+          attribute name { "Subset" },
+          ## A list of the vector/tensor components to which this reference point applies (indexes from 0 by row first for tensors).
+          element components {
+            integer_vector
+          }
+        }|
+        ## Zero all the vector/tensor components at this reference point.
+        element sub_components {
+          attribute name {"All"},
+          empty
+        }
+      )
     }
   )
 

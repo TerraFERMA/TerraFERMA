@@ -397,6 +397,7 @@ void FunctionBucket::copy_diagnostics(FunctionBucket_ptr &function, SystemBucket
   (*function).functionals_ = functionals_;
   (*function).bcexpressions_ = bcexpressions_;
   (*function).bcs_ = bcs_;
+  (*function).points_ = points_;
 
 }
 
@@ -605,6 +606,56 @@ void FunctionBucket::output(const bool &write_vis)
                                      (*(*system()).bucket()).current_time());
     }
   }
+}
+
+//*******************************************************************|************************************************************//
+// register a (boost shared) pointer to a reference point in the function bucket data maps
+//*******************************************************************|************************************************************//
+void FunctionBucket::register_point(ReferencePoints_ptr point, const std::string &name)
+{
+  ReferencePoints_it p_it = points_.find(name);                       // check if the name already exists
+  if (p_it != points_.end())
+  {
+    dolfin::error(                                                   // if it does, issue an error
+        "ReferencePoints named \"%s\" already exists in function.", 
+                                                    name.c_str());
+  }
+  else
+  {
+    points_[name] = point;                                           // if not, register the bc
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the beginning of the points_ map
+//*******************************************************************|************************************************************//
+ReferencePoints_it FunctionBucket::points_begin()
+{
+  return points_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the beginning of the points_ map
+//*******************************************************************|************************************************************//
+ReferencePoints_const_it FunctionBucket::points_begin() const
+{
+  return points_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the end of the points_ map
+//*******************************************************************|************************************************************//
+ReferencePoints_it FunctionBucket::points_end()
+{
+  return points_.end();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the end of the points_ map
+//*******************************************************************|************************************************************//
+ReferencePoints_const_it FunctionBucket::points_end() const
+{
+  return points_.end();
 }
 
 //*******************************************************************|************************************************************//

@@ -131,6 +131,8 @@ namespace buckettools
                             const std::string &bcname,
                             const std::vector<int> &bcids);
 
+    void fill_point_(const std::string &optionpath);                 // fill in the point for this function
+
     void initialize_bc_(const std::string &optionpath);              // fill in the bc for this function
 
     void initialize_bc_component_(const std::string &optionpath,     // fill in the bc data for a component of this function

@@ -39,6 +39,7 @@ PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f,
 
   Function_ptr iteratedfunction = (*snesctx).iteratedfunction;       // collect the iterated system bucket function
   std::vector<BoundaryCondition_ptr>& bcs = (*snesctx).bcs;          // get the vector of bcs
+  std::vector<ReferencePoints_ptr>& points = (*snesctx).points;      // get the vector of reference points
   Vec_ptr px(&x, dolfin::NoDeleter());                               // convert the iterated snes vector
   Vec_ptr pf(&f, dolfin::NoDeleter());                               // convert the rhs snes vector
   dolfin::PETScVector rhs(pf), iteratedvec(px);
@@ -52,6 +53,11 @@ PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f,
   for(uint i = 0; i < bcs.size(); ++i)                               // loop over the bcs
   {
     (*bcs[i]).apply(rhs, iteratedvec);                               // FIXME: will break symmetry?
+  }
+  
+  for(uint i = 0; i < points.size(); ++i)                            // loop over the reference points
+  {
+    (*points[i]).apply(rhs, iteratedvec);                            // FIXME: will break symmetry?
   }
   
   if ((*solver).monitor_norms())
@@ -115,6 +121,7 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
 
   Function_ptr iteratedfunction = (*snesctx).iteratedfunction;       // collect the iterated system bucket function
   std::vector<BoundaryCondition_ptr>& bcs = (*snesctx).bcs;          // get the vector of bcs
+  std::vector<ReferencePoints_ptr>& points = (*snesctx).points;      // get the vector of reference points
   Vec_ptr px(&x, dolfin::NoDeleter());                               // convert the iterated snes vector
   dolfin::PETScVector iteratedvec(px);
   Mat_ptr pA(A, dolfin::NoDeleter());                                // convert the snes matrix
@@ -131,6 +138,10 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
   {
     (*bcs[i]).apply(matrix);                                         // FIXME: will break symmetry?
   }
+  for(uint i = 0; i < points.size(); ++i)                            // loop over the reference points
+  {
+    (*points[i]).apply(matrix);                                      // FIXME: will break symmetry?
+  }
   if ((*snesctx).ident_zeros)
   {
     matrix.ident_zeros();
@@ -143,6 +154,10 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
     for(uint i = 0; i < bcs.size(); ++i)                             // loop over the bcs
     {
       (*bcs[i]).apply(matrixpc);                                     // FIXME: will break symmetry
+    }
+    for(uint i = 0; i < points.size(); ++i)                          // loop over the points
+    {
+      (*points[i]).apply(matrixpc);                                  // FIXME: will break symmetry
     }
     if ((*snesctx).ident_zeros_pc)
     {

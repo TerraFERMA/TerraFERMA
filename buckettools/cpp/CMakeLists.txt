@@ -61,7 +61,8 @@ add_library(buckettools_cpp Usage.cpp SignalHandler.cpp SigIntEventHandler.cpp
                             GenericDetectors.cpp PointDetectors.cpp PythonDetectors.cpp
                             DiagnosticsFile.cpp StatisticsFile.cpp SteadyStateFile.cpp
                             DetectorsFile.cpp
-                            BucketPETScBase.cpp BucketDolfinBase.cpp)
+                            BucketPETScBase.cpp BucketDolfinBase.cpp
+                            ReferencePoints.cpp)
 # tell cmake that this file doesn't exist until build time
 set_source_files_properties(builddefs.h PROPERTIES GENERATED 1)
 # the project depends on this target

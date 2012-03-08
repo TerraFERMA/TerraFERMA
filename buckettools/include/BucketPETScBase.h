@@ -20,6 +20,7 @@ namespace buckettools
     Form_ptr bilinearpc;                                             // bilinear pc (may be null if not used)
     bool ident_zeros_pc;                                             // the pc has zero rows which should be identified
     std::vector<BoundaryCondition_ptr> bcs;                          // bcs
+    std::vector<ReferencePoints_ptr> points;                         // reference points
     Function_ptr iteratedfunction;                                   // work function
     Bucket *bucket;                                                  // pointer to bucket
     SolverBucket *solver;                                            // pointer to solver

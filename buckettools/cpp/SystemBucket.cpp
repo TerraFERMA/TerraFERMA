@@ -628,6 +628,38 @@ void SystemBucket::output(const bool &write_vis)
 }
 
 //*******************************************************************|************************************************************//
+// return an iterator to the beginning of the points_ vector
+//*******************************************************************|************************************************************//
+std::vector<ReferencePoints_ptr>::iterator SystemBucket::points_begin()
+{
+  return points_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the beginning of the points_ vector
+//*******************************************************************|************************************************************//
+std::vector<ReferencePoints_ptr>::const_iterator SystemBucket::points_begin() const
+{
+  return points_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the end of the points_ vector
+//*******************************************************************|************************************************************//
+std::vector<ReferencePoints_ptr>::iterator SystemBucket::points_end()
+{
+  return points_.end();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the end of the points_ vector
+//*******************************************************************|************************************************************//
+std::vector<ReferencePoints_ptr>::const_iterator SystemBucket::points_end() const
+{
+  return points_.end();
+}
+
+//*******************************************************************|************************************************************//
 // return a boolean indicating if this system has fields to be included in visualization output
 //*******************************************************************|************************************************************//
 const bool SystemBucket::include_in_visualization() const
@@ -853,6 +885,25 @@ void SystemBucket::apply_bc_()
     (*(*bc)).apply((*(*oldfunction_).vector()));
     (*(*bc)).apply((*(*iteratedfunction_).vector()));
     (*(*bc)).apply((*(*function_).vector()));
+  }
+}
+
+//*******************************************************************|************************************************************//
+// apply the vector of system reference points to the system function vectors to ensure consistent initial and boundary conditions
+//*******************************************************************|************************************************************//
+void SystemBucket::apply_referencepoints_()
+{
+  for (int_FunctionBucket_const_it f_it = orderedfields_begin();     // loop over all the fields
+                                f_it != orderedfields_end(); f_it++)
+  {
+    for (ReferencePoints_const_it                                    // loop over all the points
+         p_it = (*(*f_it).second).points_begin(); 
+         p_it != (*(*f_it).second).points_end(); p_it++)
+    {
+      (*(*p_it).second).apply((*(*oldfunction_).vector()));
+      (*(*p_it).second).apply((*(*iteratedfunction_).vector()));
+      (*(*p_it).second).apply((*(*function_).vector()));
+    }
   }
 }
 

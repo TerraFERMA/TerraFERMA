@@ -33,6 +33,8 @@ namespace buckettools {
   typedef boost::shared_ptr< SolverBucket >     SolverBucket_ptr;
   class GenericDetectors;                                            // predeclaration
   typedef boost::shared_ptr< GenericDetectors > GenericDetectors_ptr;
+  class ReferencePoints;                                             // predeclaration
+  typedef boost::shared_ptr< ReferencePoints >  ReferencePoints_ptr;
 
   //*****************************************************************|************************************************************//
   // boost shared pointers to dolfin objects
@@ -97,6 +99,8 @@ namespace buckettools {
   typedef std::map< std::string, BoundaryCondition_ptr >::const_iterator BoundaryCondition_const_it;
   typedef std::map< int, BoundaryCondition_ptr >::iterator               int_BoundaryCondition_it;
   typedef std::map< int, BoundaryCondition_ptr >::const_iterator         int_BoundaryCondition_const_it;
+  typedef std::map< std::string, ReferencePoints_ptr >::iterator         ReferencePoints_it;
+  typedef std::map< std::string, ReferencePoints_ptr >::const_iterator   ReferencePoints_const_it;
   typedef std::map< uint, Expression_ptr >::iterator                     uint_Expression_it;
   typedef std::map< uint, Expression_ptr >::const_iterator               uint_Expression_const_it;
   typedef std::map< int, FunctionSpace_ptr >::iterator                   int_FunctionSpace_it;
