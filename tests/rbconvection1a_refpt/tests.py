@@ -42,3 +42,7 @@ def test_div():
             numpy.abs(stat["Divergence"]["Divergence"]["min"]).min())
   assert val < 1.e-6
 
+def test_refpressure():
+  val = det["Stokes"]["Pressure"]["Point"]
+  assert numpy.all(val < 1.e-10)
+
