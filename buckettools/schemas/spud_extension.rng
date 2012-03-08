@@ -81,7 +81,10 @@
   <define name="cpp_code">
     <element name="string_value">
       <attribute name="type">
-        <value>python</value>
+        <value>code</value>
+      </attribute>
+      <attribute name="language">
+        <value>cpp</value>
       </attribute>
       <!--
         Lines is a hint to the gui about the size of the text box.
