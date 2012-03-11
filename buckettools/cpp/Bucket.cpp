@@ -1097,7 +1097,7 @@ bool Bucket::perform_action_(double_ptr action_period,
     performing = ((current_time()-*previous_action_time) >= *action_period);
     if (performing)
     {
-      *previous_action_time = current_time();
+      *previous_action_time += *action_period;
     }
   }
   else if(action_period_timesteps)
