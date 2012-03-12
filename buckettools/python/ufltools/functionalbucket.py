@@ -13,6 +13,7 @@ class FunctionalBucket:
     self.function = None
     self.name = None
     self.symbol = None
+    self.quadrature_degree = None
   
   def ufl(self):
     """Write the functional to an array of ufl strings."""
@@ -119,11 +120,35 @@ class FunctionalBucket:
     except:
       checksum = None
 
-    if checksum != hashlib.md5(open(filename+".temp").read()).hexdigest():
-      # files have changed
+    try:
+      headerfile = open(self.namespace()+".h")
+    except IOError:
+      headerfile = None
+
+    if headerfile:
+      rebuild = checksum != hashlib.md5(open(filename+".temp").read()).hexdigest()
+
+      headertext = headerfile.read()
+      qdi  = headertext.find("quadrature_degree")
+      qdin = headertext.find("\n", qdi, -1)
+      if (qdi != -1) and (qdin != -1):
+        qd_old = headertext[qdi:qdin].split(" ")[-1]
+        qd_new = "'"+`self.quadrature_degree`+"'" if self.quadrature_degree else "'auto'"
+        rebuild = rebuild or qd_new != qd_old
+      else: # if we don't know what the old quadrature degree was we always want to (re)build
+        rebuild = True
+    else:   # if we don't have a header file we always want to (re)build
+      rebuild = True
+
+    if rebuild:
+      # files and/or quadrature_degree have changed
       shutil.copy(filename+".temp", filename)
+      command = ["ffc", "-l", "dolfin", "-O", "-r", "quadrature"]
+      if self.quadrature_degree:
+        command += ["-f", "quadrature_degree="+`self.quadrature_degree`]
+      command += [filename]
       try:
-        subprocess.check_call(["ffc", "-l", "dolfin", "-O", filename])
+        subprocess.check_call(command)
       except:
         print "ERROR while calling ffc on file ", filename
         sys.exit(1)

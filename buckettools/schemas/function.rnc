@@ -269,7 +269,8 @@ functional_options =
     element functional {
       attribute name { xsd:string },
       python_code,
-      functional_ufl_symbol
+      functional_ufl_symbol,
+      quadrature_degree
     }
   )
 

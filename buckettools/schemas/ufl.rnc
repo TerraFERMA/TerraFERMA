@@ -90,3 +90,13 @@ special_ufl_symbol =
     }
   )
 
+quadrature_degree =
+  (
+    ## The quadrature degree that will be used to compute the form.
+    ##
+    ## If unselected ffc will automatically determine the degree for the form.
+    element quadrature_degree {
+      integer
+    }?
+  )
+

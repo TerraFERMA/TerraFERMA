@@ -79,4 +79,14 @@ written in this file.  No additional symbols will be augomatically generated bas
       <ref name="anystring"/>
     </element>
   </define>
+  <define name="quadrature_degree">
+    <optional>
+      <element name="quadrature_degree">
+        <a:documentation>The quadrature degree that will be used to compute the form.
+
+If unselected ffc will automatically determine the degree for the form.</a:documentation>
+        <ref name="integer"/>
+      </element>
+    </optional>
+  </define>
 </grammar>

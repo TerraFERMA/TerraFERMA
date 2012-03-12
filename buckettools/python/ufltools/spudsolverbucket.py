@@ -25,5 +25,8 @@ class SpudSolverBucket(ufltools.solverbucket.SolverBucket):
       self.form_symbols.append(libspud.get_option(form_optionpath+"/ufl_symbol"))
       self.form_ranks.append(int(libspud.get_option(form_optionpath+"/rank")))
     
+    if libspud.have_option(newoptionpath+"/quadrature_degree"):
+      self.quadrature_degree = libspud.get_option(newoptionpath+"/quadrature_degree")
+
     self.system = system
 

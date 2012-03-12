@@ -343,6 +343,7 @@ The minimum and maximum of functions is included.</a:documentation>
       </attribute>
       <ref name="python_code"/>
       <ref name="functional_ufl_symbol"/>
+      <ref name="quadrature_degree"/>
     </element>
   </define>
   <define name="initial_condition_scalar">
