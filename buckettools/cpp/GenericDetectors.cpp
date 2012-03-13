@@ -67,7 +67,7 @@ void GenericDetectors::eval(std::vector< Array_double_ptr > &values,
     }
     else
     {
-      pos = (*positions_[i]).data().get(); 
+      pos = (*positions_[i]).data(); 
       dim = (*positions_[i]).size();
       const dolfin::Point point(dim, pos);
       id = (*mesh).intersected_cell(point);
