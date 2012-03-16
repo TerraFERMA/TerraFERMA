@@ -190,6 +190,12 @@
               <real_value rank="0">0.0</real_value>
             </constant>
           </initial_condition>
+          <reference_point name="Point">
+            <coordinates>
+              <real_value shape="2" dim1="dim" rank="1">0.0 0.0</real_value>
+            </coordinates>
+            <sub_components name="All"/>
+          </reference_point>
         </rank>
       </type>
       <diagnostics>
@@ -371,12 +377,6 @@ r = rv + rp + rT</string_value>
           <preconditioner name="lu">
             <factorization_package name="umfpack"/>
           </preconditioner>
-          <remove_null_space>
-            <null_space name="Pressure">
-              <field name="Pressure"/>
-              <monitors/>
-            </null_space>
-          </remove_null_space>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
