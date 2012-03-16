@@ -10,7 +10,7 @@ class SpudFunctionBucket(ufltools.functionbucket.FunctionBucket):
   def fill(self, optionpath, system, index):
     """Fill a function class with data describing that function using libspud, the given optionpath and the system its based on."""
     self.name       = libspud.get_option(optionpath+"/name")
-    self.symbol     = libspud.get_option(optionpath+"/ufl_symbol")
+    self.symbol     = libspud.get_option(optionpath+"/ufl_symbol").split("\n")[0]
     self.system     = system
     self.index      = index
     self.type       = libspud.get_option(optionpath+"/type/name")

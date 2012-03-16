@@ -22,7 +22,7 @@ class SpudSolverBucket(ufltools.solverbucket.SolverBucket):
       form_optionpath = newoptionpath+"/form["+`i`+"]"
       self.form_names.append(libspud.get_option(form_optionpath+"/name"))
       self.forms.append(libspud.get_option(form_optionpath)+"\n")
-      self.form_symbols.append(libspud.get_option(form_optionpath+"/ufl_symbol"))
+      self.form_symbols.append(libspud.get_option(form_optionpath+"/ufl_symbol").split("\n")[0])
       self.form_ranks.append(int(libspud.get_option(form_optionpath+"/rank")))
     
     if libspud.have_option(newoptionpath+"/quadrature_degree"):

@@ -11,7 +11,7 @@ class SpudFunctionalBucket(ufltools.functionalbucket.FunctionalBucket):
       self.name   = libspud.get_option(optionpath+"/name")
     except libspud.SpudKeyError:
       self.name   = ""
-    self.symbol   = libspud.get_option(optionpath+"/ufl_symbol")
+    self.symbol   = libspud.get_option(optionpath+"/ufl_symbol").split("\n")[0]
     self.form     = libspud.get_option(optionpath)+"\n"
     self.function = function
     if libspud.have_option(optionpath+"/quadrature_degree"):

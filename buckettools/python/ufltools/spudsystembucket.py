@@ -10,7 +10,7 @@ class SpudSystemBucket(ufltools.systembucket.SystemBucket):
     """Fill a system class with data describing that system using libspud and the given optionpath."""
     self.name       = libspud.get_option(optionpath+"/name")
     self.optionpath = optionpath
-    self.symbol     = libspud.get_option(optionpath+"/ufl_symbol")
+    self.symbol     = libspud.get_option(optionpath+"/ufl_symbol").split("\n")[0]
     self.bucket     = bucket
 
     self.mesh_name        = libspud.get_option(optionpath+"/mesh/name")
