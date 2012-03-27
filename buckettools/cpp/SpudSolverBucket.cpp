@@ -516,14 +516,17 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
       {
         fill_is_by_field_(buffer.str(), is,                          // create an is based on this optionpath (consistent schema
                           indices, parent_indices, NULL);            // with fieldsplit description)
+
+        prev_indices = indices;                                      // should already be sorted so don't bother doing it again
       }
       else
       {
         fill_is_by_field_(buffer.str(), is,                          // create an is based on this optionpath (consistent schema
                           indices, parent_indices, &prev_indices);   // with fieldsplit description)
+
+        prev_indices.insert(prev_indices.end(), indices.begin(), indices.end());
+        std::sort(prev_indices.begin(), prev_indices.end());         // sort the vector of prev_indices
       }
-      prev_indices.clear();
-      prev_indices = indices;
 
       PETScVector_ptr nullvec( new dolfin::PETScVector(kspsize) );   // create a null vector for this null space
     
@@ -669,6 +672,7 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
                                                                      // subsets of the parent_indices vector (if associated) that
                                                                      // will themselves become the parent_indices on the next
                                                                      // recursion)
+  std::vector<uint> prev_indices;
 
   buffer.str(""); buffer << optionpath << "/fieldsplit";
   int nsplits = Spud::option_count(buffer.str());                    // how many fieldsplits exist for this pc
@@ -683,12 +687,17 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
       fill_is_by_field_(buffer.str(), is,                            // setup an IS for each fieldsplit
                         indices, parent_indices,
                         NULL);
+
+      prev_indices = indices;                                        // should already be sorted so don't bother doing it again
     }
     else
     {
       fill_is_by_field_(buffer.str(), is,                            // setup an IS for each fieldsplit
                         indices, parent_indices,
-                        &(child_indices[i-1]));
+                        &prev_indices);
+
+      prev_indices.insert(prev_indices.end(), indices.begin(), indices.end());
+      std::sort(prev_indices.begin(), prev_indices.end());           // sort the vector of prev_indices
     }
 
     #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
@@ -736,11 +745,13 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
 }
 
 //*******************************************************************|************************************************************//
-// fill a petsc is object from the options tree (for fieldsplits and null spaces - must share common schema tree)
-// IS's may be set up by field name, components of the field and regions of the domain (FIXME: also need surface ids)
-// this leads to four combinations... fields, fields with components, fields with regions, fields with both components and regions
-// additionally the resulting IS is checked for consistency with any parents in the tree and will fail if a full description is
-// not given
+// Fill a petsc is object from the options tree (for fieldsplits and null spaces - must share common schema tree).
+// IS's may be set up by field name, components of the field, regions of the domain of the field  and surfaces of the domain of the
+// field.
+// This leads to nine combinations... no fields, fields, fields with components, fields with regions, fields with surfaces, fields with both 
+// components and regions, fields with both components and surfaces, fields with both regions and surfaces, fields with components,
+// regions and surfaces.
+// Additionally the resulting IS is checked for consistency with any parents or siblings in the tree.
 //*******************************************************************|************************************************************//
 void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is, 
                                          std::vector<uint> &child_indices, 
@@ -752,182 +763,42 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
   Spud::OptionError serr;                                            // spud error code
   PetscErrorCode perr;                                               // petsc error code
 
-  std::pair<uint, uint> ownership_range =                            // the parallel ownership range of the system functionspace
-          (*(*(*system_).functionspace()).dofmap()).ownership_range();
-
   buffer.str(""); buffer << optionpath << "/field";                  // loop over the fields used to describe this IS
   int nfields = Spud::option_count(buffer.str());
 
-  if (nfields==0)                                                    // if no fields have been specified...
+  std::vector<uint> tmp_child_indices;
+  if (nfields==0)                                                    // if no fields have been specified... **no fields**
   {
-    boost::unordered_set<uint>  dof_set =                            // take the set of dof for this system
-            (*(*(*system_).functionspace()).dofmap()).dofs();
-    for (boost::unordered_set<uint>::const_iterator                  // loop over the dof in the set
-                                    dof_it = dof_set.begin(); 
-                                    dof_it != dof_set.end(); 
-                                    dof_it++)
-    {                                                                // and insert them into the child_indices vector
-      if ((*dof_it >= ownership_range.first) &&                      // but first check that this process owns them
-                            (*dof_it < ownership_range.second))      // (in parallel)
-      {
-        child_indices.push_back(*dof_it);
-      }
-    }
-    
+    boost::unordered_set<uint> dof_set = (*(*(*system_).functionspace()).dofmap()).dofs();
+    tmp_child_indices.insert(tmp_child_indices.end(), dof_set.begin(), dof_set.end());
   }
+  else
+  {
 
-  bool mixedsystem = (((*system_).fields_size())>1);
+    bool mixedsystem = (((*system_).fields_size())>1);
 
-  for (uint i = 0; i < nfields; i++)                                 // loop over the fields that have been specified
-  {                                                                  // (won't do anything in the case of nfields==0, where we've
-    buffer.str(""); buffer << optionpath << "/field[" << i << "]";   //  already included all dofs)
+    for (uint i = 0; i < nfields; i++)                               // loop over the fields that have been specified
+    {
+      buffer.str(""); buffer << optionpath << "/field[" << i << "]";
 
-    std::string fieldname;
-    buffer.str(""); buffer << optionpath << "/field[" << i <<        // get the field name
-                                                          "]/name";
-    serr = Spud::get_option(buffer.str(), fieldname); 
-    spud_err(buffer.str(), serr);
-    
-    int fieldindex = (*(*system_).fetch_field(fieldname)).index();   // using the name, get the field index
-
-    buffer.str(""); buffer << optionpath << "/field[" << i <<        // are region id restrictions specified under this field?
-                                                   "]/region_ids";
-    if (Spud::have_option(buffer.str()))
-    {                                                                // yes... 
-      std::vector< int > region_ids;
-      serr = Spud::get_option(buffer.str(), region_ids);             // get the region ids
+      std::string fieldname;
+      buffer.str(""); buffer << optionpath << "/field[" << i <<      // get the field name
+                                                            "]/name";
+      serr = Spud::get_option(buffer.str(), fieldname); 
       spud_err(buffer.str(), serr);
+      
+      int fieldindex = (*(*system_).fetch_field(fieldname)).index(); // using the name, get the field index
 
-      Mesh_ptr mesh = (*system_).mesh();                             // get the mesh
-      MeshFunction_uint_ptr cellidmeshfunction =                     // and the region id mesh function
-                      (*mesh).domains().cell_domains(*mesh);
-
-      boost::unordered_set<uint> dof_set;                            // set up an unordered set of dof
-
-      buffer.str(""); buffer << optionpath << "/field[" << i <<      // are specific components of this field requested?
-                                                    "]/components";
-      if (Spud::have_option(buffer.str()))
-      {                                                              // yes... **field+region+component**
-
-        std::vector< int > components;
-        serr = Spud::get_option(buffer.str(), components);           // get the requested components
-        spud_err(buffer.str(), serr);
-
-        std::vector<int>::iterator max_comp_it = 
-              std::max_element(components.begin(), components.end());// check this component exists
-        if (mixedsystem)
-        {
-          assert(*max_comp_it < (*(*(*(*system_).functionspace())[fieldindex]).element()).num_sub_elements());
-        }
-        else
-        {
-          assert(*max_comp_it < (*(*(*system_).functionspace()).element()).num_sub_elements());
-        }
-        
-        for (dolfin::CellIterator cell(*mesh); !cell.end(); ++cell)  // loop over the cells in the mesh
-        {
-
-          int cellid = (*cellidmeshfunction)[(*cell).index()];       // get the cell region id from the mesh function
-
-          for (std::vector<int>::const_iterator id =                 // loop over the regions that have been requested
-                                  region_ids.begin(); 
-                                  id != region_ids.end(); id++)
-          {
-            if(cellid==*id)                                          // and check if this cell should be included
-            {                                                        // yes...
-              for (std::vector<int>::const_iterator comp =           // loop over the components that have been requested
-                                      components.begin(); 
-                                      comp != components.end(); 
-                                      comp++)
-              {
-                std::vector<uint> dof_vec;
-                if (mixedsystem)
-                {
-                  dof_vec =                                          // get the cell dof for the current component
-                      (*(*(*(*(*system_).functionspace())[fieldindex])[*comp]).dofmap()).cell_dofs((*cell).index());
-                }
-                else
-                {
-                  dof_vec =                                          // get the cell dof for the current component
-                      (*(*(*(*system_).functionspace())[*comp]).dofmap()).cell_dofs((*cell).index());
-                }
-                for (std::vector<uint>::const_iterator dof_it =      // loop over the cell dof for this component
-                                              dof_vec.begin(); 
-                                              dof_it < dof_vec.end(); 
-                                              dof_it++)
-                {
-                  dof_set.insert(*dof_it);                           // insert each dof into the unordered set
-                }                                                    // (i.e. if it's not there already)
-              }
-            }
-          }
-        }
-      }
-      else
-      {                                                              // no, no components specified... **field+region**
-
-        for (dolfin::CellIterator cell(*mesh); !cell.end(); ++cell)  // loop over the cells in the mesh
-        {
-          int cellid = (*cellidmeshfunction)[(*cell).index()];       // get the cell region id from the mesh function
-
-          for (std::vector<int>::const_iterator id =                 // loop over the region ids that have been requested
-                                      region_ids.begin(); 
-                                      id != region_ids.end(); id++)
-          {
-            if(cellid==*id)                                          // check if this cell should be included
-            {                                                        // yes...
-              std::vector<uint> dof_vec;
-              if (mixedsystem)
-              {
-                dof_vec =                                            // get the cell dof (potentially for all components)
-                  (*(*(*(*system_).functionspace())[fieldindex]).dofmap()).cell_dofs((*cell).index());
-              }
-              else
-              {
-                dof_vec =                                            // get the cell dof (potentially for all components)
-                  (*(*(*system_).functionspace()).dofmap()).cell_dofs((*cell).index());
-              }
-              for (std::vector<uint>::const_iterator dof_it =        // loop over the cell dof
-                                      dof_vec.begin(); 
-                                      dof_it < dof_vec.end(); 
-                                      dof_it++)
-              {
-                dof_set.insert(*dof_it);                             // and insert each one into the unordered set
-              }                                                      // (i.e. if it hasn't been added already)
-            }
-          }
-        }
-
-      }
-                                                                     // we now have a set of dofs for this field over all regions
-                                                                     // and components requested...
-                                                                     // put this into the vector of dofs for all fields (field
-                                                                     // indices, unlike cell indices, should be unique so no need
-                                                                     // for a set anymore)
-      for (boost::unordered_set<uint>::const_iterator dof_it =      
-                                            dof_set.begin(); 
-                                            dof_it != dof_set.end(); // loop over all entries in the set 
-                                            dof_it++)
-      {                                                              // and insert into the child_indices vector
-        if ((*dof_it >= ownership_range.first)                       // but only if the dof is within the ownership range in
-                && (*dof_it < ownership_range.second))               // parallel
-        {
-          child_indices.push_back(*dof_it);
-        }
-      }
-    }
-    else
-    {                                                                // no region ids specified, but there might still be components
       buffer.str(""); buffer << optionpath << "/field[" << i << 
                                                       "]/components";
       if (Spud::have_option(buffer.str()))
-      {                                                              // yes, there are components specified... **field+components**
+      {                                                              // yes, there are components specified...
         std::vector< int > components;
         serr = Spud::get_option(buffer.str(), components);           // get the components
         spud_err(buffer.str(), serr);
         
         std::vector<int>::iterator max_comp_it =                  
-             std::max_element(components.begin(), components.end()); // check this component exists
+             std::max_element(components.begin(), components.end()); // check the maximum requested component exists
         if (mixedsystem)
         {
           assert(*max_comp_it < (*(*(*(*system_).functionspace())[fieldindex]).element()).num_sub_elements());
@@ -942,68 +813,110 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
                                       comp != components.end(); 
                                       comp++)
         {
-          boost::unordered_set<uint> dof_set;
+          boost::shared_ptr<const dolfin::GenericDofMap> dofmap;
           if (mixedsystem)
           {
-            dof_set =                                                // take the set of dof for this component
-                (*(*(*(*(*system_).functionspace())[fieldindex])[*comp]).dofmap()).dofs();
+            dofmap = (*(*(*(*system_).functionspace())[fieldindex])[*comp]).dofmap();
           }
           else
           {
-            dof_set =                                                // take the set of dof for this component
-                (*(*(*(*system_).functionspace())[*comp]).dofmap()).dofs();
+            dofmap = (*(*(*system_).functionspace())[*comp]).dofmap();
           }
-          for (boost::unordered_set<uint>::const_iterator            // loop over the dof in the set
-                                        dof_it = dof_set.begin(); 
-                                        dof_it != dof_set.end(); 
-                                        dof_it++)
-          {                                                          // and insert them into the child_indices vector
-            if ((*dof_it >= ownership_range.first) &&                // but first check that this process owns them
-                                (*dof_it < ownership_range.second))  // (in parallel)
-            {
-              child_indices.push_back(*dof_it);
-            }
+
+          boost::unordered_set<uint> dof_set;
+
+          buffer.str(""); buffer << optionpath << "/field[" << i <<  // are region id restrictions specified under this field?
+                                                         "]/region_ids";
+          if (Spud::have_option(buffer.str()))
+          {                                                          // yes...  **field+component+region(+boundary)**
+            boost::unordered_set<uint> region_dof_set = region_dof_set_(buffer.str(), dofmap);
+            dof_set.insert(region_dof_set.begin(), region_dof_set.end());
           }
+
+          buffer.str(""); buffer << optionpath << "/field[" << i <<  // are boundary id restrictions specified under this field?
+                                                         "]/boundary_ids";
+          if (Spud::have_option(buffer.str()))
+          {                                                          // yes... **field+component+boundary(+region)**
+            boost::unordered_set<uint> boundary_dof_set = boundary_dof_set_(buffer.str(), dofmap);
+            dof_set.insert(boundary_dof_set.begin(), boundary_dof_set.end());
+          }
+
+          if(dof_set.size()==0)                                      // **field+component**
+          {
+            dof_set = (*dofmap).dofs();
+          }
+
+          tmp_child_indices.insert(tmp_child_indices.end(), dof_set.begin(), dof_set.end());
+
         }
+
       }
-      else
-      {                                                              // no regions or components specified... **field**
-        boost::unordered_set<uint> dof_set;
+      else                                                           // no, no components specified...
+      {
+        boost::shared_ptr<const dolfin::GenericDofMap> dofmap;
         if (mixedsystem)
         {
-          dof_set =                                                  // take the set of dof for this field
-                (*(*(*(*system_).functionspace())[fieldindex]).dofmap()).dofs();
+          dofmap = (*(*(*system_).functionspace())[fieldindex]).dofmap();
         }
         else
         {
-          dof_set =                                                  // take the set of dof for this field
-                (*(*(*system_).functionspace()).dofmap()).dofs();
+          dofmap = (*(*system_).functionspace()).dofmap();
         }
-        for (boost::unordered_set<uint>::const_iterator              // loop over the dof in the set
-                                        dof_it = dof_set.begin(); 
-                                        dof_it != dof_set.end(); 
-                                        dof_it++)
-        {                                                            // and insert them into the child_indices vector
-          if ((*dof_it >= ownership_range.first) &&                  // but first check that this process owns them
-                                (*dof_it < ownership_range.second))  // (in parallel)
-          {
-            child_indices.push_back(*dof_it);
-          }
+
+        boost::unordered_set<uint> dof_set;
+
+        buffer.str(""); buffer << optionpath << "/field[" << i <<    // are region id restrictions specified under this field?
+                                                       "]/region_ids";
+        if (Spud::have_option(buffer.str()))
+        {                                                            // yes... **field+region(+boundary)**
+          boost::unordered_set<uint> region_dof_set = region_dof_set_(buffer.str(), dofmap);
+          dof_set.insert(region_dof_set.begin(), region_dof_set.end());
         }
+
+        buffer.str(""); buffer << optionpath << "/field[" << i <<    // are boundary id restrictions specified under this field?
+                                                       "]/boundary_ids";
+        if (Spud::have_option(buffer.str()))
+        {                                                            // yes... **field+boundary(+region)**
+          boost::unordered_set<uint> boundary_dof_set = boundary_dof_set_(buffer.str(), dofmap);
+          dof_set.insert(boundary_dof_set.begin(), boundary_dof_set.end());
+        }
+
+        if(dof_set.size()==0)                                        // **field**
+        {
+          dof_set = (*dofmap).dofs();
+        }
+
+        tmp_child_indices.insert(tmp_child_indices.end(), dof_set.begin(), dof_set.end());
+
       }
+
     }
   }
-                                                                     // phew, that's over!
-                                                                     // FIXME: tidy up the above mess!
+
+  std::pair<uint, uint> ownership_range =                            // the parallel ownership range of the system functionspace
+          (*(*(*system_).functionspace()).dofmap()).ownership_range();
+
+  for (std::vector<uint>::const_iterator                             // loop over the dof in the set
+                        dof_it = tmp_child_indices.begin(); 
+                        dof_it != tmp_child_indices.end(); 
+                        dof_it++)
+  {                                                                  // and insert them into the child_indices vector
+    if ((*dof_it >= ownership_range.first) &&                        // but first check that this process owns them
+                          (*dof_it < ownership_range.second))        // (in parallel)
+    {
+      child_indices.push_back(*dof_it);
+    }
+  }
 
   std::sort(child_indices.begin(), child_indices.end());             // sort the vector of child_indices
 
   if(sibling_indices)                                                // we have been passed a list of sibling indices...
   {                                                                  // we wish to remove from the child_indices any indices that
                                                                      // also occur in the sibling indices
+    tmp_child_indices.clear();
+
     uint c_size = child_indices.size();
     uint c_ind = 0;
-    std::vector<uint> tmp_child_indices;
     bool overlap = false;
     for(std::vector<uint>::const_iterator                            // loop over the sibling indices
                                    s_it = (*sibling_indices).begin();
@@ -1043,10 +956,11 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
   if(parent_indices)                                                 // we have been passed a list of parent indices... 
   {                                                                  // we wish to remove from the child_indices any indices that do
                                                                      // not occur in the parent indices 
+    tmp_child_indices.clear();
+
     uint p_size = (*parent_indices).size();
     uint p_ind = 0;
     uint p_reset = 0;
-    std::vector<uint> tmp_child_indices;
     bool extra = false;
     for (std::vector<uint>::const_iterator                           // loop over the child indices
                                         c_it = child_indices.begin(); 
@@ -1158,6 +1072,105 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
   PetscFree(indices);                                                // free the PetscInt array of indices
   #endif
    
+}
+
+//*******************************************************************|************************************************************//
+// return a vector of dofs from the given dofmap for the region ids specified in the optionpath
+//*******************************************************************|************************************************************//
+boost::unordered_set<uint> SpudSolverBucket::region_dof_set_(const std::string &optionpath,
+                                                             const boost::shared_ptr<const dolfin::GenericDofMap> dofmap)
+{
+  Spud::OptionError serr;                                            // spud error code
+
+  boost::unordered_set<uint> dof_set;
+
+  std::vector< int > region_ids;
+  serr = Spud::get_option(optionpath, region_ids);                   // get the region ids
+  spud_err(optionpath, serr);
+
+  Mesh_ptr mesh = (*system_).mesh();                                 // get the mesh
+  MeshFunction_uint_ptr cellidmeshfunction =                         // and the region id mesh function
+                  (*mesh).domains().cell_domains(*mesh);
+
+  for (dolfin::CellIterator cell(*mesh); !cell.end(); ++cell)        // loop over the cells in the mesh
+  {
+    int cellid = (*cellidmeshfunction)[(*cell).index()];             // get the cell region id from the mesh function
+
+    for (std::vector<int>::const_iterator id =                       // loop over the region ids that have been requested
+                                region_ids.begin(); 
+                                id != region_ids.end(); id++)
+    {
+      if(cellid==*id)                                                // check if this cell should be included
+      {                                                              // yes...
+        std::vector<uint> dof_vec = (*dofmap).cell_dofs((*cell).index());
+        for (std::vector<uint>::const_iterator dof_it =              // loop over the cell dof
+                                dof_vec.begin(); 
+                                dof_it < dof_vec.end(); 
+                                dof_it++)
+        {
+          dof_set.insert(*dof_it);                                   // and insert each one into the unordered set
+        }                                                            // (i.e. if it hasn't been added already)
+      }
+    }
+  }
+
+  return dof_set;
+
+}
+
+//*******************************************************************|************************************************************//
+// return a vector of dofs from the given dofmap for the boundary ids specified in the optionpath
+//*******************************************************************|************************************************************//
+boost::unordered_set<uint> SpudSolverBucket::boundary_dof_set_(const std::string &optionpath,
+                                                               const boost::shared_ptr<const dolfin::GenericDofMap> dofmap)
+{
+  Spud::OptionError serr;                                            // spud error code
+
+  boost::unordered_set<uint> dof_set;                                // set up an unordered set of dof
+
+  std::vector< int > boundary_ids;
+  serr = Spud::get_option(optionpath, boundary_ids);                 // get the region ids
+  spud_err(optionpath, serr);
+
+  Mesh_ptr mesh = (*system_).mesh();                                 // get the mesh
+  MeshFunction_uint_ptr facetidmeshfunction =                        // and the facet id mesh function
+                  (*mesh).domains().facet_domains(*mesh);
+
+  for (dolfin::FacetIterator facet(*mesh); !facet.end(); ++facet)    // loop over the facets in the mesh
+  {
+    int facetid = (*facetidmeshfunction)[(*facet).index()];          // get the facet region id from the mesh function
+
+    for (std::vector<int>::const_iterator id =                       // loop over the region ids that have been requested
+                                boundary_ids.begin(); 
+                                id != boundary_ids.end(); id++)
+    {
+      if(facetid==*id)                                               // check if this facet should be included
+      {                                                              // yes...
+
+        const dolfin::Cell cell(*mesh,                               // get cell to which facet belongs
+               (*facet).entities((*mesh).topology().dim())[0]);      // (there may be two, but pick first)
+
+        const uint facet_number = cell.index(*facet);                // get the local index of the facet w.r.t. the cell
+
+        std::vector<uint> cell_dof_vec;
+        cell_dof_vec = (*dofmap).cell_dofs(cell.index());            // get the cell dof (potentially for all components)
+        
+        std::vector<uint> facet_dof_vec((*dofmap).num_facet_dofs(), 0);
+        (*dofmap).tabulate_facet_dofs(&facet_dof_vec[0], facet_number);
+
+        for (std::vector<uint>::const_iterator dof_it =              // loop over the cell dof
+                                facet_dof_vec.begin(); 
+                                dof_it < facet_dof_vec.end(); 
+                                dof_it++)
+        {
+          dof_set.insert(cell_dof_vec[*dof_it]);                     // and insert each one into the unordered set
+        }                                                            // (i.e. if it hasn't been added already)
+      }
+    }
+  }
+
+  return dof_set;
+
 }
 
 //*******************************************************************|************************************************************//

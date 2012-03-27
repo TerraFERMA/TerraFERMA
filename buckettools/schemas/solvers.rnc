@@ -288,6 +288,38 @@ ident_zeros =
     }?
   )
 
+is_by_field = 
+  (
+    ## Field to include in this index space.
+    element field {
+      attribute name { xsd:string },
+      ## If this field is a vector or a tensor components may be listed (indexed from 0 by row first if tensorial).
+      ##
+      ## Defaults to all components if not selected.
+      element components {
+        integer_vector
+      }?,
+      ## A list of the region ids (physical ids in gmsh).
+      ##
+      ## Defaults to the whole mesh if left unspecified.
+      element region_ids {
+        integer_vector
+      }?,
+      ## A list of the boundary ids (physical ids in gmsh).
+      ##
+      ## Defaults to the whole boundary if left unspecified.
+      element boundary_ids {
+        integer_vector
+      }?
+    }*,
+    element monitors {
+      ## Prints PETSc information about the index set describing this index set.
+      element view_index_set {
+        empty
+      }?
+    }
+  )
+
 linear_solver_options =
    (
       ## Iterative (Krylov) method to solve the linear discretised equation
@@ -407,7 +439,7 @@ kspother_options =
       ## Other methods
       ##
       ## Any method provided by the PETSc library
-      ## http://www-unix.mcs.anl.gov/petsc/petsc-2/snapshots/petsc-dev/docs/manualpages/KSP/KSPType.html
+      ## http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPType.html
       ## (available methods may depend on the PETSc library installed on your system)
       element iterative_method {
          attribute name { xsd:string },
@@ -587,8 +619,8 @@ pcother_options =
       ## Other preconditioners
       ##
       ## Any preconditioner provided by the PETSc library
-      ## http://www-unix.mcs.anl.gov/petsc/petsc-2/snapshots/petsc-dev/docs/manualpages/PC/PCType.html
-      ## (available preconditiors may depend on the PETSc library installed on your system)
+      ## http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCType.html
+      ## (available preconditioners may depend on the PETSc library installed on your system)
       element preconditioner {
          attribute name { string }
       }
@@ -648,30 +680,14 @@ pcfieldsplit_options =
          ),
          ## Describe the fieldsplits.  Names must be unique within this linear solver.
          ##
-         ## Each fieldsplit must fully describe the split from the base system function (i.e. field names, region ids and components are not
-         ## inherited down the tree of splits).
+         ## Fields not included in any parent fieldsplits will be excluded from this fieldsplit 
+         ## even if they are described below (a warning will be given).
+         ##
+         ## Fields included in any sibling fieldsplits will be excluded from this fieldsplit
+         ## even if they are described below (a warning will be given).
          element fieldsplit {
            attribute name { xsd:string },
-           ## Field to include in this split.
-           element field {
-             attribute name { xsd:string },
-             ## If this field is a vector or a tensor components may be listed (indexed from 0 by row first if tensorial).
-             ##
-             ## Defaults to all components if not selected.
-             element components {
-               integer_vector
-             }?,
-             ## A list of the region ids (physical ids in gmsh) 
-             element region_ids {
-               integer_vector
-             }?
-           }*,
-           element monitors {
-             ## Prints PETSc information about the index set describing this fieldsplit
-             element view_index_set {
-               empty
-             }?
-           },
+           is_by_field,
            ## Solver options for the full solve done by this preconditioner
            element linear_solver {
              linear_solver_options
@@ -766,32 +782,16 @@ generic_solver_options =
       element remove_null_space {
          ## Describe the null spaces.  Names must be unique within this linear solver.
          ##
-         ## Each null space must fully describe the space from the base system function (i.e. field names, region ids and components are not
-         ## inherited down the tree).
+         ## Fields not included in any parent fieldsplits will be excluded from this nullspace 
+         ## even if they are described below (a warning will be given).
+         ##
+         ## Fields included in any sibling nullspaces will be excluded from this nullspace 
+         ## even if they are described below (a warning will be given).  NOTE: this may not
+         ## always be the desired behaviour and the code should be modified if a case is
+         ## found that requires this.
          element null_space {
            attribute name { xsd:string },
-           ## Field to include in this null space.
-           element field {
-             attribute name { xsd:string },
-             ## If this field is a vector or a tensor components may be listed (indexed from 0 by row first if tensorial).
-             ##
-             ## Defaults to all components if not selected.
-             element components {
-               integer_vector
-             }?,
-             ## A list of the region ids (physical ids in gmsh).
-             ##
-             ## Defaults to the whole mesh if left unspecified.
-             element region_ids {
-               integer_vector
-             }?
-           }*,
-           element monitors {
-             ## Prints PETSc information about the index set describing this null space
-             element view_index_set {
-               empty
-             }?
-           }
+           is_by_field
          }+
       }?
    )

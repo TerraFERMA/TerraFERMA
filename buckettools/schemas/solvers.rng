@@ -368,6 +368,48 @@ the SNES solve. Some of those may really slow down your computation!</a:document
       </element>
     </optional>
   </define>
+  <define name="is_by_field">
+    <zeroOrMore>
+      <element name="field">
+        <a:documentation>Field to include in this index space.</a:documentation>
+        <attribute name="name">
+          <data type="string"/>
+        </attribute>
+        <optional>
+          <element name="components">
+            <a:documentation>If this field is a vector or a tensor components may be listed (indexed from 0 by row first if tensorial).
+
+Defaults to all components if not selected.</a:documentation>
+            <ref name="integer_vector"/>
+          </element>
+        </optional>
+        <optional>
+          <element name="region_ids">
+            <a:documentation>A list of the region ids (physical ids in gmsh).
+
+Defaults to the whole mesh if left unspecified.</a:documentation>
+            <ref name="integer_vector"/>
+          </element>
+        </optional>
+        <optional>
+          <element name="boundary_ids">
+            <a:documentation>A list of the boundary ids (physical ids in gmsh).
+
+Defaults to the whole boundary if left unspecified.</a:documentation>
+            <ref name="integer_vector"/>
+          </element>
+        </optional>
+      </element>
+    </zeroOrMore>
+    <element name="monitors">
+      <optional>
+        <element name="view_index_set">
+          <a:documentation>Prints PETSc information about the index set describing this index set.</a:documentation>
+          <empty/>
+        </element>
+      </optional>
+    </element>
+  </define>
   <define name="linear_solver_options">
     <choice>
       <a:documentation>Iterative (Krylov) method to solve the linear discretised equation
@@ -484,7 +526,7 @@ Only apply preconditioner each iteration, no krylov acceleration</a:documentatio
       <a:documentation>Other methods
 
 Any method provided by the PETSc library
-http://www-unix.mcs.anl.gov/petsc/petsc-2/snapshots/petsc-dev/docs/manualpages/KSP/KSPType.html
+http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPType.html
 (available methods may depend on the PETSc library installed on your system)</a:documentation>
       <attribute name="name">
         <data type="string"/>
@@ -675,8 +717,8 @@ than with bjacobi.</a:documentation>
       <a:documentation>Other preconditioners
 
 Any preconditioner provided by the PETSc library
-http://www-unix.mcs.anl.gov/petsc/petsc-2/snapshots/petsc-dev/docs/manualpages/PC/PCType.html
-(available preconditiors may depend on the PETSc library installed on your system)</a:documentation>
+http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCType.html
+(available preconditioners may depend on the PETSc library installed on your system)</a:documentation>
       <attribute name="name">
         <data type="string" datatypeLibrary=""/>
       </attribute>
@@ -749,41 +791,15 @@ exact matrix inversion), or use fgmres in the outer solve.</a:documentation>
         <element name="fieldsplit">
           <a:documentation>Describe the fieldsplits.  Names must be unique within this linear solver.
 
-Each fieldsplit must fully describe the split from the base system function (i.e. field names, region ids and components are not
-inherited down the tree of splits).</a:documentation>
+Fields not included in any parent fieldsplits will be excluded from this fieldsplit 
+even if they are described below (a warning will be given).
+
+Fields included in any sibling fieldsplits will be excluded from this fieldsplit
+even if they are described below (a warning will be given).</a:documentation>
           <attribute name="name">
             <data type="string"/>
           </attribute>
-          <zeroOrMore>
-            <element name="field">
-              <a:documentation>Field to include in this split.</a:documentation>
-              <attribute name="name">
-                <data type="string"/>
-              </attribute>
-              <optional>
-                <element name="components">
-                  <a:documentation>If this field is a vector or a tensor components may be listed (indexed from 0 by row first if tensorial).
-
-Defaults to all components if not selected.</a:documentation>
-                  <ref name="integer_vector"/>
-                </element>
-              </optional>
-              <optional>
-                <element name="region_ids">
-                  <a:documentation>A list of the region ids (physical ids in gmsh) </a:documentation>
-                  <ref name="integer_vector"/>
-                </element>
-              </optional>
-            </element>
-          </zeroOrMore>
-          <element name="monitors">
-            <optional>
-              <element name="view_index_set">
-                <a:documentation>Prints PETSc information about the index set describing this fieldsplit</a:documentation>
-                <empty/>
-              </element>
-            </optional>
-          </element>
+          <ref name="is_by_field"/>
           <element name="linear_solver">
             <a:documentation>Solver options for the full solve done by this preconditioner</a:documentation>
             <ref name="linear_solver_options"/>
@@ -895,43 +911,17 @@ has been linked with the X library.</a:documentation>
           <element name="null_space">
             <a:documentation>Describe the null spaces.  Names must be unique within this linear solver.
 
-Each null space must fully describe the space from the base system function (i.e. field names, region ids and components are not
-inherited down the tree).</a:documentation>
+Fields not included in any parent fieldsplits will be excluded from this nullspace 
+even if they are described below (a warning will be given).
+
+Fields included in any sibling nullspaces will be excluded from this nullspace 
+even if they are described below (a warning will be given).  NOTE: this may not
+always be the desired behaviour and the code should be modified if a case is
+found that requires this.</a:documentation>
             <attribute name="name">
               <data type="string"/>
             </attribute>
-            <zeroOrMore>
-              <element name="field">
-                <a:documentation>Field to include in this null space.</a:documentation>
-                <attribute name="name">
-                  <data type="string"/>
-                </attribute>
-                <optional>
-                  <element name="components">
-                    <a:documentation>If this field is a vector or a tensor components may be listed (indexed from 0 by row first if tensorial).
-
-Defaults to all components if not selected.</a:documentation>
-                    <ref name="integer_vector"/>
-                  </element>
-                </optional>
-                <optional>
-                  <element name="region_ids">
-                    <a:documentation>A list of the region ids (physical ids in gmsh).
-
-Defaults to the whole mesh if left unspecified.</a:documentation>
-                    <ref name="integer_vector"/>
-                  </element>
-                </optional>
-              </element>
-            </zeroOrMore>
-            <element name="monitors">
-              <optional>
-                <element name="view_index_set">
-                  <a:documentation>Prints PETSc information about the index set describing this null space</a:documentation>
-                  <empty/>
-                </element>
-              </optional>
-            </element>
+            <ref name="is_by_field"/>
           </element>
         </oneOrMore>
       </element>
