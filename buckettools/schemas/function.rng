@@ -962,11 +962,11 @@ GenericFunction_ptr examplecoeff;
 Then, in this initialization function, we could extract the appropriate time level of that 
 coefficient from the "ExampleSystem" system using:
 
-examplecoeff = bucket()-&gt;fetch_system("ExampleSystem")-&gt;fetch_coefficient("ExampleCoefficient")-&gt;genericfunction_ptr(time())
+examplecoeff = bucket()-&gt;fetch_system("ExampleSystem")-&gt;fetch_coeff("ExampleCoefficient")-&gt;genericfunction_ptr(time())
 
 or, if "ExampleSystem" is the current system, using the shortcut:
 
-examplecoeff = system()-&gt;fetch_coefficient("ExampleCoefficient")-&gt;genericfunction_ptr(time())
+examplecoeff = system()-&gt;fetch_coeff("ExampleCoefficient")-&gt;genericfunction_ptr(time())
 </a:documentation>
       <ref name="cpp_code"/>
     </element>

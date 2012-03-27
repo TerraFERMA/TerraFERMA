@@ -783,11 +783,11 @@ prescribed_cpp =
     ## Then, in this initialization function, we could extract the appropriate time level of that 
     ## coefficient from the "ExampleSystem" system using:
     ##
-    ## examplecoeff = bucket()->fetch_system("ExampleSystem")->fetch_coefficient("ExampleCoefficient")->genericfunction_ptr(time())
+    ## examplecoeff = bucket()->fetch_system("ExampleSystem")->fetch_coeff("ExampleCoefficient")->genericfunction_ptr(time())
     ##
     ## or, if "ExampleSystem" is the current system, using the shortcut:
     ##
-    ## examplecoeff = system()->fetch_coefficient("ExampleCoefficient")->genericfunction_ptr(time())
+    ## examplecoeff = system()->fetch_coeff("ExampleCoefficient")->genericfunction_ptr(time())
     ##
     element initialization {
       cpp_code
