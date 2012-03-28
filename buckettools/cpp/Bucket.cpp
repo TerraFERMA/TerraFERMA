@@ -44,8 +44,8 @@ Bucket::~Bucket()
 //*******************************************************************|************************************************************//
 void Bucket::run()
 {
-  update();
   update_timedependent();
+  update();
 
   output(OUTPUT_START);
 
@@ -71,8 +71,12 @@ void Bucket::run()
 
     update_timedependent();                                          // now we know the new time, update functions that are
                                                                      // potentially time dependent
+    update_nonlinear();
 
     solve_in_timeloop_();                                            // this is where the magic happens
+
+    update_timedependent();
+    update_nonlinear();
 
     if(complete())                                                   // this must be called before the update as it checks if a
     {                                                                // steady state has been attained

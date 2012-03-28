@@ -67,7 +67,11 @@ void SystemBucket::update()
                                                                      // fields share a vector with the system function so no need to
                                                                      // update them...
 
-  update_nonlinear();                                                // update potentially nonlinear coefficients
+  for (int_FunctionBucket_it f_it = orderedcoeffs_begin();           // loop over coefficients again to update any coefficient
+                           f_it != orderedcoeffs_end(); f_it++)      // functions
+  {
+    (*(*f_it).second).update();
+  }
 
   resetchange();                                                     // reset the change booleans in the system and fields
 

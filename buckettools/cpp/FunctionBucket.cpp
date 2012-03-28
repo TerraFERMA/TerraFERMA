@@ -263,7 +263,7 @@ void FunctionBucket::resetchange()
 //*******************************************************************|************************************************************//
 // refresh this functionbucket if it "needs" it
 //*******************************************************************|************************************************************//
-void FunctionBucket::refresh(const bool &force)
+void FunctionBucket::refresh(const bool force)
 {
   if (functiontype_==FUNCTIONBUCKET_FIELD)
   {
@@ -293,13 +293,29 @@ void FunctionBucket::refresh(const bool &force)
 //*******************************************************************|************************************************************//
 // update the potentially time dependent functions
 //*******************************************************************|************************************************************//
-void FunctionBucket::update_timedependent()
+void FunctionBucket::update()
 {
   if (coefficientfunction_)
   {
     (*(*boost::dynamic_pointer_cast< dolfin::Function >(oldfunction_)).vector()) = 
       (*(*boost::dynamic_pointer_cast< dolfin::Function >(function_)).vector());
                                                                      // update the oldfunction to the new function value
+  }
+
+  if (constantfunctional_)
+  {
+    *boost::dynamic_pointer_cast< dolfin::Constant >(oldfunction_) = 
+        double(*boost::dynamic_pointer_cast< dolfin::Constant >(function_));
+  }
+}
+
+//*******************************************************************|************************************************************//
+// update the potentially time dependent functions
+//*******************************************************************|************************************************************//
+void FunctionBucket::update_timedependent()
+{
+  if (coefficientfunction_)
+  {
     (*boost::dynamic_pointer_cast< dolfin::Function >(function_)).interpolate(*coefficientfunction_);
   }
 }

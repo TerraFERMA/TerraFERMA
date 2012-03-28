@@ -146,8 +146,10 @@ namespace buckettools
 
     void resetchange();                                              // reset the change boolean
 
-    void refresh(const bool &force=false);                           // refresh this function bucket - this may call solvers so 
+    void refresh(const bool force=false);                            // refresh this function bucket - this may call solvers so 
                                                                      // its not recommened to call loosely
+
+    void update();                                                   // update the timelevels of the function if it is potentially time dependent
 
     void update_nonlinear();                                         // update this function if it is potentially nonlinear
 
