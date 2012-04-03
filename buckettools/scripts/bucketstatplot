@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 #
 # James Maddison
+# (originally part of fluidity, modified for buckettools by Cian Wilson)
 
 """
-Plot data in a .stat file
+Plot data in a .stat formatted file
 """
 
 import getopt

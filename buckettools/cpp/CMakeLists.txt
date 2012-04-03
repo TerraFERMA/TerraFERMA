@@ -42,7 +42,7 @@ add_custom_target(
     builddefs
     ${CMAKE_COMMAND} -D SRC="${PROJECT_BINARY_DIR}/builddefs.h.in"
                      -D DST="${PROJECT_BINARY_DIR}/builddefs.h"
-                     -D DIR="${PROJECT_SOURCE_DIR}/../../"
+                     -D DIR="${PROJECT_SOURCE_DIR}"
                      -P "${PROJECT_BINARY_DIR}/builddefs.cmake"
     )
 
@@ -52,7 +52,8 @@ include_directories("${PROJECT_SOURCE_DIR}/../include" ${PROJECT_BINARY_DIR})
 # include python
 include_directories(${PYTHON_INCLUDE_PATH})
 # generate a library - really the main point of this whole process
-add_library(buckettools_cpp Usage.cpp SignalHandler.cpp SigIntEventHandler.cpp
+add_library(buckettools_cpp SHARED
+                            Usage.cpp SignalHandler.cpp SigIntEventHandler.cpp
                             Bucket.cpp SpudBucket.cpp SystemBucket.cpp SpudSystemBucket.cpp
                             FunctionBucket.cpp SpudFunctionBucket.cpp
                             SolverBucket.cpp SpudSolverBucket.cpp 
@@ -69,5 +70,7 @@ set_source_files_properties(builddefs.h PROPERTIES GENERATED 1)
 add_dependencies(buckettools_cpp builddefs)
 # link to python
 target_link_libraries(buckettools_cpp ${PYTHON_LIBRARIES})
+
+install(TARGETS buckettools_cpp DESTINATION lib)
 
 
