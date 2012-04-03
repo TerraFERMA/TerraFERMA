@@ -1,3 +1,5 @@
+#include <dolfin.h>
+#include <spud>
 #include "BucketTools.h"
 
 int main(int argc, char* argv[])
