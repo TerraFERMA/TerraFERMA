@@ -5,11 +5,11 @@ project(buckettools_ufc)
 # or the (main file of the) script has changed
 add_custom_command(
     OUTPUT ${PROJECT_BINARY_DIR}/SystemFunctionalsWrapper.cpp ${PROJECT_BINARY_DIR}/SystemSolversWrapper.cpp ${PROJECT_BINARY_DIR}/SystemExpressionsWrapper.cpp
-    COMMAND ${BUCKETTOOLS_BIN}/systemwrappers_from_options
-    ARGS ${OPTIONSFILE}
+    COMMAND python
+    ARGS ${PROJECT_SOURCE_DIR}/../scripts/systemwrappers_from_options.py ${OPTIONSFILE}
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
     DEPENDS ${OPTIONSFILE}
-    DEPENDS ${BUCKETTOOLS_BIN}/systemwrappers_from_options
+    DEPENDS ${PROJECT_SOURCE_DIR}/../scripts/systemwrappers_from_options.py
     )
  
 # create a custom target so we can make the project depend on this
@@ -19,7 +19,7 @@ add_custom_target(
    )
 
 # include the buckettools include directory and the binary directory (for the systemswrapper)
-include_directories(${BUCKETTOOLS_INCLUDE_DIRS} ${PROJECT_BINARY_DIR})
+include_directories("${PROJECT_SOURCE_DIR}/../include" ${PROJECT_BINARY_DIR})
 # include python
 include_directories(${PYTHON_INCLUDE_PATH})
 # generate a library - really the main point of this whole process

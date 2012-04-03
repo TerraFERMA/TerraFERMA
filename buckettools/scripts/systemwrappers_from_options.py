@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 
 from optparse import OptionParser
 import sys
@@ -9,7 +8,7 @@ import ufltools.spud
 optparser=OptionParser(usage='usage: %prog <options-file>',
                        add_help_option=True,
                        description="""This script takes a buckettools options file and writes """ +
-                       """ufl files based on the nonlinear_solver and diagnostic functional options.  """ +
+                       """ufl, ufc and cpp header files based on the solver, functional and expression options.  """ +
                        """It also provides a cpp header file wrapping the namespaces of the ufc """ +
                        """corresponding to these ufl files.""" )
 
@@ -28,9 +27,16 @@ libspud.load_options(options_filename)
 bucket = ufltools.spud.SpudBucket()
 # populate the bucket based on the options file loaded above
 bucket.fill()
+
+# write out the ufl files described by the options tree
+bucket.write_ufc()
+# write a cpp header file to wrap the namespaces of the corresponding ufc
+bucket.write_systemfunctionals_cpp()
+bucket.write_systemsolvers_cpp()
+
 # write out the cpp expression header files described by the options tree
 bucket.write_cppexpressions()
-# write a cpp header file to wrap the namespaces of the corresponding ufc
+# write a cpp header file to wrap the namespaces of the corresponding cpp
 bucket.write_systemexpressions_cpp()
 
 # and we're done
