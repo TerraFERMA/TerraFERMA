@@ -1,7 +1,7 @@
 import libspud
-import ufltools.solverbucket
+import buckettools.solverbucket
 
-class SpudSolverBucket(ufltools.solverbucket.SolverBucket):
+class SpudSolverBucket(buckettools.solverbucket.SolverBucket):
   """A class that stores all the information necessary to write the ufl for a system of forms (i.e. linear or bilinear) associated with a solver 
      plus all the information necessary to populate that class using libspud."""
 

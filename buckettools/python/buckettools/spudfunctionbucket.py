@@ -1,8 +1,8 @@
 import sys
 import libspud
-import ufltools.functionbucket
+import buckettools.functionbucket
 
-class SpudFunctionBucket(ufltools.functionbucket.FunctionBucket):
+class SpudFunctionBucket(buckettools.functionbucket.FunctionBucket):
   """A class that stores all the information necessary to write the ufl for a function (field or coefficient) 
      plus all the information necessary to populate that class using libspud.
      Note that the class has limited ufl production because much of this is system dependent."""
@@ -38,7 +38,7 @@ class SpudFunctionBucket(ufltools.functionbucket.FunctionBucket):
     # this should be restricted by the schema to Constant coefficients:
     if libspud.have_option(optionpath+"/type/rank/value/functional"):
       functional_optionpath = optionpath+"/type/rank/value/functional"
-      functional = ufltools.spud.SpudFunctionalBucket()
+      functional = buckettools.spud.SpudFunctionalBucket()
       functional.fill(functional_optionpath, self)
       self.functional = functional
     
@@ -47,7 +47,7 @@ class SpudFunctionBucket(ufltools.functionbucket.FunctionBucket):
       cpp_optionpath = optionpath+"/type/rank/initial_condition["+`k`+"]"
       if libspud.have_option(cpp_optionpath+"/cpp"):
         cpp_name = libspud.get_option(cpp_optionpath+"/name")
-        cppexpression = ufltools.spud.SpudCppExpressionBucket()
+        cppexpression = buckettools.spud.SpudCppExpressionBucket()
         # get all the information about this expression from the options dictionary
         cppexpression.fill(cpp_optionpath, cpp_name, self)
         # let the field know about this cpp expression
@@ -66,7 +66,7 @@ class SpudFunctionBucket(ufltools.functionbucket.FunctionBucket):
         if libspud.have_option(cpp_optionpath+"/cpp"):
           cpp_name = bc_name + bc_comp_name
           
-          cppexpression = ufltools.spud.SpudCppExpressionBucket()
+          cppexpression = buckettools.spud.SpudCppExpressionBucket()
           # get all the information about this expression from the options dictionary
           cppexpression.fill(cpp_optionpath, cpp_name, self)
           # let the field know about this cpp expression
@@ -78,7 +78,7 @@ class SpudFunctionBucket(ufltools.functionbucket.FunctionBucket):
       cpp_optionpath = optionpath+"/type/rank/value["+`k`+"]"
       if libspud.have_option(cpp_optionpath+"/cpp"):
         cpp_name = libspud.get_option(cpp_optionpath+"/name")
-        cppexpression = ufltools.spud.SpudCppExpressionBucket()
+        cppexpression = buckettools.spud.SpudCppExpressionBucket()
         # get all the information about this expression from the options dictionary
         cppexpression.fill(cpp_optionpath, cpp_name, self)
         # let the field know about this cpp expression
@@ -89,7 +89,7 @@ class SpudFunctionBucket(ufltools.functionbucket.FunctionBucket):
     self.functionals = []
     for k in range(libspud.option_count(optionpath+"/diagnostics/include_in_statistics/functional")):
       functional_optionpath = optionpath+"/diagnostics/include_in_statistics/functional["+`k`+"]"
-      functional = ufltools.spud.SpudFunctionalBucket()
+      functional = buckettools.spud.SpudFunctionalBucket()
       # get all the information about this functional from the options dictionary
       functional.fill(functional_optionpath, self)
       # let the field know about this functional
