@@ -340,7 +340,7 @@ r = rv + rp</string_value>
             </monitors>
           </iterative_method>
           <preconditioner name="fieldsplit">
-            <composite_type name="multiplicative"/>
+            <composite_type name="schur"/>
             <fieldsplit name="Velocity">
               <field name="Velocity"/>
               <monitors/>
@@ -355,19 +355,10 @@ r = rv + rp</string_value>
               <field name="Pressure"/>
               <monitors/>
               <linear_solver>
-                <iterative_method name="cg">
-                  <relative_error>
-                    <real_value rank="0">1.e-9</real_value>
-                  </relative_error>
-                  <absolute_error>
-                    <real_value rank="0">1.e-11</real_value>
-                  </absolute_error>
-                  <max_iterations>
-                    <integer_value rank="0">100</integer_value>
-                  </max_iterations>
-                  <monitors/>
-                </iterative_method>
-                <preconditioner name="sor"/>
+                <iterative_method name="preonly"/>
+                <preconditioner name="lu">
+                  <factorization_package name="umfpack"/>
+                </preconditioner>
               </linear_solver>
             </fieldsplit>
           </preconditioner>
