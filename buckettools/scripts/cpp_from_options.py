@@ -29,7 +29,7 @@ bucket = ufltools.spud.SpudBucket()
 bucket.fill()
 # write out the cpp expression header files described by the options tree
 bucket.write_cppexpressions()
-# write a cpp header file to wrap the namespaces of the corresponding ufc
+# write a cpp header file to wrap the namespaces of the cpp expressions
 bucket.write_systemexpressions_cpp()
 
 # and we're done

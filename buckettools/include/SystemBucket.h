@@ -71,6 +71,8 @@ namespace buckettools
     virtual void copy_diagnostics(SystemBucket_ptr &system, 
                             Bucket_ptr &bucket) const;               // copy the data necessary for the diagnostics data file(s)
 
+    void initialize_diagnostics() const;                             // initialize any diagnostic output from this system
+
     //***************************************************************|***********************************************************//
     // Base data access
     //***************************************************************|***********************************************************//
@@ -103,6 +105,9 @@ namespace buckettools
 
     const Function_ptr residualfunction() const                      // return a (boost shared) pointer to the residual in the system
     { return residualfunction_; }                                    // function
+
+    const Function_ptr snesupdatefunction() const                    // return a (boost shared) pointer to the snes update of the system
+    { return snesupdatefunction_; }                                  // function
 
     const Expression_ptr icexpression() const                        // return a constant (boost shared) pointer to the initial
     { return icexpression_; }                                        // condition expression for this system
@@ -194,6 +199,12 @@ namespace buckettools
 
     void register_solver(SolverBucket_ptr solver, 
                                            const std::string &name); // register a solver bucket with the given name
+
+    SolverBucket_ptr fetch_solver(const std::string &name);          // return a (boost shared) pointer to a solver with the
+                                                                     // given name
+
+    const SolverBucket_ptr fetch_solver(const std::string &name)     // return a constant (boost shared) pointer to a solver with the
+                                                          const;     // given name
 
     SolverBucket_it solvers_begin();                                 // return an iterator to the beginning of the solver buckets
 
@@ -312,16 +323,13 @@ namespace buckettools
     void attach_solver_coeffs_(SolverBucket_it s_begin,              // attach specific fields or coefficients to solver forms
                                           SolverBucket_it s_end);
 
-    void collect_bcs_();                                             // collect a vector of (boost shared) pointers bcs from the
-                                                                     // fields
-
     void collect_ics_(const uint &component,                         // collect the field initial conditions into an initial 
                       const std::map< uint, Expression_ptr >         // condition expression
                                                   &icexpressions);
 
     void apply_ic_();                                                // apply the initial conditions to the system function
 
-    void apply_bc_();                                                // apply the bcs to the system function
+    void apply_dirichletbc_();                                       // apply the Dirichlet bcs to the system function
 
     void apply_referencepoints_();                                   // apply the reference points to the system function
 
@@ -355,6 +363,8 @@ namespace buckettools
     bool_ptr solved_;                                                // indicate if the system has been solved this timestep
 
     Function_ptr residualfunction_;                                  // (boost shared) pointer to the residual of the system
+
+    Function_ptr snesupdatefunction_;                                // (boost shared) pointer to the snes update of the system
 
     //***************************************************************|***********************************************************//
     // Pointers data

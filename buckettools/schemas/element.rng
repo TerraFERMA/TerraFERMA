@@ -74,16 +74,24 @@
     <ref name="generic_element_family"/>
     <ref name="generic_element_degree"/>
   </define>
-  <define name="p0_element">
-    <ref name="dg_element_family"/>
-    <ref name="p0_element_degree"/>
-  </define>
   <define name="p1_element">
     <ref name="cg_element_family"/>
     <ref name="p1_element_degree"/>
   </define>
   <define name="p2_element">
     <ref name="cg_element_family"/>
+    <ref name="p2_element_degree"/>
+  </define>
+  <define name="p0_element">
+    <ref name="dg_element_family"/>
+    <ref name="p0_element_degree"/>
+  </define>
+  <define name="p1dg_element">
+    <ref name="dg_element_family"/>
+    <ref name="p1_element_degree"/>
+  </define>
+  <define name="p2dg_element">
+    <ref name="dg_element_family"/>
     <ref name="p2_element_degree"/>
   </define>
   <define name="vector_element_options">
@@ -109,36 +117,63 @@
     </optional>
   </define>
   <define name="element_options_scalar">
+    <ref name="element_options_scalar_p0"/>
+  </define>
+  <define name="element_options_scalar" combine="choice">
+    <ref name="element_options_scalar_lagrange"/>
+  </define>
+  <define name="element_options_scalar" combine="choice">
+    <ref name="element_options_scalar_user"/>
+  </define>
+  <define name="element_options_scalar_user">
+    <element name="element">
+      <a:documentation>Options describing a user defined finite element.</a:documentation>
+      <attribute name="name">
+        <value>UserDefined</value>
+      </attribute>
+      <ref name="generic_element"/>
+    </element>
+  </define>
+  <define name="element_options_scalar_lagrange">
     <choice>
       <element name="element">
-        <a:documentation>Options describing a user defined finite element for a scalar.</a:documentation>
-        <attribute name="name">
-          <value>UserDefined</value>
-        </attribute>
-        <ref name="generic_element"/>
-      </element>
-      <element name="element">
-        <a:documentation>Options describing piecewise constant discontinuous Lagrange finite element for a scalar.</a:documentation>
-        <attribute name="name">
-          <value>P0</value>
-        </attribute>
-        <ref name="p0_element"/>
-      </element>
-      <element name="element">
-        <a:documentation>Options describing piecewise linear continuous Lagrange finite element for a scalar.</a:documentation>
+        <a:documentation>Options describing piecewise linear continuous Lagrange finite element.</a:documentation>
         <attribute name="name">
           <value>P1</value>
         </attribute>
         <ref name="p1_element"/>
       </element>
       <element name="element">
-        <a:documentation>Options describing piecewise quadratic continuous Lagrange finite element for a scalar.</a:documentation>
+        <a:documentation>Options describing piecewise quadratic continuous Lagrange finite element.</a:documentation>
         <attribute name="name">
           <value>P2</value>
         </attribute>
         <ref name="p2_element"/>
       </element>
+      <element name="element">
+        <a:documentation>Options describing piecewise linear discontinuous Lagrange finite element.</a:documentation>
+        <attribute name="name">
+          <value>P1DG</value>
+        </attribute>
+        <ref name="p1dg_element"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing piecewise quadratic discontinuous Lagrange finite element.</a:documentation>
+        <attribute name="name">
+          <value>P2DG</value>
+        </attribute>
+        <ref name="p2dg_element"/>
+      </element>
     </choice>
+  </define>
+  <define name="element_options_scalar_p0">
+    <element name="element">
+      <a:documentation>Options describing piecewise constant discontinuous Lagrange finite element.</a:documentation>
+      <attribute name="name">
+        <value>P0</value>
+      </attribute>
+      <ref name="p0_element"/>
+    </element>
   </define>
   <define name="element_options_vector">
     <choice>
@@ -148,14 +183,6 @@
           <value>UserDefined</value>
         </attribute>
         <ref name="generic_element"/>
-        <ref name="vector_element_options"/>
-      </element>
-      <element name="element">
-        <a:documentation>Options describing piecewise constant discontinuous Lagrange finite element for a vector.</a:documentation>
-        <attribute name="name">
-          <value>P0</value>
-        </attribute>
-        <ref name="p0_element"/>
         <ref name="vector_element_options"/>
       </element>
       <element name="element">
@@ -174,6 +201,30 @@
         <ref name="p2_element"/>
         <ref name="vector_element_options"/>
       </element>
+      <element name="element">
+        <a:documentation>Options describing piecewise linear discontinuous Lagrange finite element for a vector.</a:documentation>
+        <attribute name="name">
+          <value>P1DG</value>
+        </attribute>
+        <ref name="p1dg_element"/>
+        <ref name="vector_element_options"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing piecewise quadratic discontinuous Lagrange finite element for a vector.</a:documentation>
+        <attribute name="name">
+          <value>P2DG</value>
+        </attribute>
+        <ref name="p2dg_element"/>
+        <ref name="vector_element_options"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing piecewise constant discontinuous Lagrange finite element for a vector.</a:documentation>
+        <attribute name="name">
+          <value>P0</value>
+        </attribute>
+        <ref name="p0_element"/>
+        <ref name="vector_element_options"/>
+      </element>
     </choice>
   </define>
   <define name="element_options_tensor">
@@ -184,14 +235,6 @@
           <value>UserDefined</value>
         </attribute>
         <ref name="generic_element"/>
-        <ref name="tensor_element_options"/>
-      </element>
-      <element name="element">
-        <a:documentation>Options describing piecewise constant discontinuous Lagrange finite element for a tensor.</a:documentation>
-        <attribute name="name">
-          <value>P0</value>
-        </attribute>
-        <ref name="p0_element"/>
         <ref name="tensor_element_options"/>
       </element>
       <element name="element">
@@ -208,6 +251,30 @@
           <value>P2</value>
         </attribute>
         <ref name="p2_element"/>
+        <ref name="tensor_element_options"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing piecewise linear discontinuous Lagrange finite element for a tensor.</a:documentation>
+        <attribute name="name">
+          <value>P1DG</value>
+        </attribute>
+        <ref name="p1dg_element"/>
+        <ref name="tensor_element_options"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing piecewise quadratic discontinuous Lagrange finite element for a tensor.</a:documentation>
+        <attribute name="name">
+          <value>P2DG</value>
+        </attribute>
+        <ref name="p2dg_element"/>
+        <ref name="tensor_element_options"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing piecewise constant discontinuous Lagrange finite element for a tensor.</a:documentation>
+        <attribute name="name">
+          <value>P0</value>
+        </attribute>
+        <ref name="p0_element"/>
         <ref name="tensor_element_options"/>
       </element>
     </choice>

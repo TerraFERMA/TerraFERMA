@@ -12,12 +12,13 @@ using namespace buckettools;
 PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f, 
                                                           void* ctx)
 {
-
   dolfin::log(dolfin::INFO, "In FormFunction");
 
   SNESCtx *snesctx = (SNESCtx *)ctx;                                 // cast the snes context
 
   SolverBucket* solver = (*snesctx).solver;                          // retrieve a (standard) pointer to this solver
+  SystemBucket* system = (*solver).system();                         // retrieve a (standard) pointer to the parent system of this solver
+  Bucket*       bucket = (*system).bucket();                         // retrieve a (standard) pointer to the parent bucket of this solver
 
   if ((*solver).monitor_norms())
   {
@@ -37,9 +38,9 @@ PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f,
     dolfin::log(dolfin::get_log_level(), "FormFunction(1): inf-norm f = %f", norm);
   }
 
-  Function_ptr iteratedfunction = (*snesctx).iteratedfunction;       // collect the iterated system bucket function
-  std::vector<BoundaryCondition_ptr>& bcs = (*snesctx).bcs;          // get the vector of bcs
-  std::vector<ReferencePoints_ptr>& points = (*snesctx).points;      // get the vector of reference points
+  Function_ptr iteratedfunction = (*system).iteratedfunction();      // collect the iterated system bucket function
+  const std::vector<BoundaryCondition_ptr>& bcs = (*system).bcs();   // get the vector of bcs
+  const std::vector<ReferencePoints_ptr>& points = (*system).points();// get the vector of reference points
   Vec_ptr px(&x, dolfin::NoDeleter());                               // convert the iterated snes vector
   Vec_ptr pf(&f, dolfin::NoDeleter());                               // convert the rhs snes vector
   dolfin::PETScVector rhs(pf), iteratedvec(px);
@@ -47,9 +48,9 @@ PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f,
 
   (*(*iteratedfunction).vector()) = iteratedvec;                     // update the iterated system bucket function
 
-  (*(*snesctx).bucket).update_nonlinear();                           // update nonlinear coefficients
+  (*bucket).update_nonlinear();                                      // update nonlinear coefficients
 
-  dolfin::assemble(rhs, (*(*snesctx).linear), reset_tensor);         // assemble the rhs from the context linear form
+  dolfin::assemble(rhs, *(*solver).linear_form(), reset_tensor);         // assemble the rhs from the context linear form
   for(uint i = 0; i < bcs.size(); ++i)                               // loop over the bcs
   {
     (*bcs[i]).apply(rhs, iteratedvec);                               // FIXME: will break symmetry?
@@ -93,7 +94,8 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
   SNESCtx *snesctx = (SNESCtx *)ctx;                                 // cast the snes context
 
   SolverBucket* solver = (*snesctx).solver;                          // retrieve a (standard) pointer to this solver
-
+  SystemBucket* system = (*solver).system();                         // retrieve a (standard) pointer to the parent system of this solver
+  Bucket*       bucket = (*system).bucket();                         // retrieve a (standard) pointer to the parent bucket of this solver
 
   if ((*solver).monitor_norms())
   {
@@ -119,9 +121,9 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
     dolfin::log(dolfin::get_log_level(), "FormJacobian(1): inf-norm B = %f", norm);
   }
 
-  Function_ptr iteratedfunction = (*snesctx).iteratedfunction;       // collect the iterated system bucket function
-  std::vector<BoundaryCondition_ptr>& bcs = (*snesctx).bcs;          // get the vector of bcs
-  std::vector<ReferencePoints_ptr>& points = (*snesctx).points;      // get the vector of reference points
+  Function_ptr iteratedfunction = (*system).iteratedfunction();      // collect the iterated system bucket function
+  const std::vector<BoundaryCondition_ptr>& bcs = (*system).bcs();   // get the vector of bcs
+  const std::vector<ReferencePoints_ptr>& points = (*system).points();// get the vector of reference points
   Vec_ptr px(&x, dolfin::NoDeleter());                               // convert the iterated snes vector
   dolfin::PETScVector iteratedvec(px);
   Mat_ptr pA(A, dolfin::NoDeleter());                                // convert the snes matrix
@@ -131,9 +133,9 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
 
   (*(*iteratedfunction).vector()) = iteratedvec;                     // update the iterated system bucket function
 
-  (*(*snesctx).bucket).update_nonlinear();                           // update nonlinear coefficients
+  (*bucket).update_nonlinear();                           // update nonlinear coefficients
 
-  dolfin::assemble(matrix, (*(*snesctx).bilinear), reset_tensor);    // assemble the matrix from the context bilinear form
+  dolfin::assemble(matrix, *(*solver).bilinear_form(), reset_tensor);// assemble the matrix from the context bilinear form
   for(uint i = 0; i < bcs.size(); ++i)                               // loop over the bcs
   {
     (*bcs[i]).apply(matrix);                                         // FIXME: will break symmetry?
@@ -142,14 +144,14 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
   {
     (*points[i]).apply(matrix);                                      // FIXME: will break symmetry?
   }
-  if ((*snesctx).ident_zeros)
+  if ((*solver).ident_zeros())
   {
     matrix.ident_zeros();
   }
 
-  if ((*snesctx).bilinearpc)                                         // do we have a different bilinear pc form associated?
+  if ((*solver).bilinearpc_form())                                   // do we have a different bilinear pc form associated?
   {
-    dolfin::assemble(matrixpc, (*(*snesctx).bilinearpc),             // assemble the matrix pc from the context bilinear pc form
+    dolfin::assemble(matrixpc, (*(*solver).bilinearpc_form()),       // assemble the matrix pc from the context bilinear pc form
                                                       reset_tensor);
     for(uint i = 0; i < bcs.size(); ++i)                             // loop over the bcs
     {
@@ -159,7 +161,7 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
     {
       (*points[i]).apply(matrixpc);                                  // FIXME: will break symmetry
     }
-    if ((*snesctx).ident_zeros_pc)
+    if ((*solver).ident_zeros_pc())
     {
       matrixpc.ident_zeros();
     }
@@ -193,5 +195,135 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
 
   PetscFunctionReturn(0);
 }
+
+//*******************************************************************|************************************************************//
+// define the petsc snes monitor callback function that outputs a visualization file
+//*******************************************************************|************************************************************//
+PetscErrorCode buckettools::SNESCustomMonitor(SNES snes, PetscInt its,
+                                      PetscReal norm, void* mctx)
+{
+  dolfin::log(dolfin::INFO, "In SNESCustomMonitor");
+
+  std::stringstream buffer;                                          // string buffer
+  PetscErrorCode perr;                                               // petsc error code
+
+  CustomMonitorCtx *snesctx = (CustomMonitorCtx *)mctx;
+
+  SolverBucket* solver = (*snesctx).solver;                          // retrieve a (standard) pointer to this solver
+  SystemBucket* system = (*solver).system();                         // retrieve a (standard) pointer to the parent system of this solver
+  Bucket*       bucket = (*system).bucket();                         // retrieve a (standard) pointer to the parent bucket of this solver
+
+  (*solver).iteration_count(its);                                    // set the iteration count
+
+  Vec x;
+  perr = SNESGetSolution(snes, &x);  CHKERRQ(perr);                  // get the solution vector from snes
+  Vec_ptr px(&x, dolfin::NoDeleter());                               // and convert it into a dolfin PETScVector
+  dolfin::PETScVector sol(px);
+
+  *(*(*system).iteratedfunction()).vector() = sol;
+
+  Vec rx;
+  perr = SNESGetFunction(snes, &rx, PETSC_NULL, PETSC_NULL);         // get the residual function vector from snes
+  CHKERRQ(perr);
+  Vec_ptr prx(&rx, dolfin::NoDeleter());                             // and convert it into a dolfin PETScVector
+  dolfin::PETScVector solresid(prx);
+
+  *(*(*system).residualfunction()).vector() = solresid;
+
+  Vec dx;
+  perr = SNESGetSolutionUpdate(snes, &dx);  CHKERRQ(perr);           // get the solution update vector from snes
+  Vec_ptr pdx(&dx, dolfin::NoDeleter());                             // and convert it into a dolfin PETScVector
+  dolfin::PETScVector solupdate(pdx);
+
+  *(*(*system).snesupdatefunction()).vector() = solupdate;
+
+
+  if ((*solver).convergence_file())
+  {
+
+    (*(*solver).convergence_file()).write_data();
+
+  }
+
+  PetscFunctionReturn(0);
+}
+
+//*******************************************************************|************************************************************//
+// define the petsc ksp monitor callback function that outputs a convergence file
+//*******************************************************************|************************************************************//
+PetscErrorCode buckettools::KSPCustomMonitor(KSP ksp, int it,
+                                      PetscReal rnorm, void* mctx)
+{
+  dolfin::log(dolfin::INFO, "In KSPCustomMonitor");
+
+  std::stringstream buffer;                                          // string buffer
+  PetscErrorCode perr;                                               // petsc error code
+
+  CustomMonitorCtx *kspctx = (CustomMonitorCtx *)mctx;
+
+  SolverBucket* solver = (*kspctx).solver;                           // retrieve a (standard) pointer to this solver
+  SystemBucket* system = (*solver).system();                         // retrieve a (standard) pointer to the parent system of this solver
+  Bucket*       bucket = (*system).bucket();                         // retrieve a (standard) pointer to the parent bucket of this solver
+
+  Vec x;
+  perr = KSPBuildSolution(ksp, PETSC_NULL, &x);  CHKERRQ(perr);      // get the solution vector from the ksp
+  Vec_ptr px(&x, dolfin::NoDeleter());                               // and convert it into a dolfin PETScVector
+  dolfin::PETScVector sol(px);
+
+  *(*(*system).iteratedfunction()).vector() = sol;
+
+  Vec rx;
+  perr = KSPBuildResidual(ksp, PETSC_NULL, PETSC_NULL, &rx);  CHKERRQ(perr);// get the residual vector from the ksp
+  Vec_ptr prx(&rx, dolfin::NoDeleter());                             // and convert it into a dolfin PETScVector
+  dolfin::PETScVector solresid(prx);
+
+  *(*(*system).residualfunction()).vector() = solresid;
+
+  if ((*solver).type()=="SNES")
+  {
+    PetscInt iter;
+    perr = SNESGetIterationNumber((*solver).snes(), &iter); CHKERRQ(perr);
+    (*solver).iteration_count(iter);
+  }
+
+  if ((*solver).ksp_convergence_file())
+  {
+
+    (*(*solver).ksp_convergence_file()).write_data(it);
+
+  }
+
+  if ((*solver).kspnullspace_monitor() && (it==0))
+  {
+    MatNullSpace SP;
+
+    perr = KSPGetNullSpace(ksp, &SP); CHKERRQ(perr);
+
+    if (SP)
+    {
+      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
+      PetscBool isNull;
+      #else
+      PetscTruth isNull;
+      #endif
+
+      Mat Amat, Pmat;
+      MatStructure flag;
+
+      perr = KSPGetOperators(ksp, &Amat, &Pmat, &flag); CHKERRQ(perr);
+
+      perr = MatNullSpaceTest(SP, Amat, &isNull); CHKERRQ(perr);
+
+      if (!isNull)
+      {
+        dolfin::error("Provided null space is not a null space of the matrix.");
+      }
+    }
+
+  }
+
+  PetscFunctionReturn(0);
+}
+
 
 

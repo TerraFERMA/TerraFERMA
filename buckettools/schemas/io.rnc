@@ -5,8 +5,8 @@ io =
     ## Input/Output options
     element io {
       output_file_options,
-      detectors_options,
       diagnostic_output_options,
+      detectors_options,
       checkpointing_options
     }
   )

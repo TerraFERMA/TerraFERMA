@@ -42,6 +42,8 @@ void SpudSystemBucket::fill()
 
   fill_fields_();                                                    // initialize the fields (subfunctions) of this system
 
+  fill_bcs_();                                                       // fill in data about the bcs relative to the system (includes
+                                                                     // periodic)
   fill_points_();                                                    // initialize the reference point array of this system
  
   fill_coeffs_();                                                    // initialize the coefficient expressions (and constants)
@@ -105,7 +107,7 @@ void SpudSystemBucket::initialize()
   if (fields_size()>0)
   {
     apply_ic_();                                                     // apply the initial condition to the system function
-    apply_bc_();                                                     // apply the boundary conditions we just collected
+    apply_dirichletbc_();                                            // apply the Dirichlet boundary conditions we just collected
     apply_referencepoints_();                                        // apply the reference points we just collected
   }
 
@@ -257,6 +259,13 @@ void SpudSystemBucket::fill_systemfunction_()
   buffer.str(""); buffer << name() << "::Residual";
   (*residualfunction_).rename( buffer.str(), buffer.str() );
 
+  if (Spud::option_count(optionpath()+"/nonlinear_solver/type::SNES/monitors/convergence_file")>0)
+  {
+    snesupdatefunction_.reset( new dolfin::Function(functionspace_) );
+    buffer.str(""); buffer << name() << "::SNESUpdateFunction";
+    (*snesupdatefunction_).rename( buffer.str(), buffer.str() );
+  }
+
 }
 
 //*******************************************************************|************************************************************//
@@ -304,10 +313,30 @@ void SpudSystemBucket::fill_fields_()
     }
   }
 
-  collect_bcs_();                                                    // collect all the bcs together for convenience later
   if (!icexpressions.empty())
   {
     collect_ics_(component, icexpressions);                          // collect all the ics together into a new initial condition expression
+  }
+
+}
+
+//*******************************************************************|************************************************************//
+// fill in the data about the system bcs
+//*******************************************************************|************************************************************//
+void SpudSystemBucket::fill_bcs_()
+{
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud error code
+
+  for (int_FunctionBucket_const_it f_it = orderedfields_begin();     // loop over all the fields
+                                f_it != orderedfields_end(); f_it++)
+  {
+    for (int_BoundaryCondition_const_it                              // loop over all the bcs
+          b_it = (*(*f_it).second).orderedbcs_begin(); 
+          b_it != (*(*f_it).second).orderedbcs_end(); b_it++)
+    {
+      bcs_.push_back((*b_it).second);                                // add the bcs to a std vector
+    }
   }
 
 }

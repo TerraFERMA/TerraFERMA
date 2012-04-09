@@ -9,6 +9,8 @@
 #include "SpudBase.h"
 #include "SpudBucket.h"
 #include "petscsnes.h"
+#include "ConvergenceFile.h"
+#include "KSPConvergenceFile.h"
 
 using namespace buckettools;
 
@@ -140,6 +142,22 @@ void SpudSolverBucket::fill()
       CHKERRV(perr);
     }
 
+    if (Spud::have_option(optionpath()+"/type/monitors/convergence_file"))
+    {
+      snesmctx_.solver = this;
+      if (Spud::have_option(optionpath()+"/type/monitors/convergence_file"))
+      {
+        buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
+                               << (*system()).name() << "_" 
+                               << name() << "_snes.conv";
+        convfile_.reset( new ConvergenceFile(buffer.str(),           // allocate the file but don't write the header yet as the
+                                      (*system()).name(), name()) ); // bucket isn't complete
+      }
+      perr = SNESMonitorSet(snes_, SNESCustomMonitor,                // set a custom snes monitor
+                                            &snesmctx_, PETSC_NULL); 
+      CHKERRV(perr);
+    }
+
     perr = SNESSetTolerances(snes_, atol_, rtol_, stol_, maxits_,    // from the data we collected in the base data fill set-up the
                                                             maxfes_);// snes tolerances
     CHKERRV(perr);
@@ -148,7 +166,7 @@ void SpudSolverBucket::fill()
                                                                      // to start setting up the ksp inside the snes
     
     buffer.str(""); buffer << optionpath() << "/type/linear_solver"; // the ksp solver path
-    fill_ksp_(buffer.str(), ksp_, prefix.str());                     // can then be used to fill the ksp data
+    fill_ksp_(buffer.str(), ksp_, prefix.str(), &snes_);             // can then be used to fill the ksp data
 
     perr = SNESView(snes_, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr); // turn on snesview so we get some debugging info
 
@@ -158,8 +176,14 @@ void SpudSolverBucket::fill()
 
     perr = KSPCreate(PETSC_COMM_WORLD, &ksp_); CHKERRV(perr);        // create a ksp object from the variable in the solverbucket
 
-    picard_iteration_count_.reset( new int );
-    *picard_iteration_count_ = 0;
+    if (Spud::have_option(optionpath()+"/type/monitors/convergence_file"))
+    {
+      buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
+                             << (*system()).name() << "_" 
+                             << name() << "_picard.conv";
+      convfile_.reset( new ConvergenceFile(buffer.str(),           // allocate the file but don't write the header yet as the
+                                    (*system()).name(), name()) ); // bucket isn't complete
+    }
 
     buffer.str(""); buffer << optionpath() << "/type/linear_solver"; // figure out the linear solver optionspath
     fill_ksp_(buffer.str(), ksp_, prefix.str());                     // fill the ksp data
@@ -288,6 +312,14 @@ void SpudSolverBucket::fill_base_()
                                 "/type/ignore_all_solver_failures";
   ignore_failures_ = Spud::have_option(buffer.str());
 
+  iteration_count_.reset( new int );
+  *iteration_count_ = 0;
+
+  kspnullspacemonitor_.reset( new bool );
+  *kspnullspacemonitor_ = false;
+
+  copy_ = false;
+
   buffer.str(""); buffer << optionpath() << 
                                 "/type/monitors/norms";
   monitornorms_ = Spud::have_option(buffer.str());
@@ -411,7 +443,8 @@ void SpudSolverBucket::fill_forms_()
 //*******************************************************************|************************************************************//
 void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp, 
                                  const std::string prefix,
-                                 const std::vector<uint>* parent_indices)
+                                 const std::vector<uint>* parent_indices,
+                                 SNES* snes)
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
@@ -477,6 +510,24 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
     {
       perr = KSPMonitorSet(ksp, KSPMonitorLG, 
                                              PETSC_NULL, PETSC_NULL); 
+      CHKERRV(perr);
+    }
+
+    if (Spud::have_option(optionpath+"/iterative_method/monitors/convergence_file")||
+        Spud::have_option(optionpath+"/iterative_method/monitors/test_null_space"))
+    {
+      kspmctx_.solver = this;
+      if (Spud::have_option(optionpath+"/iterative_method/monitors/convergence_file"))
+      {
+        buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
+                               << (*system()).name() << "_" 
+                               << name() << "_ksp.conv";
+        kspconvfile_.reset( new KSPConvergenceFile(buffer.str(),     // allocate the file but don't write the header yet as the
+                                      (*system()).name(), name()) ); // bucket isn't complete
+      }
+      *kspnullspacemonitor_ = Spud::have_option(optionpath+"/iterative_method/monitors/test_null_space");
+      perr = KSPMonitorSet(ksp, KSPCustomMonitor, 
+                                             &kspmctx_, PETSC_NULL); 
       CHKERRV(perr);
     }
 
@@ -573,9 +624,22 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
     perr = MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_FALSE, nnulls, 
                                                         vecs, &SP); 
     CHKERRV(perr);
+
+    buffer.str(""); buffer << optionpath << 
+                      "/remove_null_space/monitors/view_null_space"; // view the null space for debugging
+    if (Spud::have_option(buffer.str()))
+    {
+      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
+      perr = MatNullSpaceView(SP, PETSC_VIEWER_STDOUT_SELF); 
+      CHKERRV(perr);
+      #else
+      dolfin::error("Cannot set view_null_space monitor with PETSc < 3.2.");
+      #endif
+    }
+
     perr = KSPSetNullSpace(ksp, SP); CHKERRV(perr);                  // attach it to the ksp
     #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
-    perr = MatNullSpaceDestroy(&SP); CHKERRV(perr);                   // destroy the null space object, necessary?
+    perr = MatNullSpaceDestroy(&SP); CHKERRV(perr);                  // destroy the null space object, necessary?
     #else
     perr = MatNullSpaceDestroy(SP); CHKERRV(perr);                   // destroy the null space object, necessary?
     #endif

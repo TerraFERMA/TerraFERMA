@@ -97,6 +97,10 @@ picard =
     ## Options to give extra information for each iteration of the
     ## the Picard solve. Some of those may really slow down your computation!
     element monitors {
+       ## Output a diagnostic file detailing the convergence of this solver.
+       element convergence_file { 
+         empty
+       }?,
        ## Print norms of vectors and matrices to stdout log
        element norms {
           empty
@@ -104,7 +108,7 @@ picard =
     },
     ## Options describing a linear solver.
     element linear_solver {
-      linear_solver_options
+      linear_solver_options_top
     },
     solver_failures
   )
@@ -262,11 +266,15 @@ snes =
     element monitors {
        ## Output the residual at every function evaluation.
        element residual {
-          empty
+         empty
        }?,
        ## Plot a graph of the solution with each iteration.
        element solution_graph {
-          empty
+         empty
+       }?,
+       ## Output a diagnostic file detailing the convergence of this solver.
+       element convergence_file { 
+         empty
        }?,
        ## Print norms of vectors and matrices to stdout log
        element norms {
@@ -275,7 +283,7 @@ snes =
     },
     ## Options describing a linear solver.
     element linear_solver {
-      linear_solver_options
+      linear_solver_options_top
     },
     solver_failures
   )
@@ -319,6 +327,37 @@ is_by_field =
       }?
     }
   )
+
+linear_solver_options_top =
+   (
+      ## Iterative (Krylov) method to solve the linear discretised equation
+      ## Given are the most frequently used methods. The solution is done
+      ## by the PETSc library. Many more methods are provided.
+      (
+         kspgmres_options_top|
+         kspfgmres_options_top|
+         kspcg_options_top|
+         ksppreonly_options|
+         ksprichardson_options_top|
+         kspother_options_top
+      ),
+      ## Preconditioner to be used in combination with the iterative method.
+      (
+         pcsor_options|
+         pceisenstat_options|
+         pcfieldsplit_options|
+         pcilu_options|
+         pclu_options|
+         pcprometheus_options|
+         pchypre_options|
+         pcjacobi_options|
+         pcbjacobi_options|
+         pcasm_options|
+         pcksp_options|
+         pcother_options
+      ),
+      generic_solver_options
+   )
 
 linear_solver_options =
    (
@@ -369,6 +408,73 @@ solver_failures =
 #
 # ####################################################################
 
+kspgmres_options_top =
+   (
+      ## GMRES
+      ##
+      ## Your safest bet for non-symmetric systems.
+      element iterative_method {
+         attribute name { "gmres" },
+         ## Restart value for gmres iteration
+         ## Higher values give better convergence but require more memory.
+         ## Suggested value: 30
+         element restart {
+            integer
+         },
+         iterative_solver_options_top
+      }
+   )
+   
+kspfgmres_options_top =
+   (
+      ## FGMRES
+      element iterative_method {
+         attribute name { "fgmres" },
+         ## Restart value for fgmres iteration
+         ## Higher values give better convergence but require more memory.
+         ## Suggested value: 30
+         element restart {
+            integer
+         },
+         iterative_solver_options_top
+      }
+   )
+   
+kspcg_options_top =
+   (
+      ## Conjugate gradient method
+      ##
+      ## Only works for symmetric systems.
+      element iterative_method {
+         attribute name { "cg" },
+         iterative_solver_options_top
+      }
+   )
+
+ksprichardson_options_top =
+   (
+      ## Richardson iteration
+      ##
+      ## Only apply preconditioner each iteration, no krylov acceleration
+      element iterative_method {
+         attribute name { "richardson" },
+         iterative_solver_options_top
+      }
+   )
+   
+kspother_options_top =
+   (
+      ## Other methods
+      ##
+      ## Any method provided by the PETSc library
+      ## http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPType.html
+      ## (available methods may depend on the PETSc library installed on your system)
+      element iterative_method {
+         attribute name { xsd:string },
+         iterative_solver_options_top
+      }
+   )
+   
 kspgmres_options =
    (
       ## GMRES
@@ -702,7 +808,7 @@ pcfieldsplit_options =
 #
 # ####################################################################
 
-iterative_solver_options =
+iterative_solver_options_base =
    (
       ## Relative error
       ##
@@ -731,44 +837,66 @@ iterative_solver_options =
       ## before giving up.
       element max_iterations {
          integer
-      },
-      ## Options to give extra information for each iteration of the
-      ## the solve. Some of those may really slow down your computation!
-      element monitors {
-         ## Prints the preconditioned residual for each iteration of the solve.
-         ## This is the error estimation PETSc uses during the solve.
-         element preconditioned_residual {
-            empty
-         }?,
-         ## Prints the "true" residual for each iteration of the solve,
-         ## i.e. PETSc computes the L2-norm of r=A-bx. This may mean
-         ## PETSc has to do extra computations.
-         element true_residual {
-            empty
-         }?,
-         ## Draws a graph over the convergence of the preconditioned residual
-         ## during the solve. This option only works for systems where PETSc
-         ## has been linked with the X library.
-         element preconditioned_residual_graph {
-            empty
-         }?
-#         ## Prints the error by computing the difference with the provided
-#         ## exact solution each time step.
-#         element true_error {
-#            ## Give the field name of the field that contains the exact
-#            ## solution to be compared with each iteration
-#            attribute coefficient {
-#               attribute name { xsd:string },
-#               empty
-#            }
-#         }?,
-#         ## Writes out the approximate solution to a vtu each iteration.
-#         ## <b>This may create a large number of vtus!</b>
-#         element iteration_vtus {
-#            empty
-#         }?
-     }
+      }
    )
+
+iterative_solver_options = iterative_solver_options_base
+iterative_solver_options &= iterative_monitors
+
+iterative_solver_options_top = iterative_solver_options_base
+iterative_solver_options_top &= iterative_monitors_top
+
+iterative_monitors_base = 
+  (
+     ## Prints the preconditioned residual for each iteration of the solve.
+     ## This is the error estimation PETSc uses during the solve.
+     element preconditioned_residual {
+        empty
+     }?,
+     ## Prints the "true" residual for each iteration of the solve,
+     ## i.e. PETSc computes the L2-norm of r=A-bx. This may mean
+     ## PETSc has to do extra computations.
+     element true_residual {
+        empty
+     }?,
+     ## Draws a graph over the convergence of the preconditioned residual
+     ## during the solve. This option only works for systems where PETSc
+     ## has been linked with the X library.
+     element preconditioned_residual_graph {
+        empty
+     }?
+  )
+
+iterative_monitors_vis = 
+  (
+    ## Output a diagnostic file detailing the convergence of this solver.
+    element convergence_file { 
+      empty
+    }?,
+    ## Test any attached null spaces on the first iteration of the solve.
+    element test_null_space {
+      empty
+    }?
+  )
+
+iterative_monitors = 
+  (
+    ## Options to give extra information for each iteration of the
+    ## the solve. Some of those may really slow down your computation!
+    element monitors {
+      iterative_monitors_base
+    }
+  )
+
+iterative_monitors_top = 
+  (
+    ## Options to give extra information for each iteration of the
+    ## the solve. Some of those may really slow down your computation!
+    element monitors {
+      iterative_monitors_base,
+      iterative_monitors_vis
+    }
+  )
 
 generic_solver_options =
    (
@@ -792,7 +920,13 @@ generic_solver_options =
          element null_space {
            attribute name { xsd:string },
            is_by_field
-         }+
+         }+,
+         element monitors {
+           ## Prints PETSc information about this null space
+           element view_null_space {
+             empty
+           }?
+         }
       }?
    )
 

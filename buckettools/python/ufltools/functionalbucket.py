@@ -2,6 +2,7 @@ from ufltools.base import *
 import subprocess
 import hashlib
 import shutil
+import os
 import sys
 
 class FunctionalBucket:

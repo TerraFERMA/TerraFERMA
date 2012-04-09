@@ -983,7 +983,12 @@ void SpudBucket::fill_diagnostics_()
     steadyfile_.reset( new SteadyStateFile(output_basename()+".steady") );
     (*steadyfile_).write_header(*this);
   }
-  
+
+  for (SystemBucket_const_it s_it = systems_begin(); s_it != systems_end(); s_it++)
+  {
+    (*(*s_it).second).initialize_diagnostics();                      // initialize any diagnostic files in systems
+  }
+
 }
 
 //*******************************************************************|************************************************************//

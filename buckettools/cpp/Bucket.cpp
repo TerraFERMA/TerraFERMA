@@ -1,7 +1,5 @@
 
 #include "Bucket.h"
-// #include "GenericDetectors.h"
-// #include "PythonDetectors.h"
 #include <dolfin.h>
 #include <string>
 #include "SignalHandler.h"
@@ -847,7 +845,6 @@ void Bucket::output(const int &location)
       }
     }
   }
-
 
   if (write_stat)
   {

@@ -252,7 +252,8 @@ coeff_diagnostics_options =
     ## Output options
     element diagnostics {
       ## Include this coefficient in the statistics output file.
-      ## The minimum and maximum of functions is included.
+      ## The minimum and maximum (evaluated at the vertices of the mesh) 
+      ## of functions is included.
       element include_in_statistics {
         functional_options*
       }?,

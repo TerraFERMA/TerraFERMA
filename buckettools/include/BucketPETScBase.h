@@ -5,6 +5,8 @@
 #include "BoostTypes.h"
 #include "petscsnes.h"
 #include "Bucket.h"
+#include "ConvergenceFile.h"
+#include "KSPConvergenceFile.h"
 
 namespace buckettools
 {
@@ -14,15 +16,6 @@ namespace buckettools
   //*****************************************************************|************************************************************//
 
   typedef struct {                                                   // a structure used to pass bucket data into snes callback functions
-    Form_ptr linear;                                                 // linear form
-    Form_ptr bilinear;                                               // bilinear form
-    bool ident_zeros;                                                // the matrix has zeros rows which should be identified
-    Form_ptr bilinearpc;                                             // bilinear pc (may be null if not used)
-    bool ident_zeros_pc;                                             // the pc has zero rows which should be identified
-    std::vector<BoundaryCondition_ptr> bcs;                          // bcs
-    std::vector<ReferencePoints_ptr> points;                         // reference points
-    Function_ptr iteratedfunction;                                   // work function
-    Bucket *bucket;                                                  // pointer to bucket
     SolverBucket *solver;                                            // pointer to solver
   } SNESCtx;
 
@@ -30,6 +23,16 @@ namespace buckettools
 
   PetscErrorCode FormJacobian(SNES snes, Vec x, Mat *A, Mat *B,      // petsc snes callback function to form the jacobian
                                    MatStructure* flag, void* ctx);
+
+  typedef struct {                                                   // a structure used to pass bucket data into monitor functions
+    SolverBucket *solver;                                            // pointer to solver
+  } CustomMonitorCtx;
+
+  PetscErrorCode SNESCustomMonitor(SNES snes, PetscInt its,          // petsc snes callback function to output a 
+                                      PetscReal norm, void* mctx);   // convergence file
+
+  PetscErrorCode KSPCustomMonitor(KSP ksp, int it,                   // petsc ksp callback function to output a 
+                                      PetscReal rnorm, void* mctx);  // convergence file
 
 }
 

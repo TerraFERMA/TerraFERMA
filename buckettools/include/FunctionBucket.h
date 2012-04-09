@@ -132,6 +132,13 @@ namespace buckettools
                                                                      // so it will be necessary to make a deep copy to access
                                                                      // the vector
 
+    const GenericFunction_ptr snesupdatefunction() const             // return a constant (boost shared) pointer to the snes update
+    { return snesupdatefunction_; }                                  // function
+                                                                     // NOTE: if this is a field of a mixed
+                                                                     // system functionspace, this will return a subfunction
+                                                                     // so it will be necessary to make a deep copy to access
+                                                                     // the vector
+
     const Expression_ptr icexpression() const                        // return a constant (boost shared) pointer to the initial
     { return icexpression_; }                                        // condition expression for this function
 
@@ -211,6 +218,25 @@ namespace buckettools
 
     int_BoundaryCondition_const_it orderedbcs_end() const;           // return a constant iterator to the end of the ordered bcs of this function
 
+    void register_dirichletbc(BoundaryCondition_ptr bc, 
+                                        const std::string &name);    // register a Dirichlet bc in this function
+
+    BoundaryCondition_it dirichletbcs_begin();                       // return an iterator to the beginning of the bcs of this function
+
+    BoundaryCondition_const_it dirichletbcs_begin() const;           // return a constant iterator to the beginning of the bcs of this function
+
+    BoundaryCondition_it dirichletbcs_end();                         // return an iterator to the end of the bcs of this function
+
+    BoundaryCondition_const_it dirichletbcs_end() const;             // return a constant iterator to the end of the bcs of this function
+
+    int_BoundaryCondition_it ordereddirichletbcs_begin();            // return an iterator to the beginning of the ordered bcs of this function
+
+    int_BoundaryCondition_const_it ordereddirichletbcs_begin() const;// return a constant iterator to the beginning of the ordered bcs of this function
+
+    int_BoundaryCondition_it ordereddirichletbcs_end();              // return an iterator to the end of the ordered bcs of this function
+
+    int_BoundaryCondition_const_it ordereddirichletbcs_end() const;  // return a constant iterator to the end of the ordered bcs of this function
+
     //***************************************************************|***********************************************************//
     // Reference point data access
     //***************************************************************|***********************************************************//
@@ -289,6 +315,8 @@ namespace buckettools
 
     GenericFunction_ptr residualfunction_;                           // (boost shared) pointer to the residual in the function (only fields)
 
+    GenericFunction_ptr snesupdatefunction_;                         // (boost shared) pointer to the snes update of the function (only fields that use snes monitors)
+
     Expression_ptr icexpression_;                                    // (boost shared) pointer to an expression describing the initial condition
 
     int size_;                                                       // size of the function (most relevant for rank 1, vectors)
@@ -326,7 +354,11 @@ namespace buckettools
     std::map< std::string, BoundaryCondition_ptr > bcs_;             // map from bc::id names to (boost shared) pointers to bcs
     
     std::map< int, BoundaryCondition_ptr > orderedbcs_;              // map from int to (boost shared) pointers to bcs
+
+    std::map< std::string, BoundaryCondition_ptr > dirichletbcs_;    // map from bc::id names to (boost shared) pointers to dirichlet bcs
     
+    std::map< int, BoundaryCondition_ptr > ordereddirichletbcs_;     // map from int to (boost shared) pointers to dirichlet bcs
+
     //***************************************************************|***********************************************************//
     // Output functions (continued)
     //***************************************************************|***********************************************************//

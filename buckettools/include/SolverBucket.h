@@ -62,6 +62,8 @@ namespace buckettools
     virtual void copy_diagnostics(SolverBucket_ptr &solver, 
                                   SystemBucket_ptr &system) const;   // copy the data necessary for the diagnostics data file(s)
 
+    void initialize_diagnostics() const;                             // initialize any diagnostic output in the solver
+
     //***************************************************************|***********************************************************//
     // Base data access
     //***************************************************************|***********************************************************//
@@ -72,10 +74,42 @@ namespace buckettools
     const std::string type() const                                   // return a string describing the solver type
     { return type_; }
 
+    const SNES snes() const                                          // return the snes object being used
+    { return snes_; }
+
+    const Form_ptr bilinear_form() const                             // return a (boost shared) pointer to the bilinear form
+    { return bilinear_; }
+
+    const bool ident_zeros() const                                   // return true if the bilinear form needs to be idented
+    { return ident_zeros_; }
+
+    const Form_ptr bilinearpc_form() const                           // return a (boost shared) pointer to the bilinear pc form
+    { return bilinearpc_; }
+
+    const bool ident_zeros_pc() const                                // return true if the bilinear pc form needs to be idented
+    { return ident_zeros_pc_; }
+
+    const Form_ptr linear_form() const                               // return a (boost shared) pointer to the linear form
+    { return linear_; }
+
     const PETScVector_ptr residual_vector() const                    // return the residual of this solver
     { return res_; }
 
-    const int picard_iteration_count() const;                        // return the number of Picard iterations taken
+    SystemBucket* system()                                           // return a pointer to the parent system
+    { return system_; }
+
+    const SystemBucket* system() const                               // return a pointer to the parent system
+    { return system_; }
+
+    const int iteration_count() const;                               // return the number of iterations taken (may not be accurate!)
+
+    void iteration_count(const int &it);                             // set the number of iterations taken
+
+    const bool kspnullspace_monitor() const;                         // return true if we're using a visualization monitor
+    
+    const ConvergenceFile_ptr convergence_file() const;              // return a pointer to the convergence file
+
+    const KSPConvergenceFile_ptr ksp_convergence_file() const;       // return a pointer to the ksp convergence file
 
     const bool monitor_norms() const                                 // return true if norms should be monitored in nonlinear iterations
     { return monitornorms_; }
@@ -141,7 +175,7 @@ namespace buckettools
 
     int minits_, maxits_, maxfes_;                                   // nonlinear solver iteration counts
 
-    int_ptr picard_iteration_count_;                                 // nonlinear iterations taken (*only for Picard*)
+    int_ptr iteration_count_;                                        // nonlinear iterations taken (may not be accurate!)
 
     bool ident_zeros_, ident_zeros_pc_;                              // replace zero rows with the identity (matrix and pc)
 
@@ -152,6 +186,16 @@ namespace buckettools
     std::string type_;                                               // solver type (string)
 
     SystemBucket* system_;                                           // parent system
+
+    CustomMonitorCtx snesmctx_, kspmctx_;                            // monitor contexts
+
+    ConvergenceFile_ptr convfile_;                                   // diagnostic convergence file
+
+    KSPConvergenceFile_ptr kspconvfile_;                             // diagnostic convergence file
+
+    bool_ptr kspnullspacemonitor_;                                   // visualization monitors
+
+    bool copy_;                                                      // flag if this is a diagnostic copy or not
 
     bool monitornorms_;                                              // monitor the norms in nonlinear iterations
 

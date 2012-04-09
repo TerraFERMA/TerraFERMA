@@ -35,7 +35,7 @@ SolverBucket::~SolverBucket()
 
   PetscErrorCode perr;                                               // petsc error code
 
-  if(type()=="SNES")
+  if(type()=="SNES" && !copy_)
   {
     #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
     perr = SNESDestroy(&snes_); CHKERRV(perr);                        // destroy the snes object
@@ -44,7 +44,7 @@ SolverBucket::~SolverBucket()
     #endif
   }
 
-  if(type()=="Picard")
+  if(type()=="Picard" && !copy_)
   {
     #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
     perr = KSPDestroy(&ksp_); CHKERRV(perr);                          // destroy the ksp object
@@ -77,7 +77,7 @@ void SolverBucket::solve()
   else if (type()=="Picard")                                         // this is a hand-rolled picard iteration - FIXME: switch to enum
   {
 
-    *picard_iteration_count_ = 0;                                    // an iteration counter
+    *iteration_count_ = 0;                                           // an iteration counter
 
     assert(residual_);                                               // we need to assemble the residual again here as it may depend
                                                                      // on other systems that have been solved since the last call
@@ -113,16 +113,26 @@ void SolverBucket::solve()
     }
 
     dolfin::info("  %u Picard Residual Norm (absolute, relative) = %g, %g\n", 
-                                    picard_iteration_count(), aerror, rerror);
+                                    iteration_count(), aerror, rerror);
+
+    if(convfile_)
+    {
+      *(*(*system()).residualfunction()).vector() = (*boost::dynamic_pointer_cast< dolfin::GenericVector >(residual_vector()));
+      if (convfile_)
+      {
+        (*convfile_).write_data();
+      }
+    }
+
 
     (*(*(*system_).iteratedfunction()).vector()) =                   // system iterated function gets set to the function values
                                 (*(*(*system_).function()).vector());
 
-    while (picard_iteration_count() < minits_ ||                     // loop for the minimum number of iterations or
-          (picard_iteration_count() < maxits_ &&                     // up to the maximum number of iterations 
+    while (iteration_count() < minits_ ||                            // loop for the minimum number of iterations or
+          (iteration_count() < maxits_ &&                            // up to the maximum number of iterations 
                            rerror > rtol_ && aerror > atol_))        // until the max is reached or a tolerance criterion is
     {                                                                // satisfied
-      (*picard_iteration_count_)++;                                  // increment iteration counter
+      (*iteration_count_)++;                                         // increment iteration counter
 
       dolfin::assemble(*matrix_, *bilinear_, false);                 // assemble bilinear form
       dolfin::assemble(*rhs_, *linear_, false);                      // assemble linear form
@@ -237,14 +247,23 @@ void SolverBucket::solve()
       aerror = (*res_).norm("l2");                                   // work out absolute error
       rerror = aerror/aerror0;                                       // and relative error
       dolfin::info("  %u Picard Residual Norm (absolute, relative) = %g, %g\n", 
-                          picard_iteration_count(), aerror, rerror);
+                          iteration_count(), aerror, rerror);
                                                                      // and decide to loop or not...
+
+      if(convfile_)
+      {
+        *(*(*system()).residualfunction()).vector() = (*boost::dynamic_pointer_cast< dolfin::GenericVector >(residual_vector()));
+        if (convfile_)
+        {
+          (*convfile_).write_data();
+        }
+      }
 
     }
 
-    if (picard_iteration_count() == maxits_ && rerror > rtol_ && aerror > atol_)
+    if (iteration_count() == maxits_ && rerror > rtol_ && aerror > atol_)
     {
-      dolfin::log(dolfin::WARNING, "it = %d, maxits_ = %d", picard_iteration_count(), maxits_);
+      dolfin::log(dolfin::WARNING, "it = %d, maxits_ = %d", iteration_count(), maxits_);
       dolfin::log(dolfin::WARNING, "rerror = %f, rtol_ = %f", rerror, rtol_);
       dolfin::log(dolfin::WARNING, "aerror = %f, atol_ = %f", aerror, atol_);
       if (ignore_failures_)
@@ -334,11 +353,27 @@ void SolverBucket::copy_diagnostics(SolverBucket_ptr &solver, SystemBucket_ptr &
     solver.reset( new SolverBucket(&(*system)) );
   }
 
-  (*solver).picard_iteration_count_ = picard_iteration_count_;
+  (*solver).iteration_count_ = iteration_count_;
   (*solver).name_ = name_;
-  (*solver).type_ = "Dummy";                                         // this is done to ensure that the petsc destroy routines
+  (*solver).type_ = type_;   
+  (*solver).copy_ = true;                                            // this is done to ensure that the petsc destroy routines
                                                                      // are not called by the destructor
 
+}
+
+//*******************************************************************|************************************************************//
+// initialize any diagnostic output from the solver
+//*******************************************************************|************************************************************//
+void SolverBucket::initialize_diagnostics() const                    // doesn't allocate anything so can be const
+{
+  if (convfile_)
+  {
+    (*convfile_).write_header((*(*system()).bucket()));
+  }
+  if (kspconvfile_)
+  {
+    (*kspconvfile_).write_header((*(*system()).bucket()));
+  }
 }
 
 //*******************************************************************|************************************************************//
@@ -350,16 +385,7 @@ void SolverBucket::initialize_matrices()
 
   if (type()=="SNES")                                                // if this is a snes object then initialize the context
   {
-    ctx_.linear       = linear_;
-    ctx_.bilinear     = bilinear_;
-    ctx_.ident_zeros  = ident_zeros_;
-    ctx_.bilinearpc   = bilinearpc_;
-    ctx_.ident_zeros_pc = ident_zeros_pc_;
-    ctx_.bcs          = (*system_).bcs();
-    ctx_.points       = (*system_).points();
-    ctx_.iteratedfunction = (*system_).iteratedfunction();
-    ctx_.bucket       = (*system_).bucket();
-    ctx_.solver       = this;
+    ctx_.solver = this;
   }
 
   assemble_bilinearforms(true);                                      // perform preassembly of the bilinear forms
@@ -396,11 +422,43 @@ void SolverBucket::initialize_matrices()
 }
 
 //*******************************************************************|************************************************************//
-// return the number of Picard nonlinear iterations taken
+// return the number of nonlinear iterations taken
 //*******************************************************************|************************************************************//
-const int SolverBucket::picard_iteration_count() const
+const int SolverBucket::iteration_count() const
 {
-  return *picard_iteration_count_;
+  return *iteration_count_;
+}
+
+//*******************************************************************|************************************************************//
+// set the number of nonlinear iterations taken
+//*******************************************************************|************************************************************//
+void SolverBucket::iteration_count(const int &it)
+{
+  *iteration_count_ = it;
+}
+
+//*******************************************************************|************************************************************//
+// return true if we're using a ksp null space monitor
+//*******************************************************************|************************************************************//
+const bool SolverBucket::kspnullspace_monitor() const
+{
+  return *kspnullspacemonitor_;
+}
+
+//*******************************************************************|************************************************************//
+// return a pointer to the convergence file
+//*******************************************************************|************************************************************//
+const ConvergenceFile_ptr SolverBucket::convergence_file() const
+{
+  return convfile_;
+}
+
+//*******************************************************************|************************************************************//
+// return a pointer to the ksp convergence file
+//*******************************************************************|************************************************************//
+const KSPConvergenceFile_ptr SolverBucket::ksp_convergence_file() const
+{
+  return kspconvfile_;
 }
 
 //*******************************************************************|************************************************************//

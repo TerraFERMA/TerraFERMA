@@ -194,6 +194,7 @@ void SystemBucket::copy_diagnostics(SystemBucket_ptr &system, Bucket_ptr &bucket
   (*system).change_calculated_ = change_calculated_;
 
   (*system).residualfunction_ = residualfunction_;
+  (*system).snesupdatefunction_ = snesupdatefunction_;
 
   (*system).solved_ = solved_;
 
@@ -227,6 +228,17 @@ void SystemBucket::copy_diagnostics(SystemBucket_ptr &system, Bucket_ptr &bucket
     (*system).register_solver(solver, (*solver).name());             // put the coefficient in the bucket
   }                                                                  
 
+}
+
+//*******************************************************************|************************************************************//
+// initialize any diagnostic output in this system
+//*******************************************************************|************************************************************//
+void SystemBucket::initialize_diagnostics() const                    // doesn't allocate anything so can be const
+{
+  for (SolverBucket_const_it s_it = solvers_begin(); s_it != solvers_end(); s_it++)
+  {
+    (*(*s_it).second).initialize_diagnostics();
+  }
 }
 
 //*******************************************************************|************************************************************//
@@ -520,6 +532,40 @@ void SystemBucket::register_solver(SolverBucket_ptr solver, const std::string &n
     solvers_[name] = solver;                                         // if not then insert it into the solvers_ map
     orderedsolvers_[(int) solvers_.size()] = solver;                 // and into the orderedsolvers_ map, assuming that the
                                                                      // insertion order is the order they are to be solved
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return a (boost shared) pointer to a solver bucket in the system bucket data maps
+//*******************************************************************|************************************************************//
+SolverBucket_ptr SystemBucket::fetch_solver(const std::string &name)
+{
+  SolverBucket_it s_it = solvers_.find(name);                        // check if name already exists
+  if (s_it == solvers_.end())
+  {
+    dolfin::error("SolverBucket named \"%s\" does not exist in system.",// if it doesn't, issue an error
+                                                    name.c_str());
+  }
+  else
+  {
+    return (*s_it).second;                                           // if it does return a (boost shared) pointer to the solver
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return a const (boost shared) pointer to a solver bucket in the system bucket data maps
+//*******************************************************************|************************************************************//
+const SolverBucket_ptr SystemBucket::fetch_solver(const std::string &name) const
+{
+  SolverBucket_const_it s_it = solvers_.find(name);                        // check if name already exists
+  if (s_it == solvers_.end())
+  {
+    dolfin::error("SolverBucket named \"%s\" does not exist in system.",// if it doesn't, issue an error
+                                                    name.c_str());
+  }
+  else
+  {
+    return (*s_it).second;                                           // if it does return a (boost shared) pointer to the solver
   }
 }
 
@@ -824,23 +870,6 @@ void SystemBucket::checkpoint()
 }
 
 //*******************************************************************|************************************************************//
-// loop over all the fields in this system, collecting their bcs into a single vector of system bcs
-//*******************************************************************|************************************************************//
-void SystemBucket::collect_bcs_()
-{
-  for (int_FunctionBucket_const_it f_it = orderedfields_begin();     // loop over all the fields
-                                f_it != orderedfields_end(); f_it++)
-  {
-    for (int_BoundaryCondition_const_it                              // loop over all the bcs
-          b_it = (*(*f_it).second).orderedbcs_begin(); 
-          b_it != (*(*f_it).second).orderedbcs_end(); b_it++)
-    {
-      bcs_.push_back((*b_it).second);                                // add the bcs to a std vector
-    }
-  }
-}
-
-//*******************************************************************|************************************************************//
 // given a map from components to field initial condition expressions initialize the system initial condition expression
 //*******************************************************************|************************************************************//
 void SystemBucket::collect_ics_(const uint &component, 
@@ -881,14 +910,19 @@ void SystemBucket::apply_ic_()
 //*******************************************************************|************************************************************//
 // apply the vector of system boundary conditions to the system function vectors to ensure consisten initial and boundary conditions
 //*******************************************************************|************************************************************//
-void SystemBucket::apply_bc_()
+void SystemBucket::apply_dirichletbc_()
 {
-  for (std::vector<BoundaryCondition_ptr>::const_iterator            // loop over the vector of bcs
-                            bc = bcs_begin(); bc != bcs_end(); bc++)
+  for (int_FunctionBucket_const_it f_it = orderedfields_begin();     // loop over all the fields
+                                f_it != orderedfields_end(); f_it++)
   {
-    (*(*bc)).apply((*(*oldfunction_).vector()));
-    (*(*bc)).apply((*(*iteratedfunction_).vector()));
-    (*(*bc)).apply((*(*function_).vector()));
+    for (int_BoundaryCondition_const_it                              // loop over all the bcs
+         b_it = (*(*f_it).second).ordereddirichletbcs_begin(); 
+         b_it != (*(*f_it).second).ordereddirichletbcs_end(); b_it++)
+    {
+      (*(*b_it).second).apply((*(*oldfunction_).vector()));
+      (*(*b_it).second).apply((*(*iteratedfunction_).vector()));
+      (*(*b_it).second).apply((*(*function_).vector()));
+    }
   }
 }
 

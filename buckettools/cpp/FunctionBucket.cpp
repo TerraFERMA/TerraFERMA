@@ -409,6 +409,7 @@ void FunctionBucket::copy_diagnostics(FunctionBucket_ptr &function, SystemBucket
   (*function).change_normtype_ = change_normtype_;
 
   (*function).residualfunction_ = residualfunction_;
+  (*function).snesupdatefunction_ = snesupdatefunction_;
 
   (*function).functionals_ = functionals_;
   (*function).bcexpressions_ = bcexpressions_;
@@ -622,6 +623,93 @@ void FunctionBucket::output(const bool &write_vis)
                                      (*(*system()).bucket()).current_time());
     }
   }
+}
+
+//*******************************************************************|************************************************************//
+// register a (boost shared) pointer to a bc in the function bucket data maps
+//*******************************************************************|************************************************************//
+void FunctionBucket::register_dirichletbc(BoundaryCondition_ptr bc, const std::string &name)
+{
+  BoundaryCondition_it bc_it;
+  
+  bc_it = dirichletbcs_.find(name);                                  // check if the name already exists
+  if (bc_it != dirichletbcs_.end())
+  {
+    dolfin::error(                                                   // if it does, issue an error
+        "Dirichlet BoundaryCondition named \"%s\" already exists in function.", 
+                                                    name.c_str());
+  }
+  else
+  {
+    dirichletbcs_[name] = bc;                                        // if not, register the bc
+    ordereddirichletbcs_[(int) dirichletbcs_.size()] = bc;           // also insert it in the order it was registered in the 
+  }
+
+  register_bc(bc, name);                                             // register the dirichlet bc in the normal maps too
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the beginning of the dirichletbcs_ map
+//*******************************************************************|************************************************************//
+BoundaryCondition_it FunctionBucket::dirichletbcs_begin()
+{
+  return dirichletbcs_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the beginning of the dirichletbcs_ map
+//*******************************************************************|************************************************************//
+BoundaryCondition_const_it FunctionBucket::dirichletbcs_begin() const
+{
+  return dirichletbcs_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the end of the dirichletbcs_ map
+//*******************************************************************|************************************************************//
+BoundaryCondition_it FunctionBucket::dirichletbcs_end()
+{
+  return dirichletbcs_.end();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the end of the dirichletbcs_ map
+//*******************************************************************|************************************************************//
+BoundaryCondition_const_it FunctionBucket::dirichletbcs_end() const
+{
+  return dirichletbcs_.end();
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the beginning of the ordereddirichletbcs_ map
+//*******************************************************************|************************************************************//
+int_BoundaryCondition_it FunctionBucket::ordereddirichletbcs_begin()
+{
+  return ordereddirichletbcs_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the beginning of the ordereddirichletbcs_ map
+//*******************************************************************|************************************************************//
+int_BoundaryCondition_const_it FunctionBucket::ordereddirichletbcs_begin() const
+{
+  return ordereddirichletbcs_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the end of the ordereddirichletbcs_ map
+//*******************************************************************|************************************************************//
+int_BoundaryCondition_it FunctionBucket::ordereddirichletbcs_end()
+{
+  return ordereddirichletbcs_.end();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the end of the ordereddirichletbcs_ map
+//*******************************************************************|************************************************************//
+int_BoundaryCondition_const_it FunctionBucket::ordereddirichletbcs_end() const
+{
+  return ordereddirichletbcs_.end();
 }
 
 //*******************************************************************|************************************************************//

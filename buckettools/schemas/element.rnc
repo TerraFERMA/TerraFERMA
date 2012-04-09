@@ -80,12 +80,6 @@ generic_element =
      generic_element_degree
   )
 
-p0_element =
-  (
-     dg_element_family,
-     p0_element_degree
-  )
-
 p1_element =
   (
      cg_element_family,
@@ -95,6 +89,24 @@ p1_element =
 p2_element =
   (
      cg_element_family,
+     p2_element_degree
+  )
+
+p0_element =
+  (
+     dg_element_family,
+     p0_element_degree
+  )
+
+p1dg_element =
+  (
+     dg_element_family,
+     p1_element_degree
+  )
+
+p2dg_element =
+  (
+     dg_element_family,
      p2_element_degree
   )
 
@@ -118,28 +130,54 @@ tensor_element_options =
     }?
   )
 
-element_options_scalar =
+element_options_scalar = element_options_scalar_p0
+element_options_scalar |= element_options_scalar_lagrange
+element_options_scalar |= element_options_scalar_user
+
+element_options_scalar_user =
   (
      (
-       ## Options describing a user defined finite element for a scalar.
+       ## Options describing a user defined finite element.
        element element {
          attribute name { "UserDefined" },
          generic_element
-       }|
-       ## Options describing piecewise constant discontinuous Lagrange finite element for a scalar.
-       element element {
-         attribute name { "P0" },
-         p0_element
-       }|
-       ## Options describing piecewise linear continuous Lagrange finite element for a scalar.
+       }
+     )
+  )
+
+element_options_scalar_lagrange =
+  (
+     (
+       ## Options describing piecewise linear continuous Lagrange finite element.
        element element {
          attribute name { "P1" },
          p1_element
        }|
-       ## Options describing piecewise quadratic continuous Lagrange finite element for a scalar.
+       ## Options describing piecewise quadratic continuous Lagrange finite element.
        element element {
          attribute name { "P2" },
          p2_element
+       }|
+       ## Options describing piecewise linear discontinuous Lagrange finite element.
+       element element {
+         attribute name { "P1DG" },
+         p1dg_element
+       }|
+       ## Options describing piecewise quadratic discontinuous Lagrange finite element.
+       element element {
+         attribute name { "P2DG" },
+         p2dg_element
+       }
+     )
+  )
+
+element_options_scalar_p0 =
+  (
+     (
+       ## Options describing piecewise constant discontinuous Lagrange finite element.
+       element element {
+         attribute name { "P0" },
+         p0_element
        }
      )
   )
@@ -153,12 +191,6 @@ element_options_vector =
          generic_element,
          vector_element_options
        }|
-       ## Options describing piecewise constant discontinuous Lagrange finite element for a vector.
-       element element {
-         attribute name { "P0" },
-         p0_element,
-         vector_element_options
-       }|
        ## Options describing piecewise linear continuous Lagrange finite element for a vector.
        element element {
          attribute name { "P1" },
@@ -169,6 +201,24 @@ element_options_vector =
        element element {
          attribute name { "P2" },
          p2_element,
+         vector_element_options
+       }|
+       ## Options describing piecewise linear discontinuous Lagrange finite element for a vector.
+       element element {
+         attribute name { "P1DG" },
+         p1dg_element,
+         vector_element_options
+       }|
+       ## Options describing piecewise quadratic discontinuous Lagrange finite element for a vector.
+       element element {
+         attribute name { "P2DG" },
+         p2dg_element,
+         vector_element_options
+       }|
+       ## Options describing piecewise constant discontinuous Lagrange finite element for a vector.
+       element element {
+         attribute name { "P0" },
+         p0_element,
          vector_element_options
        }
      )
@@ -183,12 +233,6 @@ element_options_tensor =
          generic_element,
          tensor_element_options
        }|
-       ## Options describing piecewise constant discontinuous Lagrange finite element for a tensor.
-       element element {
-         attribute name { "P0" },
-         p0_element,
-         tensor_element_options
-       }|
        ## Options describing piecewise linear continuous Lagrange finite element for a tensor.
        element element {
          attribute name { "P1" },
@@ -199,6 +243,24 @@ element_options_tensor =
        element element {
          attribute name { "P2" },
          p2_element,
+         tensor_element_options
+       }|
+       ## Options describing piecewise linear discontinuous Lagrange finite element for a tensor.
+       element element {
+         attribute name { "P1DG" },
+         p1dg_element,
+         tensor_element_options
+       }|
+       ## Options describing piecewise quadratic discontinuous Lagrange finite element for a tensor.
+       element element {
+         attribute name { "P2DG" },
+         p2dg_element,
+         tensor_element_options
+       }|
+       ## Options describing piecewise constant discontinuous Lagrange finite element for a tensor.
+       element element {
+         attribute name { "P0" },
+         p0_element,
          tensor_element_options
        }
      )

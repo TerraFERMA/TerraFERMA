@@ -96,6 +96,8 @@ void SpudFunctionBucket::fill_coeff(const uint &index)
 void SpudFunctionBucket::allocate_coeff_function()
 {
 
+  std::stringstream buffer;
+
   if (type_=="Function")                                             // only do this for coefficient functions
   {
     if(!(*(*system_).bucket()).contains_coefficientspace(uflsymbol()))// check we have a coefficient space for this function's ufl
@@ -118,6 +120,12 @@ void SpudFunctionBucket::allocate_coeff_function()
                                                                      // allowed to call eval for the first time
     (*(*boost::dynamic_pointer_cast< dolfin::Function >(function_)).vector()).zero();
     (*(*boost::dynamic_pointer_cast< dolfin::Function >(oldfunction_)).vector()).zero();
+
+    buffer.str(""); buffer << (*system_).name() << "::" << name();     // rename the function as SystemName::CoefficientName
+    (*function_).rename(buffer.str(), buffer.str());
+
+    buffer.str(""); buffer << (*system_).name() << "::Old" << name();  // rename the old function as SystemName::OldCoefficientName
+    (*oldfunction_).rename(buffer.str(), buffer.str());
 
   }
 
@@ -405,6 +413,11 @@ void SpudFunctionBucket::allocate_field_()
 
     residualfunction_ = (*system_).residualfunction();
 
+    if ((*system_).snesupdatefunction())
+    {
+      snesupdatefunction_ = (*system_).snesupdatefunction();
+    }
+
   }
   else                                                               // yes, multiple fields in this system so we need to make
   {                                                                  // a subspace and subfunctions (dangerous, be careful!)
@@ -425,6 +438,12 @@ void SpudFunctionBucket::allocate_field_()
 
     residualfunction_.reset( &(*(*system_).residualfunction())[index_],
                                               dolfin::NoDeleter() );
+    if ((*system_).snesupdatefunction())
+    {
+      snesupdatefunction_.reset( &(*(*system_).snesupdatefunction())[index_], 
+                                              dolfin::NoDeleter() );
+    }
+
   }
 
   buffer.str(""); buffer << (*system_).name() << "::" << name();     // rename the function as SystemName::FieldName
@@ -455,6 +474,13 @@ void SpudFunctionBucket::allocate_field_()
                       << "/diagnostics/include_in_steady_state/norm";
     serr = Spud::get_option(buffer.str(), change_normtype_);
     spud_err(buffer.str(), serr);
+  }
+
+  if ((*system_).snesupdatefunction())
+  {
+    buffer.str(""); buffer << (*system_).name() << "::SNESUpdate"    // rename the snes update function as SystemName::SNESUpdateFieldName
+                                                          << name();  
+    (*snesupdatefunction_).rename(buffer.str(), buffer.str());
   }
 
   buffer.str(""); buffer << optionpath()                             // find out how many strong bcs there are (weak bcs handled in
@@ -574,50 +600,65 @@ void SpudFunctionBucket::fill_bc_component_(const std::string &optionpath,
   std::string compname;
   buffer.str(""); buffer << optionpath << "/name";
   serr = Spud::get_option(buffer.str(), compname);                   // get the name of these subcomponents
-  namebuffer.str(""); namebuffer << bcname << compname;              // assemble a name for the bc expression
+  spud_err(buffer.str(), serr);
 
-  buffer.str(""); buffer << optionpath << "/type::Dirichlet";        // initialize an expression describing the function
-  Expression_ptr bcexp = allocate_expression_(buffer.str(), 
-                   namebuffer.str(), 
-                   (*(*system_).bucket()).current_time_ptr());       // on this boundary condition, assuming it is of type
-  register_bcexpression(bcexp, namebuffer.str());                    // register the expression in the function bucket maps
-       
-  buffer.str(""); buffer << optionpath << "/components";             // do we have any components (i.e. could be scalar)?
-  if (Spud::have_option(buffer.str()))
-  {                                                                  // FIXME: tensorial components assumed broken!
-    std::vector<int> subcompids;
-    serr = Spud::get_option(buffer.str(), subcompids);               // get a list of the subcomponents 
-    spud_err(buffer.str(), serr);
-    
-    for (std::vector<int>::const_iterator subcompid =                // loop over those subcomponents
-                                          subcompids.begin(); 
-                      subcompid < subcompids.end(); subcompid++)
-    {
+  std::string bctype;
+  buffer.str(""); buffer << optionpath << "/type/name";              // get the bc type
+  serr = Spud::get_option(buffer.str(), bctype);
+  spud_err(buffer.str(), serr);
 
-       FunctionSpace_ptr subfunctionspace =                          // grab the subspace from the field functionspace
-                                    (*functionspace())[*subcompid];  // happily dolfin caches this for us
-       
-       for (std::vector<int>::const_iterator bcid = bcids.begin();   // loop over the boundary ids
-                                          bcid < bcids.end(); bcid++)
-       {                                                             // create a new bc on each boundary id for this subcomponent
-         BoundaryCondition_ptr bc(new dolfin::DirichletBC(*subfunctionspace, *bcexp, *bcid));
-         namebuffer.str(""); namebuffer << bcname << "::" 
-                                      << *subcompid << "::" << *bcid;// assemble a name incorporating the boundary id
-         register_bc(bc, namebuffer.str());                          // register the bc in the function bucket
-       }
-       
-    }
-  }
-  else                                                               // no components (scalar or using all components)
+  if(bctype=="Dirichlet")
   {
-    for (std::vector<int>::const_iterator bcid = bcids.begin();      // loop over the boundary ids
+    namebuffer.str(""); namebuffer << bcname << compname;              // assemble a name for the bc expression
+    buffer.str(""); buffer << optionpath << "/type::Dirichlet";      // initialize an expression describing the function
+    Expression_ptr bcexp = allocate_expression_(buffer.str(), 
+                     namebuffer.str(), 
+                     (*(*system_).bucket()).current_time_ptr());     // on this boundary condition, assuming it is of type
+
+    register_bcexpression(bcexp, namebuffer.str());                  // register the expression in the function bucket maps
+       
+    buffer.str(""); buffer << optionpath << "/components";           // do we have any components (i.e. could be scalar)?
+    if (Spud::have_option(buffer.str()))
+    {                                                                // FIXME: tensorial components assumed broken!
+      std::vector<int> subcompids;
+      serr = Spud::get_option(buffer.str(), subcompids);             // get a list of the subcomponents 
+      spud_err(buffer.str(), serr);
+      
+      for (std::vector<int>::const_iterator subcompid =              // loop over those subcomponents
+                                            subcompids.begin(); 
+                        subcompid < subcompids.end(); subcompid++)
+      {
+
+         FunctionSpace_ptr subfunctionspace =                        // grab the subspace from the field functionspace
+                                      (*functionspace())[*subcompid];// happily dolfin caches this for us
+         
+         for (std::vector<int>::const_iterator bcid = bcids.begin(); // loop over the boundary ids
+                                            bcid < bcids.end(); bcid++)
+         {                                                           // create a new bc on each boundary id for this subcomponent
+           BoundaryCondition_ptr bc(new dolfin::DirichletBC(*subfunctionspace, *bcexp, *bcid));
+           namebuffer.str(""); namebuffer << bcname << "::" 
+                                      << *subcompid << "::" << *bcid;// assemble a name incorporating the boundary id
+           register_dirichletbc(bc, namebuffer.str());               // register the bc in the function bucket
+         }
+         
+      }
+    }
+    else                                                             // no components (scalar or using all components)
+    {
+      for (std::vector<int>::const_iterator bcid = bcids.begin();    // loop over the boundary ids
                                           bcid < bcids.end(); bcid++)
-    {                                                                // create a bc on each boundary id for all components
-      BoundaryCondition_ptr bc(new dolfin::DirichletBC(*functionspace(), *bcexp, *bcid));
-      namebuffer.str(""); namebuffer << bcname << "::" << *bcid;     // assemble a name for this bc incorporating the boundary id
-      register_bc(bc, namebuffer.str());                             // register the bc in the function bucket
+      {                                                              // create a bc on each boundary id for all components
+        BoundaryCondition_ptr bc(new dolfin::DirichletBC(*functionspace(), *bcexp, *bcid));
+        namebuffer.str(""); namebuffer << bcname << "::" << *bcid;   // assemble a name for this bc incorporating the boundary id
+        register_dirichletbc(bc, namebuffer.str());                  // register the bc in the function bucket
+      }
     }
   }
+  else
+  {
+    dolfin::error("Unknown bc type.");
+  }
+
 }
 
 //*******************************************************************|************************************************************//
@@ -699,16 +740,31 @@ void SpudFunctionBucket::initialize_bc_component_(const std::string &optionpath,
   Spud::OptionError serr;                                            // spud error code
   std::stringstream namebuffer;                                      // a buffer to assemble this bc's component name
 
-  std::string compname;
-  buffer.str(""); buffer << optionpath << "/name";
-  serr = Spud::get_option(buffer.str(), compname);                   // get the name of these subcomponents
-  namebuffer.str(""); namebuffer << bcname << compname;              // assemble a name for the bc expression
+  std::string bctype;                                                // get the bc type
+  buffer.str(""); buffer << optionpath << "/type/name";
+  serr = Spud::get_option(buffer.str(), bctype);
+  spud_err(buffer.str(), serr);
 
-  Expression_ptr bcexpression = fetch_bcexpression(namebuffer.str());// fetch the bc expression in the function bucket maps
-  buffer.str(""); buffer << optionpath << "/type::Dirichlet";        // initialize the expression describing the bc component
+  if (bctype=="Dirichlet")
+  {
+
+    std::string compname;
+    buffer.str(""); buffer << optionpath << "/name";
+    serr = Spud::get_option(buffer.str(), compname);                 // get the name of these subcomponents
+    spud_err(buffer.str(), serr);
+    namebuffer.str(""); namebuffer << bcname << compname;            // assemble a name for the bc expression
+
+    Expression_ptr bcexpression = fetch_bcexpression(namebuffer.str());// fetch the bc expression in the function bucket maps
+    buffer.str(""); buffer << optionpath << "/type::Dirichlet";      // initialize the expression describing the bc component
                                                                      // (assuming it is of type Dirichlet)
-  initialize_expression_(bcexpression, buffer.str(), 
-                         namebuffer.str());
+    initialize_expression_(bcexpression, buffer.str(), 
+                           namebuffer.str());
+
+  }
+  else
+  {
+    dolfin::error("Unknown bc type.");
+  }
        
 }
 
@@ -726,7 +782,13 @@ void SpudFunctionBucket::allocate_coeff_expression_()
     function_ = allocate_expression_over_regions_(buffer.str(), (*(*system_).bucket()).current_time_ptr());
     oldfunction_ = allocate_expression_over_regions_(buffer.str(), (*(*system_).bucket()).old_time_ptr());
     iteratedfunction_ = function_;
-    
+
+    buffer.str(""); buffer << (*system_).name() << "::" << name();     // rename the function as SystemName::CoefficientName
+    (*function_).rename(buffer.str(), buffer.str());
+
+    buffer.str(""); buffer << (*system_).name() << "::Old" << name();  // rename the old function as SystemName::OldCoefficientName
+    (*oldfunction_).rename(buffer.str(), buffer.str());
+
     buffer.str(""); buffer << optionpath() << "/type/rank/value[0]/functional";
     if(Spud::have_option(buffer.str()))
     {

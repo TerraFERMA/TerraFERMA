@@ -5,8 +5,8 @@
     <element name="io">
       <a:documentation>Input/Output options</a:documentation>
       <ref name="output_file_options"/>
-      <ref name="detectors_options"/>
       <ref name="diagnostic_output_options"/>
+      <ref name="detectors_options"/>
       <ref name="checkpointing_options"/>
     </element>
   </define>

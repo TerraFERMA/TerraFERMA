@@ -60,7 +60,7 @@ add_library(buckettools_cpp Usage.cpp SignalHandler.cpp SigIntEventHandler.cpp
                             InitialConditionExpression.cpp RegionsExpression.cpp
                             GenericDetectors.cpp PointDetectors.cpp PythonDetectors.cpp
                             DiagnosticsFile.cpp StatisticsFile.cpp SteadyStateFile.cpp
-                            DetectorsFile.cpp
+                            DetectorsFile.cpp ConvergenceFile.cpp KSPConvergenceFile.cpp
                             BucketPETScBase.cpp BucketDolfinBase.cpp
                             ReferencePoints.cpp)
 # tell cmake that this file doesn't exist until build time

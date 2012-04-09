@@ -125,6 +125,12 @@ Defaults to 1.e-50.</a:documentation>
       <a:documentation>Options to give extra information for each iteration of the
 the Picard solve. Some of those may really slow down your computation!</a:documentation>
       <optional>
+        <element name="convergence_file">
+          <a:documentation>Output a diagnostic file detailing the convergence of this solver.</a:documentation>
+          <empty/>
+        </element>
+      </optional>
+      <optional>
         <element name="norms">
           <a:documentation>Print norms of vectors and matrices to stdout log</a:documentation>
           <empty/>
@@ -133,7 +139,7 @@ the Picard solve. Some of those may really slow down your computation!</a:docume
     </element>
     <element name="linear_solver">
       <a:documentation>Options describing a linear solver.</a:documentation>
-      <ref name="linear_solver_options"/>
+      <ref name="linear_solver_options_top"/>
     </element>
     <ref name="solver_failures"/>
   </define>
@@ -348,6 +354,12 @@ the SNES solve. Some of those may really slow down your computation!</a:document
         </element>
       </optional>
       <optional>
+        <element name="convergence_file">
+          <a:documentation>Output a diagnostic file detailing the convergence of this solver.</a:documentation>
+          <empty/>
+        </element>
+      </optional>
+      <optional>
         <element name="norms">
           <a:documentation>Print norms of vectors and matrices to stdout log</a:documentation>
           <empty/>
@@ -356,7 +368,7 @@ the SNES solve. Some of those may really slow down your computation!</a:document
     </element>
     <element name="linear_solver">
       <a:documentation>Options describing a linear solver.</a:documentation>
-      <ref name="linear_solver_options"/>
+      <ref name="linear_solver_options_top"/>
     </element>
     <ref name="solver_failures"/>
   </define>
@@ -410,6 +422,35 @@ Defaults to the whole boundary if left unspecified.</a:documentation>
       </optional>
     </element>
   </define>
+  <define name="linear_solver_options_top">
+    <choice>
+      <a:documentation>Iterative (Krylov) method to solve the linear discretised equation
+Given are the most frequently used methods. The solution is done
+by the PETSc library. Many more methods are provided.</a:documentation>
+      <ref name="kspgmres_options_top"/>
+      <ref name="kspfgmres_options_top"/>
+      <ref name="kspcg_options_top"/>
+      <ref name="ksppreonly_options"/>
+      <ref name="ksprichardson_options_top"/>
+      <ref name="kspother_options_top"/>
+    </choice>
+    <choice>
+      <a:documentation>Preconditioner to be used in combination with the iterative method.</a:documentation>
+      <ref name="pcsor_options"/>
+      <ref name="pceisenstat_options"/>
+      <ref name="pcfieldsplit_options"/>
+      <ref name="pcilu_options"/>
+      <ref name="pclu_options"/>
+      <ref name="pcprometheus_options"/>
+      <ref name="pchypre_options"/>
+      <ref name="pcjacobi_options"/>
+      <ref name="pcbjacobi_options"/>
+      <ref name="pcasm_options"/>
+      <ref name="pcksp_options"/>
+      <ref name="pcother_options"/>
+    </choice>
+    <ref name="generic_solver_options"/>
+  </define>
   <define name="linear_solver_options">
     <choice>
       <a:documentation>Iterative (Krylov) method to solve the linear discretised equation
@@ -456,6 +497,73 @@ by the PETSc library. Many more methods are provided.</a:documentation>
     
     ####################################################################
   -->
+  <define name="kspgmres_options_top">
+    <element name="iterative_method">
+      <a:documentation>GMRES
+
+Your safest bet for non-symmetric systems.</a:documentation>
+      <attribute name="name">
+        <value>gmres</value>
+      </attribute>
+      <element name="restart">
+        <a:documentation>Restart value for gmres iteration
+Higher values give better convergence but require more memory.
+Suggested value: 30</a:documentation>
+        <ref name="integer"/>
+      </element>
+      <ref name="iterative_solver_options_top"/>
+    </element>
+  </define>
+  <define name="kspfgmres_options_top">
+    <element name="iterative_method">
+      <a:documentation>FGMRES</a:documentation>
+      <attribute name="name">
+        <value>fgmres</value>
+      </attribute>
+      <element name="restart">
+        <a:documentation>Restart value for fgmres iteration
+Higher values give better convergence but require more memory.
+Suggested value: 30</a:documentation>
+        <ref name="integer"/>
+      </element>
+      <ref name="iterative_solver_options_top"/>
+    </element>
+  </define>
+  <define name="kspcg_options_top">
+    <element name="iterative_method">
+      <a:documentation>Conjugate gradient method
+
+Only works for symmetric systems.</a:documentation>
+      <attribute name="name">
+        <value>cg</value>
+      </attribute>
+      <ref name="iterative_solver_options_top"/>
+    </element>
+  </define>
+  <define name="ksprichardson_options_top">
+    <element name="iterative_method">
+      <a:documentation>Richardson iteration
+
+Only apply preconditioner each iteration, no krylov acceleration</a:documentation>
+      <attribute name="name">
+        <value>richardson</value>
+      </attribute>
+      <ref name="iterative_solver_options_top"/>
+    </element>
+  </define>
+  <define name="kspother_options_top">
+    <element name="iterative_method">
+      <a:documentation>Other methods
+
+Any method provided by the PETSc library
+http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPType.html
+(available methods may depend on the PETSc library installed on your system)</a:documentation>
+      <attribute name="name">
+        <data type="string"/>
+      </attribute>
+      <ref name="iterative_solver_options_top"/>
+    </element>
+  </define>
   <define name="kspgmres_options">
     <element name="iterative_method">
       <a:documentation>GMRES
@@ -815,7 +923,7 @@ even if they are described below (a warning will be given).</a:documentation>
     
     ####################################################################
   -->
-  <define name="iterative_solver_options">
+  <define name="iterative_solver_options_base">
     <element name="relative_error">
       <a:documentation>Relative error
 
@@ -848,51 +956,71 @@ Defaults to 10000.</a:documentation>
 before giving up.</a:documentation>
       <ref name="integer"/>
     </element>
+  </define>
+  <define name="iterative_solver_options">
+    <ref name="iterative_solver_options_base"/>
+  </define>
+  <define name="iterative_solver_options" combine="interleave">
+    <ref name="iterative_monitors"/>
+  </define>
+  <define name="iterative_solver_options_top">
+    <ref name="iterative_solver_options_base"/>
+  </define>
+  <define name="iterative_solver_options_top" combine="interleave">
+    <ref name="iterative_monitors_top"/>
+  </define>
+  <define name="iterative_monitors_base">
+    <optional>
+      <element name="preconditioned_residual">
+        <a:documentation>Prints the preconditioned residual for each iteration of the solve.
+This is the error estimation PETSc uses during the solve.</a:documentation>
+        <empty/>
+      </element>
+    </optional>
+    <optional>
+      <element name="true_residual">
+        <a:documentation>Prints the "true" residual for each iteration of the solve,
+i.e. PETSc computes the L2-norm of r=A-bx. This may mean
+PETSc has to do extra computations.</a:documentation>
+        <empty/>
+      </element>
+    </optional>
+    <optional>
+      <element name="preconditioned_residual_graph">
+        <a:documentation>Draws a graph over the convergence of the preconditioned residual
+during the solve. This option only works for systems where PETSc
+has been linked with the X library.</a:documentation>
+        <empty/>
+      </element>
+    </optional>
+  </define>
+  <define name="iterative_monitors_vis">
+    <optional>
+      <element name="convergence_file">
+        <a:documentation>Output a diagnostic file detailing the convergence of this solver.</a:documentation>
+        <empty/>
+      </element>
+    </optional>
+    <optional>
+      <element name="test_null_space">
+        <a:documentation>Test any attached null spaces on the first iteration of the solve.</a:documentation>
+        <empty/>
+      </element>
+    </optional>
+  </define>
+  <define name="iterative_monitors">
     <element name="monitors">
       <a:documentation>Options to give extra information for each iteration of the
 the solve. Some of those may really slow down your computation!</a:documentation>
-      <group>
-        <optional>
-          <element name="preconditioned_residual">
-            <a:documentation>Prints the preconditioned residual for each iteration of the solve.
-This is the error estimation PETSc uses during the solve.</a:documentation>
-            <empty/>
-          </element>
-        </optional>
-        <optional>
-          <element name="true_residual">
-            <a:documentation>Prints the "true" residual for each iteration of the solve,
-i.e. PETSc computes the L2-norm of r=A-bx. This may mean
-PETSc has to do extra computations.</a:documentation>
-            <empty/>
-          </element>
-        </optional>
-        <optional>
-          <element name="preconditioned_residual_graph">
-            <a:documentation>Draws a graph over the convergence of the preconditioned residual
-during the solve. This option only works for systems where PETSc
-has been linked with the X library.</a:documentation>
-            <empty/>
-          </element>
-        </optional>
-      </group>
-      <!--
-                ## Prints the error by computing the difference with the provided
-                ## exact solution each time step.
-                element true_error {
-                   ## Give the field name of the field that contains the exact
-                   ## solution to be compared with each iteration
-                   attribute coefficient {
-                      attribute name { xsd:string },
-                      empty
-                   }
-                }?,
-                ## Writes out the approximate solution to a vtu each iteration.
-                ## <b>This may create a large number of vtus!</b>
-                element iteration_vtus {
-                   empty
-                }?
-      -->
+      <ref name="iterative_monitors_base"/>
+    </element>
+  </define>
+  <define name="iterative_monitors_top">
+    <element name="monitors">
+      <a:documentation>Options to give extra information for each iteration of the
+the solve. Some of those may really slow down your computation!</a:documentation>
+      <ref name="iterative_monitors_base"/>
+      <ref name="iterative_monitors_vis"/>
     </element>
   </define>
   <define name="generic_solver_options">
@@ -924,6 +1052,14 @@ found that requires this.</a:documentation>
             <ref name="is_by_field"/>
           </element>
         </oneOrMore>
+        <element name="monitors">
+          <optional>
+            <element name="view_null_space">
+              <a:documentation>Prints PETSc information about this null space</a:documentation>
+              <empty/>
+            </element>
+          </optional>
+        </element>
       </element>
     </optional>
   </define>

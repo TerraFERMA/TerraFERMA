@@ -209,7 +209,7 @@ namespace buckettools
                                                &uflsymbol) const;    // the coefficient with the given uflsymbol
 
     //***************************************************************|***********************************************************//
-    // Coefficient functionspace data access
+    // Detector data access
     //***************************************************************|***********************************************************//
 
     void register_detector(GenericDetectors_ptr detector,            // register a detector set with the given name

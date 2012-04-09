@@ -13,9 +13,9 @@ class SpudSystemBucket(ufltools.systembucket.SystemBucket):
     self.symbol     = libspud.get_option(optionpath+"/ufl_symbol").split("\n")[0]
     self.bucket     = bucket
 
-    self.mesh_name        = libspud.get_option(optionpath+"/mesh/name")
-    mesh_optionpath  = "/geometry/mesh::"+self.mesh_name
-    self.cell             = libspud.get_option(mesh_optionpath+"/source/cell")
+    self.mesh_name = libspud.get_option(optionpath+"/mesh/name")
+    mesh_optionpath = "/geometry/mesh::"+self.mesh_name
+    self.cell      = libspud.get_option(mesh_optionpath+"/source/cell")
 
     self.fields = []
     for j in range(libspud.option_count(optionpath+"/field")):
