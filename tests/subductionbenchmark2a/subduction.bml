@@ -19,6 +19,7 @@
     <output_base_name>
       <string_value lines="1">subduction</string_value>
     </output_base_name>
+    <dump_periods/>
     <detectors>
       <point name="SlabPoint">
         <real_value shape="2" dim1="dim" rank="1">60 -60</real_value>
@@ -45,7 +46,6 @@
         </python>
       </array>
     </detectors>
-    <dump_periods/>
     <checkpointing>
       <checkpoint_period_in_timesteps>
         <integer_value rank="0">1</integer_value>
@@ -374,6 +374,7 @@ F = FT + Fv + Fp</string_value>
           <integer_value rank="0">2</integer_value>
         </min_iterations>
         <monitors>
+          <convergence_file/>
           <norms/>
         </monitors>
         <linear_solver>

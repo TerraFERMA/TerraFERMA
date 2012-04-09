@@ -22,8 +22,8 @@
     <output_base_name>
       <string_value lines="1">rbconvection</string_value>
     </output_base_name>
-    <detectors/>
     <dump_periods/>
+    <detectors/>
   </io>
   <nonlinear_systems>
     <nonlinear_iterations>
@@ -376,6 +376,7 @@ r = rv + rp</string_value>
               <field name="Pressure"/>
               <monitors/>
             </null_space>
+            <monitors/>
           </remove_null_space>
         </linear_solver>
         <never_ignore_solver_failures/>

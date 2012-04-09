@@ -22,22 +22,22 @@
     <output_base_name>
       <string_value lines="1">magmawaves</string_value>
     </output_base_name>
+    <dump_periods>
+      <visualization_period>
+        <real_value rank="0">0.05</real_value>
+      </visualization_period>
+      <statistics_period>
+        <real_value rank="0">.05</real_value>
+      </statistics_period>
+      <detectors_period>
+        <real_value rank="0">0.025</real_value>
+      </detectors_period>
+    </dump_periods>
     <detectors>
       <point name="x0">
         <real_value shape="2" dim1="dim" rank="1">.5 .5</real_value>
       </point>
     </detectors>
-    <dump_periods>
-      <visualization_period>
-        <real_value rank="0">0.05</real_value>
-      </visualization_period>
-      <statistics_period_in_timesteps>
-        <integer_value rank="0">10</integer_value>
-      </statistics_period_in_timesteps>
-      <detectors_period>
-        <real_value rank="0">0.025</real_value>
-      </detectors_period>
-    </dump_periods>
   </io>
   <timestepping>
     <current_time>
@@ -204,6 +204,12 @@ def val(x):
               <string_value lines="1">int</string_value>
             </ufl_symbol>
           </functional>
+          <functional name="L2error">
+            <string_value lines="20" type="code" language="python">L2err = (f - phi)**2*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">L2err</string_value>
+            </ufl_symbol>
+          </functional>
         </include_in_statistics>
         <include_in_steady_state>
           <norm>
@@ -223,6 +229,64 @@ def val(x):
             <constant name="dim">
               <real_value shape="2" dim1="dim" rank="1">0. -5.</real_value>
             </constant>
+          </value>
+        </rank>
+      </type>
+      <diagnostics/>
+    </coefficient>
+    <coefficient name="phi_analytic">
+      <ufl_symbol>
+        <string_value lines="1">phi</string_value>
+      </ufl_symbol>
+      <type name="Expression">
+        <rank name="Scalar" rank="0">
+          <element name="P2">
+            <family>
+              <string_value>CG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">2</integer_value>
+            </degree>
+          </element>
+          <value type="value" name="WholeMesh">
+            <python rank="0">
+              <string_value lines="20" type="code" language="python"># Initialize to single solitary wave profile 
+# using PySolwave routines ... need to set python path appropriately 
+
+from solitarywave import *
+from numpy import array
+from math import sqrt
+
+c = 5.                                 #Wave speed
+n = 3                                  # permeability exponent
+m = 0                                 # bulk-viscosity exponent
+d = 2                                  # dimension
+N = 400                              # number of collocation points
+swave = SolitaryWave(c,n,m,d,N)
+
+# location of initial solitary wave maximum
+x0 = array([.5, .5])
+# velocity of wave relative to background advection field 
+W0 = 0.
+
+# size of the domain in compaction lengths
+h_on_delta = 64.
+r_max = 25.
+
+def val(x,t):
+  global x0, h_on_delta, swave, sqrt, array, r_max, d,W0
+  x0t = x0 + array([0,1])*W0*t
+  if d == 1:
+     r = h_on_delta*abs(x[1] - x0t[1]) # use 1-D waves
+  else: 
+     dx = x - x0t  # use 2-D waves
+     r = h_on_delta*sqrt(sum(dx*dx))
+  if r &lt;= r_max:
+     #return swave.eval(array([r])) 
+     return swave.interp(array([r]))	
+  else:
+     return 1.0</string_value>
+            </python>
           </value>
         </rank>
       </type>

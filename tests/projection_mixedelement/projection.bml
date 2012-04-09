@@ -19,8 +19,8 @@
     <output_base_name>
       <string_value lines="1">projection</string_value>
     </output_base_name>
-    <detectors/>
     <dump_periods/>
+    <detectors/>
   </io>
   <timestepping>
     <current_time>
@@ -74,6 +74,7 @@
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics>
           <functional name="Integral">
             <string_value lines="20" type="code" language="python">int = ss1*dx</string_value>
@@ -82,6 +83,7 @@
             </ufl_symbol>
           </functional>
         </include_in_statistics>
+        <include_residual_in_visualization/>
       </diagnostics>
     </field>
     <field name="Field2">
@@ -106,6 +108,7 @@
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics>
           <functional name="Integral0">
             <string_value lines="20" type="code" language="python">int = ss2[0]*dx</string_value>
@@ -120,6 +123,7 @@
             </ufl_symbol>
           </functional>
         </include_in_statistics>
+        <include_residual_in_visualization/>
       </diagnostics>
     </field>
     <coefficient name="Source1">
@@ -285,6 +289,7 @@ r = r1 + r2</string_value>
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics>
           <functional name="Integral">
             <string_value lines="20" type="code" language="python">int = sp1*dx</string_value>
@@ -293,6 +298,7 @@ r = r1 + r2</string_value>
             </ufl_symbol>
           </functional>
         </include_in_statistics>
+        <include_residual_in_visualization/>
       </diagnostics>
     </field>
     <field name="Field2">
@@ -317,6 +323,7 @@ r = r1 + r2</string_value>
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics>
           <functional name="Integral0">
             <string_value lines="20" type="code" language="python">int = sp2[0]*dx</string_value>
@@ -331,6 +338,7 @@ r = r1 + r2</string_value>
             </ufl_symbol>
           </functional>
         </include_in_statistics>
+        <include_residual_in_visualization/>
       </diagnostics>
     </field>
     <coefficient name="Source1">

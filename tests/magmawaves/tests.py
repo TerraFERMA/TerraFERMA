@@ -29,12 +29,13 @@ def test_Pressure_integral():
   assert abs(val - test) < 1.e-10
   print "\tvalue=", val, "test=", test, " ",
 
-def test_timestep():
-  val = stat["timestep"]["value"][-1]
-  test = 1282
-  assert abs(val - test) < 1
+def test_Porosity_L2error():
+  val = stat["magma"]["Porosity"]["L2error"][-1]
+  val = sqrt(val)
+  test = sqrt(1.4065673868e-8)
+  assert abs(val - test) < 1.e-5
   print "\tvalue=", val, "test=", test, " ",
-
+  
 def test_timestep():
   val = stat["timestep"]["value"][-1]
   test = 1282

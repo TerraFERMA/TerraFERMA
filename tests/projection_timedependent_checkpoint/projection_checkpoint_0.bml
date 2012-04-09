@@ -19,8 +19,8 @@
     <output_base_name>
       <string_value lines="1">projection_checkpoint</string_value>
     </output_base_name>
-    <detectors/>
     <dump_periods/>
+    <detectors/>
     <checkpointing>
       <checkpoint_period>
         <real_value rank="0">5</real_value>

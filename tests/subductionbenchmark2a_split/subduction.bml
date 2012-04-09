@@ -19,6 +19,7 @@
     <output_base_name>
       <string_value lines="1">subduction</string_value>
     </output_base_name>
+    <dump_periods/>
     <detectors>
       <point name="SlabPoint">
         <real_value shape="2" dim1="dim" rank="1">60 -60</real_value>
@@ -45,7 +46,6 @@
         </python>
       </array>
     </detectors>
-    <dump_periods/>
   </io>
   <nonlinear_systems>
     <nonlinear_iterations>
@@ -225,7 +225,9 @@ F = Fv + Fp</string_value>
         <max_iterations>
           <integer_value rank="0">10</integer_value>
         </max_iterations>
-        <monitors/>
+        <monitors>
+          <convergence_file/>
+        </monitors>
         <linear_solver>
           <iterative_method name="preonly"/>
           <preconditioner name="lu">
@@ -431,7 +433,9 @@ F = FT</string_value>
         <max_iterations>
           <integer_value rank="0">10</integer_value>
         </max_iterations>
-        <monitors/>
+        <monitors>
+          <convergence_file/>
+        </monitors>
         <linear_solver>
           <iterative_method name="preonly"/>
           <preconditioner name="lu">

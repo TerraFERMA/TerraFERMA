@@ -28,8 +28,8 @@
     <output_base_name>
       <string_value lines="1">sphere</string_value>
     </output_base_name>
-    <detectors/>
     <dump_periods/>
+    <detectors/>
   </io>
   <global_parameters/>
   <system name="Stokes">

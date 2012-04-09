@@ -28,6 +28,7 @@
     <output_base_name>
       <string_value lines="1">madds1</string_value>
     </output_base_name>
+    <dump_periods/>
     <detectors>
       <point name="Point">
         <real_value shape="2" dim1="dim" rank="1">0. 1.</real_value>
@@ -36,7 +37,6 @@
         <real_value shape="2" dim1="dim" rank="1">1. 1.</real_value>
       </point>
     </detectors>
-    <dump_periods/>
   </io>
   <global_parameters/>
   <system name="Stokes">

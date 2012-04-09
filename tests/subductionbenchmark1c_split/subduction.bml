@@ -19,6 +19,7 @@
     <output_base_name>
       <string_value lines="1">subduction</string_value>
     </output_base_name>
+    <dump_periods/>
     <detectors>
       <point name="SlabPoint">
         <real_value shape="2" dim1="dim" rank="1">60 -60</real_value>
@@ -45,7 +46,6 @@
         </python>
       </array>
     </detectors>
-    <dump_periods/>
   </io>
   <global_parameters/>
   <system name="Stokes">

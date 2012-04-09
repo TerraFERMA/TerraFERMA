@@ -22,12 +22,12 @@
     <output_base_name>
       <string_value lines="1">rbconvection</string_value>
     </output_base_name>
-    <detectors/>
     <dump_periods>
       <visualization_period_in_timesteps>
         <integer_value rank="0">50</integer_value>
       </visualization_period_in_timesteps>
     </dump_periods>
+    <detectors/>
   </io>
   <timestepping>
     <current_time>
@@ -371,6 +371,7 @@ r = rv + rp + rT</string_value>
         </max_iterations>
         <monitors>
           <residual/>
+          <convergence_file/>
         </monitors>
         <linear_solver>
           <iterative_method name="preonly"/>
