@@ -375,25 +375,25 @@ void StatisticsFile::data_coeff_(FunctionBucket_const_it f_begin,
       {
         Mesh_ptr mesh = (*(*(*f_it).second).system()).mesh();
         GenericFunction_ptr func = (*(*f_it).second).function();
-        dolfin::Array< double > values((*mesh).num_vertices()*(*func).value_size());
+        std::vector< double > values;
         (*func).compute_vertex_values(values, *mesh);
         if ((*func).value_rank()==0)                                 // scalars (no components)
         {
-          file_ << values.max() << " ";
-          file_ << values.min() << " ";
+          file_ << *std::max_element(&values[0], &values[values.size()]) << " ";
+          file_ << *std::min_element(&values[0], &values[values.size()]) << " ";
         }
         else if ((*func).value_rank()==1)                            // vectors (multiple components)
         {
           int components = (*func).value_size();
           for (uint i = 0; i < components; i++)
           {
-            file_ << *std::max_element(&values.data()[i*(*mesh).num_vertices()], 
-                &values.data()[(i+1)*(*mesh).num_vertices()]) << " ";// maximum for all components
+            file_ << *std::max_element(&values[i*(*mesh).num_vertices()], 
+                &values[(i+1)*(*mesh).num_vertices()]) << " ";// maximum for all components
           }
           for (uint i = 0; i < components; i++)
           {
-            file_ << *std::min_element(&values.data()[i*(*mesh).num_vertices()], 
-                &values.data()[(i+1)*(*mesh).num_vertices()]) << " ";// maximum for all components
+            file_ << *std::min_element(&values[i*(*mesh).num_vertices()], 
+                &values[(i+1)*(*mesh).num_vertices()]) << " ";// maximum for all components
           }
         }
         else if ((*func).value_rank()==2)                            // tensor (multiple components)
@@ -404,16 +404,16 @@ void StatisticsFile::data_coeff_(FunctionBucket_const_it f_begin,
           {
             for (uint j = 0; j < dim1; j++)
             {
-              file_ << *std::max_element(&values.data()[(2*j+i)*(*mesh).num_vertices()], 
-                  &values.data()[(2*j+i+1)*(*mesh).num_vertices()]) << " ";// maximum for all components
+              file_ << *std::max_element(&values[(2*j+i)*(*mesh).num_vertices()], 
+                  &values[(2*j+i+1)*(*mesh).num_vertices()]) << " ";// maximum for all components
             }
           }
           for (uint i = 0; i < dim0; i++)
           {
             for (uint j = 0; j < dim1; j++)
             {
-              file_ << *std::min_element(&values.data()[(2*j+i)*(*mesh).num_vertices()], 
-                  &values.data()[(2*j+i+1)*(*mesh).num_vertices()]) << " ";// maximum for all components
+              file_ << *std::min_element(&values[(2*j+i)*(*mesh).num_vertices()], 
+                  &values[(2*j+i+1)*(*mesh).num_vertices()]) << " ";// maximum for all components
             }
           }
         }
