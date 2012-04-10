@@ -9,6 +9,7 @@
         <choice>
           <value>CG</value>
           <value>DG</value>
+          <value>R</value>
         </choice>
       </element>
     </element>
@@ -28,6 +29,15 @@
       <!-- a hard coded string_value -->
       <element name="string_value">
         <value>DG</value>
+      </element>
+    </element>
+  </define>
+  <define name="r_element_family">
+    <element name="family">
+      <a:documentation>Element family</a:documentation>
+      <!-- a hard coded string_value -->
+      <element name="string_value">
+        <value>R</value>
       </element>
     </element>
   </define>
@@ -94,6 +104,10 @@
     <ref name="dg_element_family"/>
     <ref name="p2_element_degree"/>
   </define>
+  <define name="r_element">
+    <ref name="r_element_family"/>
+    <ref name="p0_element_degree"/>
+  </define>
   <define name="vector_element_options">
     <optional>
       <element name="size">
@@ -117,6 +131,9 @@
     </optional>
   </define>
   <define name="element_options_scalar">
+    <ref name="element_options_scalar_r"/>
+  </define>
+  <define name="element_options_scalar" combine="choice">
     <ref name="element_options_scalar_p0"/>
   </define>
   <define name="element_options_scalar" combine="choice">
@@ -165,6 +182,15 @@
         <ref name="p2dg_element"/>
       </element>
     </choice>
+  </define>
+  <define name="element_options_scalar_r">
+    <element name="element">
+      <a:documentation>Options describing piecewise constant continuous real, e.g. for a global Lagrange multiplier.</a:documentation>
+      <attribute name="name">
+        <value>R</value>
+      </attribute>
+      <ref name="r_element"/>
+    </element>
   </define>
   <define name="element_options_scalar_p0">
     <element name="element">
@@ -225,6 +251,14 @@
         <ref name="p0_element"/>
         <ref name="vector_element_options"/>
       </element>
+      <element name="element">
+        <a:documentation>Options describing piecewise constant continuous real for a vector, e.g. for a global Lagrange multiplier.</a:documentation>
+        <attribute name="name">
+          <value>R</value>
+        </attribute>
+        <ref name="r_element"/>
+        <ref name="vector_element_options"/>
+      </element>
     </choice>
   </define>
   <define name="element_options_tensor">
@@ -275,6 +309,14 @@
           <value>P0</value>
         </attribute>
         <ref name="p0_element"/>
+        <ref name="tensor_element_options"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing piecewise constant continuous real for a tensor, e.g. for a global Lagrange multiplier.</a:documentation>
+        <attribute name="name">
+          <value>R</value>
+        </attribute>
+        <ref name="r_element"/>
         <ref name="tensor_element_options"/>
       </element>
     </choice>
