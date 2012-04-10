@@ -606,26 +606,6 @@ int_BoundaryCondition_const_it FunctionBucket::orderedbcs_end() const
 }
 
 //*******************************************************************|************************************************************//
-// output the current contents of the function to a pvd file (if associated)
-//*******************************************************************|************************************************************//
-void FunctionBucket::output(const bool &write_vis)
-{
-  if (write_vis)
-  {
-    if (pvdfile_)                                                    // check a pvd file is associated
-    {
-      *pvdfile_ << std::make_pair(&(*boost::dynamic_pointer_cast< dolfin::Function >(function())),
-                                  (*(*system()).bucket()).current_time());
-    }
-    if (respvdfile_)                                                 // check a residual pvd file is associated
-    {
-      *respvdfile_ << std::make_pair(&(*boost::dynamic_pointer_cast< dolfin::Function >(residualfunction())),
-                                     (*(*system()).bucket()).current_time());
-    }
-  }
-}
-
-//*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a bc in the function bucket data maps
 //*******************************************************************|************************************************************//
 void FunctionBucket::register_dirichletbc(BoundaryCondition_ptr bc, const std::string &name)
@@ -763,38 +743,23 @@ ReferencePoints_const_it FunctionBucket::points_end() const
 }
 
 //*******************************************************************|************************************************************//
-// return a string describing the contents of the function bucket
+// output the current contents of the function to a pvd file (if associated)
 //*******************************************************************|************************************************************//
-const std::string FunctionBucket::str(int indent) const
+void FunctionBucket::output(const bool &write_vis)
 {
-  std::stringstream s;
-  std::string indentation (indent*2, ' ');
-  s << indentation << "FunctionBucket " << name() << std::endl;
-  indent++;
-  s << functionals_str(indent);
-  return s.str();
-}
-
-//*******************************************************************|************************************************************//
-// return a string describing the functionals in the function bucket
-//*******************************************************************|************************************************************//
-const std::string FunctionBucket::functionals_str(int indent) const
-{
-  std::stringstream s;
-  std::string indentation (indent*2, ' ');
-  for ( Form_const_it f_it = functionals_.begin(); f_it != functionals_.end(); f_it++ )
+  if (write_vis)
   {
-    s << indentation << "Functional " << (*f_it).first  << std::endl;
+    if (pvdfile_)                                                    // check a pvd file is associated
+    {
+      *pvdfile_ << std::make_pair(&(*boost::dynamic_pointer_cast< dolfin::Function >(function())),
+                                  (*(*system()).bucket()).current_time());
+    }
+    if (respvdfile_)                                                 // check a residual pvd file is associated
+    {
+      *respvdfile_ << std::make_pair(&(*boost::dynamic_pointer_cast< dolfin::Function >(residualfunction())),
+                                     (*(*system()).bucket()).current_time());
+    }
   }
-  return s.str();
-}
-
-//*******************************************************************|************************************************************//
-// checkpoint the functionbucket
-//*******************************************************************|************************************************************//
-void FunctionBucket::checkpoint()
-{
-  checkpoint_options_();
 }
 
 //*******************************************************************|************************************************************//
@@ -845,6 +810,41 @@ const bool FunctionBucket::include_in_detectors() const
 {
   dolfin::error("Failed to find virtual function include_in_steadystate.");
   return false;
+}
+
+//*******************************************************************|************************************************************//
+// return a string describing the contents of the function bucket
+//*******************************************************************|************************************************************//
+const std::string FunctionBucket::str(int indent) const
+{
+  std::stringstream s;
+  std::string indentation (indent*2, ' ');
+  s << indentation << "FunctionBucket " << name() << std::endl;
+  indent++;
+  s << functionals_str(indent);
+  return s.str();
+}
+
+//*******************************************************************|************************************************************//
+// return a string describing the functionals in the function bucket
+//*******************************************************************|************************************************************//
+const std::string FunctionBucket::functionals_str(int indent) const
+{
+  std::stringstream s;
+  std::string indentation (indent*2, ' ');
+  for ( Form_const_it f_it = functionals_.begin(); f_it != functionals_.end(); f_it++ )
+  {
+    s << indentation << "Functional " << (*f_it).first  << std::endl;
+  }
+  return s.str();
+}
+
+//*******************************************************************|************************************************************//
+// checkpoint the functionbucket
+//*******************************************************************|************************************************************//
+void FunctionBucket::checkpoint()
+{
+  checkpoint_options_();
 }
 
 //*******************************************************************|************************************************************//
