@@ -601,14 +601,36 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     serr = Spud::get_option(buffer.str(), basename); 
     spud_err(buffer.str(), serr);
 
-    std::stringstream filename;                                      // read in the mesh (using the dolfin constructor)
-    filename.str(""); filename << basename << ".xml";
-    mesh.reset(new dolfin::Mesh(filename.str()));
-    (*mesh).init();                                                  // initialize the mesh (maps between dimensions etc.)
 
-    std::ifstream file;                                              // a dummy file stream to test if files exist
+    std::ifstream file;                                              // dummy file stream to test if files exist
                                                                      // (better way of doing this?)
     
+    std::stringstream filename;
+
+    filename.str(""); filename << basename << ".xml";
+    file.open(filename.str().c_str(), std::ifstream::in);
+    if (file)
+    {
+      file.close();
+      mesh.reset(new dolfin::Mesh(filename.str()));
+    }
+    else
+    {
+      filename.str(""); filename << basename << ".xml.gz";
+      file.open(filename.str().c_str(), std::ifstream::in);
+      if (file)
+      {
+        file.close();
+        mesh.reset(new dolfin::Mesh(filename.str()));
+      }
+      else
+      {
+        filename.str(""); filename << basename << ".xml";
+        dolfin::error("Could not find %s or %s.gz.", filename.str().c_str(), filename.str().c_str());
+      }
+    }
+    (*mesh).init();                                                  // initialize the mesh (maps between dimensions etc.)
+
     filename.str(""); filename << basename << "_facet_region.xml";   // check if the edge subdomain mesh function file exists
     file.open(filename.str().c_str(), std::ifstream::in);
     if (file)                                                        // if it does then attach it to the dolfin MeshData structure 
@@ -620,8 +642,22 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
       const uint D = (*mesh).topology().dim();
       *(*mesh).domains().markers(D-1) = edgeids;
     }
+    else
+    {
+      filename.str(""); filename << basename << "_facet_region.xml.gz";// check if the edge subdomain mesh function file exists
+      file.open(filename.str().c_str(), std::ifstream::in);
+      if (file)                                                      // if it does then attach it to the dolfin MeshData structure 
+      {                                                              // using the dolfin reserved name for exterior facets
+        file.close();
 
-    filename.str(""); filename << basename << "_physical_region.xml";// check if the edge subdomain mesh function file exists
+        dolfin::MeshFunction<dolfin::uint> edgeids(*mesh, filename.str());
+
+        const uint D = (*mesh).topology().dim();
+        *(*mesh).domains().markers(D-1) = edgeids;
+      }
+    }
+
+    filename.str(""); filename << basename << "_physical_region.xml";// check if the region subdomain mesh function file exists
     file.open(filename.str().c_str(), std::ifstream::in);
     if (file)                                                        // if it does then attach it to the dolfin MeshData structure 
     {                                                                // using the dolfin reserved name for cell domains
@@ -631,6 +667,20 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
 
       const uint D = (*mesh).topology().dim();
       *(*mesh).domains().markers(D) = cellids;
+    }
+    else
+    {
+      filename.str(""); filename << basename << "_physical_region.xml.gz";// check if the region subdomain mesh function file exists
+      file.open(filename.str().c_str(), std::ifstream::in);
+      if (file)                                                        // if it does then attach it to the dolfin MeshData structure 
+      {                                                                // using the dolfin reserved name for cell domains
+        file.close();
+
+        dolfin::MeshFunction<dolfin::uint> cellids(*mesh, filename.str());
+
+        const uint D = (*mesh).topology().dim();
+        *(*mesh).domains().markers(D) = cellids;
+      }
     }
 
   }

@@ -6,7 +6,7 @@ generic_element_family =
      element family {
         # a hard coded string_value
         element string_value {
-          ( "CG" | "DG" )
+          ( "CG" | "DG" | "R" )
         }
      }
   )
@@ -29,6 +29,17 @@ dg_element_family =
         # a hard coded string_value
         element string_value {
           ( "DG" )
+        }
+     }
+  )
+
+r_element_family = 
+  (
+     ## Element family
+     element family {
+        # a hard coded string_value
+        element string_value {
+          ( "R" )
         }
      }
   )
@@ -110,6 +121,12 @@ p2dg_element =
      p2_element_degree
   )
 
+r_element =
+  (
+     r_element_family,
+     p0_element_degree
+  )
+
 vector_element_options =
   (
     ## The size (length) of the vector.
@@ -130,7 +147,8 @@ tensor_element_options =
     }?
   )
 
-element_options_scalar = element_options_scalar_p0
+element_options_scalar = element_options_scalar_r
+element_options_scalar |= element_options_scalar_p0
 element_options_scalar |= element_options_scalar_lagrange
 element_options_scalar |= element_options_scalar_user
 
@@ -167,6 +185,17 @@ element_options_scalar_lagrange =
        element element {
          attribute name { "P2DG" },
          p2dg_element
+       }
+     )
+  )
+
+element_options_scalar_r =
+  (
+     (
+       ## Options describing piecewise constant continuous real, e.g. for a global Lagrange multiplier.
+       element element {
+         attribute name { "R" },
+         r_element
        }
      )
   )
@@ -220,6 +249,12 @@ element_options_vector =
          attribute name { "P0" },
          p0_element,
          vector_element_options
+       }|
+       ## Options describing piecewise constant continuous real for a vector, e.g. for a global Lagrange multiplier.
+       element element {
+         attribute name { "R" },
+         r_element,
+         vector_element_options
        }
      )
   )
@@ -261,6 +296,12 @@ element_options_tensor =
        element element {
          attribute name { "P0" },
          p0_element,
+         tensor_element_options
+       }|
+       ## Options describing piecewise constant continuous real for a tensor, e.g. for a global Lagrange multiplier.
+       element element {
+         attribute name { "R" },
+         r_element,
          tensor_element_options
        }
      )
