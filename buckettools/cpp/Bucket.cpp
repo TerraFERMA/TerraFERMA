@@ -1073,10 +1073,10 @@ bool Bucket::steadystate_()
                                     s_it != systems_end(); s_it++)
     {
       double systemchange = (*(*s_it).second).maxchange();
-      dolfin::log(dolfin::DBG, "  steady state systemchange = %f", systemchange);
+      dolfin::log(dolfin::DBG, "  steady state systemchange = %e", systemchange);
       maxchange = std::max(systemchange, maxchange);
     }
-    dolfin::log(dolfin::INFO, "steady state maxchange = %f", maxchange);
+    dolfin::log(dolfin::INFO, "steady state maxchange = %e", maxchange);
     steady = (maxchange < *steadystate_tol_);
   }
 
