@@ -41,8 +41,11 @@ namespace buckettools
 
     void allocate_coeff_function();                                  // allocate the coefficient functions
 
-    void initialize();                                               // attach functions to the forms and functionals
-                                                                     // in the system and initialize the expressions and matrices
+    void initialize_forms();                                         // initialize the forms and functionals by attaching the coeffs
+
+    void initialize_fields_and_coefficients();                       // initialize the expressions that fields and coefficients use
+
+    void initialize_matrices();                                      // initialize the matrices related to forms
 
     void copy_diagnostics(SystemBucket_ptr &system, 
                             Bucket_ptr &bucket) const;               // copy the data necessary for the diagnostics data file(s)

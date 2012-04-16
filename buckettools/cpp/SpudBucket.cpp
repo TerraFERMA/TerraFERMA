@@ -101,9 +101,21 @@ void SpudBucket::fill()
                                                                      // allocated
 
   for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *fourth* time, attaching the
-                                  sys_it != systems_end(); sys_it++) // coefficients to the forms and functionals and initializing
-  {                                                                  // the matrices by performing a preassembly step on them
-    (*boost::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).initialize();
+                                  sys_it != systems_end(); sys_it++) // coefficients to the forms and functionals
+  {
+    (*boost::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).initialize_forms();
+  }
+  
+  for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *fifth* time, initializing
+                                  sys_it != systems_end(); sys_it++) // the values of any expressions, functionals or functions
+  {                                                                  // used by fields or coefficients
+    (*boost::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).initialize_fields_and_coefficients();
+  }
+  
+  for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *sixth* time, preassembling
+                                  sys_it != systems_end(); sys_it++) // the matrices
+  {
+    (*boost::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).initialize_matrices();
   }
   
   fill_detectors_();                                                 // put the detectors in the bucket
