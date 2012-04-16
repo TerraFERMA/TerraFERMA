@@ -70,12 +70,22 @@ void SpudSystemBucket::allocate_coeff_function()
 }
 
 //*******************************************************************|************************************************************//
-// attach coefficients to forms and functionals then initialize matrices described by this system's forms
+// attach coefficients to forms and functionals
 //*******************************************************************|************************************************************//
-void SpudSystemBucket::initialize()
+void SpudSystemBucket::initialize_forms()
 {
   dolfin::info("Attaching coeffs for system %s", name().c_str());
   attach_all_coeffs_();                                              // attach the coefficients to form and functionals
+                                                                     // this happens here as some coefficients depend on functionals
+                                                                     // to be evaluated
+}
+
+//*******************************************************************|************************************************************//
+// attach coefficients to forms and functionals
+//*******************************************************************|************************************************************//
+void SpudSystemBucket::initialize_fields_and_coefficients()
+{
+  dolfin::info("Initializing fields and coefficients for system %s", name().c_str());
 
   for (FunctionBucket_it f_it = fields_begin(); f_it != fields_end();
                                                               f_it++)
@@ -110,6 +120,15 @@ void SpudSystemBucket::initialize()
     apply_dirichletbc_();                                            // apply the Dirichlet boundary conditions we just collected
     apply_referencepoints_();                                        // apply the reference points we just collected
   }
+
+}
+
+//*******************************************************************|************************************************************//
+// initialize matrices described by this system's forms
+//*******************************************************************|************************************************************//
+void SpudSystemBucket::initialize_matrices()
+{
+  dolfin::info("Initializing matrices for system %s", name().c_str());
 
   for (SolverBucket_it s_it = solvers_begin(); s_it != solvers_end();// loop over the solver buckets
                                                               s_it++)
