@@ -9,11 +9,11 @@ steady = parser("rbconvection.steady")
 
 def test_timestepcount():
   val = stat["timestep"]["value"][-1]
-  assert abs(val - 30) < 1
+  assert abs(val - 35) < 1
 
 def test_elapsedtime():
   val = stat["ElapsedTime"]["value"][-1]
-  assert abs(val - 1640.9259654) < 5.e1
+  assert abs(val - 1900.0) < 5.e1
 
 def test_v_rms():
   val = sqrt(stat["Stokes"]["Velocity"]["L2NormSquared"][-1])
@@ -32,9 +32,11 @@ def test_extremum():
   assert abs(val - 0.4222) < 0.01
 
 def test_steady():
-  val = max(steady["Stokes"]["Velocity"]["change(linf)"][-1], \
-            steady["Stokes"]["Pressure"]["change(linf)"][-1], \
-            steady["Stokes"]["Temperature"]["change(linf)"][-1])
+  val = max(steady["Stokes"]["Velocity"]["L2NormSquared_change"][-1], \
+            steady["Stokes"]["Pressure"]["Integral_change"][-1], \
+            steady["Stokes"]["Dummy"]["Integral_change"][-1], \
+            steady["Stokes"]["Temperature"]["BottomSurfaceIntegral_change"][-1], \
+            steady["Stokes"]["Temperature"]["TopSurfaceIntegral_change"][-1])
   assert val < 1.e-5
 
 def test_div():
