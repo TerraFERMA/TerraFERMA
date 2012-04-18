@@ -56,6 +56,8 @@ namespace buckettools
  
     void solve(const int &location);                                 // solve all the systems in the bucket (depending on location)
 
+    void resetcalculated();                                          // update the calculated booleans in the systems in this bucket
+
     void update();                                                   // update the functions in the systems in this bucket
 
     void update_timestep();                                          // update the timestep

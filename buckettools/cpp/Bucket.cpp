@@ -46,6 +46,7 @@ void Bucket::run()
   update();
 
   output(OUTPUT_START);
+  resetcalculated();
 
   solve_at_start_();
 
@@ -109,6 +110,18 @@ void Bucket::solve(const int &location)
     {
       (*(*s_it).second).solve();
     }
+  }
+}
+
+//*******************************************************************|************************************************************//
+// loop over the ordered systems in the bucket, reseting the calculated booleans in all of them
+//*******************************************************************|************************************************************//
+void Bucket::resetcalculated()
+{
+  for (int_SystemBucket_const_it s_it = orderedsystems_begin(); 
+                                 s_it != orderedsystems_end(); s_it++)
+  {
+    (*(*s_it).second).resetcalculated();
   }
 }
 
@@ -1130,6 +1143,7 @@ void Bucket::solve_at_start_()
   if(systems_solved)
   {
     output(OUTPUT_START);
+    update();
   }
 }
 

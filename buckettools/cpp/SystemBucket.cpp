@@ -66,14 +66,19 @@ void SystemBucket::update()
   
                                                                      // fields share a vector with the system function so no need to
                                                                      // update them...
-
-  for (int_FunctionBucket_it f_it = orderedcoeffs_begin();           // loop over coefficients again to update any coefficient
-                           f_it != orderedcoeffs_end(); f_it++)      // functions
+  for (int_FunctionBucket_it f_it = orderedfields_begin();           // except that they contain functionals which need updating
+                           f_it != orderedfields_end(); f_it++) 
   {
     (*(*f_it).second).update();
   }
 
-  resetchange();                                                     // reset the change booleans in the system and fields
+  for (int_FunctionBucket_it f_it = orderedcoeffs_begin();           // also loop over coefficients again to update any coefficient
+                           f_it != orderedcoeffs_end(); f_it++)      // functions, constant functionals or statistic functionals
+  {
+    (*(*f_it).second).update();
+  }
+
+  resetcalculated();                                                 // reset the calculated booleans in the system, fields and functionals
 
   *solved_ = false;                                                  // reset the solved_ indicator to false for the next timestep
 
@@ -123,6 +128,17 @@ const double SystemBucket::maxchange()
       dolfin::log(dolfin::DBG, "    steady state fieldchange = %f", fieldchange);
       maxchange = std::max( fieldchange, maxchange );
     }
+
+    for (Form_const_it form_it = (*(*f_it).second).functionals_begin();
+              form_it != (*(*f_it).second).functionals_end(); form_it++)
+    {
+      if ((*(*f_it).second).include_functional_in_steadystate((*form_it).first))
+      {
+        double functionalchange = (*(*f_it).second).functionalchange(form_it);
+        dolfin::log(dolfin::DBG, "      steady state functionalchange = %f", functionalchange);
+        maxchange = std::max( functionalchange, maxchange );
+      }
+    }
   }
   return maxchange;
 }
@@ -142,18 +158,21 @@ void SystemBucket::updatechange()
 }
 
 //*******************************************************************|************************************************************//
-// reset the change function
+// reset the calculated booleans
 //*******************************************************************|************************************************************//
-void SystemBucket::resetchange()
+void SystemBucket::resetcalculated()
 {
   *change_calculated_ = false;
   for (FunctionBucket_it f_it = fields_begin(); 
                                   f_it != fields_end(); f_it++)
   {
-    if ((*(*f_it).second).include_in_steadystate())
-    {
-      (*(*f_it).second).resetchange();
-    }
+    (*(*f_it).second).resetcalculated();
+  }
+
+  for (FunctionBucket_it f_it = coeffs_begin(); 
+                                  f_it != coeffs_end(); f_it++)
+  {
+    (*(*f_it).second).resetcalculated();
   }
 }
 

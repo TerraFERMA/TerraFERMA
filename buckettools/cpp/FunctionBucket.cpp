@@ -249,16 +249,57 @@ const double FunctionBucket::change()
 }
 
 //*******************************************************************|************************************************************//
-// reset the change boolean
+// return the change in the value of the given functional over a timestep
 //*******************************************************************|************************************************************//
-void FunctionBucket::resetchange()
+const double FunctionBucket::functionalchange(Form_const_it f_it)
+{
+  return std::abs(functionalvalue(f_it)-oldfunctionalvalue(f_it));
+}
+
+//*******************************************************************|************************************************************//
+// return the value of the given functional (calculating it if necessary)
+//*******************************************************************|************************************************************//
+const double FunctionBucket::functionalvalue(Form_const_it f_it)
+{
+  bool_ptr calculated = functional_calculated_[(*f_it).first];
+  if(*calculated)
+  {
+    return *functional_values_[(*f_it).first];
+  }
+  else
+  {
+    double value = dolfin::assemble((*(*f_it).second));              // assemble the functional
+    *functional_values_[(*f_it).first] = value;
+    *calculated = true;
+
+    return value;
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return the old stored value of the given functional
+//*******************************************************************|************************************************************//
+const double FunctionBucket::oldfunctionalvalue(Form_const_it f_it)
+{
+  return *oldfunctional_values_[(*f_it).first];
+}
+
+//*******************************************************************|************************************************************//
+// reset the calculated booleans
+//*******************************************************************|************************************************************//
+void FunctionBucket::resetcalculated()
 {
   if(change_calculated_)
   {
     *change_calculated_=false;
   }
-}
 
+  for (bool_ptr_it b_it = functional_calculated_.begin(); 
+                       b_it != functional_calculated_.end(); b_it++)
+  {
+    *(*b_it).second = false;
+  }
+}
 
 //*******************************************************************|************************************************************//
 // refresh this functionbucket if it "needs" it
@@ -306,6 +347,11 @@ void FunctionBucket::update()
   {
     *boost::dynamic_pointer_cast< dolfin::Constant >(oldfunction_) = 
         double(*boost::dynamic_pointer_cast< dolfin::Constant >(function_));
+  }
+
+  for (Form_const_it f_it = functionals_begin(); f_it != functionals_end(); f_it++)
+  {
+    *oldfunctional_values_[(*f_it).first] = *functional_values_[(*f_it).first];
   }
 }
 
@@ -412,6 +458,10 @@ void FunctionBucket::copy_diagnostics(FunctionBucket_ptr &function, SystemBucket
   (*function).snesupdatefunction_ = snesupdatefunction_;
 
   (*function).functionals_ = functionals_;
+  (*function).functional_values_ = functional_values_;
+  (*function).oldfunctional_values_ = oldfunctional_values_;
+  (*function).functional_calculated_ = functional_calculated_;
+
   (*function).bcexpressions_ = bcexpressions_;
   (*function).bcs_ = bcs_;
   (*function).points_ = points_;
@@ -433,6 +483,14 @@ void FunctionBucket::register_functional(Form_ptr functional, const std::string 
   else
   {
     functionals_[name] = functional;                                 // if not, insert it into the functionals_ map
+    double_ptr value;
+    value.reset( new double(0.0) );
+    functional_values_[name]      = value;
+    value.reset( new double(0.0) );
+    oldfunctional_values_[name]   = value;
+    bool_ptr calculated;
+    calculated.reset( new bool(false) );
+    functional_calculated_[name]  = calculated;
   }
 }
 
@@ -799,6 +857,16 @@ const bool FunctionBucket::include_in_statistics() const
 const bool FunctionBucket::include_in_steadystate() const
 {
   dolfin::error("Failed to find virtual function include_in_steadystate.");
+  return false;
+}
+
+//*******************************************************************|************************************************************//
+// include this a functional of this function with the given name in steadystate output and checking
+// this is a virtual function and should be implemented in the derived options class
+//*******************************************************************|************************************************************//
+const bool FunctionBucket::include_functional_in_steadystate(const std::string &name) const
+{
+  dolfin::error("Failed to find virtual function include_functional_in_steadystate.");
   return false;
 }
 

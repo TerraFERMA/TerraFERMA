@@ -60,7 +60,7 @@ namespace buckettools
 
     void updatechange();                                             // update the change function
 
-    void resetchange();                                              // reset the change boolean
+    void resetcalculated();                                          // reset the calculated booleans
 
     void cap_values();                                               // cap the values of the fields in this system
 
