@@ -375,7 +375,7 @@ void SpudBucket::fill_timestepping_()
       if ((Spud::option_count("/system/field/diagnostics/include_in_statistics/functional/include_in_steady_state")+
            Spud::option_count("/system/field/diagnostics/include_in_steady_state"))==0)
       {
-        dolfin::error("Requested a steady state check but selected no field to include.");
+        dolfin::error("Requested a steady state check but selected no field or functionals to include.");
       }
 
       steadystate_tol_.reset( new double );                          // get the steady state tolerance
