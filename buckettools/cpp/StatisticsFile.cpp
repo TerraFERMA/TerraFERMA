@@ -305,7 +305,8 @@ void StatisticsFile::data_field_(FunctionBucket_const_it f_begin,
         dolfin::error("In StatisticsFile::data_field_, unknown function rank.");
       }
 
-      data_functional_((*(*f_it).second).functionals_begin(),        // wttie data for all functionals associated with this field
+      data_functional_((*f_it).second, 
+                       (*(*f_it).second).functionals_begin(),        // wttie data for all functionals associated with this field
                             (*(*f_it).second).functionals_end());
     }
   }
@@ -423,7 +424,8 @@ void StatisticsFile::data_coeff_(FunctionBucket_const_it f_begin,
         }
       }
 
-      data_functional_((*(*f_it).second).functionals_begin(),        // write data for all functionals associated with this
+      data_functional_((*f_it).second,
+                       (*(*f_it).second).functionals_begin(),        // write data for all functionals associated with this
                               (*(*f_it).second).functionals_end());  // coefficient
     }
   }
@@ -432,12 +434,13 @@ void StatisticsFile::data_coeff_(FunctionBucket_const_it f_begin,
 //*******************************************************************|************************************************************//
 // write data for a set of functional forms
 //*******************************************************************|************************************************************//
-void StatisticsFile::data_functional_(Form_const_it s_begin, 
+void StatisticsFile::data_functional_(FunctionBucket_ptr f_ptr,
+                                       Form_const_it s_begin, 
                                        Form_const_it s_end)
 {
   for (Form_const_it s_it = s_begin; s_it != s_end; s_it++)          // loop over the given functionals
   {
-    double statistic = dolfin::assemble((*(*s_it).second));          // assemble the functional
+    const double statistic = (*f_ptr).functionalvalue(s_it);         // get the value of the functional
     file_ << statistic << " ";                                       // write to file
   }
 }

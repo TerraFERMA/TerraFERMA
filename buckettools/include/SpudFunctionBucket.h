@@ -68,6 +68,8 @@ namespace buckettools
                                     const std::string &name,         // register a functional with the given name and optionpath
                                     const std::string &optionpath);
 
+    const std::string fetch_functional_optionpath(const std::string &name) const;// return the optionpath of the named functional
+
     //***************************************************************|***********************************************************//
     // Output functions
     //***************************************************************|***********************************************************//
@@ -82,6 +84,9 @@ namespace buckettools
                                                                      // be included in diagnostic output
     
     const bool include_in_steadystate() const;                       // return a boolean indicating if this function is to 
+                                                                     // be included in steadystate output
+    
+    const bool include_functional_in_steadystate(const std::string &name) const;// return a boolean indicating if the named functional is to 
                                                                      // be included in steadystate output
     
     const bool include_in_detectors() const;                         // return a boolean indicating if this function is to 

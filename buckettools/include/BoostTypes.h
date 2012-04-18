@@ -109,6 +109,10 @@ namespace buckettools {
   typedef std::map< std::string, Form_ptr >::const_iterator              Form_const_it;
   typedef std::map< std::string, GenericDetectors_ptr >::iterator        GenericDetectors_it;
   typedef std::map< std::string, GenericDetectors_ptr >::const_iterator  GenericDetectors_const_it;
+  typedef std::map< std::string, double_ptr >::iterator                  double_ptr_it;
+  typedef std::map< std::string, double_ptr >::const_iterator            double_ptr_const_it;
+  typedef std::map< std::string, bool_ptr >::iterator                    bool_ptr_it;
+  typedef std::map< std::string, bool_ptr >::const_iterator              bool_ptr_const_it;
   
 }
 

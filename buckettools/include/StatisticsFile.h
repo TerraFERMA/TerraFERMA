@@ -96,7 +96,8 @@ namespace buckettools
     void data_coeff_(FunctionBucket_const_it f_begin,                // write the data for a set of coefficients
                      FunctionBucket_const_it f_end);
 
-    void data_functional_(Form_const_it s_begin,                     // write the data for a set of functionals
+    void data_functional_(FunctionBucket_ptr f_ptr,
+                          Form_const_it s_begin,                     // write the data for a set of functionals
                           Form_const_it s_end);
 
   };

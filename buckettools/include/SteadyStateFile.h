@@ -16,7 +16,9 @@ namespace buckettools
   class Bucket;
   class FunctionBucket;
   typedef boost::shared_ptr< FunctionBucket > FunctionBucket_ptr;
+  typedef boost::shared_ptr< dolfin::Form > Form_ptr;
   typedef std::map< std::string, FunctionBucket_ptr >::const_iterator FunctionBucket_const_it;
+  typedef std::map< std::string, Form_ptr >::const_iterator Form_const_it;
 
   //*****************************************************************|************************************************************//
   // SteadyStateFile class:
@@ -70,6 +72,15 @@ namespace buckettools
                        FunctionBucket_const_it f_end, 
                        uint &column);
 
+    void header_coeff_(FunctionBucket_const_it f_begin,              // write the header for a set of coefficients
+                       FunctionBucket_const_it f_end, 
+                       uint &column);
+
+    void header_functional_(const FunctionBucket_ptr f_ptr,          // write the header for a set of functionals
+                            Form_const_it f_begin, 
+                            Form_const_it f_end, 
+                            uint &column);
+
     //***************************************************************|***********************************************************//
     // Data writing functions (continued)
     //***************************************************************|***********************************************************//
@@ -79,6 +90,12 @@ namespace buckettools
     void data_field_(FunctionBucket_const_it f_begin,                // write the data for a set of fields
                      FunctionBucket_const_it f_end);
 
+    void data_coeff_(FunctionBucket_const_it f_begin,                // write the data for a set of coefficients
+                     FunctionBucket_const_it f_end);
+
+    void data_functional_(FunctionBucket_ptr f_ptr,                  // write the data for a set of functionals
+                          Form_const_it f_begin, 
+                          Form_const_it f_end);
   };
   
   typedef boost::shared_ptr< SteadyStateFile > SteadyStateFile_ptr;  // define a boost shared ptr type for the class

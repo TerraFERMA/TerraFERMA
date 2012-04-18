@@ -372,7 +372,8 @@ void SpudBucket::fill_timestepping_()
     buffer.str(""); buffer << "/timestepping/steady_state";
     if (Spud::have_option(buffer.str()))
     {
-      if (Spud::option_count("/system/field/diagnostics/include_in_steady_state")==0)
+      if ((Spud::option_count("/system/field/diagnostics/include_in_statistics/functional/include_in_steady_state")+
+           Spud::option_count("/system/field/diagnostics/include_in_steady_state"))==0)
       {
         dolfin::error("Requested a steady state check but selected no field to include.");
       }
@@ -1040,7 +1041,8 @@ void SpudBucket::fill_diagnostics_()
     (*detfile_).write_header(*this);
   }
 
-  if (Spud::option_count("/system/field/diagnostics/include_in_steady_state")>0)
+  if ((Spud::option_count("/system/field/diagnostics/include_in_statistics/functional/include_in_steady_state")+
+       Spud::option_count("/system/field/diagnostics/include_in_steady_state"))>0)
   {
     steadyfile_.reset( new SteadyStateFile(output_basename()+".steady") );
     (*steadyfile_).write_header(*this);

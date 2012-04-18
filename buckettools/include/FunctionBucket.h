@@ -151,7 +151,13 @@ namespace buckettools
 
     const double change();                                           // return the change (in the selected norm) in a field over a timestep
 
-    void resetchange();                                              // reset the change boolean
+    const double functionalchange(Form_const_it f_it);               // return the change in the value of the given functional
+
+    const double oldfunctionalvalue(Form_const_it f_it);             // return the old value of the given functional
+
+    const double functionalvalue(Form_const_it f_it);                // return the value of the given functional
+
+    void resetcalculated();                                          // reset the calculated booleans
 
     void refresh(const bool force=false);                            // refresh this function bucket - this may call solvers so 
                                                                      // its not recommened to call loosely
@@ -270,6 +276,9 @@ namespace buckettools
     virtual const bool include_in_steadystate() const;               // return a boolean indicating if this function is included in 
                                                                      // steady state output
 
+    virtual const bool include_functional_in_steadystate(const std::string &name) const;// return a boolean indicating if the named functional is included in 
+                                                                     // steady state output
+
     virtual const bool include_in_detectors() const;                 // return a boolean indicating if this function is included in 
                                                                      // detectors output
 
@@ -348,6 +357,12 @@ namespace buckettools
     //***************************************************************|***********************************************************//
 
     std::map< std::string, Form_ptr > functionals_;                  // map from functional names to form (boost shared) pointers
+
+    std::map< std::string, double_ptr > functional_values_,          // map from functional names to functional values
+                                        oldfunctional_values_;
+
+    std::map< std::string, bool_ptr > functional_calculated_;        // map from functional names to a boolean indicating if the
+                                                                     // functional's been evaluated this timestep
 
     std::map< std::string, Expression_ptr > bcexpressions_;          // map from bc names to bc expression (boost shared) pointers
     

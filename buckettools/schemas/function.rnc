@@ -271,7 +271,11 @@ functional_options =
       attribute name { xsd:string },
       python_code,
       functional_ufl_symbol,
-      quadrature_degree
+      quadrature_degree,
+      ## Include this functional in the steady state check and output file.
+      element include_in_steady_state {
+        empty
+      }?
     }
   )
 

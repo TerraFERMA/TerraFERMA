@@ -246,6 +246,33 @@ void SpudFunctionBucket::register_functional(Form_ptr functional,
   {
     functionals_[name]            = functional;                      // it not, insert the form into the maps
     functional_optionpaths_[name] = optionpath;                      // and its optionpath too
+    double_ptr value;
+    value.reset( new double(0.0) );
+    functional_values_[name]      = value;
+    value.reset( new double(0.0) );
+    oldfunctional_values_[name]   = value;
+    bool_ptr calculated;
+    calculated.reset( new bool(false) );
+    functional_calculated_[name]  = calculated;
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return a string containing the named functional's optionpath
+//*******************************************************************|************************************************************//
+const std::string SpudFunctionBucket::fetch_functional_optionpath(const std::string &name) const
+{
+  std::map< std::string, std::string >::const_iterator s_it = functional_optionpaths_.find(name);
+                                                                     // check if the name already exists
+  if (s_it == functional_optionpaths_.end())
+  {
+    dolfin::error(                                                   // if it doesn't, issue an error
+            "Functional named \"%s\" does not exist in function.", 
+                                                      name.c_str());
+  }
+  else
+  {
+    return (*s_it).second;                                           // if it does, return it
   }
 }
 
@@ -279,6 +306,14 @@ const bool SpudFunctionBucket::include_in_statistics() const
 const bool SpudFunctionBucket::include_in_steadystate() const
 {
   return Spud::have_option(optionpath()+"/diagnostics/include_in_steady_state");
+}
+
+//*******************************************************************|************************************************************//
+// return a boolean indicating if the named functional of this function bucket should be included in steady state check and output
+//*******************************************************************|************************************************************//
+const bool SpudFunctionBucket::include_functional_in_steadystate(const std::string &name) const
+{
+  return Spud::have_option(fetch_functional_optionpath(name)+"/include_in_steady_state");
 }
 
 //*******************************************************************|************************************************************//
