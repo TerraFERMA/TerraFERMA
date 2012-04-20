@@ -70,7 +70,7 @@
       </ufl_symbol>
       <type name="Function">
         <rank name="Scalar" rank="0">
-          <element name="R0">
+          <element name="P0R">
             <family>
               <string_value>R</string_value>
             </family>
