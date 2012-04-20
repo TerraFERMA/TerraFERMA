@@ -2,11 +2,19 @@ include "spud_base.rnc"
 
 generic_element_family = 
   (
-     ## Element family
+     ## Element family:
+     ##
+     ## - CG = Lagrange (continuous Galerkin)
+     ##
+     ## - DG = Discontinuous Lagrange (discontinuous Galerkin)
+     ##
+     ## - Q  = Quadrature
+     ##
+     ## - R  = Real (global constant)
      element family {
         # a hard coded string_value
         element string_value {
-          ( "CG" | "DG" | "R" )
+          ( "CG" | "DG" | "Q" | "R" )
         }
      }
   )
@@ -29,6 +37,17 @@ dg_element_family =
         # a hard coded string_value
         element string_value {
           ( "DG" )
+        }
+     }
+  )
+
+q_element_family = 
+  (
+     ## Element family
+     element family {
+        # a hard coded string_value
+        element string_value {
+          ( "Q" )
         }
      }
   )
@@ -85,6 +104,28 @@ p2_element_degree =
      }
   )
 
+p3_element_degree =
+  (
+     ## Element degree
+     element degree {
+       element integer_value {
+          attribute rank {"0"},
+          ( "3" )
+       }
+     }
+  )
+
+p4_element_degree =
+  (
+     ## Element degree
+     element degree {
+       element integer_value {
+          attribute rank {"0"},
+          ( "4" )
+       }
+     }
+  )
+
 generic_element =
   (
      generic_element_family,
@@ -121,7 +162,31 @@ p2dg_element =
      p2_element_degree
   )
 
-r_element =
+q1_element =
+  (
+     q_element_family,
+     p1_element_degree
+  )
+
+q2_element =
+  (
+     q_element_family,
+     p2_element_degree
+  )
+
+q3_element =
+  (
+     q_element_family,
+     p3_element_degree
+  )
+
+q4_element =
+  (
+     q_element_family,
+     p4_element_degree
+  )
+
+r0_element =
   (
      r_element_family,
      p0_element_degree
@@ -147,8 +212,7 @@ tensor_element_options =
     }?
   )
 
-element_options_scalar = element_options_scalar_r
-element_options_scalar |= element_options_scalar_p0
+element_options_scalar = element_options_scalar_not_lagrange
 element_options_scalar |= element_options_scalar_lagrange
 element_options_scalar |= element_options_scalar_user
 
@@ -189,24 +253,38 @@ element_options_scalar_lagrange =
      )
   )
 
-element_options_scalar_r =
-  (
-     (
-       ## Options describing piecewise constant continuous real, e.g. for a global Lagrange multiplier.
-       element element {
-         attribute name { "R" },
-         r_element
-       }
-     )
-  )
-
-element_options_scalar_p0 =
+element_options_scalar_not_lagrange =
   (
      (
        ## Options describing piecewise constant discontinuous Lagrange finite element.
        element element {
          attribute name { "P0" },
          p0_element
+       }|
+       ## Options describing piecewise linear quadrature element, i.e. the degrees of freedom are the quadrature points.
+       element element {
+         attribute name { "Q1" },
+         q1_element
+       }|
+       ## Options describing piecewise quadratic quadrature element, i.e. the degrees of freedom are the quadrature points.
+       element element {
+         attribute name { "Q2" },
+         q2_element
+       }|
+       ## Options describing piecewise cubic quadrature element, i.e. the degrees of freedom are the quadrature points.
+       element element {
+         attribute name { "Q3" },
+         q3_element
+       }|
+       ## Options describing piecewise quartic quadrature element, i.e. the degrees of freedom are the quadrature points.
+       element element {
+         attribute name { "Q4" },
+         q4_element
+       }|
+       ## Options describing piecewise constant continuous real, e.g. for a global Lagrange multiplier.
+       element element {
+         attribute name { "R0" },
+         r0_element
        }
      )
   )
@@ -250,10 +328,34 @@ element_options_vector =
          p0_element,
          vector_element_options
        }|
+       ## Options describing piecewise linear quadrature element, i.e. the degrees of freedom are the quadrature points.
+       element element {
+         attribute name { "Q1" },
+         q1_element,
+         vector_element_options
+       }|
+       ## Options describing piecewise quadratic quadrature element, i.e. the degrees of freedom are the quadrature points.
+       element element {
+         attribute name { "Q2" },
+         q2_element,
+         vector_element_options
+       }|
+       ## Options describing piecewise cubic quadrature element, i.e. the degrees of freedom are the quadrature points.
+       element element {
+         attribute name { "Q3" },
+         q3_element,
+         vector_element_options
+       }|
+       ## Options describing piecewise quartic quadrature element, i.e. the degrees of freedom are the quadrature points.
+       element element {
+         attribute name { "Q4" },
+         q4_element,
+         vector_element_options
+       }|
        ## Options describing piecewise constant continuous real for a vector, e.g. for a global Lagrange multiplier.
        element element {
-         attribute name { "R" },
-         r_element,
+         attribute name { "R0" },
+         r0_element,
          vector_element_options
        }
      )
@@ -298,10 +400,34 @@ element_options_tensor =
          p0_element,
          tensor_element_options
        }|
+       ## Options describing piecewise linear quadrature element, i.e. the degrees of freedom are the quadrature points.
+       element element {
+         attribute name { "Q1" },
+         q1_element,
+         tensor_element_options
+       }|
+       ## Options describing piecewise quadratic quadrature element, i.e. the degrees of freedom are the quadrature points.
+       element element {
+         attribute name { "Q2" },
+         q2_element,
+         tensor_element_options
+       }|
+       ## Options describing piecewise cubic quadrature element, i.e. the degrees of freedom are the quadrature points.
+       element element {
+         attribute name { "Q3" },
+         q3_element,
+         tensor_element_options
+       }|
+       ## Options describing piecewise quartic quadrature element, i.e. the degrees of freedom are the quadrature points.
+       element element {
+         attribute name { "Q4" },
+         q4_element,
+         tensor_element_options
+       }|
        ## Options describing piecewise constant continuous real for a tensor, e.g. for a global Lagrange multiplier.
        element element {
-         attribute name { "R" },
-         r_element,
+         attribute name { "R0" },
+         r0_element,
          tensor_element_options
        }
      )
