@@ -144,23 +144,23 @@
     <ref name="dg_element_family"/>
     <ref name="p2_element_degree"/>
   </define>
-  <define name="q1_element">
+  <define name="p1q_element">
     <ref name="q_element_family"/>
     <ref name="p1_element_degree"/>
   </define>
-  <define name="q2_element">
+  <define name="p2q_element">
     <ref name="q_element_family"/>
     <ref name="p2_element_degree"/>
   </define>
-  <define name="q3_element">
+  <define name="p3q_element">
     <ref name="q_element_family"/>
     <ref name="p3_element_degree"/>
   </define>
-  <define name="q4_element">
+  <define name="p4q_element">
     <ref name="q_element_family"/>
     <ref name="p4_element_degree"/>
   </define>
-  <define name="r0_element">
+  <define name="p0r_element">
     <ref name="r_element_family"/>
     <ref name="p0_element_degree"/>
   </define>
@@ -248,37 +248,37 @@
       <element name="element">
         <a:documentation>Options describing piecewise linear quadrature element, i.e. the degrees of freedom are the quadrature points.</a:documentation>
         <attribute name="name">
-          <value>Q1</value>
+          <value>P1Q</value>
         </attribute>
-        <ref name="q1_element"/>
+        <ref name="p1q_element"/>
       </element>
       <element name="element">
         <a:documentation>Options describing piecewise quadratic quadrature element, i.e. the degrees of freedom are the quadrature points.</a:documentation>
         <attribute name="name">
-          <value>Q2</value>
+          <value>P2Q</value>
         </attribute>
-        <ref name="q2_element"/>
+        <ref name="p2q_element"/>
       </element>
       <element name="element">
         <a:documentation>Options describing piecewise cubic quadrature element, i.e. the degrees of freedom are the quadrature points.</a:documentation>
         <attribute name="name">
-          <value>Q3</value>
+          <value>P3Q</value>
         </attribute>
-        <ref name="q3_element"/>
+        <ref name="p3q_element"/>
       </element>
       <element name="element">
         <a:documentation>Options describing piecewise quartic quadrature element, i.e. the degrees of freedom are the quadrature points.</a:documentation>
         <attribute name="name">
-          <value>Q4</value>
+          <value>P4Q</value>
         </attribute>
-        <ref name="q4_element"/>
+        <ref name="p4q_element"/>
       </element>
       <element name="element">
         <a:documentation>Options describing piecewise constant continuous real, e.g. for a global Lagrange multiplier.</a:documentation>
         <attribute name="name">
-          <value>R0</value>
+          <value>P0R</value>
         </attribute>
-        <ref name="r0_element"/>
+        <ref name="p0r_element"/>
       </element>
     </choice>
   </define>
@@ -335,41 +335,41 @@
       <element name="element">
         <a:documentation>Options describing piecewise linear quadrature element, i.e. the degrees of freedom are the quadrature points.</a:documentation>
         <attribute name="name">
-          <value>Q1</value>
+          <value>P1Q</value>
         </attribute>
-        <ref name="q1_element"/>
+        <ref name="p1q_element"/>
         <ref name="vector_element_options"/>
       </element>
       <element name="element">
         <a:documentation>Options describing piecewise quadratic quadrature element, i.e. the degrees of freedom are the quadrature points.</a:documentation>
         <attribute name="name">
-          <value>Q2</value>
+          <value>P2Q</value>
         </attribute>
-        <ref name="q2_element"/>
+        <ref name="p2q_element"/>
         <ref name="vector_element_options"/>
       </element>
       <element name="element">
         <a:documentation>Options describing piecewise cubic quadrature element, i.e. the degrees of freedom are the quadrature points.</a:documentation>
         <attribute name="name">
-          <value>Q3</value>
+          <value>P3Q</value>
         </attribute>
-        <ref name="q3_element"/>
+        <ref name="p3q_element"/>
         <ref name="vector_element_options"/>
       </element>
       <element name="element">
         <a:documentation>Options describing piecewise quartic quadrature element, i.e. the degrees of freedom are the quadrature points.</a:documentation>
         <attribute name="name">
-          <value>Q4</value>
+          <value>P4Q</value>
         </attribute>
-        <ref name="q4_element"/>
+        <ref name="p4q_element"/>
         <ref name="vector_element_options"/>
       </element>
       <element name="element">
         <a:documentation>Options describing piecewise constant continuous real for a vector, e.g. for a global Lagrange multiplier.</a:documentation>
         <attribute name="name">
-          <value>R0</value>
+          <value>P0R</value>
         </attribute>
-        <ref name="r0_element"/>
+        <ref name="p0r_element"/>
         <ref name="vector_element_options"/>
       </element>
     </choice>
@@ -427,41 +427,41 @@
       <element name="element">
         <a:documentation>Options describing piecewise linear quadrature element, i.e. the degrees of freedom are the quadrature points.</a:documentation>
         <attribute name="name">
-          <value>Q1</value>
+          <value>P1Q</value>
         </attribute>
-        <ref name="q1_element"/>
+        <ref name="p1q_element"/>
         <ref name="tensor_element_options"/>
       </element>
       <element name="element">
         <a:documentation>Options describing piecewise quadratic quadrature element, i.e. the degrees of freedom are the quadrature points.</a:documentation>
         <attribute name="name">
-          <value>Q2</value>
+          <value>P2Q</value>
         </attribute>
-        <ref name="q2_element"/>
+        <ref name="p2q_element"/>
         <ref name="tensor_element_options"/>
       </element>
       <element name="element">
         <a:documentation>Options describing piecewise cubic quadrature element, i.e. the degrees of freedom are the quadrature points.</a:documentation>
         <attribute name="name">
-          <value>Q3</value>
+          <value>P3Q</value>
         </attribute>
-        <ref name="q3_element"/>
+        <ref name="p3q_element"/>
         <ref name="tensor_element_options"/>
       </element>
       <element name="element">
         <a:documentation>Options describing piecewise quartic quadrature element, i.e. the degrees of freedom are the quadrature points.</a:documentation>
         <attribute name="name">
-          <value>Q4</value>
+          <value>P4Q</value>
         </attribute>
-        <ref name="q4_element"/>
+        <ref name="p4q_element"/>
         <ref name="tensor_element_options"/>
       </element>
       <element name="element">
         <a:documentation>Options describing piecewise constant continuous real for a tensor, e.g. for a global Lagrange multiplier.</a:documentation>
         <attribute name="name">
-          <value>R0</value>
+          <value>P0R</value>
         </attribute>
-        <ref name="r0_element"/>
+        <ref name="p0r_element"/>
         <ref name="tensor_element_options"/>
       </element>
     </choice>
