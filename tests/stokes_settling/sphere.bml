@@ -131,8 +131,7 @@ ds_interface = dS(6)</string_value>
                     <string_value lines="20" type="code" language="cpp">pvel = system()-&gt;fetch_field("ParticleVelocity")-&gt;genericfunction_ptr(time());</string_value>
                   </initialization>
                   <eval>
-                    <string_value lines="20" type="code" language="cpp">pvel-&gt;eval(values, x, cell);
-</string_value>
+                    <string_value lines="20" type="code" language="cpp">pvel-&gt;eval(values, x, cell);</string_value>
                   </eval>
                 </cpp>
               </type>
@@ -177,7 +176,7 @@ ds_interface = dS(6)</string_value>
       </ufl_symbol>
       <type name="Function">
         <rank name="Scalar" rank="0">
-          <element name="R">
+          <element name="R0">
             <family>
               <string_value>R</string_value>
             </family>
@@ -249,8 +248,7 @@ rvp = vp_t*(vp_i-vp_n)*dx_particle \
       - dt*vp_t*s*dx_particle #\
 #      - dt('+')*vp_t('+')*(2*(sym(grad(vf_i('+')))-I*pf_i('+'))[1,i]*(ns('+')+ns('-'))[i])*ds_interface
 
-r = rvf + rpf + rvp
-</string_value>
+r = rvf + rpf + rvp</string_value>
           <ufl_symbol>
             <string_value lines="1">r</string_value>
           </ufl_symbol>
