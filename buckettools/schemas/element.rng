@@ -9,15 +9,12 @@
 
 - DG = Discontinuous Lagrange (discontinuous Galerkin)
 
-- Q  = Quadrature
-
 - R  = Real (global constant)</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
         <choice>
           <value>CG</value>
           <value>DG</value>
-          <value>Q</value>
           <value>R</value>
         </choice>
       </element>
@@ -25,7 +22,9 @@
   </define>
   <define name="cg_element_family">
     <element name="family">
-      <a:documentation>Element family</a:documentation>
+      <a:documentation>Element family
+
+- CG = Lagrange (continuous Galerkin)</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
         <value>CG</value>
@@ -34,25 +33,20 @@
   </define>
   <define name="dg_element_family">
     <element name="family">
-      <a:documentation>Element family</a:documentation>
+      <a:documentation>Element family
+
+- DG = Discontinuous Lagrange (discontinuous Galerkin)</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
         <value>DG</value>
       </element>
     </element>
   </define>
-  <define name="q_element_family">
-    <element name="family">
-      <a:documentation>Element family</a:documentation>
-      <!-- a hard coded string_value -->
-      <element name="string_value">
-        <value>Q</value>
-      </element>
-    </element>
-  </define>
   <define name="r_element_family">
     <element name="family">
-      <a:documentation>Element family</a:documentation>
+      <a:documentation>Element family
+
+- R  = Real (global constant)</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
         <value>R</value>
@@ -98,28 +92,6 @@
       </element>
     </element>
   </define>
-  <define name="p3_element_degree">
-    <element name="degree">
-      <a:documentation>Element degree</a:documentation>
-      <element name="integer_value">
-        <attribute name="rank">
-          <value>0</value>
-        </attribute>
-        <value>3</value>
-      </element>
-    </element>
-  </define>
-  <define name="p4_element_degree">
-    <element name="degree">
-      <a:documentation>Element degree</a:documentation>
-      <element name="integer_value">
-        <attribute name="rank">
-          <value>0</value>
-        </attribute>
-        <value>4</value>
-      </element>
-    </element>
-  </define>
   <define name="generic_element">
     <ref name="generic_element_family"/>
     <ref name="generic_element_degree"/>
@@ -143,22 +115,6 @@
   <define name="p2dg_element">
     <ref name="dg_element_family"/>
     <ref name="p2_element_degree"/>
-  </define>
-  <define name="p1q_element">
-    <ref name="q_element_family"/>
-    <ref name="p1_element_degree"/>
-  </define>
-  <define name="p2q_element">
-    <ref name="q_element_family"/>
-    <ref name="p2_element_degree"/>
-  </define>
-  <define name="p3q_element">
-    <ref name="q_element_family"/>
-    <ref name="p3_element_degree"/>
-  </define>
-  <define name="p4q_element">
-    <ref name="q_element_family"/>
-    <ref name="p4_element_degree"/>
   </define>
   <define name="p0r_element">
     <ref name="r_element_family"/>
@@ -246,34 +202,6 @@
         <ref name="p0_element"/>
       </element>
       <element name="element">
-        <a:documentation>Options describing piecewise linear quadrature element, i.e. the degrees of freedom are the quadrature points.</a:documentation>
-        <attribute name="name">
-          <value>P1Q</value>
-        </attribute>
-        <ref name="p1q_element"/>
-      </element>
-      <element name="element">
-        <a:documentation>Options describing piecewise quadratic quadrature element, i.e. the degrees of freedom are the quadrature points.</a:documentation>
-        <attribute name="name">
-          <value>P2Q</value>
-        </attribute>
-        <ref name="p2q_element"/>
-      </element>
-      <element name="element">
-        <a:documentation>Options describing piecewise cubic quadrature element, i.e. the degrees of freedom are the quadrature points.</a:documentation>
-        <attribute name="name">
-          <value>P3Q</value>
-        </attribute>
-        <ref name="p3q_element"/>
-      </element>
-      <element name="element">
-        <a:documentation>Options describing piecewise quartic quadrature element, i.e. the degrees of freedom are the quadrature points.</a:documentation>
-        <attribute name="name">
-          <value>P4Q</value>
-        </attribute>
-        <ref name="p4q_element"/>
-      </element>
-      <element name="element">
         <a:documentation>Options describing piecewise constant continuous real, e.g. for a global Lagrange multiplier.</a:documentation>
         <attribute name="name">
           <value>P0R</value>
@@ -330,38 +258,6 @@
           <value>P0</value>
         </attribute>
         <ref name="p0_element"/>
-        <ref name="vector_element_options"/>
-      </element>
-      <element name="element">
-        <a:documentation>Options describing piecewise linear quadrature element, i.e. the degrees of freedom are the quadrature points.</a:documentation>
-        <attribute name="name">
-          <value>P1Q</value>
-        </attribute>
-        <ref name="p1q_element"/>
-        <ref name="vector_element_options"/>
-      </element>
-      <element name="element">
-        <a:documentation>Options describing piecewise quadratic quadrature element, i.e. the degrees of freedom are the quadrature points.</a:documentation>
-        <attribute name="name">
-          <value>P2Q</value>
-        </attribute>
-        <ref name="p2q_element"/>
-        <ref name="vector_element_options"/>
-      </element>
-      <element name="element">
-        <a:documentation>Options describing piecewise cubic quadrature element, i.e. the degrees of freedom are the quadrature points.</a:documentation>
-        <attribute name="name">
-          <value>P3Q</value>
-        </attribute>
-        <ref name="p3q_element"/>
-        <ref name="vector_element_options"/>
-      </element>
-      <element name="element">
-        <a:documentation>Options describing piecewise quartic quadrature element, i.e. the degrees of freedom are the quadrature points.</a:documentation>
-        <attribute name="name">
-          <value>P4Q</value>
-        </attribute>
-        <ref name="p4q_element"/>
         <ref name="vector_element_options"/>
       </element>
       <element name="element">
@@ -422,38 +318,6 @@
           <value>P0</value>
         </attribute>
         <ref name="p0_element"/>
-        <ref name="tensor_element_options"/>
-      </element>
-      <element name="element">
-        <a:documentation>Options describing piecewise linear quadrature element, i.e. the degrees of freedom are the quadrature points.</a:documentation>
-        <attribute name="name">
-          <value>P1Q</value>
-        </attribute>
-        <ref name="p1q_element"/>
-        <ref name="tensor_element_options"/>
-      </element>
-      <element name="element">
-        <a:documentation>Options describing piecewise quadratic quadrature element, i.e. the degrees of freedom are the quadrature points.</a:documentation>
-        <attribute name="name">
-          <value>P2Q</value>
-        </attribute>
-        <ref name="p2q_element"/>
-        <ref name="tensor_element_options"/>
-      </element>
-      <element name="element">
-        <a:documentation>Options describing piecewise cubic quadrature element, i.e. the degrees of freedom are the quadrature points.</a:documentation>
-        <attribute name="name">
-          <value>P3Q</value>
-        </attribute>
-        <ref name="p3q_element"/>
-        <ref name="tensor_element_options"/>
-      </element>
-      <element name="element">
-        <a:documentation>Options describing piecewise quartic quadrature element, i.e. the degrees of freedom are the quadrature points.</a:documentation>
-        <attribute name="name">
-          <value>P4Q</value>
-        </attribute>
-        <ref name="p4q_element"/>
         <ref name="tensor_element_options"/>
       </element>
       <element name="element">
