@@ -44,8 +44,10 @@ void InitialConditionExpression::eval(dolfin::Array<double>& values,
                                       const dolfin::Array<double>& x, 
                                       const ufc::cell &cell) const
 {
-  double zero = 0.0;                                                 // zero the full value array
-  values=zero;
+  for (uint i = 0; i < values.size(); i++)                           // zero the full value array
+  {
+    values[i] = 0.0;
+  }
   for (uint_Expression_const_it expr = expressions_.begin();         // loop over the expressions in the map
                     expr != expressions_.end(); expr++)
   {
