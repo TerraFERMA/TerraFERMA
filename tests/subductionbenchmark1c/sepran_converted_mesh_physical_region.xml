@@ -3071,7 +3071,7 @@
       <triangle index="2015" v0="638" v1="639" v2="663"/>
     </cells>
   </mesh>
-  <meshfunction type="uint" dim="2" size="2016">
+  <mesh_function type="uint" dim="2" size="2016">
     <entity index="0" value="1"/>
     <entity index="1" value="1"/>
     <entity index="2" value="1"/>
@@ -5088,5 +5088,5 @@
     <entity index="2013" value="3"/>
     <entity index="2014" value="3"/>
     <entity index="2015" value="3"/>
-  </meshfunction>
+  </mesh_function>
 </dolfin>
