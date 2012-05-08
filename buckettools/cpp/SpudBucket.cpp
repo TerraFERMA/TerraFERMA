@@ -375,7 +375,7 @@ void SpudBucket::fill_timestepping_()
       if ((Spud::option_count("/system/field/diagnostics/include_in_statistics/functional/include_in_steady_state")+
            Spud::option_count("/system/field/diagnostics/include_in_steady_state"))==0)
       {
-        dolfin::error("Requested a steady state check but selected no field to include.");
+        dolfin::error("Requested a steady state check but selected no field or functionals to include.");
       }
 
       steadystate_tol_.reset( new double );                          // get the steady state tolerance
@@ -639,7 +639,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
       else
       {
         filename.str(""); filename << basename << ".xml";
-        dolfin::error("Could not find %s or %s.gz.", filename.str().c_str(), filename.str().c_str());
+        dolfin::error("Could not find %s.xml or %s.xml.gz.", filename.str().c_str(), filename.str().c_str());
       }
     }
     (*mesh).init();                                                  // initialize the mesh (maps between dimensions etc.)
