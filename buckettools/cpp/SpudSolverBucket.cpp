@@ -136,7 +136,7 @@ void SpudSolverBucket::fill()
       if (Spud::have_option(buffer.str()))
       {
         #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
-        #if PETSC_RELEASE==0
+        #if PETSC_VERSION_RELEASE==0
         dolfin::error("Cannot set snes ls min_lambda with PETSc-dev - options not aligned.");
         #endif
         #else
@@ -148,7 +148,7 @@ void SpudSolverBucket::fill()
       spud_err(buffer.str(), serr);
 
       #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
-      #if PETSC_RELEASE==1
+      #if PETSC_VERSION_RELEASE==1
       perr = SNESLineSearchSetParams(snes_, alpha, maxstep, minlambda); CHKERRV(perr);
       #else
       SNESLineSearch linesearch;
