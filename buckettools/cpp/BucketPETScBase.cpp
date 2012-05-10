@@ -2,6 +2,7 @@
 #include <dolfin.h>
 #include "petscsnes.h"
 #include "BucketPETScBase.h"
+#include "BucketDolfinBase.h"
 #include "SolverBucket.h"
 
 using namespace buckettools;
@@ -50,7 +51,7 @@ PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f,
 
   (*bucket).update_nonlinear();                                      // update nonlinear coefficients
 
-  dolfin::assemble(rhs, *(*solver).linear_form(), reset_tensor);         // assemble the rhs from the context linear form
+  dolfin::assemble(rhs, *(*solver).linear_form(), reset_tensor);     // assemble the rhs from the context linear form
   for(uint i = 0; i < bcs.size(); ++i)                               // loop over the bcs
   {
     (*bcs[i]).apply(rhs, iteratedvec);                               // FIXME: will break symmetry?
@@ -133,9 +134,12 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
 
   (*(*iteratedfunction).vector()) = iteratedvec;                     // update the iterated system bucket function
 
-  (*bucket).update_nonlinear();                           // update nonlinear coefficients
+  (*bucket).update_nonlinear();                                      // update nonlinear coefficients
 
-  dolfin::assemble(matrix, *(*solver).bilinear_form(), reset_tensor);// assemble the matrix from the context bilinear form
+  dolfin::assemble(matrix, *(*solver).bilinear_form(), reset_tensor, 
+                                                       false, false);// assemble the matrix from the context bilinear form
+  Assembler::add_zeros_diagonal(matrix);
+  matrix.apply("add");
   for(uint i = 0; i < bcs.size(); ++i)                               // loop over the bcs
   {
     (*bcs[i]).apply(matrix);                                         // FIXME: will break symmetry?
@@ -153,6 +157,8 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
   {
     dolfin::assemble(matrixpc, (*(*solver).bilinearpc_form()),       // assemble the matrix pc from the context bilinear pc form
                                                       reset_tensor);
+    Assembler::add_zeros_diagonal(matrixpc);
+    matrixpc.apply("add");
     for(uint i = 0; i < bcs.size(); ++i)                             // loop over the bcs
     {
       (*bcs[i]).apply(matrixpc);                                     // FIXME: will break symmetry

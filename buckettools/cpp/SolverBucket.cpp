@@ -4,6 +4,7 @@
 #include "SystemBucket.h"
 #include "Bucket.h"
 #include "SignalHandler.h"
+#include "BucketDolfinBase.h"
 #include <dolfin.h>
 #include <string>
 #include <signal.h>
@@ -134,7 +135,9 @@ void SolverBucket::solve()
     {                                                                // satisfied
       (*iteration_count_)++;                                         // increment iteration counter
 
-      dolfin::assemble(*matrix_, *bilinear_, false);                 // assemble bilinear form
+      dolfin::assemble(*matrix_, *bilinear_, false, false, false);   // assemble bilinear form
+      Assembler::add_zeros_diagonal(*matrix_);
+      (*matrix_).apply("add");
       dolfin::assemble(*rhs_, *linear_, false);                      // assemble linear form
       for(std::vector<BoundaryCondition_ptr>::const_iterator bc =    // loop over the collected vector of system bcs
                                       (*system_).bcs_begin(); 
@@ -156,7 +159,10 @@ void SolverBucket::solve()
       if (bilinearpc_)                                               // if there's a pc associated
       {
         assert(matrixpc_);
-        dolfin::assemble(*matrixpc_, *bilinearpc_, false);           // assemble the pc
+        dolfin::assemble(*matrixpc_, *bilinearpc_, false, false, 
+                                                              false);// assemble the pc
+        Assembler::add_zeros_diagonal(*matrixpc_);
+        (*matrixpc_).apply("add");
         for(std::vector<BoundaryCondition_ptr>::const_iterator bc = 
                                           (*system_).bcs_begin(); 
                                   bc != (*system_).bcs_end(); bc++)
@@ -320,7 +326,9 @@ void SolverBucket::assemble_bilinearforms(const bool &reset_tensor)
   {
     matrix_.reset(new dolfin::PETScMatrix);                          // no, allocate one
   }
-  dolfin::assemble(*matrix_, *bilinear_, reset_tensor);              // and assemble it
+  dolfin::assemble(*matrix_, *bilinear_, reset_tensor, false, false);// and assemble it
+  Assembler::add_zeros_diagonal(*matrix_);
+  (*matrix_).apply("add");
                                                                      // don't think it's necessary to ident_zeros here?
 
   if(bilinearpc_)                                                    // do we have a pc form?
@@ -329,7 +337,10 @@ void SolverBucket::assemble_bilinearforms(const bool &reset_tensor)
     {
       matrixpc_.reset(new dolfin::PETScMatrix);                      // no, allocate one
     }
-    dolfin::assemble(*matrixpc_, *bilinearpc_, reset_tensor);        // and assemble it
+    dolfin::assemble(*matrixpc_, *bilinearpc_, reset_tensor, false, 
+                                                              false);// and assemble it
+    Assembler::add_zeros_diagonal(*matrixpc_);
+    (*matrixpc_).apply("add");
                                                                      // don't think it's necessary to ident_zeros here?
   }
 }
