@@ -916,23 +916,23 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
 
         boost::unordered_set<uint> dof_set;
 
-        buffer.str(""); buffer << optionpath << "/field[" << i <<  // are region id restrictions specified under this field?
+        buffer.str(""); buffer << optionpath << "/field[" << i <<    // are region id restrictions specified under this field?
                                                        "]/region_ids";
         if (Spud::have_option(buffer.str()))
-        {                                                          // yes...  **field+component+region(+boundary)**
+        {                                                            // yes...  **field(+component)+region(+boundary)**
           boost::unordered_set<uint> region_dof_set = region_dof_set_(buffer.str(), dofmap);
           dof_set.insert(region_dof_set.begin(), region_dof_set.end());
         }
 
-        buffer.str(""); buffer << optionpath << "/field[" << i <<  // are boundary id restrictions specified under this field?
+        buffer.str(""); buffer << optionpath << "/field[" << i <<    // are boundary id restrictions specified under this field?
                                                        "]/boundary_ids";
         if (Spud::have_option(buffer.str()))
-        {                                                          // yes... **field+component+boundary(+region)**
+        {                                                            // yes... **field(+component)+boundary(+region)**
           boost::unordered_set<uint> boundary_dof_set = boundary_dof_set_(buffer.str(), dofmap);
           dof_set.insert(boundary_dof_set.begin(), boundary_dof_set.end());
         }
 
-        if(dof_set.size()==0)                                      // **field+component**
+        if(dof_set.size()==0)                                        // **field(+component)**
         {
           dof_set = (*dofmap).dofs();
         }
