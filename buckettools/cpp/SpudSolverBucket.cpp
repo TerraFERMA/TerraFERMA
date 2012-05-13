@@ -843,7 +843,6 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
 
     for (uint i = 0; i < nfields; i++)                               // loop over the fields that have been specified
     {
-      buffer.str(""); buffer << optionpath << "/field[" << i << "]";
 
       std::string fieldname;
       buffer.str(""); buffer << optionpath << "/field[" << i <<      // get the field name
@@ -853,88 +852,21 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
       
       int fieldindex = (*(*system_).fetch_field(fieldname)).index(); // using the name, get the field index
 
-      int num_sub_elements;
+      FunctionSpace_ptr functionspace;
       if (mixedsystem)
       {
-        num_sub_elements = (*(*(*(*system_).functionspace())[fieldindex]).element()).num_sub_elements();
+        functionspace = (*(*system_).functionspace())[fieldindex];
       }
       else
       {
-        num_sub_elements = (*(*(*system_).functionspace()).element()).num_sub_elements();
+        functionspace = (*system_).functionspace();
       }
 
-      std::vector<int>* components = NULL;
-      buffer.str(""); buffer << optionpath << "/field[" << i << 
-                                                      "]/components";
-      if (Spud::have_option(buffer.str()))
-      {                                                              // yes, there are components specified...
-        components = new std::vector<int>;
-        serr = Spud::get_option(buffer.str(), *components);          // get the components
-        spud_err(buffer.str(), serr);
-        
-        std::vector<int>::iterator max_comp_it =                  
-             std::max_element((*components).begin(), (*components).end()); // check the maximum requested component exists
-        assert(*max_comp_it < num_sub_elements);
-      }
+      buffer.str(""); buffer << optionpath << "/field[" << i << "]";
+      boost::unordered_set<uint> dof_set = field_dof_set_(buffer.str(), functionspace);
 
-      for (uint i = 0; i < std::max(num_sub_elements, 1); i++)        // FIXME: won't work for tensors!!
-      {
+      tmp_child_indices.insert(tmp_child_indices.end(), dof_set.begin(), dof_set.end());
 
-        if (components)
-        {
-          std::vector<int>::iterator comp = std::find((*components).begin(), 
-                                             (*components).end(), i);
-          if (comp == (*components).end())
-          {
-            continue;                                                // component not requested so continue
-          }
-        }
-
-        boost::shared_ptr<const dolfin::GenericDofMap> dofmap;
-        if (num_sub_elements==0)
-        {
-          if (mixedsystem)
-          {
-            dofmap = (*(*(*system_).functionspace())[fieldindex]).dofmap();
-          }
-          else
-          {
-            dofmap = (*(*system_).functionspace()).dofmap();
-          }
-        }
-        else
-        {
-          if (mixedsystem)
-          {
-            dofmap = (*(*(*(*system_).functionspace())[fieldindex])[i]).dofmap();
-          }
-          else
-          {
-            dofmap = (*(*(*system_).functionspace())[i]).dofmap();
-          }
-        }
-
-        buffer.str(""); buffer << optionpath << "/field[" << i <<    // optionpath for region id restrictions under this field
-                                                       "]/region_ids";
-        boost::unordered_set<uint> dof_set = cell_dof_set_(buffer.str(), dofmap);
-
-        buffer.str(""); buffer << optionpath << "/field[" << i <<    // are boundary id restrictions specified under this field?
-                                                       "]/boundary_ids";
-        if (Spud::have_option(buffer.str()))
-        {                                                            // yes... **field(+component)+boundary(+region)**
-          boost::unordered_set<uint> boundary_dof_set = facet_dof_set_(buffer.str(), dofmap);
-          dof_set.insert(boundary_dof_set.begin(), boundary_dof_set.end());
-        }
-
-        tmp_child_indices.insert(tmp_child_indices.end(), dof_set.begin(), dof_set.end());
-
-      }
-
-      if(components)
-      {
-        delete components;
-        components = NULL;
-      }
     }
   }
 
@@ -1119,12 +1051,89 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
    
 }
 
+
+//*******************************************************************|************************************************************//
+// return a vector of dofs from the given functionspace for a field
+//*******************************************************************|************************************************************//
+boost::unordered_set<uint> SpudSolverBucket::field_dof_set_(const std::string &optionpath,
+                                                            const FunctionSpace_ptr functionspace,
+                                                            const uint parent_element,
+                                                            uint rank)
+{
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud error code
+
+  assert(rank<=2);                                                   // component logic below only makes sense for rank <= 2
+
+  boost::unordered_set<uint> dof_set;
+
+  const uint num_sub_elements = (*(*functionspace).element()).num_sub_elements();
+  if (num_sub_elements>0)
+  {
+
+    std::vector<int>* components = NULL;
+    buffer.str(""); buffer << optionpath << "/components";
+    if (Spud::have_option(buffer.str()))
+    {                                                                // yes, there are components specified...
+      components = new std::vector<int>;
+      serr = Spud::get_option(buffer.str(), *components);            // get the components
+      spud_err(buffer.str(), serr);
+      
+      std::vector<int>::iterator max_comp_it =                  
+           std::max_element((*components).begin(), (*components).end()); // check the maximum requested component exists
+      assert(*max_comp_it < (parent_element+1)*num_sub_elements);
+    }
+
+    for (uint i = 0; i < num_sub_elements; i++)
+    {
+      if (components)
+      {
+        std::vector<int>::iterator comp = std::find((*components).begin(), 
+                                           (*components).end(), 
+                                           parent_element*num_sub_elements + i);
+        if (comp == (*components).end())
+        {
+          continue;                                                  // component not requested so continue
+        }
+      }
+
+      boost::unordered_set<uint> tmp_dof_set = field_dof_set_(optionpath, (*functionspace)[i], i, rank++);
+      dof_set.insert(tmp_dof_set.begin(), tmp_dof_set.end());
+    }
+
+    if(components)
+    {
+      delete components;
+      components = NULL;
+    }
+
+    return dof_set;
+  }
+  
+  assert(num_sub_elements==0);
+
+  boost::shared_ptr<const dolfin::GenericDofMap> dofmap = (*functionspace).dofmap();
+
+  dof_set = cell_dof_set_(optionpath, dofmap);
+
+  buffer.str(""); buffer << optionpath << "/boundary_ids";           // are boundary id restrictions specified under this field?
+  if (Spud::have_option(buffer.str()))
+  {                                                                  // yes... **field(+component)+boundary(+region)**
+    boost::unordered_set<uint> facet_dof_set = facet_dof_set_(buffer.str(), dofmap);
+    dof_set.insert(facet_dof_set.begin(), facet_dof_set.end());
+  }
+
+  return dof_set;
+
+}
+
 //*******************************************************************|************************************************************//
 // return a vector of dofs from the given dofmap possibly for a subset of the region ids as specified in the optionpath
 //*******************************************************************|************************************************************//
 boost::unordered_set<uint> SpudSolverBucket::cell_dof_set_(const std::string &optionpath,
                                                              const boost::shared_ptr<const dolfin::GenericDofMap> dofmap)
 {
+  std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
 
   boost::unordered_set<uint> dof_set;
@@ -1134,11 +1143,12 @@ boost::unordered_set<uint> SpudSolverBucket::cell_dof_set_(const std::string &op
 
 
   std::vector<int>* region_ids = NULL;
-  if (Spud::have_option(optionpath))
+  buffer.str(""); buffer << optionpath << "/region_ids";
+  if (Spud::have_option(buffer.str()))
   {                                                                  // yes...  **field(+component)+region(+boundary)**
     region_ids = new std::vector<int>;
-    serr = Spud::get_option(optionpath, *region_ids);                // get the region ids
-    spud_err(optionpath, serr);
+    serr = Spud::get_option(buffer.str(), *region_ids);                // get the region ids
+    spud_err(buffer.str(), serr);
     
     cellidmeshfunction =                                             // and the region id mesh function
                   (*mesh).domains().cell_domains(*mesh);

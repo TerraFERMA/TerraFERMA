@@ -124,6 +124,11 @@ namespace buckettools
                            const std::vector<uint>* parent_indices,
                            const std::vector<uint>* sibling_indices);
 
+    boost::unordered_set<uint> field_dof_set_(const std::string &optionpath,
+                                              const FunctionSpace_ptr functionspace,
+                                              const uint parent_element=0,
+                                              uint rank=0);
+
     boost::unordered_set<uint> cell_dof_set_(const std::string &optionpath, // return a vector of dofs in a particular region
                                                const boost::shared_ptr<const dolfin::GenericDofMap> dofmap);
 
