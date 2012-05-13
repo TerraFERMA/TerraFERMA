@@ -853,99 +853,86 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
       
       int fieldindex = (*(*system_).fetch_field(fieldname)).index(); // using the name, get the field index
 
+      int num_sub_elements;
+      if (mixedsystem)
+      {
+        num_sub_elements = (*(*(*(*system_).functionspace())[fieldindex]).element()).num_sub_elements();
+      }
+      else
+      {
+        num_sub_elements = (*(*(*system_).functionspace()).element()).num_sub_elements();
+      }
+
+      std::vector<int>* components = NULL;
       buffer.str(""); buffer << optionpath << "/field[" << i << 
                                                       "]/components";
       if (Spud::have_option(buffer.str()))
       {                                                              // yes, there are components specified...
-        std::vector< int > components;
-        serr = Spud::get_option(buffer.str(), components);           // get the components
+        components = new std::vector<int>;
+        serr = Spud::get_option(buffer.str(), *components);          // get the components
         spud_err(buffer.str(), serr);
         
         std::vector<int>::iterator max_comp_it =                  
-             std::max_element(components.begin(), components.end()); // check the maximum requested component exists
-        if (mixedsystem)
+             std::max_element((*components).begin(), (*components).end()); // check the maximum requested component exists
+        assert(*max_comp_it < num_sub_elements);
+      }
+
+      for (uint i = 0; i < std::max(num_sub_elements, 1); i++)        // FIXME: won't work for tensors!!
+      {
+
+        if (components)
         {
-          assert(*max_comp_it < (*(*(*(*system_).functionspace())[fieldindex]).element()).num_sub_elements());
-        }
-        else
-        {
-          assert(*max_comp_it < (*(*(*system_).functionspace()).element()).num_sub_elements());
+          std::vector<int>::iterator comp = std::find((*components).begin(), 
+                                             (*components).end(), i);
+          if (comp == (*components).end())
+          {
+            continue;                                                // component not requested so continue
+          }
         }
 
-        for (std::vector<int>::const_iterator comp =                 // loop over the requested components
-                                      components.begin(); 
-                                      comp != components.end(); 
-                                      comp++)
+        boost::shared_ptr<const dolfin::GenericDofMap> dofmap;
+        if (num_sub_elements==0)
         {
-          boost::shared_ptr<const dolfin::GenericDofMap> dofmap;
           if (mixedsystem)
           {
-            dofmap = (*(*(*(*system_).functionspace())[fieldindex])[*comp]).dofmap();
+            dofmap = (*(*(*system_).functionspace())[fieldindex]).dofmap();
           }
           else
           {
-            dofmap = (*(*(*system_).functionspace())[*comp]).dofmap();
+            dofmap = (*(*system_).functionspace()).dofmap();
           }
-
-          boost::unordered_set<uint> dof_set;
-
-          buffer.str(""); buffer << optionpath << "/field[" << i <<  // are region id restrictions specified under this field?
-                                                         "]/region_ids";
-          if (Spud::have_option(buffer.str()))
-          {                                                          // yes...  **field+component+region(+boundary)**
-            boost::unordered_set<uint> region_dof_set = region_dof_set_(buffer.str(), dofmap);
-            dof_set.insert(region_dof_set.begin(), region_dof_set.end());
-          }
-
-          buffer.str(""); buffer << optionpath << "/field[" << i <<  // are boundary id restrictions specified under this field?
-                                                         "]/boundary_ids";
-          if (Spud::have_option(buffer.str()))
-          {                                                          // yes... **field+component+boundary(+region)**
-            boost::unordered_set<uint> boundary_dof_set = boundary_dof_set_(buffer.str(), dofmap);
-            dof_set.insert(boundary_dof_set.begin(), boundary_dof_set.end());
-          }
-
-          if(dof_set.size()==0)                                      // **field+component**
-          {
-            dof_set = (*dofmap).dofs();
-          }
-
-          tmp_child_indices.insert(tmp_child_indices.end(), dof_set.begin(), dof_set.end());
-
-        }
-
-      }
-      else                                                           // no, no components specified...
-      {
-        boost::shared_ptr<const dolfin::GenericDofMap> dofmap;
-        if (mixedsystem)
-        {
-          dofmap = (*(*(*system_).functionspace())[fieldindex]).dofmap();
         }
         else
         {
-          dofmap = (*(*system_).functionspace()).dofmap();
+          if (mixedsystem)
+          {
+            dofmap = (*(*(*(*system_).functionspace())[fieldindex])[i]).dofmap();
+          }
+          else
+          {
+            dofmap = (*(*(*system_).functionspace())[i]).dofmap();
+          }
         }
 
         boost::unordered_set<uint> dof_set;
 
-        buffer.str(""); buffer << optionpath << "/field[" << i <<    // are region id restrictions specified under this field?
+        buffer.str(""); buffer << optionpath << "/field[" << i <<  // are region id restrictions specified under this field?
                                                        "]/region_ids";
         if (Spud::have_option(buffer.str()))
-        {                                                            // yes... **field+region(+boundary)**
+        {                                                          // yes...  **field+component+region(+boundary)**
           boost::unordered_set<uint> region_dof_set = region_dof_set_(buffer.str(), dofmap);
           dof_set.insert(region_dof_set.begin(), region_dof_set.end());
         }
 
-        buffer.str(""); buffer << optionpath << "/field[" << i <<    // are boundary id restrictions specified under this field?
+        buffer.str(""); buffer << optionpath << "/field[" << i <<  // are boundary id restrictions specified under this field?
                                                        "]/boundary_ids";
         if (Spud::have_option(buffer.str()))
-        {                                                            // yes... **field+boundary(+region)**
+        {                                                          // yes... **field+component+boundary(+region)**
           boost::unordered_set<uint> boundary_dof_set = boundary_dof_set_(buffer.str(), dofmap);
           dof_set.insert(boundary_dof_set.begin(), boundary_dof_set.end());
         }
 
-        if(dof_set.size()==0)                                        // **field**
+        if(dof_set.size()==0)                                      // **field+component**
         {
           dof_set = (*dofmap).dofs();
         }
@@ -954,6 +941,11 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
 
       }
 
+      if(components)
+      {
+        delete components;
+        components = NULL;
+      }
     }
   }
 
