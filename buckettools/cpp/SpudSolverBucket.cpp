@@ -914,27 +914,16 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
           }
         }
 
-        boost::unordered_set<uint> dof_set;
-
-        buffer.str(""); buffer << optionpath << "/field[" << i <<    // are region id restrictions specified under this field?
+        buffer.str(""); buffer << optionpath << "/field[" << i <<    // optionpath for region id restrictions under this field
                                                        "]/region_ids";
-        if (Spud::have_option(buffer.str()))
-        {                                                            // yes...  **field(+component)+region(+boundary)**
-          boost::unordered_set<uint> region_dof_set = region_dof_set_(buffer.str(), dofmap);
-          dof_set.insert(region_dof_set.begin(), region_dof_set.end());
-        }
+        boost::unordered_set<uint> dof_set = cell_dof_set_(buffer.str(), dofmap);
 
         buffer.str(""); buffer << optionpath << "/field[" << i <<    // are boundary id restrictions specified under this field?
                                                        "]/boundary_ids";
         if (Spud::have_option(buffer.str()))
         {                                                            // yes... **field(+component)+boundary(+region)**
-          boost::unordered_set<uint> boundary_dof_set = boundary_dof_set_(buffer.str(), dofmap);
+          boost::unordered_set<uint> boundary_dof_set = facet_dof_set_(buffer.str(), dofmap);
           dof_set.insert(boundary_dof_set.begin(), boundary_dof_set.end());
-        }
-
-        if(dof_set.size()==0)                                        // **field(+component)**
-        {
-          dof_set = (*dofmap).dofs();
         }
 
         tmp_child_indices.insert(tmp_child_indices.end(), dof_set.begin(), dof_set.end());
@@ -1131,43 +1120,59 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
 }
 
 //*******************************************************************|************************************************************//
-// return a vector of dofs from the given dofmap for the region ids specified in the optionpath
+// return a vector of dofs from the given dofmap possibly for a subset of the region ids as specified in the optionpath
 //*******************************************************************|************************************************************//
-boost::unordered_set<uint> SpudSolverBucket::region_dof_set_(const std::string &optionpath,
+boost::unordered_set<uint> SpudSolverBucket::cell_dof_set_(const std::string &optionpath,
                                                              const boost::shared_ptr<const dolfin::GenericDofMap> dofmap)
 {
   Spud::OptionError serr;                                            // spud error code
 
   boost::unordered_set<uint> dof_set;
 
-  std::vector< int > region_ids;
-  serr = Spud::get_option(optionpath, region_ids);                   // get the region ids
-  spud_err(optionpath, serr);
-
   Mesh_ptr mesh = (*system_).mesh();                                 // get the mesh
-  MeshFunction_uint_ptr cellidmeshfunction =                         // and the region id mesh function
+  MeshFunction_uint_ptr cellidmeshfunction;
+
+
+  std::vector<int>* region_ids = NULL;
+  if (Spud::have_option(optionpath))
+  {                                                                  // yes...  **field(+component)+region(+boundary)**
+    region_ids = new std::vector<int>;
+    serr = Spud::get_option(optionpath, *region_ids);                // get the region ids
+    spud_err(optionpath, serr);
+    
+    cellidmeshfunction =                                             // and the region id mesh function
                   (*mesh).domains().cell_domains(*mesh);
+
+  }
 
   for (dolfin::CellIterator cell(*mesh); !cell.end(); ++cell)        // loop over the cells in the mesh
   {
-    int cellid = (*cellidmeshfunction)[(*cell).index()];             // get the cell region id from the mesh function
-
-    for (std::vector<int>::const_iterator id =                       // loop over the region ids that have been requested
-                                region_ids.begin(); 
-                                id != region_ids.end(); id++)
+    if (region_ids)
     {
-      if(cellid==*id)                                                // check if this cell should be included
-      {                                                              // yes...
-        std::vector<uint> dof_vec = (*dofmap).cell_dofs((*cell).index());
-        for (std::vector<uint>::const_iterator dof_it =              // loop over the cell dof
-                                dof_vec.begin(); 
-                                dof_it < dof_vec.end(); 
-                                dof_it++)
-        {
-          dof_set.insert(*dof_it);                                   // and insert each one into the unordered set
-        }                                                            // (i.e. if it hasn't been added already)
+      int cellid = (*cellidmeshfunction)[(*cell).index()];           // get the cell region id from the mesh function
+
+      std::vector<int>::iterator id = std::find((*region_ids).begin(), 
+                                             (*region_ids).end(), cellid);
+      if (id == (*region_ids).end())
+      {
+        continue;
       }
     }
+
+    std::vector<uint> dof_vec = (*dofmap).cell_dofs((*cell).index());
+    for (std::vector<uint>::const_iterator dof_it =                  // loop over the cell dof
+                            dof_vec.begin(); 
+                            dof_it < dof_vec.end(); 
+                            dof_it++)
+    {
+      dof_set.insert(*dof_it);                                       // and insert each one into the unordered set
+    }                                                                // (i.e. if it hasn't been added already)
+  }
+
+  if (region_ids)
+  {
+    delete region_ids;
+    region_ids = NULL;
   }
 
   return dof_set;
@@ -1177,7 +1182,7 @@ boost::unordered_set<uint> SpudSolverBucket::region_dof_set_(const std::string &
 //*******************************************************************|************************************************************//
 // return a vector of dofs from the given dofmap for the boundary ids specified in the optionpath
 //*******************************************************************|************************************************************//
-boost::unordered_set<uint> SpudSolverBucket::boundary_dof_set_(const std::string &optionpath,
+boost::unordered_set<uint> SpudSolverBucket::facet_dof_set_(const std::string &optionpath,
                                                                const boost::shared_ptr<const dolfin::GenericDofMap> dofmap)
 {
   Spud::OptionError serr;                                            // spud error code
