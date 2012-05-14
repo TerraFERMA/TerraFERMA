@@ -85,6 +85,15 @@ namespace buckettools
     const uint index() const                                         // return a constant unsigned integer to the index of this
     { return index_; }                                               // function in the parent system
 
+    const std::string rank() const                                   // return a string describing the rank of the function
+    { return rank_; }
+
+    const uint size() const                                          // return the size of a vector function
+    { return size_; }
+
+    const std::vector< int > shape() const                           // return the shape of a tensor function
+    { return shape_; }
+
     SystemBucket* system()                                           // return a pointer to the parent system
     { return system_; }
 

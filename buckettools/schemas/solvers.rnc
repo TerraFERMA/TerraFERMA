@@ -296,36 +296,92 @@ ident_zeros =
     }?
   )
 
-is_by_field = 
+is_field = 
   (
     ## Field to include in this index space.
     element field {
       attribute name { xsd:string },
-      ## If this field is a vector or a tensor components may be listed (indexed from 0 by row first if tensorial).
-      ##
-      ## Defaults to all components if not selected.
-      element components {
-        integer_vector
-      }?,
-      ## A list of the region ids (physical ids in gmsh).
-      ##
-      ## Defaults to the whole mesh if left unspecified.
-      element region_ids {
-        integer_vector
-      }?,
-      ## A list of the boundary ids (physical ids in gmsh).
-      ##
-      ## Defaults to the whole boundary if left unspecified.
-      element boundary_ids {
-        integer_vector
-      }?
-    }*,
+      is_field_components
+    }
+  )
+
+is_field_null = 
+  (
+    ## Field to include in this index space.
+    element field {
+      attribute name { xsd:string },
+      is_field_components,
+      (
+        ## This part of the null space is constant.
+        element constant {
+          empty
+        }|
+        ## Python function describing the null space for this field or component of this field.
+        ##
+        ## Functions may only depend on space and should be of the form:
+        ##
+        ##  def val(x):
+        ##     # Function code
+        ##     return # Return value
+        ##
+        ## or:
+        ##
+        ##  def val(x):
+        ##     # Function code
+        ##     return [..., ...] # Return value array
+        ##
+        ## The return value must have the same length as the components of this field.
+        ## 
+        ## The resulting null space will be normalized automatically.
+        element python {
+          python_code
+        }
+      )
+    }
+  )
+
+is_field_components = 
+  (
+    ## If this field is a vector or a tensor components may be listed (indexed from 0 by row first if tensorial).
+    ##
+    ## Defaults to all components if not selected.
+    element components {
+      integer_vector
+    }?,
+    ## A list of the region ids (physical ids in gmsh).
+    ##
+    ## Defaults to the whole mesh if left unspecified.
+    element region_ids {
+      integer_vector
+    }?,
+    ## A list of the boundary ids (physical ids in gmsh).
+    ##
+    ## If left unspecified, defaults to the whole boundary of the above region(s) (if specified) or the whole mesh (if region_ids are not specified).
+    element boundary_ids {
+      integer_vector
+    }?
+  )
+
+is_monitor =
+  (
     element monitors {
       ## Prints PETSc information about the index set describing this index set.
       element view_index_set {
         empty
       }?
     }
+  )
+
+is_fieldsplit =
+  (
+    is_field*,
+    is_monitor
+  )
+
+is_null_space =
+  (
+    is_field_null*,
+    is_monitor
   )
 
 linear_solver_options_top =
@@ -793,7 +849,7 @@ pcfieldsplit_options =
          ## even if they are described below (a warning will be given).
          element fieldsplit {
            attribute name { xsd:string },
-           is_by_field,
+           is_fieldsplit,
            ## Solver options for the full solve done by this preconditioner
            element linear_solver {
              linear_solver_options
@@ -913,13 +969,12 @@ generic_solver_options =
          ## Fields not included in any parent fieldsplits will be excluded from this nullspace 
          ## even if they are described below (a warning will be given).
          ##
-         ## Fields included in any sibling nullspaces will be excluded from this nullspace 
-         ## even if they are described below (a warning will be given).  NOTE: this may not
-         ## always be the desired behaviour and the code should be modified if a case is
-         ## found that requires this.
+         ## Nullspaces default to being constant over any fields described.  If no fields are specified
+         ## then the entire vector is assumed to contain a constant nullspace.  To describe variable
+         ## nullspaces python functions must be attached underneath the description of the field.
          element null_space {
            attribute name { xsd:string },
-           is_by_field
+           is_null_space
          }+,
          element monitors {
            ## Prints PETSc information about this null space
