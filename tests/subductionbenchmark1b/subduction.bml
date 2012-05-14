@@ -388,7 +388,9 @@ F = FT + Fv + Fp</string_value>
                 </preconditioner>
                 <remove_null_space>
                   <null_space name="Pressure">
-                    <field name="Pressure"/>
+                    <field name="Pressure">
+                      <constant/>
+                    </field>
                     <monitors/>
                   </null_space>
                   <monitors/>

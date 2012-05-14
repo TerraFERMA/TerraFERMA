@@ -266,10 +266,16 @@ r = rv + rp + rT</string_value>
           </preconditioner>
           <remove_null_space>
             <null_space name="Pressure">
-              <field name="Pressure"/>
-              <monitors/>
+              <field name="Pressure">
+                <constant/>
+              </field>
+              <monitors>
+                <view_index_set/>
+              </monitors>
             </null_space>
-            <monitors/>
+            <monitors>
+              <view_null_space/>
+            </monitors>
           </remove_null_space>
         </linear_solver>
         <never_ignore_solver_failures/>
@@ -314,10 +320,19 @@ r = rv + rp + rT</string_value>
           </preconditioner>
           <remove_null_space>
             <null_space name="Pressure">
-              <field name="Pressure"/>
-              <monitors/>
+              <field name="Pressure">
+                <python>
+                  <string_value type="code" lines="20" language="python">def val(x):
+  return 1.0;</string_value>
+                </python>
+              </field>
+              <monitors>
+                <view_index_set/>
+              </monitors>
             </null_space>
-            <monitors/>
+            <monitors>
+              <view_null_space/>
+            </monitors>
           </remove_null_space>
         </linear_solver>
         <never_ignore_solver_failures/>
