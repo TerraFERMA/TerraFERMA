@@ -126,14 +126,62 @@ namespace buckettools
 
     boost::unordered_set<uint> field_dof_set_(const std::string &optionpath,
                                               const FunctionSpace_ptr functionspace,
-                                              const uint parent_element=0,
-                                              uint rank=0);
+                                              const std::vector<int>* components,
+                                              const std::vector<int>* region_ids,
+                                              const std::vector<int>* boundary_ids,
+                                              const uint parent_component=0,
+                                              uint rank=0);          // set up a dof set based on a field
 
-    boost::unordered_set<uint> cell_dof_set_(const std::string &optionpath, // return a vector of dofs in a particular region
-                                               const boost::shared_ptr<const dolfin::GenericDofMap> dofmap);
+    boost::unordered_set<uint> cell_dof_set_(const boost::shared_ptr<const dolfin::GenericDofMap> dofmap,
+                                             const std::vector<int>* region_ids);
+                                                                     // set up a dof set over cells
 
-    boost::unordered_set<uint> facet_dof_set_(const std::string &optionpath, // return a vector of dofs in particular facets
-                                                 const boost::shared_ptr<const dolfin::GenericDofMap> dofmap);
+    boost::unordered_set<uint> facet_dof_set_(const boost::shared_ptr<const dolfin::GenericDofMap> dofmap,
+                                              const std::vector<int>* boundary_ids);
+                                                                     // set up a dof set over facets
+
+    void fill_nullspace_(const std::string &optionpath, 
+                         MatNullSpace &SP,
+                         const std::vector<uint>* parent_indices);   // fill a petsc null space object
+
+    void fill_nullvector_by_field_(const std::string &optionpath,    // fill a vector describing a null space
+                                   PETScVector_ptr nullvec,
+                                   const std::vector<uint>* parent_indices);
+
+    boost::unordered_map<uint, double> field_ns_map_(const std::string &optionpath,
+                                                     const FunctionSpace_ptr functionspace,
+                                                     const std::vector<int>* components,
+                                                     const std::vector<int>* region_ids,
+                                                     const std::vector<int>* boundary_ids,
+                                                     Expression_ptr ns_exp,
+                                                     const uint parent_component=0,
+                                                     uint rank=0,    // set up a map describing a null space for a field
+                                                     uint exp_index=0);
+
+    boost::unordered_map<uint, double> cell_ns_map_(const boost::shared_ptr<const dolfin::GenericDofMap> dofmap,
+                                                    const std::vector<int>* region_ids,
+                                                    Expression_ptr ns_exp, 
+                                                    const uint &exp_index);// set up a map describing a null space over cells
+
+    boost::unordered_map<uint, double> facet_ns_map_(const boost::shared_ptr<const dolfin::GenericDofMap> dofmap,
+                                                     const std::vector<int>* boundary_ids,
+                                                     Expression_ptr ns_exp, 
+                                                     const uint &exp_index);// set up a map describing a null space over a boundary
+
+    void is_by_field_restrictions_(const std::string &optionpath,
+                                   std::vector<int>* &components,
+                                   std::vector<int>* &region_ids,
+                                   std::vector<int>* &boundary_ids,
+                                   const std::string &fieldrank,
+                                   const int &fieldsize);            // set up the restrictions on an IS by field
+
+    void destroy_is_field_restrictions_(std::vector<int>* &components,// destroy the objects describing any restrictions on an IS by field
+                                        std::vector<int>* &region_ids,
+                                        std::vector<int>* &boundary_ids);
+
+    void restrict_is_indices_(std::vector<uint> &indices,            // restrict the indices describing an IS based on the parent,
+                              const std::vector<uint>* parent_indices,// sibling and parallel ownership
+                              const std::vector<uint>* sibling_indices);
 
     //***************************************************************|***********************************************************//
     // Emptying data

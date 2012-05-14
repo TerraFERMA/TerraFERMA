@@ -29,6 +29,16 @@ namespace buckettools
     // Constructors and destructors
     //***************************************************************|***********************************************************//
     
+    PythonExpression(const std::string &function);                   // specific constructor (scalar)
+    
+    PythonExpression(const uint &dim, const std::string &function);  // specific constructor (vector)
+    
+    PythonExpression(const uint &dim0, const uint &dim1,             // specific constructor (tensor)
+                     const std::string &function);
+    
+    PythonExpression(const std::vector<uint> &value_shape,           // specific constructor (alternate tensor)
+                     const std::string &function);
+    
     PythonExpression(const std::string &function, 
                                             const double_ptr time);  // specific constructor (scalar)
     
