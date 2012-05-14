@@ -1076,7 +1076,7 @@ void SpudSolverBucket::fill_nullspace_(const std::string &optionpath, MatNullSpa
     perr = MatNullSpaceView(SP, PETSC_VIEWER_STDOUT_SELF); 
     CHKERRV(perr);
     #else
-    dolfin::error("Cannot set view_null_space monitor with PETSc < 3.2.");
+    dolfin::log(dolfin::WARNING, "Cannot set view_null_space monitor with PETSc < 3.2.");
     #endif
   }
 }
