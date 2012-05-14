@@ -10,6 +10,51 @@ using namespace buckettools;
 //*******************************************************************|************************************************************//
 // specific constructor (scalar)
 //*******************************************************************|************************************************************//
+PythonExpression::PythonExpression(const std::string &function) : 
+                                                dolfin::Expression(), 
+                                                pyinst_(function)
+{
+  assert(pyinst_.number_arguments()==1);
+}
+
+//*******************************************************************|************************************************************//
+// specific constructor (vector)
+//*******************************************************************|************************************************************//
+PythonExpression::PythonExpression(const uint &dim, 
+                                   const std::string &function) : 
+                                            dolfin::Expression(dim), 
+                                            pyinst_(function)
+{
+  assert(pyinst_.number_arguments()==1);
+}
+
+//*******************************************************************|************************************************************//
+// specific constructor (tensor)
+//*******************************************************************|************************************************************//
+PythonExpression::PythonExpression(const uint &dim0, 
+                                   const uint &dim1, 
+                                   const std::string &function) : 
+                                      dolfin::Expression(dim0, dim1),
+                                      pyinst_(function)
+{
+  assert(pyinst_.number_arguments()==1);
+}
+
+//*******************************************************************|************************************************************//
+// specific constructor (alternate tensor)
+//*******************************************************************|************************************************************//
+PythonExpression::PythonExpression(const std::vector<uint> 
+                                                      &value_shape, 
+                                   const std::string &function) : 
+                                     dolfin::Expression(value_shape), 
+                                     pyinst_(function)
+{
+  assert(pyinst_.number_arguments()==1);
+}
+
+//*******************************************************************|************************************************************//
+// specific constructor (scalar)
+//*******************************************************************|************************************************************//
 PythonExpression::PythonExpression(const std::string &function, const double_ptr time) : 
                                                 dolfin::Expression(), 
                                                 pyinst_(function), 
