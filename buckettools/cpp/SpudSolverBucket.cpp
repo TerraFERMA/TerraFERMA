@@ -65,6 +65,26 @@ void SpudSolverBucket::fill()
                                                                      // any duplicated options from the options file overwrite the
                                                                      // command line)
 
+    ctx_.solver = this;                                              // the snes context just needs this class... neat, huh?
+
+    perr = SNESSetFunction(snes_, *(*res_).vec(),                    // set the snes function to use the newly allocated residual vector
+                                    FormFunction, (void *) &ctx_); 
+    CHKERRV(perr);
+
+    if (bilinearpc_)                                                 // if we have a pc form
+    {
+      assert(matrixpc_);
+      perr = SNESSetJacobian(snes_, *(*matrix_).mat(),               // set the snes jacobian to have two matrices
+                  *(*matrixpc_).mat(), FormJacobian, (void *) &ctx_); 
+      CHKERRV(perr);
+    }
+    else                                                             // otherwise
+    {
+      perr = SNESSetJacobian(snes_, *(*matrix_).mat(),               // set the snes jacobian to have the same matrix twice
+                    *(*matrix_).mat(), FormJacobian, (void *) &ctx_); 
+      CHKERRV(perr);
+    }
+
     std::string snestype;
     buffer.str(""); buffer << optionpath() << "/type/snes_type/name";
     serr = Spud::get_option(buffer.str(), snestype);                 // set the snes type... ls is most common
@@ -180,13 +200,28 @@ void SpudSolverBucket::fill()
 
     perr = KSPCreate(PETSC_COMM_WORLD, &ksp_); CHKERRV(perr);        // create a ksp object from the variable in the solverbucket
 
+    if (bilinearpc_)
+    {                                                                // if there's a pc associated
+      perr = KSPSetOperators(ksp_, *(*matrix_).mat(),                // set the ksp operators with two matrices
+                                   *(*matrixpc_).mat(), 
+                                   SAME_NONZERO_PATTERN); 
+      CHKERRV(perr);
+    }
+    else
+    {
+      perr = KSPSetOperators(ksp_, *(*matrix_).mat(),                // set the ksp operators with the same matrices
+                                   *(*matrix_).mat(), 
+                                   SAME_NONZERO_PATTERN); 
+      CHKERRV(perr);
+    }
+
     if (Spud::have_option(optionpath()+"/type/monitors/convergence_file"))
     {
       buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
                              << (*system()).name() << "_" 
                              << name() << "_picard.conv";
-      convfile_.reset( new ConvergenceFile(buffer.str(),           // allocate the file but don't write the header yet as the
-                                    (*system()).name(), name()) ); // bucket isn't complete
+      convfile_.reset( new ConvergenceFile(buffer.str(),             // allocate the file but don't write the header yet as the
+                                    (*system()).name(), name()) );   // bucket isn't complete
     }
 
     buffer.str(""); buffer << optionpath() << "/type/linear_solver"; // figure out the linear solver optionspath
@@ -198,30 +233,6 @@ void SpudSolverBucket::fill()
   else                                                               // don't know how we got here
   {
     dolfin::error("Unknown solver type.");
-  }
-
-  if(type()=="SNES")                                                 // again, if the type is snes complete the set up
-  {
-    ctx_.solver = this;
-
-    perr = SNESSetFunction(snes_, *(*res_).vec(),                    // set the snes function to use the newly allocated residual vector
-                                    FormFunction, (void *) &ctx_); 
-    CHKERRV(perr);
-
-    if (bilinearpc_)                                                 // if we have a pc form
-    {
-      assert(matrixpc_);
-      perr = SNESSetJacobian(snes_, *(*matrix_).mat(),               // set the snes jacobian to have two matrices
-                  *(*matrixpc_).mat(), FormJacobian, (void *) &ctx_); 
-      CHKERRV(perr);
-    }
-    else                                                             // otherwise
-    {
-      perr = SNESSetJacobian(snes_, *(*matrix_).mat(),               // set the snes jacobian to have the same matrix twice
-                    *(*matrix_).mat(), FormJacobian, (void *) &ctx_); 
-      CHKERRV(perr);
-    }
-
   }
 
 }
