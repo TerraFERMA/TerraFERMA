@@ -297,48 +297,31 @@ void SolverBucket::solve()
 //*******************************************************************|************************************************************//
 // assemble all linear forms (this includes initializing the vectors if necessary)
 //*******************************************************************|************************************************************//
-void SolverBucket::assemble_linearforms(const bool &reset_tensor)
+void SolverBucket::assemble_linearforms()
 {
   assert(linear_);
-  if(!rhs_)                                                          // do we have a rhs_ vector?
-  {
-    rhs_.reset(new dolfin::PETScVector);                             // no, allocate one
-  }
-  dolfin::assemble(*rhs_, *linear_, reset_tensor);                   // and assemble it
+  dolfin::assemble(*rhs_, *linear_, false);                          // and assemble it
 
   if(residual_)                                                      // do we have a residual_ form?
   {                                                                  // yes...
-    if(!res_)                                                        // do we have a res_ vector?
-    {
-      res_.reset(new dolfin::PETScVector);                           // no, allocate one
-    }
-    dolfin::assemble(*res_, *residual_, reset_tensor);               // and assemble it
+    dolfin::assemble(*res_, *residual_, false);                      // and assemble it
   }
 }
 
 //*******************************************************************|************************************************************//
 // assemble all bilinear forms (this includes initializing the matrices if necessary)
 //*******************************************************************|************************************************************//
-void SolverBucket::assemble_bilinearforms(const bool &reset_tensor)
+void SolverBucket::assemble_bilinearforms()
 {
   assert(bilinear_);
-  if(!matrix_)                                                       // do we have a matrix_ matrix?
-  {
-    matrix_.reset(new dolfin::PETScMatrix);                          // no, allocate one
-  }
-  dolfin::assemble(*matrix_, *bilinear_, reset_tensor, false, false);// and assemble it
+  dolfin::assemble(*matrix_, *bilinear_, false, false, false);       // and assemble it
   Assembler::add_zeros_diagonal(*matrix_);
   (*matrix_).apply("add");
                                                                      // don't think it's necessary to ident_zeros here?
 
   if(bilinearpc_)                                                    // do we have a pc form?
   {
-    if(!matrixpc_)                                                   // do we have a pc matrix?
-    {
-      matrixpc_.reset(new dolfin::PETScMatrix);                      // no, allocate one
-    }
-    dolfin::assemble(*matrixpc_, *bilinearpc_, reset_tensor, false, 
-                                                              false);// and assemble it
+    dolfin::assemble(*matrixpc_, *bilinearpc_, false, false, false); // and assemble it
     Assembler::add_zeros_diagonal(*matrixpc_);
     (*matrixpc_).apply("add");
                                                                      // don't think it's necessary to ident_zeros here?
@@ -388,48 +371,14 @@ void SolverBucket::initialize_diagnostics() const                    // doesn't 
 }
 
 //*******************************************************************|************************************************************//
-// perform some preassembly on the matrices and complete the snes setup (including setting up the context)
+// perform some preassembly on the tensors
 //*******************************************************************|************************************************************//
 void SolverBucket::initialize_matrices()
 {
-  PetscErrorCode perr;                                               // petsc error code variable
 
-  if (type()=="SNES")                                                // if this is a snes object then initialize the context
-  {
-    ctx_.solver = this;
-  }
-
-  assemble_bilinearforms(true);                                      // perform preassembly of the bilinear forms
-  assemble_linearforms(true);                                        // perform preassembly of the linear forms
+  assemble_bilinearforms();                                          // perform preassembly of the bilinear forms
+  assemble_linearforms();                                            // perform preassembly of the linear forms
   
-  uint syssize = (*(*(*system_).function()).vector()).size();        // set up a work vector of the correct (system) size
-  work_.reset( new dolfin::PETScVector(syssize) ); 
-
-  if(type()=="SNES")                                                 // again, if the type is snes complete the set up
-  {
-    assert(!res_);                                                   // initialize the residual vector (should only be associated
-    res_.reset( new dolfin::PETScVector(syssize) );                  // before now for picard solvers)
-
-    perr = SNESSetFunction(snes_, *(*res_).vec(),                    // set the snes function to use the newly allocated residual vector
-                                    FormFunction, (void *) &ctx_); 
-    CHKERRV(perr);
-
-    if (bilinearpc_)                                                 // if we have a pc form
-    {
-      assert(matrixpc_);
-      perr = SNESSetJacobian(snes_, *(*matrix_).mat(),               // set the snes jacobian to have two matrices
-                  *(*matrixpc_).mat(), FormJacobian, (void *) &ctx_); 
-      CHKERRV(perr);
-    }
-    else                                                             // otherwise
-    {
-      perr = SNESSetJacobian(snes_, *(*matrix_).mat(),               // set the snes jacobian to have the same matrix twice
-                    *(*matrix_).mat(), FormJacobian, (void *) &ctx_); 
-      CHKERRV(perr);
-    }
-
-  }
-
 }
 
 //*******************************************************************|************************************************************//

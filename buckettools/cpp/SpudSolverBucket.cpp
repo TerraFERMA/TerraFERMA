@@ -2,6 +2,7 @@
 #include "BoostTypes.h"
 #include "SpudSolverBucket.h"
 #include <dolfin.h>
+#include <dolfin/fem/AssemblerTools.h>
 #include <string>
 #include <spud>
 #include "SystemSolversWrapper.h"
@@ -46,6 +47,8 @@ void SpudSolverBucket::fill()
   fill_base_();                                                      // fill the base solver data: type, name etc.
 
   fill_forms_();                                                     // fill the forms data
+
+  fill_tensors_();                                                   // set up the tensor structures
 
   std::stringstream prefix;                                          // prefix buffer
   prefix.str(""); prefix << (*system_).name() << "_" << name() << "_";
@@ -235,6 +238,30 @@ void SpudSolverBucket::fill()
   else                                                               // don't know how we got here
   {
     dolfin::error("Unknown solver type.");
+  }
+
+  if(type()=="SNES")                                                 // again, if the type is snes complete the set up
+  {
+    ctx_.solver = this;
+
+    perr = SNESSetFunction(snes_, *(*res_).vec(),                    // set the snes function to use the newly allocated residual vector
+                                    FormFunction, (void *) &ctx_); 
+    CHKERRV(perr);
+
+    if (bilinearpc_)                                                 // if we have a pc form
+    {
+      assert(matrixpc_);
+      perr = SNESSetJacobian(snes_, *(*matrix_).mat(),               // set the snes jacobian to have two matrices
+                  *(*matrixpc_).mat(), FormJacobian, (void *) &ctx_); 
+      CHKERRV(perr);
+    }
+    else                                                             // otherwise
+    {
+      perr = SNESSetJacobian(snes_, *(*matrix_).mat(),               // set the snes jacobian to have the same matrix twice
+                    *(*matrix_).mat(), FormJacobian, (void *) &ctx_); 
+      CHKERRV(perr);
+    }
+
   }
 
 }
@@ -438,18 +465,11 @@ void SpudSolverBucket::fill_forms_()
     linear_      = fetch_form("Residual");
     bilinear_    = fetch_form("Jacobian");
 
-    buffer.str(""); buffer << optionpath() << "/type::SNES/form::Jacobian/ident_zeros";
-    ident_zeros_ = Spud::have_option(buffer.str());
-
     if (contains_form("JacobianPC"))                                 // is there a pc form?
     {
       bilinearpc_ = fetch_form("JacobianPC");                        // yes but
-
-      buffer.str(""); buffer << optionpath() << "/type::SNES/form::JacobianPC/ident_zeros";
-      ident_zeros_pc_ = Spud::have_option(buffer.str());
-
     }                                                                // otherwise bilinearpc_ is null (indicates self pcing)
-                                                                     // residual_ is always a null pointer for snes
+    assert(!residual_);                                              // residual_ is always a null pointer for snes
 
   }
   else if (type()=="Picard")                                         // picard solver type...
@@ -457,16 +477,9 @@ void SpudSolverBucket::fill_forms_()
     linear_      = fetch_form("Linear");
     bilinear_    = fetch_form("Bilinear");
 
-    buffer.str(""); buffer << optionpath() << "/type::Picard/form::Bilinear/ident_zeros";
-    ident_zeros_ = Spud::have_option(buffer.str());
-
     if (contains_form("BilinearPC"))                                 // is there a pc form?
     {
       bilinearpc_ = fetch_form("BilinearPC");                        // yes but
-
-      buffer.str(""); buffer << optionpath() << "/type::Picard/form::BilinearPC/ident_zeros";
-      ident_zeros_pc_ = Spud::have_option(buffer.str());
-
     }                                                                // otherwise bilinearpc_ is null (indicates self pcing)
     residual_   = fetch_form("Residual");
 
@@ -475,7 +488,82 @@ void SpudSolverBucket::fill_forms_()
   {
     dolfin::error("Unknown solver type.");
   }
+
+}
+
+//*******************************************************************|************************************************************//
+// fill the tensor structures in solver bucket assuming the buckettools schema (common for all solver types)
+// (must be called after fill_forms_)
+//*******************************************************************|************************************************************//
+void SpudSolverBucket::fill_tensors_()
+{
+  std::stringstream buffer;                                          // optionpath buffer
+   
+  matrix_.reset(new dolfin::PETScMatrix);                            // allocate the matrix
+  dolfin::AssemblerTools::init_global_tensor(*matrix_, *bilinear_, 
+                                               true, false);
+
+  if(bilinearpc_)                                                    // do we have a pc form?
+  {
+    matrixpc_.reset(new dolfin::PETScMatrix);                        // allocate the matrix
+    dolfin::AssemblerTools::init_global_tensor(*matrixpc_, *bilinearpc_, 
+                                               true, false);
+  }
      
+  rhs_.reset(new dolfin::PETScVector);                               // allocate the rhs
+  dolfin::AssemblerTools::init_global_tensor(*rhs_, *linear_, 
+                                             true, false);
+  if(residual_)                                                      // do we have a residual_ form?
+  {                                                                  // yes...
+    res_.reset(new dolfin::PETScVector);                             // allocate the residual
+    dolfin::AssemblerTools::init_global_tensor(*res_, *residual_, 
+                                               true, false);
+  }
+
+  uint syssize = (*(*(*system_).function()).vector()).size();        // set up a work vector of the correct (system) size
+  work_.reset( new dolfin::PETScVector(syssize) ); 
+
+  ident_zeros_ = false;
+  ident_zeros_pc_ = false;
+
+  if (type()=="SNES")                                                // snes solver type...
+  {
+
+    buffer.str(""); buffer << optionpath() << "/type::SNES/form::Jacobian/ident_zeros";
+    ident_zeros_ = Spud::have_option(buffer.str());
+
+    if (bilinearpc_)                                                 // is there a pc form?
+    {
+
+      buffer.str(""); buffer << optionpath() << "/type::SNES/form::JacobianPC/ident_zeros";
+      ident_zeros_pc_ = Spud::have_option(buffer.str());
+
+    }                                                                // otherwise bilinearpc_ is null (indicates self pcing)
+                                                                     // residual_ is always a null pointer for snes
+    assert(!residual_);                                              // 
+    res_.reset( new dolfin::PETScVector(syssize) );                  // but we still want to initialize the residual vector
+
+  }
+  else if (type()=="Picard")                                         // picard solver type...
+  {
+
+    buffer.str(""); buffer << optionpath() << "/type::Picard/form::Bilinear/ident_zeros";
+    ident_zeros_ = Spud::have_option(buffer.str());
+
+    if (bilinearpc_)                                                 // is there a pc form?
+    {
+
+      buffer.str(""); buffer << optionpath() << "/type::Picard/form::BilinearPC/ident_zeros";
+      ident_zeros_pc_ = Spud::have_option(buffer.str());
+
+    }                                                                // otherwise bilinearpc_ is null (indicates self pcing)
+
+  }
+  else                                                               // unknown solver type
+  {
+    dolfin::error("Unknown solver type.");
+  }
+
 }
 
 //*******************************************************************|************************************************************//
@@ -1116,7 +1204,7 @@ void SpudSolverBucket::fill_nullspace_(const std::string &optionpath, MatNullSpa
     perr = MatNullSpaceView(SP, PETSC_VIEWER_STDOUT_SELF); 
     CHKERRV(perr);
     #else
-    dolfin::error("Cannot set view_null_space monitor with PETSc < 3.2.");
+    dolfin::log(dolfin::WARNING, "Cannot set view_null_space monitor with PETSc < 3.2.");
     #endif
   }
 }

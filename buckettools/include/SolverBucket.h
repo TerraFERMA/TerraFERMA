@@ -46,9 +46,9 @@ namespace buckettools
 
     void solve();                                                    // run the nonlinear solver described by this class
 
-    void assemble_linearforms(const bool &reset_tensor);             // assemble all linear forms in this solver
+    void assemble_linearforms();                                     // assemble all linear forms in this solver
 
-    void assemble_bilinearforms(const bool &reset_tensor);           // assemble all bilinear forms in this solver
+    void assemble_bilinearforms();                                   // assemble all bilinear forms in this solver
 
     //***************************************************************|***********************************************************//
     // Filling data
