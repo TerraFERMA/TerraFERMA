@@ -697,6 +697,29 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
   perr = KSPGetPC(ksp, &pc); CHKERRV(perr);                          // get the pc from the ksp
   perr = PCSetType(pc, preconditioner.c_str()); CHKERRV(perr);       // set its type (read from options earlier)
 
+  buffer.str(""); buffer << optionpath 
+                                << "/preconditioner/near_null_space";// set a (or multiple) near null space(s)
+  if (Spud::have_option(buffer.str()))
+  {
+    #if PETSC_VERSION_RELEASE == 0
+    MatNullSpace SP;                                                 // create a set of nullspaces in a null space object
+    fill_nullspace_(buffer.str(), SP, parent_indices);
+
+    Mat AMat, PMat;
+    MatStructure flag;
+    perr = PCGetOperators(pc, &AMat, &PMat, &flag); CHKERRV(perr);
+    perr = MatSetNearNullSpace(AMat, SP); CHKERRV(perr);
+
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
+    perr = MatNullSpaceDestroy(&SP); CHKERRV(perr);                  // destroy the null space object, necessary?
+    #else
+    perr = MatNullSpaceDestroy(SP); CHKERRV(perr);                   // destroy the null space object, necessary?
+    #endif
+    #else
+    dolfin::error("Can only set near null spaces with petsc-dev.");
+    #endif
+  }
+
   if (preconditioner=="ksp")                                         // if the pc is itself a ksp
   {
     buffer.str(""); buffer << optionpath << 
