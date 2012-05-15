@@ -410,6 +410,7 @@ r = rv + rp + rT</string_value>
             </max_iterations>
             <monitors>
               <preconditioned_residual/>
+              <test_null_space/>
             </monitors>
           </iterative_method>
           <preconditioner name="fieldsplit">
@@ -477,15 +478,6 @@ r = rv + rp + rT</string_value>
                     </linear_solver>
                   </fieldsplit>
                 </preconditioner>
-                <remove_null_space>
-                  <null_space name="Pressure">
-                    <field name="Pressure">
-                      <constant/>
-                    </field>
-                    <monitors/>
-                  </null_space>
-                  <monitors/>
-                </remove_null_space>
               </linear_solver>
             </fieldsplit>
             <fieldsplit name="Temperature">
