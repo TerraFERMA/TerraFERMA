@@ -343,9 +343,6 @@ void SpudSolverBucket::fill_base_()
   iteration_count_.reset( new int );
   *iteration_count_ = 0;
 
-  kspnullspacemonitor_.reset( new bool );
-  *kspnullspacemonitor_ = false;
-
   copy_ = false;
 
   buffer.str(""); buffer << optionpath() << 
@@ -602,20 +599,23 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
       CHKERRV(perr);
     }
 
-    if (Spud::have_option(optionpath+"/iterative_method/monitors/convergence_file")||
-        Spud::have_option(optionpath+"/iterative_method/monitors/test_null_space"))
+    if (Spud::have_option(optionpath+"/iterative_method/monitors/convergence_file"))
     {
       kspmctx_.solver = this;
-      if (Spud::have_option(optionpath+"/iterative_method/monitors/convergence_file"))
-      {
-        buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
-                               << (*system()).name() << "_" 
-                               << name() << "_ksp.conv";
-        kspconvfile_.reset( new KSPConvergenceFile(buffer.str(),     // allocate the file but don't write the header yet as the
-                                      (*system()).name(), name()) ); // bucket isn't complete
-      }
-      *kspnullspacemonitor_ = Spud::have_option(optionpath+"/iterative_method/monitors/test_null_space");
+      buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
+                             << (*system()).name() << "_" 
+                             << name() << "_ksp.conv";
+      kspconvfile_.reset( new KSPConvergenceFile(buffer.str(),       // allocate the file but don't write the header yet as the
+                                    (*system()).name(), name()) );   // bucket isn't complete
       perr = KSPMonitorSet(ksp, KSPCustomMonitor, 
+                                             &kspmctx_, PETSC_NULL); 
+      CHKERRV(perr);
+    }
+
+    if (Spud::have_option(optionpath+"/iterative_method/monitors/test_null_space"))
+    {
+      kspmctx_.solver = this;
+      perr = KSPMonitorSet(ksp, KSPNullSpaceMonitor, 
                                              &kspmctx_, PETSC_NULL); 
       CHKERRV(perr);
     }

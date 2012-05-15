@@ -920,6 +920,10 @@ iterative_monitors_base =
      ## has been linked with the X library.
      element preconditioned_residual_graph {
         empty
+     }?,
+     ## Test any attached null spaces on the first iteration of the solve.
+     element test_null_space {
+       empty
      }?
   )
 
@@ -927,10 +931,6 @@ iterative_monitors_vis =
   (
     ## Output a diagnostic file detailing the convergence of this solver.
     element convergence_file { 
-      empty
-    }?,
-    ## Test any attached null spaces on the first iteration of the solve.
-    element test_null_space {
       empty
     }?
   )

@@ -1043,17 +1043,17 @@ has been linked with the X library.</a:documentation>
         <empty/>
       </element>
     </optional>
+    <optional>
+      <element name="test_null_space">
+        <a:documentation>Test any attached null spaces on the first iteration of the solve.</a:documentation>
+        <empty/>
+      </element>
+    </optional>
   </define>
   <define name="iterative_monitors_vis">
     <optional>
       <element name="convergence_file">
         <a:documentation>Output a diagnostic file detailing the convergence of this solver.</a:documentation>
-        <empty/>
-      </element>
-    </optional>
-    <optional>
-      <element name="test_null_space">
-        <a:documentation>Test any attached null spaces on the first iteration of the solve.</a:documentation>
         <empty/>
       </element>
     </optional>

@@ -34,6 +34,9 @@ namespace buckettools
   PetscErrorCode KSPCustomMonitor(KSP ksp, int it,                   // petsc ksp callback function to output a 
                                       PetscReal rnorm, void* mctx);  // convergence file
 
+  PetscErrorCode KSPNullSpaceMonitor(KSP ksp, int it,                // petsc ksp callback function to test a
+                                     PetscReal rnorm, void* mctx);   // null space
+
 }
 
 #endif

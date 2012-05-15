@@ -299,8 +299,21 @@ PetscErrorCode buckettools::KSPCustomMonitor(KSP ksp, int it,
 
   }
 
-  if ((*solver).kspnullspace_monitor() && (it==0))
+  PetscFunctionReturn(0);
+}
+
+//*******************************************************************|************************************************************//
+// define the petsc ksp monitor callback function that tests the null space
+//*******************************************************************|************************************************************//
+PetscErrorCode buckettools::KSPNullSpaceMonitor(KSP ksp, int it,
+                                                PetscReal rnorm, void* mctx)
+{
+  if (it==0)
   {
+    dolfin::log(dolfin::INFO, "In KSPNullSpaceMonitor");
+
+    PetscErrorCode perr;                                             // petsc error code
+
     MatNullSpace SP;
 
     perr = KSPGetNullSpace(ksp, &SP); CHKERRQ(perr);
