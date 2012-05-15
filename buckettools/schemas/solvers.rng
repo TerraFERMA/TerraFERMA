@@ -493,6 +493,8 @@ by the PETSc library. Many more methods are provided.</a:documentation>
       <ref name="pclu_options"/>
       <ref name="pcprometheus_options"/>
       <ref name="pchypre_options"/>
+      <ref name="pcgamg_options_top"/>
+      <ref name="pcml_options_top"/>
       <ref name="pcjacobi_options"/>
       <ref name="pcbjacobi_options"/>
       <ref name="pcasm_options"/>
@@ -522,6 +524,8 @@ by the PETSc library. Many more methods are provided.</a:documentation>
       <ref name="pclu_options"/>
       <ref name="pcprometheus_options"/>
       <ref name="pchypre_options"/>
+      <ref name="pcgamg_options"/>
+      <ref name="pcml_options"/>
       <ref name="pcjacobi_options"/>
       <ref name="pcbjacobi_options"/>
       <ref name="pcasm_options"/>
@@ -814,6 +818,104 @@ Useful for parallel direct solves (if installed on system).</a:documentation>
       </choice>
     </element>
   </define>
+  <define name="pcgamg_options_top">
+    <element name="preconditioner">
+      <a:documentation>The Geometric-Algrbraic MultiGrid Method
+
+NOTE: Only available with petsc-dev.</a:documentation>
+      <attribute name="name">
+        <value>gamg</value>
+      </attribute>
+      <optional>
+        <element name="near_null_space">
+          <a:documentation>Set a near null-space for this preconditioner.</a:documentation>
+          <oneOrMore>
+            <element name="null_space">
+              <a:documentation>Describe the null spaces.  Names must be unique within this near null space setting.
+
+Fields not included in any parent fieldsplits will be excluded from this nullspace 
+even if they are described below (a warning will be given).
+
+Nullspaces default to being constant over any fields described.  If no fields are specified
+then the entire vector is assumed to contain a constant nullspace.  To describe variable
+nullspaces python functions must be attached underneath the description of the field.</a:documentation>
+              <attribute name="name">
+                <data type="string"/>
+              </attribute>
+              <ref name="is_null_space"/>
+            </element>
+          </oneOrMore>
+          <element name="monitors">
+            <optional>
+              <element name="view_null_space">
+                <a:documentation>Prints PETSc information about this null space</a:documentation>
+                <empty/>
+              </element>
+            </optional>
+          </element>
+        </element>
+      </optional>
+    </element>
+  </define>
+  <define name="pcgamg_options">
+    <element name="preconditioner">
+      <a:documentation>The Geometric-Algrbraic MultiGrid Method
+
+NOTE: Only available with petsc-dev.</a:documentation>
+      <attribute name="name">
+        <value>gamg</value>
+      </attribute>
+    </element>
+  </define>
+  <define name="pcml_options_top">
+    <element name="preconditioner">
+      <a:documentation>The ML MultiGrid Method
+
+NOTE: Only available if petsc is configured with ml!</a:documentation>
+      <attribute name="name">
+        <value>ml</value>
+      </attribute>
+      <optional>
+        <element name="near_null_space">
+          <a:documentation>Set a near null-space for this preconditioner.</a:documentation>
+          <oneOrMore>
+            <element name="null_space">
+              <a:documentation>Describe the null spaces.  Names must be unique within this near null space setting.
+
+Fields not included in any parent fieldsplits will be excluded from this nullspace 
+even if they are described below (a warning will be given).
+
+Nullspaces default to being constant over any fields described.  If no fields are specified
+then the entire vector is assumed to contain a constant nullspace.  To describe variable
+nullspaces python functions must be attached underneath the description of the field.</a:documentation>
+              <attribute name="name">
+                <data type="string"/>
+              </attribute>
+              <ref name="is_null_space"/>
+            </element>
+          </oneOrMore>
+          <element name="monitors">
+            <optional>
+              <element name="view_null_space">
+                <a:documentation>Prints PETSc information about this null space</a:documentation>
+                <empty/>
+              </element>
+            </optional>
+          </element>
+        </element>
+      </optional>
+    </element>
+  </define>
+  <define name="pcml_options">
+    <element name="preconditioner">
+      <a:documentation>The ML MultiGrid Method
+
+NOTE: Only available if petsc is configured with ml!</a:documentation>
+      <attribute name="name">
+        <value>ml</value>
+      </attribute>
+    </element>
+  </define>
   <define name="pcjacobi_options">
     <element name="preconditioner">
       <a:documentation>Jacobi</a:documentation>
@@ -867,6 +969,8 @@ than with bjacobi.</a:documentation>
       <ref name="pcmg_options"/>
       <ref name="pcprometheus_options"/>
       <ref name="pchypre_options"/>
+      <ref name="pcgamg_options"/>
+      <ref name="pcml_options"/>
       <ref name="pcother_options"/>
     </choice>
   </define>
