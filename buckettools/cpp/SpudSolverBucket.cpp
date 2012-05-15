@@ -1435,6 +1435,10 @@ boost::unordered_map<uint, double> SpudSolverBucket::field_ns_map_(const std::st
         }
         exp_index = comp - (*components).begin();                    // work out the index into the expression for this component
       }
+      else
+      {
+        exp_index = i;
+      }
 
       boost::unordered_map<uint, double> tmp_ns_map;
       tmp_ns_map = field_ns_map_(optionpath, (*functionspace)[i], 
@@ -1654,7 +1658,7 @@ void SpudSolverBucket::is_by_field_restrictions_(const std::string &optionpath,
            std::max_element((*components).begin(), (*components).end()); // check the maximum requested component exists
       
       assert(*max_comp_it < fieldsize);
-      assert((*components).size() < fieldsize);
+      assert((*components).size() <= fieldsize);
     }
     else
     {
