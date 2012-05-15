@@ -96,13 +96,15 @@ namespace buckettools
  
     void fill_forms_();                                              // fill the form data of the solver bucket
 
+    void fill_tensors_();                                            // fill the tensor data structures of the solver bucket
+
     void fill_ksp_(const std::string &optionpath, KSP &ksp, 
                                   const std::string prefix)          // fill the information about a parent ksp
     { fill_ksp_(optionpath, ksp, prefix, NULL, NULL); }
 
     void fill_ksp_(const std::string &optionpath, KSP &ksp, 
                                   const std::string prefix,
-                                  SNES *snes)                  // fill the information about a parent ksp
+                                  SNES *snes)                        // fill the information about a parent ksp
     { fill_ksp_(optionpath, ksp, prefix, NULL, snes); }
 
     void fill_ksp_(const std::string &optionpath, KSP &ksp, 
