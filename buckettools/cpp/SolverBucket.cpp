@@ -135,22 +135,31 @@ void SolverBucket::solve()
     {                                                                // satisfied
       (*iteration_count_)++;                                         // increment iteration counter
 
-      dolfin::assemble(*matrix_, *bilinear_, false, false, false);   // assemble bilinear form
+      dolfin::symmetric_assemble(*matrix_, *matrixbc_, 
+                                 *bilinear_, (*system_).dirichletbcs(), 
+                                 NULL, NULL, NULL, 
+                                 false, false, false);               // assemble bilinear form
       Assembler::add_zeros_diagonal(*matrix_);
       (*matrix_).apply("add");
+      Assembler::add_zeros_diagonal(*matrixbc_);
+      (*matrixbc_).apply("add");
       dolfin::assemble(*rhs_, *linear_, false);                      // assemble linear form
       for(std::vector< const dolfin::DirichletBC* >::const_iterator  // loop over the collected vector of system bcs
                         bc = (*system_).dirichletbcs_begin(); 
                         bc != (*system_).dirichletbcs_end(); bc++)
       {
-        (*(*bc)).apply(*matrix_, *rhs_);                             // apply the bcs to the matrix and rhs 
+        (*(*bc)).apply(*rhs_);                                       // apply the bcs to the rhs 
       }
+      (*matrixbc_).mult(*rhs_, *rhsbc_);
+      *rhs_ -= *rhsbc_;
+
       for(std::vector<ReferencePoints_ptr>::const_iterator p =       // loop over the collected vector of system reference points
                                       (*system_).points_begin(); 
                                   p != (*system_).points_end(); p++)
       {
         (*(*p)).apply(*matrix_, *rhs_);                              // apply the reference points to the matrix and rhs
       }
+
       if(ident_zeros_)
       {
         (*matrix_).ident_zeros();
@@ -159,16 +168,14 @@ void SolverBucket::solve()
       if (bilinearpc_)                                               // if there's a pc associated
       {
         assert(matrixpc_);
-        dolfin::assemble(*matrixpc_, *bilinearpc_, false, false, 
-                                                              false);// assemble the pc
+        dolfin::symmetric_assemble(*matrixpc_, *matrixbc_, 
+                                   *bilinearpc_, (*system_).dirichletbcs(), 
+                                   NULL, NULL, NULL, 
+                                   false, false, false);             // assemble the pc
         Assembler::add_zeros_diagonal(*matrixpc_);
         (*matrixpc_).apply("add");
-        for(std::vector< const dolfin::DirichletBC* >::const_iterator bc = 
-                                  (*system_).dirichletbcs_begin(); 
-                                  bc != (*system_).dirichletbcs_end(); bc++)
-        {
-          (*(*bc)).apply(*matrixpc_, *rhs_);                         // apply the collected vector of system bcs
-        }
+        Assembler::add_zeros_diagonal(*matrixbc_);
+        (*matrixbc_).apply("add");
 
         for(std::vector<ReferencePoints_ptr>::const_iterator p =     // loop over the collected vector of system reference points
                                         (*system_).points_begin(); 

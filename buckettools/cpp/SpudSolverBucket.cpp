@@ -471,6 +471,10 @@ void SpudSolverBucket::fill_tensors_()
   dolfin::AssemblerTools::init_global_tensor(*matrix_, *bilinear_, 
                                                true, false);
 
+  matrixbc_.reset(new dolfin::PETScMatrix);                          // allocate the matrix for the lifted bcs
+  dolfin::AssemblerTools::init_global_tensor(*matrixbc_, *bilinear_, 
+                                               true, false);
+
   if(bilinearpc_)                                                    // do we have a pc form?
   {
     matrixpc_.reset(new dolfin::PETScMatrix);                        // allocate the matrix
@@ -481,6 +485,11 @@ void SpudSolverBucket::fill_tensors_()
   rhs_.reset(new dolfin::PETScVector);                               // allocate the rhs
   dolfin::AssemblerTools::init_global_tensor(*rhs_, *linear_, 
                                              true, false);
+
+  rhsbc_.reset(new dolfin::PETScVector);                             // allocate the rhs
+  dolfin::AssemblerTools::init_global_tensor(*rhsbc_, *linear_, 
+                                             true, false);
+
   if(residual_)                                                      // do we have a residual_ form?
   {                                                                  // yes...
     res_.reset(new dolfin::PETScVector);                             // allocate the residual
