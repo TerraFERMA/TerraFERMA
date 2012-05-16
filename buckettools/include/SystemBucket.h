@@ -230,18 +230,18 @@ namespace buckettools
     // BC data access
     //***************************************************************|***********************************************************//
 
-    std::vector<BoundaryCondition_ptr>::iterator bcs_begin();        // return an iterator to the beginning of the system bcs
+    std::vector< const dolfin::DirichletBC* >::iterator dirichletbcs_begin();// return an iterator to the beginning of the system bcs
 
-    std::vector<BoundaryCondition_ptr>::const_iterator bcs_begin()   // return a constant iterator to the beginning of the system
+    std::vector< const dolfin::DirichletBC* >::const_iterator dirichletbcs_begin()// return a constant iterator to the beginning of the system
                                                           const;     // bcs
 
-    std::vector<BoundaryCondition_ptr>::iterator bcs_end();          // return an iterator to the end of the system bcs
+    std::vector< const dolfin::DirichletBC* >::iterator dirichletbcs_end();  // return an iterator to the end of the system bcs
 
-    std::vector<BoundaryCondition_ptr>::const_iterator bcs_end()     // return a constant iterator to the end of the system bcs
+    std::vector< const dolfin::DirichletBC* >::const_iterator dirichletbcs_end()// return a constant iterator to the end of the system bcs
                                                           const;
 
-    const std::vector< BoundaryCondition_ptr > bcs() const           // return a constant vector of system bcs
-    { return bcs_; }
+    const std::vector< const dolfin::DirichletBC* > dirichletbcs() const     // return a constant vector of system bcs
+    { return dirichletbcs_; }
     
     //***************************************************************|***********************************************************//
     // Reference point data access
@@ -385,7 +385,7 @@ namespace buckettools
     std::map< int, SolverBucket_ptr > orderedsolvers_;               // an ordered (user defined) map to
                                                                      // (boost shared) pointers to solver buckets
 
-    std::vector< BoundaryCondition_ptr > bcs_;                       // a vector of (boost shared) poitners to bcs
+    std::vector< const dolfin::DirichletBC* > dirichletbcs_;         // a vector of (boost shared) poitners to the dirichlet bcs
 
     std::vector< ReferencePoints_ptr > points_;                       // a vector of (boost shared) poitners to reference points
 

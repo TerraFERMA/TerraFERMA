@@ -2,6 +2,7 @@
 #include "ReferencePoints.h"
 #include <dolfin.h>
 #include <string>
+#include <limits>
 
 using namespace buckettools;
 
@@ -95,6 +96,7 @@ void ReferencePoints::apply(dolfin::GenericMatrix* A,
 
   check_arguments_(A, b, x);                                         // check arguments
 
+  const double spring = std::numeric_limits<double>::max()*std::numeric_limits<double>::epsilon();
 
   const uint size = dof_.size();
   std::vector<double> values(size, 0.0);
@@ -108,13 +110,33 @@ void ReferencePoints::apply(dolfin::GenericMatrix* A,
 
   if (b)
   {
+    if (A)
+    {
+      for (uint i = 0; i < size; i++)
+      {
+        values[i] = values[i]*spring;
+      }
+    }
+
     (*b).set(&values[0], size, &dof_[0]);
     (*b).apply("insert");
   }
 
   if (A)
   {
-    (*A).ident(size, &dof_[0]);
+    std::vector< const std::vector<uint>* > block_dofs(2);
+    std::vector< uint > row(1);
+    for (uint i = 0; i < 2; ++i )
+    {
+      block_dofs[i] = &row;
+    }
+    
+    for (uint i = 0; i < size; i++)
+    {
+      row[0] = dof_[i];
+      (*A).add(&spring, block_dofs);
+    }
+    
     (*A).apply("add");
   }
 }
