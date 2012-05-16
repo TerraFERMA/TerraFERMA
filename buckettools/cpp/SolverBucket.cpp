@@ -83,9 +83,9 @@ void SolverBucket::solve()
     assert(residual_);                                               // we need to assemble the residual again here as it may depend
                                                                      // on other systems that have been solved since the last call
     dolfin::assemble(*res_, *residual_, false);                      // assemble the residual
-    for(std::vector<BoundaryCondition_ptr>::const_iterator bc = 
-                                    (*system_).bcs_begin(); 
-                                bc != (*system_).bcs_end(); bc++)
+    for(std::vector< const dolfin::DirichletBC* >::const_iterator bc = 
+                          (*system_).dirichletbcs_begin(); 
+                          bc != (*system_).dirichletbcs_end(); bc++)
     {                                                                // apply bcs to residuall (should we do this?!)
       (*(*bc)).apply(*res_, (*(*(*system_).iteratedfunction()).vector()));
     }
@@ -139,9 +139,9 @@ void SolverBucket::solve()
       Assembler::add_zeros_diagonal(*matrix_);
       (*matrix_).apply("add");
       dolfin::assemble(*rhs_, *linear_, false);                      // assemble linear form
-      for(std::vector<BoundaryCondition_ptr>::const_iterator bc =    // loop over the collected vector of system bcs
-                                      (*system_).bcs_begin(); 
-                                  bc != (*system_).bcs_end(); bc++)
+      for(std::vector< const dolfin::DirichletBC* >::const_iterator  // loop over the collected vector of system bcs
+                        bc = (*system_).dirichletbcs_begin(); 
+                        bc != (*system_).dirichletbcs_end(); bc++)
       {
         (*(*bc)).apply(*matrix_, *rhs_);                             // apply the bcs to the matrix and rhs 
       }
@@ -163,9 +163,9 @@ void SolverBucket::solve()
                                                               false);// assemble the pc
         Assembler::add_zeros_diagonal(*matrixpc_);
         (*matrixpc_).apply("add");
-        for(std::vector<BoundaryCondition_ptr>::const_iterator bc = 
-                                          (*system_).bcs_begin(); 
-                                  bc != (*system_).bcs_end(); bc++)
+        for(std::vector< const dolfin::DirichletBC* >::const_iterator bc = 
+                                  (*system_).dirichletbcs_begin(); 
+                                  bc != (*system_).dirichletbcs_end(); bc++)
         {
           (*(*bc)).apply(*matrixpc_, *rhs_);                         // apply the collected vector of system bcs
         }
@@ -174,7 +174,7 @@ void SolverBucket::solve()
                                         (*system_).points_begin(); 
                                     p != (*system_).points_end(); p++)
         {
-          (*(*p)).apply(*matrixpc_, *rhs_);                          // apply the reference points to the matrix and rhs
+          (*(*p)).apply(*matrixpc_);                                 // apply the reference points to the pc matrix
         }
 
         if(ident_zeros_pc_)
@@ -183,8 +183,8 @@ void SolverBucket::solve()
         }
 
         perr = KSPSetOperators(ksp_, *(*matrix_).mat(),              // set the ksp operators with two matrices
-                                      *(*matrixpc_).mat(), 
-                                        SAME_NONZERO_PATTERN); 
+                                     *(*matrixpc_).mat(), 
+                                     SAME_NONZERO_PATTERN); 
         CHKERRV(perr);
       }
       else
@@ -237,9 +237,9 @@ void SolverBucket::solve()
 
       assert(residual_);
       dolfin::assemble(*res_, *residual_, false);                    // assemble the residual
-      for(std::vector<BoundaryCondition_ptr>::const_iterator bc = 
-                                      (*system_).bcs_begin(); 
-                                  bc != (*system_).bcs_end(); bc++)
+      for(std::vector< const dolfin::DirichletBC* >::const_iterator bc = 
+                             (*system_).dirichletbcs_begin(); 
+                             bc != (*system_).dirichletbcs_end(); bc++)
       {                                                              // apply bcs to residual (should we do this?!)
         (*(*bc)).apply(*res_, (*(*(*system_).iteratedfunction()).vector()));
       }
