@@ -69,6 +69,13 @@ void SolverBucket::solve()
 
   if (type()=="SNES")                                                // this is a petsc snes solver - FIXME: switch to an enumerated type
   {
+    for(std::vector< const dolfin::DirichletBC* >::const_iterator    // loop over the collected vector of system bcs
+                      bc = (*system_).dirichletbcs_begin(); 
+                      bc != (*system_).dirichletbcs_end(); bc++)
+    {
+      (*(*bc)).apply(*(*(*system_).function()).vector());            // apply the bcs to the solution and
+      (*(*bc)).apply(*(*(*system_).iteratedfunction()).vector());    // iterated solution
+    }
     *work_ = (*(*(*system_).function()).vector());                   // set the work vector to the function vector
     perr = SNESSolve(snes_, PETSC_NULL, *(*work_).vec());            // call petsc to perform a snes solve
     CHKERRV(perr);
