@@ -4,10 +4,10 @@
 #include "SystemBucket.h"
 #include "Bucket.h"
 #include "SignalHandler.h"
-#include "BucketDolfinBase.h"
 #include <dolfin.h>
 #include <string>
 #include <signal.h>
+#include "BucketDolfinBase.h"
 
 using namespace buckettools;
 
@@ -138,11 +138,7 @@ void SolverBucket::solve()
       dolfin::symmetric_assemble(*matrix_, *matrixbc_, 
                                  *bilinear_, (*system_).dirichletbcs(), 
                                  NULL, NULL, NULL, 
-                                 false, false, false);               // assemble bilinear form
-      Assembler::add_zeros_diagonal(*matrix_);
-      (*matrix_).apply("add");
-      Assembler::add_zeros_diagonal(*matrixbc_);
-      (*matrixbc_).apply("add");
+                                 false);                             // assemble bilinear form
       dolfin::assemble(*rhs_, *linear_, false);                      // assemble linear form
       for(std::vector< const dolfin::DirichletBC* >::const_iterator  // loop over the collected vector of system bcs
                         bc = (*system_).dirichletbcs_begin(); 
@@ -171,11 +167,7 @@ void SolverBucket::solve()
         dolfin::symmetric_assemble(*matrixpc_, *matrixbc_, 
                                    *bilinearpc_, (*system_).dirichletbcs(), 
                                    NULL, NULL, NULL, 
-                                   false, false, false);             // assemble the pc
-        Assembler::add_zeros_diagonal(*matrixpc_);
-        (*matrixpc_).apply("add");
-        Assembler::add_zeros_diagonal(*matrixbc_);
-        (*matrixbc_).apply("add");
+                                   false);                           // assemble the pc
 
         for(std::vector<ReferencePoints_ptr>::const_iterator p =     // loop over the collected vector of system reference points
                                         (*system_).points_begin(); 
@@ -321,17 +313,26 @@ void SolverBucket::assemble_linearforms()
 void SolverBucket::assemble_bilinearforms()
 {
   assert(bilinear_);
-  dolfin::assemble(*matrix_, *bilinear_, false, false, false);       // and assemble it
-  Assembler::add_zeros_diagonal(*matrix_);
+  dolfin::symmetric_assemble(*matrix_, *matrixbc_, 
+                             *bilinear_, (*system_).dirichletbcs(), 
+                             NULL, NULL, NULL, 
+                             false, false, false);                   // assemble bilinear form
+  Assembler::add_zeros_diagonal(*matrix_);                           // add zeros to the diagonal to ensure they remain in sparsity
   (*matrix_).apply("add");
-                                                                     // don't think it's necessary to ident_zeros here?
+  Assembler::add_zeros_diagonal(*matrixbc_);                         // add zeros to the diagonal to ensure they remain in sparsity
+  (*matrixbc_).apply("add");
 
   if(bilinearpc_)                                                    // do we have a pc form?
   {
-    dolfin::assemble(*matrixpc_, *bilinearpc_, false, false, false); // and assemble it
-    Assembler::add_zeros_diagonal(*matrixpc_);
+    dolfin::symmetric_assemble(*matrixpc_, *matrixbc_, 
+                               *bilinear_, (*system_).dirichletbcs(), 
+                               NULL, NULL, NULL, 
+                               false, false, false);                   // assemble bilinear form
+    Assembler::add_zeros_diagonal(*matrixpc_);                       // add zeros to the diagonal to ensure they remain in sparsity
     (*matrixpc_).apply("add");
-                                                                     // don't think it's necessary to ident_zeros here?
+    Assembler::add_zeros_diagonal(*matrixbc_);                         // add zeros to the diagonal to ensure they remain in sparsity
+    (*matrixbc_).apply("add");
+
   }
 }
 
