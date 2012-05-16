@@ -2,7 +2,6 @@
 #include <dolfin.h>
 #include "petscsnes.h"
 #include "BucketPETScBase.h"
-#include "BucketDolfinBase.h"
 #include "SolverBucket.h"
 
 using namespace buckettools;
@@ -46,13 +45,12 @@ PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f,
   Vec_ptr px(&x, dolfin::NoDeleter());                               // convert the iterated snes vector
   Vec_ptr pf(&f, dolfin::NoDeleter());                               // convert the rhs snes vector
   dolfin::PETScVector rhs(pf), iteratedvec(px);
-  bool reset_tensor = false;                                         // never reset the tensor
 
   (*(*iteratedfunction).vector()) = iteratedvec;                     // update the iterated system bucket function
 
   (*bucket).update_nonlinear();                                      // update nonlinear coefficients
 
-  dolfin::assemble(rhs, *(*solver).linear_form(), reset_tensor);     // assemble the rhs from the context linear form
+  dolfin::assemble(rhs, *(*solver).linear_form(), false);            // assemble the rhs from the context linear form
   for(uint i = 0; i < bcs.size(); ++i)                               // loop over the bcs
   {
     (*bcs[i]).apply(rhs, iteratedvec);
@@ -133,16 +131,12 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
   Mat_ptr pA(A, dolfin::NoDeleter());                                // convert the snes matrix
   Mat_ptr pB(B, dolfin::NoDeleter());                                // convert the snes matrix pc
   dolfin::PETScMatrix matrix(pA), matrixpc(pB);
-  bool reset_tensor = false;                                         // never reset the tensor
 
   (*(*iteratedfunction).vector()) = iteratedvec;                     // update the iterated system bucket function
 
   (*bucket).update_nonlinear();                                      // update nonlinear coefficients
 
-  dolfin::assemble(matrix, *(*solver).bilinear_form(), reset_tensor, 
-                                                       false, false);// assemble the matrix from the context bilinear form
-  Assembler::add_zeros_diagonal(matrix);
-  matrix.apply("add");
+  dolfin::assemble(matrix, *(*solver).bilinear_form(), false);       // assemble the matrix from the context bilinear form
   for(uint i = 0; i < bcs.size(); ++i)                               // loop over the bcs
   {
     (*bcs[i]).apply(matrix);                                         // FIXME: will break symmetry?
@@ -159,9 +153,7 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
   if ((*solver).bilinearpc_form())                                   // do we have a different bilinear pc form associated?
   {
     dolfin::assemble(matrixpc, (*(*solver).bilinearpc_form()),       // assemble the matrix pc from the context bilinear pc form
-                                                      reset_tensor);
-    Assembler::add_zeros_diagonal(matrixpc);
-    matrixpc.apply("add");
+                                                      false);
     for(uint i = 0; i < bcs.size(); ++i)                             // loop over the bcs
     {
       (*bcs[i]).apply(matrixpc);                                     // FIXME: will break symmetry
