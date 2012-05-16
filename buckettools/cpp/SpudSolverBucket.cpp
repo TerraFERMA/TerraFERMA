@@ -65,26 +65,6 @@ void SpudSolverBucket::fill()
                                                                      // any duplicated options from the options file overwrite the
                                                                      // command line)
 
-    ctx_.solver = this;                                              // the snes context just needs this class... neat, huh?
-
-    perr = SNESSetFunction(snes_, *(*res_).vec(),                    // set the snes function to use the newly allocated residual vector
-                                    FormFunction, (void *) &ctx_); 
-    CHKERRV(perr);
-
-    if (bilinearpc_)                                                 // if we have a pc form
-    {
-      assert(matrixpc_);
-      perr = SNESSetJacobian(snes_, *(*matrix_).mat(),               // set the snes jacobian to have two matrices
-                  *(*matrixpc_).mat(), FormJacobian, (void *) &ctx_); 
-      CHKERRV(perr);
-    }
-    else                                                             // otherwise
-    {
-      perr = SNESSetJacobian(snes_, *(*matrix_).mat(),               // set the snes jacobian to have the same matrix twice
-                    *(*matrix_).mat(), FormJacobian, (void *) &ctx_); 
-      CHKERRV(perr);
-    }
-
     std::string snestype;
     buffer.str(""); buffer << optionpath() << "/type/snes_type/name";
     serr = Spud::get_option(buffer.str(), snestype);                 // set the snes type... ls is most common
@@ -234,11 +214,45 @@ void SpudSolverBucket::fill()
 
     perr = SNESView(snes_, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr); // turn on snesview so we get some debugging info
 
+    ctx_.solver = this;                                              // the snes context just needs this class... neat, huh?
+
+    perr = SNESSetFunction(snes_, *(*res_).vec(),                    // set the snes function to use the newly allocated residual vector
+                                    FormFunction, (void *) &ctx_); 
+    CHKERRV(perr);
+
+    if (bilinearpc_)                                                 // if we have a pc form
+    {
+      assert(matrixpc_);
+      perr = SNESSetJacobian(snes_, *(*matrix_).mat(),               // set the snes jacobian to have two matrices
+                  *(*matrixpc_).mat(), FormJacobian, (void *) &ctx_); 
+      CHKERRV(perr);
+    }
+    else                                                             // otherwise
+    {
+      perr = SNESSetJacobian(snes_, *(*matrix_).mat(),               // set the snes jacobian to have the same matrix twice
+                    *(*matrix_).mat(), FormJacobian, (void *) &ctx_); 
+      CHKERRV(perr);
+    }
+
   }
   else if (type()=="Picard")                                         // if this is a picard solver
   {
 
     perr = KSPCreate(PETSC_COMM_WORLD, &ksp_); CHKERRV(perr);        // create a ksp object from the variable in the solverbucket
+
+    if (Spud::have_option(optionpath()+"/type/monitors/convergence_file"))
+    {
+      buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
+                             << (*system()).name() << "_" 
+                             << name() << "_picard.conv";
+      convfile_.reset( new ConvergenceFile(buffer.str(),             // allocate the file but don't write the header yet as the
+                                    (*system()).name(), name()) );   // bucket isn't complete
+    }
+
+    buffer.str(""); buffer << optionpath() << "/type/linear_solver"; // figure out the linear solver optionspath
+    fill_ksp_(buffer.str(), ksp_, prefix.str());                     // fill the ksp data
+
+    perr = KSPView(ksp_, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);   // turn on kspview so we get some debugging info
 
     if (bilinearpc_)
     {                                                                // if there's a pc associated
@@ -254,20 +268,6 @@ void SpudSolverBucket::fill()
                                    SAME_NONZERO_PATTERN); 
       CHKERRV(perr);
     }
-
-    if (Spud::have_option(optionpath()+"/type/monitors/convergence_file"))
-    {
-      buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
-                             << (*system()).name() << "_" 
-                             << name() << "_picard.conv";
-      convfile_.reset( new ConvergenceFile(buffer.str(),             // allocate the file but don't write the header yet as the
-                                    (*system()).name(), name()) );   // bucket isn't complete
-    }
-
-    buffer.str(""); buffer << optionpath() << "/type/linear_solver"; // figure out the linear solver optionspath
-    fill_ksp_(buffer.str(), ksp_, prefix.str());                     // fill the ksp data
-
-    perr = KSPView(ksp_, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);   // turn on kspview so we get some debugging info
 
   }
   else                                                               // don't know how we got here
@@ -511,6 +511,10 @@ void SpudSolverBucket::fill_tensors_()
   dolfin::AssemblerTools::init_global_tensor(*matrix_, *bilinear_, 
                                                true, false);
 
+  matrixbc_.reset(new dolfin::PETScMatrix);                          // allocate the matrix for the lifted bcs
+  dolfin::AssemblerTools::init_global_tensor(*matrixbc_, *bilinear_, 
+                                               true, false);
+
   if(bilinearpc_)                                                    // do we have a pc form?
   {
     matrixpc_.reset(new dolfin::PETScMatrix);                        // allocate the matrix
@@ -521,6 +525,11 @@ void SpudSolverBucket::fill_tensors_()
   rhs_.reset(new dolfin::PETScVector);                               // allocate the rhs
   dolfin::AssemblerTools::init_global_tensor(*rhs_, *linear_, 
                                              true, false);
+
+  rhsbc_.reset(new dolfin::PETScVector);                             // allocate the rhs
+  dolfin::AssemblerTools::init_global_tensor(*rhsbc_, *linear_, 
+                                             true, false);
+
   if(residual_)                                                      // do we have a residual_ form?
   {                                                                  // yes...
     res_.reset(new dolfin::PETScVector);                             // allocate the residual
@@ -1498,6 +1507,10 @@ boost::unordered_map<uint, double> SpudSolverBucket::field_ns_map_(const std::st
         }
         exp_index = comp - (*components).begin();                    // work out the index into the expression for this component
       }
+      else
+      {
+        exp_index = i;
+      }
 
       boost::unordered_map<uint, double> tmp_ns_map;
       tmp_ns_map = field_ns_map_(optionpath, (*functionspace)[i], 
@@ -1717,7 +1730,7 @@ void SpudSolverBucket::is_by_field_restrictions_(const std::string &optionpath,
            std::max_element((*components).begin(), (*components).end()); // check the maximum requested component exists
       
       assert(*max_comp_it < fieldsize);
-      assert((*components).size() < fieldsize);
+      assert((*components).size() <= fieldsize);
     }
     else
     {

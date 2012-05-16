@@ -2,7 +2,6 @@
 #include <dolfin.h>
 #include "petscsnes.h"
 #include "BucketPETScBase.h"
-#include "BucketDolfinBase.h"
 #include "SolverBucket.h"
 
 using namespace buckettools;
@@ -40,26 +39,26 @@ PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f,
   }
 
   Function_ptr iteratedfunction = (*system).iteratedfunction();      // collect the iterated system bucket function
-  const std::vector<BoundaryCondition_ptr>& bcs = (*system).bcs();   // get the vector of bcs
+  const std::vector< const dolfin::DirichletBC* >& bcs = 
+                                         (*system).dirichletbcs();   // get the vector of bcs
   const std::vector<ReferencePoints_ptr>& points = (*system).points();// get the vector of reference points
   Vec_ptr px(&x, dolfin::NoDeleter());                               // convert the iterated snes vector
   Vec_ptr pf(&f, dolfin::NoDeleter());                               // convert the rhs snes vector
   dolfin::PETScVector rhs(pf), iteratedvec(px);
-  bool reset_tensor = false;                                         // never reset the tensor
 
   (*(*iteratedfunction).vector()) = iteratedvec;                     // update the iterated system bucket function
 
   (*bucket).update_nonlinear();                                      // update nonlinear coefficients
 
-  dolfin::assemble(rhs, *(*solver).linear_form(), reset_tensor);     // assemble the rhs from the context linear form
+  dolfin::assemble(rhs, *(*solver).linear_form(), false);            // assemble the rhs from the context linear form
   for(uint i = 0; i < bcs.size(); ++i)                               // loop over the bcs
   {
-    (*bcs[i]).apply(rhs, iteratedvec);                               // FIXME: will break symmetry?
+    (*bcs[i]).apply(rhs, iteratedvec);
   }
   
   for(uint i = 0; i < points.size(); ++i)                            // loop over the reference points
   {
-    (*points[i]).apply(rhs, iteratedvec);                            // FIXME: will break symmetry?
+    (*points[i]).apply(rhs, iteratedvec);
   }
   
   if ((*solver).monitor_norms())
@@ -92,6 +91,8 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
 {
   dolfin::log(dolfin::INFO, "In FormJacobian");
 
+  PetscErrorCode perr;                                               // petsc error code
+
   SNESCtx *snesctx = (SNESCtx *)ctx;                                 // cast the snes context
 
   SolverBucket* solver = (*snesctx).solver;                          // retrieve a (standard) pointer to this solver
@@ -100,7 +101,6 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
 
   if ((*solver).monitor_norms())
   {
-    PetscErrorCode perr;                                             // petsc error code
     PetscReal norm;
 
     perr = VecNorm(x,NORM_2,&norm); CHKERRQ(perr);
@@ -123,30 +123,28 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
   }
 
   Function_ptr iteratedfunction = (*system).iteratedfunction();      // collect the iterated system bucket function
-  const std::vector<BoundaryCondition_ptr>& bcs = (*system).bcs();   // get the vector of bcs
+  const std::vector< const dolfin::DirichletBC* >& bcs = 
+                                         (*system).dirichletbcs();   // get the vector of bcs
   const std::vector<ReferencePoints_ptr>& points = (*system).points();// get the vector of reference points
   Vec_ptr px(&x, dolfin::NoDeleter());                               // convert the iterated snes vector
   dolfin::PETScVector iteratedvec(px);
   Mat_ptr pA(A, dolfin::NoDeleter());                                // convert the snes matrix
   Mat_ptr pB(B, dolfin::NoDeleter());                                // convert the snes matrix pc
   dolfin::PETScMatrix matrix(pA), matrixpc(pB);
-  bool reset_tensor = false;                                         // never reset the tensor
+
+  PETScMatrix_ptr matrixbc = (*solver).matrixbc();
 
   (*(*iteratedfunction).vector()) = iteratedvec;                     // update the iterated system bucket function
 
   (*bucket).update_nonlinear();                                      // update nonlinear coefficients
 
-  dolfin::assemble(matrix, *(*solver).bilinear_form(), reset_tensor, 
-                                                       false, false);// assemble the matrix from the context bilinear form
-  Assembler::add_zeros_diagonal(matrix);
-  matrix.apply("add");
-  for(uint i = 0; i < bcs.size(); ++i)                               // loop over the bcs
-  {
-    (*bcs[i]).apply(matrix);                                         // FIXME: will break symmetry?
-  }
+  dolfin::symmetric_assemble(matrix, *matrixbc, 
+                             *(*solver).bilinear_form(), bcs,
+                             NULL, NULL, NULL,
+                             false);                                 // assemble the matrix from the context bilinear form
   for(uint i = 0; i < points.size(); ++i)                            // loop over the reference points
   {
-    (*points[i]).apply(matrix);                                      // FIXME: will break symmetry?
+    (*points[i]).apply(matrix);
   }
   if ((*solver).ident_zeros())
   {
@@ -155,17 +153,13 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
 
   if ((*solver).bilinearpc_form())                                   // do we have a different bilinear pc form associated?
   {
-    dolfin::assemble(matrixpc, (*(*solver).bilinearpc_form()),       // assemble the matrix pc from the context bilinear pc form
-                                                      reset_tensor);
-    Assembler::add_zeros_diagonal(matrixpc);
-    matrixpc.apply("add");
-    for(uint i = 0; i < bcs.size(); ++i)                             // loop over the bcs
-    {
-      (*bcs[i]).apply(matrixpc);                                     // FIXME: will break symmetry
-    }
+    dolfin::symmetric_assemble(matrixpc, *matrixbc, 
+                               (*(*solver).bilinearpc_form()), bcs,
+                               NULL, NULL, NULL,                     // assemble the matrix pc from the context bilinear pc form
+                               false);
     for(uint i = 0; i < points.size(); ++i)                          // loop over the points
     {
-      (*points[i]).apply(matrixpc);                                  // FIXME: will break symmetry
+      (*points[i]).apply(matrixpc);
     }
     if ((*solver).ident_zeros_pc())
     {
@@ -177,7 +171,6 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
 
   if ((*solver).monitor_norms())
   {
-    PetscErrorCode perr;                                             // petsc error code
     PetscReal norm;
 
     perr = VecNorm(x,NORM_2,&norm); CHKERRQ(perr);
