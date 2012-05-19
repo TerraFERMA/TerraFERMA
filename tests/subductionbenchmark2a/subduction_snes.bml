@@ -580,6 +580,7 @@ r = d_t*d_a*dx_wedge - d_t*div(v_i)*dx_wedge</string_value>
               </linear_solver>
             </fieldsplit>
           </preconditioner>
+          <monitors/>
         </linear_solver>
         <ignore_all_solver_failures/>
       </type>

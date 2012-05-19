@@ -394,6 +394,7 @@ r = rv + rp + rT</string_value>
           <integer_value rank="0">50</integer_value>
         </max_iterations>
         <monitors>
+          <view_snes/>
           <residual/>
           <norms/>
         </monitors>
@@ -591,6 +592,7 @@ r = rv + rp + rT</string_value>
             </monitors>
           </iterative_method>
           <preconditioner name="sor"/>
+          <monitors/>
         </linear_solver>
         <ignore_all_solver_failures/>
       </type>
@@ -668,6 +670,7 @@ r = c_t*c_a*dx - c_t('+')*vout('+')*dt('+')*dS - c_t('-')*vout('-')*dt('-')*dS -
         <linear_solver>
           <iterative_method name="preonly"/>
           <preconditioner name="jacobi"/>
+          <monitors/>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>

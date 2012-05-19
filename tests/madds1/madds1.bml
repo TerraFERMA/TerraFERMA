@@ -295,6 +295,7 @@ r = rv + rp</string_value>
             </monitors>
           </iterative_method>
           <preconditioner name="sor"/>
+          <monitors/>
         </linear_solver>
         <ignore_all_solver_failures/>
       </type>

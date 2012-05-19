@@ -472,6 +472,7 @@ F = F1 + F2</string_value>
             </monitors>
           </iterative_method>
           <preconditioner name="sor"/>
+          <monitors/>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>

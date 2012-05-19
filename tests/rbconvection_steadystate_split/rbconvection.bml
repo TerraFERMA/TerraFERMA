@@ -148,6 +148,7 @@ r = rT</string_value>
           <preconditioner name="lu">
             <factorization_package name="umfpack"/>
           </preconditioner>
+          <monitors/>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
@@ -380,6 +381,7 @@ r = rv + rp</string_value>
             </null_space>
             <monitors/>
           </remove_null_space>
+          <monitors/>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>

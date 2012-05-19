@@ -407,6 +407,7 @@ F = FT + Fv + Fp</string_value>
               </linear_solver>
             </fieldsplit>
           </preconditioner>
+          <monitors/>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
@@ -507,6 +508,7 @@ r = d_t*d_a*dx_wedge - d_t*div(v_i)*dx_wedge</string_value>
               </linear_solver>
             </fieldsplit>
           </preconditioner>
+          <monitors/>
         </linear_solver>
         <ignore_all_solver_failures/>
       </type>
@@ -610,6 +612,7 @@ r = r_plate + r_wedge + r_slab</string_value>
         <linear_solver>
           <iterative_method name="preonly"/>
           <preconditioner name="jacobi"/>
+          <monitors/>
         </linear_solver>
         <ignore_all_solver_failures/>
       </type>
