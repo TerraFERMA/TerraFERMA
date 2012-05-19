@@ -170,9 +170,13 @@ void SpudSolverBucket::fill()
                                                                      // to start setting up the ksp inside the snes
     
     buffer.str(""); buffer << optionpath() << "/type/linear_solver"; // the ksp solver path
-    fill_ksp_(buffer.str(), ksp_, prefix.str(), &snes_);             // can then be used to fill the ksp data
+    fill_ksp_(buffer.str(), ksp_, prefix.str());                     // can then be used to fill the ksp data
 
-    perr = SNESView(snes_, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr); // turn on snesview so we get some debugging info
+    buffer.str(""); buffer << optionpath() << "/type/monitors/view_snes";
+    if (Spud::have_option(buffer.str()))
+    {
+      perr = SNESView(snes_, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);// turn on snesview so we get some debugging info
+    }
 
     ctx_.solver = this;                                              // the snes context just needs this class... neat, huh?
 
@@ -212,7 +216,11 @@ void SpudSolverBucket::fill()
     buffer.str(""); buffer << optionpath() << "/type/linear_solver"; // figure out the linear solver optionspath
     fill_ksp_(buffer.str(), ksp_, prefix.str());                     // fill the ksp data
 
-    perr = KSPView(ksp_, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);   // turn on kspview so we get some debugging info
+    buffer.str(""); buffer << optionpath() << "/type/linear_solver/monitors/view_ksp";
+    if (Spud::have_option(buffer.str()))
+    {
+      perr = KSPView(ksp_, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr); // turn on kspview so we get some debugging info
+    }
 
     if (bilinearpc_)
     {                                                                // if there's a pc associated
@@ -549,8 +557,7 @@ void SpudSolverBucket::fill_tensors_()
 //*******************************************************************|************************************************************//
 void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp, 
                                  const std::string prefix,
-                                 const std::vector<uint>* parent_indices,
-                                 SNES* snes)
+                                 const std::vector<uint>* parent_indices)
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
@@ -565,6 +572,9 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
   spud_err(buffer.str(), serr);
 
   perr = KSPSetType(ksp, iterative_method.c_str()); CHKERRV(perr);   // set the ksp type to the iterative method
+
+  perr = KSPSetFromOptions(ksp);                                     // do this now so that options will be overwritten by options
+                                                                     // file
 
   if(iterative_method != "preonly")                                  // tolerances (and monitors) only apply to iterative methods
   {
@@ -657,14 +667,37 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
     #endif
   }
 
-  std::string preconditioner;
-  buffer.str(""); buffer << optionpath << "/preconditioner/name";    // preconditioner type
-  serr = Spud::get_option(buffer.str(), preconditioner); 
-  spud_err(buffer.str(), serr);
-
   PC pc;
   perr = KSPGetPC(ksp, &pc); CHKERRV(perr);                          // get the pc from the ksp
+
+  fill_pc_(optionpath, pc,
+           prefix,
+           parent_indices);
+
+}
+
+//*******************************************************************|************************************************************//
+// fill a pc object from the options tree (this routine may be called recursively for ksp, bjacobi, asm and fieldsplit pc types)
+//*******************************************************************|************************************************************//
+void SpudSolverBucket::fill_pc_(const std::string &optionpath, PC &pc, 
+                                const std::string prefix,
+                                const std::vector<uint>* parent_indices)
+{
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud error code
+  PetscErrorCode perr;                                               // petsc error code
+
+  perr = PCSetOptionsPrefix(pc, prefix.c_str());                     // set the pc options prefix
+  CHKERRV(perr);
+
+  std::string preconditioner;
+  buffer.str(""); buffer << optionpath << "/preconditioner/name";    // preconditioner type
+  serr = Spud::get_option(buffer.str(), preconditioner);
+  spud_err(buffer.str(), serr);
+
   perr = PCSetType(pc, preconditioner.c_str()); CHKERRV(perr);       // set its type (read from options earlier)
+
+  perr = PCSetFromOptions(pc); CHKERRV(perr);                        // do this now so they can be overwritten
 
   if (preconditioner=="ksp")                                         // if the pc is itself a ksp
   {
@@ -691,6 +724,43 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
     perr = PCFactorSetMatSolverPackage(pc, 
                                       factorization_package.c_str()); 
     CHKERRV(perr);
+
+  }
+  else if (preconditioner=="hypre")
+  {
+    std::string hypre_type;                                          // we get to choose the hypre type
+    buffer.str(""); buffer << optionpath << 
+                        "/preconditioner/hypre_type/name";
+    serr = Spud::get_option(buffer.str(), hypre_type); 
+    spud_err(buffer.str(), serr);
+
+    perr = PCHYPRESetType(pc, hypre_type.c_str()); CHKERRV(perr);
+  }
+  else if ((preconditioner=="bjacobi")||(preconditioner=="asm"))
+  {
+    perr = PCSetUp(pc); CHKERRV(perr);                               // call this before subpc can be retrieved
+
+    KSP *subksp;
+    if(preconditioner=="bjacobi")
+    {
+      perr = PCBJacobiGetSubKSP(pc, PETSC_NULL, PETSC_NULL, &subksp);
+      CHKERRV(perr);
+    }
+    else if (preconditioner=="asm")
+    {
+      perr = PCASMGetSubKSP(pc, PETSC_NULL, PETSC_NULL, &subksp);
+      CHKERRV(perr);
+    }
+    else
+    {
+      dolfin::error("Unknown preconditioner.");
+    }
+
+    PC subpc;
+    perr = KSPGetPC(*subksp, &subpc); CHKERRV(perr);                  // get the sub pc from the sub ksp
+    fill_pc_(optionpath+"/preconditioner", subpc,
+             prefix+"subpc_", 
+             parent_indices);
 
   }
 

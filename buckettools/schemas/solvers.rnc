@@ -108,7 +108,14 @@ picard =
     },
     ## Options describing a linear solver.
     element linear_solver {
-      linear_solver_options_top
+      linear_solver_options_top,
+      ## Options to give extra information for the linear solver.
+      element monitors {
+         ## Prints PETSc information about the ksp object.
+         element view_ksp {
+           empty
+         }?
+      }
     },
     solver_failures
   )
@@ -264,6 +271,10 @@ snes =
     ## Options to give extra information for each iteration of the
     ## the SNES solve. Some of those may really slow down your computation!
     element monitors {
+       ## Prints PETSc information about the snes object.
+       element view_snes {
+         empty
+       }?,
        ## Output the residual at every function evaluation.
        element residual {
          empty
@@ -769,7 +780,6 @@ subpc_options =
          pcilu_options|
          pcicc_options|
          pclu_options|
-         pcmg_options|
          pcprometheus_options|
          pchypre_options|
          pcother_options

@@ -13,7 +13,7 @@ namespace buckettools
   class FunctionBucket;                                              // predeclare the class itself
   typedef boost::shared_ptr< FunctionBucket > FunctionBucket_ptr;    // so we can predeclare a pointer to it
   
-  enum solve_location { FUNCTIONBUCKET_FIELD, FUNCTIONBUCKET_COEFF };
+  enum function_type { FUNCTIONBUCKET_FIELD, FUNCTIONBUCKET_COEFF };
 
   //*****************************************************************|************************************************************//
   // FunctionBucket class:
