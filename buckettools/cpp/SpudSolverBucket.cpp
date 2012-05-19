@@ -747,10 +747,7 @@ void SpudSolverBucket::fill_pc_(const std::string &optionpath, PC &pc,
     MatNullSpace SP;                                                 // create a set of nullspaces in a null space object
     fill_nullspace_(buffer.str(), SP, parent_indices);
 
-    Mat AMat, PMat;
-    MatStructure flag;
-    perr = PCGetOperators(pc, &AMat, &PMat, &flag); CHKERRV(perr);
-    perr = MatSetNearNullSpace(AMat, SP); CHKERRV(perr);
+    perr = MatSetNearNullSpace(*(*matrix_).mat(), SP); CHKERRV(perr);
 
     #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
     perr = MatNullSpaceDestroy(&SP); CHKERRV(perr);                  // destroy the null space object, necessary?
