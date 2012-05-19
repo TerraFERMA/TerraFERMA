@@ -172,7 +172,11 @@ void SpudSolverBucket::fill()
     buffer.str(""); buffer << optionpath() << "/type/linear_solver"; // the ksp solver path
     fill_ksp_(buffer.str(), ksp_, prefix.str());                     // can then be used to fill the ksp data
 
-    perr = SNESView(snes_, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr); // turn on snesview so we get some debugging info
+    buffer.str(""); buffer << optionpath() << "/type/monitors/view_snes";
+    if (Spud::have_option(buffer.str()))
+    {
+      perr = SNESView(snes_, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);// turn on snesview so we get some debugging info
+    }
 
     ctx_.solver = this;                                              // the snes context just needs this class... neat, huh?
 
@@ -212,7 +216,11 @@ void SpudSolverBucket::fill()
     buffer.str(""); buffer << optionpath() << "/type/linear_solver"; // figure out the linear solver optionspath
     fill_ksp_(buffer.str(), ksp_, prefix.str());                     // fill the ksp data
 
-    perr = KSPView(ksp_, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);   // turn on kspview so we get some debugging info
+    buffer.str(""); buffer << optionpath() << "/type/linear_solver/monitors/view_ksp";
+    if (Spud::have_option(buffer.str()))
+    {
+      perr = KSPView(ksp_, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr); // turn on kspview so we get some debugging info
+    }
 
     if (bilinearpc_)
     {                                                                // if there's a pc associated
