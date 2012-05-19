@@ -864,7 +864,6 @@ than with bjacobi.</a:documentation>
       <ref name="pcilu_options"/>
       <ref name="pcicc_options"/>
       <ref name="pclu_options"/>
-      <ref name="pcmg_options"/>
       <ref name="pcprometheus_options"/>
       <ref name="pchypre_options"/>
       <ref name="pcother_options"/>

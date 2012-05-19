@@ -769,7 +769,6 @@ subpc_options =
          pcilu_options|
          pcicc_options|
          pclu_options|
-         pcmg_options|
          pcprometheus_options|
          pchypre_options|
          pcother_options

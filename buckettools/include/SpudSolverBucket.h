@@ -100,22 +100,15 @@ namespace buckettools
 
     void fill_ksp_(const std::string &optionpath, KSP &ksp, 
                                   const std::string prefix)          // fill the information about a parent ksp
-    { fill_ksp_(optionpath, ksp, prefix, NULL, NULL); }
-
-    void fill_ksp_(const std::string &optionpath, KSP &ksp, 
-                                  const std::string prefix,
-                                  SNES *snes)                        // fill the information about a parent ksp
-    { fill_ksp_(optionpath, ksp, prefix, NULL, snes); }
-
-    void fill_ksp_(const std::string &optionpath, KSP &ksp, 
-                                  const std::string prefix,          // fill the information about a child ksp
-                                  const std::vector<uint>* parent_indices)
-    { fill_ksp_(optionpath, ksp, prefix, parent_indices, NULL); }
+    { fill_ksp_(optionpath, ksp, prefix, NULL); }
 
     void fill_ksp_(const std::string &optionpath, KSP &ksp,          // fill the information about a child ksp
                          const std::string prefix, 
-                         const std::vector<uint>* parent_indices,
-                         SNES *snes);
+                         const std::vector<uint>* parent_indices);
+
+    void fill_pc_(const std::string &optionpath, PC &pc,             // fill the information about a pc
+                         const std::string prefix, 
+                         const std::vector<uint>* parent_indices);
 
     void fill_pc_fieldsplit_(const std::string &optionpath, PC &pc,  // fill the information about a fieldsplit pc
                          const std::string prefix, 
