@@ -1521,7 +1521,7 @@ void SpudSolverBucket::fill_values_by_field_(const std::string &optionpath, PETS
   }
 
   std::vector<double> background((*values).local_size(), background_value);
-  (*bound).set_local(background);
+  (*values).set_local(background);
   background.clear();
 
   VecScatter scatter;                                                // create a petsc scatter object from an object with the same 
