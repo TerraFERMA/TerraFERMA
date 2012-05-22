@@ -171,9 +171,10 @@ r = r_m + r_a + r_fS + r_fs1 + r_fs2</string_value>
           <constraints>
             <upper_bound>
               <field name="Field">
-                <constant>
-                  <real_value rank="0">1.0</real_value>
-                </constant>
+                <python>
+                  <string_value type="code" lines="20" language="python">def val(x):
+  return 1.0</string_value>
+                </python>
               </field>
               <monitors/>
             </upper_bound>
