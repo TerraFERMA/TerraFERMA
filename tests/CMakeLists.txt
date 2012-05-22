@@ -81,6 +81,7 @@ add_subdirectory(subductionbenchmark1c_split)
 add_subdirectory(subductionbenchmark2a)
 add_subdirectory(subductionbenchmark2a_split)
 add_subdirectory(subductionbenchmark2b)
+add_subdirectory(dg_advection_1d_vi)
 
 add_custom_target(run)
 add_dependencies(run poisson_run)
@@ -91,6 +92,9 @@ projection_mixedelement_test projection_timedependent_test projection_timedepend
 rbconvection_steadystate_split_test rbconvection_steadystate_test rbconvection1a_test rbconvection1a_refpt_test region_ids_test 
 subductionbenchmark1a_test subductionbenchmark1b_test subductionbenchmark1c_test subductionbenchmark1c_split_test
 subductionbenchmark2a_test subductionbenchmark2a_split_test subductionbenchmark2b_test neumann_poisson_test)
+
+add_custom_target(test3p2)
+add_dependencies(test3p2 test dg_advection_1d_vi_test)
 
 add_custom_target(mediumtest)
 add_dependencies(mediumtest rbconvection2a_test)
