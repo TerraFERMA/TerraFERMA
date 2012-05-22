@@ -127,6 +127,10 @@ void SpudSolverBucket::fill()
       #endif
        
     }
+    else if(snestype=="vi")
+    {
+      fill_constraints_();
+    }
 
     buffer.str(""); buffer << optionpath() 
                                         << "/type/monitors/residual";
@@ -1233,8 +1237,8 @@ void SpudSolverBucket::fill_nullspace_(const std::string &optionpath, MatNullSpa
 
     buffer.str(""); buffer << optionpath <<                          // optionpath of the nullspace
                       "/null_space[" << i << "]";
-    fill_nullvector_by_field_(buffer.str(), nullvec,                 // create a vector describing the nullspace based on this optionpath 
-                                parent_indices);
+    fill_values_by_field_(buffer.str(), nullvec, 0.0,                // create a vector describing the nullspace based on this optionpath 
+                                parent_indices, NULL);               // (no siblings as null spaces can overlap)
 
     nullvecs.push_back(nullvec);                                     // keep the null vector in scope by grabbing a reference to it
     vecs[i] = *(*nullvec).vec();                                     // also collect it in a petsc compatible format (shouldn't take
@@ -1260,22 +1264,76 @@ void SpudSolverBucket::fill_nullspace_(const std::string &optionpath, MatNullSpa
 }
 
 //*******************************************************************|************************************************************//
-// Fill a petsc nullspace vector from the options tree.
+// fill any constraints used on fields using the optionpath provided
+//*******************************************************************|************************************************************//
+void SpudSolverBucket::fill_constraints_()
+{
+  #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
+  std::stringstream buffer;                                          // optionpath buffer
+  PetscErrorCode perr;                                               // petsc error code
+
+  PETScVector_ptr ub;
+  buffer.str(""); buffer << optionpath() << "/snes_type/constraints/upper_bound";
+  fill_bound_(buffer.str(), ub, SNES_VI_INF);
+
+  PETScVector_ptr lb;
+  buffer.str(""); buffer << optionpath() << "/snes_type/constraints/lower_bound";
+  fill_bound_(buffer.str(), lb, SNES_VI_NINF);
+
+  perr = SNESVISetVariableBounds(snes_, *(*lb).vec(), *(*ub).vec());
+  CHKERRV(perr);
+  #else
+  dolfin::error("SNES VI only available with petsc > 3.1");
+  #endif
+
+}
+
+//*******************************************************************|************************************************************//
+// fill petsc vectors describing the bounds on fields using the optionpath provided
+//*******************************************************************|************************************************************//
+void SpudSolverBucket::fill_bound_(const std::string &optionpath, PETScVector_ptr bound, const double &background_value)
+{
+
+  uint size = 0;
+  size = (*(*(*system_).function()).vector()).size();
+  bound.reset( new dolfin::PETScVector(size) );
+
+  if (Spud::have_option(optionpath))
+  {
+    fill_values_by_field_(optionpath, bound, background_value,        // create a vector describing a bound based on this optionpath 
+                                NULL, NULL);
+  }
+  else
+  {
+    dolfin::Array<double> background(size);
+    for (uint i = 0; i < background.size(); i++)
+    {
+      background[i] = background_value;
+    }
+    (*bound).set_local(background);
+  }
+
+}
+
+//*******************************************************************|************************************************************//
+// Fill a vector of values from the options tree.
 // IS's may be set up by field name, components of the field, regions of the domain of the field  and surfaces of the domain of the
 // field.
 // Additionally the resulting IS is checked for consistency with any parents in the tree.
 //*******************************************************************|************************************************************//
-void SpudSolverBucket::fill_nullvector_by_field_(const std::string &optionpath, PETScVector_ptr nullvec,
-                                                 const std::vector<uint>* parent_indices)
+void SpudSolverBucket::fill_values_by_field_(const std::string &optionpath, PETScVector_ptr values,
+                                             const double &background_value,
+                                             const std::vector<uint>* parent_indices,
+                                             const std::vector<uint>* sibling_indices)
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
   PetscErrorCode perr;                                               // petsc error code
 
-  buffer.str(""); buffer << optionpath << "/field";                  // loop over the fields used to describe this nullspace
+  buffer.str(""); buffer << optionpath << "/field";                  // loop over the fields used to describe this vector
   int nfields = Spud::option_count(buffer.str());
 
-  boost::unordered_map<uint, double> ns_map;
+  boost::unordered_map<uint, double> value_map;
   if (nfields==0)                                                    // if no fields have been specified...
   {
     boost::unordered_set<uint> dof_set = 
@@ -1284,7 +1342,7 @@ void SpudSolverBucket::fill_nullvector_by_field_(const std::string &optionpath, 
     for (boost::unordered_set<uint>::const_iterator dof_it = dof_set.begin(); 
                                   dof_it != dof_set.end(); dof_it++)
     {
-      ns_map[*dof_it] = 1.0;                                         // we assume a constant null space
+      value_map[*dof_it] = 1.0;                                      // we assume a constant value of one
     }
   }
   else
@@ -1325,7 +1383,7 @@ void SpudSolverBucket::fill_nullvector_by_field_(const std::string &optionpath, 
                                 components, region_ids, boundary_ids,
                                 fieldrank, fieldsize);
      
-      Expression_ptr ns_exp;
+      Expression_ptr value_exp;
       buffer.str(""); buffer << optionpath << "/field[" 
                                             << i << "]/python";
       if (Spud::have_option(buffer.str()))
@@ -1336,7 +1394,7 @@ void SpudSolverBucket::fill_nullvector_by_field_(const std::string &optionpath, 
 
         if (fieldrank=="Scalar")
         {
-          ns_exp.reset( new PythonExpression(pyfunction) );
+          value_exp.reset( new PythonExpression(pyfunction) );
         }
         else if (fieldrank=="Vector")
         {
@@ -1345,45 +1403,60 @@ void SpudSolverBucket::fill_nullvector_by_field_(const std::string &optionpath, 
           {
             size = (*components).size();
           }
-          ns_exp.reset( new PythonExpression(size, pyfunction) );
+          value_exp.reset( new PythonExpression(size, pyfunction) );
         }
         else
         {
-          dolfin::error("Tensor null spaces not implemented yet.");
+          dolfin::error("Tensor value maps not implemented yet.");
         }
       }
 
-      boost::unordered_map<uint, double> tmp_ns_map;
+      double *value_const = NULL;
+      buffer.str(""); buffer << optionpath << "/field[" 
+                                            << i << "]/constant";
+      if (Spud::have_option(buffer.str()))
+      {
+        value_const = new double;
+        serr = Spud::get_option(buffer.str(), *value_const);
+        spud_err(buffer.str(), serr);
+      }
+
+      boost::unordered_map<uint, double> tmp_map;
       buffer.str(""); buffer << optionpath << "/field[" << i << "]";
-      tmp_ns_map = field_ns_map_(buffer.str(), functionspace,        // for each field construct a map describing the indices and
-                             components, region_ids,                 // values of the nullspace
-                             boundary_ids, ns_exp);
-      ns_map.insert(tmp_ns_map.begin(), tmp_ns_map.end());
+      tmp_map = field_value_map_(buffer.str(), functionspace,        // for each field construct a map describing the indices and
+                             components, region_ids,                 // values
+                             boundary_ids, value_exp, value_const);
+      value_map.insert(tmp_map.begin(), tmp_map.end());
 
       destroy_is_field_restrictions_(components, 
                                      region_ids, 
                                      boundary_ids);
+      if(value_const)
+      {
+        delete(value_const);
+        value_const = NULL;
+      }
 
     }
   }
 
   std::vector<uint> child_indices;                    
   for (boost::unordered_map<uint, double>::const_iterator            // construct a vector of indices which we'll restrict and order then use
-                                              c_it = ns_map.begin(); // to index the map
-                                              c_it != ns_map.end();
+                                              c_it = value_map.begin(); // to index the map
+                                              c_it != value_map.end();
                                               c_it++)
   {
     child_indices.push_back((*c_it).first);
   }
 
-  restrict_is_indices_(child_indices, parent_indices, NULL);         // restrict based on the parents (intersection) but no siblings
-                                                                     // for null spaces
+  restrict_is_indices_(child_indices, parent_indices, sibling_indices);// restrict based on the parents (intersection) and possibly
+                                                                     // siblings 
 
   PetscInt n=child_indices.size();                                   // setup a simpler structure for petsc
   assert(n>0);
   PetscInt *indices;
   PetscMalloc(n*sizeof(PetscInt), &indices);
-  dolfin::PETScVector nsvec(n, "local");                             // create a local vector of local size length 
+  dolfin::PETScVector vvec(n, "local");                             // create a local vector of local size length 
  
   uint ind = 0;
   if(parent_indices)
@@ -1407,7 +1480,7 @@ void SpudSolverBucket::fill_nullvector_by_field_(const std::string &optionpath, 
       }
       indices[ind] = p_ind;                                          // found the child index in the parent_indices so copy it into
                                                                      // the PetscInt array
-      nsvec.set(&ns_map[(*c_it)], 1, &ind);                          // set the null vector to the value in the map
+      vvec.set(&value_map[(*c_it)], 1, &ind);                          // set the null vector to the value in the map
       ind++;                                                         // increment the array index
       p_ind++;                                                       // indices shouldn't be repeated so increment the parent too
     } 
@@ -1421,7 +1494,7 @@ void SpudSolverBucket::fill_nullvector_by_field_(const std::string &optionpath, 
                                       ind_it++)
     {
       indices[ind] = *ind_it;                                        // insert them into the PetscInt array
-      nsvec.set(&ns_map[(*ind_it)], 1, &ind);                        // set the null vector to the value in the map
+      vvec.set(&value_map[(*ind_it)], 1, &ind);                        // set the null vector to the value in the map
       ind++;                                                         // increment the array index
     }
     // these should be equal
@@ -1450,18 +1523,24 @@ void SpudSolverBucket::fill_nullvector_by_field_(const std::string &optionpath, 
     perr = ISView(is, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);      // isview?
   }
 
-  (*nullvec).zero();                                                 // zero the null vector
+  dolfin::Array<double> background((*values).local_size());
+  for (uint i = 0; i < background.size(); i++)
+  {
+    background[i] = background_value;
+  }
+
+  (*values).set_local(background);                                   // set the background value of the values vector
 
   VecScatter scatter;                                                // create a petsc scatter object from an object with the same 
-  perr = VecScatterCreate(*nsvec.vec(), PETSC_NULL,                  // structure as the nsvec vector to one with the same structure
-                          *(*nullvec).vec(), is, &scatter);          // as the null vector using the IS
+  perr = VecScatterCreate(*vvec.vec(), PETSC_NULL,                  // structure as the vvec vector to one with the same structure
+                          *(*values).vec(), is, &scatter);          // as the null vector using the IS
   CHKERRV(perr);
-  perr = VecScatterBegin(scatter, *nsvec.vec(),                      // scatter from the nsvec vector to the null vector
-                         *(*nullvec).vec(), INSERT_VALUES, 
+  perr = VecScatterBegin(scatter, *vvec.vec(),                      // scatter from the vvec vector to the null vector
+                         *(*values).vec(), INSERT_VALUES, 
                          SCATTER_FORWARD); 
   CHKERRV(perr);
-  perr = VecScatterEnd(scatter, *nsvec.vec(), 
-                       *(*nullvec).vec(), INSERT_VALUES, 
+  perr = VecScatterEnd(scatter, *vvec.vec(), 
+                       *(*values).vec(), INSERT_VALUES, 
                        SCATTER_FORWARD); 
   CHKERRV(perr);
   #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1            // necessary or taken care of when object leaves scope?
@@ -1472,20 +1551,20 @@ void SpudSolverBucket::fill_nullvector_by_field_(const std::string &optionpath, 
   perr = ISDestroy(is); CHKERRV(perr);
   #endif
 
-  (*nullvec).apply("");                                              // finish assembly of the null vector, just in case
-  perr = VecNormalize(*(*nullvec).vec(), PETSC_NULL); CHKERRV(perr); // normalize the null space vector
+  (*values).apply("");                                              // finish assembly of the null vector, just in case
+  perr = VecNormalize(*(*values).vec(), PETSC_NULL); CHKERRV(perr); // normalize the null space vector
 
 }
 
 //*******************************************************************|************************************************************//
 // return a map from dofs to null space values from the given functionspace for a field
 //*******************************************************************|************************************************************//
-boost::unordered_map<uint, double> SpudSolverBucket::field_ns_map_(const std::string &optionpath,
+boost::unordered_map<uint, double> SpudSolverBucket::field_value_map_(const std::string &optionpath,
                                                                    const FunctionSpace_ptr functionspace,
                                                                    const std::vector<int>* components,
                                                                    const std::vector<int>* region_ids,
                                                                    const std::vector<int>* boundary_ids, 
-                                                                   Expression_ptr ns_exp,
+                                                                   Expression_ptr value_exp, const double *value_const,
                                                                    const uint parent_component,
                                                                    uint rank, uint exp_index)
 {
@@ -1494,7 +1573,7 @@ boost::unordered_map<uint, double> SpudSolverBucket::field_ns_map_(const std::st
 
   assert(rank<=2);                                                   // component logic below only makes sense for rank <= 2
 
-  boost::unordered_map<uint, double> ns_map;
+  boost::unordered_map<uint, double> value_map;
 
   const uint num_sub_elements = (*(*functionspace).element()).num_sub_elements();
 
@@ -1519,45 +1598,46 @@ boost::unordered_map<uint, double> SpudSolverBucket::field_ns_map_(const std::st
         exp_index = i;
       }
 
-      boost::unordered_map<uint, double> tmp_ns_map;
-      tmp_ns_map = field_ns_map_(optionpath, (*functionspace)[i], 
+      boost::unordered_map<uint, double> tmp_map;
+      tmp_map = field_value_map_(optionpath, (*functionspace)[i], 
                                  components, region_ids,
-                                 boundary_ids, ns_exp,
+                                 boundary_ids, value_exp, value_const, 
                                  (parent_component*num_sub_elements + i), 
                                  rank++, exp_index);
-      ns_map.insert(tmp_ns_map.begin(), tmp_ns_map.end());
+      value_map.insert(tmp_map.begin(), tmp_map.end());
     }
 
-    return ns_map;
+    return value_map;
   }
   
   assert(num_sub_elements==0);
 
   boost::shared_ptr<const dolfin::GenericDofMap> dofmap = (*functionspace).dofmap();
 
-  ns_map = cell_ns_map_(dofmap, region_ids, ns_exp, exp_index);
+  value_map = cell_value_map_(dofmap, region_ids, value_exp, value_const, exp_index);
 
   if (boundary_ids)                                                  // do we have boundary ids specified?
   {                                                                  // yes...
-    boost::unordered_map<uint, double> facet_ns_map;
-    facet_ns_map = facet_ns_map_(dofmap, boundary_ids, ns_exp, exp_index);
-    ns_map.insert(facet_ns_map.begin(), facet_ns_map.end());
+    boost::unordered_map<uint, double> facet_value_map;
+    facet_value_map = facet_value_map_(dofmap, boundary_ids, value_exp, value_const, exp_index);
+    value_map.insert(facet_value_map.begin(), facet_value_map.end());
   }
 
-  return ns_map;
+  return value_map;
 
 }
 
 //*******************************************************************|************************************************************//
 // return an unordered map from dofs to null space values from the given dofmap possibly just for the region ids specified
 //*******************************************************************|************************************************************//
-boost::unordered_map<uint, double> SpudSolverBucket::cell_ns_map_(const boost::shared_ptr<const dolfin::GenericDofMap> dofmap,
+boost::unordered_map<uint, double> SpudSolverBucket::cell_value_map_(const boost::shared_ptr<const dolfin::GenericDofMap> dofmap,
                                                                   const std::vector<int>* region_ids,
-                                                                  Expression_ptr ns_exp, const uint &exp_index)
+                                                                  Expression_ptr value_exp, const double* value_const,
+                                                                  const uint &exp_index)
 {
   Spud::OptionError serr;                                            // spud error code
 
-  boost::unordered_map<uint, double> ns_map;
+  boost::unordered_map<uint, double> value_map;
 
   Mesh_ptr mesh = (*system_).mesh();                                 // get the mesh
 
@@ -1565,12 +1645,17 @@ boost::unordered_map<uint, double> SpudSolverBucket::cell_ns_map_(const boost::s
   boost::multi_array<double, 2> coordinates(boost::extents[(*dofmap).max_cell_dimension()][gdim]);
   dolfin::Array<double> x(gdim);
   uint value_size = 1;
-  if (ns_exp)
+  if (value_exp)
   {
-    for (uint i = 0; i < (*ns_exp).value_rank(); i++)
+    for (uint i = 0; i < (*value_exp).value_rank(); i++)
     {
-      value_size *= (*ns_exp).value_dimension(i);
+      value_size *= (*value_exp).value_dimension(i);
     }
+    assert(!value_const);
+  }
+  else
+  {
+    assert(value_const);
   }
   dolfin::Array<double> values(value_size);
 
@@ -1597,46 +1682,47 @@ boost::unordered_map<uint, double> SpudSolverBucket::cell_ns_map_(const boost::s
 
     std::vector<uint> dof_vec = (*dofmap).cell_dofs((*cell).index());
 
-    if(ns_exp)
+    if(value_exp)
     {
       (*dofmap).tabulate_coordinates(coordinates, *cell);
     }
 
     for (uint i = 0; i < dof_vec.size(); i++)                        // loop over the cell dof
     {
-      if(ns_exp)
+      if(value_exp)
       {
         for (uint j = 0; j < gdim; j++)
         {
           x[j] = coordinates[i][j];
         }
-        (*ns_exp).eval(values, x);                                   // evaluate te expression
-        ns_map[dof_vec[i]] = values[exp_index];                      // and set the null space to that
+        (*value_exp).eval(values, x);                                   // evaluate te expression
+        value_map[dof_vec[i]] = values[exp_index];                      // and set the null space to that
       }
       else
       {
-        ns_map[dof_vec[i]] = 1.0;                                    // and insert each one into the unordered map
-                                                                     // assuming a constant null space
+        value_map[dof_vec[i]] = *value_const;                         // and insert each one into the unordered map
+                                                                     // assuming a constant
       }
     }
   }
 
-  return ns_map;
+  return value_map;
 
 }
 
 //*******************************************************************|************************************************************//
 // return an unordered map from dofs to null space values from the given dofmap for the boundary ids specified
 //*******************************************************************|************************************************************//
-boost::unordered_map<uint, double> SpudSolverBucket::facet_ns_map_(const boost::shared_ptr<const dolfin::GenericDofMap> dofmap,
+boost::unordered_map<uint, double> SpudSolverBucket::facet_value_map_(const boost::shared_ptr<const dolfin::GenericDofMap> dofmap,
                                                                    const std::vector<int>* boundary_ids, 
-                                                                   Expression_ptr ns_exp, const uint &exp_index)
+                                                                   Expression_ptr value_exp, const double *value_const, 
+                                                                   const uint &exp_index)
 {
   Spud::OptionError serr;                                            // spud error code
 
   assert(boundary_ids);
 
-  boost::unordered_map<uint, double> ns_map;                         // set up an unordered set of dof
+  boost::unordered_map<uint, double> value_map;                         // set up an unordered set of dof
 
   Mesh_ptr mesh = (*system_).mesh();                                 // get the mesh
 
@@ -1644,12 +1730,17 @@ boost::unordered_map<uint, double> SpudSolverBucket::facet_ns_map_(const boost::
   boost::multi_array<double, 2> coordinates(boost::extents[(*dofmap).max_cell_dimension()][gdim]);
   dolfin::Array<double> x(gdim);
   uint value_size = 1;
-  if (ns_exp)
+  if (value_exp)
   {
-    for (uint i = 0; i < (*ns_exp).value_rank(); i++)
+    for (uint i = 0; i < (*value_exp).value_rank(); i++)
     {
-      value_size *= (*ns_exp).value_dimension(i);
+      value_size *= (*value_exp).value_dimension(i);
     }
+    assert(!value_const);
+  }
+  else
+  {
+    assert(value_const);
   }
   dolfin::Array<double> values(value_size);
 
@@ -1678,32 +1769,32 @@ boost::unordered_map<uint, double> SpudSolverBucket::facet_ns_map_(const boost::
         std::vector<uint> facet_dof_vec((*dofmap).num_facet_dofs(), 0);
         (*dofmap).tabulate_facet_dofs(&facet_dof_vec[0], facet_number);
 
-        if (ns_exp)
+        if (value_exp)
         {
           (*dofmap).tabulate_coordinates(coordinates, cell);
         }
 
         for (uint i = 0; i < facet_dof_vec.size(); i++)              // loop over facet dof
         {
-          if(ns_exp)
+          if(value_exp)
           {
             for (uint j = 0; j < gdim; j++)
             {
               x[j] = coordinates[i][j];
             }
-            (*ns_exp).eval(values, x);                               // evaluate the null space expression
-            ns_map[cell_dof_vec[facet_dof_vec[i]]] = values[exp_index];
+            (*value_exp).eval(values, x);                               // evaluate the null space expression
+            value_map[cell_dof_vec[facet_dof_vec[i]]] = values[exp_index];
           }
           else
           {
-            ns_map[cell_dof_vec[facet_dof_vec[i]]] = 1.0;            // and insert each one into the unordered map
-          }                                                          // assuming a constant null space
+            value_map[cell_dof_vec[facet_dof_vec[i]]] = *value_const;   // and insert each one into the unordered map
+          }                                                          // assuming a constant
         }                                                         
       }
     }
   }
 
-  return ns_map;
+  return value_map;
 
 }
 

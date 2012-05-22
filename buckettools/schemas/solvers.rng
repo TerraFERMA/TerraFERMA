@@ -287,6 +287,29 @@ Defaults to 1.e-12 if unset.</a:documentation>
         </optional>
       </element>
       <element name="snes_type">
+        <a:documentation>The SNES type. Variational Inequality.
+
+NOTE: only available with Petsc &gt;= 3.2.</a:documentation>
+        <attribute name="name">
+          <value>vi</value>
+        </attribute>
+        <element name="constraints">
+          <a:documentation>Place constraints on the variational inequality.</a:documentation>
+          <optional>
+            <element name="upper_bound">
+              <a:documentation>Describe the upper bound constraint on fields.</a:documentation>
+              <ref name="is_constraints"/>
+            </element>
+          </optional>
+          <optional>
+            <element name="lower_bound">
+              <a:documentation>Describe the upper bound constraint on fields.</a:documentation>
+              <ref name="is_constraints"/>
+            </element>
+          </optional>
+        </element>
+      </element>
+      <element name="snes_type">
         <a:documentation>The SNES type.</a:documentation>
         <attribute name="name">
           <value>tr</value>
@@ -397,7 +420,7 @@ the SNES solve. Some of those may really slow down your computation!</a:document
   </define>
   <define name="is_field">
     <element name="field">
-      <a:documentation>Field to include in this index space.</a:documentation>
+      <a:documentation>Field to include in this index set.</a:documentation>
       <attribute name="name">
         <data type="string"/>
       </attribute>
@@ -406,7 +429,7 @@ the SNES solve. Some of those may really slow down your computation!</a:document
   </define>
   <define name="is_field_null">
     <element name="field">
-      <a:documentation>Field to include in this index space.</a:documentation>
+      <a:documentation>Field to include in this index set.</a:documentation>
       <attribute name="name">
         <data type="string"/>
       </attribute>
@@ -414,7 +437,13 @@ the SNES solve. Some of those may really slow down your computation!</a:document
       <choice>
         <element name="constant">
           <a:documentation>This part of the null space is constant.</a:documentation>
-          <empty/>
+          <!-- A hardcoded real value -->
+          <element name="real_value">
+            <attribute name="rank">
+              <value>0</value>
+            </attribute>
+            <value>1.0</value>
+          </element>
         </element>
         <element name="python">
           <a:documentation>Python function describing the null space for this field or component of this field.
@@ -431,9 +460,44 @@ or:
     # Function code
     return [..., ...] # Return value array
 
-The return value must have the same length as the components of this field.
+The return value must have the same length as the number of components described above for this field.
 
 The resulting null space will be normalized automatically.</a:documentation>
+          <ref name="python_code"/>
+        </element>
+      </choice>
+    </element>
+  </define>
+  <define name="is_field_constraints">
+    <element name="field">
+      <a:documentation>Field to include in this index set.</a:documentation>
+      <attribute name="name">
+        <data type="string"/>
+      </attribute>
+      <ref name="is_field_components"/>
+      <choice>
+        <element name="constant">
+          <a:documentation>This part of the constraint is constant.
+
+Note if this part of the constraint has multiple components then all will be set to this scalar value.</a:documentation>
+          <ref name="real"/>
+        </element>
+        <element name="python">
+          <a:documentation>Python function describing the constraints for this field or component of this field.
+
+Functions may only depend on space and should be of the form:
+
+ def val(x):
+    # Function code
+    return # Return value
+
+or:
+
+ def val(x):
+    # Function code
+    return [..., ...] # Return value array
+
+The return value must have the same length as the number of components described above for this field.</a:documentation>
           <ref name="python_code"/>
         </element>
       </choice>
@@ -485,6 +549,12 @@ If left unspecified, defaults to the whole boundary of the above region(s) (if s
     <zeroOrMore>
       <ref name="is_field_null"/>
     </zeroOrMore>
+    <ref name="is_monitor"/>
+  </define>
+  <define name="is_constraints">
+    <oneOrMore>
+      <ref name="is_field_constraints"/>
+    </oneOrMore>
     <ref name="is_monitor"/>
   </define>
   <define name="linear_solver_options_top">

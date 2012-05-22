@@ -139,29 +139,36 @@ namespace buckettools
                          MatNullSpace &SP,
                          const std::vector<uint>* parent_indices);   // fill a petsc null space object
 
-    void fill_nullvector_by_field_(const std::string &optionpath,    // fill a vector describing a null space
-                                   PETScVector_ptr nullvec,
-                                   const std::vector<uint>* parent_indices);
+    void fill_constraints_();                                        // fill constraints on snes vi
 
-    boost::unordered_map<uint, double> field_ns_map_(const std::string &optionpath,
+    void fill_bound_(const std::string &optionpath, 
+                         PETScVector_ptr bound, const double &background_value);   // fill petsc vectors containing the bounds for snes vi
+
+    void fill_values_by_field_(const std::string &optionpath,    // fill a vector describing e.g. a null space
+                                   PETScVector_ptr values,
+                                   const double &value,
+                                   const std::vector<uint>* parent_indices,
+                                   const std::vector<uint>* sibling_indices);
+
+    boost::unordered_map<uint, double> field_value_map_(const std::string &optionpath,
                                                      const FunctionSpace_ptr functionspace,
                                                      const std::vector<int>* components,
                                                      const std::vector<int>* region_ids,
                                                      const std::vector<int>* boundary_ids,
-                                                     Expression_ptr ns_exp,
+                                                     Expression_ptr value_exp, const double *value_const,
                                                      const uint parent_component=0,
-                                                     uint rank=0,    // set up a map describing a null space for a field
+                                                     uint rank=0,    // set up a map describing e.g. the null space values for a field
                                                      uint exp_index=0);
 
-    boost::unordered_map<uint, double> cell_ns_map_(const boost::shared_ptr<const dolfin::GenericDofMap> dofmap,
+    boost::unordered_map<uint, double> cell_value_map_(const boost::shared_ptr<const dolfin::GenericDofMap> dofmap,
                                                     const std::vector<int>* region_ids,
-                                                    Expression_ptr ns_exp, 
-                                                    const uint &exp_index);// set up a map describing a null space over cells
+                                                    Expression_ptr value_exp, const double *value_const,
+                                                    const uint &exp_index);// set up a map describing e.g. the null space values over cells
 
-    boost::unordered_map<uint, double> facet_ns_map_(const boost::shared_ptr<const dolfin::GenericDofMap> dofmap,
+    boost::unordered_map<uint, double> facet_value_map_(const boost::shared_ptr<const dolfin::GenericDofMap> dofmap,
                                                      const std::vector<int>* boundary_ids,
-                                                     Expression_ptr ns_exp, 
-                                                     const uint &exp_index);// set up a map describing a null space over a boundary
+                                                     Expression_ptr value_exp, const double *value_const,
+                                                     const uint &exp_index);// set up a map describing e.g. the  null space values over a boundary
 
     void is_by_field_restrictions_(const std::string &optionpath,
                                    std::vector<int>* &components,
