@@ -1259,6 +1259,7 @@ void SpudSolverBucket::fill_nullspace_(const std::string &optionpath, MatNullSpa
 //*******************************************************************|************************************************************//
 void SpudSolverBucket::fill_constraints_()
 {
+  #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
   std::stringstream buffer;                                          // optionpath buffer
   PetscErrorCode perr;                                               // petsc error code
 
@@ -1272,6 +1273,9 @@ void SpudSolverBucket::fill_constraints_()
 
   perr = SNESVISetVariableBounds(snes_, *(*lb).vec(), *(*ub).vec());
   CHKERRV(perr);
+  #else
+  dolfin::error("SNES VI only available with petsc > 3.1");
+  #endif
 
 }
 
