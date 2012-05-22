@@ -65,6 +65,26 @@ void SpudSolverBucket::fill()
                                                                      // any duplicated options from the options file overwrite the
                                                                      // command line)
 
+    ctx_.solver = this;                                              // the snes context just needs this class... neat, huh?
+
+    perr = SNESSetFunction(snes_, *(*res_).vec(),                    // set the snes function to use the newly allocated residual vector
+                                    FormFunction, (void *) &ctx_); 
+    CHKERRV(perr);
+
+    if (bilinearpc_)                                                 // if we have a pc form
+    {
+      assert(matrixpc_);
+      perr = SNESSetJacobian(snes_, *(*matrix_).mat(),               // set the snes jacobian to have two matrices
+                  *(*matrixpc_).mat(), FormJacobian, (void *) &ctx_); 
+      CHKERRV(perr);
+    }
+    else                                                             // otherwise
+    {
+      perr = SNESSetJacobian(snes_, *(*matrix_).mat(),               // set the snes jacobian to have the same matrix twice
+                    *(*matrix_).mat(), FormJacobian, (void *) &ctx_); 
+      CHKERRV(perr);
+    }
+
     std::string snestype;
     buffer.str(""); buffer << optionpath() << "/type/snes_type/name";
     serr = Spud::get_option(buffer.str(), snestype);                 // set the snes type... ls is most common
@@ -180,26 +200,6 @@ void SpudSolverBucket::fill()
     if (Spud::have_option(buffer.str()))
     {
       perr = SNESView(snes_, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);// turn on snesview so we get some debugging info
-    }
-
-    ctx_.solver = this;                                              // the snes context just needs this class... neat, huh?
-
-    perr = SNESSetFunction(snes_, *(*res_).vec(),                    // set the snes function to use the newly allocated residual vector
-                                    FormFunction, (void *) &ctx_); 
-    CHKERRV(perr);
-
-    if (bilinearpc_)                                                 // if we have a pc form
-    {
-      assert(matrixpc_);
-      perr = SNESSetJacobian(snes_, *(*matrix_).mat(),               // set the snes jacobian to have two matrices
-                  *(*matrixpc_).mat(), FormJacobian, (void *) &ctx_); 
-      CHKERRV(perr);
-    }
-    else                                                             // otherwise
-    {
-      perr = SNESSetJacobian(snes_, *(*matrix_).mat(),               // set the snes jacobian to have the same matrix twice
-                    *(*matrix_).mat(), FormJacobian, (void *) &ctx_); 
-      CHKERRV(perr);
     }
 
   }
@@ -1240,6 +1240,8 @@ void SpudSolverBucket::fill_nullspace_(const std::string &optionpath, MatNullSpa
     fill_values_by_field_(buffer.str(), nullvec, 0.0,                // create a vector describing the nullspace based on this optionpath 
                                 parent_indices, NULL);               // (no siblings as null spaces can overlap)
 
+    perr = VecNormalize(*(*nullvec).vec(), PETSC_NULL); CHKERRV(perr);// normalize the null space vector
+
     nullvecs.push_back(nullvec);                                     // keep the null vector in scope by grabbing a reference to it
     vecs[i] = *(*nullvec).vec();                                     // also collect it in a petsc compatible format (shouldn't take
                                                                      // reference though... hence line above, necessary?)
@@ -1273,11 +1275,11 @@ void SpudSolverBucket::fill_constraints_()
   PetscErrorCode perr;                                               // petsc error code
 
   PETScVector_ptr ub;
-  buffer.str(""); buffer << optionpath() << "/snes_type/constraints/upper_bound";
+  buffer.str(""); buffer << optionpath() << "/type/snes_type/constraints/upper_bound";
   fill_bound_(buffer.str(), ub, SNES_VI_INF);
 
   PETScVector_ptr lb;
-  buffer.str(""); buffer << optionpath() << "/snes_type/constraints/lower_bound";
+  buffer.str(""); buffer << optionpath() << "/type/snes_type/constraints/lower_bound";
   fill_bound_(buffer.str(), lb, SNES_VI_NINF);
 
   perr = SNESVISetVariableBounds(snes_, *(*lb).vec(), *(*ub).vec());
@@ -1291,7 +1293,7 @@ void SpudSolverBucket::fill_constraints_()
 //*******************************************************************|************************************************************//
 // fill petsc vectors describing the bounds on fields using the optionpath provided
 //*******************************************************************|************************************************************//
-void SpudSolverBucket::fill_bound_(const std::string &optionpath, PETScVector_ptr bound, const double &background_value)
+void SpudSolverBucket::fill_bound_(const std::string &optionpath, PETScVector_ptr &bound, const double &background_value)
 {
 
   uint size = 0;
@@ -1511,12 +1513,17 @@ void SpudSolverBucket::fill_values_by_field_(const std::string &optionpath, PETS
   if (Spud::have_option(optionpath+"/monitors/view_index_set"))
   {
     buffer.str(""); buffer << optionpath << "/name";                 // IS Name
-    std::string isname;
-    serr = Spud::get_option(buffer.str(), isname);
-    spud_err(buffer.str(), serr);
+    if (Spud::have_option(buffer.str()))
+    {
+      std::string isname;
+      serr = Spud::get_option(buffer.str(), isname);
+      spud_err(buffer.str(), serr);
+      dolfin::log(dolfin::INFO, "ISView: %s (%s)", 
+                                  isname.c_str(), optionpath.c_str());
+    }
     
-    dolfin::log(dolfin::INFO, "ISView: %s (%s)", 
-                                isname.c_str(), optionpath.c_str());
+    dolfin::log(dolfin::INFO, "ISView: (%s)", 
+                                optionpath.c_str());
     perr = ISView(is, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);      // isview?
   }
 
@@ -1545,7 +1552,6 @@ void SpudSolverBucket::fill_values_by_field_(const std::string &optionpath, PETS
   #endif
 
   (*values).apply("");                                              // finish assembly of the null vector, just in case
-  perr = VecNormalize(*(*values).vec(), PETSC_NULL); CHKERRV(perr); // normalize the null space vector
 
 }
 
