@@ -1305,12 +1305,9 @@ void SpudSolverBucket::fill_bound_(const std::string &optionpath, PETScVector_pt
   }
   else
   {
-    dolfin::Array<double> background(size);
-    for (uint i = 0; i < background.size(); i++)
-    {
-      background[i] = background_value;
-    }
+    std::vector<double> background(size, background_value);
     (*bound).set_local(background);
+    background.clear();
   }
 
 }
@@ -1523,13 +1520,9 @@ void SpudSolverBucket::fill_values_by_field_(const std::string &optionpath, PETS
     perr = ISView(is, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);      // isview?
   }
 
-  dolfin::Array<double> background((*values).local_size());
-  for (uint i = 0; i < background.size(); i++)
-  {
-    background[i] = background_value;
-  }
-
-  (*values).set_local(background);                                   // set the background value of the values vector
+  std::vector<double> background((*values).local_size(), background_value);
+  (*bound).set_local(background);
+  background.clear();
 
   VecScatter scatter;                                                // create a petsc scatter object from an object with the same 
   perr = VecScatterCreate(*vvec.vec(), PETSC_NULL,                  // structure as the vvec vector to one with the same structure
