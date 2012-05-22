@@ -142,7 +142,7 @@ namespace buckettools
     void fill_constraints_();                                        // fill constraints on snes vi
 
     void fill_bound_(const std::string &optionpath, 
-                         PETScVector_ptr bound, const double &background_value);   // fill petsc vectors containing the bounds for snes vi
+                         PETScVector_ptr &bound, const double &background_value);   // fill petsc vectors containing the bounds for snes vi
 
     void fill_values_by_field_(const std::string &optionpath,    // fill a vector describing e.g. a null space
                                    PETScVector_ptr values,
