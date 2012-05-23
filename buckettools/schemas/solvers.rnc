@@ -226,6 +226,18 @@ snes =
       ## NOTE: only available with Petsc >= 3.2.
       element snes_type {
         attribute name { "vi" },
+        (
+          ## Performs a reduced space active set solve.
+          element vi_type {
+            attribute name { "rs" },
+            empty
+          }|
+          ## Performs a semi-smooth solve.
+          element vi_type {
+            attribute name { "ss" },
+            empty
+          }
+        ),
         ## Place constraints on the variational inequality.
         element constraints {
            ## Describe the upper bound constraint on fields.

@@ -89,10 +89,37 @@ void SpudSolverBucket::fill()
     buffer.str(""); buffer << optionpath() << "/type/snes_type/name";
     serr = Spud::get_option(buffer.str(), snestype);                 // set the snes type... ls is most common
     spud_err(buffer.str(), serr);
-    perr = SNESSetType(snes_, snestype.c_str()); CHKERRV(perr); 
 
-    if(snestype=="ls")
+    if(snestype=="vi")
     {
+      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
+      perr = SNESSetType(snes_, snestype.c_str()); CHKERRV(perr); 
+
+      std::string vitype;
+      buffer.str(""); buffer << optionpath() << "/type/snes_type::vi/vi_type/name";
+      serr = Spud::get_option(buffer.str(), vitype);
+      spud_err(buffer.str(), serr);
+      if (vitype=="rs")
+      {
+      }
+      else if (vitype=="ss")
+      {
+        dolfin::error("Unable to set snes vi type to ss.");
+      }
+      else
+      {
+        dolfin::error("Unknown snes vi type.");
+      }
+
+      fill_constraints_();
+      #else
+      dolfin::error("Cannot set snes vi with PETSc < 3.2.");
+      #endif
+    }
+    else if(snestype=="ls")
+    {
+      perr = SNESSetType(snes_, snestype.c_str()); CHKERRV(perr); 
+
       std::string lstype;
       buffer.str(""); buffer << optionpath() << "/type/snes_type::ls/ls_type/name";
       serr = Spud::get_option(buffer.str(), lstype);                // set the snes type... cubic is the most common
@@ -147,9 +174,9 @@ void SpudSolverBucket::fill()
       #endif
        
     }
-    else if(snestype=="vi")
+    else
     {
-      fill_constraints_();
+      perr = SNESSetType(snes_, snestype.c_str()); CHKERRV(perr); 
     }
 
     buffer.str(""); buffer << optionpath() 
