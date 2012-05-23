@@ -168,7 +168,6 @@ r = r_m + r_a + r_fS + r_fs1 + r_fs2</string_value>
           </ufl_symbol>
         </form>
         <snes_type name="vi">
-          <vi_type name="rs"/>
           <constraints>
             <upper_bound>
               <field name="Field">
