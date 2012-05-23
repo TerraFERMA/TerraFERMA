@@ -293,22 +293,6 @@ NOTE: only available with Petsc &gt;= 3.2.</a:documentation>
         <attribute name="name">
           <value>vi</value>
         </attribute>
-        <choice>
-          <element name="vi_type">
-            <a:documentation>Performs a reduced space active set solve.</a:documentation>
-            <attribute name="name">
-              <value>rs</value>
-            </attribute>
-            <empty/>
-          </element>
-          <element name="vi_type">
-            <a:documentation>Performs a semi-smooth solve.</a:documentation>
-            <attribute name="name">
-              <value>ss</value>
-            </attribute>
-            <empty/>
-          </element>
-        </choice>
         <element name="constraints">
           <a:documentation>Place constraints on the variational inequality.</a:documentation>
           <optional>

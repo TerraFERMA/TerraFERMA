@@ -95,22 +95,6 @@ void SpudSolverBucket::fill()
       #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
       perr = SNESSetType(snes_, snestype.c_str()); CHKERRV(perr); 
 
-      std::string vitype;
-      buffer.str(""); buffer << optionpath() << "/type/snes_type::vi/vi_type/name";
-      serr = Spud::get_option(buffer.str(), vitype);
-      spud_err(buffer.str(), serr);
-      if (vitype=="rs")
-      {
-      }
-      else if (vitype=="ss")
-      {
-        dolfin::error("Unable to set snes vi type to ss.");
-      }
-      else
-      {
-        dolfin::error("Unknown snes vi type.");
-      }
-
       fill_constraints_();
       #else
       dolfin::error("Cannot set snes vi with PETSc < 3.2.");
