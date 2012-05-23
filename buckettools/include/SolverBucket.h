@@ -112,6 +112,12 @@ namespace buckettools
     const bool monitor_norms() const                                 // return true if norms should be monitored in nonlinear iterations
     { return monitornorms_; }
 
+    PETScMatrix_ptr matrixbc()
+    { return matrixbc_; }
+
+    PETScVector_ptr rhsbc()
+    { return rhsbc_; }
+
     //***************************************************************|***********************************************************//
     // Form data access
     //***************************************************************|***********************************************************//
@@ -165,9 +171,9 @@ namespace buckettools
 
     Form_ptr linear_, bilinear_, bilinearpc_, residual_;             // (boost shared) pointers to forms
 
-    PETScMatrix_ptr matrix_, matrixpc_;                              // dolfin petsc matrix types
+    PETScMatrix_ptr matrix_, matrixpc_, matrixbc_;                   // dolfin petsc matrix types
 
-    PETScVector_ptr rhs_, res_, work_;                               // dolfin petsc vector types
+    PETScVector_ptr rhs_, rhsbc_, res_, work_;                       // dolfin petsc vector types
 
     double rtol_, atol_, stol_;                                      // nonlinear solver tolerances
 
