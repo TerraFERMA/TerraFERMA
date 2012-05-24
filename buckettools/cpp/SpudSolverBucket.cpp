@@ -61,10 +61,6 @@ void SpudSolverBucket::fill()
     perr = SNESSetOptionsPrefix(snes_, prefix.str().c_str());        // set its petsc options name prefix to SystemName_SolverName
     CHKERRV(perr);
 
-    perr = SNESSetFromOptions(snes_); CHKERRV(perr);                 // set-up snes from options (we do this first to ensure that
-                                                                     // any duplicated options from the options file overwrite the
-                                                                     // command line)
-
     ctx_.solver = this;                                              // the snes context just needs this class... neat, huh?
 
     perr = SNESSetFunction(snes_, *(*res_).vec(),                    // set the snes function to use the newly allocated residual vector
@@ -94,6 +90,9 @@ void SpudSolverBucket::fill()
     {
       #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
       perr = SNESSetType(snes_, snestype.c_str()); CHKERRV(perr); 
+      perr = SNESSetFromOptions(snes_); CHKERRV(perr);               // set-up snes from options (we do this first to ensure that
+                                                                     // any duplicated options from the options file overwrite the
+                                                                     // command line)
 
       fill_constraints_();
       #else
@@ -103,6 +102,9 @@ void SpudSolverBucket::fill()
     else if(snestype=="ls")
     {
       perr = SNESSetType(snes_, snestype.c_str()); CHKERRV(perr); 
+      perr = SNESSetFromOptions(snes_); CHKERRV(perr);               // set-up snes from options (we do this first to ensure that
+                                                                     // any duplicated options from the options file overwrite the
+                                                                     // command line)
 
       std::string lstype;
       buffer.str(""); buffer << optionpath() << "/type/snes_type::ls/ls_type/name";
@@ -161,6 +163,9 @@ void SpudSolverBucket::fill()
     else
     {
       perr = SNESSetType(snes_, snestype.c_str()); CHKERRV(perr); 
+      perr = SNESSetFromOptions(snes_); CHKERRV(perr);               // set-up snes from options (we do this first to ensure that
+                                                                     // any duplicated options from the options file overwrite the
+                                                                     // command line)
     }
 
     buffer.str(""); buffer << optionpath() 
