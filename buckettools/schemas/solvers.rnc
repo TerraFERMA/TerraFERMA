@@ -223,7 +223,7 @@ snes =
       }|
       ## The SNES type. Variational Inequality.
       ##
-      ## NOTE: only available with Petsc >= 3.2.
+      ## NOTE: only available with Petsc >= 3.2 and with petsc-dev this maps to virs.
       element snes_type {
         attribute name { "vi" },
         ## Place constraints on the variational inequality.

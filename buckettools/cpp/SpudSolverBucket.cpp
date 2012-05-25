@@ -89,7 +89,11 @@ void SpudSolverBucket::fill()
     if(snestype=="vi")
     {
       #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
+      #if PETSC_VERSION_RELEASE==1
       perr = SNESSetType(snes_, snestype.c_str()); CHKERRV(perr); 
+      #else
+      perr = SNESSetType(snes_, SNESVIRS); CHKERRV(perr); 
+      #endif
       perr = SNESSetFromOptions(snes_); CHKERRV(perr);               // set-up snes from options (we do this first to ensure that
                                                                      // any duplicated options from the options file overwrite the
                                                                      // command line)

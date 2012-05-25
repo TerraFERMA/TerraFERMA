@@ -289,7 +289,7 @@ Defaults to 1.e-12 if unset.</a:documentation>
       <element name="snes_type">
         <a:documentation>The SNES type. Variational Inequality.
 
-NOTE: only available with Petsc &gt;= 3.2.</a:documentation>
+NOTE: only available with Petsc &gt;= 3.2 and with petsc-dev this maps to virs.</a:documentation>
         <attribute name="name">
           <value>vi</value>
         </attribute>
