@@ -221,6 +221,23 @@ snes =
           real
         }?
       }|
+      ## The SNES type. Variational Inequality.
+      ##
+      ## NOTE: only available with Petsc >= 3.2.
+      element snes_type {
+        attribute name { "vi" },
+        ## Place constraints on the variational inequality.
+        element constraints {
+           ## Describe the upper bound constraint on fields.
+           element upper_bound {
+             is_constraints
+           }?,
+           ## Describe the upper bound constraint on fields.
+           element lower_bound {
+             is_constraints
+           }?
+        }
+      }|
       ## The SNES type.
       element snes_type {
         attribute name { "tr" },
@@ -309,7 +326,7 @@ ident_zeros =
 
 is_field = 
   (
-    ## Field to include in this index space.
+    ## Field to include in this index set.
     element field {
       attribute name { xsd:string },
       is_field_components
@@ -318,14 +335,18 @@ is_field =
 
 is_field_null = 
   (
-    ## Field to include in this index space.
+    ## Field to include in this index set.
     element field {
       attribute name { xsd:string },
       is_field_components,
       (
         ## This part of the null space is constant.
         element constant {
-          empty
+          # A hardcoded real value
+          element real_value{
+             attribute rank { "0" },
+             ( "1.0" )
+          }
         }|
         ## Python function describing the null space for this field or component of this field.
         ##
@@ -341,9 +362,44 @@ is_field_null =
         ##     # Function code
         ##     return [..., ...] # Return value array
         ##
-        ## The return value must have the same length as the components of this field.
+        ## The return value must have the same length as the number of components described above for this field.
         ## 
         ## The resulting null space will be normalized automatically.
+        element python {
+          python_code
+        }
+      )
+    }
+  )
+
+is_field_constraints = 
+  (
+    ## Field to include in this index set.
+    element field {
+      attribute name { xsd:string },
+      is_field_components,
+      (
+        ## This part of the constraint is constant.
+        ##
+        ## Note if this part of the constraint has multiple components then all will be set to this scalar value.
+        element constant {
+          real
+        }|
+        ## Python function describing the constraints for this field or component of this field.
+        ##
+        ## Functions may only depend on space and should be of the form:
+        ##
+        ##  def val(x):
+        ##     # Function code
+        ##     return # Return value
+        ##
+        ## or:
+        ##
+        ##  def val(x):
+        ##     # Function code
+        ##     return [..., ...] # Return value array
+        ##
+        ## The return value must have the same length as the number of components described above for this field.
         element python {
           python_code
         }
@@ -392,6 +448,12 @@ is_fieldsplit =
 is_null_space =
   (
     is_field_null*,
+    is_monitor
+  )
+
+is_constraints =
+  (
+    is_field_constraints+,
     is_monitor
   )
 

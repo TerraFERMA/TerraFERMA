@@ -67,7 +67,7 @@ add_library(buckettools_cpp Usage.cpp SignalHandler.cpp SigIntEventHandler.cpp
 set_source_files_properties(builddefs.h PROPERTIES GENERATED 1)
 # the project depends on this target
 add_dependencies(buckettools_cpp builddefs)
-# link to python
-target_link_libraries(buckettools_cpp ${PYTHON_LIBRARIES})
+# link to other libraries
+target_link_libraries(buckettools_cpp ${DOLFIN_LIBRARIES} ${DOLFIN_3RD_PARTY_LIBRARIES} ${SPUD_LIBRARIES} ${PYTHON_LIBRARIES})
 
 

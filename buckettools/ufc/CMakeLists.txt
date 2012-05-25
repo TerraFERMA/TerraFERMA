@@ -30,4 +30,6 @@ set_source_files_properties(${PROJECT_BINARY_DIR}/SystemSolversWrapper.cpp PROPE
 set_source_files_properties(${PROJECT_BINARY_DIR}/SystemExpressionsWrapper.cpp PROPERTIES GENERATED 1)
 # the project depends on this target
 add_dependencies(${PREFIX}buckettools_ufc ${PREFIX}genwrappers)
+# link to other libraries
+target_link_libraries(${PREFIX}buckettools_ufc ${DOLFIN_LIBRARIES} ${DOLFIN_3RD_PARTY_LIBRARIES})
 
