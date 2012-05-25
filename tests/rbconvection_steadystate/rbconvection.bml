@@ -267,7 +267,9 @@ r = rv + rp + rT</string_value>
           <remove_null_space>
             <null_space name="Pressure">
               <field name="Pressure">
-                <constant/>
+                <constant>
+                  <real_value rank="0">1.0</real_value>
+                </constant>
               </field>
               <monitors>
                 <view_index_set/>

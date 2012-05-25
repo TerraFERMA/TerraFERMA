@@ -1,6 +1,7 @@
 set(EXECUTABLE "projection_mixedelement")
 
 set(OPTIONSFILENAME "projection.bml")
+set(MESHBASENAME "square")
 
 set(PREFIX ${EXECUTABLE})
 
@@ -28,11 +29,20 @@ set (EXTRA_LIBS ${EXTRA_LIBS} buckettools_cpp ${PREFIX}buckettools_ufc)
 
 target_link_libraries(${EXECUTABLE} ${DOLFIN_LIBRARIES} ${DOLFIN_3RD_PARTY_LIBRARIES} ${EXTRA_LIBS} ${SPUD_LIBRARIES} ${PYTHON_LIBRARIES})
 
+# add a command that runs the mesh generation script
+add_custom_command(
+  OUTPUT ${PROJECT_BINARY_DIR}/${MESHBASENAME}.xml
+  COMMAND cp
+  ARGS ${PROJECT_SOURCE_DIR}/mesh/${MESHBASENAME}*.xml ${PROJECT_BINARY_DIR}/.
+  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+  )
+ 
 add_custom_target(
   ${PREFIX}_run
   COMMAND ${EXECUTABLE} -v${LOGLEVEL} -l ${OPTIONSFILE} 
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   DEPENDS ${EXECUTABLE}
+  DEPENDS ${PROJECT_BINARY_DIR}/${MESHBASENAME}.xml
   )
 
 add_custom_target(
