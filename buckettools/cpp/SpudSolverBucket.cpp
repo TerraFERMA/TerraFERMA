@@ -97,7 +97,11 @@ void SpudSolverBucket::initialize()
     if(snestype=="vi")
     {
       #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
+      #if PETSC_VERSION_RELEASE==1
       perr = SNESSetType(snes_, snestype.c_str()); CHKERRV(perr); 
+      #else
+      perr = SNESSetType(snes_, SNESVIRS); CHKERRV(perr); 
+      #endif
       perr = SNESSetFromOptions(snes_); CHKERRV(perr);               // set-up snes from options (we do this first to ensure that
                                                                      // any duplicated options from the options file overwrite the
                                                                      // command line)
@@ -117,28 +121,56 @@ void SpudSolverBucket::initialize()
       std::string lstype;
       buffer.str(""); buffer << optionpath() << "/type/snes_type::ls/ls_type/name";
       serr = Spud::get_option(buffer.str(), lstype);                // set the snes type... cubic is the most common
-      spud_err(buffer.str(), serr);
+      spud_err(buffer.str(), serr);                                 // FIXME: once dev is released (PETSc>3.2) the
+                                                                    // schema should be refactored to offer the petsc options
+                                                                    // directly rather than the mapping onto options done here
       if (lstype=="cubic")
       {
+        #if PETSC_VERSION_RELEASE==1
         perr = SNESLineSearchSet(snes_, SNESLineSearchCubic, PETSC_NULL); CHKERRV(perr); 
+        #else
+        SNESLineSearch linesearch;
+        perr = SNESGetSNESLineSearch(snes_, &linesearch); CHKERRV(perr);
+        perr = SNESLineSearchSetType(linesearch, "bt"); CHKERRV(perr);
+        perr = SNESLineSearchSetOrder(linesearch, 3); CHKERRV(perr);
+        #endif
       }
       else if (lstype=="quadratic")
       {
+        #if PETSC_VERSION_RELEASE==1
         perr = SNESLineSearchSet(snes_, SNESLineSearchQuadratic, PETSC_NULL); CHKERRV(perr); 
+        #else
+        SNESLineSearch linesearch;
+        perr = SNESGetSNESLineSearch(snes_, &linesearch); CHKERRV(perr);
+        perr = SNESLineSearchSetType(linesearch, "bt"); CHKERRV(perr);
+        perr = SNESLineSearchSetOrder(linesearch, 2); CHKERRV(perr);
+        #endif
       }
       else if (lstype=="basic")
       {
+        #if PETSC_VERSION_RELEASE==1
         perr = SNESLineSearchSet(snes_, SNESLineSearchNo, PETSC_NULL); CHKERRV(perr); 
+        #else
+        SNESLineSearch linesearch;
+        perr = SNESGetSNESLineSearch(snes_, &linesearch); CHKERRV(perr);
+        perr = SNESLineSearchSetType(linesearch, "basic"); CHKERRV(perr);
+        #endif
       }
       else if (lstype=="basicnonorms")
       {
+        #if PETSC_VERSION_RELEASE==1
         perr = SNESLineSearchSet(snes_, SNESLineSearchNoNorms, PETSC_NULL); CHKERRV(perr); 
+        #else
+        dolfin::error("No equivalent snes ls type to basicnonorms in petsc-dev.");
+        #endif
       }
       else
       {
         dolfin::error("Unknown snes ls type.");
       }
 
+                                                                     // FIXME: realign with available PETSc options once petsc-dev
+                                                                     // is released (PETSc>3.2)
       buffer.str(""); buffer << optionpath() << "/type/snes_type::ls/alpha";
       double alpha;
       serr = Spud::get_option(buffer.str(), alpha, 1.e-4);
@@ -150,19 +182,31 @@ void SpudSolverBucket::initialize()
       spud_err(buffer.str(), serr);
        
       buffer.str(""); buffer << optionpath() << "/type/snes_type::ls/min_lambda";
-      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
-      #else
       if (Spud::have_option(buffer.str()))
       {
+        #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
+        #if PETSC_VERSION_RELEASE==0
+        dolfin::error("Cannot set snes ls min_lambda with PETSc-dev - options not aligned.");
+        #endif
+        #else
         dolfin::error("Cannot set snes ls min_lambda with PETSc < 3.2.");
+        #endif
       }
-      #endif
       double minlambda;
       serr = Spud::get_option(buffer.str(), minlambda, 1.e-12);
       spud_err(buffer.str(), serr);
 
       #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
+      #if PETSC_VERSION_RELEASE==1
       perr = SNESLineSearchSetParams(snes_, alpha, maxstep, minlambda); CHKERRV(perr);
+      #else
+      SNESLineSearch linesearch;
+      perr = SNESGetSNESLineSearch(snes_, &linesearch); CHKERRV(perr);
+      perr = SNESLineSearchBTSetAlpha(linesearch, alpha); CHKERRV(perr);// FIXME: assumes using bt
+      perr = SNESLineSearchSetTolerances(linesearch, PETSC_DEFAULT, maxstep, PETSC_DEFAULT,
+                                        PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT);
+      CHKERRV(perr);
+      #endif
       #else
       perr = SNESLineSearchSetParams(snes_, alpha, maxstep); CHKERRV(perr);
       #endif
@@ -507,6 +551,10 @@ void SpudSolverBucket::initialize_tensors_()
   dolfin::AssemblerTools::init_global_tensor(*matrix_, *bilinear_, 
                                                true, false);
 
+  matrixbc_.reset(new dolfin::PETScMatrix);                          // allocate the matrix for the lifted bcs
+  dolfin::AssemblerTools::init_global_tensor(*matrixbc_, *bilinear_, 
+                                               true, false);
+
   if(bilinearpc_)                                                    // do we have a pc form?
   {
     matrixpc_.reset(new dolfin::PETScMatrix);                        // allocate the matrix
@@ -517,6 +565,11 @@ void SpudSolverBucket::initialize_tensors_()
   rhs_.reset(new dolfin::PETScVector);                               // allocate the rhs
   dolfin::AssemblerTools::init_global_tensor(*rhs_, *linear_, 
                                              true, false);
+
+  rhsbc_.reset(new dolfin::PETScVector);                             // allocate the rhs
+  dolfin::AssemblerTools::init_global_tensor(*rhsbc_, *linear_, 
+                                             true, false);
+
   if(residual_)                                                      // do we have a residual_ form?
   {                                                                  // yes...
     res_.reset(new dolfin::PETScVector);                             // allocate the residual
@@ -720,6 +773,26 @@ void SpudSolverBucket::fill_pc_(const std::string &optionpath, PC &pc,
   perr = PCSetType(pc, preconditioner.c_str()); CHKERRV(perr);       // set its type (read from options earlier)
 
   perr = PCSetFromOptions(pc); CHKERRV(perr);                        // do this now so they can be overwritten
+
+  buffer.str(""); buffer << optionpath 
+                                << "/preconditioner/near_null_space";// set a (or multiple) near null space(s)
+  if (Spud::have_option(buffer.str()))
+  {
+    #if PETSC_VERSION_RELEASE == 0
+    MatNullSpace SP;                                                 // create a set of nullspaces in a null space object
+    fill_nullspace_(buffer.str(), SP, parent_indices);
+
+    perr = MatSetNearNullSpace(*(*matrix_).mat(), SP); CHKERRV(perr);
+
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
+    perr = MatNullSpaceDestroy(&SP); CHKERRV(perr);                  // destroy the null space object, necessary?
+    #else
+    perr = MatNullSpaceDestroy(SP); CHKERRV(perr);                   // destroy the null space object, necessary?
+    #endif
+    #else
+    dolfin::error("Can only set near null spaces with petsc-dev.");
+    #endif
+  }
 
   if (preconditioner=="ksp")                                         // if the pc is itself a ksp
   {
@@ -1325,12 +1398,9 @@ void SpudSolverBucket::fill_bound_(const std::string &optionpath, PETScVector_pt
   }
   else
   {
-    dolfin::Array<double> background(size);
-    for (uint i = 0; i < background.size(); i++)
-    {
-      background[i] = background_value;
-    }
+    std::vector<double> background(size, background_value);
     (*bound).set_local(background);
+    background.clear();
   }
 
 }
@@ -1548,13 +1618,9 @@ void SpudSolverBucket::fill_values_by_field_(const std::string &optionpath, PETS
     perr = ISView(is, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);      // isview?
   }
 
-  dolfin::Array<double> background((*values).local_size());
-  for (uint i = 0; i < background.size(); i++)
-  {
-    background[i] = background_value;
-  }
-
-  (*values).set_local(background);                                   // set the background value of the values vector
+  std::vector<double> background((*values).local_size(), background_value);
+  (*values).set_local(background);
+  background.clear();
 
   VecScatter scatter;                                                // create a petsc scatter object from an object with the same 
   perr = VecScatterCreate(*vvec.vec(), PETSC_NULL,                  // structure as the vvec vector to one with the same structure
