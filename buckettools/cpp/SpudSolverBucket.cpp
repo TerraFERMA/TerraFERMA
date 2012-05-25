@@ -499,6 +499,10 @@ void SpudSolverBucket::fill_tensors_()
   dolfin::AssemblerTools::init_global_tensor(*matrix_, *bilinear_, 
                                                true, false);
 
+  matrixbc_.reset(new dolfin::PETScMatrix);                          // allocate the matrix for the lifted bcs
+  dolfin::AssemblerTools::init_global_tensor(*matrixbc_, *bilinear_, 
+                                               true, false);
+
   if(bilinearpc_)                                                    // do we have a pc form?
   {
     matrixpc_.reset(new dolfin::PETScMatrix);                        // allocate the matrix
@@ -509,6 +513,11 @@ void SpudSolverBucket::fill_tensors_()
   rhs_.reset(new dolfin::PETScVector);                               // allocate the rhs
   dolfin::AssemblerTools::init_global_tensor(*rhs_, *linear_, 
                                              true, false);
+
+  rhsbc_.reset(new dolfin::PETScVector);                             // allocate the rhs
+  dolfin::AssemblerTools::init_global_tensor(*rhsbc_, *linear_, 
+                                             true, false);
+
   if(residual_)                                                      // do we have a residual_ form?
   {                                                                  // yes...
     res_.reset(new dolfin::PETScVector);                             // allocate the residual
@@ -1314,12 +1323,9 @@ void SpudSolverBucket::fill_bound_(const std::string &optionpath, PETScVector_pt
   }
   else
   {
-    dolfin::Array<double> background(size);
-    for (uint i = 0; i < background.size(); i++)
-    {
-      background[i] = background_value;
-    }
+    std::vector<double> background(size, background_value);
     (*bound).set_local(background);
+    background.clear();
   }
 
 }
@@ -1537,13 +1543,9 @@ void SpudSolverBucket::fill_values_by_field_(const std::string &optionpath, PETS
     perr = ISView(is, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);      // isview?
   }
 
-  dolfin::Array<double> background((*values).local_size());
-  for (uint i = 0; i < background.size(); i++)
-  {
-    background[i] = background_value;
-  }
-
-  (*values).set_local(background);                                   // set the background value of the values vector
+  std::vector<double> background((*values).local_size(), background_value);
+  (*values).set_local(background);
+  background.clear();
 
   VecScatter scatter;                                                // create a petsc scatter object from an object with the same 
   perr = VecScatterCreate(*vvec.vec(), PETSC_NULL,                  // structure as the vvec vector to one with the same structure
