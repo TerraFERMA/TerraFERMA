@@ -45,7 +45,8 @@ namespace buckettools
 
     void initialize_fields_and_coefficients();                       // initialize the expressions that fields and coefficients use
 
-    void initialize_matrices();                                      // initialize the matrices related to forms
+    void initialize_solvers();                                       // initialize the matrices related to forms as well as the
+                                                                     // petsc objects
 
     void copy_diagnostics(SystemBucket_ptr &system, 
                             Bucket_ptr &bucket) const;               // copy the data necessary for the diagnostics data file(s)

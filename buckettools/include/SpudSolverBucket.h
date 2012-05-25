@@ -39,6 +39,8 @@ namespace buckettools
 
     void fill();                                                     // fill in the data in the base solver bucket
 
+    void initialize();                                               // initialize the solvers and tensors
+
     void copy_diagnostics(SolverBucket_ptr &solver, 
                                   SystemBucket_ptr &system) const;   // copy the data necessary for the diagnostics data file(s)
 
@@ -95,8 +97,6 @@ namespace buckettools
     void fill_base_();                                               // fill the base data of the solver bucket
  
     void fill_forms_();                                              // fill the form data of the solver bucket
-
-    void fill_tensors_();                                            // fill the tensor data structures of the solver bucket
 
     void fill_ksp_(const std::string &optionpath, KSP &ksp, 
                                   const std::string prefix)          // fill the information about a parent ksp
@@ -184,6 +184,8 @@ namespace buckettools
     void restrict_is_indices_(std::vector<uint> &indices,            // restrict the indices describing an IS based on the parent,
                               const std::vector<uint>* parent_indices,// sibling and parallel ownership
                               const std::vector<uint>* sibling_indices);
+
+    void initialize_tensors_();                                      // fill the tensor data structures of the solver bucket
 
     //***************************************************************|***********************************************************//
     // Emptying data

@@ -368,17 +368,6 @@ void SolverBucket::initialize_diagnostics() const                    // doesn't 
 }
 
 //*******************************************************************|************************************************************//
-// perform some preassembly on the tensors
-//*******************************************************************|************************************************************//
-void SolverBucket::initialize_matrices()
-{
-
-  assemble_bilinearforms();                                          // perform preassembly of the bilinear forms
-  assemble_linearforms();                                            // perform preassembly of the linear forms
-  
-}
-
-//*******************************************************************|************************************************************//
 // return the number of nonlinear iterations taken
 //*******************************************************************|************************************************************//
 const int SolverBucket::iteration_count() const

@@ -40,15 +40,23 @@ SpudSolverBucket::~SpudSolverBucket()
 //*******************************************************************|************************************************************//
 void SpudSolverBucket::fill()
 {
-  std::stringstream buffer;                                          // optionpath buffer
-  Spud::OptionError serr;                                            // spud error code
-  PetscErrorCode perr;                                               // petsc error code
 
   fill_base_();                                                      // fill the base solver data: type, name etc.
 
   fill_forms_();                                                     // fill the forms data
 
-  fill_tensors_();                                                   // set up the tensor structures
+}
+
+//*******************************************************************|************************************************************//
+// initialize the actual solvers in the solver bucket data structures assuming the buckettools schema
+//*******************************************************************|************************************************************//
+void SpudSolverBucket::initialize()
+{
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud error code
+  PetscErrorCode perr;                                               // petsc error code
+
+  initialize_tensors_();                                             // set up the tensor structures
 
   std::stringstream prefix;                                          // prefix buffer
   prefix.str(""); prefix << (*system_).name() << "_" << name() << "_";
@@ -233,15 +241,6 @@ void SpudSolverBucket::fill()
                                     (*system()).name(), name()) );   // bucket isn't complete
     }
 
-    buffer.str(""); buffer << optionpath() << "/type/linear_solver"; // figure out the linear solver optionspath
-    fill_ksp_(buffer.str(), ksp_, prefix.str());                     // fill the ksp data
-
-    buffer.str(""); buffer << optionpath() << "/type/linear_solver/monitors/view_ksp";
-    if (Spud::have_option(buffer.str()))
-    {
-      perr = KSPView(ksp_, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr); // turn on kspview so we get some debugging info
-    }
-
     if (bilinearpc_)
     {                                                                // if there's a pc associated
       perr = KSPSetOperators(ksp_, *(*matrix_).mat(),                // set the ksp operators with two matrices
@@ -255,6 +254,15 @@ void SpudSolverBucket::fill()
                                    *(*matrix_).mat(), 
                                    SAME_NONZERO_PATTERN); 
       CHKERRV(perr);
+    }
+
+    buffer.str(""); buffer << optionpath() << "/type/linear_solver"; // figure out the linear solver optionspath
+    fill_ksp_(buffer.str(), ksp_, prefix.str());                     // fill the ksp data
+
+    buffer.str(""); buffer << optionpath() << "/type/linear_solver/monitors/view_ksp";
+    if (Spud::have_option(buffer.str()))
+    {
+      perr = KSPView(ksp_, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr); // turn on kspview so we get some debugging info
     }
 
   }
@@ -488,10 +496,10 @@ void SpudSolverBucket::fill_forms_()
 }
 
 //*******************************************************************|************************************************************//
-// fill the tensor structures in solver bucket assuming the buckettools schema (common for all solver types)
+// initialize the tensor structures in solver bucket assuming the buckettools schema (common for all solver types)
 // (must be called after fill_forms_)
 //*******************************************************************|************************************************************//
-void SpudSolverBucket::fill_tensors_()
+void SpudSolverBucket::initialize_tensors_()
 {
   std::stringstream buffer;                                          // optionpath buffer
    
@@ -559,6 +567,9 @@ void SpudSolverBucket::fill_tensors_()
   {
     dolfin::error("Unknown solver type.");
   }
+
+  assemble_linearforms();                                            // preassemble
+  assemble_bilinearforms();
 
 }
 
