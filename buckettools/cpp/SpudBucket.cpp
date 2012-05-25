@@ -115,7 +115,7 @@ void SpudBucket::fill()
   for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *sixth* time, preassembling
                                   sys_it != systems_end(); sys_it++) // the matrices
   {
-    (*boost::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).initialize_matrices();
+    (*boost::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).initialize_solvers();
   }
   
   fill_detectors_();                                                 // put the detectors in the bucket

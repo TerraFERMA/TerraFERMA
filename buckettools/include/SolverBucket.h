@@ -56,9 +56,6 @@ namespace buckettools
 
     void attach_form_coeffs();                                       // attach coefficients to the forms in this solver
 
-    void initialize_matrices();                                      // initialize the vectors and matrices (preassembly) described
-                                                                     // by the forms in this solver
-
     virtual void copy_diagnostics(SolverBucket_ptr &solver, 
                                   SystemBucket_ptr &system) const;   // copy the data necessary for the diagnostics data file(s)
 
