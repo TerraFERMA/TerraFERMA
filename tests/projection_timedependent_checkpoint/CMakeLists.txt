@@ -32,16 +32,14 @@ target_link_libraries(${EXECUTABLE} ${DOLFIN_LIBRARIES} ${DOLFIN_3RD_PARTY_LIBRA
 # add a command that runs the mesh generation script
 add_custom_command(
     OUTPUT ${PROJECT_BINARY_DIR}/${MESHBASENAME}.xml
-    COMMAND gmsh
-    ARGS -2 ${PROJECT_SOURCE_DIR}/${MESHBASENAME}.geo -o ${PROJECT_BINARY_DIR}/${MESHBASENAME}.msh
     COMMAND dolfin-convert
-    ARGS ${PROJECT_BINARY_DIR}/${MESHBASENAME}.msh ${PROJECT_BINARY_DIR}/${MESHBASENAME}.xml
+    ARGS ${PROJECT_SOURCE_DIR}/${MESHBASENAME}.msh ${PROJECT_BINARY_DIR}/${MESHBASENAME}.xml
     COMMAND rm
     ARGS ${PROJECT_BINARY_DIR}/${MESHBASENAME}_physical_region.xml
     COMMAND cp
     ARGS ${PROJECT_SOURCE_DIR}/projection_PicardProjection_0.xml ${PROJECT_SOURCE_DIR}/projection_SNESProjection_0.xml ${PROJECT_BINARY_DIR}/.
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-    DEPENDS ${PROJECT_SOURCE_DIR}/${MESHBASENAME}.geo
+    DEPENDS ${PROJECT_SOURCE_DIR}/${MESHBASENAME}.msh
     )
  
 add_custom_target(
