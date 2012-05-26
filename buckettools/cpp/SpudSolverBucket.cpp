@@ -524,8 +524,8 @@ void SpudSolverBucket::initialize_tensors_()
                                                true, false);
   }
 
-  uint syssize = (*(*(*system_).function()).vector()).size();        // set up a work vector of the correct (system) size
-  work_.reset( new dolfin::PETScVector(syssize) ); 
+  work_.reset( new dolfin::PETScVector(*boost::dynamic_pointer_cast<dolfin::PETScVector>((*(*system_).function()).vector())) ); 
+  (*work_).zero();
 
   ident_zeros_ = false;
   ident_zeros_pc_ = false;
@@ -545,7 +545,8 @@ void SpudSolverBucket::initialize_tensors_()
     }                                                                // otherwise bilinearpc_ is null (indicates self pcing)
                                                                      // residual_ is always a null pointer for snes
     assert(!residual_);                                              // 
-    res_.reset( new dolfin::PETScVector(syssize) );                  // but we still want to initialize the residual vector
+    res_.reset( new dolfin::PETScVector(*work_) );                   // but we still want to initialize the residual vector
+    (*res_).zero();
 
   }
   else if (type()=="Picard")                                         // picard solver type...
@@ -1251,7 +1252,7 @@ void SpudSolverBucket::fill_nullspace_(const std::string &optionpath, MatNullSpa
   for (uint i = 0; i<nnulls; i++)                                    // loop over the nullspaces
   {
 
-    PETScVector_ptr nullvec( new dolfin::PETScVector(kspsize) );     // create a null vector for this null space
+    PETScVector_ptr nullvec( new dolfin::PETScVector(kspsize, "local") );// create a null vector for this null space
 
     buffer.str(""); buffer << optionpath <<                          // optionpath of the nullspace
                       "/null_space[" << i << "]";
@@ -1315,8 +1316,8 @@ void SpudSolverBucket::fill_bound_(const std::string &optionpath, PETScVector_pt
 {
 
   uint size = 0;
-  size = (*(*(*system_).function()).vector()).size();
-  bound.reset( new dolfin::PETScVector(size) );
+  size = (*(*(*system_).function()).vector()).local_size();
+  bound.reset( new dolfin::PETScVector(size, "local") );
 
   if (Spud::have_option(optionpath))
   {
