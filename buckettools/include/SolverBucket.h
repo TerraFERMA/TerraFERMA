@@ -46,18 +46,15 @@ namespace buckettools
 
     void solve();                                                    // run the nonlinear solver described by this class
 
-    void assemble_linearforms(const bool &reset_tensor);             // assemble all linear forms in this solver
+    void assemble_linearforms();                                     // assemble all linear forms in this solver
 
-    void assemble_bilinearforms(const bool &reset_tensor);           // assemble all bilinear forms in this solver
+    void assemble_bilinearforms();                                   // assemble all bilinear forms in this solver
 
     //***************************************************************|***********************************************************//
     // Filling data
     //***************************************************************|***********************************************************//
 
     void attach_form_coeffs();                                       // attach coefficients to the forms in this solver
-
-    void initialize_matrices();                                      // initialize the vectors and matrices (preassembly) described
-                                                                     // by the forms in this solver
 
     virtual void copy_diagnostics(SolverBucket_ptr &solver, 
                                   SystemBucket_ptr &system) const;   // copy the data necessary for the diagnostics data file(s)
@@ -105,8 +102,6 @@ namespace buckettools
 
     void iteration_count(const int &it);                             // set the number of iterations taken
 
-    const bool kspnullspace_monitor() const;                         // return true if we're using a visualization monitor
-    
     const ConvergenceFile_ptr convergence_file() const;              // return a pointer to the convergence file
 
     const KSPConvergenceFile_ptr ksp_convergence_file() const;       // return a pointer to the ksp convergence file
@@ -192,8 +187,6 @@ namespace buckettools
     ConvergenceFile_ptr convfile_;                                   // diagnostic convergence file
 
     KSPConvergenceFile_ptr kspconvfile_;                             // diagnostic convergence file
-
-    bool_ptr kspnullspacemonitor_;                                   // visualization monitors
 
     bool copy_;                                                      // flag if this is a diagnostic copy or not
 

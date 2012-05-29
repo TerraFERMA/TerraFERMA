@@ -653,35 +653,35 @@ int_SolverBucket_const_it SystemBucket::orderedsolvers_end() const
 }
 
 //*******************************************************************|************************************************************//
-// return an iterator to the beginning of the bcs_ vector
+// return an iterator to the beginning of the dirichletbcs_ vector
 //*******************************************************************|************************************************************//
-std::vector<BoundaryCondition_ptr>::iterator SystemBucket::bcs_begin()
+std::vector< const dolfin::DirichletBC* >::iterator SystemBucket::dirichletbcs_begin()
 {
-  return bcs_.begin();
+  return dirichletbcs_.begin();
 }
 
 //*******************************************************************|************************************************************//
-// return a constant iterator to the beginning of the bcs_ vector
+// return a constant iterator to the beginning of the dirichletbcs_ vector
 //*******************************************************************|************************************************************//
-std::vector<BoundaryCondition_ptr>::const_iterator SystemBucket::bcs_begin() const
+std::vector< const dolfin::DirichletBC* >::const_iterator SystemBucket::dirichletbcs_begin() const
 {
-  return bcs_.begin();
+  return dirichletbcs_.begin();
 }
 
 //*******************************************************************|************************************************************//
-// return an iterator to the end of the bcs_ vector
+// return an iterator to the end of the dirichletbcs_ vector
 //*******************************************************************|************************************************************//
-std::vector<BoundaryCondition_ptr>::iterator SystemBucket::bcs_end()
+std::vector< const dolfin::DirichletBC* >::iterator SystemBucket::dirichletbcs_end()
 {
-  return bcs_.end();
+  return dirichletbcs_.end();
 }
 
 //*******************************************************************|************************************************************//
-// return a constant iterator to the end of the bcs_ vector
+// return a constant iterator to the end of the dirichletbcs_ vector
 //*******************************************************************|************************************************************//
-std::vector<BoundaryCondition_ptr>::const_iterator SystemBucket::bcs_end() const
+std::vector< const dolfin::DirichletBC* >::const_iterator SystemBucket::dirichletbcs_end() const
 {
-  return bcs_.end();
+  return dirichletbcs_.end();
 }
 
 //*******************************************************************|************************************************************//

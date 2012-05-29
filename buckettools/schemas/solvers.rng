@@ -140,6 +140,15 @@ the Picard solve. Some of those may really slow down your computation!</a:docume
     <element name="linear_solver">
       <a:documentation>Options describing a linear solver.</a:documentation>
       <ref name="linear_solver_options_top"/>
+      <element name="monitors">
+        <a:documentation>Options to give extra information for the linear solver.</a:documentation>
+        <optional>
+          <element name="view_ksp">
+            <a:documentation>Prints PETSc information about the ksp object.</a:documentation>
+            <empty/>
+          </element>
+        </optional>
+      </element>
     </element>
     <ref name="solver_failures"/>
   </define>
@@ -278,6 +287,29 @@ Defaults to 1.e-12 if unset.</a:documentation>
         </optional>
       </element>
       <element name="snes_type">
+        <a:documentation>The SNES type. Variational Inequality.
+
+NOTE: only available with Petsc &gt;= 3.2.</a:documentation>
+        <attribute name="name">
+          <value>vi</value>
+        </attribute>
+        <element name="constraints">
+          <a:documentation>Place constraints on the variational inequality.</a:documentation>
+          <optional>
+            <element name="upper_bound">
+              <a:documentation>Describe the upper bound constraint on fields.</a:documentation>
+              <ref name="is_constraints"/>
+            </element>
+          </optional>
+          <optional>
+            <element name="lower_bound">
+              <a:documentation>Describe the upper bound constraint on fields.</a:documentation>
+              <ref name="is_constraints"/>
+            </element>
+          </optional>
+        </element>
+      </element>
+      <element name="snes_type">
         <a:documentation>The SNES type.</a:documentation>
         <attribute name="name">
           <value>tr</value>
@@ -342,6 +374,12 @@ Defaults to 10000.</a:documentation>
       <a:documentation>Options to give extra information for each iteration of the
 the SNES solve. Some of those may really slow down your computation!</a:documentation>
       <optional>
+        <element name="view_snes">
+          <a:documentation>Prints PETSc information about the snes object.</a:documentation>
+          <empty/>
+        </element>
+      </optional>
+      <optional>
         <element name="residual">
           <a:documentation>Output the residual at every function evaluation.</a:documentation>
           <empty/>
@@ -380,39 +418,118 @@ the SNES solve. Some of those may really slow down your computation!</a:document
       </element>
     </optional>
   </define>
-  <define name="is_by_field">
-    <zeroOrMore>
-      <element name="field">
-        <a:documentation>Field to include in this index space.</a:documentation>
-        <attribute name="name">
-          <data type="string"/>
-        </attribute>
-        <optional>
-          <element name="components">
-            <a:documentation>If this field is a vector or a tensor components may be listed (indexed from 0 by row first if tensorial).
+  <define name="is_field">
+    <element name="field">
+      <a:documentation>Field to include in this index set.</a:documentation>
+      <attribute name="name">
+        <data type="string"/>
+      </attribute>
+      <ref name="is_field_components"/>
+    </element>
+  </define>
+  <define name="is_field_null">
+    <element name="field">
+      <a:documentation>Field to include in this index set.</a:documentation>
+      <attribute name="name">
+        <data type="string"/>
+      </attribute>
+      <ref name="is_field_components"/>
+      <choice>
+        <element name="constant">
+          <a:documentation>This part of the null space is constant.</a:documentation>
+          <!-- A hardcoded real value -->
+          <element name="real_value">
+            <attribute name="rank">
+              <value>0</value>
+            </attribute>
+            <value>1.0</value>
+          </element>
+        </element>
+        <element name="python">
+          <a:documentation>Python function describing the null space for this field or component of this field.
+
+Functions may only depend on space and should be of the form:
+
+ def val(x):
+    # Function code
+    return # Return value
+
+or:
+
+ def val(x):
+    # Function code
+    return [..., ...] # Return value array
+
+The return value must have the same length as the number of components described above for this field.
+
+The resulting null space will be normalized automatically.</a:documentation>
+          <ref name="python_code"/>
+        </element>
+      </choice>
+    </element>
+  </define>
+  <define name="is_field_constraints">
+    <element name="field">
+      <a:documentation>Field to include in this index set.</a:documentation>
+      <attribute name="name">
+        <data type="string"/>
+      </attribute>
+      <ref name="is_field_components"/>
+      <choice>
+        <element name="constant">
+          <a:documentation>This part of the constraint is constant.
+
+Note if this part of the constraint has multiple components then all will be set to this scalar value.</a:documentation>
+          <ref name="real"/>
+        </element>
+        <element name="python">
+          <a:documentation>Python function describing the constraints for this field or component of this field.
+
+Functions may only depend on space and should be of the form:
+
+ def val(x):
+    # Function code
+    return # Return value
+
+or:
+
+ def val(x):
+    # Function code
+    return [..., ...] # Return value array
+
+The return value must have the same length as the number of components described above for this field.</a:documentation>
+          <ref name="python_code"/>
+        </element>
+      </choice>
+    </element>
+  </define>
+  <define name="is_field_components">
+    <optional>
+      <element name="components">
+        <a:documentation>If this field is a vector or a tensor components may be listed (indexed from 0 by row first if tensorial).
 
 Defaults to all components if not selected.</a:documentation>
-            <ref name="integer_vector"/>
-          </element>
-        </optional>
-        <optional>
-          <element name="region_ids">
-            <a:documentation>A list of the region ids (physical ids in gmsh).
+        <ref name="integer_vector"/>
+      </element>
+    </optional>
+    <optional>
+      <element name="region_ids">
+        <a:documentation>A list of the region ids (physical ids in gmsh).
 
 Defaults to the whole mesh if left unspecified.</a:documentation>
-            <ref name="integer_vector"/>
-          </element>
-        </optional>
-        <optional>
-          <element name="boundary_ids">
-            <a:documentation>A list of the boundary ids (physical ids in gmsh).
-
-Defaults to the whole boundary if left unspecified.</a:documentation>
-            <ref name="integer_vector"/>
-          </element>
-        </optional>
+        <ref name="integer_vector"/>
       </element>
-    </zeroOrMore>
+    </optional>
+    <optional>
+      <element name="boundary_ids">
+        <a:documentation>A list of the boundary ids (physical ids in gmsh).
+
+If left unspecified, defaults to the whole boundary of the above region(s) (if specified) or the whole mesh (if region_ids are not specified).</a:documentation>
+        <ref name="integer_vector"/>
+      </element>
+    </optional>
+  </define>
+  <define name="is_monitor">
     <element name="monitors">
       <optional>
         <element name="view_index_set">
@@ -421,6 +538,24 @@ Defaults to the whole boundary if left unspecified.</a:documentation>
         </element>
       </optional>
     </element>
+  </define>
+  <define name="is_fieldsplit">
+    <zeroOrMore>
+      <ref name="is_field"/>
+    </zeroOrMore>
+    <ref name="is_monitor"/>
+  </define>
+  <define name="is_null_space">
+    <zeroOrMore>
+      <ref name="is_field_null"/>
+    </zeroOrMore>
+    <ref name="is_monitor"/>
+  </define>
+  <define name="is_constraints">
+    <oneOrMore>
+      <ref name="is_field_constraints"/>
+    </oneOrMore>
+    <ref name="is_monitor"/>
   </define>
   <define name="linear_solver_options_top">
     <choice>
@@ -814,7 +949,6 @@ than with bjacobi.</a:documentation>
       <ref name="pcilu_options"/>
       <ref name="pcicc_options"/>
       <ref name="pclu_options"/>
-      <ref name="pcmg_options"/>
       <ref name="pcprometheus_options"/>
       <ref name="pchypre_options"/>
       <ref name="pcother_options"/>
@@ -907,7 +1041,7 @@ even if they are described below (a warning will be given).</a:documentation>
           <attribute name="name">
             <data type="string"/>
           </attribute>
-          <ref name="is_by_field"/>
+          <ref name="is_fieldsplit"/>
           <element name="linear_solver">
             <a:documentation>Solver options for the full solve done by this preconditioner</a:documentation>
             <ref name="linear_solver_options"/>
@@ -993,17 +1127,17 @@ has been linked with the X library.</a:documentation>
         <empty/>
       </element>
     </optional>
+    <optional>
+      <element name="test_null_space">
+        <a:documentation>Test any attached null spaces on the first iteration of the solve.</a:documentation>
+        <empty/>
+      </element>
+    </optional>
   </define>
   <define name="iterative_monitors_vis">
     <optional>
       <element name="convergence_file">
         <a:documentation>Output a diagnostic file detailing the convergence of this solver.</a:documentation>
-        <empty/>
-      </element>
-    </optional>
-    <optional>
-      <element name="test_null_space">
-        <a:documentation>Test any attached null spaces on the first iteration of the solve.</a:documentation>
         <empty/>
       </element>
     </optional>
@@ -1042,14 +1176,13 @@ the solve. Some of those may really slow down your computation!</a:documentation
 Fields not included in any parent fieldsplits will be excluded from this nullspace 
 even if they are described below (a warning will be given).
 
-Fields included in any sibling nullspaces will be excluded from this nullspace 
-even if they are described below (a warning will be given).  NOTE: this may not
-always be the desired behaviour and the code should be modified if a case is
-found that requires this.</a:documentation>
+Nullspaces default to being constant over any fields described.  If no fields are specified
+then the entire vector is assumed to contain a constant nullspace.  To describe variable
+nullspaces python functions must be attached underneath the description of the field.</a:documentation>
             <attribute name="name">
               <data type="string"/>
             </attribute>
-            <ref name="is_by_field"/>
+            <ref name="is_null_space"/>
           </element>
         </oneOrMore>
         <element name="monitors">

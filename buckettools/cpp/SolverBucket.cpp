@@ -7,6 +7,7 @@
 #include <dolfin.h>
 #include <string>
 #include <signal.h>
+#include "BucketDolfinBase.h"
 
 using namespace buckettools;
 
@@ -82,9 +83,9 @@ void SolverBucket::solve()
     assert(residual_);                                               // we need to assemble the residual again here as it may depend
                                                                      // on other systems that have been solved since the last call
     dolfin::assemble(*res_, *residual_, false);                      // assemble the residual
-    for(std::vector<BoundaryCondition_ptr>::const_iterator bc = 
-                                    (*system_).bcs_begin(); 
-                                bc != (*system_).bcs_end(); bc++)
+    for(std::vector< const dolfin::DirichletBC* >::const_iterator bc = 
+                          (*system_).dirichletbcs_begin(); 
+                          bc != (*system_).dirichletbcs_end(); bc++)
     {                                                                // apply bcs to residuall (should we do this?!)
       (*(*bc)).apply(*res_, (*(*(*system_).iteratedfunction()).vector()));
     }
@@ -136,9 +137,9 @@ void SolverBucket::solve()
 
       dolfin::assemble(*matrix_, *bilinear_, false);                 // assemble bilinear form
       dolfin::assemble(*rhs_, *linear_, false);                      // assemble linear form
-      for(std::vector<BoundaryCondition_ptr>::const_iterator bc =    // loop over the collected vector of system bcs
-                                      (*system_).bcs_begin(); 
-                                  bc != (*system_).bcs_end(); bc++)
+      for(std::vector< const dolfin::DirichletBC* >::const_iterator  // loop over the collected vector of system bcs
+                        bc = (*system_).dirichletbcs_begin(); 
+                        bc != (*system_).dirichletbcs_end(); bc++)
       {
         (*(*bc)).apply(*matrix_, *rhs_);                             // apply the bcs to the matrix and rhs 
       }
@@ -157,9 +158,9 @@ void SolverBucket::solve()
       {
         assert(matrixpc_);
         dolfin::assemble(*matrixpc_, *bilinearpc_, false);           // assemble the pc
-        for(std::vector<BoundaryCondition_ptr>::const_iterator bc = 
-                                          (*system_).bcs_begin(); 
-                                  bc != (*system_).bcs_end(); bc++)
+        for(std::vector< const dolfin::DirichletBC* >::const_iterator bc = 
+                                  (*system_).dirichletbcs_begin(); 
+                                  bc != (*system_).dirichletbcs_end(); bc++)
         {
           (*(*bc)).apply(*matrixpc_, *rhs_);                         // apply the collected vector of system bcs
         }
@@ -168,7 +169,7 @@ void SolverBucket::solve()
                                         (*system_).points_begin(); 
                                     p != (*system_).points_end(); p++)
         {
-          (*(*p)).apply(*matrixpc_, *rhs_);                          // apply the reference points to the matrix and rhs
+          (*(*p)).apply(*matrixpc_);                                 // apply the reference points to the pc matrix
         }
 
         if(ident_zeros_pc_)
@@ -177,8 +178,8 @@ void SolverBucket::solve()
         }
 
         perr = KSPSetOperators(ksp_, *(*matrix_).mat(),              // set the ksp operators with two matrices
-                                      *(*matrixpc_).mat(), 
-                                        SAME_NONZERO_PATTERN); 
+                                     *(*matrixpc_).mat(), 
+                                     SAME_NONZERO_PATTERN); 
         CHKERRV(perr);
       }
       else
@@ -231,9 +232,9 @@ void SolverBucket::solve()
 
       assert(residual_);
       dolfin::assemble(*res_, *residual_, false);                    // assemble the residual
-      for(std::vector<BoundaryCondition_ptr>::const_iterator bc = 
-                                      (*system_).bcs_begin(); 
-                                  bc != (*system_).bcs_end(); bc++)
+      for(std::vector< const dolfin::DirichletBC* >::const_iterator bc = 
+                             (*system_).dirichletbcs_begin(); 
+                             bc != (*system_).dirichletbcs_end(); bc++)
       {                                                              // apply bcs to residual (should we do this?!)
         (*(*bc)).apply(*res_, (*(*(*system_).iteratedfunction()).vector()));
       }
@@ -291,46 +292,36 @@ void SolverBucket::solve()
 //*******************************************************************|************************************************************//
 // assemble all linear forms (this includes initializing the vectors if necessary)
 //*******************************************************************|************************************************************//
-void SolverBucket::assemble_linearforms(const bool &reset_tensor)
+void SolverBucket::assemble_linearforms()
 {
   assert(linear_);
-  if(!rhs_)                                                          // do we have a rhs_ vector?
-  {
-    rhs_.reset(new dolfin::PETScVector);                             // no, allocate one
-  }
-  dolfin::assemble(*rhs_, *linear_, reset_tensor);                   // and assemble it
+  dolfin::assemble(*rhs_, *linear_, false);                          // and assemble it
 
   if(residual_)                                                      // do we have a residual_ form?
   {                                                                  // yes...
-    if(!res_)                                                        // do we have a res_ vector?
-    {
-      res_.reset(new dolfin::PETScVector);                           // no, allocate one
-    }
-    dolfin::assemble(*res_, *residual_, reset_tensor);               // and assemble it
+    dolfin::assemble(*res_, *residual_, false);                      // and assemble it
   }
 }
 
 //*******************************************************************|************************************************************//
 // assemble all bilinear forms (this includes initializing the matrices if necessary)
 //*******************************************************************|************************************************************//
-void SolverBucket::assemble_bilinearforms(const bool &reset_tensor)
+void SolverBucket::assemble_bilinearforms()
 {
   assert(bilinear_);
-  if(!matrix_)                                                       // do we have a matrix_ matrix?
-  {
-    matrix_.reset(new dolfin::PETScMatrix);                          // no, allocate one
-  }
-  dolfin::assemble(*matrix_, *bilinear_, reset_tensor);              // and assemble it
+  dolfin::assemble(*matrix_, *bilinear_, false, false, false);       // and assemble it
                                                                      // don't think it's necessary to ident_zeros here?
+  Assembler::add_zeros_diagonal(*matrix_);                           // add zeros to the diagonal to ensure they remain in sparsity
+  (*matrix_).apply("add");
+
 
   if(bilinearpc_)                                                    // do we have a pc form?
   {
-    if(!matrixpc_)                                                   // do we have a pc matrix?
-    {
-      matrixpc_.reset(new dolfin::PETScMatrix);                      // no, allocate one
-    }
-    dolfin::assemble(*matrixpc_, *bilinearpc_, reset_tensor);        // and assemble it
+    dolfin::assemble(*matrixpc_, *bilinearpc_, false, false, false); // and assemble it
                                                                      // don't think it's necessary to ident_zeros here?
+    Assembler::add_zeros_diagonal(*matrixpc_);                       // add zeros to the diagonal to ensure they remain in sparsity
+    (*matrixpc_).apply("add");
+
   }
 }
 
@@ -377,51 +368,6 @@ void SolverBucket::initialize_diagnostics() const                    // doesn't 
 }
 
 //*******************************************************************|************************************************************//
-// perform some preassembly on the matrices and complete the snes setup (including setting up the context)
-//*******************************************************************|************************************************************//
-void SolverBucket::initialize_matrices()
-{
-  PetscErrorCode perr;                                               // petsc error code variable
-
-  if (type()=="SNES")                                                // if this is a snes object then initialize the context
-  {
-    ctx_.solver = this;
-  }
-
-  assemble_bilinearforms(true);                                      // perform preassembly of the bilinear forms
-  assemble_linearforms(true);                                        // perform preassembly of the linear forms
-  
-  uint syssize = (*(*(*system_).function()).vector()).size();        // set up a work vector of the correct (system) size
-  work_.reset( new dolfin::PETScVector(syssize) ); 
-
-  if(type()=="SNES")                                                 // again, if the type is snes complete the set up
-  {
-    assert(!res_);                                                   // initialize the residual vector (should only be associated
-    res_.reset( new dolfin::PETScVector(syssize) );                  // before now for picard solvers)
-
-    perr = SNESSetFunction(snes_, *(*res_).vec(),                    // set the snes function to use the newly allocated residual vector
-                                    FormFunction, (void *) &ctx_); 
-    CHKERRV(perr);
-
-    if (bilinearpc_)                                                 // if we have a pc form
-    {
-      assert(matrixpc_);
-      perr = SNESSetJacobian(snes_, *(*matrix_).mat(),               // set the snes jacobian to have two matrices
-                  *(*matrixpc_).mat(), FormJacobian, (void *) &ctx_); 
-      CHKERRV(perr);
-    }
-    else                                                             // otherwise
-    {
-      perr = SNESSetJacobian(snes_, *(*matrix_).mat(),               // set the snes jacobian to have the same matrix twice
-                    *(*matrix_).mat(), FormJacobian, (void *) &ctx_); 
-      CHKERRV(perr);
-    }
-
-  }
-
-}
-
-//*******************************************************************|************************************************************//
 // return the number of nonlinear iterations taken
 //*******************************************************************|************************************************************//
 const int SolverBucket::iteration_count() const
@@ -435,14 +381,6 @@ const int SolverBucket::iteration_count() const
 void SolverBucket::iteration_count(const int &it)
 {
   *iteration_count_ = it;
-}
-
-//*******************************************************************|************************************************************//
-// return true if we're using a ksp null space monitor
-//*******************************************************************|************************************************************//
-const bool SolverBucket::kspnullspace_monitor() const
-{
-  return *kspnullspacemonitor_;
 }
 
 //*******************************************************************|************************************************************//

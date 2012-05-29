@@ -126,15 +126,16 @@ void SpudSystemBucket::initialize_fields_and_coefficients()
 //*******************************************************************|************************************************************//
 // initialize matrices described by this system's forms
 //*******************************************************************|************************************************************//
-void SpudSystemBucket::initialize_matrices()
+void SpudSystemBucket::initialize_solvers()
 {
   dolfin::info("Initializing matrices for system %s", name().c_str());
 
   for (SolverBucket_it s_it = solvers_begin(); s_it != solvers_end();// loop over the solver buckets
                                                               s_it++)
   {
-    (*(*s_it).second).initialize_matrices();                         // perform a preassembly of all the matrices to set up
-                                                                     // sparsities etc.
+    (*boost::dynamic_pointer_cast< SpudSolverBucket >((*s_it).second)).initialize();
+                                                                     // perform a preassembly of all the matrices to set up
+                                                                     // sparsities etc. and set up petsc objects
   }
 }
 
@@ -350,11 +351,11 @@ void SpudSystemBucket::fill_bcs_()
   for (int_FunctionBucket_const_it f_it = orderedfields_begin();     // loop over all the fields
                                 f_it != orderedfields_end(); f_it++)
   {
-    for (int_BoundaryCondition_const_it                              // loop over all the bcs
-          b_it = (*(*f_it).second).orderedbcs_begin(); 
-          b_it != (*(*f_it).second).orderedbcs_end(); b_it++)
+    for (int_BoundaryCondition_const_it                              // loop over the dirichlet bcs
+          b_it = (*(*f_it).second).ordereddirichletbcs_begin(); 
+          b_it != (*(*f_it).second).ordereddirichletbcs_end(); b_it++)
     {
-      bcs_.push_back((*b_it).second);                                // add the bcs to a std vector
+      dirichletbcs_.push_back(&(*boost::dynamic_pointer_cast<dolfin::DirichletBC>((*b_it).second)));                       // add the bcs to a std vector
     }
   }
 

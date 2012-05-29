@@ -108,7 +108,14 @@ picard =
     },
     ## Options describing a linear solver.
     element linear_solver {
-      linear_solver_options_top
+      linear_solver_options_top,
+      ## Options to give extra information for the linear solver.
+      element monitors {
+         ## Prints PETSc information about the ksp object.
+         element view_ksp {
+           empty
+         }?
+      }
     },
     solver_failures
   )
@@ -214,6 +221,23 @@ snes =
           real
         }?
       }|
+      ## The SNES type. Variational Inequality.
+      ##
+      ## NOTE: only available with Petsc >= 3.2.
+      element snes_type {
+        attribute name { "vi" },
+        ## Place constraints on the variational inequality.
+        element constraints {
+           ## Describe the upper bound constraint on fields.
+           element upper_bound {
+             is_constraints
+           }?,
+           ## Describe the upper bound constraint on fields.
+           element lower_bound {
+             is_constraints
+           }?
+        }
+      }|
       ## The SNES type.
       element snes_type {
         attribute name { "tr" },
@@ -264,6 +288,10 @@ snes =
     ## Options to give extra information for each iteration of the
     ## the SNES solve. Some of those may really slow down your computation!
     element monitors {
+       ## Prints PETSc information about the snes object.
+       element view_snes {
+         empty
+       }?,
        ## Output the residual at every function evaluation.
        element residual {
          empty
@@ -296,36 +324,137 @@ ident_zeros =
     }?
   )
 
-is_by_field = 
+is_field = 
   (
-    ## Field to include in this index space.
+    ## Field to include in this index set.
     element field {
       attribute name { xsd:string },
-      ## If this field is a vector or a tensor components may be listed (indexed from 0 by row first if tensorial).
-      ##
-      ## Defaults to all components if not selected.
-      element components {
-        integer_vector
-      }?,
-      ## A list of the region ids (physical ids in gmsh).
-      ##
-      ## Defaults to the whole mesh if left unspecified.
-      element region_ids {
-        integer_vector
-      }?,
-      ## A list of the boundary ids (physical ids in gmsh).
-      ##
-      ## Defaults to the whole boundary if left unspecified.
-      element boundary_ids {
-        integer_vector
-      }?
-    }*,
+      is_field_components
+    }
+  )
+
+is_field_null = 
+  (
+    ## Field to include in this index set.
+    element field {
+      attribute name { xsd:string },
+      is_field_components,
+      (
+        ## This part of the null space is constant.
+        element constant {
+          # A hardcoded real value
+          element real_value{
+             attribute rank { "0" },
+             ( "1.0" )
+          }
+        }|
+        ## Python function describing the null space for this field or component of this field.
+        ##
+        ## Functions may only depend on space and should be of the form:
+        ##
+        ##  def val(x):
+        ##     # Function code
+        ##     return # Return value
+        ##
+        ## or:
+        ##
+        ##  def val(x):
+        ##     # Function code
+        ##     return [..., ...] # Return value array
+        ##
+        ## The return value must have the same length as the number of components described above for this field.
+        ## 
+        ## The resulting null space will be normalized automatically.
+        element python {
+          python_code
+        }
+      )
+    }
+  )
+
+is_field_constraints = 
+  (
+    ## Field to include in this index set.
+    element field {
+      attribute name { xsd:string },
+      is_field_components,
+      (
+        ## This part of the constraint is constant.
+        ##
+        ## Note if this part of the constraint has multiple components then all will be set to this scalar value.
+        element constant {
+          real
+        }|
+        ## Python function describing the constraints for this field or component of this field.
+        ##
+        ## Functions may only depend on space and should be of the form:
+        ##
+        ##  def val(x):
+        ##     # Function code
+        ##     return # Return value
+        ##
+        ## or:
+        ##
+        ##  def val(x):
+        ##     # Function code
+        ##     return [..., ...] # Return value array
+        ##
+        ## The return value must have the same length as the number of components described above for this field.
+        element python {
+          python_code
+        }
+      )
+    }
+  )
+
+is_field_components = 
+  (
+    ## If this field is a vector or a tensor components may be listed (indexed from 0 by row first if tensorial).
+    ##
+    ## Defaults to all components if not selected.
+    element components {
+      integer_vector
+    }?,
+    ## A list of the region ids (physical ids in gmsh).
+    ##
+    ## Defaults to the whole mesh if left unspecified.
+    element region_ids {
+      integer_vector
+    }?,
+    ## A list of the boundary ids (physical ids in gmsh).
+    ##
+    ## If left unspecified, defaults to the whole boundary of the above region(s) (if specified) or the whole mesh (if region_ids are not specified).
+    element boundary_ids {
+      integer_vector
+    }?
+  )
+
+is_monitor =
+  (
     element monitors {
       ## Prints PETSc information about the index set describing this index set.
       element view_index_set {
         empty
       }?
     }
+  )
+
+is_fieldsplit =
+  (
+    is_field*,
+    is_monitor
+  )
+
+is_null_space =
+  (
+    is_field_null*,
+    is_monitor
+  )
+
+is_constraints =
+  (
+    is_field_constraints+,
+    is_monitor
   )
 
 linear_solver_options_top =
@@ -713,7 +842,6 @@ subpc_options =
          pcilu_options|
          pcicc_options|
          pclu_options|
-         pcmg_options|
          pcprometheus_options|
          pchypre_options|
          pcother_options
@@ -793,7 +921,7 @@ pcfieldsplit_options =
          ## even if they are described below (a warning will be given).
          element fieldsplit {
            attribute name { xsd:string },
-           is_by_field,
+           is_fieldsplit,
            ## Solver options for the full solve done by this preconditioner
            element linear_solver {
              linear_solver_options
@@ -864,6 +992,10 @@ iterative_monitors_base =
      ## has been linked with the X library.
      element preconditioned_residual_graph {
         empty
+     }?,
+     ## Test any attached null spaces on the first iteration of the solve.
+     element test_null_space {
+       empty
      }?
   )
 
@@ -871,10 +1003,6 @@ iterative_monitors_vis =
   (
     ## Output a diagnostic file detailing the convergence of this solver.
     element convergence_file { 
-      empty
-    }?,
-    ## Test any attached null spaces on the first iteration of the solve.
-    element test_null_space {
       empty
     }?
   )
@@ -913,13 +1041,12 @@ generic_solver_options =
          ## Fields not included in any parent fieldsplits will be excluded from this nullspace 
          ## even if they are described below (a warning will be given).
          ##
-         ## Fields included in any sibling nullspaces will be excluded from this nullspace 
-         ## even if they are described below (a warning will be given).  NOTE: this may not
-         ## always be the desired behaviour and the code should be modified if a case is
-         ## found that requires this.
+         ## Nullspaces default to being constant over any fields described.  If no fields are specified
+         ## then the entire vector is assumed to contain a constant nullspace.  To describe variable
+         ## nullspaces python functions must be attached underneath the description of the field.
          element null_space {
            attribute name { xsd:string },
-           is_by_field
+           is_null_space
          }+,
          element monitors {
            ## Prints PETSc information about this null space
