@@ -219,6 +219,7 @@ F = Fv + Fp</string_value>
           <preconditioner name="lu">
             <factorization_package name="umfpack"/>
           </preconditioner>
+          <monitors/>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
@@ -425,6 +426,7 @@ F = FT</string_value>
           <preconditioner name="lu">
             <factorization_package name="umfpack"/>
           </preconditioner>
+          <monitors/>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
@@ -525,6 +527,7 @@ r = d_t*d_a*dx_wedge - d_t*div(v_i)*dx_wedge</string_value>
               </linear_solver>
             </fieldsplit>
           </preconditioner>
+          <monitors/>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>

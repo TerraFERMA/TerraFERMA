@@ -388,7 +388,11 @@ F = FT + Fv + Fp</string_value>
                 </preconditioner>
                 <remove_null_space>
                   <null_space name="Pressure">
-                    <field name="Pressure"/>
+                    <field name="Pressure">
+                      <constant>
+                        <real_value rank="0">1.0</real_value>
+                      </constant>
+                    </field>
                     <monitors/>
                   </null_space>
                   <monitors/>
@@ -403,6 +407,7 @@ F = FT + Fv + Fp</string_value>
               </linear_solver>
             </fieldsplit>
           </preconditioner>
+          <monitors/>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
@@ -503,6 +508,7 @@ r = d_t*d_a*dx_wedge - d_t*div(v_i)*dx_wedge</string_value>
               </linear_solver>
             </fieldsplit>
           </preconditioner>
+          <monitors/>
         </linear_solver>
         <ignore_all_solver_failures/>
       </type>

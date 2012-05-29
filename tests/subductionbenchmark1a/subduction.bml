@@ -284,6 +284,7 @@ F = FT</string_value>
           <preconditioner name="lu">
             <factorization_package name="umfpack"/>
           </preconditioner>
+          <monitors/>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>

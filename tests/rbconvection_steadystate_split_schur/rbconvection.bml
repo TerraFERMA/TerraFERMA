@@ -148,6 +148,7 @@ r = rT</string_value>
           <preconditioner name="lu">
             <factorization_package name="umfpack"/>
           </preconditioner>
+          <monitors/>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
@@ -364,11 +365,16 @@ r = rv + rp</string_value>
           </preconditioner>
           <remove_null_space>
             <null_space name="Pressure">
-              <field name="Pressure"/>
+              <field name="Pressure">
+                <constant>
+                  <real_value rank="0">1.0</real_value>
+                </constant>
+              </field>
               <monitors/>
             </null_space>
             <monitors/>
           </remove_null_space>
+          <monitors/>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>

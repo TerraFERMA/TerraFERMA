@@ -3071,7 +3071,7 @@
       <triangle index="2015" v0="638" v1="639" v2="663"/>
     </cells>
   </mesh>
-  <meshfunction type="uint" dim="1" size="3063">
+  <mesh_function type="uint" dim="1" size="3063">
     <entity index="0" value="1"/>
     <entity index="1" value="7"/>
     <entity index="2" value="0"/>
@@ -6135,5 +6135,5 @@
     <entity index="3060" value="0"/>
     <entity index="3061" value="0"/>
     <entity index="3062" value="0"/>
-  </meshfunction>
+  </mesh_function>
 </dolfin>

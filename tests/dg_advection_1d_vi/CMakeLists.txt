@@ -1,7 +1,7 @@
-set(EXECUTABLE "projection_cpp")
+set(EXECUTABLE "dg_advection_1d_vi")
 
-set(OPTIONSFILENAME "projection.bml")
-set(MESHBASENAME "square")
+set(OPTIONSFILENAME "advection.bml")
+set(MESHBASENAME "interval")
 
 set(PREFIX ${EXECUTABLE})
 
@@ -32,12 +32,9 @@ target_link_libraries(${EXECUTABLE} ${DOLFIN_LIBRARIES} ${DOLFIN_3RD_PARTY_LIBRA
 # add a command that runs the mesh generation script
 add_custom_command(
     OUTPUT ${PROJECT_BINARY_DIR}/${MESHBASENAME}.xml
-    COMMAND dolfin-convert
-    ARGS ${PROJECT_SOURCE_DIR}/${MESHBASENAME}.msh ${PROJECT_BINARY_DIR}/${MESHBASENAME}.xml
-    COMMAND rm
-    ARGS ${PROJECT_BINARY_DIR}/${MESHBASENAME}_physical_region.xml
+    COMMAND cp
+    ARGS ${PROJECT_SOURCE_DIR}/${MESHBASENAME}*.xml ${PROJECT_BINARY_DIR}/.
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-    DEPENDS ${PROJECT_SOURCE_DIR}/${MESHBASENAME}.geo
     )
  
 add_custom_target(
@@ -55,4 +52,3 @@ add_custom_target(
   DEPENDS ${PROJECT_SOURCE_DIR}/tests.py
   )
 add_dependencies(${PREFIX}_test ${PREFIX}_run)
-

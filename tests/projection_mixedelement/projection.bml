@@ -7,7 +7,7 @@
     <mesh name="Frank">
       <source name="File">
         <file>
-          <string_value lines="1" type="filename">../../projection_mixedelement/mesh/square</string_value>
+          <string_value lines="1" type="filename">square</string_value>
         </file>
         <cell>
           <string_value>triangle</string_value>
@@ -472,6 +472,7 @@ F = F1 + F2</string_value>
             </monitors>
           </iterative_method>
           <preconditioner name="sor"/>
+          <monitors/>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
