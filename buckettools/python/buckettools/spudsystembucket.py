@@ -1,8 +1,8 @@
-import ufltools.systembucket
-import ufltools.spud
+import buckettools.systembucket
+import buckettools.spud
 import libspud
 
-class SpudSystemBucket(ufltools.systembucket.SystemBucket):
+class SpudSystemBucket(buckettools.systembucket.SystemBucket):
   """A class that stores all the information necessary to write the ufl for a system (i.e. mixed function space) 
      plus all the information necessary to populate that class using libspud."""
   
@@ -20,7 +20,7 @@ class SpudSystemBucket(ufltools.systembucket.SystemBucket):
     self.fields = []
     for j in range(libspud.option_count(optionpath+"/field")):
       field_optionpath = optionpath+"/field["+`j`+"]"
-      field = ufltools.spud.SpudFunctionBucket()
+      field = buckettools.spud.SpudFunctionBucket()
       # get all the information about this field from the options dictionary
       field.fill(field_optionpath, self, j)
       # let the system know about this field
@@ -31,7 +31,7 @@ class SpudSystemBucket(ufltools.systembucket.SystemBucket):
     self.coeffs = []
     for j in range(libspud.option_count(optionpath+"/coefficient")):
       coeff_optionpath = optionpath+"/coefficient["+`j`+"]"
-      coeff = ufltools.spud.SpudFunctionBucket()
+      coeff = buckettools.spud.SpudFunctionBucket()
       # get all the information about this coefficient from the options dictionary
       coeff.fill(coeff_optionpath, self, j)
       # let the system know about this coefficient
@@ -42,7 +42,7 @@ class SpudSystemBucket(ufltools.systembucket.SystemBucket):
     self.special_coeffs = []
     if libspud.have_option("/timestepping"):
       coeff_optionpath = "/timestepping/timestep/coefficient::Timestep"
-      coeff = ufltools.spud.SpudFunctionBucket()
+      coeff = buckettools.spud.SpudFunctionBucket()
       # get all the information about this coefficient from the options dictionary
       coeff.fill(coeff_optionpath, self, 0)
       # let the system know about this coefficient
@@ -53,7 +53,7 @@ class SpudSystemBucket(ufltools.systembucket.SystemBucket):
     self.solvers = []
     for j in range(libspud.option_count(optionpath+"/nonlinear_solver")):
       solver_optionpath = optionpath+"/nonlinear_solver["+`j`+"]"
-      solver = ufltools.spud.SpudSolverBucket()
+      solver = buckettools.spud.SpudSolverBucket()
       # get all the information about this nonlinear solver from the options dictionary
       solver.fill(solver_optionpath, self)
       # let the system know about this solver
