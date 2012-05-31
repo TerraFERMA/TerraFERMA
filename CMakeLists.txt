@@ -30,7 +30,12 @@ setenv       BUCKETTOOLS_DIR       ${CMAKE_INSTALL_PREFIX}
 prepend-path CMAKE_MODULE_PATH     ${CMAKE_INSTALL_PREFIX}/share/buckettools/cmake/modules
 prepend-path PYTHONPATH            ${CMAKE_INSTALL_PREFIX}/${BUCKETTOOLS_PYTHON_INSTALL_DIR}
 prepend-path DIAMOND_CONFIG_PATH   ${CMAKE_INSTALL_PREFIX}/share/buckettools/diamond
-prepend-path PATH                  ${CMAKE_INSTALL_PREFIX}/bin"
+prepend-path PATH                  ${CMAKE_INSTALL_PREFIX}/bin
+
+# Special Environment variables for resolving Dynamic Libraries on MacOSX
+prepend-path DYLD_LIBRARY_PATH     ${CMAKE_INSTALL_PREFIX}/lib
+"
+
     )
 
 install(FILES ${PROJECT_BINARY_DIR}/configmodule DESTINATION share/basebucket)
