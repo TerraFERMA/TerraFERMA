@@ -34,8 +34,9 @@ include_directories(${DOLFIN_INCLUDE_DIRS} ${DOLFIN_3RD_PARTY_INCLUDE_DIRS})
 
 set(BUCKETTOOLS_DIR "${PROJECT_SOURCE_DIR}/../buckettools" CACHE PATH
      "Location of buckettools." FORCE)
+set(BUCKETTOOLS_BIN ${BUCKETTOOLS_DIR}/scripts)
 
-find_package(PythonLibs)
+find_package(PythonLibs REQUIRED)
 
 if(NOT ${PYTHONLIBS_FOUND})
   message(FATAL_ERROR "Could not find python libraries.")
@@ -43,7 +44,7 @@ endif(NOT ${PYTHONLIBS_FOUND})
 
 include_directories(${PYTHON_INCLUDE_PATH})
 
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/../cmake/modules")
+set(CMAKE_MODULE_PATH "${BUCKETTOOLS_DIR}/cmake/modules")
 
 find_package(Spud REQUIRED)
 

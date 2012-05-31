@@ -13,10 +13,10 @@ endif()
 
 add_subdirectory(${BUCKETTOOLS_DIR} "buckettools")
 
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/cpp DESTINATION share)
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/cpp DESTINATION share/basebucket)
 
 file(
-    WRITE ${PROJECT_BINARY_DIR}/basebucket-config
+    WRITE ${PROJECT_BINARY_DIR}/configmodule
 "#%Module1.0
 proc ModulesHelp { } {
         global dotversion
@@ -25,7 +25,7 @@ proc ModulesHelp { } {
 }
 module-whatis \"Sets environment for Basebucket and Buckettools.\"
 
-setenv       BASEBUCKET_CMAKE_PATH ${CMAKE_INSTALL_PREFIX}/share/cpp
+setenv       BASEBUCKET_CMAKE_PATH ${CMAKE_INSTALL_PREFIX}/share/basebucket/cpp
 setenv       BUCKETTOOLS_DIR       ${CMAKE_INSTALL_PREFIX}
 prepend-path CMAKE_MODULE_PATH     ${CMAKE_INSTALL_PREFIX}/share/buckettools/cmake/modules
 prepend-path PYTHONPATH            ${CMAKE_INSTALL_PREFIX}/${BUCKETTOOLS_PYTHON_INSTALL_DIR}
@@ -33,7 +33,7 @@ prepend-path DIAMOND_CONFIG_PATH   ${CMAKE_INSTALL_PREFIX}/share/buckettools/dia
 prepend-path PATH                  ${CMAKE_INSTALL_PREFIX}/bin"
     )
 
-install(FILES ${PROJECT_BINARY_DIR}/basebucket-config DESTINATION share)
+install(FILES ${PROJECT_BINARY_DIR}/configmodule DESTINATION share/basebucket)
 
 
 
