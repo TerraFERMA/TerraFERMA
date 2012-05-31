@@ -1,8 +1,8 @@
 import libspud
-import buckettools.bucket
-import buckettools.spud
+import ufltools.bucket
+import ufltools.spud
 
-class SpudBucket(buckettools.bucket.Bucket):
+class SpudBucket(ufltools.bucket.Bucket):
   def fill(self):
     """Fill a bucket class with data describing a set of mixedfunctionspace systems using libspud, the given optionpath."""
 
@@ -14,7 +14,7 @@ class SpudBucket(buckettools.bucket.Bucket):
     # loop over the systems in the options tree
     for i in range(libspud.option_count("/system")):
       system_optionpath = "/system["+`i`+"]"
-      system = buckettools.spud.SpudSystemBucket()
+      system = ufltools.spud.SpudSystemBucket()
       # get all the information about this system from the options dictionary
       system.fill(system_optionpath, self)
       # let the bucket know about this system

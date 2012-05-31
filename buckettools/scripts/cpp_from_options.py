@@ -1,9 +1,8 @@
-#!/usr/bin/env python
 
 from optparse import OptionParser
 import sys
 import libspud
-import buckettools.spud
+import ufltools.spud
 
 # Let's start by parsing the options
 optparser=OptionParser(usage='usage: %prog <options-file>',
@@ -25,14 +24,13 @@ options_filename  = argv[0]
 # load the options tree
 libspud.load_options(options_filename)
 
-bucket = buckettools.spud.SpudBucket()
+bucket = ufltools.spud.SpudBucket()
 # populate the bucket based on the options file loaded above
 bucket.fill()
-# write out the ufl files described by the options tree
-bucket.write_ufc()
-# write a cpp header file to wrap the namespaces of the corresponding ufc
-bucket.write_systemfunctionals_cpp()
-bucket.write_systemsolvers_cpp()
+# write out the cpp expression header files described by the options tree
+bucket.write_cppexpressions()
+# write a cpp header file to wrap the namespaces of the cpp expressions
+bucket.write_systemexpressions_cpp()
 
 # and we're done
 

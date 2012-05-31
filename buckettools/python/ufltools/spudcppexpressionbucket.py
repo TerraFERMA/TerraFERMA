@@ -1,8 +1,8 @@
 import libspud
-import buckettools.cppexpressionbucket
+import ufltools.cppexpressionbucket
 import sys
 
-class SpudCppExpressionBucket(buckettools.cppexpressionbucket.CppExpressionBucket):
+class SpudCppExpressionBucket(ufltools.cppexpressionbucket.CppExpressionBucket):
   """A class that stores all the information necessary to write the cpp for a user defined expression 
      plus all the information necessary to populate that class using libspud."""
 
