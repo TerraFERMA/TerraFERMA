@@ -1,9 +1,6 @@
-from ufltools.base import *
+from buckettools.base import *
 import shutil
 import hashlib
-import os
-import sys
-import subprocess
 
 class Bucket:
   """A class that stores all the information necessary to write the ufl for an options file (i.e. set of mixed function spaces)."""
@@ -14,8 +11,7 @@ class Bucket:
     self.systems = None
 
   def write_ufc(self):
-    """Write all ufc files described by the bucket."""
-    # Loop over the systems
+    """Write all ufl files described by the bucket."""
     for system in self.systems:
       for field in system.fields:
         for functional in field.functionals:
@@ -40,8 +36,6 @@ class Bucket:
 
   def write_ufl(self):
     """Write all ufl files described by the bucket."""
-    # Write simple ufc files for visualization functionspaces
-    # Loop over the systems
     for system in self.systems:
       for field in system.fields:
         for functional in field.functionals:

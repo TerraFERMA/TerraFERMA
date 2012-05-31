@@ -3,7 +3,7 @@
 from optparse import OptionParser
 import sys
 import libspud
-import ufltools.spud
+import buckettools.spud
 
 # Let's start by parsing the options
 optparser=OptionParser(usage='usage: %prog <options-file>',
@@ -25,7 +25,7 @@ options_filename  = argv[0]
 # load the options tree
 libspud.load_options(options_filename)
 
-bucket = ufltools.spud.SpudBucket()
+bucket = buckettools.spud.SpudBucket()
 # populate the bucket based on the options file loaded above
 bucket.fill()
 # write out the ufl files described by the options tree

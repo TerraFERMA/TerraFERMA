@@ -23,7 +23,8 @@ include_directories(${BUCKETTOOLS_INCLUDE_DIRS} ${PROJECT_BINARY_DIR})
 # include python
 include_directories(${PYTHON_INCLUDE_PATH})
 # generate a library - really the main point of this whole process
-add_library(${PREFIX}buckettools_ufc ${PROJECT_BINARY_DIR}/SystemFunctionalsWrapper.cpp ${PROJECT_BINARY_DIR}/SystemSolversWrapper.cpp ${PROJECT_BINARY_DIR}/SystemExpressionsWrapper.cpp)
+add_library(${PREFIX}buckettools_ufc SHARED
+            ${PROJECT_BINARY_DIR}/SystemFunctionalsWrapper.cpp ${PROJECT_BINARY_DIR}/SystemSolversWrapper.cpp ${PROJECT_BINARY_DIR}/SystemExpressionsWrapper.cpp)
 # tell cmake that this file doesn't exist until build time
 set_source_files_properties(${PROJECT_BINARY_DIR}/SystemFunctionalsWrapper.cpp PROPERTIES GENERATED 1)
 set_source_files_properties(${PROJECT_BINARY_DIR}/SystemSolversWrapper.cpp PROPERTIES GENERATED 1)
