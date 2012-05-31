@@ -25,6 +25,11 @@ add_definitions(${DOLFIN_CXX_DEFINITIONS})
 # Add special DOLFIN compiler flags
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${DOLFIN_CXX_FLAGS}")
 
+# Add Mac specific loader flags
+if (APPLE)
+  set(CMAKE_SHARED_LINKER_FLAGS "-Wl,-undefined,dynamic_lookup" CACHE STRING "should only be set if macosx" FORCE)
+endif()
+
 # Include directories
 include_directories(${DOLFIN_INCLUDE_DIRS} ${DOLFIN_3RD_PARTY_INCLUDE_DIRS})
 
