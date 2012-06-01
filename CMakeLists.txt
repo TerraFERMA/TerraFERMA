@@ -40,6 +40,11 @@ prepend-path DYLD_LIBRARY_PATH     ${CMAKE_INSTALL_PREFIX}/lib
 
 install(FILES ${PROJECT_BINARY_DIR}/configmodule DESTINATION share/basebucket)
 
+option(BUCKET_ENABLE_TESTING "Enable tests." OFF)
+
+if (BUCKET_ENABLE_TESTING)
+  add_subdirectory(tests EXCLUDE_FROM_ALL)
+endif()
 
 
 
