@@ -21,11 +21,11 @@ if (NOT EXISTS ${OPTIONSFILE})
   message(FATAL_ERROR "Could not find OPTIONSFILE ${OPTIONSFILE}")
 endif(NOT EXISTS ${OPTIONSFILE})
 
-add_subdirectory("${BUCKETTOOLS_DIR}/ufc" "buckettools_ufc")
+add_subdirectory(${BUCKETTOOLS_SHARED_DIRS}/buckettools/ufc "buckettools_ufc")
 
 add_executable(${EXECUTABLE} "${PROJECT_SOURCE_DIR}/../../cpp/main.cpp")
 
-set (EXTRA_LIBS ${EXTRA_LIBS} buckettools_cpp ${PREFIX}buckettools_ufc)
+set (EXTRA_LIBS ${EXTRA_LIBS} ${BUCKETTOOLS_LIBRARIES} ${PREFIX}buckettools_ufc)
 
 target_link_libraries(${EXECUTABLE} ${DOLFIN_LIBRARIES} ${DOLFIN_3RD_PARTY_LIBRARIES} ${EXTRA_LIBS} ${SPUD_LIBRARIES} ${PYTHON_LIBRARIES})
 

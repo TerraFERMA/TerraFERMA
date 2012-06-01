@@ -32,9 +32,15 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${DOLFIN_CXX_FLAGS}")
 # Include directories
 include_directories(${DOLFIN_INCLUDE_DIRS} ${DOLFIN_3RD_PARTY_INCLUDE_DIRS})
 
-set(BUCKETTOOLS_DIR "${PROJECT_SOURCE_DIR}/../buckettools" CACHE PATH
-     "Location of buckettools." FORCE)
-set(BUCKETTOOLS_BIN ${BUCKETTOOLS_DIR}/scripts)
+set(CMAKE_MODULE_PATH $ENV{CMAKE_MODULE_PATH})
+
+find_package(BucketTools REQUIRED)
+
+if (NOT BUCKETTOOLS_FOUND)
+  message(FATAL_ERROR "Could not find BucketTools.")
+endif()
+
+include_directories(${BUCKETTOOLS_INCLUDE_DIRS})
 
 find_package(PythonLibs REQUIRED)
 
@@ -44,8 +50,6 @@ endif(NOT ${PYTHONLIBS_FOUND})
 
 include_directories(${PYTHON_INCLUDE_PATH})
 
-set(CMAKE_MODULE_PATH "${BUCKETTOOLS_DIR}/cmake/modules")
-
 find_package(Spud REQUIRED)
 
 if(NOT ${SPUD_FOUND})
@@ -53,10 +57,6 @@ if(NOT ${SPUD_FOUND})
 endif(NOT ${SPUD_FOUND})
 
 include_directories(${SPUD_INCLUDE_DIRS})
-
-add_subdirectory("${BUCKETTOOLS_DIR}/cpp" "buckettools_cpp")
-
-include_directories("${BUCKETTOOLS_DIR}/include")
 
 add_subdirectory(diamond_validation)
 add_subdirectory(courant_1d)
