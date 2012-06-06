@@ -1965,6 +1965,10 @@ void SpudSolverBucket::restrict_is_indices_(std::vector<uint> &indices,
       }
       c_ind++;                                                       // indices shouldn't be repeated so incredment the child too
     }
+    for (uint i = c_ind; i < c_size; i++)
+    {
+      tmp_indices.push_back(indices[i]);                             // insert any remaining indices beyond the siblings
+    }
 
     if(overlap)
     {                                                                // sibling indices were ignored... give a warning
