@@ -11,6 +11,7 @@
 #include "SpudBucket.h"
 #include "PythonExpression.h"
 #include "RegionsExpression.h"
+#include "SemiLagrangianExpression.h"
 
 using namespace buckettools;
 
@@ -1093,10 +1094,11 @@ Expression_ptr SpudFunctionBucket::allocate_expression_(
   Spud::OptionError serr;                                            // spud option error
   Expression_ptr expression;                                         // declare the pointer that will be returned
   
-  std::stringstream constbuffer, pybuffer, funcbuffer, cppbuffer;    // some string assembly streams
+  std::stringstream constbuffer, pybuffer, funcbuffer, cppbuffer, intbuffer;// some string assembly streams
   constbuffer.str(""); constbuffer << optionpath << "/constant";     // for a constant
   pybuffer.str("");    pybuffer    << optionpath << "/python";       // for a python function
   cppbuffer.str("");   cppbuffer   << optionpath << "/cpp";          // for a cpp expression
+  intbuffer.str("");   intbuffer   << optionpath << "/internal";     // for an internal expression
   funcbuffer.str("");  funcbuffer  << optionpath << "/functional";   // for a functional
   
   if (Spud::have_option(constbuffer.str()))                          // constant requested?
@@ -1222,8 +1224,132 @@ Expression_ptr SpudFunctionBucket::allocate_expression_(
                                        system(), time);
 
     if (time_dependent)                                              // if we've asked if this expression is time dependent
-    {                                                                // ... assume it is (otherwise why would you be using a functional?)
+    {                                                                // ... assume it is (otherwise why would you be using a cpp expression?)
       *time_dependent = true;
+    }
+
+  }
+  else if (Spud::have_option(intbuffer.str()))                       // not much we can do for this case here except call the constructor
+  {
+
+    std::string algoname;
+    buffer.str(""); buffer << intbuffer.str() << "/algorithm/name";  // work out which internal algorithm we're using
+    serr = Spud::get_option(buffer.str(), algoname);
+    spud_err(buffer.str(), serr);
+
+    if (algoname == "SemiLagrangian")
+    {
+
+      std::pair< std::string, std::pair< std::string, std::string > > function, velocity, outside;
+
+      buffer.str(""); buffer << intbuffer.str() 
+                        << "/algorithm/lookup_function/system/name";
+      serr = Spud::get_option(buffer.str(), function.first, (*system()).name());
+      spud_err(buffer.str(), serr);
+
+      buffer.str(""); buffer << intbuffer.str() 
+                        << "/algorithm/lookup_function/field";
+      if (Spud::have_option(buffer.str()))
+      {
+        buffer << "/name";
+        function.second.first = "field";
+        serr = Spud::get_option(buffer.str(), function.second.second);
+        spud_err(buffer.str(), serr);
+      }
+      else
+      {
+        buffer.str(""); buffer << intbuffer.str() 
+                        << "/algorithm/lookup_function/coefficient/name";
+        function.second.first = "coefficient";
+        serr = Spud::get_option(buffer.str(), function.second.second);
+        spud_err(buffer.str(), serr);
+      }
+
+      buffer.str(""); buffer << intbuffer.str() 
+                        << "/algorithm/velocity/system/name";
+      serr = Spud::get_option(buffer.str(), velocity.first, (*system()).name());
+      spud_err(buffer.str(), serr);
+
+      buffer.str(""); buffer << intbuffer.str() 
+                        << "/algorithm/velocity/field";
+      if (Spud::have_option(buffer.str()))
+      {
+        buffer << "/name";
+        velocity.second.first = "field";
+        serr = Spud::get_option(buffer.str(), velocity.second.second);
+        spud_err(buffer.str(), serr);
+      }
+      else
+      {
+        buffer.str(""); buffer << intbuffer.str() 
+                        << "/algorithm/velocity/coefficient/name";
+        velocity.second.first = "coefficient";
+        serr = Spud::get_option(buffer.str(), velocity.second.second);
+        spud_err(buffer.str(), serr);
+      }
+
+      buffer.str(""); buffer << intbuffer.str() 
+                        << "/algorithm/outside_value/system/name";
+      serr = Spud::get_option(buffer.str(), outside.first, (*system()).name());
+      spud_err(buffer.str(), serr);
+
+      buffer.str(""); buffer << intbuffer.str() 
+                        << "/algorithm/outside_value/field";
+      if (Spud::have_option(buffer.str()))
+      {
+        buffer << "/name";
+        outside.second.first = "field";
+        serr = Spud::get_option(buffer.str(), velocity.second.second);
+        spud_err(buffer.str(), serr);
+      }
+      else
+      {
+        buffer.str(""); buffer << intbuffer.str() 
+                        << "/algorithm/outside_value/coefficient/name";
+        outside.second.first = "coefficient";
+        serr = Spud::get_option(buffer.str(), outside.second.second);
+        spud_err(buffer.str(), serr);
+      }
+
+                                                                     // rank of an internal function isn't in the default spud base
+                                                                     // language so have added it... but it comes out as a string 
+                                                                     // of course!
+      std::string rankstring;                                        // bit of a hack
+      buffer.str(""); buffer << intbuffer.str() << "/rank";
+      serr = Spud::get_option(buffer.str(), rankstring); 
+      spud_err(buffer.str(), serr);
+
+      
+      int rank;
+      rank = atoi(rankstring.c_str());
+      if (rank==0)                                                   // scalar
+      {
+        expression.reset(new SemiLagrangianExpression(
+                                               (*system()).bucket(), 
+                                               time,
+                                               function, velocity, outside));
+      }
+      else if (rank==1)                                              // vector
+      {
+        expression.reset(new SemiLagrangianExpression(size_,
+                                               (*system()).bucket(), 
+                                               time,
+                                               function, velocity, outside));
+      }
+      else
+      {
+        dolfin::error("Don't deal with rank > 1 yet.");
+      }
+
+      if (time_dependent)                                            // if we've asked if this expression is time dependent
+      {                                                              // ... assume it is (otherwise why would you be using an algorithm?)
+        *time_dependent = true;
+      }
+
+    }
+    else
+    {
+      dolfin::error("Unknown algorithm name in allocate_expression_.");
     }
 
   }
@@ -1302,8 +1428,9 @@ void SpudFunctionBucket::initialize_expression_(
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud option error
 
-  std::stringstream constbuffer, pybuffer, funcbuffer, cppbuffer;    // some string assembly streams
+  std::stringstream constbuffer, pybuffer, funcbuffer, cppbuffer, intbuffer;    // some string assembly streams
   cppbuffer.str("");   cppbuffer   << optionpath << "/cpp";          // for a cpp expression
+  intbuffer.str("");   intbuffer   << optionpath << "/internal";     // for an internal expression
   funcbuffer.str("");  funcbuffer  << optionpath << "/functional";   // for a functional
 
                                                                      // nothing to do here for python or constant as they are
@@ -1340,6 +1467,24 @@ void SpudFunctionBucket::initialize_expression_(
 
     cpp_init_expression(expression, (*system()).name(), name(), 
                                      typestring, expressionname);
+
+  }
+  else if (Spud::have_option(intbuffer.str()))                       // not much we can do for this case here except call the constructor
+  {
+
+    std::string algoname;
+    buffer.str(""); buffer << intbuffer.str() << "/algorithm/name";  // work out which internal algorithm we're using
+    serr = Spud::get_option(buffer.str(), algoname);
+    spud_err(buffer.str(), serr);
+
+    if (algoname == "SemiLagrangian")
+    {
+      (*boost::dynamic_pointer_cast< SemiLagrangianExpression >(expression)).init();
+    }
+    else
+    {
+      dolfin::error("Unknown algorithm name in initialize_expression_.");
+    }
 
   }
   
