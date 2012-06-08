@@ -216,12 +216,7 @@ const bool SemiLagrangianExpression::findpoint_(const dolfin::Array<double>& x,
 {
   int cell_index;
 
-  (*vel_).eval(*v_, x, cell);
-  (*oldvel_).eval(*oldv_, x, cell);
-  for (uint i = 0; i < dim_; i++)
-  {
-    (*vstar_)[i] = 0.5*( (*v_)[i] + (*oldv_)[i] );
-  }
+  findvstar_(x, cell);
 
   for (uint k = 0; k < 2; k++)
   {
@@ -239,14 +234,8 @@ const bool SemiLagrangianExpression::findpoint_(const dolfin::Array<double>& x,
     else
     {
       (*ufccellstar_).update((*dolfincellit_)[cell_index]);
-
       dolfin::Array<double> xstar(dim_, xstar_);
-      (*vel_).eval(*v_, xstar, *ufccellstar_);
-      (*oldvel_).eval(*oldv_, xstar, *ufccellstar_);
-      for (uint i = 0; i < dim_; i++)
-      {
-        (*vstar_)[i] = 0.5*( (*v_)[i] + (*oldv_)[i] );
-      }
+      findvstar_(xstar, *ufccellstar_);
     }
   }
 
@@ -268,3 +257,13 @@ const bool SemiLagrangianExpression::findpoint_(const dolfin::Array<double>& x,
   return false;
 }
 
+void SemiLagrangianExpression::findvstar_(const dolfin::Array<double>& x, 
+                                                const ufc::cell &cell) const
+{
+  (*vel_).eval(*v_, x, cell);
+  (*oldvel_).eval(*oldv_, x, cell);
+  for (uint i = 0; i < dim_; i++)
+  {
+    (*vstar_)[i] = 0.5*( (*v_)[i] + (*oldv_)[i] );
+  }
+}

@@ -95,6 +95,9 @@ namespace buckettools
     
     const bool findpoint_(const dolfin::Array<double>& x, 
                           const ufc::cell &cell) const;
+
+    void findvstar_(const dolfin::Array<double>& x, 
+                    const ufc::cell &cell) const;
   };
 
 }
