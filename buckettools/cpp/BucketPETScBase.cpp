@@ -132,15 +132,16 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
   Mat_ptr pB(B, dolfin::NoDeleter());                                // convert the snes matrix pc
   dolfin::PETScMatrix matrix(pA), matrixpc(pB);
 
+  PETScMatrix_ptr matrixbc = (*solver).matrixbc();
+
   (*(*iteratedfunction).vector()) = iteratedvec;                     // update the iterated system bucket function
 
   (*bucket).update_nonlinear();                                      // update nonlinear coefficients
 
-  dolfin::assemble(matrix, *(*solver).bilinear_form(), false);       // assemble the matrix from the context bilinear form
-  for(uint i = 0; i < bcs.size(); ++i)                               // loop over the bcs
-  {
-    (*bcs[i]).apply(matrix);                                         // FIXME: will break symmetry?
-  }
+  dolfin::symmetric_assemble(matrix, *matrixbc, 
+                             *(*solver).bilinear_form(), bcs,
+                             NULL, NULL, NULL,
+                             false);                                 // assemble the matrix from the context bilinear form
   for(uint i = 0; i < points.size(); ++i)                            // loop over the reference points
   {
     (*points[i]).apply(matrix);
@@ -152,12 +153,10 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
 
   if ((*solver).bilinearpc_form())                                   // do we have a different bilinear pc form associated?
   {
-    dolfin::assemble(matrixpc, (*(*solver).bilinearpc_form()),       // assemble the matrix pc from the context bilinear pc form
-                                                      false);
-    for(uint i = 0; i < bcs.size(); ++i)                             // loop over the bcs
-    {
-      (*bcs[i]).apply(matrixpc);                                     // FIXME: will break symmetry
-    }
+    dolfin::symmetric_assemble(matrixpc, *matrixbc, 
+                               (*(*solver).bilinearpc_form()), bcs,
+                               NULL, NULL, NULL,                     // assemble the matrix pc from the context bilinear pc form
+                               false);
     for(uint i = 0; i < points.size(); ++i)                          // loop over the points
     {
       (*points[i]).apply(matrixpc);
