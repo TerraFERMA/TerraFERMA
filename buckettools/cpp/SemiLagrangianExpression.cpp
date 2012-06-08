@@ -9,13 +9,11 @@ using namespace buckettools;
 // specific constructor (scalar)
 //*******************************************************************|************************************************************//
 SemiLagrangianExpression::SemiLagrangianExpression(const Bucket *bucket, 
-                                                   const double_ptr time,
                                                    const std::pair< std::string, std::pair< std::string, std::string > > &function,
                                                    const std::pair< std::string, std::pair< std::string, std::string > > &velocity,
                                                    const std::pair< std::string, std::pair< std::string, std::string > > &outside) :
                                                       dolfin::Expression(), 
                                                       bucket_(bucket), 
-                                                      time_(time), 
                                                       funcname_(function),
                                                       velname_(velocity),
                                                       outname_(outside),
@@ -29,13 +27,11 @@ SemiLagrangianExpression::SemiLagrangianExpression(const Bucket *bucket,
 //*******************************************************************|************************************************************//
 SemiLagrangianExpression::SemiLagrangianExpression(const uint &dim,
                                                    const Bucket *bucket, 
-                                                   const double_ptr time,
                                                    const std::pair< std::string, std::pair< std::string, std::string > > &function,
                                                    const std::pair< std::string, std::pair< std::string, std::string > > &velocity,
                                                    const std::pair< std::string, std::pair< std::string, std::string > > &outside) :
                                                       dolfin::Expression(dim), 
                                                       bucket_(bucket), 
-                                                      time_(time), 
                                                       funcname_(function),
                                                       velname_(velocity),
                                                       outname_(outside),
@@ -49,13 +45,11 @@ SemiLagrangianExpression::SemiLagrangianExpression(const uint &dim,
 //*******************************************************************|************************************************************//
 SemiLagrangianExpression::SemiLagrangianExpression(const uint &dim0, const uint &dim1,
                                                    const Bucket *bucket, 
-                                                   const double_ptr time,
                                                    const std::pair< std::string, std::pair< std::string, std::string > > &function,
                                                    const std::pair< std::string, std::pair< std::string, std::string > > &velocity,
                                                    const std::pair< std::string, std::pair< std::string, std::string > > &outside) :
                                                       dolfin::Expression(dim0, dim1), 
                                                       bucket_(bucket), 
-                                                      time_(time), 
                                                       funcname_(function),
                                                       velname_(velocity),
                                                       outname_(outside),
@@ -69,13 +63,11 @@ SemiLagrangianExpression::SemiLagrangianExpression(const uint &dim0, const uint 
 //*******************************************************************|************************************************************//
 SemiLagrangianExpression::SemiLagrangianExpression(const std::vector<uint> &value_shape,
                                                    const Bucket *bucket, 
-                                                   const double_ptr time,
                                                    const std::pair< std::string, std::pair< std::string, std::string > > &function,
                                                    const std::pair< std::string, std::pair< std::string, std::string > > &velocity,
                                                    const std::pair< std::string, std::pair< std::string, std::string > > &outside) :
                                                       dolfin::Expression(value_shape), 
                                                       bucket_(bucket), 
-                                                      time_(time), 
                                                       funcname_(function),
                                                       velname_(velocity),
                                                       outname_(outside),
@@ -99,6 +91,8 @@ SemiLagrangianExpression::~SemiLagrangianExpression()
   oldv_ = NULL;
   delete vstar_;
   vstar_ = NULL;
+  delete cellcache_;
+  cellcache_ = NULL;
 }
 
 //*******************************************************************|************************************************************//
@@ -182,6 +176,7 @@ void SemiLagrangianExpression::init()
     v_            = new dolfin::Array<double>(dim_);
     oldv_         = new dolfin::Array<double>(dim_);
     vstar_        = new dolfin::Array<double>(dim_);
+    cellcache_    = new dolfin::MeshFunction< point_map >(*mesh_, dim_);
 
   }
 }
@@ -194,7 +189,7 @@ void SemiLagrangianExpression::eval(dolfin::Array<double>& values,
                                     const ufc::cell &cell) const
 {
       
-  bool outside = findpoint_(x, cell);
+  const bool outside = findpoint_(x, cell);
   
   dolfin::Array<double> xstar(dim_, xstar_);
   if (outside)
@@ -214,7 +209,11 @@ void SemiLagrangianExpression::eval(dolfin::Array<double>& values,
 const bool SemiLagrangianExpression::findpoint_(const dolfin::Array<double>& x, 
                                                 const ufc::cell &cell) const
 {
-  int cell_index;
+  bool outside = false;
+
+  point_map &points = (*cellcache_)[cell.index];
+  dolfin::Point lp(x.size(), x.data().get());
+  point_iterator p_it = points.find(lp);
 
   findvstar_(x, cell);
 
@@ -225,18 +224,13 @@ const bool SemiLagrangianExpression::findpoint_(const dolfin::Array<double>& x,
       xstar_[i] = x[i] - ((*bucket()).timestep()/2.0)*(*vstar_)[i];
     }
 
-    dolfin::Point p(dim_, xstar_);
-    cell_index = (*mesh_).intersected_cell(p);
-    if (cell_index<0)
+    outside = checkpoint_(0, p_it, points, lp);
+    if (outside)
     {
       return true;
     }
-    else
-    {
-      (*ufccellstar_).update((*dolfincellit_)[cell_index]);
-      dolfin::Array<double> xstar(dim_, xstar_);
-      findvstar_(xstar, *ufccellstar_);
-    }
+    dolfin::Array<double> xstar(dim_, xstar_);
+    findvstar_(xstar, *ufccellstar_);
   }
 
   for (uint i = 0; i < dim_; i++)
@@ -244,19 +238,17 @@ const bool SemiLagrangianExpression::findpoint_(const dolfin::Array<double>& x,
     xstar_[i] = x[i] - ((*bucket()).timestep())*(*vstar_)[i];
   }
 
-  dolfin::Point p(dim_, xstar_);
-  cell_index = (*mesh_).intersected_cell(p);
-  if (cell_index<0)
+  outside = checkpoint_(1, p_it, points, lp);
+  if (outside)
   {
     return true;
-  }
-  else
-  {
-    (*ufccellstar_).update((*dolfincellit_)[cell_index]);
   }
   return false;
 }
 
+//*******************************************************************|************************************************************//
+// find the time weighted velocity at the requested point, x
+//*******************************************************************|************************************************************//
 void SemiLagrangianExpression::findvstar_(const dolfin::Array<double>& x, 
                                                 const ufc::cell &cell) const
 {
@@ -266,4 +258,53 @@ void SemiLagrangianExpression::findvstar_(const dolfin::Array<double>& x,
   {
     (*vstar_)[i] = 0.5*( (*v_)[i] + (*oldv_)[i] );
   }
+}
+
+//*******************************************************************|************************************************************//
+// check if the current xstar_ is in the cache and/or is valid
+//*******************************************************************|************************************************************//
+const bool SemiLagrangianExpression::checkpoint_(const int &index, 
+                                                 point_iterator &p_it, 
+                                                 point_map &points, 
+                                                 const dolfin::Point &lp) const
+{
+  int cell_index;
+  const dolfin::Point p(dim_, xstar_);
+
+  if (p_it != points.end())
+  {
+    cell_index = (*p_it).second[index];
+
+    bool update = false;
+    if (cell_index < 0)
+    {
+      update = true;
+    }
+    else if (!(*dolfincellit_)[cell_index].intersects(p))
+    {
+      update = true;
+    }
+
+    if (update)
+    {
+      cell_index = (*mesh_).intersected_cell(p);
+      (*p_it).second[index] = cell_index;
+    }
+  }
+  else
+  {
+    cell_index = (*mesh_).intersected_cell(p);
+    std::vector<int> cells(2, -1);
+    cells[index] = cell_index;
+    points[lp] = cells;
+  }
+
+  if (cell_index<0)
+  {
+    return true;
+  }
+
+  (*ufccellstar_).update((*dolfincellit_)[cell_index]);
+  return false;
+
 }

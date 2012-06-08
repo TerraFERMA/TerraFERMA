@@ -1326,14 +1326,12 @@ Expression_ptr SpudFunctionBucket::allocate_expression_(
       {
         expression.reset(new SemiLagrangianExpression(
                                                (*system()).bucket(), 
-                                               time,
                                                function, velocity, outside));
       }
       else if (rank==1)                                              // vector
       {
         expression.reset(new SemiLagrangianExpression(size_,
                                                (*system()).bucket(), 
-                                               time,
                                                function, velocity, outside));
       }
       else
