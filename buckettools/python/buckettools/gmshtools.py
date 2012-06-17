@@ -300,6 +300,35 @@ class Spline(Curve):
     self.points.append(p)
     self.update()
 
+  def split(self, ps):
+    points = [point for point in self.points]
+    pind = range(len(points))
+    for p in ps:
+      if p not in points or p==points[0] or p==points[-1]: continue
+      for i in range(1,len(points)-1):
+        if points[i] == p: break
+      newp0 = Point(self(self.u[pind[i]]-0.1), res=p.res)
+      newp1 = Point(self(self.u[pind[i]]+0.1), res=p.res)
+      points.insert(i, newp0)
+      pind.insert(i, None)
+      points.insert(i+2, newp1)
+      pind.insert(i+2, None)
+    splines = []
+    j = 0
+    for p in range(len(ps)+1):
+      newpoints = []
+      for i in range(j,len(points)):
+        newpoints.append(points[i])
+        if p<len(ps):
+          if points[i] == ps[p]: break
+      j = i
+      if self.name:
+        name = self.name+"_split"+`p`
+      else: 
+        name = None
+      splines.append(Spline(newpoints, name=name, pid=self.pid))
+    return splines
+
 class Surface(ElementaryEntity, PhysicalEntity):
   def __init__(self, curves, name=None, pid = None):
     self.type = "Surface"
@@ -411,6 +440,19 @@ class Geometry:
         self.lineembeds[surface] = [item]
 
   def writegeofile(self, filename):
+    for surface in self.surfaces:
+      surface.eid = None
+      for curve in surface.curves:
+        curve.eid = None
+        for point in curve.points:
+          point.eid = None
+    for curve in self.curves:
+      curve.eid = None
+      for point in curve.points:
+        point.eid = None
+    for point in self.points:
+      point.eid = None
+
     self.geofile = GeoFile()
     for s in range(len(self.surfaces)):
       surface = self.surfaces[s]
