@@ -396,6 +396,7 @@ class InterpolatedSciPySpline:
       ls = (ts[1:]-ts[:-1])*lengthfraction*length
       res = [max(ls[i], ls[i+1]) for i in range(len(ls)-1)]
       point = self.points[p]
+      self.interpu.append(self.u[p])
       for i in range(1,len(ts)-1):
         t = ts[i]
         self.interpu.append(self.u[p] + t*lengthfraction)
@@ -404,6 +405,8 @@ class InterpolatedSciPySpline:
         point = npoint
       npoint = self.points[p+1]
       self.interpcurves.append(Line([point, npoint], pid))
+    self.interpu.append(self.u[p+1])
+    self.interpu = numpy.asarray(self.interpu)
 
   def copytck(self):
     tck = []
@@ -412,17 +415,63 @@ class InterpolatedSciPySpline:
     tck.append(self.tck[2])
     return tck
 
-  def intersecty(self, yint):
-    tck = self.copytck()
-    tck[1][1] = tck[1][1]-yint
-    spoint = interp.sproot(tck)[1]
-    return interp.splev(spoint, self.tck)
-      
-  def intersectx(self, xint):
+  def uintersectxy(self, xint, yint):
     tck = self.copytck()
     tck[1][0] = tck[1][0]-xint
-    spoint = interp.sproot(tck)[0]
+    tck[1][1] = tck[1][1]-yint
+    return interp.sproot(tck)
+      
+  def intersecty(self, yint):
+    spoint = self.uintersecty(yint)
+    assert(len(spoint)==1)
     return interp.splev(spoint, self.tck)
+      
+  def uintersecty(self, yint):
+    tck = self.copytck()
+    tck[1][1] = tck[1][1]-yint
+    return interp.sproot(tck)[1]
+      
+  def intersectx(self, xint):
+    spoint = self.uintersectx(xint)
+    assert(len(spoint)==1)
+    return interp.splev(spoint, self.tck)
+
+  def uintersectx(self, xint):
+    tck = self.copytck()
+    tck[1][0] = tck[1][0]-xint
+    return interp.sproot(tck)[0]
+
+  def unittangentxy(self, x, y):
+    spoint = self.uintersectxy(xint, yint)
+    locx = interpcurveindex(spoint[0])
+    locy = interpcurveindex(spoint[1])
+    assert(locx==locy)
+    totallength = sqrt((self.interpcurves[locx].point[-1].x - self.interpcurves[locx].point[0].x)**2 \
+                      +(self.interpcurves[locx].point[-1].y - self.interpcurves[locx].point[0].y)**2)
+    partiallength = sqrt((x - self.interpcurves[locx].point[0].x)**2 \
+                        +(y - self.interpcurves[locx].point[0].y)**2)
+    fractionallength = partiallength/totallength
+    u = self.interpu[locx] + fractionallength*(self.interpu[locx+1]-self.interpu[locx])
+    return self.unittangent(u)
+
+  def unittangent(self, u):
+    der = self(u, der=1)
+    vec = numpy.array([der[0], der[1]])
+    vec = vec/sqrt(sum(vec**2))
+    return vec
+
+  def interpcurveindex(self, u):
+    loc = abs(self.interpu - u).argmin()
+    if loc == 0: 
+      loc0 = loc
+    elif loc == len(self.interpu)-1: 
+      loc0 = loc-1
+    else:
+      if self.interpu(loc) < u: 
+        loc0 = loc
+      else: 
+        loc0 = loc-1
+    return loc0
 
   def translatenormal(self, dist):
     for i in range(len(self.u)):
