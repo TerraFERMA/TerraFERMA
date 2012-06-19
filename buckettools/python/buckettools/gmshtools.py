@@ -1,6 +1,7 @@
 
 import numpy
 from scipy import interpolate as interp
+from scipy import integrate as integ
 from scipy import optimize as opt
 from math import sqrt
 import pylab
@@ -41,6 +42,9 @@ class GeoFile:
     else:
       line += "\n"
     self.lines.append(line)
+
+  def addinterpcurve(self, interpcurve, comment=None):
+    for curve in interpcurve.interpcurves: self.addcurve(curve, comment)
 
   def addsurface(self, surface, comment=None):
     if surface.eid:
@@ -91,6 +95,13 @@ class GeoFile:
     line += `items[-1].eid`+"} In Surface {"+`surface.eid`+"};\n"
     self.lines.append(line) 
 
+  def addtransfinitecurve(self, curves, nele):
+    line = "Transfinite Line {"
+    for c in range(len(curves)-1):
+      line += `curves[c].eid`+", "
+    line += `curves[-1].eid`+"} = "+`nele`+";\n"
+    self.lines.append(line)
+
   def linebreak(self):
     self.lines.append("\n")
 
@@ -109,6 +120,9 @@ class ElementaryEntity:
   def __init__(self, name=None):
     self.name = name
     self.eid  = None
+
+  def cleareid(self):
+    self.eid = None
 
 class PhysicalEntity:
   def __init__(self, pid=None):
@@ -147,6 +161,10 @@ class Curve(ElementaryEntity, PhysicalEntity):
     self.points = points.tolist()
     self.x = numpy.array([self.points[i].x for i in range(len(self.points))])
     self.y = numpy.array([self.points[i].y for i in range(len(self.points))])
+
+  def cleareid(self):
+    for point in self.points: point.cleareid()
+    ElementaryEntity.cleareid(self)
 
 class Line(Curve):
   def __init__(self, points, name=None, pid=None):
@@ -303,12 +321,13 @@ class Spline(Curve):
   def split(self, ps):
     points = [point for point in self.points]
     pind = range(len(points))
+    derivs = self.find_derivatives()
     for p in ps:
       if p not in points or p==points[0] or p==points[-1]: continue
       for i in range(1,len(points)-1):
         if points[i] == p: break
-      newp0 = Point(self(self.u[pind[i]]-0.1), res=p.res)
-      newp1 = Point(self(self.u[pind[i]]+0.1), res=p.res)
+      newp0 = Point([p.x-derivs[0][pind[i]], p.y-derivs[1][pind[i]]], res=p.res)
+      newp1 = Point([p.x+derivs[0][pind[i]], p.y+derivs[1][pind[i]]], res=p.res)
       points.insert(i, newp0)
       pind.insert(i, None)
       points.insert(i+2, newp1)
@@ -329,6 +348,164 @@ class Spline(Curve):
       splines.append(Spline(newpoints, name=name, pid=self.pid))
     return splines
 
+class InterpolatedSciPySpline:
+  def __init__(self, points, name=None, pids=None):
+    self.type = "InterpolatedSciPySpline"
+    self.points = points
+    self.name = name
+    if pids: 
+      assert(len(self.pids)==len(self.points)-1)
+      self.pids = pids
+    else:
+      self.pids = [None for i in range(len(self.points)-1)]
+    self.x = None
+    self.y = None
+    self.u = None
+    self.tck = None
+    self.interpu = None
+    self.interpcurves = None
+    self.update()
+
+  def __call__(self, u, der=0):
+    return interp.splev(u, self.tck, der=der)
+
+  def update(self):
+    self.x = numpy.array([self.points[i].x for i in range(len(self.points))])
+    isort = numpy.argsort(self.x)
+    points = numpy.asarray(self.points)[isort]
+    self.points = points.tolist()
+    pids = numpy.asarray(self.pids)[[i for i in isort if i != (len(isort)-1)]]
+    self.pids = pids.tolist()
+    self.x = numpy.array([self.points[i].x for i in range(len(self.points))])
+    self.y = numpy.array([self.points[i].y for i in range(len(self.points))])
+    self.tck, self.u = interp.splprep([self.x,self.y], s=0)
+    length = integ.quad(lambda x: sqrt(sum(numpy.array(self(x, der=1))**2)), 0., 1.)[0]
+    self.interpu = []
+    self.interpcurves = []
+    for p in range(len(self.points)-1):
+      pid = self.pids[p]
+      lengthfraction = self.u[p+1]-self.u[p]
+      res0 = self.points[p].res/length/lengthfraction
+      res1 = self.points[p+1].res/length/lengthfraction
+      t = 0.0
+      ts = [t]
+      while t < 1.0:
+        t = ts[-1] + (1.0 - t)*res0 + t*res1
+        ts.append(t)
+      ts = numpy.array(ts)/ts[-1]
+      ls = (ts[1:]-ts[:-1])*lengthfraction*length
+      res = [max(ls[i], ls[i+1]) for i in range(len(ls)-1)]
+      point = self.points[p]
+      for i in range(1,len(ts)-1):
+        t = ts[i]
+        self.interpu.append(self.u[p] + t*lengthfraction)
+        npoint = Point(self(self.interpu[-1]), res=res[i-1])
+        self.interpcurves.append(Line([point, npoint], pid))
+        point = npoint
+      npoint = self.points[p+1]
+      self.interpcurves.append(Line([point, npoint], pid))
+
+  def copytck(self):
+    tck = []
+    tck.append(self.tck[0].copy())
+    tck.append([self.tck[1][0].copy(), self.tck[1][1].copy()])
+    tck.append(self.tck[2])
+    return tck
+
+  def intersecty(self, yint):
+    tck = self.copytck()
+    tck[1][1] = tck[1][1]-yint
+    spoint = interp.sproot(tck)[1]
+    return interp.splev(spoint, self.tck)
+      
+  def intersectx(self, xint):
+    tck = self.copytck()
+    tck[1][0] = tck[1][0]-xint
+    spoint = interp.sproot(tck)[0]
+    return interp.splev(spoint, self.tck)
+
+  def translatenormal(self, dist):
+    for i in range(len(self.u)):
+      der = self(self.u[i], der=1)
+      vec = numpy.array([-der[1], der[0]])
+      vec = vec/sqrt(sum(vec**2))
+      self.points[i].x += dist*vec[0]
+      self.points[i].y += dist*vec[1]
+    self.update()
+
+  def croppoint(self, pind, coord):
+    for i in range(len(pind)-1):
+      p = self.points.pop(pind[i])
+    self.points[pind[-1]].x = coord[0]
+    self.points[pind[-1]].y = coord[1]
+    self.update()
+
+  def crop(self, left=None, bottom=None, right=None, top=None):
+    if left is not None:
+      out = pylab.find(self.x < left)
+      if (len(out)>0):
+        coord = self.intersectx(left)
+        self.croppoint(out, coord)
+    if right is not None:
+      out = pylab.find(self.x > right)
+      if (len(out)>0):
+        coord = self.intersectx(right)
+        self.croppoint(out, coord)
+    if bottom is not None:
+      out = pylab.find(self.y < bottom)
+      if (len(out)>0):
+        coord = self.intersecty(bottom)
+        self.croppoint(out, coord)
+    if top is not None:
+      out = pylab.find(self.y > top)
+      if (len(out)>0):
+        coord = self.intersecty(top)
+        self.croppoint(out, coord)
+
+  def translatenormalandcrop(self, dist):
+    left = self.x.min()
+    right = self.x.max()
+    bottom = self.y.min()
+    top = self.y.max()
+    self.translatenormal(dist)
+    self.crop(left=left, bottom=bottom, right=right, top=top)
+
+  def findpointx(self, xint):
+    ind = pylab.find(self.x==xint)
+    if (len(ind)==0): 
+      return None
+    else:
+      return self.points[ind[0]]
+  
+  def findpointy(self, yint):
+    ind = pylab.find(self.y==yint)
+    if (len(ind)==0): 
+      return None
+    else:
+      return self.points[ind[0]]
+  
+  def findpoint(self, name):
+    for p in self.points:
+      if p.name == name: return p
+    return None
+
+  def interpcurvesinterval(self, point0, point1):
+    for l0 in range(len(self.interpcurves)):
+      if self.interpcurves[l0].points[0] == point0: break
+
+    for l1 in range(l0, len(self.interpcurves)):
+      if self.interpcurves[l1].points[1] == point1: break
+
+    return self.interpcurves[l0:l1+1]
+
+  def appendpoint(self, p, pid=None):
+    self.points.append(p)
+    self.pids.append(pid)
+    self.update()
+
+  def cleareid(self):
+    for curve in self.interpcurves: curve.cleareid()
+
 class Surface(ElementaryEntity, PhysicalEntity):
   def __init__(self, curves, name=None, pid = None):
     self.type = "Surface"
@@ -348,27 +525,38 @@ class Surface(ElementaryEntity, PhysicalEntity):
         elif pcurve.points[pind] == curves[ind[i]].points[-1]:
           self.directions.append(-1)
           break
+      if i == len(ind)-1 and len(self.directions) == j:
+        print "Failed to complete line loop."
+        sys.exit(1)
       self.curves.append(curves[ind[i]])
       i = ind.pop(i)
     ElementaryEntity.__init__(self, name=name)
     PhysicalEntity.__init__(self, pid=pid)
 
+  def cleareid(self):
+    for curve in self.curves: curve.cleareid()
+    ElementaryEntity.cleareid(self)
+
 class Geometry:
   def __init__(self):
     self.namedpoints = {}
     self.namedcurves = {}
+    self.namedinterpcurves = {}
     self.namedsurfaces = {}
     self.physicalpoints = {}
     self.physicalcurves = {}
     self.physicalsurfaces = {}
     self.points  = []
     self.curves  = []
+    self.interpcurves  = []
     self.surfaces = []
     self.pointcomments  = []
     self.curvecomments  = []
+    self.interpcurvecomments  = []
     self.surfacecomments = []
     self.pointembeds = {}
     self.lineembeds = {}
+    self.transfinitecurves = {}
     self.geofile = None
 
   def addpoint(self, point, name=None, comment=None):
@@ -407,6 +595,27 @@ class Geometry:
       else:
         self.physicalcurves[curve.pid] = [curve]
 
+  def addtransfinitecurve(self, curve, name=None, comment=None, nele=1):
+    self.addcurve(curve, name, comment)
+    if nele in self.transfinitecurves:
+      self.transfinitecurves[nele].append(curve)
+    else:
+      self.transfinitecurves[nele] = [curve]
+
+  def addinterpcurve(self, interpcurve, name=None, comment=None):
+    self.interpcurves.append(interpcurve)
+    self.interpcurvecomments.append(comment)
+    if not comment:
+      if name:
+        self.interpcurvecomments[-1] = name
+      elif interpcurve.name:
+        self.interpcurvecomments[-1] = interpcurve.name
+    if name:
+      self.namedinterpcurves[name] = interpcurve
+    elif interpcurve.name:
+      self.namedinterpcurves[interpcurve.name] = interpcurve
+    for curve in interpcurve.interpcurves: self.addtransfinitecurve(curve)
+
   def addsurface(self, surface, name=None, comment=None):
     self.surfaces.append(surface)
     self.surfacecomments.append(comment)
@@ -440,29 +649,16 @@ class Geometry:
         self.lineembeds[surface] = [item]
 
   def writegeofile(self, filename):
-    for surface in self.surfaces:
-      surface.eid = None
-      for curve in surface.curves:
-        curve.eid = None
-        for point in curve.points:
-          point.eid = None
-    for curve in self.curves:
-      curve.eid = None
-      for point in curve.points:
-        point.eid = None
-    for point in self.points:
-      point.eid = None
-
+    self.cleareid()
+    
     self.geofile = GeoFile()
     for s in range(len(self.surfaces)):
       surface = self.surfaces[s]
       self.geofile.addsurface(surface, self.surfacecomments[s])
-      self.geofile.linebreak()
     self.geofile.linebreak()
     for c in range(len(self.curves)):
       curve = self.curves[c]
       self.geofile.addcurve(curve, self.curvecomments[c])
-      self.geofile.linebreak()
     self.geofile.linebreak()
     for p in range(len(self.points)):
       point = self.points[p]
@@ -473,6 +669,10 @@ class Geometry:
       self.geofile.addembed(surface,items)
     for surface,items in self.lineembeds.iteritems():
       self.geofile.addembed(surface,items)
+    self.geofile.linebreak()
+
+    for nele,curves in self.transfinitecurves.iteritems():
+      self.geofile.addtransfinitecurve(curves,nele)
     self.geofile.linebreak()
     
     for pid,surfaces in self.physicalsurfaces.iteritems():
@@ -490,10 +690,24 @@ class Geometry:
     self.geofile.write(filename)
 
   def pylabplot(self, lineres=100):
+    for interpcurve in self.interpcurves:
+      unew = numpy.arange(interpcurve.u[0], interpcurve.u[-1]+((interpcurve.u[-1]-interpcurve.u[0])/(2.*lineres)), 1./lineres)
+      pylab.plot(interpcurve(unew)[0], interpcurve(unew)[1], 'b')
+      pylab.plot(interpcurve.x, interpcurve.y, 'ob')
+      for curve in interpcurve.interpcurves:
+        unew = numpy.arange(curve.u[0], curve.u[-1]+((curve.u[-1]-curve.u[0])/(2.*lineres)), 1./lineres)
+        pylab.plot(curve(unew)[0], curve(unew)[1], 'k')
+        pylab.plot(curve.x, curve.y, '+k')
     for curve in self.curves:
       unew = numpy.arange(curve.u[0], curve.u[-1]+((curve.u[-1]-curve.u[0])/(2.*lineres)), 1./lineres)
       pylab.plot(curve(unew)[0], curve(unew)[1], 'k')
       pylab.plot(curve.x, curve.y, 'ok')
-    for point in self.points:
-      pylab.plot(point.x, point.y, 'ok')
+    #for point in self.points:
+    #  pylab.plot(point.x, point.y, 'ok')
+
+  def cleareid(self):
+    for surface in self.surfaces: surface.cleareid()
+    for interpcurve in self.interpcurves: interpcurve.cleareid()
+    for curve in self.curves: curve.cleareid()
+    for point in self.points: point.cleareid()
   
