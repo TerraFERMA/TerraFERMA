@@ -420,7 +420,12 @@ class InterpolatedSciPySpline:
     tck = self.copytck()
     tck[1][0] = tck[1][0]-xint
     tck[1][1] = tck[1][1]-yint
-    return interp.sproot(tck)
+    t = tck[0]
+    c0 = numpy.concatenate( (tck[1][0], numpy.array([0]*(len(t)-len(tck[1][0])), dtype=tck[1][0].dtype)))
+    c1 = numpy.concatenate( (tck[1][1], numpy.array([0]*(len(t)-len(tck[1][1])), dtype=tck[1][1].dtype)))
+    z0, m0,ierr = interp.fitpack.dfitpack.sproot(t, c0)
+    z1, m1,ierr = interp.fitpack.dfitpack.sproot(t, c1)
+    return [z0[:m0], z1[:m1]]
       
   def intersecty(self, yint):
     spoint = self.uintersecty(yint)
@@ -430,7 +435,10 @@ class InterpolatedSciPySpline:
   def uintersecty(self, yint):
     tck = self.copytck()
     tck[1][1] = tck[1][1]-yint
-    return interp.sproot(tck)[1]
+    t = tck[0]
+    c = numpy.concatenate( (tck[1][1], numpy.array([0]*(len(t)-len(tck[1][1])), dtype=tck[1][1].dtype)))
+    z,m,ierr = interp.fitpack.dfitpack.sproot(t, c)
+    return z[:m]
       
   def intersectx(self, xint):
     spoint = self.uintersectx(xint)
@@ -440,7 +448,10 @@ class InterpolatedSciPySpline:
   def uintersectx(self, xint):
     tck = self.copytck()
     tck[1][0] = tck[1][0]-xint
-    return interp.sproot(tck)[0]
+    t = tck[0]
+    c = numpy.concatenate( (tck[1][0], numpy.array([0]*(len(t)-len(tck[1][0])), dtype=tck[1][0].dtype)))
+    z,m,ierr = interp.fitpack.dfitpack.sproot(t, c)
+    return z[:m]
 
   def uxymindist(self, x, y):
     spoint = self.uintersectxy(x,y)
