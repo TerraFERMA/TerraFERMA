@@ -364,6 +364,7 @@ class InterpolatedSciPySpline:
     self.tck = None
     self.interpu = None
     self.interpcurves = None
+    self.length = None
     self.update()
 
   def __call__(self, u, der=0):
@@ -379,21 +380,21 @@ class InterpolatedSciPySpline:
     self.x = numpy.array([self.points[i].x for i in range(len(self.points))])
     self.y = numpy.array([self.points[i].y for i in range(len(self.points))])
     self.tck, self.u = interp.splprep([self.x,self.y], s=0)
-    length = integ.quad(lambda x: sqrt(sum(numpy.array(self(x, der=1))**2)), 0., 1.)[0]
+    self.length = integ.quad(lambda x: sqrt(sum(numpy.array(self(x, der=1))**2)), 0., 1.)[0]
     self.interpu = []
     self.interpcurves = []
     for p in range(len(self.points)-1):
       pid = self.pids[p]
       lengthfraction = self.u[p+1]-self.u[p]
-      res0 = self.points[p].res/length/lengthfraction
-      res1 = self.points[p+1].res/length/lengthfraction
+      res0 = self.points[p].res/self.length/lengthfraction
+      res1 = self.points[p+1].res/self.length/lengthfraction
       t = 0.0
       ts = [t]
       while t < 1.0:
         t = ts[-1] + (1.0 - t)*res0 + t*res1
         ts.append(t)
       ts = numpy.array(ts)/ts[-1]
-      ls = (ts[1:]-ts[:-1])*lengthfraction*length
+      ls = (ts[1:]-ts[:-1])*lengthfraction*self.length
       res = [max(ls[i], ls[i+1]) for i in range(len(ls)-1)]
       point = self.points[p]
       self.interpu.append(self.u[p])
@@ -441,24 +442,24 @@ class InterpolatedSciPySpline:
     tck[1][0] = tck[1][0]-xint
     return interp.sproot(tck)[0]
 
-  def unittangentxy(self, x, y):
-    spoint = self.uintersectxy(xint, yint)
-    locx = interpcurveindex(spoint[0])
-    locy = interpcurveindex(spoint[1])
-    assert(locx==locy)
-    totallength = sqrt((self.interpcurves[locx].point[-1].x - self.interpcurves[locx].point[0].x)**2 \
-                      +(self.interpcurves[locx].point[-1].y - self.interpcurves[locx].point[0].y)**2)
-    partiallength = sqrt((x - self.interpcurves[locx].point[0].x)**2 \
-                        +(y - self.interpcurves[locx].point[0].y)**2)
-    fractionallength = partiallength/totallength
-    u = self.interpu[locx] + fractionallength*(self.interpu[locx+1]-self.interpu[locx])
-    return self.unittangent(u)
+  def uxymindist(self, x, y):
+    spoint = self.uintersectxy(x,y)
+    for i in range(2): 
+      if len(spoint[i])>0: break
+    f = lambda u: numpy.sqrt(sum((numpy.asarray(self(u)) - numpy.asarray([x,y]))**2))
+    return opt.fmin_bfgs(f, spoint[i][0], disp=0)[0]
 
-  def unittangent(self, u):
-    der = self(u, der=1)
-    vec = numpy.array([der[0], der[1]])
-    vec = vec/sqrt(sum(vec**2))
-    return vec
+  def uxyapprox(self, x, y):
+    spoint = self.uintersectxy(x, y)
+    for i in range(2): 
+      if len(spoint[i])>0: break
+    loc = self.interpcurveindex(spoint[i][0])
+    totallength = sqrt((self.interpcurves[loc].points[-1].x - self.interpcurves[loc].points[0].x)**2 \
+                      +(self.interpcurves[loc].points[-1].y - self.interpcurves[loc].points[0].y)**2)
+    partiallength = sqrt((x - self.interpcurves[loc].points[0].x)**2 \
+                        +(y - self.interpcurves[loc].points[0].y)**2)
+    fractionallength = partiallength/totallength
+    return self.interpu[loc] + fractionallength*(self.interpu[loc+1]-self.interpu[loc])
 
   def interpcurveindex(self, u):
     loc = abs(self.interpu - u).argmin()
@@ -467,11 +468,17 @@ class InterpolatedSciPySpline:
     elif loc == len(self.interpu)-1: 
       loc0 = loc-1
     else:
-      if self.interpu(loc) < u: 
+      if self.interpu[loc] < u: 
         loc0 = loc
       else: 
         loc0 = loc-1
     return loc0
+
+  def unittangent(self, u):
+    der = self(u, der=1)
+    vec = numpy.array([der[0], der[1]])
+    vec = vec/sqrt(sum(vec**2))
+    return vec
 
   def translatenormal(self, dist):
     for i in range(len(self.u)):
@@ -536,6 +543,11 @@ class InterpolatedSciPySpline:
   def findpoint(self, name):
     for p in self.points:
       if p.name == name: return p
+    return None
+
+  def findpointindex(self, name):
+    for p in range(len(self.points)):
+      if self.points[p].name == name: return p
     return None
 
   def interpcurvesinterval(self, point0, point1):
