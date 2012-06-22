@@ -95,11 +95,23 @@ class GeoFile:
     line += `items[-1].eid`+"} In Surface {"+`surface.eid`+"};\n"
     self.lines.append(line) 
 
-  def addtransfinitecurve(self, curves, nele):
+  def addtransfinitecurve(self, curves, n):
+    for c in range(len(curves)):
+      if curves[c].eid is None:
+        self.addcurve(curves[c])
     line = "Transfinite Line {"
     for c in range(len(curves)-1):
       line += `curves[c].eid`+", "
-    line += `curves[-1].eid`+"} = "+`nele`+";\n"
+    line += `curves[-1].eid`+"} = "+`n`+";\n"
+    self.lines.append(line)
+
+  def addtransfinitesurface(self, surface, corners, direction):
+    if surface.eid is None:
+      self.addsurface(surface)
+    line = "Transfinite Surface {"+`surface.eid`+"} = {"
+    for c in range(len(corners)-1):
+      line += `corners[c].eid`+", "
+    line += `corners[-1].eid`+"} "+direction+";\n"
     self.lines.append(line)
 
   def linebreak(self):
@@ -381,6 +393,8 @@ class InterpolatedSciPySpline:
     self.y = numpy.array([self.points[i].y for i in range(len(self.points))])
     self.tck, self.u = interp.splprep([self.x,self.y], s=0)
     self.length = integ.quad(lambda x: sqrt(sum(numpy.array(self(x, der=1))**2)), 0., 1.)[0]
+  
+  def updateinterp(self):
     self.interpu = []
     self.interpcurves = []
     for p in range(len(self.points)-1):
@@ -403,6 +417,32 @@ class InterpolatedSciPySpline:
         self.interpu.append(self.u[p] + t*lengthfraction)
         npoint = Point(self(self.interpu[-1]), res=res[i-1])
         self.interpcurves.append(Line([point, npoint], pid))
+        point = npoint
+      npoint = self.points[p+1]
+      self.interpcurves.append(Line([point, npoint], pid))
+    self.interpu.append(self.u[p+1])
+    self.interpu = numpy.asarray(self.interpu)
+
+  def copyinterp(self, spline):
+    assert(len(self.points)==len(spline.points))
+    self.interpu = []
+    self.interpcurves = []
+    for p in range(len(self.points)-1):
+      pid = self.pids[p]
+      lengthfraction = self.u[p+1]-self.u[p]
+      splinelengthfraction = spline.u[p+1]-spline.u[p]
+      lengthratio = lengthfraction/splinelengthfraction
+      splinepoint0 = spline.points[p]
+      splinepoint1 = spline.points[p+1]
+      splineus = spline.interpusinterval(splinepoint0, splinepoint1)
+      splinecurves = spline.interpcurvesinterval(splinepoint0, splinepoint1)
+      assert(len(splineus)==len(splinecurves)+1)
+      point = self.points[p]
+      self.interpu.append(self.u[p])
+      for i in range(1, len(splineus)-1):
+        self.interpu.append(self.u[p] + (splineus[i]-spline.u[p])*lengthratio)
+        npoint = Point(self(self.interpu[-1]), res=splinecurves[i-1].points[1].res*lengthratio)
+        self.interpcurves.append(Line([point,npoint], pid))
         point = npoint
       npoint = self.points[p+1]
       self.interpcurves.append(Line([point, npoint], pid))
@@ -570,6 +610,15 @@ class InterpolatedSciPySpline:
 
     return self.interpcurves[l0:l1+1]
 
+  def interpusinterval(self, point0, point1):
+    for l0 in range(len(self.interpcurves)):
+      if self.interpcurves[l0].points[0] == point0: break
+
+    for l1 in range(l0, len(self.interpcurves)):
+      if self.interpcurves[l1].points[1] == point1: break
+
+    return self.interpu[l0:l1+2]
+
   def appendpoint(self, p, pid=None):
     self.points.append(p)
     self.pids.append(pid)
@@ -629,6 +678,7 @@ class Geometry:
     self.pointembeds = {}
     self.lineembeds = {}
     self.transfinitecurves = {}
+    self.transfinitesurfaces = {}
     self.geofile = None
 
   def addpoint(self, point, name=None, comment=None):
@@ -667,12 +717,16 @@ class Geometry:
       else:
         self.physicalcurves[curve.pid] = [curve]
 
-  def addtransfinitecurve(self, curve, name=None, comment=None, nele=1):
+  def addtransfinitecurve(self, curve, name=None, comment=None, n=2):
     self.addcurve(curve, name, comment)
-    if nele in self.transfinitecurves:
-      self.transfinitecurves[nele].append(curve)
+    if n in self.transfinitecurves:
+      self.transfinitecurves[n].append(curve)
     else:
-      self.transfinitecurves[nele] = [curve]
+      self.transfinitecurves[n] = [curve]
+
+  def addtransfinitesurface(self, surface, corners, direction="Right", name=None, comment=None):
+    self.addsurface(surface, name, comment)
+    self.transfinitesurfaces[surface] = (corners, direction)
 
   def addinterpcurve(self, interpcurve, name=None, comment=None):
     self.interpcurves.append(interpcurve)
@@ -743,8 +797,11 @@ class Geometry:
       self.geofile.addembed(surface,items)
     self.geofile.linebreak()
 
-    for nele,curves in self.transfinitecurves.iteritems():
-      self.geofile.addtransfinitecurve(curves,nele)
+    for n,curves in self.transfinitecurves.iteritems():
+      self.geofile.addtransfinitecurve(curves,n)
+    self.geofile.linebreak()
+    for surface,corners in self.transfinitesurfaces.iteritems():
+      self.geofile.addtransfinitesurface(surface,corners[0],corners[1])
     self.geofile.linebreak()
     
     for pid,surfaces in self.physicalsurfaces.iteritems():
