@@ -582,6 +582,7 @@ by the PETSc library. Many more methods are provided.</a:documentation>
       <ref name="pcbjacobi_options"/>
       <ref name="pcasm_options"/>
       <ref name="pcksp_options"/>
+      <ref name="pcnone_options"/>
       <ref name="pcother_options"/>
     </choice>
     <ref name="generic_solver_options"/>
@@ -611,6 +612,7 @@ by the PETSc library. Many more methods are provided.</a:documentation>
       <ref name="pcbjacobi_options"/>
       <ref name="pcasm_options"/>
       <ref name="pcksp_options"/>
+      <ref name="pcnone_options"/>
       <ref name="pcother_options"/>
     </choice>
     <ref name="generic_solver_options"/>
@@ -938,6 +940,14 @@ than with bjacobi.</a:documentation>
         <value>asm</value>
       </attribute>
       <ref name="subpc_options"/>
+    </element>
+  </define>
+  <define name="pcnone_options">
+    <element name="preconditioner">
+      <a:documentation>No preconditioner</a:documentation>
+      <attribute name="name">
+        <value>none</value>
+      </attribute>
     </element>
   </define>
   <!-- sub preconditioner to choose for bjacobi or asm -->
