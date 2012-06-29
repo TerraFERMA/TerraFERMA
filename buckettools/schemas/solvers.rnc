@@ -975,7 +975,13 @@ iterative_solver_options_base =
       ## before giving up.
       element max_iterations {
          integer
-      }
+      },
+      ## Switch on to not use an initial guess from a previous solve but
+      ## start with a zero vector. Note that some of the solves always
+      ## start at zero in which case this switch will have no effect (see the log output).
+      element start_from_zero {
+         empty
+      }?
    )
 
 iterative_solver_options = iterative_solver_options_base
@@ -1038,12 +1044,6 @@ iterative_monitors_top =
 
 generic_solver_options =
    (
-#      ## Switch on to not use an initial guess from a previous solve but
-#      ## start with a zero vector. Note that some of the solves always
-#      ## start at zero in which case this switch will have no effect (see the log output).
-#      element start_from_zero {
-#         empty
-#      }?,
       ## Remove Null-space from residual after applying preconditioner.
       element remove_null_space {
          ## Describe the null spaces.  Names must be unique within this linear solver.

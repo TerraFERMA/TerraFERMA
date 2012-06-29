@@ -1100,6 +1100,14 @@ Defaults to 10000.</a:documentation>
 before giving up.</a:documentation>
       <ref name="integer"/>
     </element>
+    <optional>
+      <element name="start_from_zero">
+        <a:documentation>Switch on to not use an initial guess from a previous solve but
+start with a zero vector. Note that some of the solves always
+start at zero in which case this switch will have no effect (see the log output).</a:documentation>
+        <empty/>
+      </element>
+    </optional>
   </define>
   <define name="iterative_solver_options">
     <ref name="iterative_solver_options_base"/>
@@ -1169,14 +1177,6 @@ the solve. Some of those may really slow down your computation!</a:documentation
   </define>
   <define name="generic_solver_options">
     <optional>
-      <!--
-             ## Switch on to not use an initial guess from a previous solve but
-             ## start with a zero vector. Note that some of the solves always
-             ## start at zero in which case this switch will have no effect (see the log output).
-             element start_from_zero {
-                empty
-             }?,
-      -->
       <element name="remove_null_space">
         <a:documentation>Remove Null-space from residual after applying preconditioner.</a:documentation>
         <oneOrMore>
