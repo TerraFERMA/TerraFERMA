@@ -539,7 +539,7 @@ prescribed_expression_scalar =
     element value {
       attribute name {"WholeMesh"},
       attribute type {"value"},
-      prescribed_scalar
+      prescribed_scalar_w_internal
     }|
     ## Options for the description of an expression over regions
     element value {
@@ -549,7 +549,7 @@ prescribed_expression_scalar =
       element region_ids {
         integer_vector
       },
-      prescribed_scalar
+      prescribed_scalar_w_internal
     }
   )
 
@@ -559,7 +559,7 @@ prescribed_expression_vector =
     element value {
       attribute name {"WholeMesh"},
       attribute type {"value"},
-      prescribed_vector
+      prescribed_vector_w_internal
     }|
     ## Options for the description of an expression over regions
     element value {
@@ -569,7 +569,7 @@ prescribed_expression_vector =
       element region_ids {
         integer_vector
       },
-      prescribed_vector
+      prescribed_vector_w_internal
     }
   )
 
@@ -579,7 +579,7 @@ prescribed_expression_tensor =
     element value {
       attribute name {"WholeMesh"},
       attribute type {"value"},
-      prescribed_tensor
+      prescribed_tensor_w_internal
     }|
     ## Options for the description of an expression over regions
     element value {
@@ -589,7 +589,7 @@ prescribed_expression_tensor =
       element region_ids {
         integer_vector
       },
-      prescribed_tensor
+      prescribed_tensor_w_internal
     }
   )
 
@@ -842,6 +842,112 @@ prescribed_tensor_cpp =
     }
   )
 
+prescribed_internal = 
+  (
+    (
+      ## A semilagrangian lookup algorithm
+      element algorithm {
+        attribute name { "SemiLagrangian" },
+        ## The function that will be looked up (normally a field).
+        ##
+        ## Note that the algorithm will always look up the value of the function at the previous timestep.
+        element lookup_function {
+          ## The system where the function is to be found.
+          ## Assumed to be the current system if left unspecified.
+          element system {
+            attribute name { xsd:string },
+            empty
+          }?,
+          (
+            ## The field name.
+            element field {
+              attribute name { xsd:string },
+              empty
+            }|
+            ## The coefficient name.
+            element coefficient {
+              attribute name { xsd:string },
+              empty
+            }
+          )
+        },
+        ## The velocity that will be used to lookup the value.
+        ##
+        ## This must have the same dimension as the geometry.
+        element velocity {
+          ## The system where the velocity is to be found.
+          ## Assumed to be the current system if left unspecified.
+          element system {
+            attribute name { xsd:string },
+            empty
+          }?,
+          (
+            ## The field name.
+            element field {
+              attribute name { xsd:string },
+              empty
+            }|
+            ## The coefficient name.
+            element coefficient {
+              attribute name { xsd:string },
+              empty
+            }
+          )
+        },
+        ## The value that will be used when the lookup point falls outside the mesh.
+        ##
+        ## Most likely this should be a coefficient expression or constant (i.e. not restricted to the system's mesh).
+        element outside_value {
+          ## The system where the function is to be found.
+          ## Assumed to be the current system if left unspecified.
+          element system {
+            attribute name { xsd:string },
+            empty
+          }?,
+          (
+            ## The coefficient name.
+            element coefficient {
+              attribute name { xsd:string },
+              empty
+            }|
+            ## The field name.
+            element field {
+              attribute name { xsd:string },
+              empty
+            }
+          )
+        }
+      }
+    )
+  )
+
+prescribed_scalar_internal =
+  (
+    ## A scalar described by an internal derived dolfin expression.
+    element internal {
+      attribute rank { "0" },
+      prescribed_internal
+    }
+  )
+
+prescribed_vector_internal =
+  (
+    ## A vector described by an internal derived dolfin expression.
+    element internal {
+      attribute rank { "1" },
+      prescribed_internal
+    }
+  )
+
+prescribed_tensor_internal =
+  (
+    ## A tensor described by an internal derived dolfin expression.
+    element internal {
+      attribute rank { "2" },
+      prescribed_internal
+    }
+  )
+
 prescribed_file = 
   (
     ## Give the name of a checkpoint file.  All fields in a system must share this file
@@ -855,6 +961,9 @@ prescribed_scalar = prescribed_scalar_cpp
 prescribed_scalar |= prescribed_scalar_python
 prescribed_scalar |= prescribed_scalar_constant
 
+prescribed_scalar_w_internal = prescribed_scalar_internal
+prescribed_scalar_w_internal |= prescribed_scalar
+
 prescribed_scalar_w_file = prescribed_file
 prescribed_scalar_w_file |= prescribed_scalar
 
@@ -862,12 +971,18 @@ prescribed_vector = prescribed_vector_cpp
 prescribed_vector |= prescribed_vector_python
 prescribed_vector |= prescribed_vector_constant
 
+prescribed_vector_w_internal = prescribed_vector_internal
+prescribed_vector_w_internal |= prescribed_vector
+
 prescribed_vector_w_file = prescribed_file
 prescribed_vector_w_file |= prescribed_vector
 
 prescribed_tensor = prescribed_tensor_cpp
 prescribed_tensor |= prescribed_tensor_python
 prescribed_tensor |= prescribed_tensor_constant
+
+prescribed_tensor_w_internal = prescribed_tensor_internal
+prescribed_tensor_w_internal |= prescribed_tensor
 
 prescribed_tensor_w_file = prescribed_file
 prescribed_tensor_w_file |= prescribed_tensor

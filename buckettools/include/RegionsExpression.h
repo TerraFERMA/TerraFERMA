@@ -1,6 +1,6 @@
 
-#ifndef __INITIAL_CONDITION_EXPRESSION_H
-#define __INITIAL_CONDITION_EXPRESSION_H
+#ifndef __REGIONS_EXPRESSION_H
+#define __REGIONS_EXPRESSION_H
 
 #include <dolfin.h>
 #include "BoostTypes.h"

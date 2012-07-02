@@ -695,7 +695,7 @@ of functions is included.</a:documentation>
         <attribute name="type">
           <value>value</value>
         </attribute>
-        <ref name="prescribed_scalar"/>
+        <ref name="prescribed_scalar_w_internal"/>
       </element>
       <element name="value">
         <a:documentation>Options for the description of an expression over regions</a:documentation>
@@ -709,7 +709,7 @@ of functions is included.</a:documentation>
           <a:documentation>A list of the region ids (physical ids in gmsh) that this expression applies to</a:documentation>
           <ref name="integer_vector"/>
         </element>
-        <ref name="prescribed_scalar"/>
+        <ref name="prescribed_scalar_w_internal"/>
       </element>
     </choice>
   </define>
@@ -723,7 +723,7 @@ of functions is included.</a:documentation>
         <attribute name="type">
           <value>value</value>
         </attribute>
-        <ref name="prescribed_vector"/>
+        <ref name="prescribed_vector_w_internal"/>
       </element>
       <element name="value">
         <a:documentation>Options for the description of an expression over regions</a:documentation>
@@ -737,7 +737,7 @@ of functions is included.</a:documentation>
           <a:documentation>A list of the region ids (physical ids in gmsh) that this expression applies to</a:documentation>
           <ref name="integer_vector"/>
         </element>
-        <ref name="prescribed_vector"/>
+        <ref name="prescribed_vector_w_internal"/>
       </element>
     </choice>
   </define>
@@ -751,7 +751,7 @@ of functions is included.</a:documentation>
         <attribute name="type">
           <value>value</value>
         </attribute>
-        <ref name="prescribed_tensor"/>
+        <ref name="prescribed_tensor_w_internal"/>
       </element>
       <element name="value">
         <a:documentation>Options for the description of an expression over regions</a:documentation>
@@ -765,7 +765,7 @@ of functions is included.</a:documentation>
           <a:documentation>A list of the region ids (physical ids in gmsh) that this expression applies to</a:documentation>
           <ref name="integer_vector"/>
         </element>
-        <ref name="prescribed_tensor"/>
+        <ref name="prescribed_tensor_w_internal"/>
       </element>
     </choice>
   </define>
@@ -1021,6 +1021,134 @@ examplecoeff.eval(values, x, cell);
       <ref name="prescribed_cpp"/>
     </element>
   </define>
+  <define name="prescribed_internal">
+    <element name="algorithm">
+      <a:documentation>A semilagrangian lookup algorithm</a:documentation>
+      <attribute name="name">
+        <value>SemiLagrangian</value>
+      </attribute>
+      <element name="lookup_function">
+        <a:documentation>The function that will be looked up (normally a field).
+
+Note that the algorithm will always look up the value of the function at the previous timestep.</a:documentation>
+        <optional>
+          <element name="system">
+            <a:documentation>The system where the function is to be found.
+Assumed to be the current system if left unspecified.</a:documentation>
+            <attribute name="name">
+              <data type="string"/>
+            </attribute>
+            <empty/>
+          </element>
+        </optional>
+        <choice>
+          <element name="field">
+            <a:documentation>The field name.</a:documentation>
+            <attribute name="name">
+              <data type="string"/>
+            </attribute>
+            <empty/>
+          </element>
+          <element name="coefficient">
+            <a:documentation>The coefficient name.</a:documentation>
+            <attribute name="name">
+              <data type="string"/>
+            </attribute>
+            <empty/>
+          </element>
+        </choice>
+      </element>
+      <element name="velocity">
+        <a:documentation>The velocity that will be used to lookup the value.
+
+This must have the same dimension as the geometry.</a:documentation>
+        <optional>
+          <element name="system">
+            <a:documentation>The system where the velocity is to be found.
+Assumed to be the current system if left unspecified.</a:documentation>
+            <attribute name="name">
+              <data type="string"/>
+            </attribute>
+            <empty/>
+          </element>
+        </optional>
+        <choice>
+          <element name="field">
+            <a:documentation>The field name.</a:documentation>
+            <attribute name="name">
+              <data type="string"/>
+            </attribute>
+            <empty/>
+          </element>
+          <element name="coefficient">
+            <a:documentation>The coefficient name.</a:documentation>
+            <attribute name="name">
+              <data type="string"/>
+            </attribute>
+            <empty/>
+          </element>
+        </choice>
+      </element>
+      <element name="outside_value">
+        <a:documentation>The value that will be used when the lookup point falls outside the mesh.
+
+Most likely this should be a coefficient expression or constant (i.e. not restricted to the system's mesh).</a:documentation>
+        <optional>
+          <element name="system">
+            <a:documentation>The system where the function is to be found.
+Assumed to be the current system if left unspecified.</a:documentation>
+            <attribute name="name">
+              <data type="string"/>
+            </attribute>
+            <empty/>
+          </element>
+        </optional>
+        <choice>
+          <element name="coefficient">
+            <a:documentation>The coefficient name.</a:documentation>
+            <attribute name="name">
+              <data type="string"/>
+            </attribute>
+            <empty/>
+          </element>
+          <element name="field">
+            <a:documentation>The field name.</a:documentation>
+            <attribute name="name">
+              <data type="string"/>
+            </attribute>
+            <empty/>
+          </element>
+        </choice>
+      </element>
+    </element>
+  </define>
+  <define name="prescribed_scalar_internal">
+    <element name="internal">
+      <a:documentation>A scalar described by an internal derived dolfin expression.</a:documentation>
+      <attribute name="rank">
+        <value>0</value>
+      </attribute>
+      <ref name="prescribed_internal"/>
+    </element>
+  </define>
+  <define name="prescribed_vector_internal">
+    <element name="internal">
+      <a:documentation>A vector described by an internal derived dolfin expression.</a:documentation>
+      <attribute name="rank">
+        <value>1</value>
+      </attribute>
+      <ref name="prescribed_internal"/>
+    </element>
+  </define>
+  <define name="prescribed_tensor_internal">
+    <element name="internal">
+      <a:documentation>A tensor described by an internal derived dolfin expression.</a:documentation>
+      <attribute name="rank">
+        <value>2</value>
+      </attribute>
+      <ref name="prescribed_internal"/>
+    </element>
+  </define>
   <define name="prescribed_file">
     <element name="file">
       <a:documentation>Give the name of a checkpoint file.  All fields in a system must share this file
@@ -1037,6 +1165,12 @@ and the functionspace must be identical to the original system's functionspace.<
   <define name="prescribed_scalar" combine="choice">
     <ref name="prescribed_scalar_constant"/>
   </define>
+  <define name="prescribed_scalar_w_internal">
+    <ref name="prescribed_scalar_internal"/>
+  </define>
+  <define name="prescribed_scalar_w_internal" combine="choice">
+    <ref name="prescribed_scalar"/>
+  </define>
   <define name="prescribed_scalar_w_file">
     <ref name="prescribed_file"/>
   </define>
@@ -1052,6 +1186,12 @@ and the functionspace must be identical to the original system's functionspace.<
   <define name="prescribed_vector" combine="choice">
     <ref name="prescribed_vector_constant"/>
   </define>
+  <define name="prescribed_vector_w_internal">
+    <ref name="prescribed_vector_internal"/>
+  </define>
+  <define name="prescribed_vector_w_internal" combine="choice">
+    <ref name="prescribed_vector"/>
+  </define>
   <define name="prescribed_vector_w_file">
     <ref name="prescribed_file"/>
   </define>
@@ -1066,6 +1206,12 @@ and the functionspace must be identical to the original system's functionspace.<
   </define>
   <define name="prescribed_tensor" combine="choice">
     <ref name="prescribed_tensor_constant"/>
+  </define>
+  <define name="prescribed_tensor_w_internal">
+    <ref name="prescribed_tensor_internal"/>
+  </define>
+  <define name="prescribed_tensor_w_internal" combine="choice">
+    <ref name="prescribed_tensor"/>
   </define>
   <define name="prescribed_tensor_w_file">
     <ref name="prescribed_file"/>
