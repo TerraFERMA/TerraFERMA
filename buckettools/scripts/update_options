@@ -4,7 +4,6 @@ import glob
 import os
 import sys
 import argparse
-import fnmatch
 import string
 
 import diamond.debug as debug
@@ -45,19 +44,22 @@ filenames = []
 exts = set()
 for f in args.file:
   
-  dirname = os.path.dirname(f)
-  if dirname=='': dirname=os.curdir
-  dirname = os.path.normpath(dirname)
-  
   if args.recurse is None:
     for filename in glob.glob(f):
       filenames.append(os.path.join(os.curdir, filename))
       exts.add(filename.split('.')[-1])
   else:
+    
+    if os.path.isabs(f):
+      dirname = os.path.dirname(f)
+    else:
+      dirname = os.curdir
+    dirname = os.path.normpath(dirname)
+  
     for root, dirnames, files in os.walk(dirname, topdown=True):
       depth = string.count(root, os.path.sep)
-      for filename in fnmatch.filter(files, f):
-        filenames.append(os.path.join(root, filename))
+      for filename in glob.glob1(os.path.join(root, os.path.dirname(f)), os.path.split(f)[-1]):
+        filenames.append(os.path.join(os.path.join(root, os.path.dirname(f)), filename))
         exts.add(filename.split('.')[-1])
       if depth == args.recurse:
         dirnames[:] = []
