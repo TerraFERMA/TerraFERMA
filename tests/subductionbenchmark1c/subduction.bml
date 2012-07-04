@@ -391,6 +391,7 @@ F = FT + Fv + Fp</string_value>
                   <max_iterations>
                     <integer_value rank="0">100</integer_value>
                   </max_iterations>
+                  <nonzero_initial_guess/>
                   <monitors>
                     <preconditioned_residual/>
                   </monitors>

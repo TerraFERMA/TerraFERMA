@@ -351,6 +351,7 @@ r = rp + rf</string_value>
             <max_iterations>
               <integer_value rank="0">50</integer_value>
             </max_iterations>
+            <zero_initial_guess/>
             <monitors/>
           </iterative_method>
           <preconditioner name="fieldsplit">
@@ -379,6 +380,7 @@ r = rp + rf</string_value>
                   <max_iterations>
                     <integer_value rank="0">50</integer_value>
                   </max_iterations>
+                  <zero_initial_guess/>
                   <monitors/>
                 </iterative_method>
                 <preconditioner name="ilu"/>

@@ -165,7 +165,7 @@
             <max_iterations>
               <integer_value rank="0">1000</integer_value>
             </max_iterations>
-            <start_from_zero/>
+            <zero_initial_guess/>
             <monitors>
               <preconditioned_residual/>
             </monitors>
