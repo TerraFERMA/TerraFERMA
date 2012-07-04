@@ -108,7 +108,7 @@ picard =
     },
     ## Options describing a linear solver.
     element linear_solver {
-      linear_solver_options_top,
+      linear_solver_options_picard_top,
       ## Options to give extra information for the linear solver.
       element monitors {
          ## Prints PETSc information about the ksp object.
@@ -311,7 +311,7 @@ snes =
     },
     ## Options describing a linear solver.
     element linear_solver {
-      linear_solver_options_top
+      linear_solver_options_snes_top
     },
     solver_failures
   )
@@ -457,65 +457,112 @@ is_constraints =
     is_monitor
   )
 
-linear_solver_options_top =
+pc_options_picard =
+  (
+    ## Preconditioner to be used in combination with the iterative method.
+    (
+       pcsor_options|
+       pceisenstat_options|
+       pcfieldsplit_options_picard|
+       pcilu_options|
+       pclu_options|
+       pcprometheus_options|
+       pchypre_options|
+       pcjacobi_options|
+       pcbjacobi_options|
+       pcasm_options|
+       pcksp_options_picard|
+       pcnone_options|
+       pcother_options
+    )
+  )
+
+pc_options_snes =
+  (
+    ## Preconditioner to be used in combination with the iterative method.
+    (
+       pcsor_options|
+       pceisenstat_options|
+       pcfieldsplit_options_snes|
+       pcilu_options|
+       pclu_options|
+       pcprometheus_options|
+       pchypre_options|
+       pcjacobi_options|
+       pcbjacobi_options|
+       pcasm_options|
+       pcksp_options_snes|
+       pcnone_options|
+       pcother_options
+    )
+  )
+
+linear_solver_options_picard_top =
    (
       ## Iterative (Krylov) method to solve the linear discretised equation
       ## Given are the most frequently used methods. The solution is done
       ## by the PETSc library. Many more methods are provided.
       (
-         kspgmres_options_top|
-         kspfgmres_options_top|
-         kspcg_options_top|
+         kspgmres_options_picard_top|
+         kspfgmres_options_picard_top|
+         kspcg_options_picard_top|
          ksppreonly_options|
-         ksprichardson_options_top|
-         kspother_options_top
+         ksprichardson_options_picard_top|
+         kspother_options_picard_top
       ),
-      ## Preconditioner to be used in combination with the iterative method.
-      (
-         pcsor_options|
-         pceisenstat_options|
-         pcfieldsplit_options|
-         pcilu_options|
-         pclu_options|
-         pcprometheus_options|
-         pchypre_options|
-         pcjacobi_options|
-         pcbjacobi_options|
-         pcasm_options|
-         pcksp_options|
-         pcother_options
-      ),
+      pc_options_picard,
       generic_solver_options
    )
 
-linear_solver_options =
+linear_solver_options_snes_top =
    (
       ## Iterative (Krylov) method to solve the linear discretised equation
       ## Given are the most frequently used methods. The solution is done
       ## by the PETSc library. Many more methods are provided.
       (
-         kspgmres_options|
-         kspfgmres_options|
-         kspcg_options|
+         kspgmres_options_snes_top|
+         kspfgmres_options_snes_top|
+         kspcg_options_snes_top|
          ksppreonly_options|
-         ksprichardson_options|
-         kspother_options
+         ksprichardson_options_snes_top|
+         kspother_options_snes_top
       ),
-      ## Preconditioner to be used in combination with the iterative method.
+      pc_options_snes,
+      generic_solver_options
+   )
+
+linear_solver_options_picard =
+   (
+      ## Iterative (Krylov) method to solve the linear discretised equation
+      ## Given are the most frequently used methods. The solution is done
+      ## by the PETSc library. Many more methods are provided.
       (
-         pcsor_options|
-         pceisenstat_options|
-         pcfieldsplit_options|
-         pcilu_options|
-         pclu_options|
-         pcprometheus_options|
-         pchypre_options|
-         pcjacobi_options|
-         pcbjacobi_options|
-         pcasm_options|
-         pcksp_options|
-         pcother_options
+         kspgmres_options_picard|
+         kspfgmres_options_picard|
+         kspcg_options_picard|
+         ksppreonly_options|
+         ksprichardson_options_picard|
+         kspother_options_picard
       ),
+      pc_options_picard,
+      generic_solver_options
+   )
+
+
+linear_solver_options_snes =
+   (
+      ## Iterative (Krylov) method to solve the linear discretised equation
+      ## Given are the most frequently used methods. The solution is done
+      ## by the PETSc library. Many more methods are provided.
+      (
+         kspgmres_options_snes|
+         kspfgmres_options_snes|
+         kspcg_options_snes|
+         ksppreonly_options|
+         ksprichardson_options_snes|
+         kspother_options_snes
+      ),
+      pc_options_snes,
       generic_solver_options
    )
 
@@ -537,7 +584,7 @@ solver_failures =
 #
 # ####################################################################
 
-kspgmres_options_top =
+kspgmres_options_picard_top =
    (
       ## GMRES
       ##
@@ -550,11 +597,11 @@ kspgmres_options_top =
          element restart {
             integer
          },
-         iterative_solver_options_top
+         iterative_solver_options_picard_top
       }
    )
    
-kspfgmres_options_top =
+kspfgmres_options_picard_top =
    (
       ## FGMRES
       element iterative_method {
@@ -565,33 +612,33 @@ kspfgmres_options_top =
          element restart {
             integer
          },
-         iterative_solver_options_top
+         iterative_solver_options_picard_top
       }
    )
    
-kspcg_options_top =
+kspcg_options_picard_top =
    (
       ## Conjugate gradient method
       ##
       ## Only works for symmetric systems.
       element iterative_method {
          attribute name { "cg" },
-         iterative_solver_options_top
+         iterative_solver_options_picard_top
       }
    )
 
-ksprichardson_options_top =
+ksprichardson_options_picard_top =
    (
       ## Richardson iteration
       ##
       ## Only apply preconditioner each iteration, no krylov acceleration
       element iterative_method {
          attribute name { "richardson" },
-         iterative_solver_options_top
+         iterative_solver_options_picard_top
       }
    )
    
-kspother_options_top =
+kspother_options_picard_top =
    (
       ## Other methods
       ##
@@ -600,11 +647,11 @@ kspother_options_top =
       ## (available methods may depend on the PETSc library installed on your system)
       element iterative_method {
          attribute name { xsd:string },
-         iterative_solver_options_top
+         iterative_solver_options_picard_top
       }
    )
    
-kspgmres_options =
+kspgmres_options_snes_top =
    (
       ## GMRES
       ##
@@ -617,11 +664,11 @@ kspgmres_options =
          element restart {
             integer
          },
-         iterative_solver_options
+         iterative_solver_options_snes_top
       }
    )
    
-kspfgmres_options =
+kspfgmres_options_snes_top =
    (
       ## FGMRES
       element iterative_method {
@@ -632,21 +679,179 @@ kspfgmres_options =
          element restart {
             integer
          },
-         iterative_solver_options
+         iterative_solver_options_snes_top
       }
    )
    
-kspcg_options =
+kspcg_options_snes_top =
    (
       ## Conjugate gradient method
       ##
       ## Only works for symmetric systems.
       element iterative_method {
          attribute name { "cg" },
-         iterative_solver_options
+         iterative_solver_options_snes_top
       }
    )
 
+ksprichardson_options_snes_top =
+   (
+      ## Richardson iteration
+      ##
+      ## Only apply preconditioner each iteration, no krylov acceleration
+      element iterative_method {
+         attribute name { "richardson" },
+         iterative_solver_options_snes_top
+      }
+   )
+   
+kspother_options_snes_top =
+   (
+      ## Other methods
+      ##
+      ## Any method provided by the PETSc library
+      ## http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPType.html
+      ## (available methods may depend on the PETSc library installed on your system)
+      element iterative_method {
+         attribute name { xsd:string },
+         iterative_solver_options_snes_top
+      }
+   )
+   
+kspgmres_options_picard =
+   (
+      ## GMRES
+      ##
+      ## Your safest bet for non-symmetric systems.
+      element iterative_method {
+         attribute name { "gmres" },
+         ## Restart value for gmres iteration
+         ## Higher values give better convergence but require more memory.
+         ## Suggested value: 30
+         element restart {
+            integer
+         },
+         iterative_solver_options_picard
+      }
+   )
+   
+kspfgmres_options_picard =
+   (
+      ## FGMRES
+      element iterative_method {
+         attribute name { "fgmres" },
+         ## Restart value for fgmres iteration
+         ## Higher values give better convergence but require more memory.
+         ## Suggested value: 30
+         element restart {
+            integer
+         },
+         iterative_solver_options_picard
+      }
+   )
+   
+kspcg_options_picard =
+   (
+      ## Conjugate gradient method
+      ##
+      ## Only works for symmetric systems.
+      element iterative_method {
+         attribute name { "cg" },
+         iterative_solver_options_picard
+      }
+   )
+
+ksprichardson_options_picard =
+   (
+      ## Richardson iteration
+      ##
+      ## Only apply preconditioner each iteration, no krylov acceleration
+      element iterative_method {
+         attribute name { "richardson" },
+         iterative_solver_options_picard
+      }
+   )
+   
+kspother_options_picard =
+   (
+      ## Other methods
+      ##
+      ## Any method provided by the PETSc library
+      ## http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPType.html
+      ## (available methods may depend on the PETSc library installed on your system)
+      element iterative_method {
+         attribute name { xsd:string },
+         iterative_solver_options_picard
+      }
+   )
+   
+kspgmres_options_snes =
+   (
+      ## GMRES
+      ##
+      ## Your safest bet for non-symmetric systems.
+      element iterative_method {
+         attribute name { "gmres" },
+         ## Restart value for gmres iteration
+         ## Higher values give better convergence but require more memory.
+         ## Suggested value: 30
+         element restart {
+            integer
+         },
+         iterative_solver_options_snes
+      }
+   )
+   
+kspfgmres_options_snes =
+   (
+      ## FGMRES
+      element iterative_method {
+         attribute name { "fgmres" },
+         ## Restart value for fgmres iteration
+         ## Higher values give better convergence but require more memory.
+         ## Suggested value: 30
+         element restart {
+            integer
+         },
+         iterative_solver_options_snes
+      }
+   )
+   
+kspcg_options_snes =
+   (
+      ## Conjugate gradient method
+      ##
+      ## Only works for symmetric systems.
+      element iterative_method {
+         attribute name { "cg" },
+         iterative_solver_options_snes
+      }
+   )
+
+ksprichardson_options_snes =
+   (
+      ## Richardson iteration
+      ##
+      ## Only apply preconditioner each iteration, no krylov acceleration
+      element iterative_method {
+         attribute name { "richardson" },
+         iterative_solver_options_snes
+      }
+   )
+   
+kspother_options_snes =
+   (
+      ## Other methods
+      ##
+      ## Any method provided by the PETSc library
+      ## http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPType.html
+      ## (available methods may depend on the PETSc library installed on your system)
+      element iterative_method {
+         attribute name { xsd:string },
+         iterative_solver_options_snes
+      }
+   )
+   
 ksppreonly_options =
    (
       ## Direct method
@@ -655,30 +860,6 @@ ksppreonly_options =
       ## Only makes sense in combination with preconditioners that do a complete solve, e.g. lu.
       element iterative_method {
          attribute name { "preonly" }
-      }
-   )
-   
-ksprichardson_options =
-   (
-      ## Richardson iteration
-      ##
-      ## Only apply preconditioner each iteration, no krylov acceleration
-      element iterative_method {
-         attribute name { "richardson" },
-         iterative_solver_options
-      }
-   )
-   
-kspother_options =
-   (
-      ## Other methods
-      ##
-      ## Any method provided by the PETSc library
-      ## http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPType.html
-      ## (available methods may depend on the PETSc library installed on your system)
-      element iterative_method {
-         attribute name { xsd:string },
-         iterative_solver_options
       }
    )
    
@@ -832,6 +1013,14 @@ pcasm_options =
       }
    )
 
+pcnone_options =
+   (
+      ## No preconditioner
+      element preconditioner {
+         attribute name { "none" }
+      }
+   )
+
 # sub preconditioner to choose for bjacobi or asm
 subpc_options =
    (
@@ -860,7 +1049,7 @@ pcother_options =
       }
    )
    
-pcksp_options =
+pcksp_options_picard =
    (
       ## A ksp preconditioner.
       ##
@@ -875,43 +1064,68 @@ pcksp_options =
          attribute name { "ksp" },
          ## Solver options for the full solve done by this preconditioner
          element linear_solver {
-            linear_solver_options
+            linear_solver_options_picard
          }
       }
    )
 
-pcfieldsplit_options =
+pcksp_options_snes =
+   (
+      ## A ksp preconditioner.
+      ##
+      ## This only makes sense for solves where a different approximated preconditioner
+      ## matrix is provided.
+      ##
+      ## NOTE: If you are using a krylov method (cg/gmres) for this preconditioner 
+      ## solve you either need to set your tolerances much stricter for it
+      ## than in the outer solve (so that the preconditioner is close to an
+      ## exact matrix inversion), or use fgmres in the outer solve.
+      element preconditioner {
+         attribute name { "ksp" },
+         ## Solver options for the full solve done by this preconditioner
+         element linear_solver {
+            linear_solver_options_snes
+         }
+      }
+   )
+
+pcfieldsplit_composite_types = 
+  (
+    (
+      ## Composite type of the fieldsplit preconditioner - multiplicative - update off diagonal blocks.
+      element composite_type {
+        attribute name { "multiplicative" },
+        empty
+      }|
+      ## Composite type of the fieldsplit preconditioner - additive - do not update off diagonal blocks.
+      element composite_type {
+        attribute name { "additive" },
+        empty
+      }|
+      ## Composite type of the fieldsplit preconditioner - symmetric_multiplicative - update off diagonal blocks.
+      element composite_type {
+        attribute name { "symmetric_multiplicative" },
+        empty
+      }|
+      ## Composite type of the fieldsplit preconditioner - special.
+      element composite_type {
+        attribute name { "special" },
+        empty
+      }|
+      ## Composite type of the fieldsplit preconditioner - schur.
+      element composite_type {
+        attribute name { "schur" },
+        empty
+      }
+    )
+  )
+
+pcfieldsplit_options_picard =
    (
       ## A fieldsplit preconditioner.
       element preconditioner {
          attribute name { "fieldsplit" },
-         (
-           ## Composite type of the fieldsplit preconditioner - multiplicative - update off diagonal blocks.
-           element composite_type {
-             attribute name { "multiplicative" },
-             empty
-           }|
-           ## Composite type of the fieldsplit preconditioner - additive - do not update off diagonal blocks.
-           element composite_type {
-             attribute name { "additive" },
-             empty
-           }|
-           ## Composite type of the fieldsplit preconditioner - symmetric_multiplicative - update off diagonal blocks.
-           element composite_type {
-             attribute name { "symmetric_multiplicative" },
-             empty
-           }|
-           ## Composite type of the fieldsplit preconditioner - special.
-           element composite_type {
-             attribute name { "special" },
-             empty
-           }|
-           ## Composite type of the fieldsplit preconditioner - schur.
-           element composite_type {
-             attribute name { "schur" },
-             empty
-           }
-         ),
+         pcfieldsplit_composite_types,
          ## Describe the fieldsplits.  Names must be unique within this linear solver.
          ##
          ## Fields not included in any parent fieldsplits will be excluded from this fieldsplit 
@@ -924,7 +1138,31 @@ pcfieldsplit_options =
            is_fieldsplit,
            ## Solver options for the full solve done by this preconditioner
            element linear_solver {
-             linear_solver_options
+             linear_solver_options_picard
+           }
+         }+
+      }
+   )
+
+pcfieldsplit_options_snes =
+   (
+      ## A fieldsplit preconditioner.
+      element preconditioner {
+         attribute name { "fieldsplit" },
+         pcfieldsplit_composite_types,
+         ## Describe the fieldsplits.  Names must be unique within this linear solver.
+         ##
+         ## Fields not included in any parent fieldsplits will be excluded from this fieldsplit 
+         ## even if they are described below (a warning will be given).
+         ##
+         ## Fields included in any sibling fieldsplits will be excluded from this fieldsplit
+         ## even if they are described below (a warning will be given).
+         element fieldsplit {
+           attribute name { xsd:string },
+           is_fieldsplit,
+           ## Solver options for the full solve done by this preconditioner
+           element linear_solver {
+             linear_solver_options_snes
            }
          }+
       }
@@ -968,11 +1206,49 @@ iterative_solver_options_base =
       }
    )
 
-iterative_solver_options = iterative_solver_options_base
-iterative_solver_options &= iterative_monitors
+iterative_solver_zero_initial_guess =
+  (
+    ## Zero the initial guess.
+    ##
+    ## NOTE: some solvers always start at zero in which case this switch will have no effect.  
+    ## Also the value of this switch on any parent solves may effect its behaviour.
+    element zero_initial_guess {
+       empty
+    }
+  )
 
-iterative_solver_options_top = iterative_solver_options_base
-iterative_solver_options_top &= iterative_monitors_top
+iterative_solver_nonzero_initial_guess =
+  (
+    ## Use an initial guess from the previous solver or initial condition.
+    ##
+    ## NOTE: some solvers always start at zero in which case this switch will have no effect.
+    ## Also the value of this switch on any parent solves may effect its behaviour.
+    element nonzero_initial_guess {
+      empty
+    }
+  )
+
+iterative_solver_initial_guess_picard = iterative_solver_zero_initial_guess
+iterative_solver_initial_guess_picard |= iterative_solver_nonzero_initial_guess
+
+iterative_solver_initial_guess_snes = iterative_solver_nonzero_initial_guess
+iterative_solver_initial_guess_snes |= iterative_solver_zero_initial_guess
+
+iterative_solver_options_picard = iterative_solver_options_base
+iterative_solver_options_picard &= iterative_monitors
+iterative_solver_options_picard &= iterative_solver_initial_guess_picard
+
+iterative_solver_options_picard_top = iterative_solver_options_base
+iterative_solver_options_picard_top &= iterative_monitors_top
+iterative_solver_options_picard_top &= iterative_solver_initial_guess_picard
+
+iterative_solver_options_snes = iterative_solver_options_base
+iterative_solver_options_snes &= iterative_monitors
+iterative_solver_options_snes &= iterative_solver_initial_guess_snes
+
+iterative_solver_options_snes_top = iterative_solver_options_base
+iterative_solver_options_snes_top &= iterative_monitors_top
+iterative_solver_options_snes_top &= iterative_solver_initial_guess_snes
 
 iterative_monitors_base = 
   (
@@ -1028,12 +1304,6 @@ iterative_monitors_top =
 
 generic_solver_options =
    (
-#      ## Switch on to not use an initial guess from a previous solve but
-#      ## start with a zero vector. Note that some of the solves always
-#      ## start at zero in which case this switch will have no effect (see the log output).
-#      element start_from_zero {
-#         empty
-#      }?,
       ## Remove Null-space from residual after applying preconditioner.
       element remove_null_space {
          ## Describe the null spaces.  Names must be unique within this linear solver.
