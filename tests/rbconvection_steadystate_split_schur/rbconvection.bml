@@ -375,7 +375,9 @@ r = rv + rp</string_value>
             </null_space>
             <monitors/>
           </remove_null_space>
-          <monitors/>
+          <monitors>
+            <view_ksp/>
+          </monitors>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
