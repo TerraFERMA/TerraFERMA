@@ -626,7 +626,7 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
     spud_err(buffer.str(), serr);
 
     buffer.str(""); buffer << optionpath << 
-                                 "/iterative_method/start_from_zero";// starting the solve from zero?
+                              "/iterative_method/zero_initial_guess";// starting the solve from zero?
     if (Spud::have_option(buffer.str()))
     {
       perr = KSPSetInitialGuessNonzero(ksp, PETSC_FALSE); 

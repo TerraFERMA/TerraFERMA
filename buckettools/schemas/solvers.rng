@@ -139,7 +139,7 @@ the Picard solve. Some of those may really slow down your computation!</a:docume
     </element>
     <element name="linear_solver">
       <a:documentation>Options describing a linear solver.</a:documentation>
-      <ref name="linear_solver_options_top"/>
+      <ref name="linear_solver_options_picard_top"/>
       <element name="monitors">
         <a:documentation>Options to give extra information for the linear solver.</a:documentation>
         <optional>
@@ -406,7 +406,7 @@ the SNES solve. Some of those may really slow down your computation!</a:document
     </element>
     <element name="linear_solver">
       <a:documentation>Options describing a linear solver.</a:documentation>
-      <ref name="linear_solver_options_top"/>
+      <ref name="linear_solver_options_snes_top"/>
     </element>
     <ref name="solver_failures"/>
   </define>
@@ -557,23 +557,12 @@ If left unspecified, defaults to the whole boundary of the above region(s) (if s
     </oneOrMore>
     <ref name="is_monitor"/>
   </define>
-  <define name="linear_solver_options_top">
-    <choice>
-      <a:documentation>Iterative (Krylov) method to solve the linear discretised equation
-Given are the most frequently used methods. The solution is done
-by the PETSc library. Many more methods are provided.</a:documentation>
-      <ref name="kspgmres_options_top"/>
-      <ref name="kspfgmres_options_top"/>
-      <ref name="kspcg_options_top"/>
-      <ref name="ksppreonly_options"/>
-      <ref name="ksprichardson_options_top"/>
-      <ref name="kspother_options_top"/>
-    </choice>
+  <define name="pc_options_picard">
     <choice>
       <a:documentation>Preconditioner to be used in combination with the iterative method.</a:documentation>
       <ref name="pcsor_options"/>
       <ref name="pceisenstat_options"/>
-      <ref name="pcfieldsplit_options"/>
+      <ref name="pcfieldsplit_options_picard"/>
       <ref name="pcilu_options"/>
       <ref name="pclu_options"/>
       <ref name="pcprometheus_options"/>
@@ -581,40 +570,87 @@ by the PETSc library. Many more methods are provided.</a:documentation>
       <ref name="pcjacobi_options"/>
       <ref name="pcbjacobi_options"/>
       <ref name="pcasm_options"/>
-      <ref name="pcksp_options"/>
+      <ref name="pcksp_options_picard"/>
       <ref name="pcnone_options"/>
       <ref name="pcother_options"/>
     </choice>
+  </define>
+  <define name="pc_options_snes">
+    <choice>
+      <a:documentation>Preconditioner to be used in combination with the iterative method.</a:documentation>
+      <ref name="pcsor_options"/>
+      <ref name="pceisenstat_options"/>
+      <ref name="pcfieldsplit_options_snes"/>
+      <ref name="pcilu_options"/>
+      <ref name="pclu_options"/>
+      <ref name="pcprometheus_options"/>
+      <ref name="pchypre_options"/>
+      <ref name="pcjacobi_options"/>
+      <ref name="pcbjacobi_options"/>
+      <ref name="pcasm_options"/>
+      <ref name="pcksp_options_snes"/>
+      <ref name="pcnone_options"/>
+      <ref name="pcother_options"/>
+    </choice>
+  </define>
+  <define name="linear_solver_options_picard_top">
+    <choice>
+      <a:documentation>Iterative (Krylov) method to solve the linear discretised equation
+Given are the most frequently used methods. The solution is done
+by the PETSc library. Many more methods are provided.</a:documentation>
+      <ref name="kspgmres_options_picard_top"/>
+      <ref name="kspfgmres_options_picard_top"/>
+      <ref name="kspcg_options_picard_top"/>
+      <ref name="ksppreonly_options"/>
+      <ref name="ksprichardson_options_picard_top"/>
+      <ref name="kspother_options_picard_top"/>
+    </choice>
+    <ref name="pc_options_picard"/>
     <ref name="generic_solver_options"/>
   </define>
-  <define name="linear_solver_options">
+  <define name="linear_solver_options_snes_top">
     <choice>
       <a:documentation>Iterative (Krylov) method to solve the linear discretised equation
 Given are the most frequently used methods. The solution is done
 by the PETSc library. Many more methods are provided.</a:documentation>
-      <ref name="kspgmres_options"/>
-      <ref name="kspfgmres_options"/>
-      <ref name="kspcg_options"/>
+      <ref name="kspgmres_options_snes_top"/>
+      <ref name="kspfgmres_options_snes_top"/>
+      <ref name="kspcg_options_snes_top"/>
       <ref name="ksppreonly_options"/>
-      <ref name="ksprichardson_options"/>
-      <ref name="kspother_options"/>
+      <ref name="ksprichardson_options_snes_top"/>
+      <ref name="kspother_options_snes_top"/>
     </choice>
+    <ref name="pc_options_snes"/>
+    <ref name="generic_solver_options"/>
+  </define>
+  <define name="linear_solver_options_picard">
     <choice>
-      <a:documentation>Preconditioner to be used in combination with the iterative method.</a:documentation>
-      <ref name="pcsor_options"/>
-      <ref name="pceisenstat_options"/>
-      <ref name="pcfieldsplit_options"/>
-      <ref name="pcilu_options"/>
-      <ref name="pclu_options"/>
-      <ref name="pcprometheus_options"/>
-      <ref name="pchypre_options"/>
-      <ref name="pcjacobi_options"/>
-      <ref name="pcbjacobi_options"/>
-      <ref name="pcasm_options"/>
-      <ref name="pcksp_options"/>
-      <ref name="pcnone_options"/>
-      <ref name="pcother_options"/>
+      <a:documentation>Iterative (Krylov) method to solve the linear discretised equation
+Given are the most frequently used methods. The solution is done
+by the PETSc library. Many more methods are provided.</a:documentation>
+      <ref name="kspgmres_options_picard"/>
+      <ref name="kspfgmres_options_picard"/>
+      <ref name="kspcg_options_picard"/>
+      <ref name="ksppreonly_options"/>
+      <ref name="ksprichardson_options_picard"/>
+      <ref name="kspother_options_picard"/>
     </choice>
+    <ref name="pc_options_picard"/>
+    <ref name="generic_solver_options"/>
+  </define>
+  <define name="linear_solver_options_snes">
+    <choice>
+      <a:documentation>Iterative (Krylov) method to solve the linear discretised equation
+Given are the most frequently used methods. The solution is done
+by the PETSc library. Many more methods are provided.</a:documentation>
+      <ref name="kspgmres_options_snes"/>
+      <ref name="kspfgmres_options_snes"/>
+      <ref name="kspcg_options_snes"/>
+      <ref name="ksppreonly_options"/>
+      <ref name="ksprichardson_options_snes"/>
+      <ref name="kspother_options_snes"/>
+    </choice>
+    <ref name="pc_options_snes"/>
     <ref name="generic_solver_options"/>
   </define>
   <define name="solver_failures">
@@ -634,7 +670,7 @@ by the PETSc library. Many more methods are provided.</a:documentation>
     
     ####################################################################
   -->
-  <define name="kspgmres_options_top">
+  <define name="kspgmres_options_picard_top">
     <element name="iterative_method">
       <a:documentation>GMRES
 
@@ -648,10 +684,10 @@ Higher values give better convergence but require more memory.
 Suggested value: 30</a:documentation>
         <ref name="integer"/>
       </element>
-      <ref name="iterative_solver_options_top"/>
+      <ref name="iterative_solver_options_picard_top"/>
     </element>
   </define>
-  <define name="kspfgmres_options_top">
+  <define name="kspfgmres_options_picard_top">
     <element name="iterative_method">
       <a:documentation>FGMRES</a:documentation>
       <attribute name="name">
@@ -663,10 +699,10 @@ Higher values give better convergence but require more memory.
 Suggested value: 30</a:documentation>
         <ref name="integer"/>
       </element>
-      <ref name="iterative_solver_options_top"/>
+      <ref name="iterative_solver_options_picard_top"/>
     </element>
   </define>
-  <define name="kspcg_options_top">
+  <define name="kspcg_options_picard_top">
     <element name="iterative_method">
       <a:documentation>Conjugate gradient method
 
@@ -674,10 +710,10 @@ Only works for symmetric systems.</a:documentation>
       <attribute name="name">
         <value>cg</value>
       </attribute>
-      <ref name="iterative_solver_options_top"/>
+      <ref name="iterative_solver_options_picard_top"/>
     </element>
   </define>
-  <define name="ksprichardson_options_top">
+  <define name="ksprichardson_options_picard_top">
     <element name="iterative_method">
       <a:documentation>Richardson iteration
 
@@ -685,10 +721,10 @@ Only apply preconditioner each iteration, no krylov acceleration</a:documentatio
       <attribute name="name">
         <value>richardson</value>
       </attribute>
-      <ref name="iterative_solver_options_top"/>
+      <ref name="iterative_solver_options_picard_top"/>
     </element>
   </define>
-  <define name="kspother_options_top">
+  <define name="kspother_options_picard_top">
     <element name="iterative_method">
       <a:documentation>Other methods
 
@@ -698,10 +734,10 @@ http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPType.html
       <attribute name="name">
         <data type="string"/>
       </attribute>
-      <ref name="iterative_solver_options_top"/>
+      <ref name="iterative_solver_options_picard_top"/>
     </element>
   </define>
-  <define name="kspgmres_options">
+  <define name="kspgmres_options_snes_top">
     <element name="iterative_method">
       <a:documentation>GMRES
 
@@ -715,10 +751,10 @@ Higher values give better convergence but require more memory.
 Suggested value: 30</a:documentation>
         <ref name="integer"/>
       </element>
-      <ref name="iterative_solver_options"/>
+      <ref name="iterative_solver_options_snes_top"/>
     </element>
   </define>
-  <define name="kspfgmres_options">
+  <define name="kspfgmres_options_snes_top">
     <element name="iterative_method">
       <a:documentation>FGMRES</a:documentation>
       <attribute name="name">
@@ -730,10 +766,10 @@ Higher values give better convergence but require more memory.
 Suggested value: 30</a:documentation>
         <ref name="integer"/>
       </element>
-      <ref name="iterative_solver_options"/>
+      <ref name="iterative_solver_options_snes_top"/>
     </element>
   </define>
-  <define name="kspcg_options">
+  <define name="kspcg_options_snes_top">
     <element name="iterative_method">
       <a:documentation>Conjugate gradient method
 
@@ -741,7 +777,165 @@ Only works for symmetric systems.</a:documentation>
       <attribute name="name">
         <value>cg</value>
       </attribute>
-      <ref name="iterative_solver_options"/>
+      <ref name="iterative_solver_options_snes_top"/>
+    </element>
+  </define>
+  <define name="ksprichardson_options_snes_top">
+    <element name="iterative_method">
+      <a:documentation>Richardson iteration
+
+Only apply preconditioner each iteration, no krylov acceleration</a:documentation>
+      <attribute name="name">
+        <value>richardson</value>
+      </attribute>
+      <ref name="iterative_solver_options_snes_top"/>
+    </element>
+  </define>
+  <define name="kspother_options_snes_top">
+    <element name="iterative_method">
+      <a:documentation>Other methods
+
+Any method provided by the PETSc library
+http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPType.html
+(available methods may depend on the PETSc library installed on your system)</a:documentation>
+      <attribute name="name">
+        <data type="string"/>
+      </attribute>
+      <ref name="iterative_solver_options_snes_top"/>
+    </element>
+  </define>
+  <define name="kspgmres_options_picard">
+    <element name="iterative_method">
+      <a:documentation>GMRES
+
+Your safest bet for non-symmetric systems.</a:documentation>
+      <attribute name="name">
+        <value>gmres</value>
+      </attribute>
+      <element name="restart">
+        <a:documentation>Restart value for gmres iteration
+Higher values give better convergence but require more memory.
+Suggested value: 30</a:documentation>
+        <ref name="integer"/>
+      </element>
+      <ref name="iterative_solver_options_picard"/>
+    </element>
+  </define>
+  <define name="kspfgmres_options_picard">
+    <element name="iterative_method">
+      <a:documentation>FGMRES</a:documentation>
+      <attribute name="name">
+        <value>fgmres</value>
+      </attribute>
+      <element name="restart">
+        <a:documentation>Restart value for fgmres iteration
+Higher values give better convergence but require more memory.
+Suggested value: 30</a:documentation>
+        <ref name="integer"/>
+      </element>
+      <ref name="iterative_solver_options_picard"/>
+    </element>
+  </define>
+  <define name="kspcg_options_picard">
+    <element name="iterative_method">
+      <a:documentation>Conjugate gradient method
+
+Only works for symmetric systems.</a:documentation>
+      <attribute name="name">
+        <value>cg</value>
+      </attribute>
+      <ref name="iterative_solver_options_picard"/>
+    </element>
+  </define>
+  <define name="ksprichardson_options_picard">
+    <element name="iterative_method">
+      <a:documentation>Richardson iteration
+
+Only apply preconditioner each iteration, no krylov acceleration</a:documentation>
+      <attribute name="name">
+        <value>richardson</value>
+      </attribute>
+      <ref name="iterative_solver_options_picard"/>
+    </element>
+  </define>
+  <define name="kspother_options_picard">
+    <element name="iterative_method">
+      <a:documentation>Other methods
+
+Any method provided by the PETSc library
+http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPType.html
+(available methods may depend on the PETSc library installed on your system)</a:documentation>
+      <attribute name="name">
+        <data type="string"/>
+      </attribute>
+      <ref name="iterative_solver_options_picard"/>
+    </element>
+  </define>
+  <define name="kspgmres_options_snes">
+    <element name="iterative_method">
+      <a:documentation>GMRES
+
+Your safest bet for non-symmetric systems.</a:documentation>
+      <attribute name="name">
+        <value>gmres</value>
+      </attribute>
+      <element name="restart">
+        <a:documentation>Restart value for gmres iteration
+Higher values give better convergence but require more memory.
+Suggested value: 30</a:documentation>
+        <ref name="integer"/>
+      </element>
+      <ref name="iterative_solver_options_snes"/>
+    </element>
+  </define>
+  <define name="kspfgmres_options_snes">
+    <element name="iterative_method">
+      <a:documentation>FGMRES</a:documentation>
+      <attribute name="name">
+        <value>fgmres</value>
+      </attribute>
+      <element name="restart">
+        <a:documentation>Restart value for fgmres iteration
+Higher values give better convergence but require more memory.
+Suggested value: 30</a:documentation>
+        <ref name="integer"/>
+      </element>
+      <ref name="iterative_solver_options_snes"/>
+    </element>
+  </define>
+  <define name="kspcg_options_snes">
+    <element name="iterative_method">
+      <a:documentation>Conjugate gradient method
+
+Only works for symmetric systems.</a:documentation>
+      <attribute name="name">
+        <value>cg</value>
+      </attribute>
+      <ref name="iterative_solver_options_snes"/>
+    </element>
+  </define>
+  <define name="ksprichardson_options_snes">
+    <element name="iterative_method">
+      <a:documentation>Richardson iteration
+
+Only apply preconditioner each iteration, no krylov acceleration</a:documentation>
+      <attribute name="name">
+        <value>richardson</value>
+      </attribute>
+      <ref name="iterative_solver_options_snes"/>
+    </element>
+  </define>
+  <define name="kspother_options_snes">
+    <element name="iterative_method">
+      <a:documentation>Other methods
+
+Any method provided by the PETSc library
+http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPType.html
+(available methods may depend on the PETSc library installed on your system)</a:documentation>
+      <attribute name="name">
+        <data type="string"/>
+      </attribute>
+      <ref name="iterative_solver_options_snes"/>
     </element>
   </define>
   <define name="ksppreonly_options">
@@ -753,30 +947,6 @@ Only makes sense in combination with preconditioners that do a complete solve, e
       <attribute name="name">
         <value>preonly</value>
       </attribute>
-    </element>
-  </define>
-  <define name="ksprichardson_options">
-    <element name="iterative_method">
-      <a:documentation>Richardson iteration
-
-Only apply preconditioner each iteration, no krylov acceleration</a:documentation>
-      <attribute name="name">
-        <value>richardson</value>
-      </attribute>
-      <ref name="iterative_solver_options"/>
-    </element>
-  </define>
-  <define name="kspother_options">
-    <element name="iterative_method">
-      <a:documentation>Other methods
-
-Any method provided by the PETSc library
-http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/KSP/KSPType.html
-(available methods may depend on the PETSc library installed on your system)</a:documentation>
-      <attribute name="name">
-        <data type="string"/>
-      </attribute>
-      <ref name="iterative_solver_options"/>
     </element>
   </define>
   <!--
@@ -976,7 +1146,7 @@ http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCType.html
       </attribute>
     </element>
   </define>
-  <define name="pcksp_options">
+  <define name="pcksp_options_picard">
     <element name="preconditioner">
       <a:documentation>A ksp preconditioner.
 
@@ -992,53 +1162,76 @@ exact matrix inversion), or use fgmres in the outer solve.</a:documentation>
       </attribute>
       <element name="linear_solver">
         <a:documentation>Solver options for the full solve done by this preconditioner</a:documentation>
-        <ref name="linear_solver_options"/>
+        <ref name="linear_solver_options_picard"/>
       </element>
     </element>
   </define>
-  <define name="pcfieldsplit_options">
+  <define name="pcksp_options_snes">
+    <element name="preconditioner">
+      <a:documentation>A ksp preconditioner.
+
+This only makes sense for solves where a different approximated preconditioner
+matrix is provided.
+
+NOTE: If you are using a krylov method (cg/gmres) for this preconditioner 
+solve you either need to set your tolerances much stricter for it
+than in the outer solve (so that the preconditioner is close to an
+exact matrix inversion), or use fgmres in the outer solve.</a:documentation>
+      <attribute name="name">
+        <value>ksp</value>
+      </attribute>
+      <element name="linear_solver">
+        <a:documentation>Solver options for the full solve done by this preconditioner</a:documentation>
+        <ref name="linear_solver_options_snes"/>
+      </element>
+    </element>
+  </define>
+  <define name="pcfieldsplit_composite_types">
+    <choice>
+      <element name="composite_type">
+        <a:documentation>Composite type of the fieldsplit preconditioner - multiplicative - update off diagonal blocks.</a:documentation>
+        <attribute name="name">
+          <value>multiplicative</value>
+        </attribute>
+        <empty/>
+      </element>
+      <element name="composite_type">
+        <a:documentation>Composite type of the fieldsplit preconditioner - additive - do not update off diagonal blocks.</a:documentation>
+        <attribute name="name">
+          <value>additive</value>
+        </attribute>
+        <empty/>
+      </element>
+      <element name="composite_type">
+        <a:documentation>Composite type of the fieldsplit preconditioner - symmetric_multiplicative - update off diagonal blocks.</a:documentation>
+        <attribute name="name">
+          <value>symmetric_multiplicative</value>
+        </attribute>
+        <empty/>
+      </element>
+      <element name="composite_type">
+        <a:documentation>Composite type of the fieldsplit preconditioner - special.</a:documentation>
+        <attribute name="name">
+          <value>special</value>
+        </attribute>
+        <empty/>
+      </element>
+      <element name="composite_type">
+        <a:documentation>Composite type of the fieldsplit preconditioner - schur.</a:documentation>
+        <attribute name="name">
+          <value>schur</value>
+        </attribute>
+        <empty/>
+      </element>
+    </choice>
+  </define>
+  <define name="pcfieldsplit_options_picard">
     <element name="preconditioner">
       <a:documentation>A fieldsplit preconditioner.</a:documentation>
       <attribute name="name">
         <value>fieldsplit</value>
       </attribute>
-      <choice>
-        <element name="composite_type">
-          <a:documentation>Composite type of the fieldsplit preconditioner - multiplicative - update off diagonal blocks.</a:documentation>
-          <attribute name="name">
-            <value>multiplicative</value>
-          </attribute>
-          <empty/>
-        </element>
-        <element name="composite_type">
-          <a:documentation>Composite type of the fieldsplit preconditioner - additive - do not update off diagonal blocks.</a:documentation>
-          <attribute name="name">
-            <value>additive</value>
-          </attribute>
-          <empty/>
-        </element>
-        <element name="composite_type">
-          <a:documentation>Composite type of the fieldsplit preconditioner - symmetric_multiplicative - update off diagonal blocks.</a:documentation>
-          <attribute name="name">
-            <value>symmetric_multiplicative</value>
-          </attribute>
-          <empty/>
-        </element>
-        <element name="composite_type">
-          <a:documentation>Composite type of the fieldsplit preconditioner - special.</a:documentation>
-          <attribute name="name">
-            <value>special</value>
-          </attribute>
-          <empty/>
-        </element>
-        <element name="composite_type">
-          <a:documentation>Composite type of the fieldsplit preconditioner - schur.</a:documentation>
-          <attribute name="name">
-            <value>schur</value>
-          </attribute>
-          <empty/>
-        </element>
-      </choice>
+      <ref name="pcfieldsplit_composite_types"/>
       <oneOrMore>
         <element name="fieldsplit">
           <a:documentation>Describe the fieldsplits.  Names must be unique within this linear solver.
@@ -1054,7 +1247,35 @@ even if they are described below (a warning will be given).</a:documentation>
           <ref name="is_fieldsplit"/>
           <element name="linear_solver">
             <a:documentation>Solver options for the full solve done by this preconditioner</a:documentation>
-            <ref name="linear_solver_options"/>
+            <ref name="linear_solver_options_picard"/>
+          </element>
+        </element>
+      </oneOrMore>
+    </element>
+  </define>
+  <define name="pcfieldsplit_options_snes">
+    <element name="preconditioner">
+      <a:documentation>A fieldsplit preconditioner.</a:documentation>
+      <attribute name="name">
+        <value>fieldsplit</value>
+      </attribute>
+      <ref name="pcfieldsplit_composite_types"/>
+      <oneOrMore>
+        <element name="fieldsplit">
+          <a:documentation>Describe the fieldsplits.  Names must be unique within this linear solver.
+
+Fields not included in any parent fieldsplits will be excluded from this fieldsplit 
+even if they are described below (a warning will be given).
+
+Fields included in any sibling fieldsplits will be excluded from this fieldsplit
+even if they are described below (a warning will be given).</a:documentation>
+          <attribute name="name">
+            <data type="string"/>
+          </attribute>
+          <ref name="is_fieldsplit"/>
+          <element name="linear_solver">
+            <a:documentation>Solver options for the full solve done by this preconditioner</a:documentation>
+            <ref name="linear_solver_options_snes"/>
           </element>
         </element>
       </oneOrMore>
@@ -1100,26 +1321,72 @@ Defaults to 10000.</a:documentation>
 before giving up.</a:documentation>
       <ref name="integer"/>
     </element>
-    <optional>
-      <element name="start_from_zero">
-        <a:documentation>Switch on to not use an initial guess from a previous solve but
-start with a zero vector. Note that some of the solves always
-start at zero in which case this switch will have no effect (see the log output).</a:documentation>
-        <empty/>
-      </element>
-    </optional>
   </define>
-  <define name="iterative_solver_options">
+  <define name="iterative_solver_zero_initial_guess">
+    <element name="zero_initial_guess">
+      <a:documentation>Zero the initial guess.
+
+NOTE: some solvers always start at zero in which case this switch will have no effect.  
+Also the value of this switch on any parent solves may effect its behaviour.</a:documentation>
+      <empty/>
+    </element>
+  </define>
+  <define name="iterative_solver_nonzero_initial_guess">
+    <element name="nonzero_initial_guess">
+      <a:documentation>Use an initial guess from the previous solver or initial condition.
+
+NOTE: some solvers always start at zero in which case this switch will have no effect.
+Also the value of this switch on any parent solves may effect its behaviour.</a:documentation>
+      <empty/>
+    </element>
+  </define>
+  <define name="iterative_solver_initial_guess_picard">
+    <ref name="iterative_solver_zero_initial_guess"/>
+  </define>
+  <define name="iterative_solver_initial_guess_picard" combine="choice">
+    <ref name="iterative_solver_nonzero_initial_guess"/>
+  </define>
+  <define name="iterative_solver_initial_guess_snes">
+    <ref name="iterative_solver_nonzero_initial_guess"/>
+  </define>
+  <define name="iterative_solver_initial_guess_snes" combine="choice">
+    <ref name="iterative_solver_zero_initial_guess"/>
+  </define>
+  <define name="iterative_solver_options_picard">
     <ref name="iterative_solver_options_base"/>
   </define>
-  <define name="iterative_solver_options" combine="interleave">
+  <define name="iterative_solver_options_picard" combine="interleave">
     <ref name="iterative_monitors"/>
   </define>
-  <define name="iterative_solver_options_top">
+  <define name="iterative_solver_options_picard" combine="interleave">
+    <ref name="iterative_solver_initial_guess_picard"/>
+  </define>
+  <define name="iterative_solver_options_picard_top">
     <ref name="iterative_solver_options_base"/>
   </define>
-  <define name="iterative_solver_options_top" combine="interleave">
+  <define name="iterative_solver_options_picard_top" combine="interleave">
     <ref name="iterative_monitors_top"/>
+  </define>
+  <define name="iterative_solver_options_picard_top" combine="interleave">
+    <ref name="iterative_solver_initial_guess_picard"/>
+  </define>
+  <define name="iterative_solver_options_snes">
+    <ref name="iterative_solver_options_base"/>
+  </define>
+  <define name="iterative_solver_options_snes" combine="interleave">
+    <ref name="iterative_monitors"/>
+  </define>
+  <define name="iterative_solver_options_snes" combine="interleave">
+    <ref name="iterative_solver_initial_guess_snes"/>
+  </define>
+  <define name="iterative_solver_options_snes_top">
+    <ref name="iterative_solver_options_base"/>
+  </define>
+  <define name="iterative_solver_options_snes_top" combine="interleave">
+    <ref name="iterative_monitors_top"/>
+  </define>
+  <define name="iterative_solver_options_snes_top" combine="interleave">
+    <ref name="iterative_solver_initial_guess_snes"/>
   </define>
   <define name="iterative_monitors_base">
     <optional>
