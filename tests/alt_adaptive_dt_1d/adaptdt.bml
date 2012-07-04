@@ -110,7 +110,10 @@
                 <string_value lines="20" type="code" language="cpp">const dolfin::Cell dcell((*system()-&gt;mesh()), cell.index);
 dolfin::Array&lt;double&gt; v_values(1);
 v-&gt;eval(v_values, x, cell);
-values[0] = (std::abs(v_values.max())*bucket()-&gt;timestep())/dcell.diameter();</string_value>
+double valmin = std::abs(*std::min_element(&amp;v_values.data()[0], &amp;v_values.data()[v_values.size()]));
+double valmax = std::abs(*std::max_element(&amp;v_values.data()[0], &amp;v_values.data()[v_values.size()]));
+double val = std::max(valmin, valmax);
+values[0] = (val*bucket()-&gt;timestep())/dcell.diameter();</string_value>
               </eval>
             </cpp>
           </value>
