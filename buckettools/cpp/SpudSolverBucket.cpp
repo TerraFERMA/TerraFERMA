@@ -97,10 +97,10 @@ void SpudSolverBucket::initialize()
     if(snestype=="vi")
     {
       #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
-      #if PETSC_VERSION_RELEASE==1
-      perr = SNESSetType(snes_, snestype.c_str()); CHKERRV(perr); 
-      #else
+      #if PETSC_VERSION_MINOR > 2
       perr = SNESSetType(snes_, SNESVIRS); CHKERRV(perr); 
+      #else
+      perr = SNESSetType(snes_, snestype.c_str()); CHKERRV(perr); 
       #endif
       perr = SNESSetFromOptions(snes_); CHKERRV(perr);               // set-up snes from options (we do this first to ensure that
                                                                      // any duplicated options from the options file overwrite the
@@ -126,42 +126,42 @@ void SpudSolverBucket::initialize()
                                                                     // directly rather than the mapping onto options done here
       if (lstype=="cubic")
       {
-        #if PETSC_VERSION_RELEASE==1
-        perr = SNESLineSearchSet(snes_, SNESLineSearchCubic, PETSC_NULL); CHKERRV(perr); 
-        #else
+        #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 2
         SNESLineSearch linesearch;
         perr = SNESGetSNESLineSearch(snes_, &linesearch); CHKERRV(perr);
         perr = SNESLineSearchSetType(linesearch, "bt"); CHKERRV(perr);
         perr = SNESLineSearchSetOrder(linesearch, 3); CHKERRV(perr);
+        #else
+        perr = SNESLineSearchSet(snes_, SNESLineSearchCubic, PETSC_NULL); CHKERRV(perr); 
         #endif
       }
       else if (lstype=="quadratic")
       {
-        #if PETSC_VERSION_RELEASE==1
-        perr = SNESLineSearchSet(snes_, SNESLineSearchQuadratic, PETSC_NULL); CHKERRV(perr); 
-        #else
+        #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 2
         SNESLineSearch linesearch;
         perr = SNESGetSNESLineSearch(snes_, &linesearch); CHKERRV(perr);
         perr = SNESLineSearchSetType(linesearch, "bt"); CHKERRV(perr);
         perr = SNESLineSearchSetOrder(linesearch, 2); CHKERRV(perr);
+        #else
+        perr = SNESLineSearchSet(snes_, SNESLineSearchQuadratic, PETSC_NULL); CHKERRV(perr); 
         #endif
       }
       else if (lstype=="basic")
       {
-        #if PETSC_VERSION_RELEASE==1
-        perr = SNESLineSearchSet(snes_, SNESLineSearchNo, PETSC_NULL); CHKERRV(perr); 
-        #else
+        #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 2
         SNESLineSearch linesearch;
         perr = SNESGetSNESLineSearch(snes_, &linesearch); CHKERRV(perr);
         perr = SNESLineSearchSetType(linesearch, "basic"); CHKERRV(perr);
+        #else
+        perr = SNESLineSearchSet(snes_, SNESLineSearchNo, PETSC_NULL); CHKERRV(perr); 
         #endif
       }
       else if (lstype=="basicnonorms")
       {
-        #if PETSC_VERSION_RELEASE==1
-        perr = SNESLineSearchSet(snes_, SNESLineSearchNoNorms, PETSC_NULL); CHKERRV(perr); 
+        #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 2
+        dolfin::error("No equivalent snes ls type to basicnonorms in petsc>3.2.");
         #else
-        dolfin::error("No equivalent snes ls type to basicnonorms in petsc-dev.");
+        perr = SNESLineSearchSet(snes_, SNESLineSearchNoNorms, PETSC_NULL); CHKERRV(perr); 
         #endif
       }
       else
@@ -184,11 +184,10 @@ void SpudSolverBucket::initialize()
       buffer.str(""); buffer << optionpath() << "/type/snes_type::ls/min_lambda";
       if (Spud::have_option(buffer.str()))
       {
-        #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
-        #if PETSC_VERSION_RELEASE==0
-        dolfin::error("Cannot set snes ls min_lambda with PETSc-dev - options not aligned.");
+        #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 2
+        dolfin::error("Cannot set snes ls min_lambda with PETSc > 3.2 - options not aligned.");
         #endif
-        #else
+        #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 2
         dolfin::error("Cannot set snes ls min_lambda with PETSc < 3.2.");
         #endif
       }
@@ -197,15 +196,15 @@ void SpudSolverBucket::initialize()
       spud_err(buffer.str(), serr);
 
       #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
-      #if PETSC_VERSION_RELEASE==1
-      perr = SNESLineSearchSetParams(snes_, alpha, maxstep, minlambda); CHKERRV(perr);
-      #else
+      #if PETSC_VERSION_MINOR > 2
       SNESLineSearch linesearch;
       perr = SNESGetSNESLineSearch(snes_, &linesearch); CHKERRV(perr);
       perr = SNESLineSearchBTSetAlpha(linesearch, alpha); CHKERRV(perr);// FIXME: assumes using bt
       perr = SNESLineSearchSetTolerances(linesearch, PETSC_DEFAULT, maxstep, PETSC_DEFAULT,
                                         PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT);
       CHKERRV(perr);
+      #else
+      perr = SNESLineSearchSetParams(snes_, alpha, maxstep, minlambda); CHKERRV(perr);
       #endif
       #else
       perr = SNESLineSearchSetParams(snes_, alpha, maxstep); CHKERRV(perr);
@@ -792,19 +791,15 @@ void SpudSolverBucket::fill_pc_(const std::string &optionpath, PC &pc,
                                 << "/preconditioner/near_null_space";// set a (or multiple) near null space(s)
   if (Spud::have_option(buffer.str()))
   {
-    #if PETSC_VERSION_RELEASE == 0
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 2
     MatNullSpace SP;                                                 // create a set of nullspaces in a null space object
     fill_nullspace_(buffer.str(), SP, parent_indices);
 
     perr = MatSetNearNullSpace(*(*matrix_).mat(), SP); CHKERRV(perr);
 
-    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
     perr = MatNullSpaceDestroy(&SP); CHKERRV(perr);                  // destroy the null space object, necessary?
     #else
-    perr = MatNullSpaceDestroy(SP); CHKERRV(perr);                   // destroy the null space object, necessary?
-    #endif
-    #else
-    dolfin::error("Can only set near null spaces with petsc-dev.");
+    dolfin::error("Can only set near null spaces with petsc > 3.2.");
     #endif
   }
 
