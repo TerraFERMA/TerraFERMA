@@ -275,6 +275,7 @@ r = rT</string_value>
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics/>
       </diagnostics>
     </field>
@@ -342,7 +343,9 @@ r = rv + rp</string_value>
             </monitors>
           </iterative_method>
           <preconditioner name="fieldsplit">
-            <composite_type name="schur"/>
+            <composite_type name="schur">
+              <preconditioner name="diag"/>
+            </composite_type>
             <fieldsplit name="Velocity">
               <field name="Velocity"/>
               <monitors/>
@@ -375,7 +378,9 @@ r = rv + rp</string_value>
             </null_space>
             <monitors/>
           </remove_null_space>
-          <monitors/>
+          <monitors>
+            <view_ksp/>
+          </monitors>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
