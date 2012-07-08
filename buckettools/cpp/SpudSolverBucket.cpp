@@ -811,6 +811,10 @@ void SpudSolverBucket::fill_pc_(const std::string &optionpath, PC &pc,
     perr = PCKSPGetKSP(pc, &subksp); CHKERRV(perr);
     fill_ksp_(buffer.str(), subksp, prefix+"subksp_", parent_indices);// recursively fill the ksp data (i.e. go back to this routine)
   }
+  else if (preconditioner=="lsc")                                    // would be nice to put subksp options for lsc here
+  {
+    perr = PCSetUp(pc); CHKERRV(perr);                               // this is just necessary in case we view it later
+  }
   else if (preconditioner=="fieldsplit")                             // if the pc is a fieldsplit
   {
     buffer.str(""); buffer << optionpath << "/preconditioner";
