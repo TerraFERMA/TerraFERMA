@@ -971,6 +971,45 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
     CHKERRV(perr);
     perr = PCSetUp(pc); CHKERRV(perr);                               // call this before subksp can be retrieved
     
+    std::string ftype;
+    buffer.str(""); buffer << optionpath << 
+                    "/composite_type::schur/factorization_type/name";// schur factorization type
+    serr = Spud::get_option(buffer.str(), ftype);                    // sadly no string based interface provided to this (I think)
+    spud_err(buffer.str(), serr);                                    // so hard code an if block
+    if (ftype == "full")
+    {
+      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 2
+      perr = PCFieldSplitSetSchurFactType(pc, PC_FIELDSPLIT_SCHUR_FACT_FULL); 
+      CHKERRV(perr);
+      #endif
+    }
+    else
+    {
+      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 2
+      if (ftype == "upper")
+      {
+        perr = PCFieldSplitSetSchurFactType(pc, PC_FIELDSPLIT_SCHUR_FACT_UPPER); 
+        CHKERRV(perr);
+      }
+      else if (ftype == "lower")
+      {
+        perr = PCFieldSplitSetSchurFactType(pc, PC_FIELDSPLIT_SCHUR_FACT_LOWER); 
+        CHKERRV(perr);
+      }
+      else if (ftype == "diag")
+      {
+        perr = PCFieldSplitSetSchurFactType(pc, PC_FIELDSPLIT_SCHUR_FACT_DIAG); 
+        CHKERRV(perr);
+      }
+      else
+      {
+        dolfin::error("Unknown PCFieldSplitSchurFactType.");
+      }
+      #else
+      dolfin::error("Can only set schur factorization_type to anything other than full with petsc > 3.2.")
+      #endif
+    }
+    
     std::string ptype;
     buffer.str(""); buffer << optionpath << 
                         "/composite_type::schur/preconditioner/name";// preconditioner for schur block
