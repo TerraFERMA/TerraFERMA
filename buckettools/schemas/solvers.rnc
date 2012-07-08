@@ -966,7 +966,7 @@ pchypre_options =
             }|
             ## Other Hypre preconditioners
             element hypre_type {
-               attribute name { string }
+               attribute name { xsd:string }
             }
          )
       }
@@ -1115,7 +1115,20 @@ pcfieldsplit_composite_types =
       ## Composite type of the fieldsplit preconditioner - schur.
       element composite_type {
         attribute name { "schur" },
-        empty
+        (
+          element preconditioner {
+            attribute name { "diag" },
+            empty
+          }|
+          element preconditioner {
+            attribute name { "self" },
+            empty
+          }
+          #element preconditioner {
+          #  attribute name { "user" },
+          #  empty
+          #}
+        )
       }
     )
   )

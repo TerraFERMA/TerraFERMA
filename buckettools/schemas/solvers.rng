@@ -1065,7 +1065,7 @@ Useful for parallel direct solves (if installed on system).</a:documentation>
         <element name="hypre_type">
           <a:documentation>Other Hypre preconditioners</a:documentation>
           <attribute name="name">
-            <data type="string" datatypeLibrary=""/>
+            <data type="string"/>
           </attribute>
         </element>
       </choice>
@@ -1221,7 +1221,26 @@ exact matrix inversion), or use fgmres in the outer solve.</a:documentation>
         <attribute name="name">
           <value>schur</value>
         </attribute>
-        <empty/>
+        <choice>
+          <element name="preconditioner">
+            <attribute name="name">
+              <value>diag</value>
+            </attribute>
+            <empty/>
+          </element>
+          <element name="preconditioner">
+            <attribute name="name">
+              <value>self</value>
+            </attribute>
+            <empty/>
+          </element>
+        </choice>
+        <!--
+          element preconditioner {
+           attribute name { "user" },
+           empty
+          }
+        -->
       </element>
     </choice>
   </define>
