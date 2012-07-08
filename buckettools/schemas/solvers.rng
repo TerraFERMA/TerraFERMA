@@ -1373,11 +1373,11 @@ while the second must describe the lower right diagonal block (A11).</a:document
           <element name="factorization_type">
             <a:documentation>The full factorization is:
 
-(A   B)  = (1       0) (A   0) (1  Ainv*B)
+(A00   A01)  = (1           0) (A00   0) (1  A00inv*A01)
 
-(C   D)    (C*Ainv  1) (0   S) (0     1  )
+(A10   A11)    (A10*A00inv  1) (0     S) (0         1  )
 
-where S = D - C*Ainv*B. In practice, the full factorization is applied via block triangular solves 
+where S = A11 - A10*A00inv*A01. In practice, the full factorization is applied via block triangular solves 
 with the grouping L*(D*U).
 
 Upper uses D*U, lower uses L*D, and diag is the diagonal part with the sign of S flipped (because 
