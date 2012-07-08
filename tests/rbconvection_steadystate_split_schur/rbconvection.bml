@@ -338,6 +338,7 @@ r = rv + rp</string_value>
           </iterative_method>
           <preconditioner name="fieldsplit">
             <composite_type name="schur">
+              <factorization_type name="full"/>
               <preconditioner name="self"/>
             </composite_type>
             <fieldsplit name="Velocity">
@@ -688,6 +689,7 @@ r = rv + rp</string_value>
           </iterative_method>
           <preconditioner name="fieldsplit">
             <composite_type name="schur">
+              <factorization_type name="full"/>
               <preconditioner name="diag"/>
             </composite_type>
             <fieldsplit name="Velocity">
