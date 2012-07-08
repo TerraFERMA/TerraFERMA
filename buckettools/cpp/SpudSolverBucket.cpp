@@ -641,6 +641,13 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
   perr = KSPSetOptionsPrefix(ksp, prefix.c_str());                   // set the ksp options prefix
   CHKERRV(perr);
 
+  PC pc;
+  perr = KSPGetPC(ksp, &pc); CHKERRV(perr);                          // get the pc from the ksp
+
+  fill_pc_(optionpath, pc,
+           prefix,
+           parent_indices);
+
   std::string iterative_method;
   buffer.str(""); buffer << optionpath << "/iterative_method/name";  // iterative method (gmres, fgmres, cg etc.)
   serr = Spud::get_option(buffer.str(), iterative_method); 
@@ -649,7 +656,7 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
   perr = KSPSetType(ksp, iterative_method.c_str()); CHKERRV(perr);   // set the ksp type to the iterative method
 
   perr = KSPSetFromOptions(ksp);                                     // do this now so that options will be overwritten by options
-                                                                     // file
+                                                                     // file (may call PCSetFromOptions so this logic breaks down)
 
   if(iterative_method != "preonly")                                  // tolerances (and monitors) only apply to iterative methods
   {
@@ -754,13 +761,6 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
     perr = MatNullSpaceDestroy(SP); CHKERRV(perr);                   // destroy the null space object, necessary?
     #endif
   }
-
-  PC pc;
-  perr = KSPGetPC(ksp, &pc); CHKERRV(perr);                          // get the pc from the ksp
-
-  fill_pc_(optionpath, pc,
-           prefix,
-           parent_indices);
 
 }
 
@@ -882,41 +882,6 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
   Spud::OptionError serr;                                            // spud error code
   PetscErrorCode perr;                                               // petsc error code
 
-  std::string ctype;
-  buffer.str(""); buffer << optionpath << "/composite_type/name";    // composite type of fieldsplit (additive, multiplicative etc.)
-  serr = Spud::get_option(buffer.str(), ctype);                      // sadly no string based interface provided to this (I think)
-  spud_err(buffer.str(), serr);                                      // so hard code an if block
-
-  if (ctype == "additive")                                           // additive fieldsplit
-  {
-    perr = PCFieldSplitSetType(pc, PC_COMPOSITE_ADDITIVE); 
-    CHKERRV(perr);
-  }
-  else if (ctype == "multiplicative")                                // multiplicative fieldsplit
-  {
-    perr = PCFieldSplitSetType(pc, PC_COMPOSITE_MULTIPLICATIVE); 
-    CHKERRV(perr);
-  }
-  else if (ctype == "symmetric_multiplicative")                      // symmetric multiplicative fieldsplit
-  {
-    perr = PCFieldSplitSetType(pc, 
-                          PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE); 
-    CHKERRV(perr);
-  }
-  else if (ctype == "special")                                       // special fieldsplit (whatever that means!)
-  {
-    perr = PCFieldSplitSetType(pc, PC_COMPOSITE_SPECIAL); 
-    CHKERRV(perr);
-  }
-  else if (ctype == "schur")                                         // schur fieldsplit
-  {
-    perr = PCFieldSplitSetType(pc, PC_COMPOSITE_SCHUR); 
-    CHKERRV(perr);
-  }
-  else                                                               // unknown (to buckettools) fieldsplit composite type
-  {
-    dolfin::error("Unknown PCCompositeType.");
-  }
 
   std::vector< std::vector<uint> > child_indices;                    // a vector of vectors to collect the child indices (the
                                                                      // subsets of the parent_indices vector (if associated) that
@@ -969,6 +934,63 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
 
     child_indices.push_back(indices);                                // record the indices of the global vector that made it into
   }                                                                  // IS (and hence the fieldsplit)
+
+  std::string ctype;
+  buffer.str(""); buffer << optionpath << "/composite_type/name";    // composite type of fieldsplit (additive, multiplicative etc.)
+  serr = Spud::get_option(buffer.str(), ctype);                      // sadly no string based interface provided to this (I think)
+  spud_err(buffer.str(), serr);                                      // so hard code an if block
+
+  if (ctype == "additive")                                           // additive fieldsplit
+  {
+    perr = PCFieldSplitSetType(pc, PC_COMPOSITE_ADDITIVE); 
+    CHKERRV(perr);
+  }
+  else if (ctype == "multiplicative")                                // multiplicative fieldsplit
+  {
+    perr = PCFieldSplitSetType(pc, PC_COMPOSITE_MULTIPLICATIVE); 
+    CHKERRV(perr);
+  }
+  else if (ctype == "symmetric_multiplicative")                      // symmetric multiplicative fieldsplit
+  {
+    perr = PCFieldSplitSetType(pc, 
+                          PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE); 
+    CHKERRV(perr);
+  }
+  else if (ctype == "special")                                       // special fieldsplit (whatever that means!)
+  {
+    perr = PCFieldSplitSetType(pc, PC_COMPOSITE_SPECIAL); 
+    CHKERRV(perr);
+  }
+  else if (ctype == "schur")                                         // schur fieldsplit
+  {
+    perr = PCFieldSplitSetType(pc, PC_COMPOSITE_SCHUR); 
+    CHKERRV(perr);
+    perr = PCSetUp(pc); CHKERRV(perr);                               // call this before subksp can be retrieved
+    
+    std::string ptype;
+    buffer.str(""); buffer << optionpath << 
+                        "/composite_type::schur/preconditioner/name";// preconditioner for schur block
+    serr = Spud::get_option(buffer.str(), ptype);                    // sadly no string based interface provided to this (I think)
+    spud_err(buffer.str(), serr);                                    // so hard code an if block
+    if (ptype == "diag")
+    {
+      perr = PCFieldSplitSchurPrecondition(pc, PC_FIELDSPLIT_SCHUR_PRE_DIAG, PETSC_NULL);
+      CHKERRV(perr);
+    }
+    else if (ptype == "self")
+    {
+      perr = PCFieldSplitSchurPrecondition(pc, PC_FIELDSPLIT_SCHUR_PRE_SELF, PETSC_NULL);
+      CHKERRV(perr);
+    }
+    else
+    {
+      dolfin::error("Unknown PCFieldSplitSchurPreconditionType.");
+    }
+  }
+  else                                                               // unknown (to buckettools) fieldsplit composite type
+  {
+    dolfin::error("Unknown PCCompositeType.");
+  }
 
   KSP *subksps;                                                      // setup the fieldsplit subksps
   PetscInt nsubksps;
