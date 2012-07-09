@@ -346,10 +346,14 @@ void SolverBucket::assemble_bilinearforms()
                      f_it != solverforms_end(); f_it++)
   {
     PETScMatrix_ptr solvermatrix = solvermatrices_[(*f_it).first];
-    dolfin::assemble(*solvermatrix, *(*f_it).second, 
-                                                false, false, false);
+    dolfin::symmetric_assemble(*solvermatrix, *matrixbc_, 
+                               *(*f_it).second, (*system_).dirichletbcs(), 
+                               NULL, NULL, NULL, 
+                               false, false, false);                   // assemble bilinear form
     Assembler::add_zeros_diagonal(*solvermatrix);                    // add zeros to the diagonal to ensure they remain in sparsity
     (*solvermatrix).apply("add");
+    Assembler::add_zeros_diagonal(*matrixbc_);                         // add zeros to the diagonal to ensure they remain in sparsity
+    (*matrixbc_).apply("add");
   }
 
 }
