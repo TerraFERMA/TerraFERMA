@@ -341,6 +341,21 @@ void SolverBucket::assemble_bilinearforms()
     (*matrixbc_).apply("add");
 
   }
+
+  for (Form_const_it f_it = solverforms_begin(); 
+                     f_it != solverforms_end(); f_it++)
+  {
+    PETScMatrix_ptr solvermatrix = solvermatrices_[(*f_it).first];
+    dolfin::symmetric_assemble(*solvermatrix, *matrixbc_, 
+                               *(*f_it).second, (*system_).dirichletbcs(), 
+                               NULL, NULL, NULL, 
+                               false, false, false);                   // assemble bilinear form
+    Assembler::add_zeros_diagonal(*solvermatrix);                    // add zeros to the diagonal to ensure they remain in sparsity
+    (*solvermatrix).apply("add");
+    Assembler::add_zeros_diagonal(*matrixbc_);                         // add zeros to the diagonal to ensure they remain in sparsity
+    (*matrixbc_).apply("add");
+  }
+
 }
 
 //*******************************************************************|************************************************************//
@@ -490,6 +505,55 @@ Form_it SolverBucket::forms_end()
 Form_const_it SolverBucket::forms_end() const
 {
   return forms_.end();
+}
+
+//*******************************************************************|************************************************************//
+// register a (boost shared) pointer to a form in the solver bucket data maps
+//*******************************************************************|************************************************************//
+void SolverBucket::register_solverform(Form_ptr form, const std::string &name)
+{
+  Form_it f_it = solverforms_.find(name);                            // check if this name already exists
+  if (f_it != solverforms_.end())
+  {
+    dolfin::error("Solver form named \"%s\" already exists in solver.",     // if it does, issue an error
+                                                  name.c_str());
+  }
+  else
+  {
+    solverforms_[name] = form;                                             // if not, register the form in the maps
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the beginning of the solverforms_ map
+//*******************************************************************|************************************************************//
+Form_it SolverBucket::solverforms_begin()
+{
+  return solverforms_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the beginning of the solverforms_ map
+//*******************************************************************|************************************************************//
+Form_const_it SolverBucket::solverforms_begin() const
+{
+  return solverforms_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the end of the solverforms_ map
+//*******************************************************************|************************************************************//
+Form_it SolverBucket::solverforms_end()
+{
+  return solverforms_.end();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the end of the solverforms_ map
+//*******************************************************************|************************************************************//
+Form_const_it SolverBucket::solverforms_end() const
+{
+  return solverforms_.end();
 }
 
 //*******************************************************************|************************************************************//
