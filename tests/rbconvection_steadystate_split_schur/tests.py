@@ -21,3 +21,11 @@ def test_nu2():
   val = -1.0*(stat["Temperature2"]["Temperature"]["TopSurfaceIntegral"][-1])
   assert val - 4.9 < 0.05
 
+def test_v3_rms():
+  val = sqrt(stat["Stokes3"]["Velocity"]["L2Norm"][-1])
+  assert abs(val - 42.865) < 0.01
+
+def test_nu3():
+  val = -1.0*(stat["Temperature3"]["Temperature"]["TopSurfaceIntegral"][-1])
+  assert val - 4.9 < 0.05
+
