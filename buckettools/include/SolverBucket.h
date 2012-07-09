@@ -128,6 +128,16 @@ namespace buckettools
 
     Form_const_it forms_end() const;                                 // return a constant iterator to the end of the forms
 
+    void register_solverform(Form_ptr form, const std::string &name);// register a form in the solver
+
+    Form_it solverforms_begin();                                     // return an iterator to the beginning of the forms
+
+    Form_const_it solverforms_begin() const;                         // return a constant iterator to the beginning of the forms
+
+    Form_it solverforms_end();                                       // return an iterator to the end of the forms
+
+    Form_const_it solverforms_end() const;                           // return a constant iterator to the end of the forms
+
     //***************************************************************|***********************************************************//
     // Output functions
     //***************************************************************|***********************************************************//
@@ -162,7 +172,15 @@ namespace buckettools
 
     Form_ptr linear_, bilinear_, bilinearpc_, residual_;             // (boost shared) pointers to forms
 
+    std::map< std::string, Form_ptr > solverforms_;                  // (boost shared) pointers to forms under linear solver 
+
     PETScMatrix_ptr matrix_, matrixpc_;                              // dolfin petsc matrix types
+
+    std::map< std::string, PETScMatrix_ptr > solvermatrices_;        // dolfin petsc matrices for solver matrices
+
+    std::map< std::string, IS_ptr > solverindexsets_;                // (boost shared) pointers to the indexsets defining the solver submatrices
+
+    std::map< std::string, Mat_ptr > solversubmatrices_;             // (boost shared) pointers to the sub petsc matrices
 
     PETScVector_ptr rhs_, res_, work_;                               // dolfin petsc vector types
 
@@ -173,6 +191,8 @@ namespace buckettools
     int_ptr iteration_count_;                                        // nonlinear iterations taken (may not be accurate!)
 
     bool ident_zeros_, ident_zeros_pc_;                              // replace zero rows with the identity (matrix and pc)
+
+    std::map< std::string, bool > solverident_zeros_;                // replace zero rows with the identity (solver matrices)
 
     bool ignore_failures_;                                           // ignore solver failures
 

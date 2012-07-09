@@ -1133,7 +1133,7 @@ pcfieldsplit_composite_types =
           ## Usually for saddle point problems one would use a preconditioner of self and pc lsc 
           ## which uses the least squares commutator compute a preconditioner for the Schur 
           ## complement.
-          element preconditioner {
+          element schur_preconditioner {
             attribute name { "diag" },
             empty
           }|
@@ -1144,14 +1144,25 @@ pcfieldsplit_composite_types =
           ## Usually for saddle point problems one would use a preconditioner of self and pc lsc 
           ## which uses the least squares commutator compute a preconditioner for the Schur 
           ## complement.
-          element preconditioner {
+          element schur_preconditioner {
             attribute name { "self" },
             empty
+          }|
+          ## The preconditioner for the Schur complement is described by a ufl form.
+          element schur_preconditioner {
+            attribute name { "user" },
+            ## ufl code form describing a preconditioner for the Schur block (must return a bilinear form).  
+            ## Any system, field or coefficient ufl symbols defined in this options file may be used in this form as well as any symbols 
+            ## defined in the preamble and bilinear form from this nonlinear_solver above.
+            element form {
+              attribute name { "SchurPC" },
+              attribute rank { "1" },
+              python_code,
+              form_ufl_symbol,
+              ident_zeros
+            },
+            is_monitor
           }
-          #element preconditioner {
-          #  attribute name { "user" },
-          #  empty
-          #}
         )
       }
     )
