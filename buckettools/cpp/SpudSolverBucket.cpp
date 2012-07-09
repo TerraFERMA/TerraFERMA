@@ -1059,7 +1059,7 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
         dolfin::error("Unknown PCFieldSplitSchurFactType.");
       }
       #else
-      dolfin::error("Can only set schur factorization_type to anything other than full with petsc > 3.2.")
+      dolfin::error("Can only set schur factorization_type to anything other than full with petsc > 3.2.");
       #endif
     }
     
