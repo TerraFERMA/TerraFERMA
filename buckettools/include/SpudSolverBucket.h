@@ -98,6 +98,12 @@ namespace buckettools
  
     void fill_forms_();                                              // fill the form data of the solver bucket
 
+    void fill_subforms_(const std::string &optionpath, 
+                        const std::string &prefix="");               // fill the form data of a section of the solver bucket
+
+    void fill_solverforms_(const std::string &optionpath, 
+                           const std::string &prefix="");            // fill the form data of a linear solver
+
     void fill_ksp_(const std::string &optionpath, KSP &ksp, 
                                   const std::string prefix)          // fill the information about a parent ksp
     { fill_ksp_(optionpath, ksp, prefix, NULL); }

@@ -13,6 +13,7 @@
 #include "ConvergenceFile.h"
 #include "KSPConvergenceFile.h"
 #include "PythonExpression.h"
+#include <boost/algorithm/string/predicate.hpp>
 
 using namespace buckettools;
 
@@ -406,12 +407,82 @@ void SpudSolverBucket::fill_forms_()
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
    
-  buffer.str(""); buffer << optionpath() << "/type/form";           
+  buffer.str(""); buffer << optionpath() << "/type";
+  fill_subforms_(buffer.str());
+  std::stringstream prefix;                                          // prefix buffer
+  prefix.str(""); prefix << (*system_).name() << "_" << name() << "_";
+  fill_solverforms_(buffer.str(), prefix.str());
+
+                                                                     // depending on the type of solver we assign certain forms to
+                                                                     // hardcoded names in the solver bucket (basically it depends
+                                                                     // which are linear or bilinear)
+  ident_zeros_ = false;
+  ident_zeros_pc_ = false;
+
+  if (type()=="SNES")                                                // snes solver type...
+  {
+    linear_      = fetch_form("Residual");
+    bilinear_    = fetch_form("Jacobian");
+    buffer.str(""); buffer << optionpath() << "/type::SNES/form::Jacobian/ident_zeros";
+    ident_zeros_ = Spud::have_option(buffer.str());
+
+
+    if (contains_form("JacobianPC"))                                 // is there a pc form?
+    {
+      bilinearpc_ = fetch_form("JacobianPC");                        // yes but
+      buffer.str(""); buffer << optionpath() << "/type::SNES/form::JacobianPC/ident_zeros";
+      ident_zeros_pc_ = Spud::have_option(buffer.str());
+    }                                                                // otherwise bilinearpc_ is null (indicates self pcing)
+    assert(!residual_);                                              // residual_ is always a null pointer for snes
+
+  }
+  else if (type()=="Picard")                                         // picard solver type...
+  {
+    linear_      = fetch_form("Linear");
+    bilinear_    = fetch_form("Bilinear");
+    buffer.str(""); buffer << optionpath() << "/type::Picard/form::Bilinear/ident_zeros";
+    ident_zeros_ = Spud::have_option(buffer.str());
+
+
+    if (contains_form("BilinearPC"))                                 // is there a pc form?
+    {
+      bilinearpc_ = fetch_form("BilinearPC");                        // yes but
+      buffer.str(""); buffer << optionpath() << "/type::Picard/form::BilinearPC/ident_zeros";
+      ident_zeros_pc_ = Spud::have_option(buffer.str());
+    }                                                                // otherwise bilinearpc_ is null (indicates self pcing)
+    residual_   = fetch_form("Residual");
+
+  }
+  else                                                               // unknown solver type
+  {
+    dolfin::error("Unknown solver type.");
+  }
+
+  for (Form_const_it f_it = forms_begin(); f_it != forms_end(); f_it++)
+  {
+    if(boost::algorithm::ends_with((*f_it).first, "SchurPC"))
+    {
+      register_solverform((*f_it).second, (*f_it).first);
+      solverident_zeros_[(*f_it).first] = Spud::have_option(form_optionpaths_[(*f_it).first]+"/ident_zeros");
+    }
+  }
+
+}
+
+//*******************************************************************|************************************************************//
+// fill a form in solver bucket assuming the buckettools schema (common for all solver types)
+//*******************************************************************|************************************************************//
+void SpudSolverBucket::fill_subforms_(const std::string &optionpath, 
+                                      const std::string &prefix)
+{
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud error code
+   
+  buffer.str(""); buffer << optionpath << "/form";           
   int nforms = Spud::option_count(buffer.str());                     // find out how many forms we have
   for (uint i = 0; i < nforms; i++)                                  // loop over them 
   {
-    buffer.str(""); buffer << optionpath() << "/type/form[" << 
-                                                          i << "]";
+    buffer.str(""); buffer << optionpath << "/form[" << i << "]";
     std::string formoptionpath = buffer.str();
 
     std::string formname;
@@ -421,9 +492,9 @@ void SpudSolverBucket::fill_forms_()
 
     Form_ptr form = ufc_fetch_form((*system_).name(), name(),        // get the form from the ufc using the system functionspace
                                         type(), 
-                                        formname, 
+                                        prefix+formname, 
                                         (*system_).functionspace());
-    register_form(form, formname, formoptionpath);
+    register_form(form, prefix+formname, formoptionpath);
 
                                                                      // at this stage we cannot attach any coefficients to this
                                                                      // form because we do not necessarily have them all
@@ -458,39 +529,47 @@ void SpudSolverBucket::fill_forms_()
 
   }
 
-                                                                     // depending on the type of solver we assign certain forms to
-                                                                     // hardcoded names in the solver bucket (basically it depends
-                                                                     // which are linear or bilinear)
-  ident_zeros_ = false;
-  ident_zeros_pc_ = false;
+}
 
-  if (type()=="SNES")                                                // snes solver type...
+//*******************************************************************|************************************************************//
+// recursively fill any forms beneath the linear_solver
+//*******************************************************************|************************************************************//
+void SpudSolverBucket::fill_solverforms_(const std::string &optionpath,
+                                         const std::string &prefix)
+{
+  std::stringstream buffer, fsbuffer, lsbuffer, pcbuffer;            // optionpath buffer
+  Spud::OptionError serr;                                            // spud error code
+   
+  buffer.str(""); buffer << optionpath <<
+                 "/composite_type::schur/schur_preconditioner::user";
+  if (Spud::have_option(buffer.str()))
   {
-    linear_      = fetch_form("Residual");
-    bilinear_    = fetch_form("Jacobian");
-
-    if (contains_form("JacobianPC"))                                 // is there a pc form?
-    {
-      bilinearpc_ = fetch_form("JacobianPC");                        // yes but
-    }                                                                // otherwise bilinearpc_ is null (indicates self pcing)
-    assert(!residual_);                                              // residual_ is always a null pointer for snes
-
+    fill_subforms_(buffer.str(), prefix);
   }
-  else if (type()=="Picard")                                         // picard solver type...
-  {
-    linear_      = fetch_form("Linear");
-    bilinear_    = fetch_form("Bilinear");
 
-    if (contains_form("BilinearPC"))                                 // is there a pc form?
+  fsbuffer.str(""); fsbuffer << optionpath << "/fieldsplit";
+  lsbuffer.str(""); lsbuffer << optionpath <<
+                                     "/linear_solver/preconditioner";
+  pcbuffer.str(""); pcbuffer << optionpath << "preconditioner";
+  if (Spud::have_option(fsbuffer.str()))
+  {
+    for (uint i = 0; i < Spud::option_count(fsbuffer.str()); i++)
     {
-      bilinearpc_ = fetch_form("BilinearPC");                        // yes but
-    }                                                                // otherwise bilinearpc_ is null (indicates self pcing)
-    residual_   = fetch_form("Residual");
-
+      std::string fsname;
+      buffer.str(""); buffer << fsbuffer.str() << "[" << i << "]/name";
+      serr = Spud::get_option(buffer.str(), fsname);
+      spud_err(buffer.str(), serr);
+      buffer.str(""); buffer << fsbuffer.str() << "[" << i << "]/linear_solver/preconditioner";
+      fill_solverforms_(buffer.str(), prefix+fsname+"_");
+    }
   }
-  else                                                               // unknown solver type
+  else if (Spud::have_option(lsbuffer.str()))
   {
-    dolfin::error("Unknown solver type.");
+    fill_solverforms_(lsbuffer.str(), prefix);
+  }
+  else if (Spud::have_option(pcbuffer.str()))
+  {
+    fill_solverforms_(pcbuffer.str(), prefix);
   }
 
 }
@@ -503,6 +582,9 @@ void SpudSolverBucket::initialize_tensors_()
 {
   std::stringstream buffer;                                          // optionpath buffer
    
+  work_.reset( new dolfin::PETScVector(*boost::dynamic_pointer_cast<dolfin::PETScVector>((*(*system_).function()).vector())) ); 
+  (*work_).zero();
+
   matrix_.reset(new dolfin::PETScMatrix);                            // allocate the matrix
   dolfin::AssemblerTools::init_global_tensor(*matrix_, *bilinear_, 
                                                true, false);
@@ -532,50 +614,21 @@ void SpudSolverBucket::initialize_tensors_()
     dolfin::AssemblerTools::init_global_tensor(*res_, *residual_, 
                                                true, false);
   }
-
-  work_.reset( new dolfin::PETScVector(*boost::dynamic_pointer_cast<dolfin::PETScVector>((*(*system_).function()).vector())) ); 
-  (*work_).zero();
-
-  ident_zeros_ = false;
-  ident_zeros_pc_ = false;
-
-  if (type()=="SNES")                                                // snes solver type...
+  else
   {
-
-    buffer.str(""); buffer << optionpath() << "/type::SNES/form::Jacobian/ident_zeros";
-    ident_zeros_ = Spud::have_option(buffer.str());
-
-    if (bilinearpc_)                                                 // is there a pc form?
-    {
-
-      buffer.str(""); buffer << optionpath() << "/type::SNES/form::JacobianPC/ident_zeros";
-      ident_zeros_pc_ = Spud::have_option(buffer.str());
-
-    }                                                                // otherwise bilinearpc_ is null (indicates self pcing)
-                                                                     // residual_ is always a null pointer for snes
-    assert(!residual_);                                              // 
     res_.reset( new dolfin::PETScVector(*work_) );                   // but we still want to initialize the residual vector
     (*res_).zero();
-
   }
-  else if (type()=="Picard")                                         // picard solver type...
+
+  for (Form_const_it f_it = solverforms_begin(); 
+                     f_it != solverforms_end(); f_it++)
   {
-
-    buffer.str(""); buffer << optionpath() << "/type::Picard/form::Bilinear/ident_zeros";
-    ident_zeros_ = Spud::have_option(buffer.str());
-
-    if (bilinearpc_)                                                 // is there a pc form?
-    {
-
-      buffer.str(""); buffer << optionpath() << "/type::Picard/form::BilinearPC/ident_zeros";
-      ident_zeros_pc_ = Spud::have_option(buffer.str());
-
-    }                                                                // otherwise bilinearpc_ is null (indicates self pcing)
-
-  }
-  else                                                               // unknown solver type
-  {
-    dolfin::error("Unknown solver type.");
+    PETScMatrix_ptr solvermatrix;
+    solvermatrix.reset(new dolfin::PETScMatrix);
+    dolfin::AssemblerTools::init_global_tensor(*solvermatrix, 
+                                               *(*f_it).second,
+                                               true, false);
+    solvermatrices_[(*f_it).first] = solvermatrix;
   }
 
   assemble_linearforms();                                            // preassemble
@@ -607,6 +660,13 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
 
   perr = KSPSetFromOptions(ksp);                                     // do this now so that options will be overwritten by options
                                                                      // file
+
+  PC pc;
+  perr = KSPGetPC(ksp, &pc); CHKERRV(perr);                          // get the pc from the ksp
+
+  fill_pc_(optionpath, pc,
+           prefix,
+           parent_indices);
 
   if(iterative_method != "preonly")                                  // tolerances (and monitors) only apply to iterative methods
   {
@@ -712,13 +772,6 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
     #endif
   }
 
-  PC pc;
-  perr = KSPGetPC(ksp, &pc); CHKERRV(perr);                          // get the pc from the ksp
-
-  fill_pc_(optionpath, pc,
-           prefix,
-           parent_indices);
-
 }
 
 //*******************************************************************|************************************************************//
@@ -750,7 +803,11 @@ void SpudSolverBucket::fill_pc_(const std::string &optionpath, PC &pc,
                                     "/preconditioner/linear_solver";
     KSP subksp;                                                      // create a subksp from this pc
     perr = PCKSPGetKSP(pc, &subksp); CHKERRV(perr);
-    fill_ksp_(buffer.str(), subksp, prefix+"subksp_", parent_indices);// recursively fill the ksp data (i.e. go back to this routine)
+    fill_ksp_(buffer.str(), subksp, prefix, parent_indices);// recursively fill the ksp data (i.e. go back to this routine)
+  }
+  else if (preconditioner=="lsc")                                    // would be nice to put subksp options for lsc here
+  {
+    perr = PCSetUp(pc); CHKERRV(perr);                               // this is just necessary in case we view it later
   }
   else if (preconditioner=="fieldsplit")                             // if the pc is a fieldsplit
   {
@@ -804,7 +861,7 @@ void SpudSolverBucket::fill_pc_(const std::string &optionpath, PC &pc,
     PC subpc;
     perr = KSPGetPC(*subksp, &subpc); CHKERRV(perr);                  // get the sub pc from the sub ksp
     fill_pc_(optionpath+"/preconditioner", subpc,
-             prefix+"subpc_", 
+             prefix, 
              parent_indices);
 
   }
@@ -823,41 +880,6 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
   Spud::OptionError serr;                                            // spud error code
   PetscErrorCode perr;                                               // petsc error code
 
-  std::string ctype;
-  buffer.str(""); buffer << optionpath << "/composite_type/name";    // composite type of fieldsplit (additive, multiplicative etc.)
-  serr = Spud::get_option(buffer.str(), ctype);                      // sadly no string based interface provided to this (I think)
-  spud_err(buffer.str(), serr);                                      // so hard code an if block
-
-  if (ctype == "additive")                                           // additive fieldsplit
-  {
-    perr = PCFieldSplitSetType(pc, PC_COMPOSITE_ADDITIVE); 
-    CHKERRV(perr);
-  }
-  else if (ctype == "multiplicative")                                // multiplicative fieldsplit
-  {
-    perr = PCFieldSplitSetType(pc, PC_COMPOSITE_MULTIPLICATIVE); 
-    CHKERRV(perr);
-  }
-  else if (ctype == "symmetric_multiplicative")                      // symmetric multiplicative fieldsplit
-  {
-    perr = PCFieldSplitSetType(pc, 
-                          PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE); 
-    CHKERRV(perr);
-  }
-  else if (ctype == "special")                                       // special fieldsplit (whatever that means!)
-  {
-    perr = PCFieldSplitSetType(pc, PC_COMPOSITE_SPECIAL); 
-    CHKERRV(perr);
-  }
-  else if (ctype == "schur")                                         // schur fieldsplit
-  {
-    perr = PCFieldSplitSetType(pc, PC_COMPOSITE_SCHUR); 
-    CHKERRV(perr);
-  }
-  else                                                               // unknown (to buckettools) fieldsplit composite type
-  {
-    dolfin::error("Unknown PCCompositeType.");
-  }
 
   std::vector< std::vector<uint> > child_indices;                    // a vector of vectors to collect the child indices (the
                                                                      // subsets of the parent_indices vector (if associated) that
@@ -910,6 +932,116 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
 
     child_indices.push_back(indices);                                // record the indices of the global vector that made it into
   }                                                                  // IS (and hence the fieldsplit)
+
+  std::string ctype;
+  buffer.str(""); buffer << optionpath << "/composite_type/name";    // composite type of fieldsplit (additive, multiplicative etc.)
+  serr = Spud::get_option(buffer.str(), ctype);                      // sadly no string based interface provided to this (I think)
+  spud_err(buffer.str(), serr);                                      // so hard code an if block
+
+  if (ctype == "additive")                                           // additive fieldsplit
+  {
+    perr = PCFieldSplitSetType(pc, PC_COMPOSITE_ADDITIVE); 
+    CHKERRV(perr);
+  }
+  else if (ctype == "multiplicative")                                // multiplicative fieldsplit
+  {
+    perr = PCFieldSplitSetType(pc, PC_COMPOSITE_MULTIPLICATIVE); 
+    CHKERRV(perr);
+  }
+  else if (ctype == "symmetric_multiplicative")                      // symmetric multiplicative fieldsplit
+  {
+    perr = PCFieldSplitSetType(pc, 
+                          PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE); 
+    CHKERRV(perr);
+  }
+  else if (ctype == "special")                                       // special fieldsplit (whatever that means!)
+  {
+    perr = PCFieldSplitSetType(pc, PC_COMPOSITE_SPECIAL); 
+    CHKERRV(perr);
+  }
+  else if (ctype == "schur")                                         // schur fieldsplit
+  {
+    perr = PCFieldSplitSetType(pc, PC_COMPOSITE_SCHUR); 
+    CHKERRV(perr);
+    perr = PCSetUp(pc); CHKERRV(perr);                                 // call this before subksp can be retrieved
+    
+    std::string ptype;
+    buffer.str(""); buffer << optionpath << 
+                  "/composite_type::schur/schur_preconditioner/name";// preconditioner for schur block
+    serr = Spud::get_option(buffer.str(), ptype);                    // sadly no string based interface provided to this (I think)
+    spud_err(buffer.str(), serr);                                    // so hard code an if block
+    if (ptype == "diag")
+    {
+      perr = PCFieldSplitSchurPrecondition(pc, PC_FIELDSPLIT_SCHUR_PRE_DIAG, PETSC_NULL);
+      CHKERRV(perr);
+    }
+    else if (ptype == "self")
+    {
+      perr = PCFieldSplitSchurPrecondition(pc, PC_FIELDSPLIT_SCHUR_PRE_SELF, PETSC_NULL);
+      CHKERRV(perr);
+    }
+    else if (ptype == "user")
+    {
+      PetscInt n = child_indices[1].size();
+      PetscInt *petscindices;
+      PetscMalloc(n*sizeof(PetscInt), &petscindices);
+      
+      uint ind = 0;
+      for (std::vector<uint>::const_iterator                         // loop over the indices
+                                  ind_it = child_indices[1].begin(); 
+                                  ind_it != child_indices[1].end(); 
+                                  ind_it++)
+      {
+        petscindices[ind] = *ind_it;                                 // insert them into the PetscInt array
+        ind++;                                                       // increment the array index
+      }
+      assert(ind==n);                                                // these should be equal
+
+      IS_ptr is;
+      is.reset( new IS );
+      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
+      perr = ISCreateGeneral(PETSC_COMM_WORLD, n, petscindices, 
+                                        PETSC_OWN_POINTER, &(*is));  // create the general index set based on the indices
+      #else
+      perr = ISCreateGeneral(PETSC_COMM_WORLD, n, 
+                                               petscindices, &(*is));// create the general index set based on the indices
+      #endif
+      CHKERRV(perr);
+      
+      buffer.str(""); buffer << optionpath << 
+                 "/composite_type::schur/schur_preconditioner::user";
+      if (Spud::have_option(buffer.str()+"/monitors/view_index_set"))
+      {
+        std::string isname = prefix+"SchurPC";
+        dolfin::log(dolfin::INFO, "ISView: %s (%s)", 
+                             isname.c_str(), buffer.str().c_str());
+        perr = ISView(*is, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr); // isview?
+      }
+
+      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
+      #else
+      PetscFree(petscindices);                                       // free the PetscInt array of indices
+      #endif
+
+      solverindexsets_[prefix+"SchurPC"] = is;
+
+      Mat_ptr submatrix;
+      submatrix.reset( new Mat );
+      perr = MatGetSubMatrix(*(*solvermatrices_[prefix+"SchurPC"]).mat(), *is, *is, MAT_INITIAL_MATRIX, &(*submatrix));
+      CHKERRV(perr);
+      
+      perr = PCFieldSplitSchurPrecondition(pc, PC_FIELDSPLIT_SCHUR_PRE_USER, *submatrix);
+      CHKERRV(perr);
+    }
+    else
+    {
+      dolfin::error("Unknown PCFieldSplitSchurPreconditionType.");
+    }
+  }
+  else                                                               // unknown (to buckettools) fieldsplit composite type
+  {
+    dolfin::error("Unknown PCCompositeType.");
+  }
 
   KSP *subksps;                                                      // setup the fieldsplit subksps
   PetscInt nsubksps;
@@ -1562,9 +1694,11 @@ void SpudSolverBucket::fill_values_by_field_(const std::string &optionpath, PETS
       dolfin::log(dolfin::INFO, "ISView: %s (%s)", 
                                   isname.c_str(), optionpath.c_str());
     }
-    
-    dolfin::log(dolfin::INFO, "ISView: (%s)", 
-                                optionpath.c_str());
+    else
+    {
+      dolfin::log(dolfin::INFO, "ISView: (%s)", 
+                                  optionpath.c_str());
+    }
     perr = ISView(is, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);      // isview?
   }
 
