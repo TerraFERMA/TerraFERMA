@@ -954,7 +954,6 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
   {
     perr = PCFieldSplitSetType(pc, PC_COMPOSITE_SCHUR); 
     CHKERRV(perr);
-    perr = PCSetUp(pc); CHKERRV(perr);                                 // call this before subksp can be retrieved
     
     std::string ptype;
     buffer.str(""); buffer << optionpath << 
@@ -1033,6 +1032,7 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
   {
     dolfin::error("Unknown PCCompositeType.");
   }
+  perr = PCSetUp(pc); CHKERRV(perr);                                 // call this before subksp can be retrieved
 
   KSP *subksps;                                                      // setup the fieldsplit subksps
   PetscInt nsubksps;
@@ -1043,6 +1043,14 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
 
   for (uint i = 0; i < nsplits; i++)                                 // loop over the splits again
   {
+    perr = KSPSetNormType(subksps[i], KSP_NORM_DEFAULT);             // these two calls are necessary because the normtype
+    CHKERRV(perr);                                                   // and pc_side will have been set inappropriately in the 
+    perr = KSPSetPCSide(subksps[i], PC_SIDE_DEFAULT);                // above call to PCSetUp.  now we undo this damage by resetting
+    CHKERRV(perr);                                                   // them to default (since the schema doesn't allow them to be
+                                                                     // set by the user anyway) so that they can once again be reset
+                                                                     // by KSP/PCSetUp later (probably from KSPSolve) once the ksp
+                                                                     // type is set properly
+
     std::string fsname;
     buffer.str(""); buffer << optionpath << "/fieldsplit[" 
                                         << i << "]/name";
