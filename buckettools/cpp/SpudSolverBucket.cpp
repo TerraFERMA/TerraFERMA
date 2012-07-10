@@ -1020,6 +1020,8 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
       submatrix.reset( new Mat );
       perr = MatGetSubMatrix(*(*solvermatrices_[prefix+"SchurPC"]).mat(), *is, *is, MAT_INITIAL_MATRIX, &(*submatrix));
       CHKERRV(perr);
+
+      solversubmatrices_[prefix+"SchurPC"] = submatrix;
       
       perr = PCFieldSplitSchurPrecondition(pc, PC_FIELDSPLIT_SCHUR_PRE_USER, *submatrix);
       CHKERRV(perr);

@@ -128,6 +128,10 @@ namespace buckettools
 
     Form_const_it forms_end() const;                                 // return a constant iterator to the end of the forms
 
+    //***************************************************************|***********************************************************//
+    // Solver form data access
+    //***************************************************************|***********************************************************//
+
     void register_solverform(Form_ptr form, const std::string &name);// register a form in the solver
 
     Form_it solverforms_begin();                                     // return an iterator to the beginning of the forms
@@ -137,6 +141,14 @@ namespace buckettools
     Form_it solverforms_end();                                       // return an iterator to the end of the forms
 
     Form_const_it solverforms_end() const;                           // return a constant iterator to the end of the forms
+
+    PETScMatrix_ptr fetch_solvermatrix(const std::string &name);     // fetch the named solver matrix
+
+    bool solverident_zeros(const std::string &name);                 // ident zero the named solver matrix
+
+    IS_ptr fetch_solverindexset(const std::string &name);            // fetch the named ident zeros
+
+    Mat_ptr fetch_solversubmatrix(const std::string &name);          // fetch the named solver submatrix
 
     //***************************************************************|***********************************************************//
     // Output functions

@@ -162,7 +162,7 @@ void SolverBucket::solve()
                                   (*system_).dirichletbcs_begin(); 
                                   bc != (*system_).dirichletbcs_end(); bc++)
         {
-          (*(*bc)).apply(*matrixpc_, *rhs_);                         // apply the collected vector of system bcs
+          (*(*bc)).apply(*matrixpc_);                                // apply the collected vector of system bcs
         }
 
         for(std::vector<ReferencePoints_ptr>::const_iterator p =     // loop over the collected vector of system reference points
@@ -188,6 +188,38 @@ void SolverBucket::solve()
                                       *(*matrix_).mat(), 
                                         SAME_NONZERO_PATTERN); 
         CHKERRV(perr);
+      }
+
+      for (Form_const_it f_it = solverforms_begin(); 
+                         f_it != solverforms_end(); f_it++)
+      {
+        PETScMatrix_ptr solvermatrix = solvermatrices_[(*f_it).first];
+        dolfin::assemble(*solvermatrix, *(*f_it).second, 
+                                                    false);
+        for(std::vector< const dolfin::DirichletBC* >::const_iterator bc = 
+                                  (*system_).dirichletbcs_begin(); 
+                                  bc != (*system_).dirichletbcs_end(); bc++)
+        {
+          (*(*bc)).apply(*solvermatrix);                             // apply the collected vector of system bcs
+        }
+
+        for(std::vector<ReferencePoints_ptr>::const_iterator p =     // loop over the collected vector of system reference points
+                                        (*system_).points_begin(); 
+                                    p != (*system_).points_end(); p++)
+        {
+          (*(*p)).apply(*solvermatrix);                              // apply the reference points to the pc matrix
+        }
+
+        if(solverident_zeros_[(*f_it).first])
+        {
+          (*solvermatrix).ident_zeros();
+        }
+
+        IS_ptr is = solverindexsets_[(*f_it).first];
+        Mat_ptr submatrix = solversubmatrices_[(*f_it).first];
+        perr = MatGetSubMatrix(*(*solvermatrix).mat(), *is, *is, MAT_REUSE_MATRIX, &(*submatrix));
+        CHKERRV(perr);
+
       }
 
       if (monitor_norms())
@@ -532,6 +564,78 @@ Form_it SolverBucket::solverforms_end()
 Form_const_it SolverBucket::solverforms_end() const
 {
   return solverforms_.end();
+}
+
+//*******************************************************************|************************************************************//
+// return a (boost shared) pointer to a petsc matrix from the solver bucket data maps
+//*******************************************************************|************************************************************//
+PETScMatrix_ptr SolverBucket::fetch_solvermatrix(const std::string &name)
+{
+  std::map< std::string, PETScMatrix_ptr>::iterator s_it = 
+                                          solvermatrices_.find(name);// check if this name already exists
+  if (s_it == solvermatrices_.end())
+  {
+    dolfin::error("Solver matrix named \"%s\" does not exist in solver.",     // if it doesn't, issue an error
+                                                    name.c_str());
+  }
+  else
+  {
+    return (*s_it).second;                                           // if it does, return it
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return a (boost shared) pointer to an index set for this solver sub matrix
+//*******************************************************************|************************************************************//
+IS_ptr SolverBucket::fetch_solverindexset(const std::string &name)
+{
+  std::map< std::string, IS_ptr >::iterator s_it = 
+                                         solverindexsets_.find(name);// check if this name already exists
+  if (s_it == solverindexsets_.end())
+  {
+    dolfin::error("Solver index set named \"%s\" does not exist in solver.",     // if it doesn't, issue an error
+                                                    name.c_str());
+  }
+  else
+  {
+    return (*s_it).second;                                           // if it does, return it
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return a bool indicating if the named solver form/matrix should have zeros idented
+//*******************************************************************|************************************************************//
+bool SolverBucket::solverident_zeros(const std::string &name)
+{
+  std::map< std::string, bool >::iterator s_it = 
+                                       solverident_zeros_.find(name);// check if this name already exists
+  if (s_it == solverident_zeros_.end())
+  {
+    dolfin::error("Solver ident zeros named \"%s\" does not exist in solver.",     // if it doesn't, issue an error
+                                                    name.c_str());
+  }
+  else
+  {
+    return (*s_it).second;                                           // if it does, return it
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return a (boost shared) pointer to a petsc matrix from the solver bucket data maps
+//*******************************************************************|************************************************************//
+Mat_ptr SolverBucket::fetch_solversubmatrix(const std::string &name)
+{
+  std::map< std::string, Mat_ptr >::iterator s_it = 
+                                          solversubmatrices_.find(name);// check if this name already exists
+  if (s_it == solversubmatrices_.end())
+  {
+    dolfin::error("Solver sub matrix named \"%s\" does not exist in solver.",     // if it doesn't, issue an error
+                                                    name.c_str());
+  }
+  else
+  {
+    return (*s_it).second;                                           // if it does, return it
+  }
 }
 
 //*******************************************************************|************************************************************//
