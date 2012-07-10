@@ -1020,9 +1020,9 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
   }
   else if (ctype == "schur")                                         // schur fieldsplit
   {
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
     perr = PCFieldSplitSetType(pc, PC_COMPOSITE_SCHUR); 
     CHKERRV(perr);
-    perr = PCSetUp(pc); CHKERRV(perr);                                 // call this before subksp can be retrieved
     
     std::string ftype;
     buffer.str(""); buffer << optionpath << 
@@ -1135,11 +1135,20 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
     {
       dolfin::error("Unknown PCFieldSplitSchurPreconditionType.");
     }
+    #else
+    dolfin::error("schur fieldsplits only support with petsc > 3.1");
+    #endif
   }
   else                                                               // unknown (to buckettools) fieldsplit composite type
   {
     dolfin::error("Unknown PCCompositeType.");
   }
+  #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
+  perr = PCSetUp(pc); CHKERRV(perr);                                 // call this before subksp can be retrieved
+                                                                     // this is only necessary for schur fieldsplits and
+                                                                     // as we're not supporting these with petsc 3.1 we don't
+                                                                     // bother otherwise
+  #endif
 
   KSP *subksps;                                                      // setup the fieldsplit subksps
   PetscInt nsubksps;
@@ -1150,6 +1159,17 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
 
   for (uint i = 0; i < nsplits; i++)                                 // loop over the splits again
   {
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
+    perr = KSPSetNormType(subksps[i], KSP_NORM_DEFAULT);             // these two calls are necessary because the normtype
+    CHKERRV(perr);                                                   // and pc_side will have been set inappropriately in the 
+    perr = KSPSetPCSide(subksps[i], PC_SIDE_DEFAULT);                // above call to PCSetUp.  now we undo this damage by resetting
+    CHKERRV(perr);                                                   // them to default (since the schema doesn't allow them to be
+                                                                     // set by the user anyway) so that they can once again be reset
+                                                                     // by KSP/PCSetUp later (probably from KSPSolve) once the ksp
+                                                                     // type is set properly.
+                                                                     // same petsc 3.1 support logic as for PCSetUp above.
+    #endif
+
     std::string fsname;
     buffer.str(""); buffer << optionpath << "/fieldsplit[" 
                                         << i << "]/name";
