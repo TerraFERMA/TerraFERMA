@@ -972,6 +972,12 @@ r = rT</string_value>
               <real_value rank="0">0.0</real_value>
             </constant>
           </initial_condition>
+          <reference_point name="Point">
+            <coordinates>
+              <real_value shape="2" dim1="dim" rank="1">0.0 0.0</real_value>
+            </coordinates>
+            <sub_components name="All"/>
+          </reference_point>
         </rank>
       </type>
       <diagnostics>
@@ -1078,26 +1084,9 @@ r = rv + rp</string_value>
                   </monitors>
                 </iterative_method>
                 <preconditioner name="jacobi"/>
-                <remove_null_space>
-                  <null_space name="Pressure">
-                    <monitors/>
-                  </null_space>
-                  <monitors/>
-                </remove_null_space>
               </linear_solver>
             </fieldsplit>
           </preconditioner>
-          <remove_null_space>
-            <null_space name="Pressure">
-              <field name="Pressure">
-                <constant>
-                  <real_value rank="0">1.0</real_value>
-                </constant>
-              </field>
-              <monitors/>
-            </null_space>
-            <monitors/>
-          </remove_null_space>
           <monitors>
             <view_ksp/>
           </monitors>
