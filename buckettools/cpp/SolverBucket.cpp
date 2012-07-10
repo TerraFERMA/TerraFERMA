@@ -205,14 +205,10 @@ void SolverBucket::solve()
                          f_it != solverforms_end(); f_it++)
       {
         PETScMatrix_ptr solvermatrix = solvermatrices_[(*f_it).first];
-        dolfin::assemble(*solvermatrix, *(*f_it).second, 
-                                                    false);
-        for(std::vector< const dolfin::DirichletBC* >::const_iterator bc = 
-                                  (*system_).dirichletbcs_begin(); 
-                                  bc != (*system_).dirichletbcs_end(); bc++)
-        {
-          (*(*bc)).apply(*solvermatrix);                             // apply the collected vector of system bcs
-        }
+        dolfin::symmetric_assemble(*solvermatrix, *matrixbc_, 
+                                   *(*f_it).second, (*system_).dirichletbcs(), 
+                                   NULL, NULL, NULL, 
+                                   false);                           // assemble the solver matrix
 
         for(std::vector<ReferencePoints_ptr>::const_iterator p =     // loop over the collected vector of system reference points
                                         (*system_).points_begin(); 

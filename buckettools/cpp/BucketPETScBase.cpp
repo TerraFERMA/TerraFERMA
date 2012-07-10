@@ -171,12 +171,10 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
                      f_it != (*solver).solverforms_end(); f_it++)    // - these will already be attached to the appropriate
   {                                                                  // ksps so be careful just to update their pointers
     PETScMatrix_ptr solvermatrix = (*solver).fetch_solvermatrix((*f_it).first);
-    dolfin::assemble(*solvermatrix, *(*f_it).second, 
-                                                false);
-    for(uint i = 0; i < bcs.size(); ++i)                             // loop over the bcs
-    {
-      (*bcs[i]).apply(*solvermatrix);                                // FIXME: will break symmetry
-    }
+    dolfin::symmetric_assemble(*solvermatrix, *matrixbc, 
+                               *(*f_it).second, bcs,
+                               NULL, NULL, NULL,                     // assemble the matrix pc from the context bilinear pc form
+                               false);
     for(uint i = 0; i < points.size(); ++i)                          // loop over the points
     {
       (*points[i]).apply(*solvermatrix);
