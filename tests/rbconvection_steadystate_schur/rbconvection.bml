@@ -117,6 +117,7 @@
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics>
           <functional name="L2Norm">
             <string_value lines="20" type="code" language="python">int = inner(v,v)*dx</string_value>
@@ -149,6 +150,7 @@
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics/>
       </diagnostics>
     </field>
@@ -198,6 +200,7 @@
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics>
           <functional name="TopSurfaceIntegral">
             <string_value lines="20" type="code" language="python">int = T.dx(1)*ds_4</string_value>
@@ -258,6 +261,9 @@ r = rv + rp + rT</string_value>
         <max_iterations>
           <integer_value rank="0">50</integer_value>
         </max_iterations>
+        <min_iterations>
+          <integer_value rank="0">2</integer_value>
+        </min_iterations>
         <monitors/>
         <linear_solver>
           <iterative_method name="fgmres">
