@@ -167,6 +167,32 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
     }
   }
 
+  for (Form_const_it f_it = (*solver).solverforms_begin();           // update any solver forms/matrices/submatrices as well
+                     f_it != (*solver).solverforms_end(); f_it++)    // - these will already be attached to the appropriate
+  {                                                                  // ksps so be careful just to update their pointers
+    PETScMatrix_ptr solvermatrix = (*solver).fetch_solvermatrix((*f_it).first);
+    dolfin::assemble(*solvermatrix, *(*f_it).second, 
+                                                false);
+    for(uint i = 0; i < bcs.size(); ++i)                             // loop over the bcs
+    {
+      (*bcs[i]).apply(*solvermatrix);                                // FIXME: will break symmetry
+    }
+    for(uint i = 0; i < points.size(); ++i)                          // loop over the points
+    {
+      (*points[i]).apply(*solvermatrix);
+    }
+    if((*solver).solverident_zeros((*f_it).first))
+    {
+      (*solvermatrix).ident_zeros();
+    }
+
+    IS_ptr is = (*solver).fetch_solverindexset((*f_it).first);
+    Mat_ptr submatrix = (*solver).fetch_solversubmatrix((*f_it).first);
+    perr = MatGetSubMatrix(*(*solvermatrix).mat(), *is, *is, MAT_REUSE_MATRIX, &(*submatrix));
+    CHKERRQ(perr);
+
+  }
+
   *flag = SAME_NONZERO_PATTERN;                                      // both matrices are assumed to have the same sparsity
 
   if ((*solver).monitor_norms())
