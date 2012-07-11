@@ -1,0 +1,56 @@
+set(EXECUTABLE "viscosity_constrast")
+
+set(OPTIONSFILENAME "vc.bml")
+set(MESHBASENAME "square")
+
+set(PREFIX ${EXECUTABLE})
+
+project($EXECUTABLE)
+
+set(OPTIONSFILE "${PROJECT_SOURCE_DIR}/${OPTIONSFILENAME}")
+
+if(NOT IS_ABSOLUTE ${OPTIONSFILE})
+  set(OPTIONSFILE ${PROJECT_BINARY_DIR}/${OPTIONSFILE})
+endif(NOT IS_ABSOLUTE ${OPTIONSFILE})
+
+if (IS_DIRECTORY ${OPTIONSFILE})
+  message(FATAL_ERROR "OPTIONSFILE not set or set to a directory.")
+endif(IS_DIRECTORY ${OPTIONSFILE})
+
+if (NOT EXISTS ${OPTIONSFILE})
+  message(FATAL_ERROR "Could not find OPTIONSFILE ${OPTIONSFILE}")
+endif(NOT EXISTS ${OPTIONSFILE})
+
+add_subdirectory(${BUCKETTOOLS_SHARED_DIRS}/buckettools/ufc "buckettools_ufc")
+
+add_executable(${EXECUTABLE} "${PROJECT_SOURCE_DIR}/../../cpp/main.cpp")
+
+set (EXTRA_LIBS ${EXTRA_LIBS} ${BUCKETTOOLS_LIBRARIES} ${PREFIX}buckettools_ufc)
+
+target_link_libraries(${EXECUTABLE} ${DOLFIN_LIBRARIES} ${DOLFIN_3RD_PARTY_LIBRARIES} ${EXTRA_LIBS} ${SPUD_LIBRARIES} ${PYTHON_LIBRARIES})
+
+# add a command that runs the mesh generation script
+add_custom_command(
+    OUTPUT ${PROJECT_BINARY_DIR}/${MESHBASENAME}.xml
+    COMMAND dolfin-convert
+    ARGS ${PROJECT_BINARY_DIR}/${MESHBASENAME}.msh ${PROJECT_BINARY_DIR}/${MESHBASENAME}.xml
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+    DEPENDS ${PROJECT_SOURCE_DIR}/${MESHBASENAME}.msh
+    )
+ 
+add_custom_target(
+  ${PREFIX}_run
+  COMMAND ${EXECUTABLE} -vINFO -l ${OPTIONSFILE} # HACK: this case requires INFO level logging
+  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+  DEPENDS ${EXECUTABLE}
+  DEPENDS ${PROJECT_BINARY_DIR}/${MESHBASENAME}.xml
+  )
+
+add_custom_target(
+  ${PREFIX}_test
+  COMMAND py.test -vs ${PROJECT_SOURCE_DIR}/tests.py 
+  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+  DEPENDS ${PROJECT_SOURCE_DIR}/tests.py
+  )
+add_dependencies(${PREFIX}_test ${PREFIX}_run)
+
