@@ -457,50 +457,6 @@ is_constraints =
     is_monitor
   )
 
-pc_options_picard_top =
-  (
-    ## Preconditioner to be used in combination with the iterative method.
-    (
-       pcsor_options|
-       pceisenstat_options|
-       pcfieldsplit_options_picard|
-       pcilu_options|
-       pclu_options|
-       pcprometheus_options|
-       pchypre_options|
-       pcgamg_options_top|
-       pcml_options_top|
-       pcjacobi_options|
-       pcbjacobi_options|
-       pcasm_options|
-       pcksp_options_picard|
-       pcnone_options|
-       pcother_options
-    )
-  )
-
-pc_options_snes_top =
-  (
-    ## Preconditioner to be used in combination with the iterative method.
-    (
-       pcsor_options|
-       pceisenstat_options|
-       pcfieldsplit_options_snes|
-       pcilu_options|
-       pclu_options|
-       pcprometheus_options|
-       pchypre_options|
-       pcgamg_options_top|
-       pcml_options_top|
-       pcjacobi_options|
-       pcbjacobi_options|
-       pcasm_options|
-       pcksp_options_snes|
-       pcnone_options|
-       pcother_options
-    )
-  )
-
 pc_options_picard =
   (
     ## Preconditioner to be used in combination with the iterative method.
@@ -560,7 +516,7 @@ linear_solver_options_picard_top =
          ksprichardson_options_picard_top|
          kspother_options_picard_top
       ),
-      pc_options_picard_top,
+      pc_options_picard,
       generic_solver_options
    )
 
@@ -577,7 +533,7 @@ linear_solver_options_snes_top =
          ksprichardson_options_snes_top|
          kspother_options_snes_top
       ),
-      pc_options_snes_top,
+      pc_options_snes,
       generic_solver_options
    )
 
@@ -1022,75 +978,39 @@ pchypre_options =
       }
    )
 
-pcgamg_options_top =
+near_null_space =
    (
-      ## The Geometric-Algrbraic MultiGrid Method
-      ##
-      ## NOTE: Only available with petsc-dev.
-      element preconditioner {
-         attribute name { "gamg" },
-         ## Set a near null-space for this preconditioner.
-         element near_null_space {
-            ## Describe the null spaces.  Names must be unique within this near null space setting.
-            ##
-            ## Fields not included in any parent fieldsplits will be excluded from this nullspace 
-            ## even if they are described below (a warning will be given).
-            ##
-            ## Nullspaces default to being constant over any fields described.  If no fields are specified
-            ## then the entire vector is assumed to contain a constant nullspace.  To describe variable
-            ## nullspaces python functions must be attached underneath the description of the field.
-            element null_space {
-              attribute name { xsd:string },
-              is_null_space
-            }+,
-            element monitors {
-              ## Prints PETSc information about this null space
-              element view_null_space {
-                empty
-              }?
-            }
-         }?
-      }
+     ## Set a near null-space for this preconditioner.
+     element near_null_space {
+        ## Describe the null spaces.  Names must be unique within this near null space setting.
+        ##
+        ## Fields not included in any parent fieldsplits will be excluded from this nullspace 
+        ## even if they are described below (a warning will be given).
+        ##
+        ## Nullspaces default to being constant over any fields described.  If no fields are specified
+        ## then the entire vector is assumed to contain a constant nullspace.  To describe variable
+        ## nullspaces python functions must be attached underneath the description of the field.
+        element null_space {
+          attribute name { xsd:string },
+          is_null_space
+        }+,
+        element monitors {
+          ## Prints PETSc information about this null space
+          element view_null_space {
+            empty
+          }?
+        }
+     }
    )
 
 pcgamg_options =
    (
       ## The Geometric-Algrbraic MultiGrid Method
       ##
-      ## NOTE: Only available with petsc-dev.
+      ## NOTE: Only available with petsc > 3.2.
       element preconditioner {
-         attribute name { "gamg" }
-      }
-   )
-
-pcml_options_top =
-   (
-      ## The ML MultiGrid Method
-      ##
-      ## NOTE: Only available if petsc is configured with ml!
-      element preconditioner {
-         attribute name { "ml" },
-         ## Set a near null-space for this preconditioner.
-         element near_null_space {
-            ## Describe the null spaces.  Names must be unique within this near null space setting.
-            ##
-            ## Fields not included in any parent fieldsplits will be excluded from this nullspace 
-            ## even if they are described below (a warning will be given).
-            ##
-            ## Nullspaces default to being constant over any fields described.  If no fields are specified
-            ## then the entire vector is assumed to contain a constant nullspace.  To describe variable
-            ## nullspaces python functions must be attached underneath the description of the field.
-            element null_space {
-              attribute name { xsd:string },
-              is_null_space
-            }+,
-            element monitors {
-              ## Prints PETSc information about this null space
-              element view_null_space {
-                empty
-              }?
-            }
-         }?
+         attribute name { "gamg" },
+         near_null_space?
       }
    )
 
@@ -1100,7 +1020,8 @@ pcml_options =
       ##
       ## NOTE: Only available if petsc is configured with ml!
       element preconditioner {
-         attribute name { "ml" }
+         attribute name { "ml" },
+         near_null_space?
       }
    )
 

@@ -840,22 +840,6 @@ void SpudSolverBucket::fill_pc_(const std::string &optionpath, PC &pc,
 
   perr = PCSetFromOptions(pc); CHKERRV(perr);                        // do this now so they can be overwritten
 
-  buffer.str(""); buffer << optionpath 
-                                << "/preconditioner/near_null_space";// set a (or multiple) near null space(s)
-  if (Spud::have_option(buffer.str()))
-  {
-    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 2
-    MatNullSpace SP;                                                 // create a set of nullspaces in a null space object
-    fill_nullspace_(buffer.str(), SP, parent_indices);
-
-    perr = MatSetNearNullSpace(*(*matrix_).mat(), SP); CHKERRV(perr);
-
-    perr = MatNullSpaceDestroy(&SP); CHKERRV(perr);                  // destroy the null space object, necessary?
-    #else
-    dolfin::error("Can only set near null spaces with petsc > 3.2.");
-    #endif
-  }
-
   if (preconditioner=="ksp")                                         // if the pc is itself a ksp
   {
     buffer.str(""); buffer << optionpath << 
@@ -924,6 +908,31 @@ void SpudSolverBucket::fill_pc_(const std::string &optionpath, PC &pc,
              parent_indices);
 
   }
+
+  buffer.str(""); buffer << optionpath 
+                                << "/preconditioner/near_null_space";// set a (or multiple) near null space(s)
+  if (Spud::have_option(buffer.str()))
+  {
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 2
+    Mat pmat;
+    perr = PCGetOperators(pc, PETSC_NULL, &pmat, PETSC_NULL);
+    CHKERRV(perr);
+
+    MatNullSpace SP;                                                 // create a set of nullspaces in a null space object
+    fill_nullspace_(buffer.str(), SP, parent_indices);
+
+    perr = MatSetNearNullSpace(pmat, SP); CHKERRV(perr);
+
+    perr = MatNullSpaceDestroy(&SP); CHKERRV(perr);                  // destroy the null space object, necessary?
+    #else
+    dolfin::error("Can only set near null spaces with petsc > 3.2.");
+    #endif
+  }
+
+  if (preconditioner=="gamg")
+  {
+    perr = PCSetUp(pc); CHKERRV(perr);                               // need to call this to prevent seg fault on kspview
+  }                                                                  // BUT it has to happen after the near null space is set
 
 }
 

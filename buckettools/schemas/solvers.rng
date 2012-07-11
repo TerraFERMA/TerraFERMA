@@ -557,46 +557,6 @@ If left unspecified, defaults to the whole boundary of the above region(s) (if s
     </oneOrMore>
     <ref name="is_monitor"/>
   </define>
-  <define name="pc_options_picard_top">
-    <choice>
-      <a:documentation>Preconditioner to be used in combination with the iterative method.</a:documentation>
-      <ref name="pcsor_options"/>
-      <ref name="pceisenstat_options"/>
-      <ref name="pcfieldsplit_options_picard"/>
-      <ref name="pcilu_options"/>
-      <ref name="pclu_options"/>
-      <ref name="pcprometheus_options"/>
-      <ref name="pchypre_options"/>
-      <ref name="pcgamg_options_top"/>
-      <ref name="pcml_options_top"/>
-      <ref name="pcjacobi_options"/>
-      <ref name="pcbjacobi_options"/>
-      <ref name="pcasm_options"/>
-      <ref name="pcksp_options_picard"/>
-      <ref name="pcnone_options"/>
-      <ref name="pcother_options"/>
-    </choice>
-  </define>
-  <define name="pc_options_snes_top">
-    <choice>
-      <a:documentation>Preconditioner to be used in combination with the iterative method.</a:documentation>
-      <ref name="pcsor_options"/>
-      <ref name="pceisenstat_options"/>
-      <ref name="pcfieldsplit_options_snes"/>
-      <ref name="pcilu_options"/>
-      <ref name="pclu_options"/>
-      <ref name="pcprometheus_options"/>
-      <ref name="pchypre_options"/>
-      <ref name="pcgamg_options_top"/>
-      <ref name="pcml_options_top"/>
-      <ref name="pcjacobi_options"/>
-      <ref name="pcbjacobi_options"/>
-      <ref name="pcasm_options"/>
-      <ref name="pcksp_options_snes"/>
-      <ref name="pcnone_options"/>
-      <ref name="pcother_options"/>
-    </choice>
-  </define>
   <define name="pc_options_picard">
     <choice>
       <a:documentation>Preconditioner to be used in combination with the iterative method.</a:documentation>
@@ -651,7 +611,7 @@ by the PETSc library. Many more methods are provided.</a:documentation>
       <ref name="ksprichardson_options_picard_top"/>
       <ref name="kspother_options_picard_top"/>
     </choice>
-    <ref name="pc_options_picard_top"/>
+    <ref name="pc_options_picard"/>
     <ref name="generic_solver_options"/>
   </define>
   <define name="linear_solver_options_snes_top">
@@ -666,7 +626,7 @@ by the PETSc library. Many more methods are provided.</a:documentation>
       <ref name="ksprichardson_options_snes_top"/>
       <ref name="kspother_options_snes_top"/>
     </choice>
-    <ref name="pc_options_snes_top"/>
+    <ref name="pc_options_snes"/>
     <ref name="generic_solver_options"/>
   </define>
   <define name="linear_solver_options_picard">
@@ -1117,20 +1077,12 @@ Useful for parallel direct solves (if installed on system).</a:documentation>
       </choice>
     </element>
   </define>
-  <define name="pcgamg_options_top">
-    <element name="preconditioner">
-      <a:documentation>The Geometric-Algrbraic MultiGrid Method
-
-NOTE: Only available with petsc-dev.</a:documentation>
-      <attribute name="name">
-        <value>gamg</value>
-      </attribute>
-      <optional>
-        <element name="near_null_space">
-          <a:documentation>Set a near null-space for this preconditioner.</a:documentation>
-          <oneOrMore>
-            <element name="null_space">
-              <a:documentation>Describe the null spaces.  Names must be unique within this near null space setting.
+  <define name="near_null_space">
+    <element name="near_null_space">
+      <a:documentation>Set a near null-space for this preconditioner.</a:documentation>
+      <oneOrMore>
+        <element name="null_space">
+          <a:documentation>Describe the null spaces.  Names must be unique within this near null space setting.
 
 Fields not included in any parent fieldsplits will be excluded from this nullspace 
 even if they are described below (a warning will be given).
@@ -1138,70 +1090,32 @@ even if they are described below (a warning will be given).
 Nullspaces default to being constant over any fields described.  If no fields are specified
 then the entire vector is assumed to contain a constant nullspace.  To describe variable
 nullspaces python functions must be attached underneath the description of the field.</a:documentation>
-              <attribute name="name">
-                <data type="string"/>
-              </attribute>
-              <ref name="is_null_space"/>
-            </element>
-          </oneOrMore>
-          <element name="monitors">
-            <optional>
-              <element name="view_null_space">
-                <a:documentation>Prints PETSc information about this null space</a:documentation>
-                <empty/>
-              </element>
-            </optional>
-          </element>
+          <attribute name="name">
+            <data type="string"/>
+          </attribute>
+          <ref name="is_null_space"/>
         </element>
-      </optional>
+      </oneOrMore>
+      <element name="monitors">
+        <optional>
+          <element name="view_null_space">
+            <a:documentation>Prints PETSc information about this null space</a:documentation>
+            <empty/>
+          </element>
+        </optional>
+      </element>
     </element>
   </define>
   <define name="pcgamg_options">
     <element name="preconditioner">
       <a:documentation>The Geometric-Algrbraic MultiGrid Method
 
-NOTE: Only available with petsc-dev.</a:documentation>
+NOTE: Only available with petsc &gt; 3.2.</a:documentation>
       <attribute name="name">
         <value>gamg</value>
       </attribute>
-    </element>
-  </define>
-  <define name="pcml_options_top">
-    <element name="preconditioner">
-      <a:documentation>The ML MultiGrid Method
-
-NOTE: Only available if petsc is configured with ml!</a:documentation>
-      <attribute name="name">
-        <value>ml</value>
-      </attribute>
       <optional>
-        <element name="near_null_space">
-          <a:documentation>Set a near null-space for this preconditioner.</a:documentation>
-          <oneOrMore>
-            <element name="null_space">
-              <a:documentation>Describe the null spaces.  Names must be unique within this near null space setting.
-
-Fields not included in any parent fieldsplits will be excluded from this nullspace 
-even if they are described below (a warning will be given).
-
-Nullspaces default to being constant over any fields described.  If no fields are specified
-then the entire vector is assumed to contain a constant nullspace.  To describe variable
-nullspaces python functions must be attached underneath the description of the field.</a:documentation>
-              <attribute name="name">
-                <data type="string"/>
-              </attribute>
-              <ref name="is_null_space"/>
-            </element>
-          </oneOrMore>
-          <element name="monitors">
-            <optional>
-              <element name="view_null_space">
-                <a:documentation>Prints PETSc information about this null space</a:documentation>
-                <empty/>
-              </element>
-            </optional>
-          </element>
-        </element>
+        <ref name="near_null_space"/>
       </optional>
     </element>
   </define>
@@ -1213,6 +1127,9 @@ NOTE: Only available if petsc is configured with ml!</a:documentation>
       <attribute name="name">
         <value>ml</value>
       </attribute>
+      <optional>
+        <ref name="near_null_space"/>
+      </optional>
     </element>
   </define>
   <define name="pcjacobi_options">
