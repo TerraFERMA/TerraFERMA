@@ -70,6 +70,7 @@ add_subdirectory(subductionbenchmark2a)
 add_subdirectory(subductionbenchmark2a_split)
 add_subdirectory(subductionbenchmark2b)
 add_subdirectory(dg_advection_1d_vi)
+add_subdirectory(viscosity_contrast)
 
 add_custom_target(build_test)
 add_dependencies(build_test courant_1d alt_courant_1d adaptive_dt_1d alt_adaptive_dt_1d
@@ -78,7 +79,7 @@ rbconvection_steadystate_split rbconvection_steadystate_split_schur rbconvection
 rbconvection_steadystate_schur rbconvection1a rbconvection1a_refpt region_ids 
 subductionbenchmark1a subductionbenchmark1b subductionbenchmark1c subductionbenchmark1c_split
 subductionbenchmark2a subductionbenchmark2a_split subductionbenchmark2b neumann_poisson 
-dg_advection_1d_vi)
+dg_advection_1d_vi viscosity_contrast)
 
 add_custom_target(run)
 add_dependencies(run poisson_run)
@@ -88,6 +89,9 @@ add_dependencies(run3p1 run)
 
 add_custom_target(run3p2)
 add_dependencies(run3p2 run)
+
+add_custom_target(run3p3)
+add_dependencies(run3p3 run)
 
 add_custom_target(run_test3p1)
 add_dependencies(run_test3p1 diamond_validation_test courant_1d_test alt_courant_1d adaptive_dt_1d_test alt_adaptive_dt_1d_test
@@ -100,6 +104,10 @@ subductionbenchmark2a_test subductionbenchmark2a_split_test subductionbenchmark2
 add_custom_target(run_test3p2)
 add_dependencies(run_test3p2 run_test3p1 dg_advection_1d_vi_test rbconvection_steadystate_split_schur_test
 rbconvection_steadystate_schur)
+
+add_custom_target(run_test3p3)
+add_dependencies(run_test3p2 run_test3p1 rbconvection_steadystate_split_schur_test
+rbconvection_steadystate_schur_test viscosity_contrast_test)
 
 add_custom_target(run_mediumtest)
 add_dependencies(run_mediumtest rbconvection2a_test)
