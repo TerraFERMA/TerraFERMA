@@ -83,6 +83,12 @@ dg_advection_1d_vi)
 add_custom_target(run)
 add_dependencies(run poisson_run)
 
+add_custom_target(run3p1)
+add_dependencies(run3p1 poisson_run)
+
+add_custom_target(run3p2)
+add_dependencies(run3p2 poisson_run)
+
 add_custom_target(run_test3p1)
 add_dependencies(run_test3p1 diamond_validation_test courant_1d_test alt_courant_1d adaptive_dt_1d_test alt_adaptive_dt_1d_test
 projection_mixedelement_test projection_timedependent_test projection_timedependent_checkpoint_test projection_cpp_test
