@@ -106,7 +106,7 @@ add_dependencies(run_test3p2 run_test3p1 dg_advection_1d_vi_test rbconvection_st
 rbconvection_steadystate_schur)
 
 add_custom_target(run_test3p3)
-add_dependencies(run_test3p2 run_test3p1 rbconvection_steadystate_split_schur_test
+add_dependencies(run_test3p2 run_test3p1 dg_advection_1d_vi_test rbconvection_steadystate_split_schur_test
 rbconvection_steadystate_schur_test viscosity_contrast_test)
 
 add_custom_target(run_mediumtest)
