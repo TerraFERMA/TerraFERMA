@@ -105,7 +105,7 @@ const double FunctionBucket::max(const double_ptr time, const int *index0, const
   {
     Mesh_ptr mesh = (*system()).mesh();
     const int nvert = (*mesh).num_vertices();
-    dolfin::Array< double > values(nvert*(*function).value_size());
+    std::vector< double > values;
     (*function).compute_vertex_values(values, *mesh);
 
     if (index0 && index1)
@@ -114,20 +114,20 @@ const double FunctionBucket::max(const double_ptr time, const int *index0, const
       assert(*index0 < (*function).value_dimension(0));
       assert(*index1 < (*function).value_dimension(1));
 
-      maxvalue = *std::max_element(&values.data()[(2*(*index1)+(*index0))*nvert], 
-                  &values.data()[(2*(*index1)+(*index0)+1)*nvert]);  // maximum for requested component
+      maxvalue = *std::max_element(&values[(2*(*index1)+(*index0))*nvert], 
+                  &values[(2*(*index1)+(*index0)+1)*nvert]);  // maximum for requested component
     }
     else if (index0)
     {
       assert((*function).value_rank()==1);
       assert(*index0 < (*function).value_size());
 
-      maxvalue = *std::max_element(&values.data()[(*index0)*nvert], 
-                  &values.data()[((*index0)+1)*nvert]);              // maximum for requested component
+      maxvalue = *std::max_element(&values[(*index0)*nvert], 
+                  &values[((*index0)+1)*nvert]);              // maximum for requested component
     }
     else
     {
-      maxvalue = values.max();
+      maxvalue = *std::max_element(&values[0], &values[values.size()]);
     }
   }
 
@@ -175,7 +175,7 @@ const double FunctionBucket::min(const double_ptr time, const int *index0, const
   {
     Mesh_ptr mesh = (*system()).mesh();
     const int nvert = (*mesh).num_vertices();
-    dolfin::Array< double > values(nvert*(*function).value_size());
+    std::vector< double > values;
     (*function).compute_vertex_values(values, *mesh);
 
     if (index0 && index1)
@@ -184,20 +184,20 @@ const double FunctionBucket::min(const double_ptr time, const int *index0, const
       assert(*index0 < (*function).value_dimension(0));
       assert(*index1 < (*function).value_dimension(1));
 
-      minvalue = *std::min_element(&values.data()[(2*(*index1)+(*index0))*nvert], 
-                  &values.data()[(2*(*index1)+(*index0)+1)*nvert]);  // minimum for requested component
+      minvalue = *std::min_element(&values[(2*(*index1)+(*index0))*nvert], 
+                  &values[(2*(*index1)+(*index0)+1)*nvert]);  // minimum for requested component
     }
     else if (index0)
     {
       assert((*function).value_rank()==1);
       assert(*index0 < (*function).value_size());
 
-      minvalue = *std::min_element(&values.data()[(*index0)*nvert], 
-                  &values.data()[((*index0)+1)*nvert]);              // minimum for requested component
+      minvalue = *std::min_element(&values[(*index0)*nvert], 
+                  &values[((*index0)+1)*nvert]);              // minimum for requested component
     }
     else
     {
-      minvalue = values.min();
+      minvalue = *std::min_element(&values[0], &values[values.size()]);
     }
   }
 
