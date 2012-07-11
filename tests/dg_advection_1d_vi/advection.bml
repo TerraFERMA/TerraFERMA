@@ -196,6 +196,7 @@ r = r_m + r_a + r_fS + r_fs1 + r_fs2</string_value>
         </max_iterations>
         <monitors>
           <view_snes/>
+          <residual/>
         </monitors>
         <linear_solver>
           <iterative_method name="preonly"/>
