@@ -1470,6 +1470,11 @@ void SpudSolverBucket::fill_constraints_()
 
   perr = SNESVISetVariableBounds(snes_, *(*lb).vec(), *(*ub).vec());
   CHKERRV(perr);
+                                                                     // UGLY HACK: our constant bounds will be overwritten by the dm
+                                                                     // in SNESSetUp so let's stop it from doing that by attaching a
+                                                                     // dummy variable bounds computation - does nothing!
+  perr = SNESVISetComputeVariableBounds(snes_, SNESVIDummyComputeVariableBounds);
+  CHKERRV(perr);
   #else
   dolfin::error("SNES VI only available with petsc > 3.1");
   #endif
