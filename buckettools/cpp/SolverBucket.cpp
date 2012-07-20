@@ -261,8 +261,6 @@ void SolverBucket::solve()
         }
       }
 
-      perr = KSPSetUp(ksp_); CHKERRV(perr);                          // set up the ksp
-
       *work_ = (*(*(*system_).iteratedfunction()).vector());         // set the work vector to the iterated function
       perr = KSPSolve(ksp_, *(*rhs_).vec(), *(*work_).vec());        // perform a linear solve
       CHKERRV(perr);

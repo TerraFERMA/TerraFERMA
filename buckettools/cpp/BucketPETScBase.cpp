@@ -362,4 +362,10 @@ PetscErrorCode buckettools::KSPNullSpaceMonitor(KSP ksp, int it,
 }
 
 
+PetscErrorCode buckettools::SNESVIDummyComputeVariableBounds(SNES snes, Vec xl, Vec xu)
+{
+                                                                     // do nothing
+  PetscFunctionReturn(0);
+}
+
 

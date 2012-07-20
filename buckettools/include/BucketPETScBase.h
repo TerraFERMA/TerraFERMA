@@ -37,6 +37,8 @@ namespace buckettools
   PetscErrorCode KSPNullSpaceMonitor(KSP ksp, int it,                // petsc ksp callback function to test a
                                      PetscReal rnorm, void* mctx);   // null space
 
+  PetscErrorCode SNESVIDummyComputeVariableBounds(SNES snes, Vec xl, Vec xu);
+
 }
 
 #endif
