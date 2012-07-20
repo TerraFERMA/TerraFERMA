@@ -581,37 +581,44 @@ void SpudSolverBucket::fill_solverforms_(const std::string &optionpath,
 void SpudSolverBucket::initialize_tensors_()
 {
   std::stringstream buffer;                                          // optionpath buffer
+  const std::vector<std::pair<std::pair<uint, uint>, std::pair<uint, uint> > > periodic_master_slave_dofs;                                           // dummy for now
    
   work_.reset( new dolfin::PETScVector(*boost::dynamic_pointer_cast<dolfin::PETScVector>((*(*system_).function()).vector())) ); 
   (*work_).zero();
 
   matrix_.reset(new dolfin::PETScMatrix);                            // allocate the matrix
   dolfin::AssemblerTools::init_global_tensor(*matrix_, *bilinear_, 
+                                               periodic_master_slave_dofs,
                                                true, false);
 
   matrixbc_.reset(new dolfin::PETScMatrix);                          // allocate the matrix for the lifted bcs
   dolfin::AssemblerTools::init_global_tensor(*matrixbc_, *bilinear_, 
+                                               periodic_master_slave_dofs,
                                                true, false);
 
   if(bilinearpc_)                                                    // do we have a pc form?
   {
     matrixpc_.reset(new dolfin::PETScMatrix);                        // allocate the matrix
     dolfin::AssemblerTools::init_global_tensor(*matrixpc_, *bilinearpc_, 
+                                               periodic_master_slave_dofs, 
                                                true, false);
   }
      
   rhs_.reset(new dolfin::PETScVector);                               // allocate the rhs
   dolfin::AssemblerTools::init_global_tensor(*rhs_, *linear_, 
+                                             periodic_master_slave_dofs, 
                                              true, false);
 
   rhsbc_.reset(new dolfin::PETScVector);                             // allocate the rhs
   dolfin::AssemblerTools::init_global_tensor(*rhsbc_, *linear_, 
+                                             periodic_master_slave_dofs, 
                                              true, false);
 
   if(residual_)                                                      // do we have a residual_ form?
   {                                                                  // yes...
     res_.reset(new dolfin::PETScVector);                             // allocate the residual
     dolfin::AssemblerTools::init_global_tensor(*res_, *residual_, 
+                                               periodic_master_slave_dofs, 
                                                true, false);
   }
   else
@@ -627,6 +634,7 @@ void SpudSolverBucket::initialize_tensors_()
     solvermatrix.reset(new dolfin::PETScMatrix);
     dolfin::AssemblerTools::init_global_tensor(*solvermatrix, 
                                                *(*f_it).second,
+                                               periodic_master_slave_dofs, 
                                                true, false);
     solvermatrices_[(*f_it).first] = solvermatrix;
   }
