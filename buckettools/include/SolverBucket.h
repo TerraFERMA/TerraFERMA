@@ -109,6 +109,12 @@ namespace buckettools
     const bool monitor_norms() const                                 // return true if norms should be monitored in nonlinear iterations
     { return monitornorms_; }
 
+    PETScMatrix_ptr matrixbc()
+    { return matrixbc_; }
+
+    PETScVector_ptr rhsbc()
+    { return rhsbc_; }
+
     //***************************************************************|***********************************************************//
     // Form data access
     //***************************************************************|***********************************************************//
@@ -186,7 +192,7 @@ namespace buckettools
 
     std::map< std::string, Form_ptr > solverforms_;                  // (boost shared) pointers to forms under linear solver 
 
-    PETScMatrix_ptr matrix_, matrixpc_;                              // dolfin petsc matrix types
+    PETScMatrix_ptr matrix_, matrixpc_, matrixbc_;                   // dolfin petsc matrix types
 
     std::map< std::string, PETScMatrix_ptr > solvermatrices_;        // dolfin petsc matrices for solver matrices
 
@@ -194,7 +200,7 @@ namespace buckettools
 
     std::map< std::string, Mat_ptr > solversubmatrices_;             // (boost shared) pointers to the sub petsc matrices
 
-    PETScVector_ptr rhs_, res_, work_;                               // dolfin petsc vector types
+    PETScVector_ptr rhs_, rhsbc_, res_, work_;                       // dolfin petsc vector types
 
     double rtol_, atol_, stol_;                                      // nonlinear solver tolerances
 
