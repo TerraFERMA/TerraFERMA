@@ -7,7 +7,6 @@
 #include <dolfin.h>
 #include <string>
 #include <signal.h>
-#include "BucketDolfinBase.h"
 
 using namespace buckettools;
 
@@ -349,23 +348,14 @@ void SolverBucket::assemble_bilinearforms()
   dolfin::symmetric_assemble(*matrix_, *matrixbc_, 
                              *bilinear_, (*system_).dirichletbcs(), 
                              NULL, NULL, NULL, 
-                             false, false, false);                   // assemble bilinear form
-  Assembler::add_zeros_diagonal(*matrix_);                           // add zeros to the diagonal to ensure they remain in sparsity
-  (*matrix_).apply("add");
-  Assembler::add_zeros_diagonal(*matrixbc_);                         // add zeros to the diagonal to ensure they remain in sparsity
-  (*matrixbc_).apply("add");
+                             false);                                 // assemble bilinear form
 
   if(bilinearpc_)                                                    // do we have a pc form?
   {
     dolfin::symmetric_assemble(*matrixpc_, *matrixbc_, 
                                *bilinear_, (*system_).dirichletbcs(), 
                                NULL, NULL, NULL, 
-                               false, false, false);                   // assemble bilinear form
-    Assembler::add_zeros_diagonal(*matrixpc_);                       // add zeros to the diagonal to ensure they remain in sparsity
-    (*matrixpc_).apply("add");
-    Assembler::add_zeros_diagonal(*matrixbc_);                         // add zeros to the diagonal to ensure they remain in sparsity
-    (*matrixbc_).apply("add");
-
+                               false);                               // assemble bilinear form
   }
 
   for (Form_const_it f_it = solverforms_begin(); 
@@ -375,11 +365,7 @@ void SolverBucket::assemble_bilinearforms()
     dolfin::symmetric_assemble(*solvermatrix, *matrixbc_, 
                                *(*f_it).second, (*system_).dirichletbcs(), 
                                NULL, NULL, NULL, 
-                               false, false, false);                   // assemble bilinear form
-    Assembler::add_zeros_diagonal(*solvermatrix);                    // add zeros to the diagonal to ensure they remain in sparsity
-    (*solvermatrix).apply("add");
-    Assembler::add_zeros_diagonal(*matrixbc_);                         // add zeros to the diagonal to ensure they remain in sparsity
-    (*matrixbc_).apply("add");
+                               false);                               // assemble bilinear form
   }
 
 }
