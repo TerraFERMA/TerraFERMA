@@ -1277,13 +1277,19 @@ boost::unordered_set<uint> SpudSolverBucket::field_dof_set_(const std::string &o
 
   boost::shared_ptr<const dolfin::GenericDofMap> dofmap = (*functionspace).dofmap();
 
-  dof_set = cell_dof_set_(dofmap, region_ids);                       // get dofs over cells
-
   if (boundary_ids)                                                  // do we have boundary id restrictions
   {                                                                  // yes, then get the dofs over these boundaries
+    if (region_ids)
+    {
+      dof_set = cell_dof_set_(dofmap, region_ids);                   // if we have boundary_ids then we're only interested
+    }                                                                // in cell dofs if we have region_ids specified too
     boost::unordered_set<uint> facet_dof_set;
     facet_dof_set = facet_dof_set_(dofmap, boundary_ids);
     dof_set.insert(facet_dof_set.begin(), facet_dof_set.end());
+  }
+  else                                                               // no boundary_ids specified so let's hope we have some
+  {                                                                  // cells to fill the goody bag with
+    dof_set = cell_dof_set_(dofmap, region_ids);
   }
 
   return dof_set;
@@ -1813,13 +1819,19 @@ boost::unordered_map<uint, double> SpudSolverBucket::field_value_map_(const std:
 
   boost::shared_ptr<const dolfin::GenericDofMap> dofmap = (*functionspace).dofmap();
 
-  value_map = cell_value_map_(dofmap, region_ids, value_exp, value_const, exp_index);
-
   if (boundary_ids)                                                  // do we have boundary ids specified?
   {                                                                  // yes...
+    if (region_ids)                                                  // if we have boundary_ids then we're only interested
+    {                                                                // in cell dofs if we have region_ids specified too
+      value_map = cell_value_map_(dofmap, region_ids, value_exp, value_const, exp_index);
+    }
     boost::unordered_map<uint, double> facet_value_map;
     facet_value_map = facet_value_map_(dofmap, boundary_ids, value_exp, value_const, exp_index);
     value_map.insert(facet_value_map.begin(), facet_value_map.end());
+  }
+  else
+  {
+    value_map = cell_value_map_(dofmap, region_ids, value_exp, value_const, exp_index);
   }
 
   return value_map;
