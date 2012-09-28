@@ -49,37 +49,6 @@ Fields may only be prognostic functions.</a:documentation>
         <element name="type">
           <a:documentation>The type of coefficient.
 
-Functions require a functionspace, which will be defined on the same mesh as the system in which this coefficient falls.</a:documentation>
-          <attribute name="name">
-            <value>Function</value>
-          </attribute>
-          <choice>
-            <element name="rank">
-              <a:documentation>The rank of the coefficient (scalar, rank 0).</a:documentation>
-              <attribute name="name">
-                <value>Scalar</value>
-              </attribute>
-              <ref name="scalar_coefficient_function_expression_options"/>
-            </element>
-            <element name="rank">
-              <a:documentation>The rank of the coefficient (vector, rank 1).</a:documentation>
-              <attribute name="name">
-                <value>Vector</value>
-              </attribute>
-              <ref name="vector_coefficient_function_expression_options"/>
-            </element>
-            <element name="rank">
-              <a:documentation>The rank of the coefficient (tensor, rank 2).</a:documentation>
-              <attribute name="name">
-                <value>Tensor</value>
-              </attribute>
-              <ref name="tensor_coefficient_function_expression_options"/>
-            </element>
-          </choice>
-        </element>
-        <element name="type">
-          <a:documentation>The type of coefficient.
-
 Expressions are not defined on functionspaces but require an element to be described in ufl.</a:documentation>
           <attribute name="name">
             <value>Expression</value>
@@ -136,6 +105,37 @@ Constants are spatially constant expressions.</a:documentation>
                 <value>Tensor</value>
               </attribute>
               <ref name="tensor_coefficient_constant_options"/>
+            </element>
+          </choice>
+        </element>
+        <element name="type">
+          <a:documentation>The type of coefficient.
+
+Functions require a functionspace, which will be defined on the same mesh as the system in which this coefficient falls.</a:documentation>
+          <attribute name="name">
+            <value>Function</value>
+          </attribute>
+          <choice>
+            <element name="rank">
+              <a:documentation>The rank of the coefficient (scalar, rank 0).</a:documentation>
+              <attribute name="name">
+                <value>Scalar</value>
+              </attribute>
+              <ref name="scalar_coefficient_function_expression_options"/>
+            </element>
+            <element name="rank">
+              <a:documentation>The rank of the coefficient (vector, rank 1).</a:documentation>
+              <attribute name="name">
+                <value>Vector</value>
+              </attribute>
+              <ref name="vector_coefficient_function_expression_options"/>
+            </element>
+            <element name="rank">
+              <a:documentation>The rank of the coefficient (tensor, rank 2).</a:documentation>
+              <attribute name="name">
+                <value>Tensor</value>
+              </attribute>
+              <ref name="tensor_coefficient_function_expression_options"/>
             </element>
           </choice>
         </element>
