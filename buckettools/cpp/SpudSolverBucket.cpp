@@ -2,7 +2,6 @@
 #include "BoostTypes.h"
 #include "SpudSolverBucket.h"
 #include <dolfin.h>
-#include <dolfin/fem/AssemblerTools.h>
 #include <string>
 #include <spud>
 #include "SystemSolversWrapper.h"
