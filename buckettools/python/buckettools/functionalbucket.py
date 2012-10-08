@@ -163,7 +163,7 @@ class FunctionalBucket:
     else:
       cpp.append("        else if (functionalname ==  \""+self.name+"\")\n")
     cpp.append("        {\n")
-    cpp.append("          functional.reset(new "+self.namespace()+"::Form_0(mesh));\n")
+    cpp.append("          functional.reset(new "+self.namespace()+"::Form_"+self.symbol+"(mesh));\n")
     cpp.append("        }\n")
     return cpp
 
