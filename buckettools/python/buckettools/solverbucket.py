@@ -18,6 +18,7 @@ class SolverBucket:
     self.form_ranks = None
     self.system = None
     self.quadrature_degree = None
+    self.quadrature_rule = None
 
   def ufl(self):
     """Write the system of forms to an array."""
@@ -79,6 +80,7 @@ class SolverBucket:
       rebuild = checksum != hashlib.md5(open(filename+".temp").read()).hexdigest()
 
       headertext = headerfile.read()
+      
       qdi  = headertext.find("quadrature_degree")
       qdin = headertext.find("\n", qdi, -1)
       if (qdi != -1) and (qdin != -1):
@@ -87,6 +89,16 @@ class SolverBucket:
         rebuild = rebuild or qd_new != qd_old
       else: # if we don't know what the old quadrature degree was we always want to (re)build
         rebuild = True
+
+      qri  = headertext.find("quadrature_rule")
+      qrin = headertext.find("\n", qri, -1)
+      if (qri != -1) and (qrin != -1):
+        qr_old = headertext[qri:qrin].split(" ")[-1]
+        qr_new = "'"+self.quadrature_rule+"'" 
+        rebuild = rebuild or qr_new != qr_old
+      else: # if we don't know what the old quadrature rule was we always want to (re)build
+        rebuild = True
+      
     else:   # if we don't have a header file we always want to (re)build
       rebuild = True
 
@@ -96,6 +108,7 @@ class SolverBucket:
       command = ["ffc", "-l", "dolfin", "-O", "-r", "quadrature"]
       if self.quadrature_degree:
         command += ["-fquadrature_degree="+`self.quadrature_degree`]
+      command += ["-q", self.quadrature_rule]
       command += [filename]
       try:
         subprocess.check_call(command)

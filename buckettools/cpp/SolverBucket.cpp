@@ -77,6 +77,11 @@ void SolverBucket::solve()
     }
     *work_ = (*(*(*system_).function()).vector());                   // set the work vector to the function vector
     perr = SNESSolve(snes_, PETSC_NULL, *(*work_).vec());            // call petsc to perform a snes solve
+    if (perr>0)
+    {
+      dolfin::log(dolfin::ERROR, "Error in SNESSolve, sending sig int.");
+      (*SignalHandler::instance()).dispatcher(SIGINT);
+    }
     CHKERRV(perr);
     snes_check_convergence_();
     (*(*(*system_).function()).vector()) = *work_;                   // update the function

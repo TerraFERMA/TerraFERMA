@@ -9,10 +9,12 @@ generic_element_family =
      ## - DG = Discontinuous Lagrange (discontinuous Galerkin)
      ##
      ## - R  = Real (global constant)
+     ##
+     ## - Quadrature
      element family {
         # a hard coded string_value
         element string_value {
-          ( "CG" | "DG" | "R" )
+          ( "CG" | "DG" | "R" | "Quadrature" )
         }
      }
   )
@@ -56,9 +58,35 @@ r_element_family =
      }
   )
 
+q_element_family = 
+  (
+     ## Element family
+     ##
+     ## - Quadrature
+     element family {
+        # a hard coded string_value
+        element string_value {
+          ( "Quadrature" )
+        }
+     }
+  )
+
 generic_element_degree =
   (
-     ## Element degree
+     ## Element (or quadrature) degree
+     element degree {
+       integer
+     }
+  )
+
+quadrature_element_degree =
+  (
+     ## Quadrature degree.
+     ##
+     ## Note that this restricts the quadrature degree of any form in which it appears and must not conflict
+     ## with the degree set in the form.
+     ##
+     ## Importantly, this is the degree of the resulting form not the function itself!
      element degree {
        integer
      }
@@ -139,6 +167,12 @@ p0r_element =
      p0_element_degree
   )
 
+quadrature_element =
+  (
+     q_element_family,
+     quadrature_element_degree
+  )
+
 vector_element_options =
   (
     ## The size (length) of the vector.
@@ -212,6 +246,11 @@ element_options_scalar_not_lagrange =
        element element {
          attribute name { "P0R" },
          p0r_element
+       }|
+       ## Options describing a piecewise constant quadrature element.
+       element element {
+         attribute name { "Quadrature" },
+         quadrature_element
        }
      )
   )
@@ -260,6 +299,12 @@ element_options_vector =
          attribute name { "P0R" },
          p0r_element,
          vector_element_options
+       }|
+       ## Options describing a piecewise constant quadrature element for a vector.
+       element element {
+         attribute name { "Quadrature" },
+         quadrature_element,
+         vector_element_options
        }
      )
   )
@@ -307,6 +352,12 @@ element_options_tensor =
        element element {
          attribute name { "P0R" },
          p0r_element,
+         tensor_element_options
+       }|
+       ## Options describing a piecewise constant quadrature element for a tensor.
+       element element {
+         attribute name { "Quadrature" },
+         quadrature_element,
          tensor_element_options
        }
      )

@@ -45,29 +45,6 @@ coefficient_options =
       (
         ## The type of coefficient.
         ##
-        ## Functions require a functionspace, which will be defined on the same mesh as the system in which this coefficient falls.
-        element type {
-          attribute name { "Function" },
-          (
-            ## The rank of the coefficient (scalar, rank 0).
-            element rank {
-              attribute name { "Scalar" },
-              scalar_coefficient_function_expression_options
-            }|
-            ## The rank of the coefficient (vector, rank 1).
-            element rank {
-              attribute name { "Vector" },
-              vector_coefficient_function_expression_options
-            }|
-            ## The rank of the coefficient (tensor, rank 2).
-            element rank {
-              attribute name { "Tensor" },
-              tensor_coefficient_function_expression_options
-            }
-          )
-        }|
-        ## The type of coefficient.
-        ##
         ## Expressions are not defined on functionspaces but require an element to be described in ufl.
         element type {
           attribute name { "Expression" },
@@ -109,6 +86,29 @@ coefficient_options =
             element rank {
               attribute name { "Tensor" },
               tensor_coefficient_constant_options
+            }
+          )
+        }|
+        ## The type of coefficient.
+        ##
+        ## Functions require a functionspace, which will be defined on the same mesh as the system in which this coefficient falls.
+        element type {
+          attribute name { "Function" },
+          (
+            ## The rank of the coefficient (scalar, rank 0).
+            element rank {
+              attribute name { "Scalar" },
+              scalar_coefficient_function_expression_options
+            }|
+            ## The rank of the coefficient (vector, rank 1).
+            element rank {
+              attribute name { "Vector" },
+              vector_coefficient_function_expression_options
+            }|
+            ## The rank of the coefficient (tensor, rank 2).
+            element rank {
+              attribute name { "Tensor" },
+              tensor_coefficient_function_expression_options
             }
           )
         }
@@ -272,6 +272,7 @@ functional_options =
       python_code,
       functional_ufl_symbol,
       quadrature_degree,
+      quadrature_rule,
       ## Include this functional in the steady state check and output file.
       element include_in_steady_state {
         empty
@@ -610,7 +611,9 @@ prescribed_scalar_functional =
       element functional {
         attribute rank { "0" },
         python_code,
-        functional_ufl_symbol
+        functional_ufl_symbol,
+        quadrature_degree,
+        quadrature_rule
       }
     )
   )
