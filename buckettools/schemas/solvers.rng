@@ -291,7 +291,7 @@ Defaults to 1.e-12 if unset.</a:documentation>
       <element name="snes_type">
         <a:documentation>The SNES type. Variational Inequality.
 
-NOTE: only available with Petsc &gt;= 3.2.</a:documentation>
+NOTE: only available with Petsc &gt;= 3.2 and with petsc &gt; 3.2 this maps to virs.</a:documentation>
         <attribute name="name">
           <value>vi</value>
         </attribute>
@@ -569,6 +569,8 @@ If left unspecified, defaults to the whole boundary of the above region(s) (if s
       <ref name="pclu_options"/>
       <ref name="pcprometheus_options"/>
       <ref name="pchypre_options"/>
+      <ref name="pcgamg_options"/>
+      <ref name="pcml_options"/>
       <ref name="pcjacobi_options"/>
       <ref name="pcbjacobi_options"/>
       <ref name="pcasm_options"/>
@@ -588,6 +590,8 @@ If left unspecified, defaults to the whole boundary of the above region(s) (if s
       <ref name="pclu_options"/>
       <ref name="pcprometheus_options"/>
       <ref name="pchypre_options"/>
+      <ref name="pcgamg_options"/>
+      <ref name="pcml_options"/>
       <ref name="pcjacobi_options"/>
       <ref name="pcbjacobi_options"/>
       <ref name="pcasm_options"/>
@@ -1075,6 +1079,61 @@ Useful for parallel direct solves (if installed on system).</a:documentation>
       </choice>
     </element>
   </define>
+  <define name="near_null_space">
+    <element name="near_null_space">
+      <a:documentation>Set a near null-space for this preconditioner.</a:documentation>
+      <oneOrMore>
+        <element name="null_space">
+          <a:documentation>Describe the null spaces.  Names must be unique within this near null space setting.
+
+Fields not included in any parent fieldsplits will be excluded from this nullspace 
+even if they are described below (a warning will be given).
+
+Nullspaces default to being constant over any fields described.  If no fields are specified
+then the entire vector is assumed to contain a constant nullspace.  To describe variable
+nullspaces python functions must be attached underneath the description of the field.</a:documentation>
+          <attribute name="name">
+            <data type="string"/>
+          </attribute>
+          <ref name="is_null_space"/>
+        </element>
+      </oneOrMore>
+      <element name="monitors">
+        <optional>
+          <element name="view_null_space">
+            <a:documentation>Prints PETSc information about this null space</a:documentation>
+            <empty/>
+          </element>
+        </optional>
+      </element>
+    </element>
+  </define>
+  <define name="pcgamg_options">
+    <element name="preconditioner">
+      <a:documentation>The Geometric-Algrbraic MultiGrid Method
+
+NOTE: Only available with petsc &gt; 3.2.</a:documentation>
+      <attribute name="name">
+        <value>gamg</value>
+      </attribute>
+      <optional>
+        <ref name="near_null_space"/>
+      </optional>
+    </element>
+  </define>
+  <define name="pcml_options">
+    <element name="preconditioner">
+      <a:documentation>The ML MultiGrid Method
+
+NOTE: Only available if petsc is configured with ml!</a:documentation>
+      <attribute name="name">
+        <value>ml</value>
+      </attribute>
+      <optional>
+        <ref name="near_null_space"/>
+      </optional>
+    </element>
+  </define>
   <define name="pcjacobi_options">
     <element name="preconditioner">
       <a:documentation>Jacobi</a:documentation>
@@ -1135,6 +1194,8 @@ than with bjacobi.</a:documentation>
       <ref name="pclu_options"/>
       <ref name="pcprometheus_options"/>
       <ref name="pchypre_options"/>
+      <ref name="pcgamg_options"/>
+      <ref name="pcml_options"/>
       <ref name="pcother_options"/>
     </choice>
   </define>
@@ -1227,6 +1288,76 @@ while the second must describe the lower right diagonal block (A11).</a:document
         <attribute name="name">
           <value>schur</value>
         </attribute>
+        <choice>
+          <element name="factorization_type">
+            <a:documentation>The full factorization is:
+
+(A00   A01)  = (1           0) (A00   0) (1  A00inv*A01)
+
+(A10   A11)    (A10*A00inv  1) (0     S) (0         1  )
+
+where S = A11 - A10*A00inv*A01. In practice, the full factorization is applied via block triangular solves 
+with the grouping L*(D*U).
+
+Upper uses D*U, lower uses L*D, and diag is the diagonal part with the sign of S flipped (because 
+this makes the preconditioner positive definite for many formulations, thus allowing the use of KSPMINRES).</a:documentation>
+            <attribute name="name">
+              <value>full</value>
+            </attribute>
+            <empty/>
+          </element>
+          <element name="factorization_type">
+            <a:documentation>The full factorization is:
+
+(A00   A01)  = (1           0) (A00   0) (1  A00inv*A01)
+
+(A10   A11)    (A10*A00inv  1) (0     S) (0         1  )
+
+where S = A11 - A10*A00inv*A01. In practice, the full factorization is applied via block triangular solves 
+with the grouping L*(D*U).
+
+Upper uses D*U, lower uses L*D, and diag is the diagonal part with the sign of S flipped (because 
+this makes the preconditioner positive definite for many formulations, thus allowing the use of KSPMINRES).</a:documentation>
+            <attribute name="name">
+              <value>upper</value>
+            </attribute>
+            <empty/>
+          </element>
+          <element name="factorization_type">
+            <a:documentation>The full factorization is:
+
+(A00   A01)  = (1           0) (A00   0) (1  A00inv*A01)
+
+(A10   A11)    (A10*A00inv  1) (0     S) (0         1  )
+
+where S = A11 - A10*A00inv*A01. In practice, the full factorization is applied via block triangular solves 
+with the grouping L*(D*U).
+
+Upper uses D*U, lower uses L*D, and diag is the diagonal part with the sign of S flipped (because 
+this makes the preconditioner positive definite for many formulations, thus allowing the use of KSPMINRES).</a:documentation>
+            <attribute name="name">
+              <value>lower</value>
+            </attribute>
+            <empty/>
+          </element>
+          <element name="factorization_type">
+            <a:documentation>The full factorization is:
+
+(A00   A01)  = (1           0) (A00   0) (1  A00inv*A01)
+
+(A10   A11)    (A10*A00inv  1) (0     S) (0         1  )
+
+where S = A11 - A10*A00inv*A01. In practice, the full factorization is applied via block triangular solves 
+with the grouping L*(D*U).
+
+Upper uses D*U, lower uses L*D, and diag is the diagonal part with the sign of S flipped (because 
+this makes the preconditioner positive definite for many formulations, thus allowing the use of KSPMINRES).</a:documentation>
+            <attribute name="name">
+              <value>diag</value>
+            </attribute>
+            <empty/>
+          </element>
+        </choice>
         <choice>
           <element name="schur_preconditioner">
             <a:documentation>The preconditioner for the Schur complement is generated by the block diagonal 
