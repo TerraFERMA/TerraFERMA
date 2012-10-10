@@ -320,6 +320,7 @@
               <ufl_symbol>
                 <string_value lines="1">int</string_value>
               </ufl_symbol>
+              <quadrature_rule name="default"/>
             </functional>
           </value>
         </rank>
@@ -340,6 +341,7 @@
               <ufl_symbol>
                 <string_value lines="1">int</string_value>
               </ufl_symbol>
+              <quadrature_rule name="default"/>
             </functional>
           </value>
         </rank>
