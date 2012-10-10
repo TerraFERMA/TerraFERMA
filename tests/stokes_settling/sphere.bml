@@ -260,6 +260,7 @@ r = rvf + rpf + rvp</string_value>
           </ufl_symbol>
           <ident_zeros/>
         </form>
+        <quadrature_rule name="default"/>
         <snes_type name="ls">
           <ls_type name="cubic"/>
         </snes_type>

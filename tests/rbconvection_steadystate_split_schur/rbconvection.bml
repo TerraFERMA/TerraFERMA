@@ -89,6 +89,7 @@
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
+            <quadrature_rule name="default"/>
           </functional>
         </include_in_statistics>
       </diagnostics>
@@ -133,6 +134,7 @@ r = rT</string_value>
             <string_value lines="1">res</string_value>
           </ufl_symbol>
         </form>
+        <quadrature_rule name="default"/>
         <relative_error>
           <real_value rank="0">1.e-6</real_value>
         </relative_error>
@@ -249,6 +251,7 @@ r = rT</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
+            <quadrature_rule name="default"/>
           </functional>
         </include_in_statistics>
       </diagnostics>
@@ -307,6 +310,7 @@ r = rv + rp</string_value>
             <string_value lines="1">res</string_value>
           </ufl_symbol>
         </form>
+        <quadrature_rule name="default"/>
         <relative_error>
           <real_value rank="0">1.e-6</real_value>
         </relative_error>
@@ -455,6 +459,7 @@ r = rv + rp</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
+            <quadrature_rule name="default"/>
           </functional>
         </include_in_statistics>
       </diagnostics>
@@ -484,6 +489,7 @@ r = rT</string_value>
             <string_value lines="1">res</string_value>
           </ufl_symbol>
         </form>
+        <quadrature_rule name="default"/>
         <relative_error>
           <real_value rank="0">1.e-6</real_value>
         </relative_error>
@@ -600,6 +606,7 @@ r = rT</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
+            <quadrature_rule name="default"/>
           </functional>
         </include_in_statistics>
       </diagnostics>
@@ -658,6 +665,7 @@ r = rv + rp</string_value>
             <string_value lines="1">res</string_value>
           </ufl_symbol>
         </form>
+        <quadrature_rule name="default"/>
         <relative_error>
           <real_value rank="0">1.e-6</real_value>
         </relative_error>
@@ -806,6 +814,7 @@ r = rv + rp</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
+            <quadrature_rule name="default"/>
           </functional>
         </include_in_statistics>
       </diagnostics>
@@ -835,6 +844,7 @@ r = rT</string_value>
             <string_value lines="1">res</string_value>
           </ufl_symbol>
         </form>
+        <quadrature_rule name="default"/>
         <relative_error>
           <real_value rank="0">1.e-6</real_value>
         </relative_error>
@@ -951,6 +961,7 @@ r = rT</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
+            <quadrature_rule name="default"/>
           </functional>
         </include_in_statistics>
       </diagnostics>
@@ -1015,6 +1026,7 @@ r = rv + rp</string_value>
             <string_value lines="1">res</string_value>
           </ufl_symbol>
         </form>
+        <quadrature_rule name="default"/>
         <relative_error>
           <real_value rank="0">1.e-6</real_value>
         </relative_error>

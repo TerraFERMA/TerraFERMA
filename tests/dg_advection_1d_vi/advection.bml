@@ -167,6 +167,7 @@ r = r_m + r_a + r_fS + r_fs1 + r_fs2</string_value>
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
+        <quadrature_rule name="default"/>
         <snes_type name="vi">
           <constraints>
             <upper_bound>

@@ -111,6 +111,7 @@ values[0] = (val*bucket()-&gt;timestep())/dcell.diameter();</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
+            <quadrature_rule name="default"/>
           </functional>
         </include_in_statistics>
       </diagnostics>
