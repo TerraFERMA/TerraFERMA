@@ -16,6 +16,7 @@ class SpudFunctionalBucket(buckettools.functionalbucket.FunctionalBucket):
     self.function = function
     if libspud.have_option(optionpath+"/quadrature_degree"):
       self.quadrature_degree = libspud.get_option(optionpath+"/quadrature_degree")
+    self.quadrature_rule = libspud.get_option(optionpath+"/quadrature_rule/name")
 
 
   

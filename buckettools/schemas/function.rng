@@ -345,6 +345,7 @@ of functions is included.</a:documentation>
       <ref name="python_code"/>
       <ref name="functional_ufl_symbol"/>
       <ref name="quadrature_degree"/>
+      <ref name="quadrature_rule"/>
       <optional>
         <element name="include_in_steady_state">
           <a:documentation>Include this functional in the steady state check and output file.</a:documentation>

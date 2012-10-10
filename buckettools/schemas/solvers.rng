@@ -97,6 +97,7 @@ defined in the preamble, bilinear and linear forms above.</a:documentation>
       <ref name="form_ufl_symbol"/>
     </element>
     <ref name="quadrature_degree"/>
+    <ref name="quadrature_rule"/>
     <element name="relative_error">
       <a:documentation>The relative error allowed to remain in the vector l2 norm of the nonlinear solver residual (defined above) upon termination
 of the iteration loop.</a:documentation>
@@ -209,6 +210,7 @@ If undefined the jacobian bilinear form above will be used to precondition itsel
       </element>
     </optional>
     <ref name="quadrature_degree"/>
+    <ref name="quadrature_rule"/>
     <choice>
       <element name="snes_type">
         <a:documentation>The SNES type.  Line search.</a:documentation>

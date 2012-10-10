@@ -272,6 +272,7 @@ functional_options =
       python_code,
       functional_ufl_symbol,
       quadrature_degree,
+      quadrature_rule,
       ## Include this functional in the steady state check and output file.
       element include_in_steady_state {
         empty

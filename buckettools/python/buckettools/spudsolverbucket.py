@@ -25,6 +25,8 @@ class SpudSolverBucket(buckettools.solverbucket.SolverBucket):
     if libspud.have_option(newoptionpath+"/quadrature_degree"):
       self.quadrature_degree = libspud.get_option(newoptionpath+"/quadrature_degree")
 
+    self.quadrature_rule = libspud.get_option(newoptionpath+"/quadrature_rule/name")
+
     self.system = system
 
   def fill_subforms(self, optionpath, prefix=""):

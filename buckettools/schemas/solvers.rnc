@@ -74,6 +74,7 @@ picard =
       form_ufl_symbol
     },
     quadrature_degree,
+    quadrature_rule,
     ## The relative error allowed to remain in the vector l2 norm of the nonlinear solver residual (defined above) upon termination
     ## of the iteration loop.
     element relative_error {
@@ -160,6 +161,7 @@ snes =
       ident_zeros
     }?,
     quadrature_degree,
+    quadrature_rule,
     (
       ## The SNES type.  Line search.
       element snes_type {
