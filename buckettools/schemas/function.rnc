@@ -611,7 +611,9 @@ prescribed_scalar_functional =
       element functional {
         attribute rank { "0" },
         python_code,
-        functional_ufl_symbol
+        functional_ufl_symbol,
+        quadrature_degree,
+        quadrature_rule
       }
     )
   )

@@ -784,6 +784,8 @@ of functions is included.</a:documentation>
       </attribute>
       <ref name="python_code"/>
       <ref name="functional_ufl_symbol"/>
+      <ref name="quadrature_degree"/>
+      <ref name="quadrature_rule"/>
     </element>
   </define>
   <define name="prescribed_scalar_constant_w_functional">
