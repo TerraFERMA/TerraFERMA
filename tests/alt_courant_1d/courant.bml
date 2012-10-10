@@ -108,6 +108,7 @@ values[0] = (std::abs(v_values.max())*bucket()-&gt;timestep())/dcell.diameter();
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
+            <quadrature_rule name="default"/>
           </functional>
         </include_in_statistics>
       </diagnostics>

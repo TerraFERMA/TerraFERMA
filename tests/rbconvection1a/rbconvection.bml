@@ -189,6 +189,7 @@
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
+            <quadrature_rule name="default"/>
           </functional>
         </include_in_statistics>
         <include_in_steady_state>
@@ -230,6 +231,7 @@
             <quadrature_degree>
               <integer_value rank="0">3</integer_value>
             </quadrature_degree>
+            <quadrature_rule name="default"/>
           </functional>
         </include_in_statistics>
         <include_in_steady_state>
@@ -294,12 +296,14 @@
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
+            <quadrature_rule name="default"/>
           </functional>
           <functional name="BottomSurfaceIntegral">
             <string_value lines="20" type="code" language="python">int = T.dx(1)*ds(3)</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
+            <quadrature_rule name="default"/>
           </functional>
         </include_in_statistics>
         <include_in_steady_state>
@@ -381,6 +385,7 @@ r = rv + rp + rT</string_value>
         <quadrature_degree>
           <integer_value rank="0">5</integer_value>
         </quadrature_degree>
+        <quadrature_rule name="default"/>
         <snes_type name="ls">
           <ls_type name="cubic"/>
         </snes_type>
@@ -575,6 +580,7 @@ r = rv + rp + rT</string_value>
             <string_value lines="1">res</string_value>
           </ufl_symbol>
         </form>
+        <quadrature_rule name="default"/>
         <relative_error>
           <real_value rank="0">1.e-6</real_value>
         </relative_error>
@@ -663,6 +669,7 @@ r = c_t*c_a*dx - c_t('+')*vout('+')*dt('+')*dS - c_t('-')*vout('-')*dt('-')*dS -
             <string_value lines="1">res</string_value>
           </ufl_symbol>
         </form>
+        <quadrature_rule name="default"/>
         <relative_error>
           <real_value rank="0">1.e-6</real_value>
         </relative_error>

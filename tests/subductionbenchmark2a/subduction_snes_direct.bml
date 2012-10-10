@@ -399,6 +399,7 @@ F = FT + Fv + Fp</string_value>
           </ufl_symbol>
           <ident_zeros/>
         </form>
+        <quadrature_rule name="default"/>
         <snes_type name="ls">
           <ls_type name="cubic"/>
         </snes_type>
@@ -510,6 +511,7 @@ r = d_t*d_a*dx_wedge - d_t*div(v_i)*dx_wedge</string_value>
             <string_value lines="1">res</string_value>
           </ufl_symbol>
         </form>
+        <quadrature_rule name="default"/>
         <relative_error>
           <real_value rank="0">1.e-6</real_value>
         </relative_error>

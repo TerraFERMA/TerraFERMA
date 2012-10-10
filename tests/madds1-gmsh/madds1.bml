@@ -119,6 +119,7 @@
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
+            <quadrature_rule name="default"/>
           </functional>
         </include_in_statistics>
         <include_in_detectors/>
@@ -153,6 +154,7 @@
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
+            <quadrature_rule name="default"/>
           </functional>
         </include_in_statistics>
         <include_in_steady_state>
@@ -186,6 +188,7 @@ r = rv + rp</string_value>
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
+        <quadrature_rule name="default"/>
         <snes_type name="ls">
           <ls_type name="cubic"/>
         </snes_type>
@@ -266,6 +269,7 @@ r = rv + rp</string_value>
             <string_value lines="1">res</string_value>
           </ufl_symbol>
         </form>
+        <quadrature_rule name="default"/>
         <relative_error>
           <real_value rank="0">1.e-6</real_value>
         </relative_error>

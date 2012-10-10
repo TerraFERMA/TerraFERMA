@@ -60,6 +60,7 @@
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
+            <quadrature_rule name="default"/>
           </functional>
         </include_in_statistics>
       </diagnostics>
@@ -156,6 +157,7 @@
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
+        <quadrature_rule name="default"/>
         <snes_type name="ls">
           <ls_type name="cubic"/>
         </snes_type>
