@@ -123,6 +123,7 @@ r = rv</string_value>
         <quadrature_degree>
           <integer_value rank="0">4</integer_value>
         </quadrature_degree>
+        <quadrature_rule name="default"/>
         <relative_error>
           <real_value rank="0">1.e-5</real_value>
         </relative_error>
@@ -288,6 +289,7 @@ r = rsv + rsp</string_value>
         <quadrature_degree>
           <integer_value rank="0">4</integer_value>
         </quadrature_degree>
+        <quadrature_rule name="default"/>
         <relative_error>
           <real_value rank="0">1.e-5</real_value>
         </relative_error>
