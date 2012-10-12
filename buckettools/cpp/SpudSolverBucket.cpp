@@ -912,7 +912,6 @@ void SpudSolverBucket::fill_pc_(const std::string &optionpath, PC &pc,
 
   }
 
-<<<<<<< local
   buffer.str(""); buffer << optionpath 
                                 << "/preconditioner/near_null_space";// set a (or multiple) near null space(s)
   if (Spud::have_option(buffer.str()))
