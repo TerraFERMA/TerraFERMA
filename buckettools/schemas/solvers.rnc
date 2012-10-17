@@ -1113,6 +1113,11 @@ pcfieldsplit_composite_types =
         attribute name { "multiplicative" },
         empty
       }|
+      ## Composite type of the fieldsplit preconditioner - symmetric multiplicative - update off diagonal symmetric blocks.
+      element composite_type {
+        attribute name { "symmetric_multiplicative" },
+        empty
+      }|
       ## Composite type of the fieldsplit preconditioner - additive - do not update off diagonal blocks.
       element composite_type {
         attribute name { "additive" },
