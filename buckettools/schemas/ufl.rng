@@ -89,4 +89,34 @@ If unselected ffc will automatically determine the degree for the form.</a:docum
       </element>
     </optional>
   </define>
+  <define name="quadrature_rule">
+    <choice>
+      <element name="quadrature_rule">
+        <a:documentation>The quadrature rule that will be used when integrating the forms.
+
+The 'default' option covers hand implemented quadrature rules (in ffc) for triangles and tetrahedra with a degree of
+precision less than or equal to six.  Above this 'canonical' will automatically be used.
+
+The 'canonical' option relies on FIAT to compute the quadrature rule which is based on Gauss--Legendre--Jacobi rule mapped
+onto simplices.</a:documentation>
+        <attribute name="name">
+          <value>default</value>
+        </attribute>
+        <empty/>
+      </element>
+      <element name="quadrature_rule">
+        <a:documentation>The quadrature rule that will be used when integrating the forms.
+
+The 'canonical' option relies on FIAT to compute the quadrature rule which is based on Gauss--Legendre--Jacobi rule mapped
+onto simplices.
+
+The 'default' option covers hand implemented quadrature rules (in ffc) for triangles and tetrahedra with a degree of
+precision less than or equal to six.  Above this 'canonical' will automatically be used.</a:documentation>
+        <attribute name="name">
+          <value>canonical</value>
+        </attribute>
+        <empty/>
+      </element>
+    </choice>
+  </define>
 </grammar>

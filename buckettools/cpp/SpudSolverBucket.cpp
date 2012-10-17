@@ -857,6 +857,11 @@ void SpudSolverBucket::fill_pc_(const std::string &optionpath, PC &pc,
 
   }
 
+  if ((preconditioner=="ml"))
+  {
+    perr = PCSetUp(pc); CHKERRV(perr);                               // need to call this to prevent seg fault on kspview
+  }
+
 }
 
 //*******************************************************************|************************************************************//

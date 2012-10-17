@@ -100,3 +100,31 @@ quadrature_degree =
     }?
   )
 
+quadrature_rule =
+  (
+    (
+      ## The quadrature rule that will be used when integrating the forms.
+      ##
+      ## The 'default' option covers hand implemented quadrature rules (in ffc) for triangles and tetrahedra with a degree of
+      ## precision less than or equal to six.  Above this 'canonical' will automatically be used.
+      ##
+      ## The 'canonical' option relies on FIAT to compute the quadrature rule which is based on Gauss--Legendre--Jacobi rule mapped
+      ## onto simplices.
+      element quadrature_rule {
+        attribute name { "default" },
+        empty
+      }|
+      ## The quadrature rule that will be used when integrating the forms.
+      ##
+      ## The 'canonical' option relies on FIAT to compute the quadrature rule which is based on Gauss--Legendre--Jacobi rule mapped
+      ## onto simplices.
+      ##
+      ## The 'default' option covers hand implemented quadrature rules (in ffc) for triangles and tetrahedra with a degree of
+      ## precision less than or equal to six.  Above this 'canonical' will automatically be used.
+      element quadrature_rule {
+        attribute name { "canonical" },
+        empty
+      }
+    )
+  )
+
