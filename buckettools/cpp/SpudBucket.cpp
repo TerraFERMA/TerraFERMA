@@ -638,8 +638,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
       }
       else
       {
-        filename.str(""); filename << basename << ".xml";
-        dolfin::error("Could not find %s.xml or %s.xml.gz.", filename.str().c_str(), filename.str().c_str());
+        dolfin::error("Could not find %s.xml or %s.xml.gz.", basename.c_str(), basename.c_str());
       }
     }
     (*mesh).init();                                                  // initialize the mesh (maps between dimensions etc.)
