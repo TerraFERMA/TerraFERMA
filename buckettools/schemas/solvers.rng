@@ -1274,6 +1274,13 @@ No options for the subksp are currently exposed so defaults are assumed.</a:docu
         <empty/>
       </element>
       <element name="composite_type">
+        <a:documentation>Composite type of the fieldsplit preconditioner - symmetric multiplicative - update off diagonal symmetric blocks.</a:documentation>
+        <attribute name="name">
+          <value>symmetric_multiplicative</value>
+        </attribute>
+        <empty/>
+      </element>
+      <element name="composite_type">
         <a:documentation>Composite type of the fieldsplit preconditioner - additive - do not update off diagonal blocks.</a:documentation>
         <attribute name="name">
           <value>additive</value>

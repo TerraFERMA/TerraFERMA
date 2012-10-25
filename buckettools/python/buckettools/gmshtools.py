@@ -791,26 +791,26 @@ class Geometry:
       self.geofile.addpoint(point, self.pointcomments[p])
     self.geofile.linebreak()
 
-    for surface,items in self.pointembeds.iteritems():
+    for surface,items in iter(sorted(self.pointembeds.items(), key=lambda item: item[0].eid)):
       self.geofile.addembed(surface,items)
-    for surface,items in self.lineembeds.iteritems():
+    for surface,items in iter(sorted(self.lineembeds.items(), key=lambda item: item[0].eid)):
       self.geofile.addembed(surface,items)
     self.geofile.linebreak()
 
-    for n,curves in self.transfinitecurves.iteritems():
+    for n,curves in iter(sorted(self.transfinitecurves.items())):
       self.geofile.addtransfinitecurve(curves,n)
     self.geofile.linebreak()
-    for surface,corners in self.transfinitesurfaces.iteritems():
+    for surface,corners in iter(sorted(self.transfinitesurfaces.items(), key=lambda item: item[0].eid)):
       self.geofile.addtransfinitesurface(surface,corners[0],corners[1])
     self.geofile.linebreak()
     
-    for pid,surfaces in self.physicalsurfaces.iteritems():
+    for pid,surfaces in iter(sorted(self.physicalsurfaces.items())):
       self.geofile.addphysicalsurface(pid,surfaces)
     self.geofile.linebreak()
-    for pid,curves in self.physicalcurves.iteritems():
+    for pid,curves in iter(sorted(self.physicalcurves.items())):
       self.geofile.addphysicalline(pid,curves)
     self.geofile.linebreak()
-    for pid,points in self.physicalpoints.iteritems():
+    for pid,points in iter(sorted(self.physicalpoints.items())):
       self.geofile.addphysicalpoint(pid,points)
     self.geofile.linebreak()
 

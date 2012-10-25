@@ -128,14 +128,17 @@ void SpudSystemBucket::initialize_fields_and_coefficients()
 //*******************************************************************|************************************************************//
 void SpudSystemBucket::initialize_solvers()
 {
-  dolfin::info("Initializing matrices for system %s", name().c_str());
-
-  for (SolverBucket_it s_it = solvers_begin(); s_it != solvers_end();// loop over the solver buckets
-                                                              s_it++)
+  if (solve_location()!=SOLVE_NEVER)
   {
-    (*boost::dynamic_pointer_cast< SpudSolverBucket >((*s_it).second)).initialize();
-                                                                     // perform a preassembly of all the matrices to set up
-                                                                     // sparsities etc. and set up petsc objects
+    dolfin::info("Initializing matrices for system %s", name().c_str());
+
+    for (SolverBucket_it s_it = solvers_begin(); s_it != solvers_end();// loop over the solver buckets
+                                                                s_it++)
+    {
+      (*boost::dynamic_pointer_cast< SpudSolverBucket >((*s_it).second)).initialize();
+                                                                       // perform a preassembly of all the matrices to set up
+                                                                       // sparsities etc. and set up petsc objects
+    }
   }
 }
 
