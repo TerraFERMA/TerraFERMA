@@ -63,6 +63,11 @@ void SolverBucket::solve()
 {
   PetscErrorCode perr;
 
+  if ((*system_).solve_location()==SOLVE_NEVER)
+  {
+    dolfin::error("Unable to solve as solve_location set to never.");
+  }
+
   dolfin::log(dolfin::INFO, "Solving for %s::%s using %s", 
                           (*system_).name().c_str(), name().c_str(), 
                           type().c_str());
