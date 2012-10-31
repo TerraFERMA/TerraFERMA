@@ -69,9 +69,20 @@ namespace buckettools
     const double min(const double_ptr time) const
     { return min(time, NULL, NULL); }
 
+    const double infnorm(const double_ptr time, const int* index0, 
+                                            const int* index1) const;// infnorm of the function at the given time
+
+    const double infnorm(const double_ptr time, const int* index0) const
+    { return infnorm(time, index0, NULL); }
+
+    const double infnorm(const double_ptr time) const
+    { return infnorm(time, NULL, NULL); }
+
     const double functionmax() const;                                // max of the function
 
     const double functionmin() const;                                // min of the function
+
+    const double functioninfnorm() const;                            // infnorm of the function
 
     const std::string name() const                                   // return a constant string giving the function name
     { return name_; }

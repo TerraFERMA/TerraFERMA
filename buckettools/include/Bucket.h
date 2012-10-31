@@ -68,8 +68,6 @@ namespace buckettools
 
     bool complete();                                                 // indicate if the simulation is complete or not
 
-    void cap_values();                                               // cap the values of the fields in all systems
-
     //***************************************************************|***********************************************************//
     // Filling data
     //***************************************************************|***********************************************************//

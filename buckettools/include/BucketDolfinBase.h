@@ -58,5 +58,7 @@ namespace buckettools
 
 }
 
+bool abslessthan(const double &elem1, const double &elem2);
+
 #endif
 

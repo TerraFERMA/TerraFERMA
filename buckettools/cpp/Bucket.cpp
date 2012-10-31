@@ -109,6 +109,10 @@ void Bucket::solve(const int &location)
     if((*(*s_it).second).solve_location()==location)
     {
       (*(*s_it).second).solve();
+
+      (*(*s_it).second).cap_values();                                // if fields have requested that their values are capped, do it
+                                                                     // now 
+
     }
   }
 }
@@ -178,7 +182,7 @@ void Bucket::update_timestep()
     double suggested_dt;
 
     (*(*c_it).first).refresh(zero_init_dt);
-    const double maxval = (*(*c_it).first).functionmax();
+    const double maxval = (*(*c_it).first).functioninfnorm();
 
     if (maxval==0.0)
     {
@@ -250,18 +254,6 @@ bool Bucket::complete()
   }
 
   return completed;
-}
-
-//*******************************************************************|************************************************************//
-// cap the value of the fields in the systems of this bucket
-//*******************************************************************|************************************************************//
-void Bucket::cap_values()
-{
-  for (SystemBucket_it s_it = systems_begin();
-                              s_it != systems_end(); s_it++)
-  {
-    (*(*s_it).second).cap_values();
-  }
 }
 
 //*******************************************************************|************************************************************//
@@ -844,6 +836,8 @@ void Bucket::output(const int &location)
     return;
   }  
 
+  bool systems_solved = false;
+
   for (int_SystemBucket_const_it s_it = orderedsystems_begin();      // loop over the systems (in order)
                               s_it != orderedsystems_end(); s_it++)
   {
@@ -855,8 +849,16 @@ void Bucket::output(const int &location)
           (write_det    && (*(*s_it).second).include_in_detectors())        )
       {
         (*(*s_it).second).solve();                                   // solve for those fields
+        (*(*s_it).second).cap_values();                              // if fields have requested that their values are capped, do it
+                                                                     // now 
+        systems_solved = true;
       }
     }
+  }
+
+  if(systems_solved)
+  {
+    update_timedependent();
   }
 
   if (write_stat)
@@ -1136,12 +1138,15 @@ void Bucket::solve_at_start_()
     if((*(*s_it).second).solve_location()==SOLVE_START)
     {
       (*(*s_it).second).solve();
+      (*(*s_it).second).cap_values();                                // if fields have requested that their values are capped, do it
+                                                                     // now 
       systems_solved = true;
     }
   }
 
   if(systems_solved)
   {
+    update_timedependent();
     output(OUTPUT_START);
     update();
   }
@@ -1158,9 +1163,6 @@ void Bucket::solve_in_timeloop_()
        (*iteration_count_)++)                                        // loop over the nonlinear iterations
   {
     solve(SOLVE_TIMELOOP);                                           // solve all systems in the bucket
-
-    cap_values();                                                    // if fields have requested that their values are capped, do it
-                                                                     // now (move inside the solve?)
 
     //update_nonlinear();
   }

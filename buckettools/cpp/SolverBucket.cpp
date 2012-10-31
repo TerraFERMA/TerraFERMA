@@ -62,6 +62,11 @@ void SolverBucket::solve()
 {
   PetscErrorCode perr;
 
+  if ((*system_).solve_location()==SOLVE_NEVER)
+  {
+    dolfin::error("Unable to solve as solve_location set to never.");
+  }
+
   dolfin::log(dolfin::INFO, "Solving for %s::%s using %s", 
                           (*system_).name().c_str(), name().c_str(), 
                           type().c_str());
@@ -79,7 +84,7 @@ void SolverBucket::solve()
     perr = SNESSolve(snes_, PETSC_NULL, *(*work_).vec());            // call petsc to perform a snes solve
     if (perr>0)
     {
-      dolfin::log(dolfin::ERROR, "Error in SNESSolve, sending sig int.");
+      dolfin::log(dolfin::ERROR, "ERROR: SNESSolve returned error code %d.", perr);
       (*SignalHandler::instance()).dispatcher(SIGINT);
     }
     CHKERRV(perr);

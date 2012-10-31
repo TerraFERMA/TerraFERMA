@@ -3,6 +3,7 @@
 #include "FunctionBucket.h"
 #include "SystemBucket.h"
 #include "Bucket.h"
+#include "BucketDolfinBase.h"
 #include <dolfin.h>
 #include <string>
 
@@ -206,6 +207,77 @@ const double FunctionBucket::min(const double_ptr time, const int *index0, const
 }
 
 //*******************************************************************|************************************************************//
+// return the infnorm of the function bucket at the given time
+//*******************************************************************|************************************************************//
+const double FunctionBucket::infnorm(const double_ptr time, const int *index0, const int *index1) const
+{
+  const GenericFunction_ptr function = genericfunction_ptr(time);
+  double normvalue;
+
+  if (  functiontype_==FUNCTIONBUCKET_FIELD || 
+      ((functiontype_==FUNCTIONBUCKET_COEFF)&&(type()=="Function")) )
+  {
+    dolfin::Function func =                                        // take a deep copy of the subfunction so the vector is accessible
+      *boost::dynamic_pointer_cast< const dolfin::Function >(function);
+
+    if (index0 && index1)
+    {
+      assert(func.value_rank()==2);
+      assert(*index0 < (*function).value_dimension(0));
+      assert(*index1 < (*function).value_dimension(1));
+
+      dolfin::Function funccomp = func[*index0][*index1];
+      normvalue = (*funccomp.vector()).norm("linf");
+    }
+    else if (index0)
+    {
+      assert(func.value_rank()==1);
+      assert(*index0 < (*function).value_size());
+
+      dolfin::Function funccomp = func[*index0];
+      normvalue = (*funccomp.vector()).norm("linf");
+    }
+    else
+    {
+      normvalue = (*func.vector()).norm("linf");
+    }
+  }
+  else
+  {
+    Mesh_ptr mesh = (*system()).mesh();
+    const int nvert = (*mesh).num_vertices();
+    std::vector< double > values;
+    (*function).compute_vertex_values(values, *mesh);
+
+    if (index0 && index1)
+    {
+      assert((*function).value_rank()==2);
+      assert(*index0 < (*function).value_dimension(0));
+      assert(*index1 < (*function).value_dimension(1));
+
+      normvalue = std::abs(*std::max_element(&values[(2*(*index1)+(*index0))*nvert], 
+                           &values[(2*(*index1)+(*index0)+1)*nvert], abslessthan));
+    }
+    else if (index0)
+    {
+      assert((*function).value_rank()==1);
+      assert(*index0 < (*function).value_size());
+
+      normvalue = std::abs(*std::max_element(&values[(*index0)*nvert], 
+                           &values[((*index0)+1)*nvert], abslessthan));
+    }
+    else
+    {
+      normvalue = std::abs(*std::max_element(&values[0], 
+                           &values[nvert], abslessthan));
+    }
+  }
+
+  return normvalue;
+  
+}
+
+//*******************************************************************|************************************************************//
 // return the maximum of the function at the current time
 //*******************************************************************|************************************************************//
 const double FunctionBucket::functionmax() const
@@ -219,6 +291,14 @@ const double FunctionBucket::functionmax() const
 const double FunctionBucket::functionmin() const
 {
   return min((*(*system()).bucket()).current_time_ptr());
+}
+
+//*******************************************************************|************************************************************//
+// return the infnorm of the function at the current time
+//*******************************************************************|************************************************************//
+const double FunctionBucket::functioninfnorm() const
+{
+  return infnorm((*(*system()).bucket()).current_time_ptr());
 }
 
 //*******************************************************************|************************************************************//
