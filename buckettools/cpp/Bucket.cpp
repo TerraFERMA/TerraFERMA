@@ -844,6 +844,8 @@ void Bucket::output(const int &location)
     return;
   }  
 
+  bool systems_solved = false;
+
   for (int_SystemBucket_const_it s_it = orderedsystems_begin();      // loop over the systems (in order)
                               s_it != orderedsystems_end(); s_it++)
   {
@@ -855,8 +857,14 @@ void Bucket::output(const int &location)
           (write_det    && (*(*s_it).second).include_in_detectors())        )
       {
         (*(*s_it).second).solve();                                   // solve for those fields
+        systems_solved = true;
       }
     }
+  }
+
+  if(systems_solved)
+  {
+    update_timedependent();
   }
 
   if (write_stat)
@@ -1142,6 +1150,7 @@ void Bucket::solve_at_start_()
 
   if(systems_solved)
   {
+    update_timedependent();
     output(OUTPUT_START);
     update();
   }
