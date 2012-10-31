@@ -182,7 +182,7 @@ void Bucket::update_timestep()
     double suggested_dt;
 
     (*(*c_it).first).refresh(zero_init_dt);
-    const double maxval = (*(*c_it).first).functionmax();
+    const double maxval = (*(*c_it).first).functioninfnorm();
 
     if (maxval==0.0)
     {

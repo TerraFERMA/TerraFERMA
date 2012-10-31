@@ -48,4 +48,9 @@ void Assembler::add_zeros_diagonal(dolfin::GenericTensor& A)
 
 }
 
+bool abslessthan (const double &elem1, const double &elem2)
+{
+    return std::abs(elem1) < std::abs(elem2);
+}
+
 
