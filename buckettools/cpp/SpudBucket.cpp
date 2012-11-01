@@ -343,11 +343,6 @@ void SpudBucket::fill_timestepping_()
   current_time_.reset( new double(start_time()) );                   // initialize the current (n+1) and
   old_time_.reset( new double(start_time()) );                       // old (n) times
 
-  finish_time_.reset( new double );
-  buffer.str(""); buffer << "/timestepping/finish_time";             // get the finish time (assumed zero for steady simulations)
-  serr = Spud::get_option(buffer.str(), *finish_time_, 0.0); 
-  spud_err(buffer.str(), serr);
-
   nonlinear_iterations_.reset( new int );
   buffer.str(""); buffer                                             // find out if we're doing nonlinear iterations
                     << "/nonlinear_systems/nonlinear_iterations";    // between the systems
@@ -384,11 +379,29 @@ void SpudBucket::fill_timestepping_()
       spud_err(buffer.str(), serr);
     }
 
+    buffer.str(""); buffer << "/timestepping/finish_time";           // get the finish time (assumed zero for steady simulations)
+    if (Spud::have_option(buffer.str()))
+    {
+      finish_time_.reset( new double );
+      serr = Spud::get_option(buffer.str(), *finish_time_); 
+      spud_err(buffer.str(), serr);
+    }
+    else
+    {
+      number_timesteps_.reset( new int );
+      buffer.str(""); buffer << "/timestepping/number_timesteps";    // get the finish time (assumed zero for steady simulations)
+      serr = Spud::get_option(buffer.str(), *number_timesteps_); 
+      spud_err(buffer.str(), serr);
+    }
+
   }
   else
   {
+    number_timesteps_.reset( new int(1) );
+
     timestep_.first = "";
     timestep_.second.reset( new dolfin::Constant(0.0) );
+
   }
   
   

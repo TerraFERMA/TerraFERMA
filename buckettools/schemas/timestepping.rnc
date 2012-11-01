@@ -8,10 +8,16 @@ timestepping =
         element current_time {
           real
         },
-        ## The time at which the simulation should stop
-        element finish_time {
-          real
-        },
+        (
+          ## The time at which the simulation should stop
+          element finish_time {
+            real
+          }|
+          ## The number of timesteps after which the simulation should stop
+          element number_timesteps {
+            integer
+          }
+        ),
         ## Options for the timestep
         element timestep {
           ## Options describing a coefficient in this system

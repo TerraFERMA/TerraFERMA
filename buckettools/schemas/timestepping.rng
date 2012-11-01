@@ -8,10 +8,16 @@
         <a:documentation>The current time at the start of the simulation</a:documentation>
         <ref name="real"/>
       </element>
-      <element name="finish_time">
-        <a:documentation>The time at which the simulation should stop</a:documentation>
-        <ref name="real"/>
-      </element>
+      <choice>
+        <element name="finish_time">
+          <a:documentation>The time at which the simulation should stop</a:documentation>
+          <ref name="real"/>
+        </element>
+        <element name="number_timesteps">
+          <a:documentation>The number of timesteps after which the simulation should stop</a:documentation>
+          <ref name="integer"/>
+        </element>
+      </choice>
       <element name="timestep">
         <a:documentation>Options for the timestep</a:documentation>
         <element name="coefficient">

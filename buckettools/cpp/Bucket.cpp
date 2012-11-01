@@ -52,6 +52,10 @@ void Bucket::run()
 
   dolfin::log(dolfin::INFO, "Entering timeloop.");
   bool continue_timestepping = true;
+  if (number_timesteps_)
+  {
+    continue_timestepping = number_timesteps()>0;
+  }
   while (continue_timestepping) 
   {                                                                  // loop over time
 
@@ -235,10 +239,21 @@ bool Bucket::complete()
 {
   bool completed = false;
   
-  if (current_time() >= finish_time())
+  if (finish_time_)
   {
-    dolfin::log(dolfin::WARNING, "Finish time reached, terminating timeloop.");
-    completed = true;
+    if (current_time() >= finish_time())
+    {
+      dolfin::log(dolfin::WARNING, "Finish time reached, terminating timeloop.");
+      completed = true;
+    }
+  }
+  else
+  {
+    if (timestep_count() >= number_timesteps())
+    {
+      dolfin::log(dolfin::WARNING, "Number timesteps reached, terminating timeloop.");
+      completed = true;
+    }
   }
 
   if (steadystate_())
@@ -300,6 +315,7 @@ void Bucket::copy_diagnostics(Bucket_ptr &bucket) const
   (*bucket).old_time_ = old_time_;
   (*bucket).current_time_ = current_time_;
   (*bucket).finish_time_ = finish_time_;
+  (*bucket).number_timesteps_ = number_timesteps_;
   (*bucket).timestep_count_ = timestep_count_;
   (*bucket).timestep_ = timestep_;
   (*bucket).nonlinear_iterations_ = nonlinear_iterations_;
@@ -367,6 +383,15 @@ const double Bucket::finish_time() const
 {
   assert(finish_time_);
   return *finish_time_;
+}
+
+//*******************************************************************|************************************************************//
+// return the number of timesteps after which the simulation will finish
+//*******************************************************************|************************************************************//
+const double Bucket::number_timesteps() const
+{
+  assert(number_timesteps_);
+  return *number_timesteps_;
 }
 
 //*******************************************************************|************************************************************//
