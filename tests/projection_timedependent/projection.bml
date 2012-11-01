@@ -31,9 +31,9 @@
     <current_time>
       <real_value rank="0">0.0</real_value>
     </current_time>
-    <finish_time>
-      <real_value rank="0">10.0</real_value>
-    </finish_time>
+    <number_timesteps>
+      <integer_value rank="0">10</integer_value>
+    </number_timesteps>
     <timestep>
       <coefficient name="Timestep">
         <ufl_symbol>
