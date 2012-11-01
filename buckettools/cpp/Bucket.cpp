@@ -51,11 +51,7 @@ void Bucket::run()
   solve_at_start_();
 
   dolfin::log(dolfin::INFO, "Entering timeloop.");
-  bool continue_timestepping = true;
-  if (number_timesteps_)
-  {
-    continue_timestepping = number_timesteps()>0;
-  }
+  bool continue_timestepping = !complete_timestepping();
   while (continue_timestepping) 
   {                                                                  // loop over time
 
@@ -237,6 +233,28 @@ void Bucket::update_nonlinear()
 //*******************************************************************|************************************************************//
 bool Bucket::complete()
 {
+  bool completed = complete_timestepping();
+
+  if (steadystate_())
+  {
+    dolfin::log(dolfin::WARNING, "Steady state attained, terminating timeloop.");
+    completed = true;
+  }
+
+  if ((*(*SignalHandler::instance()).return_handler(SIGINT)).received())
+  {
+    dolfin::log(dolfin::ERROR, "SigInt received, terminating timeloop.");
+    completed = true;
+  }
+
+  return completed;
+}
+
+//*******************************************************************|************************************************************//
+// return a boolean indicating if the simulation has finished or not
+//*******************************************************************|************************************************************//
+bool Bucket::complete_timestepping()
+{
   bool completed = false;
   
   if (finish_time_)
@@ -254,18 +272,6 @@ bool Bucket::complete()
       dolfin::log(dolfin::WARNING, "Number timesteps reached, terminating timeloop.");
       completed = true;
     }
-  }
-
-  if (steadystate_())
-  {
-    dolfin::log(dolfin::WARNING, "Steady state attained, terminating timeloop.");
-    completed = true;
-  }
-
-  if ((*(*SignalHandler::instance()).return_handler(SIGINT)).received())
-  {
-    dolfin::log(dolfin::ERROR, "SigInt received, terminating timeloop.");
-    completed = true;
   }
 
   return completed;

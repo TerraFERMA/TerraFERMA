@@ -68,6 +68,8 @@ namespace buckettools
 
     bool complete();                                                 // indicate if the simulation is complete or not
 
+    bool complete_timestepping();                                    // indicate if timestepping is complete or not
+
     //***************************************************************|***********************************************************//
     // Filling data
     //***************************************************************|***********************************************************//
