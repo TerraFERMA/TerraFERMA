@@ -44,25 +44,25 @@ namespace buckettools
   
   public:                                                            // available to everyone
   
-    SemiLagrangianExpression(const Bucket *bucket, 
+    SemiLagrangianExpression(const Bucket *bucket, const double_ptr time, 
                              const std::pair< std::string, std::pair< std::string, std::string > > &function,
                              const std::pair< std::string, std::pair< std::string, std::string > > &velocity,
                              const std::pair< std::string, std::pair< std::string, std::string > > &outside);
 
     SemiLagrangianExpression(const uint &dim,
-                             const Bucket *bucket, 
+                             const Bucket *bucket, const double_ptr time, 
                              const std::pair< std::string, std::pair< std::string, std::string > > &function,
                              const std::pair< std::string, std::pair< std::string, std::string > > &velocity,
                              const std::pair< std::string, std::pair< std::string, std::string > > &outside);
 
     SemiLagrangianExpression(const uint &dim0, const uint &dim1,
-                             const Bucket *bucket, 
+                             const Bucket *bucket, const double_ptr time, 
                              const std::pair< std::string, std::pair< std::string, std::string > > &function,
                              const std::pair< std::string, std::pair< std::string, std::string > > &velocity,
                              const std::pair< std::string, std::pair< std::string, std::string > > &outside);
 
     SemiLagrangianExpression(const std::vector<uint> &value_shape,
-                             const Bucket *bucket, 
+                             const Bucket *bucket, const double_ptr time, 
                              const std::pair< std::string, std::pair< std::string, std::string > > &function,
                              const std::pair< std::string, std::pair< std::string, std::string > > &velocity,
                              const std::pair< std::string, std::pair< std::string, std::string > > &outside);
@@ -84,8 +84,15 @@ namespace buckettools
     const Bucket* bucket() const
     { return bucket_; }
     
+    const double_ptr time() const
+    {
+      return time_;
+    }
+
     const Bucket *bucket_;
     
+    const double_ptr time_;
+
     bool initialized_;
 
     std::pair< std::string, std::pair< std::string, std::string > > 

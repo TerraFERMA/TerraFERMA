@@ -8,12 +8,13 @@ using namespace buckettools;
 //*******************************************************************|************************************************************//
 // specific constructor (scalar)
 //*******************************************************************|************************************************************//
-SemiLagrangianExpression::SemiLagrangianExpression(const Bucket *bucket, 
+SemiLagrangianExpression::SemiLagrangianExpression(const Bucket *bucket, const double_ptr time,
                                                    const std::pair< std::string, std::pair< std::string, std::string > > &function,
                                                    const std::pair< std::string, std::pair< std::string, std::string > > &velocity,
                                                    const std::pair< std::string, std::pair< std::string, std::string > > &outside) :
                                                       dolfin::Expression(), 
                                                       bucket_(bucket), 
+                                                      time_(time),
                                                       funcname_(function),
                                                       velname_(velocity),
                                                       outname_(outside),
@@ -26,12 +27,13 @@ SemiLagrangianExpression::SemiLagrangianExpression(const Bucket *bucket,
 // specific constructor (vector)
 //*******************************************************************|************************************************************//
 SemiLagrangianExpression::SemiLagrangianExpression(const uint &dim,
-                                                   const Bucket *bucket, 
+                                                   const Bucket *bucket, const double_ptr time, 
                                                    const std::pair< std::string, std::pair< std::string, std::string > > &function,
                                                    const std::pair< std::string, std::pair< std::string, std::string > > &velocity,
                                                    const std::pair< std::string, std::pair< std::string, std::string > > &outside) :
                                                       dolfin::Expression(dim), 
                                                       bucket_(bucket), 
+                                                      time_(time),
                                                       funcname_(function),
                                                       velname_(velocity),
                                                       outname_(outside),
@@ -44,12 +46,13 @@ SemiLagrangianExpression::SemiLagrangianExpression(const uint &dim,
 // specific constructor (tensor)
 //*******************************************************************|************************************************************//
 SemiLagrangianExpression::SemiLagrangianExpression(const uint &dim0, const uint &dim1,
-                                                   const Bucket *bucket, 
+                                                   const Bucket *bucket, const double_ptr time, 
                                                    const std::pair< std::string, std::pair< std::string, std::string > > &function,
                                                    const std::pair< std::string, std::pair< std::string, std::string > > &velocity,
                                                    const std::pair< std::string, std::pair< std::string, std::string > > &outside) :
                                                       dolfin::Expression(dim0, dim1), 
                                                       bucket_(bucket), 
+                                                      time_(time),
                                                       funcname_(function),
                                                       velname_(velocity),
                                                       outname_(outside),
@@ -62,12 +65,13 @@ SemiLagrangianExpression::SemiLagrangianExpression(const uint &dim0, const uint 
 // specific constructor (alternate tensor)
 //*******************************************************************|************************************************************//
 SemiLagrangianExpression::SemiLagrangianExpression(const std::vector<uint> &value_shape,
-                                                   const Bucket *bucket, 
+                                                   const Bucket *bucket, const double_ptr time, 
                                                    const std::pair< std::string, std::pair< std::string, std::string > > &function,
                                                    const std::pair< std::string, std::pair< std::string, std::string > > &velocity,
                                                    const std::pair< std::string, std::pair< std::string, std::string > > &outside) :
                                                       dolfin::Expression(value_shape), 
                                                       bucket_(bucket), 
+                                                      time_(time),
                                                       funcname_(function),
                                                       velname_(velocity),
                                                       outname_(outside),
@@ -108,13 +112,13 @@ void SemiLagrangianExpression::init()
     {
       func_ = (*(*(*bucket()).fetch_system(funcname_.first)).
                fetch_field(funcname_.second.second)).
-               genericfunction_ptr((*bucket()).old_time_ptr());
+               genericfunction_ptr(time());
     }
     else
     {
       func_ = (*(*(*bucket()).fetch_system(funcname_.first)).
                fetch_coeff(funcname_.second.second)).
-               genericfunction_ptr((*bucket()).old_time_ptr());
+               genericfunction_ptr(time());
     }
 
     if(velname_.second.first=="field")
@@ -140,13 +144,13 @@ void SemiLagrangianExpression::init()
     {
       out_ = (*(*(*bucket()).fetch_system(outname_.first)).
                fetch_field(outname_.second.second)).
-               genericfunction_ptr((*bucket()).old_time_ptr());
+               genericfunction_ptr(time());
     }
     else
     {
       out_ = (*(*(*bucket()).fetch_system(outname_.first)).
                fetch_coeff(outname_.second.second)).
-               genericfunction_ptr((*bucket()).old_time_ptr());
+               genericfunction_ptr(time());
     }
 
     assert(value_rank()==(*func_).value_rank());

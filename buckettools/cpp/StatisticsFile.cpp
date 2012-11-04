@@ -238,7 +238,7 @@ void StatisticsFile::data_field_(FunctionBucket_const_it f_begin,
         int components = func.value_size();
         for (uint i = 0; i < components; i++)
         {
-          dolfin::Function funccomp = func[i];                                        // take a deep copy of the component of the subfunction
+          dolfin::Function funccomp = func[i];                       // take a deep copy of the component of the subfunction
           file_ << (*funccomp.vector()).max() << " ";                // maximum for all components
         }
 
