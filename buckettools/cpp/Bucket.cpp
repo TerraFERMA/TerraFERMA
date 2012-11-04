@@ -109,10 +109,6 @@ void Bucket::solve(const int &location)
     if((*(*s_it).second).solve_location()==location)
     {
       (*(*s_it).second).solve();
-
-      (*(*s_it).second).cap_values();                                // if fields have requested that their values are capped, do it
-                                                                     // now 
-
     }
   }
 }
@@ -880,8 +876,6 @@ void Bucket::output(const int &location)
           (write_det    && (*(*s_it).second).include_in_detectors())        )
       {
         (*(*s_it).second).solve();                                   // solve for those fields
-        (*(*s_it).second).cap_values();                              // if fields have requested that their values are capped, do it
-                                                                     // now 
         systems_solved = true;
       }
     }
@@ -1169,8 +1163,6 @@ void Bucket::solve_at_start_()
     if((*(*s_it).second).solve_location()==SOLVE_START)
     {
       (*(*s_it).second).solve();
-      (*(*s_it).second).cap_values();                                // if fields have requested that their values are capped, do it
-                                                                     // now 
       systems_solved = true;
     }
   }

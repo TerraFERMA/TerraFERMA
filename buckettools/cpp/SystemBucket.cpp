@@ -43,6 +43,8 @@ void SystemBucket::solve()
   {
     (*(*s_it).second).solve();
 
+    cap_values();
+
     (*(*residualfunction_).vector()) = (*boost::dynamic_pointer_cast< dolfin::GenericVector >((*(*s_it).second).residual_vector()));
     // update_nonlinear...
   }
