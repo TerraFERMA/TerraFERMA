@@ -1,7 +1,6 @@
 import os
 import subprocess
 import sys
-import libspud
 import hashlib
 import shutil
 import threading
@@ -23,22 +22,9 @@ class ThreadIterator(list):
     else:
       ans=None
     self.lock.release()
-    if ans==None:
+    if ans is None:
       raise StopIteration
     return ans
-
-class ThreadSpudLock:
-  '''A thread-safe way of loading libspud.'''
-  def __init__(self):
-    self.lock=threading.Lock()
-
-  def load_options(self, filename):
-    self.lock.acquire()
-    libspud.load_options(filename)
-
-  def clear_options(self):
-    libspud.clear_options()
-    self.lock.release()
 
 class SimulationBatch:
   def __init__(self, name, ext, scriptdirectory, basebucketdirectory, globaloptionsdict, simulationtype=None, nthreads=1):
@@ -160,14 +146,8 @@ class Simulation:
     self.lock=threading.Lock()
 
   def writeoptions(self):
-    libspud.load_options(os.path.join(self.basedirectory, self.name+self.ext))
-    self.updateoptions()
-    try:
-      os.makedirs(self.rundirectory)
-    except OSError:
-      pass
-    libspud.write_options(os.path.join(self.rundirectory, self.name+self.ext))
-    libspud.clear_options()
+    print "ERROR: writeoptions should be overloaded."
+    sys.exit(1)
 
   def updateoptions(self):
     print "ERROR: updateoptions should be overloaded."
