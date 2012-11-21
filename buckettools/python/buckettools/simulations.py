@@ -60,15 +60,36 @@ class SimulationBatch:
     self.threadruns = []
     self.threadbuilds = []
   
-  def sliceoptionsdict(self, slicedoptionslist, diroptionsdict, optionsdict={}, i=0):
+  def sliceoptionsdict(self, slicedoptionslist, diroptionsdict, optionsdict={}, i=0, orgoptiondict=None):
     if i==0: optionsdict = {}
-    if i < len(diroptionsdict): 
+    if i < len(diroptionsdict):
       item = sorted(diroptionsdict.items())[i]
-      for strvalue in item[1]:
-        optionsdict[item[0]] = strvalue
-        self.sliceoptionsdict(slicedoptionslist, diroptionsdict, optionsdict=optionsdict, i=i+1)
+      if orgoptiondict is not None:
+        if item[0] in orgoptiondict:
+          self.sliceoptionsdict(slicedoptionslist, diroptionsdict, optionsdict=optionsdict, i=i+1, orgoptiondict=orgoptiondict)
+        else:
+          for strvalue in item[1]:
+            optionsdict[item[0]] = strvalue
+            self.sliceoptionsdict(slicedoptionslist, diroptionsdict, optionsdict=optionsdict, i=i+1, orgoptiondict=orgoptiondict)
+      else:
+        for strvalue in item[1]:
+          optionsdict[item[0]] = strvalue
+          self.sliceoptionsdict(slicedoptionslist, diroptionsdict, optionsdict=optionsdict, i=i+1, orgoptiondict=orgoptiondict)
     else:
-      slicedoptionslist.append(copy.deepcopy(optionsdict))
+      if orgoptiondict is not None:
+        assert(len(orgoptiondict)==1)
+        item = orgoptiondict.items()[0]
+        if item[0] in diroptionsdict:
+          orgoptionslist = []
+          for strvalue in item[1]:
+            if strvalue in diroptionsdict[item[0]]:
+              optionsdict[item[0]] = strvalue
+              orgoptionslist.append(copy.deepcopy(optionsdict))
+            else:
+              orgoptionslist.append(None)
+          slicedoptionslist.append(orgoptionslist)
+      else:
+        slicedoptionslist.append(copy.deepcopy(optionsdict))
 
   def collatebuilds(self):
     self.builds = {}
