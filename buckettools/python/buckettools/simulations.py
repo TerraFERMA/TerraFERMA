@@ -29,6 +29,7 @@ class ThreadIterator(list):
 class SimulationBatch:
   def __init__(self, name, ext, scriptdirectory, basebucketdirectory, globaloptionsdict, simulationtype=None, nthreads=1):
     self.globaloptionsdict = globaloptionsdict
+    self.scriptdirectory = scriptdirectory
     self.nthreads = nthreads
     self.simulations = []
     for dirname, diroptionsdict in self.globaloptionsdict.iteritems():
@@ -146,9 +147,27 @@ class SimulationBatch:
       '''Wait until all threads finish'''
       t.join() 
 
+  def threadpostprocess(self):
+    for simulation in self.threadruns: simulation.postprocess()
+
+  def postprocess(self, level=-1):
+    threadlist=[]
+    self.threadruns = ThreadIterator([value['simulation'] for value in sorted(self.runs.values(), key=lambda value: value['level']) if value['level'] >= level])
+    for i in range(self.nthreads):
+      threadlist.append(threading.Thread(target=self.threadpostprocess))
+      threadlist[-1].start()
+    for t in threadlist:
+      '''Wait until all threads finish'''
+      t.join() 
+
   def writeoptions(self, level=-1):
     runs = [value['simulation'] for value in sorted(self.runs.values(), key=lambda value: value['level']) if value['level'] >= level]
     for simulation in runs: simulation.writeoptions()  # not thread safe so don't thread it!
+
+def rundirectorystr(basedirectory, optionsdict):
+    rundirectory = basedirectory
+    for directory in [item[0]+"_"+item[1] for item in sorted(optionsdict.items())]: rundirectory = os.path.join(rundirectory, directory)
+    return rundirectory
 
 class Simulation:
   def __init__(self, name, ext, scriptdirectory, basedirectory, basebucketdirectory, optionsdict, nruns=1, dependents=[]):
@@ -158,8 +177,7 @@ class Simulation:
     self.scriptdirectory = scriptdirectory
     self.basebucketdirectory = basebucketdirectory
     self.basedirectory = os.path.join(self.scriptdirectory, basedirectory)  # directory in which the options file is stored
-    self.rundirectory = self.basedirectory
-    for directory in [item[0]+"_"+item[1] for item in sorted(optionsdict.items())]: self.rundirectory = os.path.join(self.rundirectory, directory)
+    self.rundirectory = rundirectorystr(self.basedirectory, optionsdict)
     self.builddirectory = self.rundirectory
     self.nruns = nruns
     self.dependencies = []
@@ -277,6 +295,9 @@ class Simulation:
 
     self.lock.release()
       
+  def postprocess(self):
+    return None
+
   def extract(self, options):
     suboptionsdict = {}
     for option in options: suboptionsdict[option] = self.optionsdict[option]
