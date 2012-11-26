@@ -460,6 +460,16 @@ class InterpolatedSciPySpline:
     tck = self.copytck()
     tck[1][0] = tck[1][0]-xint
     tck[1][1] = tck[1][1]-yint
+
+    if numpy.all(numpy.sign(tck[1][0])==numpy.sign(tck[1][0])[0]) \
+       and numpy.all(numpy.sign(tck[1][1])==numpy.sign(tck[1][1])[0]):
+      if numpy.abs(tck[1][0]).min() < numpy.abs(tck[1][1]).min():
+        assert(numpy.abs(tck[1][0]).min() < self.length*1.e-10)
+        tck[1][0] = tck[1][0] - tck[1][0][numpy.abs(tck[1][0]).argmin()]
+      else:
+        assert(numpy.abs(tck[1][1]).min() < self.length*1.e-10)
+        tck[1][1] = tck[1][1] - tck[1][1][numpy.abs(tck[1][1]).argmin()]
+
     t = tck[0]
     c0 = numpy.concatenate( (tck[1][0], numpy.array([0]*(len(t)-len(tck[1][0])), dtype=tck[1][0].dtype)))
     c1 = numpy.concatenate( (tck[1][1], numpy.array([0]*(len(t)-len(tck[1][1])), dtype=tck[1][1].dtype)))
@@ -504,6 +514,7 @@ class InterpolatedSciPySpline:
     spoint = self.uintersectxy(x, y)
     for i in range(2): 
       if len(spoint[i])>0: break
+    if len(spoint[i])==0: print "x, y = ", x, y
     loc = self.interpcurveindex(spoint[i][0])
     totallength = sqrt((self.interpcurves[loc].points[-1].x - self.interpcurves[loc].points[0].x)**2 \
                       +(self.interpcurves[loc].points[-1].y - self.interpcurves[loc].points[0].y)**2)
