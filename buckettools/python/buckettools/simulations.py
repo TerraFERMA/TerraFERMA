@@ -281,6 +281,11 @@ class Simulation:
       if output_missing or input_changed or force:
         print "  running in directory ", self.rundirectory
         # file has changed or a recompilation is necessary
+        for filepath in requiredoutput:
+          try:
+            os.remove(os.path.join(dirname, filepath))
+          except OSError:
+            pass
         for filepath in requiredinput:
           shutil.copy(filepath, os.path.join(dirname, os.path.basename(filepath)))
         
