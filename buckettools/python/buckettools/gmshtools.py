@@ -461,6 +461,11 @@ class InterpolatedSciPySpline:
     tck[1][0] = tck[1][0]-xint
     tck[1][1] = tck[1][1]-yint
 
+    if tck[1][0][0]==0.0:  return [[0.0], []]
+    if tck[1][0][-1]==0.0: return [[1.0], []]
+    if tck[1][1][0]==0.0:  return [[], [0.0]]
+    if tck[1][1][-1]==0.0: return [[], [1.0]]
+
     if numpy.all(numpy.sign(tck[1][0])==numpy.sign(tck[1][0])[0]) \
        and numpy.all(numpy.sign(tck[1][1])==numpy.sign(tck[1][1])[0]):
       if numpy.abs(tck[1][0]).min() < numpy.abs(tck[1][1]).min():
