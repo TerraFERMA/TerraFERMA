@@ -5,6 +5,8 @@ import hashlib
 import shutil
 import threading
 import copy
+import string
+import glob
 
 class ThreadIterator(list):
   '''A thread-safe iterator over a list.'''
@@ -26,8 +28,212 @@ class ThreadIterator(list):
       raise StopIteration
     return ans
 
+class Simulation:
+  def __init__(self, name, ext, scriptdirectory, basedirectory, basebucketdirectory, \
+               optionsdict, nruns=1, dependents=[], checkpointdict={}):
+    self.optionsdict = optionsdict
+    self.checkpointdict = checkpointdict
+    self.name = name
+    self.ext = ext
+    self.scriptdirectory = scriptdirectory
+    self.basebucketdirectory = basebucketdirectory
+    self.basedirectory = os.path.join(self.scriptdirectory, basedirectory)  # directory in which the options file is stored
+    self.rundirectory = rundirectorystr(self.basedirectory, optionsdict)
+    self.builddirectory = self.rundirectory
+    self.nruns = nruns
+    self.dependencies = []
+    self.dependents = dependents
+    self.lock=threading.Lock()
+
+  def writeoptions(self):
+    print "ERROR: writeoptions should be overloaded."
+    sys.exit(1)
+
+  def writecheckpointoptions(self):
+    print "ERROR: writecheckpointoptions should be overloaded."
+    sys.exit(1)
+
+  def updateoptions(self, optionsdict):
+    print "ERROR: updateoptions should be overloaded."
+    sys.exit(1)
+
+  def configure(self, force=False):
+    
+    dirname = os.path.join(self.builddirectory, "build")
+    if force: 
+      try:
+        shutil.rmtree(dirname)
+      except OSError:
+        pass
+    
+    try:
+      os.makedirs(dirname)
+    except OSError:
+      pass
+
+    p = subprocess.Popen(["cmake", \
+                          "-DOPTIONSFILE="+os.path.join(self.builddirectory, self.name+self.ext), \
+                          "-DCMAKE_BUILD_TYPE=RelWithDebInfo", \
+                          "-DLOGLEVEL=INFO", \
+                          "-DEXECUTABLE="+self.name, \
+                          os.path.join(self.basebucketdirectory,os.curdir)],
+                          cwd=dirname)
+    retcode = p.wait()
+    if retcode!=0:
+      print "ERROR cmake returned ", retcode, " in directory: ", dirname
+      sys.exit(1)
+
+  def build(self, force=False):
+
+    dirname = os.path.join(self.builddirectory, "build")
+    if force:
+      p = subprocess.Popen(["make", "clean"], cwd=dirname)
+      retcode = p.wait()
+      if retcode!=0:
+        print "ERROR make clean returned ", retcode, " in directory: ", dirname
+        sys.exit(1)
+
+    p = subprocess.Popen(["make"], cwd=dirname)
+    retcode = p.wait()
+    if retcode!=0:
+      print "ERROR make returned ", retcode, " in directory: ", dirname
+      sys.exit(1)
+
+  def checkpointrun(self):
+
+    if len(self.checkpointdict)==0: return None
+    
+    for r in range(self.nruns):
+      dirname = os.path.join(self.rundirectory, "run_"+`r`)
+
+      for root, dirnames, files in os.walk(dirname, topdown=True):
+        depth = string.count(root, os.path.sep) - string.count(dirname, os.path.sep) + 1
+        if "checkpoint" in dirnames:
+          dirnames[:] = ["checkpoint"]
+        else:
+          dirnames[:] = []
+
+
+      basedir = root
+
+      print "checking in directory ", os.path.relpath(basedir, self.scriptdirectory)
+
+      files = glob.glob1(basedir, "*"+self.ext)
+      files = [f for f in files if "_checkpoint"*depth in f]
+      files = sorted(files, key=lambda f: int(f.split(self.ext)[0].split("_")[-1]))
+
+      if len(files)==0: continue
+      
+      basefile = files[-1]
+
+      requiredinput = self.getrequiredcheckpointinput(basedir, basefile)
+      commands = self.getcheckpointcommands(basefile)
+
+      dirname = os.path.join(basedir, "checkpoint")
+      try:
+        os.makedirs(dirname)
+      except OSError:
+        pass
+        
+      print "  running in directory ", os.path.relpath(dirname, self.scriptdirectory)
+      for filepath in requiredinput:
+        shutil.copy(filepath, os.path.join(dirname, os.path.basename(filepath)))
+      self.writecheckpointoptions(basedir, basefile)
+      
+      for command in commands:
+        p = subprocess.Popen(command, cwd=dirname)
+        retcode = p.wait()
+        if retcode!=0:
+          print "ERROR Command ", command, " returned ", retcode, " in directory: ", dirname
+          #sys.exit(1)
+      
+      print "  finished in directory ", os.path.relpath(dirname, self.scriptdirectory)
+
+  def run(self, force=False):
+    
+    self.lock.acquire()
+    
+    for dependency in self.dependencies: dependency.run(force=force)
+    
+    print "checking in directory ", os.path.relpath(self.rundirectory, self.scriptdirectory)
+
+    requiredinput = self.getrequiredinput()
+    requiredoutput = self.getrequiredoutput()
+    commands = self.getcommands()
+
+    for r in range(self.nruns):
+      dirname = os.path.join(self.rundirectory, "run_"+`r`)
+      try:
+        os.makedirs(dirname)
+      except OSError:
+        pass
+
+      input_changed = False
+      for filepath in requiredinput:
+        try:
+          checksum = hashlib.md5(open(os.path.join(dirname, os.path.basename(filepath))).read()).hexdigest()
+        except:
+          checksum = None
+        input_changed = input_changed or checksum != hashlib.md5(open(filepath).read()).hexdigest()
+
+      output_missing = False
+      for filepath in requiredoutput:
+        try:
+          output_file = open(os.path.join(dirname, filepath))
+          output_file.close()
+        except IOError:
+          output_missing = True
+      if len(requiredoutput)==0: output_missing=True # don't know what output is needed so we have to force
+        
+      if output_missing or input_changed or force:
+        print "  running in directory ", os.path.relpath(dirname, self.scriptdirectory)
+        # file has changed or a recompilation is necessary
+        for filepath in requiredoutput:
+          try:
+            os.remove(os.path.join(dirname, filepath))
+          except OSError:
+            pass
+        for filepath in requiredinput:
+          shutil.copy(filepath, os.path.join(dirname, os.path.basename(filepath)))
+        
+        for command in commands:
+          p = subprocess.Popen(command, cwd=dirname)
+          retcode = p.wait()
+          if retcode!=0:
+            print "ERROR Command ", command, " returned ", retcode, " in directory: ", dirname
+            #sys.exit(1)
+        
+        print "  finished in directory ", os.path.relpath(dirname, self.scriptdirectory)
+
+    self.lock.release()
+      
+  def postprocess(self):
+    return None
+
+  def extract(self, options):
+    suboptionsdict = {}
+    for option in options: suboptionsdict[option] = self.optionsdict[option]
+    return suboptionsdict
+
+  def getrequiredoutput(self):
+    requiredoutput = []
+    return requiredoutput
+ 
+  def getrequiredinput(self):
+    requiredinput = [os.path.join(self.rundirectory, self.name+self.ext)]
+    return requiredinput
+
+  def getcheckpointcommands(self, basefile):
+    commands = [[os.path.join(self.builddirectory, "build", self.name), "-vINFO", "-l", basefile]]
+    return commands
+
+  def getcommands(self):
+    commands = [[os.path.join(self.builddirectory, "build", self.name), "-vINFO", "-l", self.name+self.ext]]
+    return commands
+
 class SimulationBatch:
-  def __init__(self, name, ext, scriptdirectory, basebucketdirectory, globaloptionsdict, simulationtype=None, nthreads=1):
+  def __init__(self, name, ext, scriptdirectory, basebucketdirectory, globaloptionsdict, \
+               simulationtype=Simulation, nthreads=1):
     self.globaloptionsdict = globaloptionsdict
     self.scriptdirectory = scriptdirectory
     self.nthreads = nthreads
@@ -35,11 +241,11 @@ class SimulationBatch:
     for dirname, diroptionsdict in self.globaloptionsdict.iteritems():
       slicedoptionslist = []
       self.sliceoptionsdict(slicedoptionslist, diroptionsdict["options"])
+      checkpointdict = {}
+      if "checkpoint" in diroptionsdict: checkpointdict = diroptionsdict["checkpoint"]
       for optionsdict in slicedoptionslist:
-        if simulationtype==None:
-          self.simulations.append(Simulation(name, ext, scriptdirectory, dirname, basebucketdirectory, optionsdict))
-        else:
-          self.simulations.append(simulationtype(name, ext, scriptdirectory, dirname, basebucketdirectory, optionsdict))
+        self.simulations.append(simulationtype(name, ext, scriptdirectory, dirname, basebucketdirectory, \
+                                               optionsdict, checkpointdict=checkpointdict))
     self.runs = {}
     self.collateruns()
     self.builds = {}
@@ -147,6 +353,19 @@ class SimulationBatch:
       '''Wait until all threads finish'''
       t.join() 
 
+  def threadcheckpointrun(self):
+    for simulation in self.threadruns: simulation.checkpointrun()
+
+  def checkpointrun(self, level=-1):
+    threadlist=[]
+    self.threadruns = ThreadIterator([value['simulation'] for value in sorted(self.runs.values(), key=lambda value: value['level']) if value['level'] >= level])
+    for i in range(self.nthreads):
+      threadlist.append(threading.Thread(target=self.threadcheckpointrun))
+      threadlist[-1].start()
+    for t in threadlist:
+      '''Wait until all threads finish'''
+      t.join() 
+
   def threadpostprocess(self):
     for simulation in self.threadruns: simulation.postprocess()
 
@@ -168,155 +387,4 @@ def rundirectorystr(basedirectory, optionsdict):
     rundirectory = basedirectory
     for directory in [item[0]+"_"+item[1] for item in sorted(optionsdict.items())]: rundirectory = os.path.join(rundirectory, directory)
     return rundirectory
-
-class Simulation:
-  def __init__(self, name, ext, scriptdirectory, basedirectory, basebucketdirectory, optionsdict, nruns=1, dependents=[]):
-    self.optionsdict = optionsdict
-    self.name = name
-    self.ext = ext
-    self.scriptdirectory = scriptdirectory
-    self.basebucketdirectory = basebucketdirectory
-    self.basedirectory = os.path.join(self.scriptdirectory, basedirectory)  # directory in which the options file is stored
-    self.rundirectory = rundirectorystr(self.basedirectory, optionsdict)
-    self.builddirectory = self.rundirectory
-    self.nruns = nruns
-    self.dependencies = []
-    self.dependents = dependents
-    self.lock=threading.Lock()
-
-  def writeoptions(self):
-    print "ERROR: writeoptions should be overloaded."
-    sys.exit(1)
-
-  def updateoptions(self):
-    print "ERROR: updateoptions should be overloaded."
-    sys.exit(1)
-
-  def configure(self, force=False):
-    
-    self.lock.acquire()
-
-    dirname = os.path.join(self.builddirectory, "build")
-    if force: 
-      try:
-        shutil.rmtree(dirname)
-      except OSError:
-        pass
-    
-    try:
-      os.makedirs(dirname)
-    except OSError:
-      pass
-
-    p = subprocess.Popen(["cmake", \
-                          "-DOPTIONSFILE="+os.path.join(self.builddirectory, self.name+self.ext), \
-                          "-DCMAKE_BUILD_TYPE=RelWithDebInfo", \
-                          "-DLOGLEVEL=INFO", \
-                          "-DEXECUTABLE="+self.name, \
-                          os.path.join(self.basebucketdirectory,os.curdir)],
-                          cwd=dirname)
-    retcode = p.wait()
-    if retcode!=0:
-      print "ERROR cmake returned ", retcode, " in directory: ", dirname
-      sys.exit(1)
-
-    self.lock.release()
-
-  def build(self, force=False):
-
-    self.lock.acquire()
-
-    dirname = os.path.join(self.builddirectory, "build")
-    if force:
-      p = subprocess.Popen(["make", "clean"], cwd=dirname)
-      retcode = p.wait()
-      if retcode!=0:
-        print "ERROR make clean returned ", retcode, " in directory: ", dirname
-        sys.exit(1)
-
-    p = subprocess.Popen(["make"], cwd=dirname)
-    retcode = p.wait()
-    if retcode!=0:
-      print "ERROR make returned ", retcode, " in directory: ", dirname
-      sys.exit(1)
-
-    self.lock.release()
-
-  def run(self, force=False):
-    
-    self.lock.acquire()
-    
-    for dependency in self.dependencies: dependency.run(force=force)
-    
-    print "checking in directory ", self.rundirectory
-
-    requiredinput = self.getrequiredinput()
-    requiredoutput = self.getrequiredoutput()
-    commands = self.getcommands()
-
-    for r in range(self.nruns):
-      dirname = os.path.join(self.rundirectory, "run_"+`r`)
-      try:
-        os.makedirs(dirname)
-      except OSError:
-        pass
-
-      input_changed = False
-      for filepath in requiredinput:
-        try:
-          checksum = hashlib.md5(open(os.path.join(dirname, os.path.basename(filepath))).read()).hexdigest()
-        except:
-          checksum = None
-        input_changed = input_changed or checksum != hashlib.md5(open(filepath).read()).hexdigest()
-
-      output_missing = False
-      for filepath in requiredoutput:
-        try:
-          output_file = open(os.path.join(dirname, filepath))
-          output_file.close()
-        except IOError:
-          output_missing = True
-      if len(requiredoutput)==0: output_missing=True # don't know what output is needed so we have to force
-        
-      if output_missing or input_changed or force:
-        print "  running in directory ", self.rundirectory
-        # file has changed or a recompilation is necessary
-        for filepath in requiredoutput:
-          try:
-            os.remove(os.path.join(dirname, filepath))
-          except OSError:
-            pass
-        for filepath in requiredinput:
-          shutil.copy(filepath, os.path.join(dirname, os.path.basename(filepath)))
-        
-        for command in commands:
-          p = subprocess.Popen(command, cwd=dirname)
-          retcode = p.wait()
-          if retcode!=0:
-            print "ERROR Command ", command, " returned ", retcode, " in directory: ", dirname
-            #sys.exit(1)
-        
-        print "  finished in directory ", self.rundirectory
-
-    self.lock.release()
-      
-  def postprocess(self):
-    return None
-
-  def extract(self, options):
-    suboptionsdict = {}
-    for option in options: suboptionsdict[option] = self.optionsdict[option]
-    return suboptionsdict
-
-  def getrequiredoutput(self):
-    requiredoutput = []
-    return requiredoutput
- 
-  def getrequiredinput(self):
-    requiredinput = [os.path.join(self.rundirectory, self.name+self.ext)]
-    return requiredinput
-
-  def getcommands(self):
-    commands = [[os.path.join(self.builddirectory, "build", self.name), "-vINFO", "-l", self.name+self.ext]]
-    return commands
 
