@@ -109,10 +109,14 @@ class Simulation:
       for root, dirnames, files in os.walk(dirname, topdown=True):
         depth = string.count(root, os.path.sep) - string.count(dirname, os.path.sep) + 1
         if "checkpoint" in dirnames:
+          # there is a checkpoint directory beneath the current directory
           dirnames[:] = ["checkpoint"]
+          files = glob.glob1(os.path.join(root, "checkpoint"), "*"+self.ext)
+          files = [f for f in files if "_checkpoint"*(depth+1) in f]
+          if len(files)==0: dirnames[:] = [] # but it contains no appropriate checkpoint files so don't descend
         else:
+          # there is no checkpoint directory beneath the current directory
           dirnames[:] = []
-
 
       basedir = root
 
