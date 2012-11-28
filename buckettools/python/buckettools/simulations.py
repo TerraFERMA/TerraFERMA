@@ -211,7 +211,7 @@ class Simulation:
 
     self.lock.release()
       
-  def postprocess(self):
+  def postprocess(self, force=False):
     return None
 
   def extract(self, options):
@@ -370,14 +370,14 @@ class SimulationBatch:
       '''Wait until all threads finish'''
       t.join() 
 
-  def threadpostprocess(self):
-    for simulation in self.threadruns: simulation.postprocess()
+  def threadpostprocess(self, force=False):
+    for simulation in self.threadruns: simulation.postprocess(force=force)
 
-  def postprocess(self, level=-1):
+  def postprocess(self, level=-1, force=False):
     threadlist=[]
     self.threadruns = ThreadIterator([value['simulation'] for value in sorted(self.runs.values(), key=lambda value: value['level']) if value['level'] >= level])
     for i in range(self.nthreads):
-      threadlist.append(threading.Thread(target=self.threadpostprocess))
+      threadlist.append(threading.Thread(target=self.threadpostprocess, kwargs={'force':force}))
       threadlist[-1].start()
     for t in threadlist:
       '''Wait until all threads finish'''
