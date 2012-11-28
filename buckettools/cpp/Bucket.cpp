@@ -51,7 +51,7 @@ void Bucket::run()
   solve_at_start_();
 
   dolfin::log(dolfin::INFO, "Entering timeloop.");
-  bool continue_timestepping = true;
+  bool continue_timestepping = !complete_timestepping();
   while (continue_timestepping) 
   {                                                                  // loop over time
 
@@ -109,10 +109,6 @@ void Bucket::solve(const int &location)
     if((*(*s_it).second).solve_location()==location)
     {
       (*(*s_it).second).solve();
-
-      (*(*s_it).second).cap_values();                                // if fields have requested that their values are capped, do it
-                                                                     // now 
-
     }
   }
 }
@@ -233,13 +229,7 @@ void Bucket::update_nonlinear()
 //*******************************************************************|************************************************************//
 bool Bucket::complete()
 {
-  bool completed = false;
-  
-  if (current_time() >= finish_time())
-  {
-    dolfin::log(dolfin::WARNING, "Finish time reached, terminating timeloop.");
-    completed = true;
-  }
+  bool completed = complete_timestepping();
 
   if (steadystate_())
   {
@@ -251,6 +241,33 @@ bool Bucket::complete()
   {
     dolfin::log(dolfin::ERROR, "SigInt received, terminating timeloop.");
     completed = true;
+  }
+
+  return completed;
+}
+
+//*******************************************************************|************************************************************//
+// return a boolean indicating if the simulation has finished or not
+//*******************************************************************|************************************************************//
+bool Bucket::complete_timestepping()
+{
+  bool completed = false;
+  
+  if (finish_time_)
+  {
+    if (current_time() >= finish_time())
+    {
+      dolfin::log(dolfin::WARNING, "Finish time reached, terminating timeloop.");
+      completed = true;
+    }
+  }
+  else
+  {
+    if (timestep_count() >= number_timesteps())
+    {
+      dolfin::log(dolfin::WARNING, "Number timesteps reached, terminating timeloop.");
+      completed = true;
+    }
   }
 
   return completed;
@@ -300,6 +317,7 @@ void Bucket::copy_diagnostics(Bucket_ptr &bucket) const
   (*bucket).old_time_ = old_time_;
   (*bucket).current_time_ = current_time_;
   (*bucket).finish_time_ = finish_time_;
+  (*bucket).number_timesteps_ = number_timesteps_;
   (*bucket).timestep_count_ = timestep_count_;
   (*bucket).timestep_ = timestep_;
   (*bucket).nonlinear_iterations_ = nonlinear_iterations_;
@@ -367,6 +385,15 @@ const double Bucket::finish_time() const
 {
   assert(finish_time_);
   return *finish_time_;
+}
+
+//*******************************************************************|************************************************************//
+// return the number of timesteps after which the simulation will finish
+//*******************************************************************|************************************************************//
+const double Bucket::number_timesteps() const
+{
+  assert(number_timesteps_);
+  return *number_timesteps_;
 }
 
 //*******************************************************************|************************************************************//
@@ -849,8 +876,6 @@ void Bucket::output(const int &location)
           (write_det    && (*(*s_it).second).include_in_detectors())        )
       {
         (*(*s_it).second).solve();                                   // solve for those fields
-        (*(*s_it).second).cap_values();                              // if fields have requested that their values are capped, do it
-                                                                     // now 
         systems_solved = true;
       }
     }
@@ -1138,8 +1163,6 @@ void Bucket::solve_at_start_()
     if((*(*s_it).second).solve_location()==SOLVE_START)
     {
       (*(*s_it).second).solve();
-      (*(*s_it).second).cap_values();                                // if fields have requested that their values are capped, do it
-                                                                     // now 
       systems_solved = true;
     }
   }

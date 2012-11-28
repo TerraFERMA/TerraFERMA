@@ -312,23 +312,9 @@ NOTE: only available with Petsc &gt;= 3.2 and with petsc &gt; 3.2 this maps to v
         </element>
       </element>
       <element name="snes_type">
-        <a:documentation>The SNES type.</a:documentation>
+        <a:documentation>The SNES type.  KSP only - treat as a linear problem.</a:documentation>
         <attribute name="name">
-          <value>tr</value>
-        </attribute>
-        <empty/>
-      </element>
-      <element name="snes_type">
-        <a:documentation>The SNES type.</a:documentation>
-        <attribute name="name">
-          <value>python</value>
-        </attribute>
-        <empty/>
-      </element>
-      <element name="snes_type">
-        <a:documentation>The SNES type.</a:documentation>
-        <attribute name="name">
-          <value>test</value>
+          <value>ksponly</value>
         </attribute>
         <empty/>
       </element>

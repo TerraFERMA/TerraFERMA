@@ -68,6 +68,8 @@ namespace buckettools
 
     bool complete();                                                 // indicate if the simulation is complete or not
 
+    bool complete_timestepping();                                    // indicate if timestepping is complete or not
+
     //***************************************************************|***********************************************************//
     // Filling data
     //***************************************************************|***********************************************************//
@@ -106,6 +108,8 @@ namespace buckettools
     { return current_time_; }
 
     const double finish_time() const;                                // return the finish time
+
+    const double number_timesteps() const;                           // return the number of timesteps after which the simulation will finish
 
     const double timestep() const;                                   // return the timestep (as a double)
 
@@ -274,7 +278,7 @@ namespace buckettools
     double_ptr start_time_, old_time_,
                             current_time_, finish_time_;             // the current and finish times of the simulation
 
-    int_ptr timestep_count_;                                         // the number of timesteps and number of nonlinear iterations taken
+    int_ptr timestep_count_, number_timesteps_;                      // the number of timesteps and number of nonlinear iterations taken
 
     std::pair< std::string, Constant_ptr > timestep_;                // the timestep, represented as a dolfin constant so it can be used in
                                                                      // the ufl (ufl symbol first member of pair)
