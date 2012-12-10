@@ -204,7 +204,7 @@ void ReferencePoints::init_(const Array_double_ptr coord)
   const dolfin::Mesh& mesh = *(*functionspace_).mesh();
   const dolfin::GenericDofMap& dofmap = *(*functionspace_).dofmap();
 
-  const dolfin::uint gdim = mesh.geometry().dim();
+  const std::size_t gdim = mesh.geometry().dim();
 
   double* pos = (*position_).data();
   uint dim = (*position_).size();

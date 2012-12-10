@@ -119,7 +119,7 @@ void PythonExpression::eval(dolfin::Array<double>& values,
                             const dolfin::Array<double>& x) const
 {
   PyObject *pArgs, *pPos, *pT, *px, *pResult;
-  dolfin::uint meshdim, valdim;
+  std::size_t meshdim, valdim;
   
   valdim = values.size();                                            // the size of the value space 
                                                                      // (FIXME: doesn't tell us about shape so tensors not supported)
@@ -156,7 +156,7 @@ void PythonExpression::eval(dolfin::Array<double>& values,
     
   if (PySequence_Check(pResult))                                     // is the result a sequence (FIXME: assumed vector, not tensor)
   {                                                                  // yes, ...
-    for (dolfin::uint i = 0; i<valdim; i++)                          // loop over the value dimension
+    for (std::size_t i = 0; i<valdim; i++)                          // loop over the value dimension
     {
       px = PySequence_GetItem(pResult, i);                           // get the item from the python sequence
       values[i] = PyFloat_AsDouble(px);                              // convert it to a float

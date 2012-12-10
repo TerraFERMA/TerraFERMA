@@ -70,7 +70,7 @@ namespace buckettools
     std::string      name_;                                          // reference point name (not really necessary)
     Array_double_ptr position_;                                      // array giving location of reference point
     FunctionSpace_ptr functionspace_;                                // functionspace to which this reference point is applied
-    std::vector<dolfin::uint> dof_;                                  // list of the degrees of freedom 
+    std::vector<std::size_t> dof_;                                  // list of the degrees of freedom 
 
     //***************************************************************|***********************************************************//
     // Initialization
