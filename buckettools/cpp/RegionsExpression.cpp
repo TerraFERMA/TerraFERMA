@@ -9,9 +9,9 @@ using namespace buckettools;
 //*******************************************************************|************************************************************//
 // specific constructor (scalar)
 //*******************************************************************|************************************************************//
-RegionsExpression::RegionsExpression(std::map< uint, 
+RegionsExpression::RegionsExpression(std::map< std::size_t, 
                                      Expression_ptr > expressions,
-                                     MeshFunction_uint_ptr cell_ids) : 
+                                     MeshFunction_size_t_ptr cell_ids) : 
                                             dolfin::Expression(), 
                                             expressions_(expressions),
                                             cell_ids_(cell_ids)
@@ -23,9 +23,9 @@ RegionsExpression::RegionsExpression(std::map< uint,
 // specific constructor (vector)
 //*******************************************************************|************************************************************//
 RegionsExpression::RegionsExpression(const uint &dim, 
-                                     std::map< uint, Expression_ptr > 
+                                     std::map< std::size_t, Expression_ptr > 
                                                expressions,
-                                     MeshFunction_uint_ptr cell_ids) : 
+                                     MeshFunction_size_t_ptr cell_ids) : 
                                      dolfin::Expression(dim), 
                                      expressions_(expressions),
                                      cell_ids_(cell_ids)
@@ -37,9 +37,9 @@ RegionsExpression::RegionsExpression(const uint &dim,
 // specific constructor (tensor)
 //*******************************************************************|************************************************************//
 RegionsExpression::RegionsExpression(const uint &dim0, const uint &dim1, 
-                                     std::map< uint, Expression_ptr > 
+                                     std::map< std::size_t, Expression_ptr > 
                                                expressions,
-                                     MeshFunction_uint_ptr cell_ids) : 
+                                     MeshFunction_size_t_ptr cell_ids) : 
                                      dolfin::Expression(dim0, dim1), 
                                      expressions_(expressions),
                                      cell_ids_(cell_ids)
@@ -50,11 +50,11 @@ RegionsExpression::RegionsExpression(const uint &dim0, const uint &dim1,
 //*******************************************************************|************************************************************//
 // specific constructor (alternate tensor)
 //*******************************************************************|************************************************************//
-RegionsExpression::RegionsExpression(const std::vector<uint>
+RegionsExpression::RegionsExpression(const std::vector<std::size_t>
                                                         &value_shape, 
-                                     std::map< uint, Expression_ptr > 
+                                     std::map< std::size_t, Expression_ptr > 
                                                expressions,
-                                     MeshFunction_uint_ptr cell_ids) : 
+                                     MeshFunction_size_t_ptr cell_ids) : 
                                      dolfin::Expression(value_shape), 
                                      expressions_(expressions),
                                      cell_ids_(cell_ids)
@@ -79,7 +79,7 @@ void RegionsExpression::eval(dolfin::Array<double>& values,
                                       const ufc::cell &cell) const
 {
   uint id = (*cell_ids_)[cell.index];
-  uint_Expression_const_it e_it = expressions_.find(id);
+  size_t_Expression_const_it e_it = expressions_.find(id);
   if (e_it == expressions_.end())
   {
     dolfin::error("Unknown region id %d in RegionsExpression eval", id);

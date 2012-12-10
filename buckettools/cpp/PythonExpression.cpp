@@ -43,7 +43,7 @@ PythonExpression::PythonExpression(const uint &dim0,
 //*******************************************************************|************************************************************//
 // specific constructor (alternate tensor)
 //*******************************************************************|************************************************************//
-PythonExpression::PythonExpression(const std::vector<uint> 
+PythonExpression::PythonExpression(const std::vector<std::size_t> 
                                                       &value_shape, 
                                    const std::string &function) : 
                                      dolfin::Expression(value_shape), 
@@ -93,7 +93,7 @@ PythonExpression::PythonExpression(const uint &dim0,
 //*******************************************************************|************************************************************//
 // specific constructor (alternate tensor)
 //*******************************************************************|************************************************************//
-PythonExpression::PythonExpression(const std::vector<uint> 
+PythonExpression::PythonExpression(const std::vector<std::size_t> 
                                                       &value_shape, 
                                    const std::string &function,
                                    const double_ptr time) : 

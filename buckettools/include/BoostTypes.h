@@ -44,7 +44,7 @@ namespace buckettools {
   typedef boost::shared_ptr< dolfin::Constant >                     Constant_ptr;
   typedef boost::shared_ptr< dolfin::Expression >                   Expression_ptr;
   typedef boost::shared_ptr< dolfin::Mesh >                         Mesh_ptr;
-  typedef boost::shared_ptr< const dolfin::MeshFunction< std::size_t > > MeshFunction_uint_ptr;
+  typedef boost::shared_ptr< const dolfin::MeshFunction< std::size_t > > MeshFunction_size_t_ptr;
   typedef boost::shared_ptr< dolfin::FunctionSpace >                FunctionSpace_ptr;
   typedef boost::shared_ptr< dolfin::Function >                     Function_ptr;
   typedef boost::shared_ptr< dolfin::BoundaryCondition >            BoundaryCondition_ptr;
@@ -101,8 +101,8 @@ namespace buckettools {
   typedef std::map< int, BoundaryCondition_ptr >::const_iterator         int_BoundaryCondition_const_it;
   typedef std::map< std::string, ReferencePoints_ptr >::iterator         ReferencePoints_it;
   typedef std::map< std::string, ReferencePoints_ptr >::const_iterator   ReferencePoints_const_it;
-  typedef std::map< uint, Expression_ptr >::iterator                     uint_Expression_it;
-  typedef std::map< uint, Expression_ptr >::const_iterator               uint_Expression_const_it;
+  typedef std::map< std::size_t, Expression_ptr >::iterator              size_t_Expression_it;
+  typedef std::map< std::size_t, Expression_ptr >::const_iterator        size_t_Expression_const_it;
   typedef std::map< int, FunctionSpace_ptr >::iterator                   int_FunctionSpace_it;
   typedef std::map< int, FunctionSpace_ptr >::const_iterator             int_FunctionSpace_const_it;
   typedef std::map< std::string, Form_ptr >::iterator                    Form_it;

@@ -623,7 +623,8 @@ void SpudSolverBucket::fill_solverforms_(const std::string &optionpath,
 void SpudSolverBucket::initialize_tensors_()
 {
   std::stringstream buffer;                                          // optionpath buffer
-  const std::vector<std::pair<std::pair<uint, uint>, std::pair<uint, uint> > > periodic_master_slave_dofs;                                           // dummy for now
+  const std::vector<std::pair<std::pair<std::size_t, std::size_t>, std::pair<std::size_t, std::size_t> > > 
+                                       periodic_master_slave_dofs;   // dummy for now
   dolfin::AssemblerBase assembler;
   assembler.finalize_tensor = false;
   assembler.keep_diagonal = true;
@@ -1221,7 +1222,7 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
   child_indices.clear();
   if (nfields==0)                                                    // if no fields have been specified... **no fields**
   {
-    boost::unordered_set<uint> dof_set = (*(*(*system_).functionspace()).dofmap()).dofs();
+    boost::unordered_set<std::size_t> dof_set = (*(*(*system_).functionspace()).dofmap()).dofs();
     child_indices.insert(child_indices.end(), dof_set.begin(), dof_set.end());
   }
   else
@@ -1427,7 +1428,7 @@ boost::unordered_set<uint> SpudSolverBucket::cell_dof_set_(const boost::shared_p
   boost::unordered_set<uint> dof_set;
 
   Mesh_ptr mesh = (*system_).mesh();                                 // get the mesh
-  MeshFunction_uint_ptr cellidmeshfunction;
+  MeshFunction_size_t_ptr cellidmeshfunction;
 
   if (region_ids)
   {                                                                  // yes...  **field(+component)+region(+boundary)**
@@ -1450,13 +1451,13 @@ boost::unordered_set<uint> SpudSolverBucket::cell_dof_set_(const boost::shared_p
       }
     }
 
-    std::vector<uint> dof_vec = (*dofmap).cell_dofs((*cell).index());
-    for (std::vector<uint>::const_iterator dof_it =                  // loop over the cell dof
-                            dof_vec.begin(); 
-                            dof_it < dof_vec.end(); 
-                            dof_it++)
+    std::vector<dolfin::DolfinIndex> dof_vec = (*dofmap).cell_dofs((*cell).index());
+    for (std::vector<dolfin::DolfinIndex>::const_iterator dof_it =           // loop over the cell dof
+                                    dof_vec.begin(); 
+                                    dof_it < dof_vec.end(); 
+                                    dof_it++)
     {
-      dof_set.insert(*dof_it);                                       // and insert each one into the unordered set
+      dof_set.insert((uint) *dof_it);                                       // and insert each one into the unordered set
     }                                                                // (i.e. if it hasn't been added already)
   }
 
@@ -1475,7 +1476,7 @@ boost::unordered_set<uint> SpudSolverBucket::facet_dof_set_(const boost::shared_
   boost::unordered_set<uint> dof_set;                                // set up an unordered set of dof
 
   Mesh_ptr mesh = (*system_).mesh();                                 // get the mesh
-  MeshFunction_uint_ptr facetidmeshfunction =                        // and the facet id mesh function
+  MeshFunction_size_t_ptr facetidmeshfunction =                        // and the facet id mesh function
                   (*mesh).domains().facet_domains(*mesh);
 
   for (dolfin::FacetIterator facet(*mesh); !facet.end(); ++facet)    // loop over the facets in the mesh
@@ -1494,7 +1495,7 @@ boost::unordered_set<uint> SpudSolverBucket::facet_dof_set_(const boost::shared_
 
         const uint facet_number = cell.index(*facet);                // get the local index of the facet w.r.t. the cell
 
-        std::vector<uint> cell_dof_vec;
+        std::vector<dolfin::DolfinIndex> cell_dof_vec;
         cell_dof_vec = (*dofmap).cell_dofs(cell.index());            // get the cell dof (potentially for all components)
         
         std::vector<uint> facet_dof_vec((*dofmap).num_facet_dofs(), 0);
@@ -1505,7 +1506,7 @@ boost::unordered_set<uint> SpudSolverBucket::facet_dof_set_(const boost::shared_
                                 dof_it < facet_dof_vec.end(); 
                                 dof_it++)
         {
-          dof_set.insert(cell_dof_vec[*dof_it]);                     // and insert each one into the unordered set
+          dof_set.insert((uint) cell_dof_vec[*dof_it]);                     // and insert each one into the unordered set
         }                                                            // (i.e. if it hasn't been added already)
       }
     }
@@ -1651,10 +1652,10 @@ void SpudSolverBucket::fill_values_by_field_(const std::string &optionpath, PETS
   boost::unordered_map<uint, double> value_map;
   if (nfields==0)                                                    // if no fields have been specified...
   {
-    boost::unordered_set<uint> dof_set = 
+    boost::unordered_set<std::size_t> dof_set = 
                     (*(*(*system_).functionspace()).dofmap()).dofs();
 
-    for (boost::unordered_set<uint>::const_iterator dof_it = dof_set.begin(); 
+    for (boost::unordered_set<std::size_t>::const_iterator dof_it = dof_set.begin(); 
                                   dof_it != dof_set.end(); dof_it++)
     {
       value_map[*dof_it] = 1.0;                                      // we assume a constant value of one
@@ -1773,7 +1774,7 @@ void SpudSolverBucket::fill_values_by_field_(const std::string &optionpath, PETS
   PetscMalloc(n*sizeof(PetscInt), &indices);
   dolfin::PETScVector vvec(n, "local");                             // create a local vector of local size length 
  
-  uint ind = 0;
+  dolfin::DolfinIndex ind = 0;
   if(parent_indices)
   {                                                                  // we have been passed a list of parent indices... 
                                                                      // our child indices must be a  subset of this list and indexed
@@ -1982,7 +1983,7 @@ boost::unordered_map<uint, double> SpudSolverBucket::cell_value_map_(const boost
   }
   dolfin::Array<double> values(value_size);
 
-  MeshFunction_uint_ptr cellidmeshfunction;
+  MeshFunction_size_t_ptr cellidmeshfunction;
   if (region_ids)
   {
     cellidmeshfunction =                                             // get the region id mesh function
@@ -2003,7 +2004,7 @@ boost::unordered_map<uint, double> SpudSolverBucket::cell_value_map_(const boost
       }
     }
 
-    std::vector<uint> dof_vec = (*dofmap).cell_dofs((*cell).index());
+    std::vector<dolfin::DolfinIndex> dof_vec = (*dofmap).cell_dofs((*cell).index());
 
     if(value_exp)
     {
@@ -2018,12 +2019,12 @@ boost::unordered_map<uint, double> SpudSolverBucket::cell_value_map_(const boost
         {
           x[j] = coordinates[i][j];
         }
-        (*value_exp).eval(values, x);                                   // evaluate te expression
-        value_map[dof_vec[i]] = values[exp_index];                      // and set the null space to that
+        (*value_exp).eval(values, x);                                // evaluate te expression
+        value_map[(uint) dof_vec[i]] = values[exp_index];            // and set the null space to that
       }
       else
       {
-        value_map[dof_vec[i]] = *value_const;                         // and insert each one into the unordered map
+        value_map[(uint) dof_vec[i]] = *value_const;                 // and insert each one into the unordered map
                                                                      // assuming a constant
       }
     }
@@ -2067,7 +2068,7 @@ boost::unordered_map<uint, double> SpudSolverBucket::facet_value_map_(const boos
   }
   dolfin::Array<double> values(value_size);
 
-  MeshFunction_uint_ptr facetidmeshfunction =                        // and the facet id mesh function
+  MeshFunction_size_t_ptr facetidmeshfunction =                        // and the facet id mesh function
                   (*mesh).domains().facet_domains(*mesh);
 
   for (dolfin::FacetIterator facet(*mesh); !facet.end(); ++facet)    // loop over the facets in the mesh
@@ -2086,7 +2087,7 @@ boost::unordered_map<uint, double> SpudSolverBucket::facet_value_map_(const boos
 
         const uint facet_number = cell.index(*facet);                // get the local index of the facet w.r.t. the cell
 
-        std::vector<uint> cell_dof_vec;
+        std::vector<dolfin::DolfinIndex> cell_dof_vec;
         cell_dof_vec = (*dofmap).cell_dofs(cell.index());            // get the cell dof (potentially for all components)
         
         std::vector<uint> facet_dof_vec((*dofmap).num_facet_dofs(), 0);
@@ -2105,12 +2106,12 @@ boost::unordered_map<uint, double> SpudSolverBucket::facet_value_map_(const boos
             {
               x[j] = coordinates[i][j];
             }
-            (*value_exp).eval(values, x);                               // evaluate the null space expression
-            value_map[cell_dof_vec[facet_dof_vec[i]]] = values[exp_index];
+            (*value_exp).eval(values, x);                            // evaluate the null space expression
+            value_map[(uint) cell_dof_vec[facet_dof_vec[i]]] = values[exp_index];
           }
           else
           {
-            value_map[cell_dof_vec[facet_dof_vec[i]]] = *value_const;   // and insert each one into the unordered map
+            value_map[(uint) cell_dof_vec[facet_dof_vec[i]]] = *value_const;// and insert each one into the unordered map
           }                                                          // assuming a constant
         }                                                         
       }

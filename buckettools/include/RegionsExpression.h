@@ -29,20 +29,20 @@ namespace buckettools
     //***************************************************************|***********************************************************//
     
     RegionsExpression(                                               // specific constructor (scalar)
-                      std::map< uint, Expression_ptr > expressions,
-                      MeshFunction_uint_ptr cell_ids);
+                      std::map< std::size_t, Expression_ptr > expressions,
+                      MeshFunction_size_t_ptr cell_ids);
     
     RegionsExpression(const uint &dim,                               // specific constructor (vector)
-                      std::map< uint, Expression_ptr > expressions,
-                      MeshFunction_uint_ptr cell_ids);
+                      std::map< std::size_t, Expression_ptr > expressions,
+                      MeshFunction_size_t_ptr cell_ids);
     
     RegionsExpression(const uint &dim0, const uint &dim1,            // specific constructor (tensor)
-                      std::map< uint, Expression_ptr > expressions,
-                      MeshFunction_uint_ptr cell_ids);
+                      std::map< std::size_t, Expression_ptr > expressions,
+                      MeshFunction_size_t_ptr cell_ids);
     
-    RegionsExpression(const std::vector<uint> &value_shape,          // specific constructor (alternate tensor)
-                      std::map< uint, Expression_ptr > expressions,
-                      MeshFunction_uint_ptr cell_ids);
+    RegionsExpression(const std::vector<size_t> &value_shape,          // specific constructor (alternate tensor)
+                      std::map< std::size_t, Expression_ptr > expressions,
+                      MeshFunction_size_t_ptr cell_ids);
     
     virtual ~RegionsExpression();                           // default destructor
     
@@ -58,10 +58,10 @@ namespace buckettools
     // Base data access
     //***************************************************************|***********************************************************//
 
-    const std::map< uint, Expression_ptr> expressions() const        // return the map of expressions (const version)
+    const std::map< std::size_t, Expression_ptr> expressions() const        // return the map of expressions (const version)
     { return expressions_; }
     
-    std::map< uint, Expression_ptr> expressions()                    // return the map of expressions (non-const version)
+    std::map< std::size_t, Expression_ptr> expressions()                    // return the map of expressions (non-const version)
     { return expressions_; }
     
   //*****************************************************************|***********************************************************//
@@ -74,9 +74,9 @@ namespace buckettools
     // Pointers data
     //***************************************************************|***********************************************************//
 
-    std::map< uint, Expression_ptr > expressions_;                   // map from region id to expression for that region
+    std::map< std::size_t, Expression_ptr > expressions_;                   // map from region id to expression for that region
   
-    MeshFunction_uint_ptr cell_ids_;                                 // a (boost shared) pointer to a (uint) mesh function holding the cell ids
+    MeshFunction_size_t_ptr cell_ids_;                                 // a (boost shared) pointer to a (uint) mesh function holding the cell ids
 
   };
 

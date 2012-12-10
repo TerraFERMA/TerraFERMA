@@ -324,7 +324,7 @@ namespace buckettools
                                           SolverBucket_it s_end);
 
     void collect_ics_(const uint &component,                         // collect the field initial conditions into an initial 
-                      const std::map< uint, Expression_ptr >         // condition expression
+                      const std::map< std::size_t, Expression_ptr >  // condition expression
                                                   &icexpressions);
 
     void apply_ic_();                                                // apply the initial conditions to the system function

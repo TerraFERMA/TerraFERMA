@@ -894,7 +894,7 @@ void SystemBucket::checkpoint()
 // given a map from components to field initial condition expressions initialize the system initial condition expression
 //*******************************************************************|************************************************************//
 void SystemBucket::collect_ics_(const uint &component, 
-              const std::map< uint, Expression_ptr > &icexpressions)
+              const std::map< std::size_t, Expression_ptr > &icexpressions)
 {
   if (component==1)
   {

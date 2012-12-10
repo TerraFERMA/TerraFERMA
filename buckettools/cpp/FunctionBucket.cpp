@@ -465,9 +465,9 @@ void FunctionBucket::cap_values()
 {
   if (lower_cap_ || upper_cap_)
   {
-    boost::unordered_set<uint> dofs = (*(*functionspace()).dofmap()).dofs();
+    boost::unordered_set<std::size_t> dofs = (*(*functionspace()).dofmap()).dofs();
 
-    boost::unordered_set<uint>::const_iterator dof;
+    boost::unordered_set<std::size_t>::const_iterator dof;
     for (dof = dofs.begin(); dof != dofs.end(); dof++)
     {
       if(upper_cap_)

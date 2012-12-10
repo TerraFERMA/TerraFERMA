@@ -61,7 +61,7 @@ namespace buckettools
                              const std::pair< std::string, std::pair< std::string, std::string > > &velocity,
                              const std::pair< std::string, std::pair< std::string, std::string > > &outside);
 
-    SemiLagrangianExpression(const std::vector<uint> &value_shape,
+    SemiLagrangianExpression(const std::vector<std::size_t> &value_shape,
                              const Bucket *bucket, const double_ptr time, 
                              const std::pair< std::string, std::pair< std::string, std::string > > &function,
                              const std::pair< std::string, std::pair< std::string, std::string > > &velocity,

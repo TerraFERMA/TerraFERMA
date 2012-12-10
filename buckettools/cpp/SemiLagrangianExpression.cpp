@@ -64,7 +64,7 @@ SemiLagrangianExpression::SemiLagrangianExpression(const uint &dim0, const uint 
 //*******************************************************************|************************************************************//
 // specific constructor (alternate tensor)
 //*******************************************************************|************************************************************//
-SemiLagrangianExpression::SemiLagrangianExpression(const std::vector<uint> &value_shape,
+SemiLagrangianExpression::SemiLagrangianExpression(const std::vector<std::size_t> &value_shape,
                                                    const Bucket *bucket, const double_ptr time, 
                                                    const std::pair< std::string, std::pair< std::string, std::string > > &function,
                                                    const std::pair< std::string, std::pair< std::string, std::string > > &velocity,

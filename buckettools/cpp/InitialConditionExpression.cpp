@@ -9,7 +9,7 @@ using namespace buckettools;
 //*******************************************************************|************************************************************//
 // specific constructor (scalar)
 //*******************************************************************|************************************************************//
-InitialConditionExpression::InitialConditionExpression(std::map< uint, 
+InitialConditionExpression::InitialConditionExpression(std::map< std::size_t, 
                                      Expression_ptr > expressions) : 
                                             dolfin::Expression(), 
                                             expressions_(expressions)
@@ -21,7 +21,7 @@ InitialConditionExpression::InitialConditionExpression(std::map< uint,
 // specific constructor (vector)
 //*******************************************************************|************************************************************//
 InitialConditionExpression::InitialConditionExpression(const uint &dim, 
-                      std::map< uint, Expression_ptr > expressions) : 
+                      std::map< std::size_t, Expression_ptr > expressions) : 
                       dolfin::Expression(dim), 
                       expressions_(expressions)
 {
@@ -48,7 +48,7 @@ void InitialConditionExpression::eval(dolfin::Array<double>& values,
   {
     values[i] = 0.0;
   }
-  for (uint_Expression_const_it expr = expressions_.begin();         // loop over the expressions in the map
+  for (size_t_Expression_const_it expr = expressions_.begin();         // loop over the expressions in the map
                     expr != expressions_.end(); expr++)
   {
     dolfin::Array<double> tmp_values((*(*expr).second).value_size());// set up a temporary value array
