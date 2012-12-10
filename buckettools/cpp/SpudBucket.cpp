@@ -716,7 +716,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     serr = Spud::get_option(buffer.str(), cells); 
     spud_err(buffer.str(), serr);
     
-    mesh.reset( new dolfin::UnitInterval(cells) );
+    mesh.reset( new dolfin::UnitIntervalMesh(cells) );
 
     Side left(0, 0.0);
     Side right(0, 1.0);
@@ -744,7 +744,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     serr = Spud::get_option(buffer.str(), cells); 
     spud_err(buffer.str(), serr);
     
-    mesh.reset( new dolfin::Interval(cells, leftx, rightx) );
+    mesh.reset( new dolfin::IntervalMesh(cells, leftx, rightx) );
 
     Side left(0, leftx);
     Side right(0, rightx);
@@ -767,7 +767,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     serr = Spud::get_option(buffer.str(), diagonal); 
     spud_err(buffer.str(), serr);
     
-    mesh.reset( new dolfin::UnitSquare(cells[0], cells[1], diagonal) );
+    mesh.reset( new dolfin::UnitSquareMesh(cells[0], cells[1], diagonal) );
 
     Side left(0, 0.0);
     Side right(0, 1.0);
@@ -804,7 +804,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     serr = Spud::get_option(buffer.str(), diagonal); 
     spud_err(buffer.str(), serr);
     
-    mesh.reset(new dolfin::Rectangle(lowerleft[0], lowerleft[1], 
+    mesh.reset(new dolfin::RectangleMesh(lowerleft[0], lowerleft[1], 
                                     upperright[0], upperright[1], 
                                     cells[0], cells[1], diagonal));
 
@@ -838,7 +838,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     serr = Spud::get_option(buffer.str(), transformation); 
     spud_err(buffer.str(), serr);
     
-    mesh.reset(new dolfin::UnitCircle(cells, 
+    mesh.reset(new dolfin::UnitCircleMesh(cells, 
                                           diagonal, transformation));
 
   }
@@ -849,7 +849,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     serr = Spud::get_option(buffer.str(), cells); 
     spud_err(buffer.str(), serr);
     
-    mesh.reset( new dolfin::UnitCube(cells[0], 
+    mesh.reset( new dolfin::UnitCubeMesh(cells[0], 
                                      cells[1], 
                                      cells[2]) );
 
@@ -889,7 +889,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     serr = Spud::get_option(buffer.str(), cells); 
     spud_err(buffer.str(), serr);
     
-    mesh.reset( new dolfin::Box(lowerbackleft[0], 
+    mesh.reset( new dolfin::BoxMesh(lowerbackleft[0], 
                                 lowerbackleft[1], 
                                 lowerbackleft[2],
                                 upperfrontright[0], 
@@ -913,16 +913,6 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     front.mark(edgeids, 6);
 
     *(*mesh).domains().markers(2) = edgeids;
-  }
-  else if (source=="UnitSphere")                                     // source is an internally generated dolfin mesh
-  {
-    int cells;
-    buffer.str(""); buffer << optionpath << "/source/number_cells";
-    serr = Spud::get_option(buffer.str(), cells); 
-    spud_err(buffer.str(), serr);
-    
-    mesh.reset( new dolfin::UnitSphere(cells) );
-
   }
   else                                                               // source is unrecognised
   {
