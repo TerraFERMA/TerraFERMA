@@ -4,6 +4,10 @@ import numpy
 
 stat = parser("projection.stat")
 
+def test_timestep_count():
+  val = stat["timestep"]["value"][-1]
+  assert val==10
+
 def test_picard_field1_min():
   val = stat["PicardProjection"]["Field1"]["min"][-1]
   assert abs(val - 1000.0) < 1.e-7
