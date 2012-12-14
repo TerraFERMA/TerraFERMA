@@ -741,7 +741,7 @@ void SolverBucket::ksp_check_convergence_(KSP &ksp, int indent)
                               indentation.c_str(), kspreason);
   dolfin::log(dolfin::INFO, "%sKSP n/o iterations %d", 
                               indentation.c_str(), kspiterations);
-  if (kspreason<0)
+  if (ident==0 && kspreason<0)
   {
     if (ignore_failures_)
     {
