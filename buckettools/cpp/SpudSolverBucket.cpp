@@ -1451,8 +1451,8 @@ boost::unordered_set<uint> SpudSolverBucket::cell_dof_set_(const boost::shared_p
       }
     }
 
-    std::vector<dolfin::DolfinIndex> dof_vec = (*dofmap).cell_dofs((*cell).index());
-    for (std::vector<dolfin::DolfinIndex>::const_iterator dof_it =           // loop over the cell dof
+    std::vector<dolfin::la_index> dof_vec = (*dofmap).cell_dofs((*cell).index());
+    for (std::vector<dolfin::la_index>::const_iterator dof_it =           // loop over the cell dof
                                     dof_vec.begin(); 
                                     dof_it < dof_vec.end(); 
                                     dof_it++)
@@ -1495,7 +1495,7 @@ boost::unordered_set<uint> SpudSolverBucket::facet_dof_set_(const boost::shared_
 
         const uint facet_number = cell.index(*facet);                // get the local index of the facet w.r.t. the cell
 
-        std::vector<dolfin::DolfinIndex> cell_dof_vec;
+        std::vector<dolfin::la_index> cell_dof_vec;
         cell_dof_vec = (*dofmap).cell_dofs(cell.index());            // get the cell dof (potentially for all components)
         
         std::vector<uint> facet_dof_vec((*dofmap).num_facet_dofs(), 0);
@@ -1774,7 +1774,7 @@ void SpudSolverBucket::fill_values_by_field_(const std::string &optionpath, PETS
   PetscMalloc(n*sizeof(PetscInt), &indices);
   dolfin::PETScVector vvec(n, "local");                             // create a local vector of local size length 
  
-  dolfin::DolfinIndex ind = 0;
+  dolfin::la_index ind = 0;
   if(parent_indices)
   {                                                                  // we have been passed a list of parent indices... 
                                                                      // our child indices must be a  subset of this list and indexed
@@ -2004,7 +2004,7 @@ boost::unordered_map<uint, double> SpudSolverBucket::cell_value_map_(const boost
       }
     }
 
-    std::vector<dolfin::DolfinIndex> dof_vec = (*dofmap).cell_dofs((*cell).index());
+    std::vector<dolfin::la_index> dof_vec = (*dofmap).cell_dofs((*cell).index());
 
     if(value_exp)
     {
@@ -2087,7 +2087,7 @@ boost::unordered_map<uint, double> SpudSolverBucket::facet_value_map_(const boos
 
         const uint facet_number = cell.index(*facet);                // get the local index of the facet w.r.t. the cell
 
-        std::vector<dolfin::DolfinIndex> cell_dof_vec;
+        std::vector<dolfin::la_index> cell_dof_vec;
         cell_dof_vec = (*dofmap).cell_dofs(cell.index());            // get the cell dof (potentially for all components)
         
         std::vector<uint> facet_dof_vec((*dofmap).num_facet_dofs(), 0);

@@ -124,8 +124,8 @@ void ReferencePoints::apply(dolfin::GenericMatrix* A,
 
   if (A)
   {
-    std::vector< const std::vector<dolfin::DolfinIndex>* > block_dofs(2);
-    std::vector< dolfin::DolfinIndex > row(1);
+    std::vector< const std::vector<dolfin::la_index>* > block_dofs(2);
+    std::vector< dolfin::la_index > row(1);
     for (uint i = 0; i < 2; ++i )
     {
       block_dofs[i] = &row;
@@ -226,7 +226,7 @@ void ReferencePoints::init_(const Array_double_ptr coord)
     boost::multi_array<double, 2> coordinates(boost::extents[dofmap.cell_dimension(cellid)][gdim]);
     dofmap.tabulate_coordinates(coordinates, cell);
 
-    const std::vector<dolfin::DolfinIndex>& cell_dofs = dofmap.cell_dofs(cellid);
+    const std::vector<dolfin::la_index>& cell_dofs = dofmap.cell_dofs(cellid);
 
     std::vector<double> dist(dofmap.cell_dimension(cellid), 0.0);
 
