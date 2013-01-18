@@ -56,24 +56,6 @@ namespace buckettools
 
   };
 
-  
-  //*****************************************************************|************************************************************//
-  // Assembler class:
-  //
-  // A dummy class to hold some auxilliary assembly subroutines
-  //*****************************************************************|************************************************************//
-  class Assembler
-  {
-
-  //*****************************************************************|***********************************************************//
-  // Publicly available functions
-  //*****************************************************************|***********************************************************//
-
-  public:                                                            // accesible to everyone
-
-    static void add_zeros_diagonal(dolfin::GenericTensor& A);               // add zeros to the diagonal of a tensor
-
-  };
 }
 
 bool abslessthan(const double &elem1, const double &elem2);

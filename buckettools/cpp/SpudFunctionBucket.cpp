@@ -969,10 +969,10 @@ Expression_ptr SpudFunctionBucket::allocate_expression_over_regions_(
       *time_dependent = false;
     }
 
-    std::map< uint, Expression_ptr > expressions;
+    std::map< std::size_t, Expression_ptr > expressions;
 
     int rank;
-    std::vector< uint > shape;
+    std::vector< std::size_t > shape;
 
     for (uint i = 0; i < nvs; i++)
     {
@@ -1023,7 +1023,7 @@ Expression_ptr SpudFunctionBucket::allocate_expression_over_regions_(
                             id != regionids.end(); id++)
       {
         
-        uint_Expression_it e_it = expressions.find(*id);              // check if this component already exists
+        size_t_Expression_it e_it = expressions.find((std::size_t)*id);              // check if this component already exists
         if (e_it != expressions.end())
         {
           dolfin::error(                                             // if it does, issue an error
@@ -1039,7 +1039,7 @@ Expression_ptr SpudFunctionBucket::allocate_expression_over_regions_(
 
     }
 
-    MeshFunction_uint_ptr cell_ids = 
+    MeshFunction_size_t_ptr cell_ids = 
           (*(*system_).mesh()).domains().cell_domains((*(*system_).mesh()));
     if (rank==0)
     {
@@ -1373,7 +1373,7 @@ void SpudFunctionBucket::initialize_expression_over_regions_(
   int nvs = Spud::option_count(optionpath);
   if (nvs > 1)
   {
-    std::map< uint, Expression_ptr > expressions = 
+    std::map< std::size_t, Expression_ptr > expressions = 
       (*boost::dynamic_pointer_cast< RegionsExpression >(expression)).expressions();
 
     for (uint i = 0; i < nvs; i++)
@@ -1387,7 +1387,7 @@ void SpudFunctionBucket::initialize_expression_over_regions_(
       serr = Spud::get_option(buffer.str(), regionids);              // get the list of region ids
       spud_err(buffer.str(), serr);
     
-      uint_Expression_const_it e_it = expressions.find(regionids[0]);
+      size_t_Expression_const_it e_it = expressions.find(regionids[0]);
       if (e_it == expressions.end())
       {
         dolfin::error("Unknown region id %d in RegionsExpression map", regionids[0]);

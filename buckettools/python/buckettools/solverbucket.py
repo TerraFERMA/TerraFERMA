@@ -139,9 +139,9 @@ class SolverBucket:
         cpp.append("          else if (formname == \""+self.form_names[f]+"\")\n")
       cpp.append("          {\n")
       if self.form_ranks[f]==0:
-        cpp.append("            form.reset(new "+self.system.name+self.name+"::Form_"+`f`+"(functionspace));\n")
+        cpp.append("            form.reset(new "+self.system.name+self.name+"::Form_"+self.form_symbols[f]+"(functionspace));\n")
       elif self.form_ranks[f]==1:
-        cpp.append("            form.reset(new "+self.system.name+self.name+"::Form_"+`f`+"(functionspace, functionspace));\n")
+        cpp.append("            form.reset(new "+self.system.name+self.name+"::Form_"+self.form_symbols[f]+"(functionspace, functionspace));\n")
       else:
         print "Unknwon form rank."
         sys.exit(1)

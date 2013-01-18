@@ -301,7 +301,7 @@ void SpudSystemBucket::fill_fields_()
                                                                      // prepare the system initial condition expression:
   uint component = 0;                                                // initialize a counter for the scalar components of this
                                                                      // system
-  std::map< uint, Expression_ptr > icexpressions;                    // set up a map from component to initial condition expression
+  std::map< std::size_t, Expression_ptr > icexpressions;                    // set up a map from component to initial condition expression
 
   buffer.str("");  buffer << optionpath() << "/field";               // find out how many fields we have
   int nfields = Spud::option_count(buffer.str());
@@ -319,7 +319,7 @@ void SpudSystemBucket::fill_fields_()
     {
                                                                      // insert the field's initial condition expression into a 
                                                                      // temporary system map:
-      uint_Expression_it e_it = icexpressions.find(component);       // check if this component already exists
+      size_t_Expression_it e_it = icexpressions.find(component);       // check if this component already exists
       if (e_it != icexpressions.end())
       {
         dolfin::error(                                               // if it does, issue an error

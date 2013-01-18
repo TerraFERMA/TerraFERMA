@@ -216,12 +216,9 @@ void buckettools::parse_arguments(int argc, char** argv)
     std::ostringstream debug_file, err_file;
     debug_file << "bucket.log";
     err_file << "bucket.err";
-    if(MPI::Is_initialized())
-    {
-      int proc = dolfin::MPI::process_number();
-      debug_file << "-" << proc;
-      err_file << "-" << proc;
-    }
+    int proc = dolfin::MPI::process_number();
+    debug_file << "-" << proc;
+    err_file << "-" << proc;
 
     if(std::freopen(debug_file.str().c_str(), "w", stdout) == NULL)
     {

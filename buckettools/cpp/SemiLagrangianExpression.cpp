@@ -64,7 +64,7 @@ SemiLagrangianExpression::SemiLagrangianExpression(const uint &dim0, const uint 
 //*******************************************************************|************************************************************//
 // specific constructor (alternate tensor)
 //*******************************************************************|************************************************************//
-SemiLagrangianExpression::SemiLagrangianExpression(const std::vector<uint> &value_shape,
+SemiLagrangianExpression::SemiLagrangianExpression(const std::vector<std::size_t> &value_shape,
                                                    const Bucket *bucket, const double_ptr time, 
                                                    const std::pair< std::string, std::pair< std::string, std::string > > &function,
                                                    const std::pair< std::string, std::pair< std::string, std::string > > &velocity,
@@ -216,7 +216,7 @@ const bool SemiLagrangianExpression::findpoint_(const dolfin::Array<double>& x,
   bool outside = false;
 
   point_map &points = (*cellcache_)[cell.index];
-  dolfin::Point lp(x.size(), x.data().get());
+  dolfin::Point lp(x.size(), x.data());
   point_iterator p_it = points.find(lp);
 
   findvstar_(x, cell);

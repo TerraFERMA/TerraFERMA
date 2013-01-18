@@ -274,22 +274,6 @@ mesh_options =
              "tetrahedron"
            }
          }
-       }|
-       ## Choose the source of this mesh as an internally generated 3d sphere of radius 1.
-       ##
-       ## No boundary or region ids will be assigned.
-       element source {
-         attribute name { "UnitSphere" },
-         ## Specify the number of cells (same in both dimensions).
-         element number_cells {
-           integer
-         },
-         ## The ufl cell type (no option allowed).
-         element cell {
-           element string_value {
-             "tetrahedron"
-           }
-         }
        }
      )
   )

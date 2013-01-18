@@ -556,7 +556,7 @@ class SystemBucket:
           cpp.append("      else if (coefficientname ==  \""+self.coeffs[c].name+"\")\n")
         functionals_found =+ 1
         cpp.append("      {\n")
-        cpp.append("        functional.reset(new "+self.coeffs[c].functional.namespace()+"::Form_0(mesh));\n")
+        cpp.append("        functional.reset(new "+self.coeffs[c].functional.namespace()+"::Form_"+self.coeffs[c].functional.symbol+"(mesh));\n")
         cpp.append("      }\n")
     if functionals_found==0:
       cpp.append("      dolfin::error(\"Unknown coefficientname in ufc_fetch_functional\");\n")

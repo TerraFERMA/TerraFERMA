@@ -83,7 +83,7 @@ namespace buckettools
     //***************************************************************|***********************************************************//
 
     std::string                     name_;                           // detectors set name
-    dolfin::uint                    number_detectors_,               // number of detectors
+    std::size_t                    number_detectors_,               // number of detectors
                                     meshdim_;                        // coordinate dimensions
     std::vector< Array_double_ptr > positions_;                      // vector of arrays giving locations of detectors
 

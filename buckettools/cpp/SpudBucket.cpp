@@ -662,10 +662,10 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     {                                                                // using the dolfin reserved name for exterior facets
       file.close();
 
-      dolfin::MeshFunction<dolfin::uint> edgeids(*mesh, filename.str());
+      dolfin::MeshFunction<std::size_t> edgeids(*mesh, filename.str());
 
       const uint D = (*mesh).topology().dim();
-      (*mesh).domains().markers(D-1) = edgeids;
+      *(*mesh).domains().markers(D-1) = edgeids;
     }
     else
     {
@@ -675,10 +675,10 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
       {                                                              // using the dolfin reserved name for exterior facets
         file.close();
 
-        dolfin::MeshFunction<dolfin::uint> edgeids(*mesh, filename.str());
+        dolfin::MeshFunction<std::size_t> edgeids(*mesh, filename.str());
 
         const uint D = (*mesh).topology().dim();
-        (*mesh).domains().markers(D-1) = edgeids;
+        *(*mesh).domains().markers(D-1) = edgeids;
       }
     }
 
@@ -688,10 +688,10 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     {                                                                // using the dolfin reserved name for cell domains
       file.close();
 
-      dolfin::MeshFunction<dolfin::uint> cellids(*mesh, filename.str());
+      dolfin::MeshFunction<std::size_t> cellids(*mesh, filename.str());
 
       const uint D = (*mesh).topology().dim();
-      (*mesh).domains().markers(D) = cellids;
+      *(*mesh).domains().markers(D) = cellids;
     }
     else
     {
@@ -701,10 +701,10 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
       {                                                                // using the dolfin reserved name for cell domains
         file.close();
 
-        dolfin::MeshFunction<dolfin::uint> cellids(*mesh, filename.str());
+        dolfin::MeshFunction<std::size_t> cellids(*mesh, filename.str());
 
         const uint D = (*mesh).topology().dim();
-        (*mesh).domains().markers(D) = cellids;
+        *(*mesh).domains().markers(D) = cellids;
       }
     }
 
@@ -716,16 +716,16 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     serr = Spud::get_option(buffer.str(), cells); 
     spud_err(buffer.str(), serr);
     
-    mesh.reset( new dolfin::UnitInterval(cells) );
+    mesh.reset( new dolfin::UnitIntervalMesh(cells) );
 
     Side left(0, 0.0);
     Side right(0, 1.0);
 
-    dolfin::MeshFunction<dolfin::uint> edgeids(*mesh, 0, 0);
+    dolfin::MeshFunction<std::size_t> edgeids(*mesh, 0, 0);
     left.mark(edgeids, 1);
     right.mark(edgeids, 2);
 
-    (*mesh).domains().markers(0) = edgeids;
+    *(*mesh).domains().markers(0) = edgeids;
   }
   else if (source=="Interval")                                       // source is an internally generated dolfin mesh
   {
@@ -744,16 +744,16 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     serr = Spud::get_option(buffer.str(), cells); 
     spud_err(buffer.str(), serr);
     
-    mesh.reset( new dolfin::Interval(cells, leftx, rightx) );
+    mesh.reset( new dolfin::IntervalMesh(cells, leftx, rightx) );
 
     Side left(0, leftx);
     Side right(0, rightx);
 
-    dolfin::MeshFunction<dolfin::uint> edgeids(*mesh, 0, 0);
+    dolfin::MeshFunction<std::size_t> edgeids(*mesh, 0, 0);
     left.mark(edgeids, 1);
     right.mark(edgeids, 2);
 
-    (*mesh).domains().markers(0) = edgeids;
+    *(*mesh).domains().markers(0) = edgeids;
   }
   else if (source=="UnitSquare")                                     // source is an internally generated dolfin mesh
   {
@@ -767,20 +767,20 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     serr = Spud::get_option(buffer.str(), diagonal); 
     spud_err(buffer.str(), serr);
     
-    mesh.reset( new dolfin::UnitSquare(cells[0], cells[1], diagonal) );
+    mesh.reset( new dolfin::UnitSquareMesh(cells[0], cells[1], diagonal) );
 
     Side left(0, 0.0);
     Side right(0, 1.0);
     Side bottom(1, 0.0);
     Side top(1, 1.0);
 
-    dolfin::MeshFunction<dolfin::uint> edgeids(*mesh, 1, 0);
+    dolfin::MeshFunction<std::size_t> edgeids(*mesh, 1, 0);
     left.mark(edgeids, 1);
     right.mark(edgeids, 2);
     bottom.mark(edgeids, 3);
     top.mark(edgeids, 4);
 
-    (*mesh).domains().markers(1) = edgeids;
+    *(*mesh).domains().markers(1) = edgeids;
   }
   else if (source=="Rectangle")                                      // source is an internally generated dolfin mesh
   {
@@ -804,7 +804,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     serr = Spud::get_option(buffer.str(), diagonal); 
     spud_err(buffer.str(), serr);
     
-    mesh.reset(new dolfin::Rectangle(lowerleft[0], lowerleft[1], 
+    mesh.reset(new dolfin::RectangleMesh(lowerleft[0], lowerleft[1], 
                                     upperright[0], upperright[1], 
                                     cells[0], cells[1], diagonal));
 
@@ -813,13 +813,13 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     Side bottom(1, lowerleft[1]);
     Side top(1, upperright[1]);
 
-    dolfin::MeshFunction<dolfin::uint> edgeids(*mesh, 1, 0);
+    dolfin::MeshFunction<std::size_t> edgeids(*mesh, 1, 0);
     left.mark(edgeids, 1);
     right.mark(edgeids, 2);
     bottom.mark(edgeids, 3);
     top.mark(edgeids, 4);
 
-    (*mesh).domains().markers(1) = edgeids;
+    *(*mesh).domains().markers(1) = edgeids;
   }
   else if (source=="UnitCircle")                                     // source is an internally generated dolfin mesh
   {
@@ -838,7 +838,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     serr = Spud::get_option(buffer.str(), transformation); 
     spud_err(buffer.str(), serr);
     
-    mesh.reset(new dolfin::UnitCircle(cells, 
+    mesh.reset(new dolfin::UnitCircleMesh(cells, 
                                           diagonal, transformation));
 
   }
@@ -849,7 +849,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     serr = Spud::get_option(buffer.str(), cells); 
     spud_err(buffer.str(), serr);
     
-    mesh.reset( new dolfin::UnitCube(cells[0], 
+    mesh.reset( new dolfin::UnitCubeMesh(cells[0], 
                                      cells[1], 
                                      cells[2]) );
 
@@ -860,7 +860,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     Side back(1, 0.0);
     Side front(1, 1.0);
 
-    dolfin::MeshFunction<dolfin::uint> edgeids(*mesh, 2, 0);
+    dolfin::MeshFunction<std::size_t> edgeids(*mesh, 2, 0);
     left.mark(edgeids, 1);
     right.mark(edgeids, 2);
     bottom.mark(edgeids, 3);
@@ -868,7 +868,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     back.mark(edgeids, 5);
     front.mark(edgeids, 6);
 
-    (*mesh).domains().markers(2) = edgeids;
+    *(*mesh).domains().markers(2) = edgeids;
   }
   else if (source=="Box")                                            // source is an internally generated dolfin mesh
   {
@@ -889,7 +889,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     serr = Spud::get_option(buffer.str(), cells); 
     spud_err(buffer.str(), serr);
     
-    mesh.reset( new dolfin::Box(lowerbackleft[0], 
+    mesh.reset( new dolfin::BoxMesh(lowerbackleft[0], 
                                 lowerbackleft[1], 
                                 lowerbackleft[2],
                                 upperfrontright[0], 
@@ -904,7 +904,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     Side back(1, lowerbackleft[1]);
     Side front(1, upperfrontright[1]);
 
-    dolfin::MeshFunction<dolfin::uint> edgeids(*mesh, 2, 0);
+    dolfin::MeshFunction<std::size_t> edgeids(*mesh, 2, 0);
     left.mark(edgeids, 1);
     right.mark(edgeids, 2);
     bottom.mark(edgeids, 3);
@@ -912,17 +912,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     back.mark(edgeids, 5);
     front.mark(edgeids, 6);
 
-    (*mesh).domains().markers(2) = edgeids;
-  }
-  else if (source=="UnitSphere")                                     // source is an internally generated dolfin mesh
-  {
-    int cells;
-    buffer.str(""); buffer << optionpath << "/source/number_cells";
-    serr = Spud::get_option(buffer.str(), cells); 
-    spud_err(buffer.str(), serr);
-    
-    mesh.reset( new dolfin::UnitSphere(cells) );
-
+    *(*mesh).domains().markers(2) = edgeids;
   }
   else                                                               // source is unrecognised
   {

@@ -30,10 +30,10 @@ namespace buckettools
     //***************************************************************|***********************************************************//
     
     InitialConditionExpression(                                      // specific constructor (scalar)
-                      std::map< uint, Expression_ptr > expressions);
+                      std::map< std::size_t, Expression_ptr > expressions);
     
     InitialConditionExpression(const uint &dim,                      // specific constructor (vector)
-                      std::map< uint, Expression_ptr > expressions);
+                      std::map< std::size_t, Expression_ptr > expressions);
     
     
     virtual ~InitialConditionExpression();                           // default destructor
@@ -56,7 +56,7 @@ namespace buckettools
     // Pointers data
     //***************************************************************|***********************************************************//
 
-    std::map< uint, Expression_ptr > expressions_;                   // map from component to initial condition expression for a function
+    std::map< std::size_t, Expression_ptr > expressions_;                   // map from component to initial condition expression for a function
   
   };
 

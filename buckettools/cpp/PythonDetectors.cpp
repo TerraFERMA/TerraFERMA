@@ -65,7 +65,7 @@ void PythonDetectors::init_()
     dolfin::error("In PythonDetectors::init_ evaluating pResult");
   }
     
-  for (dolfin::uint i = 0; i<size(); i++)                            // loop over the array of detectors
+  for (std::size_t i = 0; i<size(); i++)                            // loop over the array of detectors
   {
     pResultItem = PySequence_GetItem(pResult, i);                    // get an item out of the sequence of the results
     
@@ -73,7 +73,7 @@ void PythonDetectors::init_()
 
     assert(PyObject_Length(pResultItem)==meshdim_);                  // check this item in the list is meshdim_ long
     
-    for (dolfin::uint j = 0; j<meshdim_; j++)                        // loop over the coordinate dimension
+    for (std::size_t j = 0; j<meshdim_; j++)                        // loop over the coordinate dimension
     {
       px = PySequence_GetItem(pResultItem, j);                       // get an item from the coordinate array
       (*point)[j] = PyFloat_AsDouble(px);                            // convert from python to double

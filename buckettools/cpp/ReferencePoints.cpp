@@ -124,8 +124,8 @@ void ReferencePoints::apply(dolfin::GenericMatrix* A,
 
   if (A)
   {
-    std::vector< const std::vector<uint>* > block_dofs(2);
-    std::vector< uint > row(1);
+    std::vector< const std::vector<dolfin::la_index>* > block_dofs(2);
+    std::vector< dolfin::la_index > row(1);
     for (uint i = 0; i < 2; ++i )
     {
       block_dofs[i] = &row;
@@ -204,9 +204,9 @@ void ReferencePoints::init_(const Array_double_ptr coord)
   const dolfin::Mesh& mesh = *(*functionspace_).mesh();
   const dolfin::GenericDofMap& dofmap = *(*functionspace_).dofmap();
 
-  const dolfin::uint gdim = mesh.geometry().dim();
+  const std::size_t gdim = mesh.geometry().dim();
 
-  double* pos = (*position_).data().get();
+  double* pos = (*position_).data();
   uint dim = (*position_).size();
   assert(dim==gdim);
   const dolfin::Point point(dim, pos);
@@ -223,13 +223,12 @@ void ReferencePoints::init_(const Array_double_ptr coord)
   {
     const dolfin::Cell cell(mesh, cellid);
 
-    boost::multi_array<double, 2> coordinates(boost::extents[dofmap.max_cell_dimension()][gdim]);
+    boost::multi_array<double, 2> coordinates(boost::extents[dofmap.cell_dimension(cellid)][gdim]);
     dofmap.tabulate_coordinates(coordinates, cell);
 
-    const std::vector<uint>& cell_dofs = dofmap.cell_dofs(cellid);
+    const std::vector<dolfin::la_index>& cell_dofs = dofmap.cell_dofs(cellid);
 
-    dolfin::Array<double> dist(dofmap.max_cell_dimension());
-    dist.zero();
+    std::vector<double> dist(dofmap.cell_dimension(cellid), 0.0);
 
     for (uint i = 0; i < dofmap.cell_dimension(cellid); ++i)
     {
@@ -239,7 +238,7 @@ void ReferencePoints::init_(const Array_double_ptr coord)
       }
     }
 
-    double mindist = dist.min();
+    double mindist = *std::min_element(&dist[0], &dist[dist.size()]);
     for (uint i = 0; i < dofmap.cell_dimension(cellid); ++i)
     {
       if (std::fabs(dist[i]-mindist) < DOLFIN_EPS)
