@@ -883,7 +883,11 @@ void SpudSolverBucket::fill_pc_(const std::string &optionpath, PC &pc,
     serr = Spud::get_option(buffer.str(), hypre_type); 
     spud_err(buffer.str(), serr);
 
+#ifdef PETSC_HAVE_HYPRE
     perr = PCHYPRESetType(pc, hypre_type.c_str()); CHKERRV(perr);
+#else
+    dolfin::error("Must compile petsc with hypre to use it.");
+#endif
   }
   else if ((preconditioner=="bjacobi")||(preconditioner=="asm"))
   {
