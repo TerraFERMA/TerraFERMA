@@ -1493,15 +1493,15 @@ boost::unordered_set<uint> SpudSolverBucket::facet_dof_set_(const boost::shared_
         const dolfin::Cell cell(*mesh,                               // get cell to which facet belongs
                (*facet).entities((*mesh).topology().dim())[0]);      // (there may be two, but pick first)
 
-        const uint facet_number = cell.index(*facet);                // get the local index of the facet w.r.t. the cell
+        const std::size_t facet_number = cell.index(*facet);                // get the local index of the facet w.r.t. the cell
 
         std::vector<dolfin::la_index> cell_dof_vec;
         cell_dof_vec = (*dofmap).cell_dofs(cell.index());            // get the cell dof (potentially for all components)
         
-        std::vector<uint> facet_dof_vec((*dofmap).num_facet_dofs(), 0);
-        (*dofmap).tabulate_facet_dofs(&facet_dof_vec[0], facet_number);
+        std::vector<std::size_t> facet_dof_vec((*dofmap).num_facet_dofs(), 0);
+        (*dofmap).tabulate_facet_dofs(facet_dof_vec, facet_number);
 
-        for (std::vector<uint>::const_iterator dof_it =              // loop over the cell dof
+        for (std::vector<std::size_t>::const_iterator dof_it =              // loop over the cell dof
                                 facet_dof_vec.begin(); 
                                 dof_it < facet_dof_vec.end(); 
                                 dof_it++)
@@ -2085,13 +2085,13 @@ boost::unordered_map<uint, double> SpudSolverBucket::facet_value_map_(const boos
         const dolfin::Cell cell(*mesh,                               // get cell to which facet belongs
                (*facet).entities((*mesh).topology().dim())[0]);      // (there may be two, but pick first)
 
-        const uint facet_number = cell.index(*facet);                // get the local index of the facet w.r.t. the cell
+        const std::size_t facet_number = cell.index(*facet);         // get the local index of the facet w.r.t. the cell
 
         std::vector<dolfin::la_index> cell_dof_vec;
         cell_dof_vec = (*dofmap).cell_dofs(cell.index());            // get the cell dof (potentially for all components)
         
-        std::vector<uint> facet_dof_vec((*dofmap).num_facet_dofs(), 0);
-        (*dofmap).tabulate_facet_dofs(&facet_dof_vec[0], facet_number);
+        std::vector<std::size_t> facet_dof_vec((*dofmap).num_facet_dofs(), 0);
+        (*dofmap).tabulate_facet_dofs(facet_dof_vec, facet_number);
 
         if (value_exp)
         {
