@@ -98,10 +98,10 @@
         <string_value lines="1">v</string_value>
       </ufl_symbol>
       <type name="Constant">
-        <rank name="Scalar" rank="0">
+        <rank name="Vector" rank="1">
           <value type="value" name="WholeMesh">
-            <constant>
-              <real_value rank="0">-1.0</real_value>
+            <constant name="dim">
+              <real_value shape="1" dim1="dim" rank="1">-1.0</real_value>
             </constant>
           </value>
         </rank>
