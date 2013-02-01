@@ -72,7 +72,7 @@ if __name__ == "__main__":
     executable = options.executable
 
     if (executable == None):
-        executable = bmlfile.rstrip(".bml")
+        executable = bmlfile[:-4]
 
     # sort out any extra cmake options
     cmake_options = getExtraCmakeOptions(options)        
