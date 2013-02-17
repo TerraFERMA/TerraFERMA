@@ -1105,8 +1105,13 @@ void Bucket::empty_()
 bool Bucket::steadystate_()
 {
   bool steady = false;
-
-  if (steadystate_tol_)
+  
+  bool zero_init_dt = ( (std::abs(timestep()) < DOLFIN_EPS)          // if the timestep is zero and
+                                   && (timestep_count()==1) );       // this is the end of the first timestep
+                                                                     // then we consider this a zero initial timestep
+                                                                     // simulation and don't test for a steady state
+  
+  if (!zero_init_dt && steadystate_tol_)
   {
     double maxchange = 0.0;
     for (SystemBucket_it s_it = systems_begin(); 
