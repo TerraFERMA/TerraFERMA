@@ -301,6 +301,7 @@ void SpudSystemBucket::fill_fields_()
                                                                      // prepare the system initial condition expression:
   uint component = 0;                                                // initialize a counter for the scalar components of this
                                                                      // system
+  std::size_t maxrank = 0;
   std::map< std::size_t, Expression_ptr > icexpressions;                    // set up a map from component to initial condition expression
 
   buffer.str("");  buffer << optionpath() << "/field";               // find out how many fields we have
@@ -333,12 +334,13 @@ void SpudSystemBucket::fill_fields_()
 
       component += (*(*field).icexpression()).value_size();          // increment the component count by the size of this field
                                                                      // (i.e. no. of scalar components)
+      maxrank = std::max(maxrank, (*(*field).icexpression()).value_rank());
     }
   }
 
   if (!icexpressions.empty())
   {
-    collect_ics_(component, icexpressions);                          // collect all the ics together into a new initial condition expression
+    collect_ics_(component, maxrank, icexpressions);                          // collect all the ics together into a new initial condition expression
   }
 
 }

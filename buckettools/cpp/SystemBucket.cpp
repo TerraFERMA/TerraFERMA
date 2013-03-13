@@ -893,10 +893,10 @@ void SystemBucket::checkpoint()
 //*******************************************************************|************************************************************//
 // given a map from components to field initial condition expressions initialize the system initial condition expression
 //*******************************************************************|************************************************************//
-void SystemBucket::collect_ics_(const uint &component, 
+void SystemBucket::collect_ics_(const uint &component, const std::size_t &maxrank,
               const std::map< std::size_t, Expression_ptr > &icexpressions)
 {
-  if (component==1)
+  if (component==1 && maxrank==0)
   {
     icexpression_.reset(new InitialConditionExpression(icexpressions));// the system function is scalar so set up a scalar ic expression
   }
