@@ -135,10 +135,12 @@ for example:
       
       binaryFormat = False
       constantEles = parsed.getElementsByTagName("constant")
+      self.constants = {}
       for ele in constantEles:
         name = ele.getAttribute("name")
         type = ele.getAttribute("type")
         value = ele.getAttribute("value")
+        self.constants[name] = value
         if name == "format":
           assert(type == "string")
           if value == "binary":
