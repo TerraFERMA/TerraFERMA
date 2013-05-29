@@ -1,0 +1,54 @@
+set(EXECUTABLE "dg_advection_1d_vi")
+
+set(OPTIONSFILENAME "advection.bml")
+set(MESHBASENAME "interval")
+
+set(PREFIX ${EXECUTABLE})
+
+project($EXECUTABLE)
+
+set(OPTIONSFILE "${PROJECT_SOURCE_DIR}/${OPTIONSFILENAME}")
+
+if(NOT IS_ABSOLUTE ${OPTIONSFILE})
+  set(OPTIONSFILE ${PROJECT_BINARY_DIR}/${OPTIONSFILE})
+endif(NOT IS_ABSOLUTE ${OPTIONSFILE})
+
+if (IS_DIRECTORY ${OPTIONSFILE})
+  message(FATAL_ERROR "OPTIONSFILE not set or set to a directory.")
+endif(IS_DIRECTORY ${OPTIONSFILE})
+
+if (NOT EXISTS ${OPTIONSFILE})
+  message(FATAL_ERROR "Could not find OPTIONSFILE ${OPTIONSFILE}")
+endif(NOT EXISTS ${OPTIONSFILE})
+
+add_subdirectory(${BUCKETTOOLS_SHARED_DIRS}/buckettools/ufc "buckettools_ufc")
+
+add_executable(${EXECUTABLE} "${PROJECT_SOURCE_DIR}/../../cpp/main.cpp")
+
+set (EXTRA_LIBS ${EXTRA_LIBS} ${BUCKETTOOLS_LIBRARIES} ${PREFIX}buckettools_ufc)
+
+target_link_libraries(${EXECUTABLE} ${DOLFIN_LIBRARIES} ${DOLFIN_3RD_PARTY_LIBRARIES} ${EXTRA_LIBS} ${SPUD_LIBRARIES} ${PYTHON_LIBRARIES})
+
+# add a command that runs the mesh generation script
+add_custom_command(
+    OUTPUT ${PROJECT_BINARY_DIR}/${MESHBASENAME}.xml
+    COMMAND cp
+    ARGS ${PROJECT_SOURCE_DIR}/${MESHBASENAME}*.xml ${PROJECT_BINARY_DIR}/.
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+    )
+ 
+add_custom_target(
+  ${PREFIX}_run
+  COMMAND ${EXECUTABLE} -v${LOGLEVEL} -l ${OPTIONSFILE} 
+  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+  DEPENDS ${EXECUTABLE}
+  DEPENDS ${PROJECT_BINARY_DIR}/${MESHBASENAME}.xml
+  )
+
+add_custom_target(
+  ${PREFIX}_test
+  COMMAND py.test -vs ${PROJECT_SOURCE_DIR}/tests.py 
+  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+  DEPENDS ${PROJECT_SOURCE_DIR}/tests.py
+  )
+add_dependencies(${PREFIX}_test ${PREFIX}_run)
