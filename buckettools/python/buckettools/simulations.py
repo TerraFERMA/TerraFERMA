@@ -321,9 +321,9 @@ class SimulationBatch:
   def threadconfigure(self, force=False):
     for simulation in self.threadbuilds: simulation.configure(force=force)
 
-  def configure(self, level=-1, force=False):
+  def configure(self, level=-1, types=None, force=False):
     threadlist=[]
-    self.threadbuilds = ThreadIterator([value['simulation'] for value in sorted(self.builds.values(), key=lambda value: value['level']) if value['level'] >= level])
+    self.threadbuilds = ThreadIterator([value['simulation'] for value in sorted(self.builds.values(), key=lambda value: value['level']) if value['level'] >= level and (types is None or isinstance(value['simulation'], tuple(types)))])
     for i in range(self.nthreads):
       threadlist.append(threading.Thread(target=self.threadconfigure, kwargs={'force':force}))
       threadlist[-1].start()
@@ -334,9 +334,9 @@ class SimulationBatch:
   def threadbuild(self, force=False):
     for simulation in self.threadbuilds: simulation.build(force=force)
 
-  def build(self, level=-1, force=False):
+  def build(self, level=-1, types=None, force=False):
     threadlist=[]
-    self.threadbuilds = ThreadIterator([value['simulation'] for value in sorted(self.builds.values(), key=lambda value: value['level']) if value['level'] >= level])
+    self.threadbuilds = ThreadIterator([value['simulation'] for value in sorted(self.builds.values(), key=lambda value: value['level']) if value['level'] >= level and (types is None or isinstance(value['simulation'], tuple(types)))])
     for i in range(self.nthreads):
       threadlist.append(threading.Thread(target=self.threadbuild, kwargs={'force':force})) 
       threadlist[-1].start()
@@ -347,9 +347,9 @@ class SimulationBatch:
   def threadrun(self, force=False):
     for simulation in self.threadruns: simulation.run(force=force)
 
-  def run(self, level=-1, force=False):
+  def run(self, level=-1, types=None, force=False):
     threadlist=[]
-    self.threadruns = ThreadIterator([value['simulation'] for value in sorted(self.runs.values(), key=lambda value: value['level']) if value['level'] >= level])
+    self.threadruns = ThreadIterator([value['simulation'] for value in sorted(self.runs.values(), key=lambda value: value['level']) if value['level'] >= level and (types is None or isinstance(value['simulation'], tuple(types)))])
     for i in range(self.nthreads):
       threadlist.append(threading.Thread(target=self.threadrun, kwargs={'force':force}))
       threadlist[-1].start()
@@ -360,9 +360,9 @@ class SimulationBatch:
   def threadcheckpointrun(self):
     for simulation in self.threadruns: simulation.checkpointrun()
 
-  def checkpointrun(self, level=-1):
+  def checkpointrun(self, level=-1, types=None):
     threadlist=[]
-    self.threadruns = ThreadIterator([value['simulation'] for value in sorted(self.runs.values(), key=lambda value: value['level']) if value['level'] >= level])
+    self.threadruns = ThreadIterator([value['simulation'] for value in sorted(self.runs.values(), key=lambda value: value['level']) if value['level'] >= level and (types is None or isinstance(value['simulation'], tuple(types)))])
     for i in range(self.nthreads):
       threadlist.append(threading.Thread(target=self.threadcheckpointrun))
       threadlist[-1].start()
@@ -373,9 +373,9 @@ class SimulationBatch:
   def threadpostprocess(self, force=False):
     for simulation in self.threadruns: simulation.postprocess(force=force)
 
-  def postprocess(self, level=-1, force=False):
+  def postprocess(self, level=-1, types=None, force=False):
     threadlist=[]
-    self.threadruns = ThreadIterator([value['simulation'] for value in sorted(self.runs.values(), key=lambda value: value['level']) if value['level'] >= level])
+    self.threadruns = ThreadIterator([value['simulation'] for value in sorted(self.runs.values(), key=lambda value: value['level']) if value['level'] >= level and (types is None or isinstance(value['simulation'], tuple(types)))])
     for i in range(self.nthreads):
       threadlist.append(threading.Thread(target=self.threadpostprocess, kwargs={'force':force}))
       threadlist[-1].start()

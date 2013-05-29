@@ -15,8 +15,8 @@ class creator(dict):
    Constants can be added with the add_constant function.
 
    Example:
-     from buckettools import stat_creator
-     c=stat_creator("my_stat.stat")
+     from buckettools.statfile import creator
+     c=creator("my_stat.stat")
      c.add_constant({"time": 1.0})
      c[('Material1', 'Speed', 'max')] = 1.0
      c.write()
@@ -51,22 +51,26 @@ class creator(dict):
         header.appendChild(const_element)
       # Create the stat elements
       column = 1
-      for stat in self.keys():
+      for stat_k, stat_v in self.items():
         stat_element = doc.createElement("field")
         stat_element.setAttribute("column", str(column))
-        if len(stat) == 2:
-          stat_element.setAttribute("name", stat[0])
-          stat_element.setAttribute("statistic", stat[1])
-        elif len(stat) == 3:
-          stat_element.setAttribute("system", stat[0])
-          stat_element.setAttribute("name", stat[1])
-          stat_element.setAttribute("statistic", stat[2])
+        if len(stat_k) == 2:
+          stat_element.setAttribute("name", stat_k[0])
+          stat_element.setAttribute("statistic", stat_k[1])
+        elif len(stat_k) == 3:
+          stat_element.setAttribute("system", stat_k[0])
+          stat_element.setAttribute("name", stat_k[1])
+          stat_element.setAttribute("statistic", stat_k[2])
         else:
-          print "Element ", stat, " must have length 2 or 3"
+          print "Element ", stat_k, " must have length 2 or 3"
           exit()
+        if isinstance(stat_v, (list, numpy.ndarray)):
+          stat_element.setAttribute("components", str(len(stat_v)))
+          column += len(stat_v)
+        else:
+          column += 1
         header.appendChild(stat_element)
-        self.header.append(stat)
-        column = column+1
+        self.header.append(stat_k)
       self.initialised = True
       try:
             f.write(doc.toprettyxml(indent="  "))
@@ -84,8 +88,13 @@ class creator(dict):
       print "Columns in the header: ", self.header
       exit()
     output = ""
-    for stat in self.header:
-      output = output + "  " + str(self[stat])
+    for stat_k in self.header:
+      stat_v = self[stat_k]
+      if isinstance(stat_v, (list, numpy.ndarray)):
+        for v in stat_v:
+          output = output + "  " + str(v)
+      else:
+        output = output + "  " + str(stat_v)
     output = output + "\n"  
     try:
           f.write(output)
@@ -126,10 +135,12 @@ for example:
       
       binaryFormat = False
       constantEles = parsed.getElementsByTagName("constant")
+      self.constants = {}
       for ele in constantEles:
         name = ele.getAttribute("name")
         type = ele.getAttribute("type")
         value = ele.getAttribute("value")
+        self.constants[name] = value
         if name == "format":
           assert(type == "string")
           if value == "binary":
