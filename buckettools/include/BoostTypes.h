@@ -47,7 +47,6 @@ namespace buckettools {
   typedef boost::shared_ptr< const dolfin::MeshFunction< std::size_t > > MeshFunction_size_t_ptr;
   typedef boost::shared_ptr< dolfin::FunctionSpace >                FunctionSpace_ptr;
   typedef boost::shared_ptr< dolfin::Function >                     Function_ptr;
-  typedef boost::shared_ptr< dolfin::BoundaryCondition >            BoundaryCondition_ptr;
   typedef boost::shared_ptr< dolfin::DirichletBC >                  DirichletBC_ptr;
   typedef boost::shared_ptr< dolfin::Form >                         Form_ptr;
   typedef boost::shared_ptr< dolfin::PETScMatrix >                  PETScMatrix_ptr;
@@ -95,10 +94,8 @@ namespace buckettools {
   typedef std::map< std::string, Expression_ptr >::const_iterator        Expression_const_it;
   typedef std::map< std::string, DirichletBC_ptr >::iterator             DirichletBC_it;
   typedef std::map< std::string, DirichletBC_ptr >::const_iterator       DirichletBC_const_it;
-  typedef std::map< std::string, BoundaryCondition_ptr >::iterator       BoundaryCondition_it;
-  typedef std::map< std::string, BoundaryCondition_ptr >::const_iterator BoundaryCondition_const_it;
-  typedef std::map< int, BoundaryCondition_ptr >::iterator               int_BoundaryCondition_it;
-  typedef std::map< int, BoundaryCondition_ptr >::const_iterator         int_BoundaryCondition_const_it;
+  typedef std::map< int, DirichletBC_ptr >::iterator                     int_DirichletBC_it;
+  typedef std::map< int, DirichletBC_ptr >::const_iterator               int_DirichletBC_const_it;
   typedef std::map< std::string, ReferencePoints_ptr >::iterator         ReferencePoints_it;
   typedef std::map< std::string, ReferencePoints_ptr >::const_iterator   ReferencePoints_const_it;
   typedef std::map< std::size_t, Expression_ptr >::iterator              size_t_Expression_it;

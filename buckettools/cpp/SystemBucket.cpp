@@ -936,7 +936,7 @@ void SystemBucket::apply_dirichletbc_()
   for (int_FunctionBucket_const_it f_it = orderedfields_begin();     // loop over all the fields
                                 f_it != orderedfields_end(); f_it++)
   {
-    for (int_BoundaryCondition_const_it                              // loop over all the bcs
+    for (int_DirichletBC_const_it                                    // loop over all the bcs
          b_it = (*(*f_it).second).ordereddirichletbcs_begin(); 
          b_it != (*(*f_it).second).ordereddirichletbcs_end(); b_it++)
     {
