@@ -665,7 +665,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
       dolfin::MeshFunction<std::size_t> edgeids(*mesh, filename.str());
 
       const uint D = (*mesh).topology().dim();
-      *(*mesh).domains().markers(D-1) = edgeids;
+      //*(*mesh).domains().markers(D-1) = edgeids;
     }
     else
     {
@@ -678,7 +678,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
         dolfin::MeshFunction<std::size_t> edgeids(*mesh, filename.str());
 
         const uint D = (*mesh).topology().dim();
-        *(*mesh).domains().markers(D-1) = edgeids;
+        //*(*mesh).domains().markers(D-1) = edgeids;
       }
     }
 
@@ -691,7 +691,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
       dolfin::MeshFunction<std::size_t> cellids(*mesh, filename.str());
 
       const uint D = (*mesh).topology().dim();
-      *(*mesh).domains().markers(D) = cellids;
+      //*(*mesh).domains().markers(D) = cellids;
     }
     else
     {
@@ -704,7 +704,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
         dolfin::MeshFunction<std::size_t> cellids(*mesh, filename.str());
 
         const uint D = (*mesh).topology().dim();
-        *(*mesh).domains().markers(D) = cellids;
+        //*(*mesh).domains().markers(D) = cellids;
       }
     }
 
@@ -725,7 +725,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     left.mark(edgeids, 1);
     right.mark(edgeids, 2);
 
-    *(*mesh).domains().markers(0) = edgeids;
+    //*(*mesh).domains().markers(0) = edgeids;
   }
   else if (source=="Interval")                                       // source is an internally generated dolfin mesh
   {
@@ -753,7 +753,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     left.mark(edgeids, 1);
     right.mark(edgeids, 2);
 
-    *(*mesh).domains().markers(0) = edgeids;
+    //*(*mesh).domains().markers(0) = edgeids;
   }
   else if (source=="UnitSquare")                                     // source is an internally generated dolfin mesh
   {
@@ -780,7 +780,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     bottom.mark(edgeids, 3);
     top.mark(edgeids, 4);
 
-    *(*mesh).domains().markers(1) = edgeids;
+    //*(*mesh).domains().markers(1) = edgeids;
   }
   else if (source=="Rectangle")                                      // source is an internally generated dolfin mesh
   {
@@ -819,7 +819,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     bottom.mark(edgeids, 3);
     top.mark(edgeids, 4);
 
-    *(*mesh).domains().markers(1) = edgeids;
+    //*(*mesh).domains().markers(1) = edgeids;
   }
   else if (source=="UnitCircle")                                     // source is an internally generated dolfin mesh
   {
@@ -868,7 +868,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     back.mark(edgeids, 5);
     front.mark(edgeids, 6);
 
-    *(*mesh).domains().markers(2) = edgeids;
+    //*(*mesh).domains().markers(2) = edgeids;
   }
   else if (source=="Box")                                            // source is an internally generated dolfin mesh
   {
@@ -912,7 +912,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     back.mark(edgeids, 5);
     front.mark(edgeids, 6);
 
-    *(*mesh).domains().markers(2) = edgeids;
+    //*(*mesh).domains().markers(2) = edgeids;
   }
   else                                                               // source is unrecognised
   {

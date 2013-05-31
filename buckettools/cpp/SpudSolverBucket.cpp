@@ -1436,8 +1436,10 @@ boost::unordered_set<uint> SpudSolverBucket::cell_dof_set_(const boost::shared_p
 
   if (region_ids)
   {                                                                  // yes...  **field(+component)+region(+boundary)**
-    cellidmeshfunction =                                             // and the region id mesh function
-                  (*mesh).domains().cell_domains(*mesh);
+    cellidmeshfunction.reset(new dolfin::MeshFunction(mesh, (*mesh).topology().dim()));
+    (*cellidmeshfunction).set_all(0);
+    //cellidmeshfunction =                                             // and the region id mesh function
+    //              (*mesh).domains().cell_domains(*mesh);
 
   }
 
@@ -1480,8 +1482,11 @@ boost::unordered_set<uint> SpudSolverBucket::facet_dof_set_(const boost::shared_
   boost::unordered_set<uint> dof_set;                                // set up an unordered set of dof
 
   Mesh_ptr mesh = (*system_).mesh();                                 // get the mesh
-  MeshFunction_size_t_ptr facetidmeshfunction =                        // and the facet id mesh function
-                  (*mesh).domains().facet_domains(*mesh);
+  MeshFunction_size_t_ptr facetidmeshfunction;
+  facetidmeshfunction.reset(new dolfin::MeshFunction(mesh, (*mesh).topology().dim()-1));
+  (*facetidmeshfunction).set_all(0);
+  //MeshFunction_size_t_ptr facetidmeshfunction =                        // and the facet id mesh function
+  //                (*mesh).domains().facet_domains(*mesh);
 
   for (dolfin::FacetIterator facet(*mesh); !facet.end(); ++facet)    // loop over the facets in the mesh
   {
@@ -1990,8 +1995,10 @@ boost::unordered_map<uint, double> SpudSolverBucket::cell_value_map_(const boost
   MeshFunction_size_t_ptr cellidmeshfunction;
   if (region_ids)
   {
-    cellidmeshfunction =                                             // get the region id mesh function
-                  (*mesh).domains().cell_domains(*mesh);
+    cellidmeshfunction.reset(new dolfin::MeshFunction(mesh, (*mesh).topology().dim()));
+    (*cellidmeshfunction).set_all(0);
+    //cellidmeshfunction =                                             // get the region id mesh function
+    //              (*mesh).domains().cell_domains(*mesh);
   }
 
   for (dolfin::CellIterator cell(*mesh); !cell.end(); ++cell)        // loop over the cells in the mesh
@@ -2072,8 +2079,11 @@ boost::unordered_map<uint, double> SpudSolverBucket::facet_value_map_(const boos
   }
   dolfin::Array<double> values(value_size);
 
-  MeshFunction_size_t_ptr facetidmeshfunction =                        // and the facet id mesh function
-                  (*mesh).domains().facet_domains(*mesh);
+  MeshFunction_size_t_ptr facetidmeshfunction;
+  facetidmeshfunction.reset(new dolfin::MeshFunction(mesh, (*mesh).topology().dim()-1));
+  (*facetidmeshfunction).set_all(0);
+  //MeshFunction_size_t_ptr facetidmeshfunction =                        // and the facet id mesh function
+  //                (*mesh).domains().facet_domains(*mesh);
 
   for (dolfin::FacetIterator facet(*mesh); !facet.end(); ++facet)    // loop over the facets in the mesh
   {
