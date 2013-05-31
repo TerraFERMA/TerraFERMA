@@ -465,24 +465,24 @@ void FunctionBucket::cap_values()
 {
   if (lower_cap_ || upper_cap_)
   {
-    boost::unordered_set<std::size_t> dofs = (*(*functionspace()).dofmap()).dofs();
 
-    boost::unordered_set<std::size_t>::const_iterator dof;
-    for (dof = dofs.begin(); dof != dofs.end(); dof++)
+    std::pair<uint, uint> ownership_range =                          // the parallel ownership range of the system functionspace
+                      (*(*functionspace()).dofmap()).ownership_range();
+    for (uint i = ownership_range.first; i < ownership_range.second; i++)
     {
       if(upper_cap_)
       {
-        if ((*(*(*system()).function()).vector())[*dof] > *upper_cap_)
+        if ((*(*(*system()).function()).vector())[i] > *upper_cap_)
         {
-          (*(*(*system()).function()).vector()).setitem(*dof, *upper_cap_);
+          (*(*(*system()).function()).vector()).setitem(i, *upper_cap_);
         }
       }
 
       if(lower_cap_)
       {
-        if ((*(*(*system()).function()).vector())[*dof] < *lower_cap_)
+        if ((*(*(*system()).function()).vector())[i] < *lower_cap_)
         {
-          (*(*(*system()).function()).vector()).setitem(*dof, *lower_cap_);
+          (*(*(*system()).function()).vector()).setitem(i, *lower_cap_);
         }
       }
 

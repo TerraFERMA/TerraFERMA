@@ -1226,8 +1226,12 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
   child_indices.clear();
   if (nfields==0)                                                    // if no fields have been specified... **no fields**
   {
-    boost::unordered_set<std::size_t> dof_set = (*(*(*system_).functionspace()).dofmap()).dofs();
-    child_indices.insert(child_indices.end(), dof_set.begin(), dof_set.end());
+    std::pair<uint, uint> ownership_range =                          // the parallel ownership range of the system functionspace
+            (*(*(*system_).functionspace()).dofmap()).ownership_range();
+    for (uint i = ownership_range.first; i < ownership_range.second; i++)
+    {
+      child_indices.push_back(i);
+    }
   }
   else
   {
@@ -1661,13 +1665,11 @@ void SpudSolverBucket::fill_values_by_field_(const std::string &optionpath, PETS
   boost::unordered_map<uint, double> value_map;
   if (nfields==0)                                                    // if no fields have been specified...
   {
-    boost::unordered_set<std::size_t> dof_set = 
-                    (*(*(*system_).functionspace()).dofmap()).dofs();
-
-    for (boost::unordered_set<std::size_t>::const_iterator dof_it = dof_set.begin(); 
-                                  dof_it != dof_set.end(); dof_it++)
+    std::pair<uint, uint> ownership_range =                          // the parallel ownership range of the system functionspace
+            (*(*(*system_).functionspace()).dofmap()).ownership_range();
+    for (uint i = ownership_range.first; i < ownership_range.second; i++)
     {
-      value_map[*dof_it] = 1.0;                                      // we assume a constant value of one
+      value_map[i] = 1.0;                                            // we assume a constant value of one
     }
   }
   else
