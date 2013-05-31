@@ -1436,7 +1436,7 @@ boost::unordered_set<uint> SpudSolverBucket::cell_dof_set_(const boost::shared_p
 
   if (region_ids)
   {                                                                  // yes...  **field(+component)+region(+boundary)**
-    cellidmeshfunction.reset(new dolfin::MeshFunction(mesh, (*mesh).topology().dim()));
+    cellidmeshfunction.reset(new dolfin::MeshFunction< std::size_t >(mesh, (*mesh).topology().dim()));
     (*cellidmeshfunction).set_all(0);
     //cellidmeshfunction =                                             // and the region id mesh function
     //              (*mesh).domains().cell_domains(*mesh);
@@ -1483,7 +1483,7 @@ boost::unordered_set<uint> SpudSolverBucket::facet_dof_set_(const boost::shared_
 
   Mesh_ptr mesh = (*system_).mesh();                                 // get the mesh
   MeshFunction_size_t_ptr facetidmeshfunction;
-  facetidmeshfunction.reset(new dolfin::MeshFunction(mesh, (*mesh).topology().dim()-1));
+  facetidmeshfunction.reset(new dolfin::MeshFunction< std::size_t >(mesh, (*mesh).topology().dim()-1));
   (*facetidmeshfunction).set_all(0);
   //MeshFunction_size_t_ptr facetidmeshfunction =                        // and the facet id mesh function
   //                (*mesh).domains().facet_domains(*mesh);
@@ -1995,7 +1995,7 @@ boost::unordered_map<uint, double> SpudSolverBucket::cell_value_map_(const boost
   MeshFunction_size_t_ptr cellidmeshfunction;
   if (region_ids)
   {
-    cellidmeshfunction.reset(new dolfin::MeshFunction(mesh, (*mesh).topology().dim()));
+    cellidmeshfunction.reset(new dolfin::MeshFunction< std::size_t >(mesh, (*mesh).topology().dim()));
     (*cellidmeshfunction).set_all(0);
     //cellidmeshfunction =                                             // get the region id mesh function
     //              (*mesh).domains().cell_domains(*mesh);
@@ -2080,7 +2080,7 @@ boost::unordered_map<uint, double> SpudSolverBucket::facet_value_map_(const boos
   dolfin::Array<double> values(value_size);
 
   MeshFunction_size_t_ptr facetidmeshfunction;
-  facetidmeshfunction.reset(new dolfin::MeshFunction(mesh, (*mesh).topology().dim()-1));
+  facetidmeshfunction.reset(new dolfin::MeshFunction< std::size_t >(mesh, (*mesh).topology().dim()-1));
   (*facetidmeshfunction).set_all(0);
   //MeshFunction_size_t_ptr facetidmeshfunction =                        // and the facet id mesh function
   //                (*mesh).domains().facet_domains(*mesh);

@@ -1040,7 +1040,7 @@ Expression_ptr SpudFunctionBucket::allocate_expression_over_regions_(
     }
 
     MeshFunction_size_t_ptr cell_ids;
-    cell_ids.reset(new dolfin::MeshFunction((*system_).mesh(), (*(*system_).mesh()).topology().dim()));
+    cell_ids.reset(new dolfin::MeshFunction< std::size_t >((*system_).mesh(), (*(*system_).mesh()).topology().dim()));
     (*cell_ids).set_all(0);
     //MeshFunction_size_t_ptr cell_ids = 
     //      (*(*system_).mesh()).domains().cell_domains((*(*system_).mesh()));
