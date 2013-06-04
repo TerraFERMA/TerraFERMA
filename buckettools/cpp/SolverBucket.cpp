@@ -98,7 +98,9 @@ void SolverBucket::solve()
 
     assert(residual_);                                               // we need to assemble the residual again here as it may depend
                                                                      // on other systems that have been solved since the last call
-    dolfin::assemble(*res_, *residual_, false);                      // assemble the residual
+    dolfin::Assembler assemblerres;
+    assemblerres.reset_sparsity = false;
+    assemblerres.assemble(*res_, *residual_);                        // assemble the residual
     for(std::vector< const dolfin::DirichletBC* >::const_iterator bc = 
                           (*system_).dirichletbcs_begin(); 
                           bc != (*system_).dirichletbcs_end(); bc++)
@@ -151,19 +153,10 @@ void SolverBucket::solve()
     {                                                                // satisfied
       (*iteration_count_)++;                                         // increment iteration counter
 
-      dolfin::symmetric_assemble(*matrix_, *matrixbc_, 
-                                 *bilinear_, (*system_).dirichletbcs(), 
-                                 NULL, NULL, NULL, 
-                                 false);                             // assemble bilinear form
-      dolfin::assemble(*rhs_, *linear_, false);                      // assemble linear form
-      for(std::vector< const dolfin::DirichletBC* >::const_iterator  // loop over the collected vector of system bcs
-                        bc = (*system_).dirichletbcs_begin(); 
-                        bc != (*system_).dirichletbcs_end(); bc++)
-      {
-        (*(*bc)).apply(*rhs_);                                       // apply the bcs to the rhs 
-      }
-      (*matrixbc_).mult(*rhs_, *rhsbc_);
-      *rhs_ -= *rhsbc_;
+      dolfin::SystemAssembler assembler(bilinear_, linear_,
+                                        (*system_).dirichletbcs());
+      assembler.reset_sparsity = false;
+      assembler.assemble(*matrix_, *rhs_);
 
       for(std::vector<ReferencePoints_ptr>::const_iterator p =       // loop over the collected vector of system reference points
                                       (*system_).points_begin(); 
@@ -180,10 +173,10 @@ void SolverBucket::solve()
       if (bilinearpc_)                                               // if there's a pc associated
       {
         assert(matrixpc_);
-        dolfin::symmetric_assemble(*matrixpc_, *matrixbc_, 
-                                   *bilinearpc_, (*system_).dirichletbcs(), 
-                                   NULL, NULL, NULL, 
-                                   false);                           // assemble the pc
+        dolfin::SystemAssembler assemblerpc(bilinearpc_, linear_,
+                                          (*system_).dirichletbcs());
+        assemblerpc.reset_sparsity = false;
+        assemblerpc.assemble(*matrixpc_);
 
         for(std::vector<ReferencePoints_ptr>::const_iterator p =     // loop over the collected vector of system reference points
                                         (*system_).points_begin(); 
@@ -214,10 +207,10 @@ void SolverBucket::solve()
                          f_it != solverforms_end(); f_it++)
       {
         PETScMatrix_ptr solvermatrix = solvermatrices_[(*f_it).first];
-        dolfin::symmetric_assemble(*solvermatrix, *matrixbc_, 
-                                   *(*f_it).second, (*system_).dirichletbcs(), 
-                                   NULL, NULL, NULL, 
-                                   false);                           // assemble the solver matrix
+        dolfin::SystemAssembler assemblerform((*f_it).second, linear_,
+                                          (*system_).dirichletbcs());
+        assemblerform.reset_sparsity = false;
+        assemblerform.assemble(*solvermatrix);
 
         for(std::vector<ReferencePoints_ptr>::const_iterator p =     // loop over the collected vector of system reference points
                                         (*system_).points_begin(); 
@@ -277,7 +270,7 @@ void SolverBucket::solve()
       (*(*(*system_).iteratedfunction()).vector()) = *work_;         // update the iterated function with the work vector
 
       assert(residual_);
-      dolfin::assemble(*res_, *residual_, false);                    // assemble the residual
+      assemblerres.assemble(*res_, *residual_);                      // assemble the residual
       for(std::vector< const dolfin::DirichletBC* >::const_iterator bc = 
                              (*system_).dirichletbcs_begin(); 
                              bc != (*system_).dirichletbcs_end(); bc++)
@@ -341,11 +334,14 @@ void SolverBucket::solve()
 void SolverBucket::assemble_linearforms()
 {
   assert(linear_);
-  dolfin::assemble(*rhs_, *linear_, false);                          // and assemble it
+  dolfin::Assembler assembler;
+  assembler.reset_sparsity=false;
+
+  assembler.assemble(*rhs_, *linear_);
 
   if(residual_)                                                      // do we have a residual_ form?
   {                                                                  // yes...
-    dolfin::assemble(*res_, *residual_, false);                      // and assemble it
+    assembler.assemble(*res_, *residual_);                           // and assemble it
   }
 }
 
@@ -355,27 +351,27 @@ void SolverBucket::assemble_linearforms()
 void SolverBucket::assemble_bilinearforms()
 {
   assert(bilinear_);
-  dolfin::symmetric_assemble(*matrix_, *matrixbc_, 
-                             *bilinear_, (*system_).dirichletbcs(), 
-                             NULL, NULL, NULL, 
-                             false);                                 // assemble bilinear form
+  dolfin::SystemAssembler assembler(bilinear_, linear_, 
+                                    (*system_).dirichletbcs());
+  assembler.reset_sparsity=false;
+  assembler.assemble(*matrix_);
 
   if(bilinearpc_)                                                    // do we have a pc form?
   {
-    dolfin::symmetric_assemble(*matrixpc_, *matrixbc_, 
-                               *bilinear_, (*system_).dirichletbcs(), 
-                               NULL, NULL, NULL, 
-                               false);                               // assemble bilinear form
+    dolfin::SystemAssembler assemblerpc(bilinearpc_, linear_,
+                                      (*system_).dirichletbcs());
+    assemblerpc.reset_sparsity=false;
+    assemblerpc.assemble(*matrixpc_);
   }
 
   for (Form_const_it f_it = solverforms_begin(); 
                      f_it != solverforms_end(); f_it++)
   {
     PETScMatrix_ptr solvermatrix = solvermatrices_[(*f_it).first];
-    dolfin::symmetric_assemble(*solvermatrix, *matrixbc_, 
-                               *(*f_it).second, (*system_).dirichletbcs(), 
-                               NULL, NULL, NULL, 
-                               false);                               // assemble bilinear form
+    dolfin::SystemAssembler assemblerform((*f_it).second, linear_,
+                                      (*system_).dirichletbcs());
+    assemblerform.reset_sparsity=false;
+    assemblerform.assemble(*solvermatrix);
   }
 
 }
