@@ -1991,6 +1991,8 @@ boost::unordered_map<uint, double> SpudSolverBucket::cell_value_map_(const boost
     //              (*mesh).domains().cell_domains(*mesh);
   }
 
+  dolfin::UFCCell ufc_cell(*mesh);                                   // may need this if value_exp has been passed
+
   for (dolfin::CellIterator cell(*mesh); !cell.end(); ++cell)        // loop over the cells in the mesh
   {
     if (region_ids)
@@ -2009,7 +2011,8 @@ boost::unordered_map<uint, double> SpudSolverBucket::cell_value_map_(const boost
 
     if(value_exp)
     {
-      (*dofmap).tabulate_coordinates(coordinates, *cell);
+      ufc_cell.update(*cell);
+      (*dofmap).tabulate_coordinates(coordinates, ufc_cell);
     }
 
     for (uint i = 0; i < dof_vec.size(); i++)                        // loop over the cell dof
@@ -2075,6 +2078,8 @@ boost::unordered_map<uint, double> SpudSolverBucket::facet_value_map_(const boos
   //MeshFunction_size_t_ptr facetidmeshfunction =                        // and the facet id mesh function
   //                (*mesh).domains().facet_domains(*mesh);
 
+  dolfin::UFCCell ufc_cell(*mesh);                                   // may need this if value_exp has been passed
+
   for (dolfin::FacetIterator facet(*mesh); !facet.end(); ++facet)    // loop over the facets in the mesh
   {
     int facetid = (*facetidmeshfunction)[(*facet).index()];          // get the facet boundary id from the mesh function
@@ -2099,7 +2104,8 @@ boost::unordered_map<uint, double> SpudSolverBucket::facet_value_map_(const boos
 
         if (value_exp)
         {
-          (*dofmap).tabulate_coordinates(coordinates, cell);
+          ufc_cell.update(cell, facet_number);                       // should we be passing facet_number here?
+          (*dofmap).tabulate_coordinates(coordinates, ufc_cell);
         }
 
         for (uint i = 0; i < facet_dof_vec.size(); i++)              // loop over facet dof
