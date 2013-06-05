@@ -619,6 +619,8 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
   spud_err(buffer.str(), serr);
 
   Mesh_ptr mesh;                                                     // initialize the pointer
+  MeshFunction_size_t_ptr edgeids;
+  MeshFunction_size_t_ptr cellids;
 
   if (source=="File")                                                // source is a file
   {
@@ -662,10 +664,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     {                                                                // using the dolfin reserved name for exterior facets
       file.close();
 
-      dolfin::MeshFunction<std::size_t> edgeids(*mesh, filename.str());
-
-      const uint D = (*mesh).topology().dim();
-      //*(*mesh).domains().markers(D-1) = edgeids;
+      edgeids.reset(new dolfin::MeshFunction<std::size_t>(*mesh, filename.str()));
     }
     else
     {
@@ -675,10 +674,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
       {                                                              // using the dolfin reserved name for exterior facets
         file.close();
 
-        dolfin::MeshFunction<std::size_t> edgeids(*mesh, filename.str());
-
-        const uint D = (*mesh).topology().dim();
-        //*(*mesh).domains().markers(D-1) = edgeids;
+        edgeids.reset(new dolfin::MeshFunction<std::size_t>(*mesh, filename.str()));
       }
     }
 
@@ -688,10 +684,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     {                                                                // using the dolfin reserved name for cell domains
       file.close();
 
-      dolfin::MeshFunction<std::size_t> cellids(*mesh, filename.str());
-
-      const uint D = (*mesh).topology().dim();
-      //*(*mesh).domains().markers(D) = cellids;
+      cellids.reset(new dolfin::MeshFunction<std::size_t>(*mesh, filename.str()));
     }
     else
     {
@@ -701,10 +694,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
       {                                                                // using the dolfin reserved name for cell domains
         file.close();
 
-        dolfin::MeshFunction<std::size_t> cellids(*mesh, filename.str());
-
-        const uint D = (*mesh).topology().dim();
-        //*(*mesh).domains().markers(D) = cellids;
+        cellids.reset(new dolfin::MeshFunction<std::size_t>(*mesh, filename.str()));
       }
     }
 
@@ -721,11 +711,9 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     Side left(0, 0.0);
     Side right(0, 1.0);
 
-    dolfin::MeshFunction<std::size_t> edgeids(*mesh, 0, 0);
-    left.mark(edgeids, 1);
-    right.mark(edgeids, 2);
-
-    //*(*mesh).domains().markers(0) = edgeids;
+    edgeids.reset(new dolfin::MeshFunction<std::size_t>(*mesh, 0, 0));
+    left.mark(*edgeids, 1);
+    right.mark(*edgeids, 2);
   }
   else if (source=="Interval")                                       // source is an internally generated dolfin mesh
   {
@@ -749,11 +737,9 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     Side left(0, leftx);
     Side right(0, rightx);
 
-    dolfin::MeshFunction<std::size_t> edgeids(*mesh, 0, 0);
-    left.mark(edgeids, 1);
-    right.mark(edgeids, 2);
-
-    //*(*mesh).domains().markers(0) = edgeids;
+    edgeids.reset(new dolfin::MeshFunction<std::size_t>(*mesh, 0, 0));
+    left.mark(*edgeids, 1);
+    right.mark(*edgeids, 2);
   }
   else if (source=="UnitSquare")                                     // source is an internally generated dolfin mesh
   {
@@ -774,13 +760,11 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     Side bottom(1, 0.0);
     Side top(1, 1.0);
 
-    dolfin::MeshFunction<std::size_t> edgeids(*mesh, 1, 0);
-    left.mark(edgeids, 1);
-    right.mark(edgeids, 2);
-    bottom.mark(edgeids, 3);
-    top.mark(edgeids, 4);
-
-    //*(*mesh).domains().markers(1) = edgeids;
+    edgeids.reset(new dolfin::MeshFunction<std::size_t>(*mesh, 1, 0));
+    left.mark(*edgeids, 1);
+    right.mark(*edgeids, 2);
+    bottom.mark(*edgeids, 3);
+    top.mark(*edgeids, 4);
   }
   else if (source=="Rectangle")                                      // source is an internally generated dolfin mesh
   {
@@ -813,13 +797,11 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     Side bottom(1, lowerleft[1]);
     Side top(1, upperright[1]);
 
-    dolfin::MeshFunction<std::size_t> edgeids(*mesh, 1, 0);
-    left.mark(edgeids, 1);
-    right.mark(edgeids, 2);
-    bottom.mark(edgeids, 3);
-    top.mark(edgeids, 4);
-
-    //*(*mesh).domains().markers(1) = edgeids;
+    edgeids.reset(new dolfin::MeshFunction<std::size_t>(*mesh, 1, 0));
+    left.mark(*edgeids, 1);
+    right.mark(*edgeids, 2);
+    bottom.mark(*edgeids, 3);
+    top.mark(*edgeids, 4);
   }
   else if (source=="UnitCircle")                                     // source is an internally generated dolfin mesh
   {
@@ -860,15 +842,13 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     Side back(1, 0.0);
     Side front(1, 1.0);
 
-    dolfin::MeshFunction<std::size_t> edgeids(*mesh, 2, 0);
-    left.mark(edgeids, 1);
-    right.mark(edgeids, 2);
-    bottom.mark(edgeids, 3);
-    top.mark(edgeids, 4);
-    back.mark(edgeids, 5);
-    front.mark(edgeids, 6);
-
-    //*(*mesh).domains().markers(2) = edgeids;
+    edgeids.reset(new dolfin::MeshFunction<std::size_t>(*mesh, 2, 0));
+    left.mark(*edgeids, 1);
+    right.mark(*edgeids, 2);
+    bottom.mark(*edgeids, 3);
+    top.mark(*edgeids, 4);
+    back.mark(*edgeids, 5);
+    front.mark(*edgeids, 6);
   }
   else if (source=="Box")                                            // source is an internally generated dolfin mesh
   {
@@ -904,15 +884,13 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     Side back(1, lowerbackleft[1]);
     Side front(1, upperfrontright[1]);
 
-    dolfin::MeshFunction<std::size_t> edgeids(*mesh, 2, 0);
-    left.mark(edgeids, 1);
-    right.mark(edgeids, 2);
-    bottom.mark(edgeids, 3);
-    top.mark(edgeids, 4);
-    back.mark(edgeids, 5);
-    front.mark(edgeids, 6);
-
-    //*(*mesh).domains().markers(2) = edgeids;
+    edgeids.reset(new dolfin::MeshFunction<std::size_t>(*mesh, 2, 0));
+    left.mark(*edgeids, 1);
+    right.mark(*edgeids, 2);
+    bottom.mark(*edgeids, 3);
+    top.mark(*edgeids, 4);
+    back.mark(*edgeids, 5);
+    front.mark(*edgeids, 6);
   }
   else                                                               // source is unrecognised
   {

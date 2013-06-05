@@ -45,7 +45,6 @@ namespace buckettools {
   typedef boost::shared_ptr< dolfin::Expression >                   Expression_ptr;
   typedef boost::shared_ptr< dolfin::Mesh >                         Mesh_ptr;
   typedef boost::shared_ptr< dolfin::MeshFunction< std::size_t > >  MeshFunction_size_t_ptr;
-  typedef boost::shared_ptr< const dolfin::MeshFunction< std::size_t > > const_MeshFunction_size_t_ptr;
   typedef boost::shared_ptr< dolfin::FunctionSpace >                FunctionSpace_ptr;
   typedef boost::shared_ptr< dolfin::Function >                     Function_ptr;
   typedef boost::shared_ptr< dolfin::DirichletBC >                  DirichletBC_ptr;
@@ -75,6 +74,8 @@ namespace buckettools {
   typedef std::map< int, SystemBucket_ptr >::const_iterator              int_SystemBucket_const_it;
   typedef std::map< std::string, Mesh_ptr >::iterator                    Mesh_it;
   typedef std::map< std::string, Mesh_ptr >::const_iterator              Mesh_const_it;
+  typedef std::map< std::string, MeshFunction_size_t_ptr >::iterator     MeshFunction_size_t_it;
+  typedef std::map< std::string, MeshFunction_size_t_ptr >::const_iterator MeshFunction_size_t_const_it;
   typedef std::map< std::string, std::string >::iterator                 string_it;
   typedef std::map< std::string, std::string >::const_iterator           string_const_it;
   typedef std::map< std::string, FunctionSpace_ptr >::iterator           FunctionSpace_it;

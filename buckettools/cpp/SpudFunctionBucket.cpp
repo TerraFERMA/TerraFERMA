@@ -841,6 +841,9 @@ void SpudFunctionBucket::fill_constantfunctional_()
 {
   constantfunctional_ = ufc_fetch_functional((*system_).name(),      // get a pointer to the functional form from the ufc
                         name(), (*system_).mesh());
+  (*constantfunctional_).set_cell_domains((*system_).celldomains());
+  (*constantfunctional_).set_interior_facet_domains((*system_).facetdomains());
+  (*constantfunctional_).set_exterior_facet_domains((*system_).facetdomains());
 
                                                                      // at this stage we cannot attach any coefficients to this
                                                                      // functional because we do not necessarily have them all
@@ -900,6 +903,9 @@ void SpudFunctionBucket::fill_functionals_()
 
     Form_ptr functional = ufc_fetch_functional((*system_).name(),    // get a pointer to the functional form from the ufc
                           name(), functionalname, (*system_).mesh());
+    (*functional).set_cell_domains((*system_).celldomains());
+    (*functional).set_interior_facet_domains((*system_).facetdomains());
+    (*functional).set_exterior_facet_domains((*system_).facetdomains());
     register_functional(functional, functionalname,                  // register it in the function bucket
                                                functionaloptionpath);
 
@@ -1039,11 +1045,7 @@ Expression_ptr SpudFunctionBucket::allocate_expression_over_regions_(
 
     }
 
-    MeshFunction_size_t_ptr cell_ids;
-    cell_ids.reset(new dolfin::MeshFunction< std::size_t >((*system_).mesh(), (*(*system_).mesh()).topology().dim()));
-    (*cell_ids).set_all(0);
-    //MeshFunction_size_t_ptr cell_ids = 
-    //      (*(*system_).mesh()).domains().cell_domains((*(*system_).mesh()));
+    MeshFunction_size_t_ptr cell_ids = (*system_).celldomains();
     if (rank==0)
     {
       expression.reset( new RegionsExpression(expressions, 

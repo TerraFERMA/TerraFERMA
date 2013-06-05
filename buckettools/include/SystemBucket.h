@@ -88,6 +88,12 @@ namespace buckettools
     const Mesh_ptr mesh() const                                      // return a (boost shared) pointer to the system mesh
     { return mesh_; }
 
+    const MeshFunction_size_t_ptr celldomains() const                // return a (boost shared) pointer to the system mesh function
+    { return celldomains_; }
+
+    const MeshFunction_size_t_ptr facetdomains() const               // return a (boost shared) pointer to the system mesh function
+    { return facetdomains_; }
+
     const FunctionSpace_ptr functionspace() const                    // return a (boost shared) pointer to the system functionspace
     { return functionspace_; }
 
@@ -344,6 +350,8 @@ namespace buckettools
     Bucket* bucket_;                                                 // a pointer to the parent bucket
 
     Mesh_ptr mesh_;                                                  // a (boost shared) pointer to the system mesh
+
+    MeshFunction_size_t_ptr celldomains_, facetdomains_;             // a (boost shared) pointer to the system mesh functions
 
     FunctionSpace_ptr functionspace_;                                // a (boost shared) pointer to the system functionspace
 

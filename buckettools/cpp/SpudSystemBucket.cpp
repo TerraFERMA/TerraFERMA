@@ -212,6 +212,8 @@ void SpudSystemBucket::fill_base_()
   serr = Spud::get_option(buffer.str(), meshname); 
   spud_err(buffer.str(), serr);
   mesh_ = (*bucket_).fetch_mesh(meshname);                           // and extract it from the bucket
+  celldomains_ = (*bucket_).fetch_celldomains(meshname);             // along with the cell domains
+  facetdomains_ = (*bucket_).fetch_facetdomains(meshname);           // and facet domains
 
   std::string location;
   buffer.str(""); buffer << optionpath() << "/solve/name";
