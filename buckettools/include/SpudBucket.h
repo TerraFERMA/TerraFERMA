@@ -59,7 +59,9 @@ namespace buckettools
     //***************************************************************|***********************************************************//
 
     void register_mesh(Mesh_ptr mesh, const std::string &name,       // register a mesh with a given name (and an optionpath)
-                       const std::string &optionpath); 
+                       const std::string &optionpath,
+                       MeshFunction_size_t_ptr celldomains = MeshFunction_size_t_ptr(),
+                       MeshFunction_size_t_ptr facetdomains = MeshFunction_size_t_ptr());
 
     std::string fetch_mesh_optionpath(const std::string &name);      // return the optionpath associated with the named mesh
 

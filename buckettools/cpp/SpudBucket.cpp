@@ -151,7 +151,9 @@ void SpudBucket::copy_diagnostics(Bucket_ptr &bucket) const
 //*******************************************************************|************************************************************//
 void SpudBucket::register_mesh(Mesh_ptr mesh, 
                                const std::string &name, 
-                               const std::string &optionpath)
+                               const std::string &optionpath,
+                               MeshFunction_size_t_ptr celldomains, 
+                               MeshFunction_size_t_ptr facetdomains)
 {
   Mesh_it m_it = meshes_.find(name);                                 // check if a mesh with this name already exists
   if (m_it != meshes_end())
@@ -163,6 +165,8 @@ void SpudBucket::register_mesh(Mesh_ptr mesh,
   {
     meshes_[name]           = mesh;                                  // if not register it in the map
     mesh_optionpaths_[name] = optionpath;                            // also register its optionpath
+    celldomains_[name] = celldomains;
+    facetdomains_[name] = facetdomains;
   }
 }
 
@@ -897,7 +901,8 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     dolfin::error("Unknown mesh source.");
   }
 
-  register_mesh(mesh, meshname, optionpath);                         // put the new mesh in the bucket
+  register_mesh(mesh, meshname, optionpath,
+                cellids, edgeids);                                   // put the new mesh in the bucket
 }
 
 //*******************************************************************|************************************************************//
