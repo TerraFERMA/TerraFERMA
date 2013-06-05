@@ -6,7 +6,7 @@ if (NOT LOGLEVEL)
 endif()
 
 # Get DOLFIN configuration data (dolfin-config.cmake must be in DOLFIN_CMAKE_CONFIG_PATH)
-find_package(dolfin)
+find_package(DOLFIN)
 
 # Compiler definitions
 add_definitions(${DOLFIN_CXX_DEFINITIONS})
