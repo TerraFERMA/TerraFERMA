@@ -80,13 +80,13 @@ endif()
 
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/schemas DESTINATION share/buckettools)
 
-# Write a schemata file for bmls that can be installed
+# Write a schemata file for tfmls that can be installed
 file(
-    WRITE ${PROJECT_BINARY_DIR}/bml
-    "BucketTools Markup Language\ndefault=${CMAKE_INSTALL_PREFIX}/share/buckettools/schemas/buckettools.rng"
+    WRITE ${PROJECT_BINARY_DIR}/tfml
+    "TerraFERMA Markup Language\ndefault=${CMAKE_INSTALL_PREFIX}/share/buckettools/schemas/terraferma.rng"
     )
 
-install(FILES ${PROJECT_BINARY_DIR}/bml DESTINATION share/buckettools/diamond/schemata)
+install(FILES ${PROJECT_BINARY_DIR}/tfml DESTINATION share/buckettools/diamond/schemata)
 
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/cmake DESTINATION share/buckettools)
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/ufc   DESTINATION share/buckettools)

@@ -103,7 +103,7 @@ class DiamondValidator:
 
 validator = DiamondValidator(rootDir = os.path.join(os.path.pardir, os.path.pardir))
 
-validator.ValidateOptionsFiles(schemafile = os.path.join("buckettools", "schemas", "buckettools.rng"), testDir = "tests", depth = 1, extension = "bml")
+validator.ValidateOptionsFiles(schemafile = os.path.join("buckettools", "schemas", "terraferma.rng"), testDir = "tests", depth = 1, extension = "tfml")
 
 passes = validator.Passes()
 optionErrors = validator.OptionErrors()

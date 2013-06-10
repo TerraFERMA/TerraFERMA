@@ -1,6 +1,6 @@
 set(EXECUTABLE "rbconvection2a")
 
-set(OPTIONSFILENAME "rbconvection.bml")
+set(OPTIONSFILENAME "rbconvection.tfml")
 
 set(PREFIX ${EXECUTABLE})
 

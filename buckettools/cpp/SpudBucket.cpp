@@ -1071,7 +1071,7 @@ void SpudBucket::checkpoint_options_()
   namebuffer.str(""); namebuffer << output_basename() 
                                  << "_checkpoint_" 
                                  << checkpoint_count() 
-                                 << ".bml";
+                                 << ".tfml";
   Spud::write_options(namebuffer.str());
   
   buffer.str(""); buffer << "/io/output_base_name";

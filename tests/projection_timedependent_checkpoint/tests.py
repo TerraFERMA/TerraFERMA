@@ -150,7 +150,7 @@ def test_snes_source2_oldint_1():
   assert numpy.all(val == [1500.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0])
 
 def test_checkpoint_0():
-  libspud.load_options("projection_checkpoint_checkpoint_0.bml")
+  libspud.load_options("projection_checkpoint_checkpoint_0.tfml")
   val = libspud.get_option("/timestepping/current_time")
   libspud.clear_options()
   assert val==10.0

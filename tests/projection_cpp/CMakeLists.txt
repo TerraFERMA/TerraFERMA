@@ -1,6 +1,6 @@
 set(EXECUTABLE "projection_cpp")
 
-set(OPTIONSFILENAME "projection.bml")
+set(OPTIONSFILENAME "projection.tfml")
 set(MESHBASENAME "square")
 
 set(PREFIX ${EXECUTABLE})

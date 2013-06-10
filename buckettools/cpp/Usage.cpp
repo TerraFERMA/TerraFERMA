@@ -233,14 +233,14 @@ void buckettools::parse_arguments(int argc, char** argv)
 
   if(argc > optind + 1)                                              // find the options file name
   {
-    command_line_options["bml"] = argv[optind + 1];
+    command_line_options["tfml"] = argv[optind + 1];
   }
   else if(argc == optind + 1)
   {
-    command_line_options["bml"] = argv[optind];
+    command_line_options["tfml"] = argv[optind];
   }
 
-  Spud::load_options(command_line_options["bml"]);                   // and load it
+  Spud::load_options(command_line_options["tfml"]);                  // and load it
   if(!Spud::have_option("/io/output_base_name"))                     // check its been loaded
   {
     dolfin::error("Failed to find output_base_name after loading options file.");

@@ -1,6 +1,6 @@
 set(EXECUTABLE "projection_timedependent_checkpoint")
 
-set(OPTIONSFILENAME "projection_checkpoint_0.bml")
+set(OPTIONSFILENAME "projection_checkpoint_0.tfml")
 set(MESHBASENAME "square")
 
 set(PREFIX ${EXECUTABLE})

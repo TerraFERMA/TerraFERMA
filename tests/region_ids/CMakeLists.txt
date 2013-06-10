@@ -1,6 +1,6 @@
 set(EXECUTABLE "region_ids")
 
-set(OPTIONSFILENAME "region_ids.bml")
+set(OPTIONSFILENAME "region_ids.tfml")
 set(MESHBASENAME "region_id")
 
 set(PREFIX ${EXECUTABLE})
