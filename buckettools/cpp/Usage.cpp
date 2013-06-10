@@ -46,7 +46,7 @@ void buckettools::usage(char *cmd)
 //*******************************************************************|************************************************************//
 void buckettools::print_version(std::ostream& stream)
 {
-  stream << "HGChangesetId: " <<__HG_ID__ << std::endl
+  stream << "GitHash: " <<__GIT_SHA__ << std::endl
       <<"CompileTime: "<<__DATE__<<" "<<__TIME__<<std::endl
       ;
   stream.flush();
