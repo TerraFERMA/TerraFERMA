@@ -51,6 +51,8 @@ namespace buckettools
     void copy_diagnostics(SystemBucket_ptr &system, 
                             Bucket_ptr &bucket) const;               // copy the data necessary for the diagnostics data file(s)
 
+    std::vector< GenericFunction_ptr > collect_vis_functions() const;// output the diagnostics on this system
+
     //***************************************************************|***********************************************************//
     // Base data access
     //***************************************************************|***********************************************************//

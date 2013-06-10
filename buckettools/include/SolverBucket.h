@@ -102,6 +102,10 @@ namespace buckettools
 
     void iteration_count(const int &it);                             // set the number of iterations taken
 
+    const bool visualization_monitor() const;                        // return true if we're using a visualization monitor
+    
+    const bool kspvisualization_monitor() const;                     // return true if we're using a visualization monitor
+    
     const ConvergenceFile_ptr convergence_file() const;              // return a pointer to the convergence file
 
     const KSPConvergenceFile_ptr ksp_convergence_file() const;       // return a pointer to the ksp convergence file
@@ -222,6 +226,8 @@ namespace buckettools
     ConvergenceFile_ptr convfile_;                                   // diagnostic convergence file
 
     KSPConvergenceFile_ptr kspconvfile_;                             // diagnostic convergence file
+
+    bool_ptr visualizationmonitor_, kspvisualizationmonitor_;        // visualization monitors
 
     bool copy_;                                                      // flag if this is a diagnostic copy or not
 

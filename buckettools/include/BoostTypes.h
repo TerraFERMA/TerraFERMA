@@ -80,6 +80,8 @@ namespace buckettools {
   typedef std::map< std::string, std::string >::const_iterator           string_const_it;
   typedef std::map< std::string, FunctionSpace_ptr >::iterator           FunctionSpace_it;
   typedef std::map< std::string, FunctionSpace_ptr >::const_iterator     FunctionSpace_const_it;
+  typedef std::map< Mesh_ptr, FunctionSpace_ptr >::iterator              Mesh_FunctionSpace_it;
+  typedef std::map< Mesh_ptr, FunctionSpace_ptr >::const_iterator        Mesh_FunctionSpace_const_it;
   typedef std::map< std::string, FunctionBucket_ptr >::iterator          FunctionBucket_it;
   typedef std::map< std::string, FunctionBucket_ptr >::const_iterator    FunctionBucket_const_it;
   typedef std::map< int, FunctionBucket_ptr >::iterator                  int_FunctionBucket_it;
@@ -108,6 +110,12 @@ namespace buckettools {
   typedef std::map< std::string, Form_ptr >::const_iterator              Form_const_it;
   typedef std::map< std::string, GenericDetectors_ptr >::iterator        GenericDetectors_it;
   typedef std::map< std::string, GenericDetectors_ptr >::const_iterator  GenericDetectors_const_it;
+  typedef std::map<File_ptr, 
+                   std::pair<FunctionSpace_ptr, 
+                   std::vector<GenericFunction_ptr> > >::iterator        Vis_it;
+  typedef std::map<File_ptr, 
+                   std::pair<FunctionSpace_ptr, 
+                   std::vector<GenericFunction_ptr> > >::const_iterator  Vis_const_it;
   typedef std::map< std::string, double_ptr >::iterator                  double_ptr_it;
   typedef std::map< std::string, double_ptr >::const_iterator            double_ptr_const_it;
   typedef std::map< std::string, bool_ptr >::iterator                    bool_ptr_it;

@@ -167,6 +167,19 @@ namespace buckettools
 
     MeshFunction_size_t_const_it facetdomains_end() const;            // return a constant iterator to the end of the meshfunctions
  
+    void register_visfunctionspace(
+               FunctionSpace_ptr functionspace, Mesh_ptr mesh);      // register a visualization functionspace with a mesh
+
+    FunctionSpace_ptr fetch_visfunctionspace(const Mesh_ptr mesh);   // return a (boost shared) pointer to a functionspace on the given mesh
+    
+    Mesh_FunctionSpace_it visfunctionspaces_begin();                 // return an iterator to the beginning of the visfunctionspaces
+
+    Mesh_FunctionSpace_const_it visfunctionspaces_begin() const;     // return a constant iterator to the beginning of the visfunctionspaces
+
+    Mesh_FunctionSpace_it visfunctionspaces_end();                   // return an iterator to the end of the visfunctionspaces
+
+    Mesh_FunctionSpace_const_it visfunctionspaces_end() const;       // return a constant iterator to the end of the visfunctionspaces
+ 
     //***************************************************************|***********************************************************//
     // System data access
     //***************************************************************|***********************************************************//
@@ -347,6 +360,8 @@ namespace buckettools
     std::map< std::string, MeshFunction_size_t_ptr > facetdomains_;  // a map from mesh names to (boost shared) pointers to
                                                                      // meshfunctions describing the facetids
 
+    std::map< Mesh_ptr, FunctionSpace_ptr > visfunctionspaces_;      // pointers to visualization functionspaces
+
     std::map< std::string, SystemBucket_ptr > systems_;              // a map from system names to (boost shared) pointers to systems
 
     std::map< int, SystemBucket_ptr > orderedsystems_;               // an ordered (user defined) map from system names to (boost
@@ -362,6 +377,11 @@ namespace buckettools
     DetectorsFile_ptr detfile_;                                      // pointer to a detectors file
 
     SteadyStateFile_ptr steadyfile_;                                 // pointer to a steady state file
+
+    std::map< File_ptr, 
+              std::pair< FunctionSpace_ptr, 
+                         std::vector< GenericFunction_ptr > > > 
+                                                          visfiles_; // pointer to visualization file(s)
 
     //***************************************************************|***********************************************************//
     // Filling data

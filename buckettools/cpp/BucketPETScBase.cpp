@@ -220,13 +220,11 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
 }
 
 //*******************************************************************|************************************************************//
-// define the petsc snes monitor callback function that outputs a visualization file
+// define the petsc snes monitor callback function that outputs a visualization file and a convergence file
 //*******************************************************************|************************************************************//
 PetscErrorCode buckettools::SNESCustomMonitor(SNES snes, PetscInt its,
                                       PetscReal norm, void* mctx)
 {
-  dolfin::log(dolfin::INFO, "In SNESCustomMonitor");
-
   std::stringstream buffer;                                          // string buffer
   PetscErrorCode perr;                                               // petsc error code
 
@@ -260,6 +258,33 @@ PetscErrorCode buckettools::SNESCustomMonitor(SNES snes, PetscInt its,
 
   *(*(*system).snesupdatefunction()).vector() = solupdate;
 
+  std::vector< GenericFunction_ptr > functions;                      // create a list of subfunctions
+  for (FunctionBucket_const_it f_it = (*system).fields_begin(); 
+                               f_it != (*system).fields_end(); 
+                                                        f_it++)
+  {
+    functions.push_back((*(*f_it).second).iteratedfunction());
+    functions.push_back((*(*f_it).second).residualfunction());
+    functions.push_back((*(*f_it).second).snesupdatefunction());
+  }
+
+  if (((*solver).visualization_monitor()))
+  {
+    if (its==0)
+    {
+      buffer.str(""); buffer << (*bucket).output_basename() << "_" 
+                             << (*system).name() << "_" 
+                             << (*solver).name() << "_" 
+                             << (*bucket).timestep_count() << "_" 
+                             << (*bucket).iteration_count() << "_snes.pvd";
+      (*snesctx).pvdfile.reset( new dolfin::File(buffer.str(), "compressed") );
+    }
+    assert((*snesctx).pvdfile);
+
+    Mesh_ptr sysmesh = (*system).mesh();
+    FunctionSpace_ptr visfuncspace = (*bucket).fetch_visfunctionspace(sysmesh);
+    (*(*snesctx).pvdfile).write(functions, *visfuncspace, (double) its);
+  }
 
   if ((*solver).convergence_file())
   {
@@ -272,13 +297,11 @@ PetscErrorCode buckettools::SNESCustomMonitor(SNES snes, PetscInt its,
 }
 
 //*******************************************************************|************************************************************//
-// define the petsc ksp monitor callback function that outputs a convergence file
+// define the petsc ksp monitor callback function that outputs a visualization file
 //*******************************************************************|************************************************************//
 PetscErrorCode buckettools::KSPCustomMonitor(KSP ksp, int it,
                                       PetscReal rnorm, void* mctx)
 {
-  dolfin::log(dolfin::INFO, "In KSPCustomMonitor");
-
   std::stringstream buffer;                                          // string buffer
   PetscErrorCode perr;                                               // petsc error code
 
@@ -302,11 +325,39 @@ PetscErrorCode buckettools::KSPCustomMonitor(KSP ksp, int it,
 
   *(*(*system).residualfunction()).vector() = solresid;
 
+  std::vector< GenericFunction_ptr > functions;                      // create a list of subfunctions
+  for (FunctionBucket_const_it f_it = (*system).fields_begin(); 
+                               f_it != (*system).fields_end(); 
+                                                        f_it++)
+  {
+    functions.push_back((*(*f_it).second).iteratedfunction());
+    functions.push_back((*(*f_it).second).residualfunction());
+  }
+
   if ((*solver).type()=="SNES")
   {
     PetscInt iter;
     perr = SNESGetIterationNumber((*solver).snes(), &iter); CHKERRQ(perr);
     (*solver).iteration_count(iter);
+  }
+
+  if (((*solver).kspvisualization_monitor()))
+  {
+    if (it==0)
+    {
+      buffer.str(""); buffer << (*bucket).output_basename() << "_" 
+                             << (*system).name() << "_" 
+                             << (*solver).name() << "_" 
+                             << (*bucket).timestep_count() << "_" 
+                             << (*bucket).iteration_count() << "_"
+                             << (*solver).iteration_count() << "_ksp.pvd";
+      (*kspctx).pvdfile.reset( new dolfin::File(buffer.str(), "compressed") );
+    }
+    assert((*kspctx).pvdfile);
+
+    Mesh_ptr sysmesh = (*system).mesh();
+    FunctionSpace_ptr visfuncspace = (*bucket).fetch_visfunctionspace(sysmesh);
+    (*(*kspctx).pvdfile).write(functions, *visfuncspace, (double) it);
   }
 
   if ((*solver).ksp_convergence_file())

@@ -7,6 +7,7 @@
 #include "PointDetectors.h"
 #include "PythonDetectors.h"
 #include "StatisticsFile.h"
+#include "VisualizationWrapper.h"
 #include <dolfin.h>
 #include <string>
 #include <spud>
@@ -903,6 +904,13 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
 
   register_mesh(mesh, meshname, optionpath,
                 cellids, edgeids);                                   // put the new mesh in the bucket
+
+  FunctionSpace_ptr vis_fs =                                         // retrieve the visualization functionspace for this mesh
+                    ufc_fetch_visualization_functionspace(meshname,
+                                                          mesh);
+
+  register_visfunctionspace(vis_fs, mesh);                           // put the visualization functionspace in the bucket
+
 }
 
 //*******************************************************************|************************************************************//
@@ -1038,6 +1046,49 @@ void SpudBucket::fill_diagnostics_()
     (*(*s_it).second).initialize_diagnostics();                      // initialize any diagnostic files in systems
   }
 
+  if ((Spud::option_count("/system/field/diagnostics/include_in_visualization")+
+       Spud::option_count("/system/field/diagnostics/include_residual_in_visualization")+
+       Spud::option_count("/system/coefficient/diagnostics/include_in_visualization"))>0)
+  {
+    for (Mesh_const_it m_it = meshes_begin(); m_it != meshes_end(); m_it++)
+    {
+      std::vector<GenericFunction_ptr> functions;
+      for (SystemBucket_it s_it = systems_begin(); s_it != systems_end(); s_it++)// loop over the systems
+      {
+        if ((*(*s_it).second).mesh() == (*m_it).second)              // check the system is on the right mesh (using pointers)
+        {
+          if ((*(*s_it).second).include_in_visualization())          // are any functions of fields included in the visualization
+          {
+            
+            std::vector<GenericFunction_ptr> sysfuncs = 
+                (*boost::dynamic_pointer_cast< SpudSystemBucket >((*s_it).second)).collect_vis_functions();
+
+            functions.insert(functions.end(), sysfuncs.begin(), sysfuncs.end());
+          }
+        }
+      }
+
+      if (functions.size()>0)                                        // if there were any functions to include, let's save this info
+      {
+        File_ptr pvd_file;
+        if (meshes_.size()>1)                                        // allocate the pvd file with an appropriate name
+        {
+          pvd_file.reset( new dolfin::File(output_basename()+"_"+(*m_it).first+".pvd", "compressed") );
+        }
+        else
+        {
+          pvd_file.reset( new dolfin::File(output_basename()+".pvd", "compressed") );
+        }
+
+
+        FunctionSpace_ptr vis_fs = fetch_visfunctionspace((*m_it).second);
+
+        visfiles_[pvd_file] = std::make_pair(vis_fs, functions);     // save to the data structure
+      }
+
+    }
+  }
+  
 }
 
 //*******************************************************************|************************************************************//

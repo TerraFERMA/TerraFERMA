@@ -19,6 +19,16 @@
     <output_base_name>
       <string_value lines="1">projection</string_value>
     </output_base_name>
+    <visualization>
+      <element name="P2">
+        <family>
+          <string_value>CG</string_value>
+        </family>
+        <degree>
+          <integer_value rank="0">2</integer_value>
+        </degree>
+      </element>
+    </visualization>
     <dump_periods/>
     <detectors/>
   </io>
@@ -143,6 +153,7 @@
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics>
           <functional name="Integral">
             <string_value lines="20" type="code" language="python">int = ss1*dx</string_value>
@@ -168,6 +179,7 @@
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics>
           <functional name="Integral0">
             <string_value lines="20" type="code" language="python">int = ss2[0]*dx</string_value>
@@ -213,6 +225,7 @@ def val(x):
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics/>
       </diagnostics>
     </coefficient>
@@ -249,6 +262,7 @@ r = r1 + r2</string_value>
         </max_iterations>
         <monitors>
           <residual/>
+          <visualization/>
         </monitors>
         <linear_solver>
           <iterative_method name="cg">
@@ -366,6 +380,7 @@ r = r1 + r2</string_value>
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics>
           <functional name="Integral">
             <string_value lines="20" type="code" language="python">int = sp1*dx</string_value>
@@ -391,6 +406,7 @@ r = r1 + r2</string_value>
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics>
           <functional name="Integral0">
             <string_value lines="20" type="code" language="python">int = sp2[0]*dx</string_value>
@@ -433,6 +449,7 @@ r = r1 + r2</string_value>
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics/>
       </diagnostics>
     </coefficient>

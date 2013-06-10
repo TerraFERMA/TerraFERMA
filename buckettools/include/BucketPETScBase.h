@@ -25,13 +25,14 @@ namespace buckettools
                                    MatStructure* flag, void* ctx);
 
   typedef struct {                                                   // a structure used to pass bucket data into monitor functions
+    File_ptr pvdfile;                                                // (boost shared) pointer to a pvd file
     SolverBucket *solver;                                            // pointer to solver
   } CustomMonitorCtx;
 
-  PetscErrorCode SNESCustomMonitor(SNES snes, PetscInt its,          // petsc snes callback function to output a 
+  PetscErrorCode SNESCustomMonitor(SNES snes, PetscInt its,          // petsc snes callback function to output a visualization and 
                                       PetscReal norm, void* mctx);   // convergence file
 
-  PetscErrorCode KSPCustomMonitor(KSP ksp, int it,                   // petsc ksp callback function to output a 
+  PetscErrorCode KSPCustomMonitor(KSP ksp, int it,                   // petsc ksp callback function to output a visualization and
                                       PetscReal rnorm, void* mctx);  // convergence file
 
   PetscErrorCode KSPNullSpaceMonitor(KSP ksp, int it,                // petsc ksp callback function to test a
