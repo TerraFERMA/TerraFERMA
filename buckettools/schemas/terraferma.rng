@@ -17,7 +17,7 @@
   <include href="solvers.rng"/>
   <include href="ufl.rng"/>
   <start>
-    <element name="tferma_options">
+    <element name="terraferma_options">
       <a:documentation>The root node of the options dictionary for TerraFERMA.
 
 Options which are shaded blue are incomplete and require input.

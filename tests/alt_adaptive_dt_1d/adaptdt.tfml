@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<tferma_options>
+<terraferma_options>
   <geometry>
     <dimension>
       <integer_value rank="0">1</integer_value>
@@ -125,4 +125,4 @@ values[0] = (val*bucket()-&gt;timestep())/dcell.diameter();</string_value>
     </coefficient>
     <solve name="with_diagnostics"/>
   </system>
-</tferma_options>
+</terraferma_options>

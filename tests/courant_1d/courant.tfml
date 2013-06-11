@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<tferma_options>
+<terraferma_options>
   <geometry>
     <dimension>
       <integer_value rank="0">1</integer_value>
@@ -140,4 +140,4 @@ r = c_t*c_a*dx - c_t('+')*vout('+')*dt('+')*dS - c_t('-')*vout('-')*dt('-')*dS -
     </nonlinear_solver>
     <solve name="with_diagnostics"/>
   </system>
-</tferma_options>
+</terraferma_options>

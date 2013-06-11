@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<tferma_options>
+<terraferma_options>
   <geometry>
     <dimension>
       <integer_value rank="0">2</integer_value>
@@ -181,4 +181,4 @@
     </nonlinear_solver>
     <solve name="in_timeloop"/>
   </system>
-</tferma_options>
+</terraferma_options>

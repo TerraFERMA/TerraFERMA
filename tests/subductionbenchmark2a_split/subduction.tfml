@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<tferma_options>
+<terraferma_options>
   <geometry>
     <dimension>
       <integer_value rank="0">2</integer_value>
@@ -553,4 +553,4 @@ r = d_t*d_a*dx_wedge - d_t*div(v_i)*dx_wedge</string_value>
     </nonlinear_solver>
     <solve name="with_diagnostics"/>
   </system>
-</tferma_options>
+</terraferma_options>

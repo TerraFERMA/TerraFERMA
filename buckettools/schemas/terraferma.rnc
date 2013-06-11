@@ -22,7 +22,7 @@ start =
       ## Options which are shaded blue are incomplete and require input.
       ## Greyed out options are optional.
       ## Black options are active.
-      element tferma_options {
+      element terraferma_options {
          # in geometry.rnc
          geometry,
          # in io.rnc
