@@ -1,6 +1,6 @@
 set(EXECUTABLE "rbconvection_steadystate_split")
 
-set(OPTIONSFILENAME "rbconvection.bml")
+set(OPTIONSFILENAME "rbconvection.tfml")
 
 set(PREFIX ${EXECUTABLE})
 

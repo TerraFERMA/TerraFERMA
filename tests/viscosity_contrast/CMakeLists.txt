@@ -1,6 +1,6 @@
 set(EXECUTABLE "viscosity_constrast")
 
-set(OPTIONSFILENAME "vc.bml")
+set(OPTIONSFILENAME "vc.tfml")
 set(MESHBASENAME "square")
 
 set(PREFIX ${EXECUTABLE})

@@ -7,37 +7,37 @@ project(buckettools_cpp)
 #  below)
 file(
     WRITE ${PROJECT_BINARY_DIR}/builddefs.h.in
-    "#define __HG_ID__ \"@HG_ID@\"\n"
+    "#define __GIT_SHA__ \"@GIT_SHA@\"\n"
     )
 
 # Write a cmake script to disk at configuration time
-# (this will run hg - at compile time - and record the id info
+# (this will run git - at compile time - and record the id info
 #  to an environment variable which can be used to write a
 #  header file for the build)
 file(
     WRITE ${PROJECT_BINARY_DIR}/builddefs.cmake
-    "find_program(HAVE_HG hg)
-    if(HAVE_HG)
+    "find_program(HAVE_GIT git)
+    if(HAVE_GIT)
         execute_process (
-           COMMAND hg id -i 
+           COMMAND git log --pretty=format:%H -1 HEAD^
            WORKING_DIRECTORY \${DIR}
-           OUTPUT_VARIABLE HG_ID
-           ERROR_VARIABLE HG_ERR
+           OUTPUT_VARIABLE GIT_SHA
+           ERROR_VARIABLE GIT_ERR
            OUTPUT_STRIP_TRAILING_WHITESPACE
            ERROR_STRIP_TRAILING_WHITESPACE
            )
-        if(HG_ERR)
-           set(HG_ID "hg_id_not_found")
-        endif(HG_ERR)
-    else(HAVE_HG)
-        set(HG_ID "hg_not_found")
-    endif(HAVE_HG)
+        if(GIT_ERR)
+           set(GIT_SHA "git_log_not_found")
+        endif(GIT_ERR)
+    else(HAVE_GIT)
+        set(GIT_SHA "git_not_found")
+    endif(HAVE_GIT)
     configure_file(\${SRC} \${DST} @ONLY)
     "
     )
 
 # add a target that runs the above cmake script and creates the header
-# file containing the hg id information
+# file containing the git log information
 add_custom_target(
     builddefs
     ${CMAKE_COMMAND} -D SRC="${PROJECT_BINARY_DIR}/builddefs.h.in"

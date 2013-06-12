@@ -1,6 +1,6 @@
 set(EXECUTABLE "subductionbenchmark2a")
 
-set(OPTIONSFILENAME "subduction.bml")
+set(OPTIONSFILENAME "subduction.tfml")
 set(MESHBASENAME "sepran_converted_mesh")
 
 set(PREFIX ${EXECUTABLE})

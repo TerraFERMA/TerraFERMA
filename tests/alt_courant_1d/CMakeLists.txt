@@ -1,6 +1,6 @@
 set(EXECUTABLE "alt_courant_1d")
 
-set(OPTIONSFILENAME "courant.bml")
+set(OPTIONSFILENAME "courant.tfml")
 
 set(PREFIX ${EXECUTABLE})
 

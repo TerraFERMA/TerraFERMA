@@ -23,7 +23,8 @@ if(NOT ${PYTHONLIBS_FOUND})
   message(FATAL_ERROR "Could not find python libraries.")
 endif(NOT ${PYTHONLIBS_FOUND})
 
-set(CMAKE_MODULE_PATH $ENV{CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH $ENV{CMAKE_MODULE_PATH} "${BUCKETTOOLS_DIR}/cmake/modules")
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${CMAKE_CURRENT_BINARY_DIR}/buckettools)
 
 find_package(BucketTools REQUIRED)
 

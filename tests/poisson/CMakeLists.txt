@@ -1,6 +1,6 @@
 set(EXECUTABLE "poisson")
 
-set(OPTIONSFILENAME "${EXECUTABLE}.bml")
+set(OPTIONSFILENAME "${EXECUTABLE}.tfml")
 
 set(PREFIX ${EXECUTABLE})
 

@@ -1,6 +1,6 @@
 set(EXECUTABLE "alt_adaptive_dt_1d")
 
-set(OPTIONSFILENAME "adaptdt.bml")
+set(OPTIONSFILENAME "adaptdt.tfml")
 
 set(PREFIX ${EXECUTABLE})
 

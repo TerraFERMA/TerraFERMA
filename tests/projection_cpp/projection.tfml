@@ -1,0 +1,1000 @@
+<?xml version='1.0' encoding='utf-8'?>
+<terraferma_options>
+  <geometry>
+    <dimension>
+      <integer_value rank="0">2</integer_value>
+    </dimension>
+    <mesh name="Mesh">
+      <source name="File">
+        <file>
+          <string_value lines="1" type="filename">square</string_value>
+        </file>
+        <cell>
+          <string_value>triangle</string_value>
+        </cell>
+      </source>
+    </mesh>
+  </geometry>
+  <io>
+    <output_base_name>
+      <string_value lines="1">projection</string_value>
+    </output_base_name>
+    <visualization>
+      <element name="P1">
+        <family>
+          <string_value>CG</string_value>
+        </family>
+        <degree>
+          <integer_value rank="0">1</integer_value>
+        </degree>
+      </element>
+    </visualization>
+    <dump_periods/>
+    <detectors/>
+  </io>
+  <timestepping>
+    <current_time>
+      <real_value rank="0">0.0</real_value>
+    </current_time>
+    <finish_time>
+      <real_value rank="0">10.0</real_value>
+    </finish_time>
+    <timestep>
+      <coefficient name="Timestep">
+        <ufl_symbol>
+          <string_value lines="1">dt</string_value>
+        </ufl_symbol>
+        <type name="Constant">
+          <rank name="Scalar" rank="0">
+            <value name="WholeMesh">
+              <constant>
+                <real_value rank="0">1.0</real_value>
+              </constant>
+            </value>
+          </rank>
+        </type>
+      </coefficient>
+    </timestep>
+  </timestepping>
+  <global_parameters/>
+  <system name="SNESProjection">
+    <mesh name="Mesh"/>
+    <ufl_symbol>
+      <string_value lines="1">us</string_value>
+    </ufl_symbol>
+    <field name="Field1">
+      <ufl_symbol>
+        <string_value lines="1">ss1</string_value>
+      </ufl_symbol>
+      <type name="Function">
+        <rank name="Scalar" rank="0">
+          <element name="P1">
+            <family>
+              <string_value>CG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">1</integer_value>
+            </degree>
+          </element>
+          <initial_condition type="initial_condition" name="WholeMesh">
+            <cpp rank="0">
+              <members>
+                <string_value lines="20" type="code" language="cpp">GenericFunction_ptr pysource1;</string_value>
+              </members>
+              <initialization>
+                <string_value lines="20" type="code" language="cpp">pysource1 = bucket()-&gt;fetch_system("PicardProjection")-&gt;fetch_coeff("PySource1")-&gt;genericfunction_ptr(time());</string_value>
+              </initialization>
+              <eval>
+                <string_value lines="20" type="code" language="cpp">(*pysource1).eval(values, x, cell);
+values[0] = values[0]-2.0;</string_value>
+              </eval>
+            </cpp>
+          </initial_condition>
+          <boundary_condition name="All">
+            <boundary_ids>
+              <integer_value shape="4" rank="1">7 8 9 10</integer_value>
+            </boundary_ids>
+            <sub_components name="All">
+              <type type="boundary_condition" name="Dirichlet">
+                <cpp rank="0">
+                  <members>
+                    <string_value lines="20" type="code" language="cpp">GenericFunction_ptr pysource1;</string_value>
+                  </members>
+                  <initialization>
+                    <string_value lines="20" type="code" language="cpp">pysource1 = bucket()-&gt;fetch_system("PicardProjection")-&gt;fetch_coeff("PySource1")-&gt;genericfunction_ptr(time());</string_value>
+                  </initialization>
+                  <eval>
+                    <string_value lines="20" type="code" language="cpp">(*pysource1).eval(values, x, cell);
+values[0] = values[0]-2.0;</string_value>
+                  </eval>
+                </cpp>
+              </type>
+            </sub_components>
+          </boundary_condition>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_visualization/>
+        <include_in_statistics>
+          <functional name="Integral">
+            <string_value lines="20" type="code" language="python">int = ss1*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="OldIntegral">
+            <string_value lines="20" type="code" language="python">int = ss1_n*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+        </include_in_statistics>
+      </diagnostics>
+    </field>
+    <field name="Field2">
+      <ufl_symbol>
+        <string_value lines="1">ss2</string_value>
+      </ufl_symbol>
+      <type name="Function">
+        <rank name="Vector" rank="1">
+          <element name="P2">
+            <family>
+              <string_value>CG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">2</integer_value>
+            </degree>
+          </element>
+          <initial_condition type="initial_condition" name="WholeMesh">
+            <cpp rank="1">
+              <members>
+                <string_value lines="20" type="code" language="cpp">GenericFunction_ptr pysource2;</string_value>
+              </members>
+              <initialization>
+                <string_value lines="20" type="code" language="cpp">pysource2 = bucket()-&gt;fetch_system("PicardProjection")-&gt;fetch_coeff("PySource2")-&gt;genericfunction_ptr(time());</string_value>
+              </initialization>
+              <eval>
+                <string_value lines="20" type="code" language="cpp">(*pysource2).eval(values, x, cell);
+values[0] = values[0]-2.0;
+values[1] = values[1]-2.0;</string_value>
+              </eval>
+            </cpp>
+          </initial_condition>
+          <boundary_condition name="All">
+            <boundary_ids>
+              <integer_value shape="4" rank="1">7 8 9 10</integer_value>
+            </boundary_ids>
+            <sub_components name="All">
+              <type type="boundary_condition" name="Dirichlet">
+                <cpp rank="1">
+                  <members>
+                    <string_value lines="20" type="code" language="cpp">GenericFunction_ptr pysource2;</string_value>
+                  </members>
+                  <initialization>
+                    <string_value lines="20" type="code" language="cpp">pysource2 = bucket()-&gt;fetch_system("PicardProjection")-&gt;fetch_coeff("PySource2")-&gt;genericfunction_ptr(time());</string_value>
+                  </initialization>
+                  <eval>
+                    <string_value lines="20" type="code" language="cpp">(*pysource2).eval(values, x, cell);
+values[0] = values[0]-2.0;
+values[1] = values[1]-2.0;</string_value>
+                  </eval>
+                </cpp>
+              </type>
+            </sub_components>
+          </boundary_condition>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_visualization/>
+        <include_in_statistics>
+          <functional name="Integral0">
+            <string_value lines="20" type="code" language="python">int = ss2[0]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="Integral1">
+            <string_value lines="20" type="code" language="python">int = ss2[1]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="OldIntegral0">
+            <string_value lines="20" type="code" language="python">int = ss2_n[0]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="OldIntegral1">
+            <string_value lines="20" type="code" language="python">int = ss2_n[1]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+        </include_in_statistics>
+      </diagnostics>
+    </field>
+    <coefficient name="PySource1">
+      <ufl_symbol>
+        <string_value lines="1">pfs1</string_value>
+      </ufl_symbol>
+      <type name="Function">
+        <rank name="Scalar" rank="0">
+          <element name="P0">
+            <family>
+              <string_value>DG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">0</integer_value>
+            </degree>
+          </element>
+          <value type="value" name="WholeMesh">
+            <python rank="0">
+              <string_value lines="20" type="code" language="python">def val(x,t):
+  return 100.0*t</string_value>
+            </python>
+          </value>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_statistics>
+          <functional name="Integral">
+            <string_value lines="20" type="code" language="python">int = pfs1*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="OldIntegral">
+            <string_value lines="20" type="code" language="python">int = pfs1_n*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+        </include_in_statistics>
+      </diagnostics>
+    </coefficient>
+    <coefficient name="PySource2">
+      <ufl_symbol>
+        <string_value lines="1">pfs2</string_value>
+      </ufl_symbol>
+      <type name="Function">
+        <rank name="Vector" rank="1">
+          <element name="P0">
+            <family>
+              <string_value>DG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">0</integer_value>
+            </degree>
+          </element>
+          <value type="value" name="WholeMesh">
+            <python rank="1">
+              <string_value lines="20" type="code" language="python">def val(x,t):
+  return [200.0*t, 300.0*t]</string_value>
+            </python>
+          </value>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_statistics>
+          <functional name="Integral0">
+            <string_value lines="20" type="code" language="python">int = pfs2[0]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="Integral1">
+            <string_value lines="20" type="code" language="python">int = pfs2[1]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="OldIntegral0">
+            <string_value lines="20" type="code" language="python">int = pfs2_n[0]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="OldIntegral1">
+            <string_value lines="20" type="code" language="python">int = pfs2_n[1]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+        </include_in_statistics>
+      </diagnostics>
+    </coefficient>
+    <coefficient name="Source1">
+      <ufl_symbol>
+        <string_value lines="1">fs1</string_value>
+      </ufl_symbol>
+      <type name="Function">
+        <rank name="Scalar" rank="0">
+          <element name="P0">
+            <family>
+              <string_value>DG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">0</integer_value>
+            </degree>
+          </element>
+          <value type="value" name="WholeMesh">
+            <cpp rank="0">
+              <members>
+                <string_value lines="20" type="code" language="cpp">GenericFunction_ptr pysource1;</string_value>
+              </members>
+              <initialization>
+                <string_value lines="20" type="code" language="cpp">pysource1 = system()-&gt;fetch_coeff("PySource1")-&gt;genericfunction_ptr(time());</string_value>
+              </initialization>
+              <eval>
+                <string_value lines="20" type="code" language="cpp">(*pysource1).eval(values, x, cell);</string_value>
+              </eval>
+            </cpp>
+          </value>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_statistics>
+          <functional name="Integral">
+            <string_value lines="20" type="code" language="python">int = fs1*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="OldIntegral">
+            <string_value lines="20" type="code" language="python">int = fs1_n*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+        </include_in_statistics>
+      </diagnostics>
+    </coefficient>
+    <coefficient name="Source2">
+      <ufl_symbol>
+        <string_value lines="1">fs2</string_value>
+      </ufl_symbol>
+      <type name="Function">
+        <rank name="Vector" rank="1">
+          <element name="P0">
+            <family>
+              <string_value>DG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">0</integer_value>
+            </degree>
+          </element>
+          <value type="value" name="WholeMesh">
+            <cpp rank="1">
+              <members>
+                <string_value lines="20" type="code" language="cpp">GenericFunction_ptr pysource2;</string_value>
+              </members>
+              <initialization>
+                <string_value lines="20" type="code" language="cpp">pysource2 = system()-&gt;fetch_coeff("PySource2")-&gt;genericfunction_ptr(time());</string_value>
+              </initialization>
+              <eval>
+                <string_value lines="20" type="code" language="cpp">(*pysource2).eval(values, x, cell);</string_value>
+              </eval>
+            </cpp>
+          </value>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_statistics>
+          <functional name="Integral0">
+            <string_value lines="20" type="code" language="python">int = fs2[0]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="Integral1">
+            <string_value lines="20" type="code" language="python">int = fs2[1]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="OldIntegral0">
+            <string_value lines="20" type="code" language="python">int = fs2_n[0]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="OldIntegral1">
+            <string_value lines="20" type="code" language="python">int = fs2_n[1]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+        </include_in_statistics>
+      </diagnostics>
+    </coefficient>
+    <nonlinear_solver name="SimpleSolver">
+      <type name="SNES">
+        <form name="Residual" rank="0">
+          <string_value lines="20" type="code" language="python">r1 = ss1_t*(ss1_i-fs1)*dx
+r20 = ss2_t[0]*(ss2_i[0]-fs2[0])*dx
+r21 = ss2_t[1]*(ss2_i[1]-fs2[1])*dx
+r2 = r20 + r21
+r = r1 + r2</string_value>
+          <ufl_symbol>
+            <string_value lines="1">r</string_value>
+          </ufl_symbol>
+        </form>
+        <form name="Jacobian" rank="1">
+          <string_value lines="20" type="code" language="python">a = derivative(r, us_i)</string_value>
+          <ufl_symbol>
+            <string_value lines="1">a</string_value>
+          </ufl_symbol>
+        </form>
+        <quadrature_rule name="default"/>
+        <snes_type name="ls">
+          <ls_type name="cubic"/>
+        </snes_type>
+        <relative_error>
+          <real_value rank="0">1.e-10</real_value>
+        </relative_error>
+        <absolute_error>
+          <real_value rank="0">1.e-10</real_value>
+        </absolute_error>
+        <max_iterations>
+          <integer_value rank="0">50</integer_value>
+        </max_iterations>
+        <monitors>
+          <residual/>
+        </monitors>
+        <linear_solver>
+          <iterative_method name="cg">
+            <relative_error>
+              <real_value rank="0">1.e-12</real_value>
+            </relative_error>
+            <max_iterations>
+              <integer_value rank="0">100</integer_value>
+            </max_iterations>
+            <zero_initial_guess/>
+            <monitors>
+              <preconditioned_residual/>
+            </monitors>
+          </iterative_method>
+          <preconditioner name="sor"/>
+        </linear_solver>
+        <never_ignore_solver_failures/>
+      </type>
+    </nonlinear_solver>
+    <solve name="in_timeloop"/>
+  </system>
+  <system name="PicardProjection">
+    <mesh name="Mesh"/>
+    <ufl_symbol>
+      <string_value lines="1">up</string_value>
+    </ufl_symbol>
+    <field name="Field1">
+      <ufl_symbol>
+        <string_value lines="1">sp1</string_value>
+      </ufl_symbol>
+      <type name="Function">
+        <rank name="Scalar" rank="0">
+          <element name="P1">
+            <family>
+              <string_value>CG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">1</integer_value>
+            </degree>
+          </element>
+          <initial_condition type="initial_condition" name="WholeMesh">
+            <constant>
+              <real_value rank="0">0.0</real_value>
+            </constant>
+          </initial_condition>
+          <boundary_condition name="All">
+            <boundary_ids>
+              <integer_value shape="4" rank="1">7 8 9 10</integer_value>
+            </boundary_ids>
+            <sub_components name="All">
+              <type type="boundary_condition" name="Dirichlet">
+                <cpp rank="0">
+                  <members>
+                    <string_value lines="20" type="code" language="cpp">// do nothing</string_value>
+                  </members>
+                  <initialization>
+                    <string_value lines="20" type="code" language="cpp">// do nothing</string_value>
+                  </initialization>
+                  <eval>
+                    <string_value lines="20" type="code" language="cpp">values[0] = 100.0*(*time())+2.0;</string_value>
+                  </eval>
+                </cpp>
+              </type>
+            </sub_components>
+          </boundary_condition>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_visualization/>
+        <include_in_statistics>
+          <functional name="Integral">
+            <string_value lines="20" type="code" language="python">int = sp1*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="OldIntegral">
+            <string_value lines="20" type="code" language="python">int = sp1_n*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+        </include_in_statistics>
+      </diagnostics>
+    </field>
+    <field name="Field2">
+      <ufl_symbol>
+        <string_value lines="1">sp2</string_value>
+      </ufl_symbol>
+      <type name="Function">
+        <rank name="Vector" rank="1">
+          <element name="P2">
+            <family>
+              <string_value>CG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">2</integer_value>
+            </degree>
+          </element>
+          <initial_condition type="initial_condition" name="WholeMesh">
+            <constant name="dim">
+              <real_value shape="2" dim1="dim" rank="1">0.0 0.0</real_value>
+            </constant>
+          </initial_condition>
+          <boundary_condition name="All">
+            <boundary_ids>
+              <integer_value shape="4" rank="1">7 8 9 10</integer_value>
+            </boundary_ids>
+            <sub_components name="All">
+              <type type="boundary_condition" name="Dirichlet">
+                <cpp rank="1">
+                  <members>
+                    <string_value lines="20" type="code" language="cpp">// do nothing</string_value>
+                  </members>
+                  <initialization>
+                    <string_value lines="20" type="code" language="cpp">// do nothing</string_value>
+                  </initialization>
+                  <eval>
+                    <string_value lines="20" type="code" language="cpp">values[0] = 200.0*(*time())+2.0;
+values[1] = 300.0*(*time())+2.0;</string_value>
+                  </eval>
+                </cpp>
+              </type>
+            </sub_components>
+          </boundary_condition>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_visualization/>
+        <include_in_statistics>
+          <functional name="Integral0">
+            <string_value lines="20" type="code" language="python">int = sp2[0]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="Integral1">
+            <string_value lines="20" type="code" language="python">int = sp2[1]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="OldIntegral0">
+            <string_value lines="20" type="code" language="python">int = sp2_n[0]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="OldIntegral1">
+            <string_value lines="20" type="code" language="python">int = sp2_n[1]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+        </include_in_statistics>
+      </diagnostics>
+    </field>
+    <coefficient name="Source1">
+      <ufl_symbol>
+        <string_value lines="1">fp1</string_value>
+      </ufl_symbol>
+      <type name="Expression">
+        <rank name="Scalar" rank="0">
+          <element name="P0">
+            <family>
+              <string_value>DG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">0</integer_value>
+            </degree>
+          </element>
+          <value type="value" name="WholeMesh">
+            <cpp rank="0">
+              <members>
+                <string_value lines="20" type="code" language="cpp">GenericFunction_ptr pysource1;</string_value>
+              </members>
+              <initialization>
+                <string_value lines="20" type="code" language="cpp">pysource1 = system()-&gt;fetch_coeff("PySource1")-&gt;genericfunction_ptr(time());</string_value>
+              </initialization>
+              <eval>
+                <string_value lines="20" type="code" language="cpp">(*pysource1).eval(values, x, cell);</string_value>
+              </eval>
+            </cpp>
+          </value>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_statistics>
+          <functional name="Integral">
+            <string_value lines="20" type="code" language="python">int = fp1*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="OldIntegral">
+            <string_value lines="20" type="code" language="python">int = fp1_n*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+        </include_in_statistics>
+      </diagnostics>
+    </coefficient>
+    <coefficient name="Source2">
+      <ufl_symbol>
+        <string_value lines="1">fp2</string_value>
+      </ufl_symbol>
+      <type name="Expression">
+        <rank name="Vector" rank="1">
+          <element name="P0">
+            <family>
+              <string_value>DG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">0</integer_value>
+            </degree>
+          </element>
+          <value type="value" name="WholeMesh">
+            <cpp rank="1">
+              <members>
+                <string_value lines="20" type="code" language="cpp">GenericFunction_ptr pysource2;</string_value>
+              </members>
+              <initialization>
+                <string_value lines="20" type="code" language="cpp">pysource2 = system()-&gt;fetch_coeff("PySource2")-&gt;genericfunction_ptr(time());</string_value>
+              </initialization>
+              <eval>
+                <string_value lines="20" type="code" language="cpp">(*pysource2).eval(values, x, cell);</string_value>
+              </eval>
+            </cpp>
+          </value>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_statistics>
+          <functional name="Integral0">
+            <string_value lines="20" type="code" language="python">int = fp2[0]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="Integral1">
+            <string_value lines="20" type="code" language="python">int = fp2[1]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="OldIntegral0">
+            <string_value lines="20" type="code" language="python">int = fp2_n[0]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="OldIntegral1">
+            <string_value lines="20" type="code" language="python">int = fp2_n[1]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+        </include_in_statistics>
+      </diagnostics>
+    </coefficient>
+    <coefficient name="PySource1">
+      <ufl_symbol>
+        <string_value lines="1">pfp1</string_value>
+      </ufl_symbol>
+      <type name="Expression">
+        <rank name="Scalar" rank="0">
+          <element name="P0">
+            <family>
+              <string_value>DG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">0</integer_value>
+            </degree>
+          </element>
+          <value type="value" name="WholeMesh">
+            <python rank="0">
+              <string_value lines="20" type="code" language="python">def val(x,t):
+  return 100.0*t+2.0</string_value>
+            </python>
+          </value>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_statistics>
+          <functional name="Integral">
+            <string_value lines="20" type="code" language="python">int = pfp1*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="OldIntegral">
+            <string_value lines="20" type="code" language="python">int = pfp1_n*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+        </include_in_statistics>
+      </diagnostics>
+    </coefficient>
+    <coefficient name="PySource2">
+      <ufl_symbol>
+        <string_value lines="1">pfp2</string_value>
+      </ufl_symbol>
+      <type name="Expression">
+        <rank name="Vector" rank="1">
+          <element name="P0">
+            <family>
+              <string_value>DG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">0</integer_value>
+            </degree>
+          </element>
+          <value type="value" name="WholeMesh">
+            <python rank="1">
+              <string_value lines="20" type="code" language="python">def val(x,t):
+  return [200.0*t+2.0, 300.0*t+2.0]</string_value>
+            </python>
+          </value>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_statistics>
+          <functional name="Integral0">
+            <string_value lines="20" type="code" language="python">int = pfp2[0]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="Integral1">
+            <string_value lines="20" type="code" language="python">int = pfp2[1]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="OldIntegral0">
+            <string_value lines="20" type="code" language="python">int = pfp2_n[0]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="OldIntegral1">
+            <string_value lines="20" type="code" language="python">int = pfp2_n[1]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+        </include_in_statistics>
+      </diagnostics>
+    </coefficient>
+    <coefficient name="FieldEval1">
+      <ufl_symbol>
+        <string_value lines="1">spe1</string_value>
+      </ufl_symbol>
+      <type name="Expression">
+        <rank name="Scalar" rank="0">
+          <element name="P1">
+            <family>
+              <string_value>CG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">1</integer_value>
+            </degree>
+          </element>
+          <value type="value" name="WholeMesh">
+            <cpp rank="0">
+              <members>
+                <string_value lines="20" type="code" language="cpp">GenericFunction_ptr field1;</string_value>
+              </members>
+              <initialization>
+                <string_value lines="20" type="code" language="cpp">field1 = bucket()-&gt;fetch_system("SNESProjection")-&gt;fetch_field("Field1")-&gt;genericfunction_ptr(time());</string_value>
+              </initialization>
+              <eval>
+                <string_value lines="20" type="code" language="cpp">(*field1).eval(values, x, cell);</string_value>
+              </eval>
+            </cpp>
+          </value>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_statistics>
+          <functional name="Integral">
+            <string_value lines="20" type="code" language="python">int = spe1*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="OldIntegral">
+            <string_value lines="20" type="code" language="python">int = spe1_n*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+        </include_in_statistics>
+      </diagnostics>
+    </coefficient>
+    <coefficient name="FieldEval2">
+      <ufl_symbol>
+        <string_value lines="1">spe2</string_value>
+      </ufl_symbol>
+      <type name="Expression">
+        <rank name="Vector" rank="1">
+          <element name="P2">
+            <family>
+              <string_value>CG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">2</integer_value>
+            </degree>
+          </element>
+          <value type="value" name="WholeMesh">
+            <cpp rank="1">
+              <members>
+                <string_value lines="20" type="code" language="cpp">GenericFunction_ptr field2;</string_value>
+              </members>
+              <initialization>
+                <string_value lines="20" type="code" language="cpp">field2 = bucket()-&gt;fetch_system("SNESProjection")-&gt;fetch_field("Field2")-&gt;genericfunction_ptr(time());</string_value>
+              </initialization>
+              <eval>
+                <string_value lines="20" type="code" language="cpp">(*field2).eval(values, x, cell);</string_value>
+              </eval>
+            </cpp>
+          </value>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_statistics>
+          <functional name="Integral0">
+            <string_value lines="20" type="code" language="python">int = spe2[0]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="Integral1">
+            <string_value lines="20" type="code" language="python">int = spe2[1]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="OldIntegral0">
+            <string_value lines="20" type="code" language="python">int = spe2_n[0]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="OldIntegral1">
+            <string_value lines="20" type="code" language="python">int = spe2_n[1]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+        </include_in_statistics>
+      </diagnostics>
+    </coefficient>
+    <nonlinear_solver name="SimpleSolver">
+      <type name="Picard">
+        <preamble>
+          <string_value lines="20" type="code" language="python">F1 = sp1_t*(sp1_a-fp1)*dx
+F20 = sp2_t[0]*(sp2_a[0]-fp2[0])*dx
+F21 = sp2_t[1]*(sp2_a[1]-fp2[1])*dx
+F2 = F20 + F21
+F = F1 + F2</string_value>
+        </preamble>
+        <form name="Bilinear" rank="1">
+          <string_value lines="20" type="code" language="python">a = lhs(F)</string_value>
+          <ufl_symbol>
+            <string_value lines="1">a</string_value>
+          </ufl_symbol>
+        </form>
+        <form name="Linear" rank="0">
+          <string_value lines="20" type="code" language="python">L = rhs(F)</string_value>
+          <ufl_symbol>
+            <string_value lines="1">L</string_value>
+          </ufl_symbol>
+        </form>
+        <form name="Residual" rank="0">
+          <string_value lines="20" type="code" language="python">r = action(a, up_i) - L</string_value>
+          <ufl_symbol>
+            <string_value lines="1">r</string_value>
+          </ufl_symbol>
+        </form>
+        <quadrature_rule name="default"/>
+        <relative_error>
+          <real_value rank="0">1.e-10</real_value>
+        </relative_error>
+        <absolute_error>
+          <real_value rank="0">1.e-10</real_value>
+        </absolute_error>
+        <max_iterations>
+          <integer_value rank="0">10</integer_value>
+        </max_iterations>
+        <monitors/>
+        <linear_solver>
+          <iterative_method name="cg">
+            <relative_error>
+              <real_value rank="0">1.e-12</real_value>
+            </relative_error>
+            <max_iterations>
+              <integer_value rank="0">20</integer_value>
+            </max_iterations>
+            <nonzero_initial_guess/>
+            <monitors>
+              <preconditioned_residual/>
+            </monitors>
+          </iterative_method>
+          <preconditioner name="sor"/>
+          <monitors/>
+        </linear_solver>
+        <never_ignore_solver_failures/>
+      </type>
+    </nonlinear_solver>
+    <solve name="in_timeloop"/>
+  </system>
+</terraferma_options>

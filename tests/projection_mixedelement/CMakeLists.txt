@@ -1,6 +1,6 @@
 set(EXECUTABLE "projection_mixedelement")
 
-set(OPTIONSFILENAME "projection.bml")
+set(OPTIONSFILENAME "projection.tfml")
 set(MESHBASENAME "square")
 
 set(PREFIX ${EXECUTABLE})

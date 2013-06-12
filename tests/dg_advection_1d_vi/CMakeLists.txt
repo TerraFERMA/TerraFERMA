@@ -1,6 +1,6 @@
 set(EXECUTABLE "dg_advection_1d_vi")
 
-set(OPTIONSFILENAME "advection.bml")
+set(OPTIONSFILENAME "advection.tfml")
 set(MESHBASENAME "interval")
 
 set(PREFIX ${EXECUTABLE})
