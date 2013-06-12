@@ -7,7 +7,7 @@ project(buckettools_cpp)
 #  below)
 file(
     WRITE ${PROJECT_BINARY_DIR}/builddefs.h.in
-    "#define __GIT_SHA__ \"@GIT_SHA@\"\n"
+    "#define __GIT_SHA__ @GIT_SHA@\n"
     )
 
 # Write a cmake script to disk at configuration time
@@ -19,7 +19,7 @@ file(
     "find_program(HAVE_GIT git)
     if(HAVE_GIT)
         execute_process (
-           COMMAND git log --pretty=format:%H -1 HEAD^
+           COMMAND git log --pretty=format:\"%H %ad\" -1 HEAD
            WORKING_DIRECTORY \${DIR}
            OUTPUT_VARIABLE GIT_SHA
            ERROR_VARIABLE GIT_ERR
