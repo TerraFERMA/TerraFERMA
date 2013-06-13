@@ -214,8 +214,8 @@ void buckettools::parse_arguments(int argc, char** argv)
   if(command_line_options.count("log"))                              // std::err/std::out
   {
     std::ostringstream debug_file, err_file;
-    debug_file << "bucket.log";
-    err_file << "bucket.err";
+    debug_file << "terraferma.log";
+    err_file << "terraferma.err";
     int proc = dolfin::MPI::process_number();
     debug_file << "-" << proc;
     err_file << "-" << proc;
