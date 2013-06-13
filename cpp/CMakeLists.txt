@@ -8,7 +8,7 @@ cmake_minimum_required(VERSION 2.8)
 cmake_policy(SET CMP0004 OLD)
 
 # Get DOLFIN configuration data (dolfin-config.cmake must be in DOLFIN_CMAKE_CONFIG_PATH)
-find_package(dolfin)
+find_package(DOLFIN)
 
 # Default build type (can be overridden by user)
 if (NOT CMAKE_BUILD_TYPE)
@@ -30,10 +30,10 @@ endif()
 # Include directories
 include_directories(${DOLFIN_INCLUDE_DIRS} ${DOLFIN_3RD_PARTY_INCLUDE_DIRS})
 
-project(basebucket)
+project(terraferma)
 
 if (NOT EXECUTABLE)
-  set(EXECUTABLE "basebucket" CACHE STRING
+  set(EXECUTABLE "terraferma" CACHE STRING
        "The name of the executable" FORCE)
 endif()
 
