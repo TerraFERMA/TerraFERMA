@@ -18,7 +18,7 @@ def chdir(dirname):
 
 def getExtraCmakeOptions(options):
     """
-    get extra -D options for cmake from the command line or the environment variable BASEBUCKET_CMAKE_EXTRA_DARGS
+    get extra -D options for cmake from the command line or the environment variable TF_CMAKE_EXTRA_DARGS
     """
     # get options from command line
     cmake_options = options.extra_Doptions
@@ -28,7 +28,7 @@ def getExtraCmakeOptions(options):
         cmake_options = ''
         
     # get options from environment variable
-    env_options = os.getenv('BASEBUCKET_CMAKE_EXTRA_DARGS')
+    env_options = os.getenv('TF_CMAKE_EXTRA_DARGS')
     if (env_options == None):
         env_options = ''
 
@@ -107,7 +107,7 @@ if __name__ == "__main__":
         cmake_prog = "cmake"
 
     try:
-        cmake_path = os.getenv('BASEBUCKET_CMAKE_PATH')
+        cmake_path = os.getenv('TF_CMAKE_PATH')
         subprocess.check_call([cmake_prog,cmake_path,"-DOPTIONSFILE=../"+tfmlfile,"-DEXECUTABLE="+executable]+cmake_options)   
     except:
         print "ERROR while calling cmake in directory ", build_dir

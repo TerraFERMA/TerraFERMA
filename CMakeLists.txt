@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 2.8)
 # Set verbose output while testing CMake
 #set(CMAKE_VERBOSE_MAKEFILE 1)
 
-project(basebucket)
+project(terraferma)
 
 if (NOT BUCKETTOOLS_DIR)
   set(BUCKETTOOLS_DIR "${PROJECT_SOURCE_DIR}/buckettools" CACHE PATH
@@ -13,7 +13,7 @@ endif()
 
 add_subdirectory(${BUCKETTOOLS_DIR} "buckettools")
 
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/cpp DESTINATION share/basebucket)
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/cpp DESTINATION share/terraferma)
 
 file(
     WRITE ${PROJECT_BINARY_DIR}/configmodule
@@ -21,11 +21,11 @@ file(
 proc ModulesHelp { } {
         global dotversion
 
-        puts stderr \"\tSets environment for Basebucket.\"
+        puts stderr \"\tSets environment for TerraFERMA.\"
 }
-module-whatis \"Sets environment for Basebucket and Buckettools.\"
+module-whatis \"Sets environment for TerraFERMA and Buckettools.\"
 
-setenv       BASEBUCKET_CMAKE_PATH ${CMAKE_INSTALL_PREFIX}/share/basebucket/cpp
+setenv       TF_CMAKE_PATH         ${CMAKE_INSTALL_PREFIX}/share/terraferma/cpp
 setenv       BUCKETTOOLS_DIR       ${CMAKE_INSTALL_PREFIX}
 prepend-path CMAKE_MODULE_PATH     ${CMAKE_INSTALL_PREFIX}/share/buckettools/cmake/modules
 prepend-path PYTHONPATH            ${CMAKE_INSTALL_PREFIX}/${BUCKETTOOLS_PYTHON_INSTALL_DIR}
@@ -38,7 +38,7 @@ prepend-path DYLD_LIBRARY_PATH     ${CMAKE_INSTALL_PREFIX}/lib
 
     )
 
-install(FILES ${PROJECT_BINARY_DIR}/configmodule DESTINATION share/basebucket)
+install(FILES ${PROJECT_BINARY_DIR}/configmodule DESTINATION share/terraferma)
 
 option(BUCKET_ENABLE_TESTING "Enable tests." OFF)
 

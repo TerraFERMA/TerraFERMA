@@ -29,14 +29,14 @@ class ThreadIterator(list):
     return ans
 
 class Simulation:
-  def __init__(self, name, ext, scriptdirectory, basedirectory, basebucketdirectory, \
+  def __init__(self, name, ext, scriptdirectory, basedirectory, tfdirectory, \
                optionsdict, nruns=1, dependents=[], checkpointdict={}):
     self.optionsdict = optionsdict
     self.checkpointdict = checkpointdict
     self.name = name
     self.ext = ext
     self.scriptdirectory = scriptdirectory
-    self.basebucketdirectory = basebucketdirectory
+    self.tfdirectory = tfdirectory
     self.basedirectory = os.path.join(self.scriptdirectory, basedirectory)  # directory in which the options file is stored
     self.rundirectory = rundirectorystr(self.basedirectory, optionsdict)
     self.builddirectory = self.rundirectory
@@ -76,7 +76,7 @@ class Simulation:
                           "-DCMAKE_BUILD_TYPE=RelWithDebInfo", \
                           "-DLOGLEVEL=INFO", \
                           "-DEXECUTABLE="+self.name, \
-                          os.path.join(self.basebucketdirectory,os.curdir)],
+                          os.path.join(self.tfdirectory,os.curdir)],
                           cwd=dirname)
     retcode = p.wait()
     if retcode!=0:
@@ -236,7 +236,7 @@ class Simulation:
     return commands
 
 class SimulationBatch:
-  def __init__(self, name, ext, scriptdirectory, basebucketdirectory, globaloptionsdict, \
+  def __init__(self, name, ext, scriptdirectory, tfdirectory, globaloptionsdict, \
                simulationtype=Simulation, nthreads=1):
     self.globaloptionsdict = globaloptionsdict
     self.scriptdirectory = scriptdirectory
@@ -248,7 +248,7 @@ class SimulationBatch:
       checkpointdict = {}
       if "checkpoint" in diroptionsdict: checkpointdict = diroptionsdict["checkpoint"]
       for optionsdict in slicedoptionslist:
-        self.simulations.append(simulationtype(name, ext, scriptdirectory, dirname, basebucketdirectory, \
+        self.simulations.append(simulationtype(name, ext, scriptdirectory, dirname, tfdirectory, \
                                                optionsdict, checkpointdict=checkpointdict))
     self.runs = {}
     self.collateruns()
