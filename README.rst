@@ -1,5 +1,3 @@
-.. default-role:: math
-
 ======
 TerraFERMA
 ======
@@ -13,4 +11,3 @@ TerraFERMA is a finite element model builder that uses three principal open-sour
  * SPuD
 
 
-Trying some math here for fun $\alpha^2 = \sqrt{x}$ which is supposed to work in restructed text
