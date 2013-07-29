@@ -15,10 +15,10 @@ TerraFERMA is a finite element model builder that uses three principal open-sour
 Installation:
 --------
 
-Instructions for installing the software using Dorsal__ are available on the Wiki__
+Instructions for installing the software using Dorsal_ are available on the Wiki_
 page.  
 
-.. __Dorsal:  https://bitbucket.org/tferma/dorsal
-.. __Wiki:  https://bitbucket.org/tferma/tferma/wiki/Home
+.. _Dorsal:  https://bitbucket.org/tferma/dorsal
+.. _Wiki:  https://bitbucket.org/tferma/tferma/wiki/Home
 
 
