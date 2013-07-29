@@ -11,3 +11,14 @@ TerraFERMA is a finite element model builder that uses three principal open-sour
  * SPuD
 
 
+--------
+Installation:
+--------
+
+Instructions for installing the software using Dorsal__ are available on the Wiki__
+page.  
+
+.. __Dorsal:  https://bitbucket.org/tferma/dorsal
+.. __Wiki:  https://bitbucket.org/tferma/tferma/wiki/Home
+
+
