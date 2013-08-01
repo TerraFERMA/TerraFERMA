@@ -52,3 +52,16 @@
 %% Function and Vector spaces
 \newcommand{\fspace}{\mathcal{V}}
 \newcommand{\Rn}[1][n]{\mathbb{R}^#1{}}
+
+% Define step environment
+\newenvironment{steps}[1]{\begin{enumerate}[label=\bfseries#1 \bfseries\arabic*]}{\end{enumerate}}
+
+% \makeatletter% http://tex.stackexchange.com/questions/29517/forcing-new-line-after-item-number-in-enumerate-environment/29518#29518
+% \def\step{%
+%    \@ifnextchar[ \@step{\@noitemargtrue\@step[\@itemlabel]}}
+% \def\@step[#1]{\item[#1]\mbox{}\\\hspace*{\dimexpr-\labelwidth-\labelsep}}
+% \makeatother
+
+% set screendump with
+\newlength{\diamondwidth}
+\setlength{\diamondwidth}{0.8\textwidth}

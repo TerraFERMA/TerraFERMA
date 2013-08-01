@@ -12,10 +12,10 @@
 \usepackage[protrusion=true,expansion=true]{microtype}
 %\usepackage{type1cm}
 \usepackage{lettrine}
-\usepackage{macros}
 \usepackage{graphicx}
 \usepackage{amsfonts,amsmath,amssymb,amsthm,amsbsy,amssymb,bm}
 \usepackage{xcolor}
+\usepackage{enumitem}
 
 \usepackage[final]{listings}
 \lstloadlanguages{[LaTeX]TeX,Python,bash,[gnu]Make,XML}
@@ -49,6 +49,7 @@
   linewidth=0.9\linewidth,
   xleftmargin=0.1\linewidth
 }
+\usepackage{macros}
 %\checkandfixthelayout
 
 % See the ``Memoir customise'' template for some common customisations
@@ -158,11 +159,10 @@ coupled multi-physics problems
 (\href{https://www.mcs.anl.gov/petsc}{PETSc}) and a science neutral
 options handling system
 (\href{http://www3.imperial.ac.uk/earthscienceandengineering/research/amcg/spud}{SPuD})
-that allows the hierarchical management of all model options.
-
-TerraFERMA inherits most of its functionality from the underlying
-libraries but adds a layer of control and guidance for building
-reusable and reproducible applications.
+that allows the hierarchical management of all model
+options. TerraFERMA inherits most of its functionality from the
+underlying libraries but adds a layer of control and guidance for
+building reusable and reproducible applications.
 % A manuscript describing the design and basic functionality of TerraFERMA can be found here.
 
 As most of the language of \TF{} is also inherited from the underlying
@@ -172,8 +172,8 @@ excellent introduction to both finite elements and UFL (Unified form
 language) for describing weak forms.  It is also well worth
 understanding the basic PETSc solver objects for nonlinear solvers
 (SNES), Linear solvers (KSP) and Preconditioners (PC) as we will use
-the same language for describing solver options (although \TF{} at
-least provides guidance and subsets of options for choosing).
+the same language for describing solver options (although \TF{}
+provides some guidance and subsets of options for choosing).
 
 The purpose of these tutorials is to develop hands-on experience with
 \TF{} through detailed, step-by-step examples starting with the
@@ -185,13 +185,14 @@ scientific and computational choices and the purpose of \TF{} is to
 help the user organize, manage and modify those choices in a manner
 that is flexible, reproducible and reusable.
 
+\pagebreak{}
 \section{Getting and installing the \TF{} software}
 \label{sec:gett-inst-tf}
 
 \TF{} is available as an open-source code under a LGPL 3.0
 license.  It is hosted as a
 \href{https://bitbucket.org/tferma/tferma}{git repository}.
-Installation information is available on the
+Installation information and scripts for building from source is available on the
 \href{https://bitbucket.org/tferma/tferma/wiki}{Wiki} page. 
 
 \chapter{Poisson's Equation on the unit square}
@@ -219,16 +220,20 @@ linear combination of the basis functions
   \label{eq:6}
   u = \sum_{i=1}^{N} w_{i}\phi_{i}
 \end{equation}
-where $w_{i}$ are just a set of weights that map to a discrete vector $\vec{w}$ in $\Rn$.
+where $w_{i}$ are a set of weights that map to a discrete vector $\vec{w}$ in $\Rn$.
 
 Next we transform the problem into its weak form by multiplying by a
 test function $u_{t}$ and integrating by parts to yield the
-variational problem: Find $u\in \fspace$ such that
-\begin{equation}
-\int_\Omega \nabla u_t\cdot \nabla u dx= \int_\Omega u_t f dx.\label{eq:weakpoisson}
-\end{equation}
-for all $u_{t} \in\fspace$. It is often convenient to rewrite
-Eq. (\ref{eq:weakpoisson}) in the notation of linear forms as
+variational problem: 
+\begin{quote}
+  \fbox{\parbox{.9\textwidth}{Find $u\in \fspace$ such that
+  \begin{equation}
+    \int_\Omega \nabla u_t\cdot \nabla u dx= \int_\Omega u_t f dx.\label{eq:weakpoisson}
+  \end{equation}
+  for all $u_{t} \in\fspace$.}}
+\end{quote}
+It is often convenient to rewrite Eq. (\ref{eq:weakpoisson}) in the
+notation of linear forms as
 \begin{equation}
 \label{eq:7}
   a(u,u_{t}) = L(u_{t})
@@ -241,13 +246,14 @@ where
 \end{align}
 are \emph{bilinear} and \emph{linear} forms respectively.
 
-For a linear problem, Eq. (\ref{eq:weakpoisson}) or (\ref{eq:7}) assembles into a discrete linear problem
+For a linear problem, Eq. (\ref{eq:weakpoisson}) or (\ref{eq:7})
+assembles into the discrete linear algebra problem
 \begin{equation}
   \label{eq:1}
   A\vec{w} = \vec{b}
 \end{equation}
-where $A$ is a matrix, $\vec{w}$ is a vector of values at the degrees of freedom of the
-function space and $\vec{b}$ is a vector that is essentially the
+where $A$ is a matrix, $\vec{w}$ is a vector of values at the degrees
+of freedom of the function space and $\vec{b}$ is a vector that is essentially the
 projection of the forcing function $f$ onto $\fspace$.  We then need
 to choose appropriate solvers for the linear system.
 
@@ -257,23 +263,26 @@ to choose appropriate solvers for the linear system.
 We could construct a model in \TF{} for this linear problem, however, as many
 problems we wish to explore  quickly become non-linear, it is worth
 first rephrasing this problem as a non-linear problem, and solve it
-using Newton's method which will solve a linear problem in
-exactly one iteration. % show this?
+using Newton's method.  Newton can always be used for linear problems
+and is guaranteed to reach a solution in exactly one iteration. % show this?
 
 The principal idea is to rewrite our initial equation in terms of the residual
 \begin{equation}
   \label{eq:2}
   r(u) = -\nabla^2 u - f
 \end{equation}
-which is zero, if $u$ is a solution.  The variation form of this
-problem  is then find $u\in\fspace$ such that
+which is zero, if $u$ is a solution.  The variational form of this
+problem  is then:
+\begin{quote}
+  \fbox{\parbox{.9\textwidth}{Find $u\in\fspace$ such that
 \begin{equation}
   \label{eq:3}
   F(u;u_{t}) = \int_{\Omega} u_{t}r\, dx = 0
 \end{equation}
-for all test functions $u_t\in\fspace$.  $F(u;u_{t})$ is the weak
-form of the residual and is a linear form that assembles into a
-vector.
+for all test functions $u_t\in\fspace$. }}
+\end{quote} 
+$F(u;u_{t})$ is the weak form of the (possibly non-linear) residual
+and is a linear form that assembles into a vector.
 
 For the specific case of Poisson's equation with Dirichlet boundary conditions,
 the weak form of the residual can be written, after integration by
@@ -308,14 +317,14 @@ that
 Newton's method assumes we can linearize this equation such that
 \begin{equation}
   \label{eq:9}
-   F(u_{i} + \delta u_{i}; u_{t}) \approx F(u_{i};,u_{t}) +
+   F(u_{i} + \delta u_{i}; u_{t}) \approx F(u_{i};u_{t}) +
    J(u_{i},\delta u_{i}; u_{t})
 \end{equation}
 where 
 \begin{equation}
   \label{eq:10}
   J(u_{i},\delta u_{i}; u_{t}) = \lim_{\epsilon\rightarrow 0}
-  \frac{F(u_{i}+\epsilon\delta u_{i};u_{t}) - F(u_{i};u_{t}}{\epsilon}
+  \frac{F(u_{i}+\epsilon\delta u_{i};u_{t}) - F(u_{i};u_{t})}{\epsilon}
 \end{equation}
 is the functional (Gateaux) derivative of $F$ with respect to
 $u_{i}$.  After a bit of algebra, we can see that for this problem
@@ -325,18 +334,23 @@ $u_{i}$.  After a bit of algebra, we can see that for this problem
     \grad u_{t}\cdot\grad \delta u_{i} \right)dx
 \end{equation}
 which is a bilinear form that is equivalent to $a(\delta u_{i},u_{t})$
-defined above, which assembles into a matrix $J$. Combing Eqs.\
+(Eq.\ \ref{eq:5}), which assembles into a matrix $J$. Combining Eqs.\
 (\ref{eq:8}) -- (\ref{eq:10}), Newton's method
-simply says while $||F||> tol$, solve
+states
+\begin{quote}
+  \fbox{\parbox{.9\textwidth}{while $||\vec{F}||> tol$, solve
 \begin{align}
   \label{eq:12}
   J(u_{i},\delta u_{i}; u_{t}) = -F(u_{i};u_{t})
 \end{align}
-for $\delta u_{i}$ and update $u_{i+1} = u_{i} + \delta u_{i}$.
-
+for $\delta u_{i}$ and update
+\begin{displaymath}
+u_{i+1} = u_{i} + \delta u_{i}.
+\end{displaymath}}}
+\end{quote}
 For the purposes of the rest of this tutorial we will refer to
 $F(u_{i};u_{t})$ as the ``weak form of the residual'' and
-$J(u_{i},\delta u_{i};u_{t})$ as the ``weak form of the Jacobian.
+$J(u_{i},\delta u_{i};u_{t})$ as the ``weak form of the Jacobian''.
 
 \subsubsection{Writing the problem in ufl}
 \label{sec:writing-problem-ufl}
@@ -347,10 +361,10 @@ non-linear problem  as
 \begin{lstlisting}[style=UFL]
 u_e = FiniteElement("Lagrange", triangle, 1)
 
-u_i  = Coefficient(u_e)
+u_i = Coefficient(u_e)
+f   = Coefficient(u_e)
 u_t = TestFunction(u_e)
 u_a = TrialFunction(u_e)
-f   = Coefficient(u_e)
 
 F   = (inner(grad(u_t), grad(u_i)) - u_t*f)*dx
 J   = inner(grad(u_t), grad(u_a))*dx
@@ -391,9 +405,9 @@ basic finite element problem using Newton's method are
 \begin{enumerate}
 \setlength{\itemsep}{0cm}
 \item Choose a mesh
-\item Choose an element (Function Space)
 \item Choose Fields to solve $u$
-\item Choose Boundary/Initial Conditions
+\item Choose an element (Function Space)
+\item Choose Initial/Boundary Conditions
 \item Choose a weak form for the non-linear residual $F(u)$
 \item Calculate the Jacobian $J=F'(u)$
 \item Choose a method for solving the linear problem $J\delta u = -F$
@@ -405,7 +419,7 @@ The design of \TF{} is to use the SPuD library to provide a schema and interface
 for managing, recording and documenting all of these choices in an
 intuitive options file, from which a full compiled C++ application can
 be built and run.  These options files have the suffix \texttt{.tfml}
-and describe the \TF{} markup language (which is basically xml which
+and describe the \emph{\TF{} markup language} (which is basically xml which
 should never be read by humans).  SPuD also provides the gui
 \texttt{diamond} that reads and writes \texttt{tfml} files through an
 intuitive interface.  
@@ -427,8 +441,10 @@ $ cd build
 $ make run 
 \end{lstlisting}
 which will create a build directory \texttt{build} using
-\texttt{cmake} then compile and run the code. The output  can then be
-visualized using paraview to looks something like
+\texttt{cmake} then compile and run the code. Output from the run
+includes stdout (in \texttt{terraferma.log-0)}, statistics files (see
+below) and \texttt{vtk} files that can be visualized using paraview
+(or any other vtk visualization system) to produce something like
 \begin{figure}[h]
   \centering
   \includegraphics[width=.9\textwidth]{figures/poisson_simple.png}
@@ -440,8 +456,298 @@ visualized using paraview to looks something like
   \label{fig:simple_poisson}
 \end{figure}
 
+\subsection{Step-by-step instructions for building poisson.tfml}
+\label{sec:step-step-instr}
 
+To really begin to understand and use \TF{}, however, we need to
+construct and populate our own version of \texttt{poisson.tfml} from
+which we can then modify and extend later in the themes and variations
+section.  Because of the graphical nature of \texttt{diamond} the
+following set of steps will probably take longer to read than it
+actually takes to set the problem up.  But to be completely pedantic,
+here are all the steps spelled out with screendumps to compare.
 
+\begin{steps}{Step}
+\item  create an empty directory somewhere and start diamond
+\begin{lstlisting}[style=bash]
+$ mkdir mypoisson
+$ cd mypoisson
+$ diamond poisson.tfml & 
+\end{lstlisting}%$
+This will pop-up a
+diamond window with an empty \texttt{tfml} file.
+It should look something like
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_00.png}
+  \caption{0th level diamond window}
+  \label{fig:diamond-poisson-0}
+\end{figure}
+\pagebreak
+\item Unfold the terraferma-options tab to view the top level options
+  for setting \textbf{geometry}, \textbf{io}, \textbf{system}.  Required fields with
+    incomplete options are highlighted in blue.
+\begin{center}
+  \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_01.png}
+\end{center}
+
+\item\textbf{ Set Geometry option: dimension}: Unfold the
+  \textbf{geometry tab} and choose \textbf{dimension}.  This is the
+  physical dimension of the domain (1-D, 2-D, 3-D) and can be set only
+  once (as it determines the size of other options).  In the right
+  hand \textbf{data} window choose 2.
+\begin{center}
+  \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_02a.png}    
+  \end{center}
+
+\item \textbf{Set Geometry option: Mesh} Select the Mesh tab and
+  assign it a Name (default is Mesh which you can choose with the
+  green arrow).  For any name field you will
+  need to hit return in diamond to set it,  other fields you should not include
+  carriage returns. 
+  \begin{center}
+    \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_03a.png}
+  \end{center}
+
+Now unfold the \textbf{mesh} tab to expose the \textbf{source} tab and
+using the green arrow choose \textbf{source (UnitSquare)} from the
+options (default is File).
+\begin{center}
+  \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_03b.png}
+\end{center}
+This will expose two more fields, \textbf{number\_cells} and
+\textbf{diagonal}.
+
+Choose \textbf{number\_cells} and set each field to 32 (for a
+$32\times32$ cell mesh.
+\begin{center}
+    \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_03c.png}
+\end{center}
+
+Then choose \textbf{diagonal} and set to \textbf{right/left}. 
+\begin{center}
+    \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_03d.png}
+\end{center}
+This completes all the required choices for setting the geometry and
+the geometry tab should have changed from blue to black. At this point
+(or before) you should save your file (and you can refold the geometry
+tab). Also hopefully by this point it
+  should be relatively clear how to maneuver around the diamond
+  window.  
+\item \textbf{Setting io parameters:}  The next step is to set IO
+  parameters.
+First unfold both the \textbf{io} then \textbf{visualization} tabs.
+\textbf{output\_base\_name} is a required field and should be blue. It sets the
+rootname of any output file.  Set this to \emph{poisson} (no line
+return). 
+\begin{center}
+    \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_04.png}
+\end{center}
+\textbf{visualization} sets the default element used in the vtk files
+for visualizing fields.  This is optional and defaults to P1 (piecewise
+linear functions) which will be adequate for this problem which will
+also use P1 elements.
+
+This completes the \textbf{io} options tree.
+%{\samepage
+\item \textbf{Setting the System:}  The \textbf{system} is the heart of
+  \TF{} and includes all the choices of fields, elements, boundary
+  conditions and solvers.  You can have multiple systems in any
+  problem but each one needs a \textbf{name}, a \textbf{mesh} and a
+  \emph{unique} \textbf{ufl\_symbol}.  Start by setting the system name to \texttt{poisson} 
+\begin{center}
+    \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_05a.png}
+\end{center}
+then set the \textbf{mesh} name to be consistent with what you set in
+geometry (Mesh), and choose \textbf{ufl\_symbol} and set it to
+\texttt{us}. (Later on we will distinguish between system symbols
+which include all fields in a system, and the individual field
+symbols).
+\begin{center}
+    \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_05c.png}
+\end{center}
+%}
+\item \textbf{Setting the field:} Next step is to actually describe
+  the field (function) or fields we are trying to solve in each
+  system.  Poisson has only one field and which we will enable by
+  clicking the $+$ next to the greyed out \textbf{field} tab and
+  unfold the new field tab.
+\begin{center}
+    \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_06a.png}
+\end{center}
+Each field requires both a \textbf{name} and a unique
+\textbf{ufl\_symbol}.  Here set the field name to \texttt{ufield} and
+the ufl\_symbol to \texttt{u}.
+\begin{center}
+    \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_06c.png}
+\end{center}
+\item \textbf{Setting Field attributes:} Once named we next need to
+  set critical attributes on the field including its \textbf{rank}
+  (scalar, vector or tensor valued field), the \textbf{element},
+  \textbf{initial conditions} and \textbf{boundary conditions.} Unfold
+  the \textbf{Function} tab and its sub tab \textbf{rank}
+\begin{center}
+    \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_07a.png}
+\end{center}
+\textbf{rank} is already set to Scalar (green arrows could choose
+vector or tensor). Use the green arrows to choose the built in
+\textbf{element} P1 (which automatically chooses an element family
+``CG'' (continuous galerkin, or Lagrange element) of degree 1.
+\begin{center}
+    \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_07b.png}
+\end{center}
+\item \textbf{Setting initial conditions:} Because we
+  often use iterative solvers even on steady state problems, we need
+  to initialize all fields with an initial condition.  Here we will
+  just set it to a constant 0 over the whole mesh.  Unfold the
+  \textbf{initial\_condition (WholeMesh)} tab and set the constant to
+  \texttt{0.}
+\begin{center}
+    \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_07c.png}
+\end{center}
+\item \textbf{Setting Boundary conditions:} Now we need to set
+  Dirichlet conditions on the field so that it is zero on all four
+  boundaries. First, activate the \textbf{boundary\_condition} tab,
+  give it a name (\texttt{ZeroBCs}) and
+  unfold all the suboptions. 
+\begin{center}
+    \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_08b.png}
+\end{center}
+This will expose the options \textbf{boundary\_ids} which identify
+which boundaries are affected, and \textbf{Type (Dirichlet)} which
+let's you set a function that evaluates the dirichlet BCs.  For the
+unit square,  the Boundary ID's are shown with the \textbf{source
+  (UnitSquare)} tab (see Step 4, second figure).  Here we'll set all
+of them by putting \texttt{1 2 3 4} in \textbf{boundary\_ids}.  
+\begin{center}
+    \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_08c.png}
+\end{center}
+and we will set the \texttt{type (Dirichlet)} to a constant function
+with value 0.
+\begin{center}
+    \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_08d.png}
+\end{center}
+This completes the \textbf{Function} tab, which you can refold.
+\item \textbf{Setting Diagnostics on a field:}  If you want to actually visualize
+  or get output about a field, you'll need to add it to the
+  diagnostics.  Unfold the \textbf{diagnostics} tab and activate
+  \textbf{include\_in\_visualization} and
+  \textbf{include\_in\_statistics}. Other options are available.
+\begin{center}
+    \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_09.png}
+\end{center}
+This completes the \textbf{field} tab
+\item \textbf{Setting the RHS coefficient $f$:} To solve Poisson, we
+  need to give the system a rhs function $f(\vec{x})$ which in this
+  case is a constant $f=1$.  In ufl notation,  $f$ is a
+  \emph{coefficient} in the form that can be evaluated at any point in
+  the domain.  To set $f$, activate the \textbf{coefficient} tab and
+  give it a name (here \texttt{rhs} and unfold. We will also need to
+  give it a  ufl symbol (\texttt{f}). 
+\begin{center}
+    \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_10b.png}
+\end{center}
+ To evaluate \texttt{f}, we need to set the \textbf{type} to
+\textbf{Constant} using the drop down arrows, then continue to unfold
+until you can set the constant value to 1.
+\begin{center}
+    \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_10c.png}
+\end{center}
+This completes the coefficient field.
+\item \textbf{Setting the solver (and equations):}  The last set of
+  choices involve setting the solvers for the system.  In \TF{}, the
+  actual equations we want to solve are part of the solver as each
+  solver acts as an operator over the fields (and you can have
+  multiple solvers in a system).  Here we will implement Poisson using
+  PETScs Newton solver SNES.  
+
+Start by activating the \textbf{nonlinear\_solver} tab, name the
+solver (\texttt{Solver}) and unfold.
+\begin{center}
+    \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_11a.png}
+\end{center}
+We will use the default type \textbf{SNES} which is PETSc's Scaleable
+Non-linear Equation Solver which provides a large range of Newton and
+quasi-newton schemes with control.
+\item \textbf{Setting the SNES options:} Unfold the \textbf{type
+    (SNES)} tab to show all the required options for a non-linear
+ Newton  solver
+\begin{center}
+    \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_11b.png}
+\end{center}
+which include weak forms for the \textbf{Residual}, and
+\textbf{Jacobian}, parameters to control convergence such as
+\textbf{relative\_tolerance} and \textbf{maximum\_iterations} as well
+as choice of \textbf{linear\_solvers} for the inner solver.
+
+First we will set the weak form for the \textbf{form (Residual)}.
+First highlight the  \textbf{form (Residual)} tab and in the
+\textbf{Data} window add the following piece of ufl
+\begin{lstlisting}[style=ufl]
+F   = (inner(grad(u_t), grad(u_i)) - u_t*f)*dx
+\end{lstlisting}
+to define the weak form of the residual given on field \texttt{u} and
+coefficient \texttt{f}.  The subscripted ufl symbols are automatically
+generated by \TF{}. 
+\begin{center}
+    \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_11c.png}
+\end{center}
+Also unfold the \textbf{form (Residual)} tab and set the
+\textbf{ufl\_symbol} for the form to \texttt{F}
+
+To set the Jacobian choose  the \textbf{form (Jacobian)} tab and add
+the ufl
+\begin{lstlisting}[style=ufl]
+J = derivative(F,us_i,us_a)
+\end{lstlisting}
+and set its ufl symbol to \texttt{J}.  Note the derivative is taken
+with respect to the \textbf{System} ufl symbol \texttt{us} not the
+field (this will become more obvious with other problems).
+\begin{center}
+    \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_11d.png}
+\end{center}
+
+Now set \textbf{relative\_error} to \texttt{1.e-6} and
+\textbf{max\_iterations} to \texttt{20} (and we won't need more than 1
+actually for this problem) and unfold the \textbf{linear\_solver} tab
+\begin{center}
+    \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_11e.png}
+\end{center}
+\item \textbf{Setting the Linear solver options:} Finally we need to
+  set options for the inner linear solver.  For a small 2-D problem
+  it's nearly impossible to beat sparse direct methods so we'll start
+  with those.  Every linear solver has 2 components an
+  \textbf{iterative\_method} (which is a PETSc KSP) and a
+  \textbf{preconditioner} (a PETSc PC).  The appropriate (KSP,PC)
+  pair for a direct solver is (preonly, lu), i.e a sparse-lu decomposition as
+  a pre-conditioner (which is a direct solve) and no iterative
+  method.  In \TF{} we use the green drop-down arrows to choose
+  \textbf{linear\_solver} to be \texttt{preonly}, and
+  \textbf{preconditioner} to be \texttt{lu}, which will default to the
+  sparse direct solver \texttt{umfpack} (which is what is used in
+  matlab).  Other direct solver packages such as mumps can also be chosen.
+\begin{center}
+    \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_12a.png}
+\end{center}
+This completes all the choices required to build
+\texttt{poisson.tfml}. \textbf{Save your file}, cross your fingers and see if
+we can build this.
+\item \textbf{Building and running your model:}  The instructions are
+  given at the beginning of section \ref{sec:solution-using-tf} but to
+  repeat
+\begin{lstlisting}[style=Bash]
+$ tfbuild poisson.tfml
+$ cd build
+$ make run 
+\end{lstlisting} %$
+Compilation the first time requires autogeneration of C++ code from
+the ufl forms (using FFC), then creating wrappers to link into the
+base \TF libraries.  Once the code has been compiled however, changes
+to run-time parameters will not force a recompile or relinking and
+\lstinline[style=Bash]´$ make run´ %$
+will be much quicker.  Any change to \texttt{ufl} or expressions that
+require recompilation will force a rebuild automatically.
+ \end{steps}
   
 %\lstinline[style=Bash]´$ tfbuild <filename>.tfml´.
 
@@ -451,18 +757,29 @@ visualized using paraview to looks something like
 \section{Themes and Variations}
 \label{sec:themes-variations}
 
-\subsection{Manufactured Solutions}
-\label{sec:manuf-solut}
+Given an initial working \texttt{tfml} file, one of the very nice
+features of \TF{} is that it becomes usually quite straightforward to
+rapidly change your choices to make new models or add new features.
+\texttt{tfml} files are just ascii and can be copied to make new
+files. In addition,  diamond allows entire options and option
+sub-trees to be copied and pasted preserving (with some significant
+care) work done in another model.  Here we will start by making some
+small modifications to our basic working poisson model, then add some
+advance features such as including non-constant rhs's, boundary
+conditions etc.
 
-\subsection{Changing Elements}
+
+\subsection{Changing Resolution}
 \label{sec:changing-elements}
 
-\subsection{Changing Meshes}
+\subsection{Changing Elements}
 \label{sec:changing-meshes}
 
 \subsection{Changing Solvers}
 \label{sec:changing-solvers}
 
+\subsection{Manufactured Solutions}
+\label{sec:manuf-solut}
 
 
 \end{document}
