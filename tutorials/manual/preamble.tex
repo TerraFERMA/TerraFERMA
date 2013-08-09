@@ -1,0 +1,97 @@
+\usepackage[english]{babel}
+\usepackage{tgtermes}
+\usepackage[colorlinks=true]{hyperref}
+
+\usepackage{mathpazo}
+\usepackage[protrusion=true,expansion=true]{microtype}
+\usepackage{lettrine}
+\usepackage{graphicx}
+\usepackage{amsfonts,amsmath,amssymb,amsthm,amsbsy,amssymb,bm}
+\usepackage{xcolor}
+\usepackage{enumitem}
+
+\usepackage[final]{listings}
+\lstloadlanguages{[LaTeX]TeX,Python,bash,[gnu]Make,XML}
+
+\lstset{basicstyle=\footnotesize\ttfamily,
+  emph=anyfield,
+  emphstyle=\textit,
+  morekeywords={pure},
+  escapeinside=`'
+}
+
+\lstdefinestyle{Bash}{
+  language=bash,
+  basicstyle=\small\sffamily,
+  frame=tb,
+  columns=fullflexible,
+  backgroundcolor=\color{yellow!20},
+  linewidth=0.9\linewidth,
+  xleftmargin=0.1\linewidth
+}
+
+\lstdefinestyle{UFL}{
+  language=Python,
+  basicstyle=\small\ttfamily,
+  numbers=left,
+  numberstyle=\tiny,
+  numbersep=3pt,
+  frame=tb,
+  columns=fullflexible,
+  backgroundcolor=\color{yellow!20},
+  linewidth=0.9\linewidth,
+  xleftmargin=0.1\linewidth
+}
+\usepackage{macros}
+%\checkandfixthelayout
+
+% See the ``Memoir customise'' template for some common customisations
+% Don't forget to read the Memoir manual: memman.pdf
+
+% \title{A Tutorial Cookbook for \TF{}}
+% \author{Marc Spiegelman and Cian Wilson\\
+% Columbia University/Lamont Doherty Earth Obs.}
+% \date{} % Delete this line to display the current date
+
+%% BEGIN TITLE
+
+\makeatletter
+\def\maketitle{%
+  \null
+  \thispagestyle{empty}%
+  \vfill
+  \begin{center}\leavevmode
+    \normalfont
+    {\LARGE\raggedleft \@author\par}%
+    \hrulefill\par
+    {\huge\raggedright \@title\par}%
+    %\vskip 1cm
+    \vfill
+    {\Large \@date\par}%
+  \end{center}%
+  %\vfill
+  \null
+  \cleardoublepage
+  }
+\makeatother
+\author{Marc Spiegelman and Cian Wilson}
+\title{A Tutorial Cookbook for \TF{}}
+\date{\today}
+
+
+%%% HEADERS & FOOTERS
+\pagestyle{ruled} % try also: empty , plain , headings , ruled , Ruled , companion
+
+%%% CHAPTERS
+\chapterstyle{demo} % try also: default , section , hangnum , companion , article, demo
+
+%%% Change section number depth
+\setsecnumdepth{subsection}
+\setcounter{tocdepth}{2}
+
+
+
+
+
+
+
