@@ -230,7 +230,7 @@ intuitive interface.
 A fully worked out description of Poisson's Equation on the unit
 square with unit forcing can be found in the tutorials folder of the
 installed software (by default
-\texttt{\${TFHOME}/share/terraferma/tutorials}) in
+\texttt{\${TF\_HOME}/share/terraferma/tutorials}) in
 \texttt{poisson/simple/poisson.tfml}.  To view this file, simply go to
 the source folder and type
 \begin{lstlisting}[style=Bash]
@@ -801,11 +801,123 @@ python functions (which can be slow in large calculations) or as C++
 expressions.  Here we will just demonstrate the python interface.  A
 fully worked out example is in \texttt{tutorials/poisson/mms/poisson.tfml}.
 
-The principal modifications from simple poisson are the following
+To add these new features (and visualize the error from the analytic solution), do the following.
 \begin{steps}{Step}
-\item blah
-  
+\item  Start with the simple poisson.tfml
+  \begin{lstlisting}[style=Bash]
+$ mkdir mymms
+$ cd mymms
+$ cp $TF_HOME/tutorials/poisson/simple/poisson.tfml .    
+  \end{lstlisting}
+\item Change the coefficient \texttt{f} in \textbf{system (Poisson)} to a python Expression. Unfold the \textbf{coefficient (f)} tab until you see the Expression value as \textbf{constant}. 
+\begin{center}
+\includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_f_value.png}
+  \end{center}
+\item using the drop down menu, change the value from \textbf{constant} to \textbf{python} and in the data window, replace \texttt{(string)} with the following small python function
+  \begin{lstlisting}[style=python]
+from math import exp
+def val(x):
+  global exp
+  return -5./4.*exp(x[0] + x[1]/2.)   
+  \end{lstlisting}
+(and be careful about the indentation). \texttt{f} is now a variable coefficient which will return $f(\vec{x}) = -5/4(\exp(x + y/2)$ at any point $\vec{x}$. Your diamond window should now look like
+\begin{center}
+\includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_mms_f_value.png}
+  \end{center}
+\item \textbf{Change the Dirichlet Boundary conditions}.  Under \textbf{field (u)}$\rightarrow$\textbf{type (Function)}, find and unfold the \textbf{boundary\_condition (homogeneous)} tab.  Select \textbf{boundary\_ids} and remove \texttt{2} (right boundary) from the list to leave \texttt{1 3 4}.  Then unfold \textbf{sub\_components (All)}$\rightarrow$\textbf{type (Dirichlet)} and change the value from \textbf{constant} to \textbf{python} and add the python function
+\begin{lstlisting}[style=python]
+from math import exp
+def val(x):
+  global exp
+  return exp(x[0] + x[1]/2.)    
+\end{lstlisting}
+\begin{center}
+\includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_mms_bcs.png}
+  \end{center}
+\item \textbf{Add a new coefficient (g)} for the Neumann boundary conditions.  The cleanest way to do this is to activate a new coefficient tab and set the \texttt{name} and \textbf{ufl\_symbol} to \texttt{g},  the \textbf{element} to \texttt{P1} and the \textbf{value (WholeMesh)} to \textbf{python} and add the python function
+\begin{lstlisting}[style=python]
+from math import exp
+def val(x):
+  global exp
+  return exp(x[0] + x[1]/2.)    
+\end{lstlisting}
+
+The slightly dangerous, but quicker way is to use the copy and paste features of \texttt{Diamond} where you can copy and paste entire sub-trees of options, i.e. select the top tab \texttt{coefficient (f)}, and using the edit menu select \texttt{Copy}, then activate a new coefficient tab and select \texttt{Paste}.  This should give you a copy of the entire options tree of the \textbf{coefficient (f)}.  You now just have to edit the coefficient \texttt{name} and \textbf{ufl\_symbol} to \texttt{g}, and edit the \textbf{python} function to the listing above. 
+ \begin{center}
+\includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_mms_g_value.png}
+  \end{center} 
+\item \textbf{Edit the UFL for the residual}. We now have to add the boundary terms for \texttt{g} into the residual equations.  Unfold \textbf{nonlinear\_solver (SNES)}$\rightarrow$\textbf{type (SNES)} and choose \textbf{form (Residual)}, and change
+  \begin{lstlisting}[style=UFL]
+    F = (inner(grad(u_t),grad(u_i)) - u_t*f)*dx
+  \end{lstlisting}
+to
+  \begin{lstlisting}[style=UFL]
+    F = (inner(grad(u_t),grad(u_i)) - u_t*f)*dx - u_t*g*ds(2)
+  \end{lstlisting}
+\begin{center}
+\includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_mms_residual.png}
+  \end{center}
+\item At this point you should be able to build and run the new model
+  \begin{lstlisting}[style=Bash]
+$ tfbuild poisson.tfml
+$ cd build
+$ make run
+   \end{lstlisting} %$
+and it should look something like
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=.7\textwidth]{figures/poisson_mms.png}
+  \caption{solution for the Poisson mms example (not terribly exciting looking)}
+  \label{fig:poisson_mms}
+\end{figure}
+
 \end{steps}
+
+\paragraph{Adding Error monitoring}
+\label{sec:adding-error-monit}
+
+Pretty pictures are nice,  but the whole point of MMS is that we can calculate the exact error to test our solutions as well as convergence.  The example program \texttt{\$TF\_HOME/tutorials/poisson/mms/poisson.tfml} has two mechanisms for calculating and monitoring the absolute error of this solution.  The first calculates a functional
+\begin{equation}
+  \label{eq:18}
+  e^{2} = \int_{\Omega} (u-u_{exact})^{2} dx
+\end{equation}
+which is the square of the L2 norm of the absolute error and outputs it to statistics.  To implement this
+\begin{steps}{Step}
+\item First create another coefficient by copying \textbf{coefficent (g)} then changing the name to \texttt{AnalyticSolution} and \textbf{ufl\_symbol} to \texttt{ue}.  The python to evaluate \texttt{g} and the analytic solution are the same (coincidentally).
+\item \textbf{Add a functional to statistics for field (u)} Next we have to attach a functional to the \textbf{field (u)} and output to statistics.  Do the following
+  \begin{steps}{step}
+  \item unfold \textbf{field (u)}$\rightarrow$\textbf{diagnostics}$\rightarrow$\textbf{include\_in\_statistics}
+  \item activate the greyed out tab \textbf{functional} and give it a \textbf{name} (L2NormErrorSquared) and a piece of ufl to evaluate the functional in Eq.\ (\ref{eq:18})
+    \begin{lstlisting}[style=UFL]
+e2 = ( u - ue )**2 *dx
+    \end{lstlisting}
+  \item set the  \textbf{ufl\_symbol} for the functional to \texttt{ue}
+  \end{steps}
+\end{steps}
+The value of the functional will now be written to the statistics file \texttt{poisson.stat} as part of a python dictionary that can be either viewed with \texttt{tfplot} or interrogated using additional python modules furnished with \TF{}. The python script \texttt{run\_convergence.py} in the \texttt{poisson/mms} directory provides an example of how to use the python bindings  manipulate \texttt{tfml} files and extract information from the stat files to run a convergence test.
+\begin{lstlisting}[style=Bash]
+ $ python run_convergence.py
+\end{lstlisting} %$
+which should produce the output
+\begin{lstlisting}[style=Bash]
+N= 8     L2err= 0.00106772930839
+N= 16   L2err= 0.000272913347515
+N= 32   L2err= 6.88527616919e-05
+N= 64   L2err= 1.7282821143e-05
+N= 128 L2err= 4.32880552601e-06
+\end{lstlisting}
+and the plot shown in Figure \ref{fig:poisson_convergence}
+\begin{figure}[ht!]
+  \centering
+\includegraphics[width=.6\textwidth]{figures/poisson_convergence.pdf}
+  \caption{Convergence plot for poisson mms problem. $h=1/N$ is the nominal grid spacing}
+  \label{fig:poisson_convergence}
+\end{figure}
+
+
+The second method to visualize errors is to create a new system that calculates the projection of $e = u - u_{exact}$ onto the Function Space P1.  A fully worked out example is given in the tutorial program.
+
+
 
 %%% Local Variables: 
 %%% mode: latex
