@@ -55,8 +55,10 @@ for i in xrange(len(ncells)):
     stats =  parser(ioname+".stat")
     L2errorSquared_V = stats['Stokes']['Velocity']['L2NormErrorSquared'][-1]
     L2errorSquared_p = stats['Stokes']['Pressure']['L2NormErrorSquared'][-1]
-    L2err_V[i] = sqrt(abs(L2errorSquared_V))
-    L2err_p[i] = sqrt(abs(L2errorSquared_p))
+    L2Squared_V =  stats['Stokes']['Velocity']['L2NormSquared'][-1]
+    L2Squared_p =  stats['Stokes']['Pressure']['L2NormSquared'][-1]
+    L2err_V[i] = sqrt(abs(L2errorSquared_V))/sqrt(L2Squared_V)
+    L2err_p[i] = sqrt(abs(L2errorSquared_p))/sqrt(L2Squared_p)
     print 'N=', n, 'L2err_V=', L2err_V[i],'L2err_p=', L2err_p[i]
     os.chdir('..')
 
@@ -67,10 +69,11 @@ h = 1./np.array(ncells)
 pl.figure()
 pl.loglog(h,L2err_V,'bo-',h,L2err_p,'ro-')
 pl.xlabel('h')
-pl.ylabel('||e||_2')
+pl.ylabel('relative errors ||e||_2')
 pl.grid()
 pl.legend(['e_V','e_p'],loc='best')
-p=pl.polyfit(np.log(h),np.log(L2err_V),1)
-pl.title('h Convergence, p={0}'.format(p[0]))
+pv=pl.polyfit(np.log(h),np.log(L2err_V),1)
+pp=pl.polyfit(np.log(h),np.log(L2err_p),1)
+pl.title('Convergence, p_v={0}, p_p={1}'.format(pv[0],pp[0]))
 pl.savefig('Stokes_convergence.pdf')
 pl.show(block=False)
