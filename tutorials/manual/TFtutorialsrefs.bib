@@ -13,6 +13,23 @@
 	file = {egq036v1.pdf:/Users/mspieg/Library/Application Support/Firefox/Profiles/nlmrow2s.default/zotero/storage/A8PM8UUM/egq036v1.pdf:application/pdf;HighWire Snapshot:/Users/mspieg/Library/Application Support/Firefox/Profiles/nlmrow2s.default/zotero/storage/7GDXRA8B/egq036v1.html:text/html}
 },
 
+@article{may_preconditioned_2008,
+	title = {Preconditioned iterative methods for Stokes flow problems arising in computational geodynamics},
+	volume = {171},
+	issn = {0031-9201},
+	url = {http://apps.isiknowledge.com.ezproxy.cul.columbia.edu/full_record.do?product=WOS&search_mode=GeneralSearch&qid=1&SID=1A9Ba2edpM1bFkLenIl&page=1&doc=1},
+	doi = {10.1016/j.pepi.2008.07.036},
+	abstract = {The numerical Solution of a discrete Stokes flow problem is a common component of many computational geodynamic models. We compare using the Schur complement reduction ({SCR)} and a fully coupled ({FC)} approach to solve geodynamic problems which are characterized by incompressible fluids containing large variations in viscosity. The scalability and robustness of these methods is assessed by examining their sensitivity to the discretization parameter h and the viscosity contrast Delta eta, respectively. We demonstrate that the scaled {BFBt} preconditioner [Elman, {H.C.}, Howle, {V.E.}, Shadid, J., Shuttleworth, R., Tuminaro, R., 2006. Block preconditioners; based on approximate commutators. {SIAM} J. Sci. Comput. 27 (5),1651-1668] can be an effective preconditioner for S = G({T)K(-1)} G, even when the fluid viscosity varies in space, provided an appropriate scaling is used. The performance of this preconditioner is strongly linked to the scaling employed. Through a number of numerical experiments, we demonstrate that our new scaling strategy ensures that the scaled {BFBt} preconditioner remains effective in scenarios where the viscosity variations are either locally smooth or discontinuous. Of the solvers considered, applying {FGMRES} to the pressure Schur complement in combination with {BFBt} and Our choice of scaling matrices was the most scalable and robust approach. (C) 2008 Elsevier {B.V.} All rights reserved.},
+	number = {1-4},
+	urldate = {2011-01-08},
+	journal = {{PHYSICS} {OF} {THE} {EARTH} {AND} {PLANETARY} {INTERIORS}},
+	author = {May, {DA} and Moresi, L},
+	month = dec,
+	year = {2008},
+	pages = {33--47},
+	file = {ISI Web of Knowledge Snapshot:/Users/mspieg/Library/Application Support/Firefox/Profiles/nlmrow2s.default/zotero/storage/2T4NKGCQ/full_record.html:text/html;sdarticle-8.pdf:/Users/mspieg/Library/Application Support/Firefox/Profiles/nlmrow2s.default/zotero/storage/DINUBQ46/sdarticle-8.pdf:application/pdf}
+},
+
 @article{ham_spud_2009,
 	title = {Spud 1.0: generalising and automating the user interfaces of scientific computer models},
 	volume = {2},
@@ -22,7 +39,7 @@
 	doi = {10.5194/gmd-2-33-2009},
 	number = {1},
 	urldate = {2011-03-06},
-	journal = {Geosci. Model Dev.},
+	journal = {Geoscientific Model Development},
 	author = {Ham, D. A. and Farrell, P. E. and Gorman, G. J. and Maddison, J. R. and Wilson, C. R. and Kramer, S. C. and Shipton, J. and Collins, G. S. and Cotter, C. J. and Piggott, M. D.},
 	month = mar,
 	year = {2009},
@@ -36,7 +53,7 @@
 	url = {http://www.springerlink.com/content/e1k667647k484142/},
 	doi = {10.1007/s10915-011-9461-y},
 	urldate = {2011-04-20},
-	journal = {J Sci Comput},
+	journal = {Journal of Scientific Computing},
 	author = {Simpson, G. and Spiegelman, M.},
 	month = jan,
 	year = {2011},
@@ -49,7 +66,7 @@
 	url = {http://www.agu.org/pubs/crossref/2007/2007JB004934.shtml},
 	doi = {200710.1029/2007JB004934},
 	urldate = {2012-02-17},
-	journal = {J. Geophys. Res.},
+	journal = {Journal of Geophysical Research},
 	author = {Cagnioncle, Amandine-Marie and Parmentier, E. M. and Elkins-Tanton, Linda T.},
 	month = sep,
 	year = {2007},
@@ -68,12 +85,36 @@
 	language = {English},
 	number = {8},
 	urldate = {2012-10-19},
-	journal = {Geochem. Geophys. Geosyst.},
+	journal = {Geochemistry Geophysics Geosystems},
 	author = {Billen, Magali I. and Hirth, Greg},
 	month = aug,
 	year = {2007},
 	pages = {Q08012},
 	file = {Full Text PDF:/Users/mspieg/Library/Application Support/Firefox/Profiles/nlmrow2s.default/zotero/storage/7C8DR5T5/Billen and Hirth - 2007 - Rheologic controls on slab dynamics.pdf:application/pdf;Snapshot:/Users/mspieg/Library/Application Support/Firefox/Profiles/nlmrow2s.default/zotero/storage/XIBR4H59/2007GC001597.html:text/html}
+},
+
+@misc{balay_petsc_2012,
+	title = {{PETSc} Web page},
+	author = {Balay, Satish and Brown, Jed and Buschelman, Kris and Gropp, William D. and Kaushik, Dinesh and Knepley, Matthew G. and {McInnes}, Lois Curfman and Smith, Barry F. and Zhang, Hong},
+	year = {2012},
+	note = {http://www.mcs.anl.gov/petsc}
+},
+
+@techreport{balay_petsc_2012-1,
+	title = {{PETSc} Users Manual},
+	number = {{ANL-95/11} - Revision 3.3},
+	institution = {Argonne National Laboratory},
+	author = {Balay, Satish and Brown, Jed and Buschelman, Kris and Eijkhout, Victor and Gropp, William D. and Kaushik, Dinesh and Knepley, Matthew G. and {McInnes}, Lois Curfman and Smith, Barry F. and Zhang, Hong},
+	year = {2012}
+},
+
+@misc{logg_anders_fenics_2011,
+	title = {Fenics Project},
+	url = {fenicsproject.org},
+	journal = {{FEniCS} Project},
+	author = {{Logg, Anders}},
+	year = {2011},
+	howpublished = {fenicsproject.org}
 },
 
 @article{bangerth_deal.ii---general-purpose_2007,
@@ -84,6 +125,7 @@
 	doi = {10.1145/1268776.1268779},
 	number = {4},
 	urldate = {2013-07-30},
+	journal = {{ACM} Transactions on Mathematical Software},
 	author = {Bangerth, W. and Hartmann, R. and Kanschat, G.},
 	month = aug,
 	year = {2007},
@@ -103,6 +145,18 @@
 	keywords = {Differential equations, Finite differences}
 },
 
+@book{logg_automated_2012,
+	address = {Berlin, Heidelberg},
+	title = {Automated Solution of Differential Equations by the Finite Element Method The {FEniCS} Book},
+	isbn = {9783642230998 3642230997},
+	url = {http://ezproxy.usherbrooke.ca/login?url=http://dx.doi.org/10.1007/978-3-642-23099-8},
+	language = {English},
+	urldate = {2013-08-15},
+	publisher = {Springer Berlin Heidelberg},
+	author = {Logg, Anders},
+	year = {2012}
+},
+
 @book{elman_finite_2005,
 	address = {Oxford ; New York},
 	series = {Numerical mathematics and scientific computation},
@@ -114,4 +168,17 @@
 	author = {Elman, Howard C. and Silvester, David J. and Wathen, Andrew J.},
 	year = {2005},
 	keywords = {Data processing, Differential equations, Partial, Finite element method, Fluid dynamics}
+},
+
+@inproceedings{brown_composable_2012,
+	title = {Composable Linear Solvers for Multiphysics},
+	isbn = {978-1-4673-2599-8},
+	url = {http://ieeexplore.ieee.org/lpdocs/epic03/wrapper.htm?arnumber=6341494},
+	doi = {10.1109/ISPDC.2012.16},
+	urldate = {2013-08-16},
+	booktitle = {ispdc},
+	publisher = {{IEEE}},
+	author = {Brown, Jed and Knepley, Matthew G. and May, David A. and {McInnes}, Lois Curfman and Smith, Barry},
+	year = {2012},
+	pages = {55--62}
 }
