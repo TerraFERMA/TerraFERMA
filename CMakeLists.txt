@@ -47,4 +47,6 @@ if (BUCKET_ENABLE_TESTING)
 endif()
 
 
+# install tutorials under share
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/tutorials DESTINATION share/terraferma)
 
