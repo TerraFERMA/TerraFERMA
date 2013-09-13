@@ -11,22 +11,42 @@ viscous fluid.
 -\div\eta(\grad\vec{v} + \grad\vec{v}^{T}) + \grad p &= \vec{f}\\ 
 \div \vec{v} = 0 & 
 \end{align}
-where $\vec{v}$ is the fluid velocity field and $p$ is the pressure
-which acts to enforce the conpressibility constraint.  Unlike
-Poisson's equation in Chapter \ref{cha:poiss-equat-unit},  Stokes
-equation is a coupled system of PDE's for $\vec{u} = (\vec{v},p)$. In
-finite elements we can capture this system by describing $\vec{u}$ as
-a mixed-element on a mixed Finite element Function space.  The proper
-choice of elements is critical for stability and solution of this
-problem and is discussed in detail in any text on finite elements
-for example \cite{elman_finite_2005}.   Here we will just illustrate the
-problem with a classic, stable ``Taylor-Hood'' element where velocity
-is assumed to be a vector valued function with each component a
-piecewise quadratic function (i.e.\ for a 2-D problem on triangles
+where $\vec{v}$ is the fluid velocity field,  $p$ is the pressure
+which acts to enforce the conpressibility constraint and $\eta$ is the
+fluid viscosity.
+
+Computationally and mathematically, Stokes Equation, particularly for
+non-constant viscosity, requires somewhat more care to solve than
+Poisson's equation in Chapter \ref{cha:poiss-equat-unit}.  To begin
+with,   Stokes is a coupled system of PDE's for $\vec{u} =
+(\vec{v},p)$ which in finite elements we can capture by describing
+$\vec{u}$ as a mixed-element on a mixed Finite element Function space.
+The proper choice of elements for $\vec{v}$ and $p$ is critical for
+stability and solution of this problem.  Elman et
+al. \cite{elman_finite_2005}  provide a good discussion of the issues
+for the isoviscous case and \cite{may_preconditioned_2008} provides
+important extensions and tests of a large range of iterative solvers
+for the variable viscosity case. 
+
+Here we will just illustrate the basic isoviscous problem with a range
+of direct and iterative solvers that highlight the Fieldsplit block
+preconditioners in PETSc \cite{brown_composable_2012} and their
+implementation in \TF{}.  While the computational choices required to
+solve Stokes efficiently and accurately are considerably more delicate
+than Poisson,  we will demonstrate that setting the problem up in
+\TF{} is a straightforward extension of the the problems in Chapter
+\ref{cha:poiss-equat-unit}. 
+
+\subsection{Variational forms}
+\label{sec:variational-forms}
+
+For this tutorial, we will use a stable ``Taylor-Hood'' element where
+velocity is assumed to be a vector valued function with each component
+a piecewise quadratic function (i.e.\ for a 2-D problem on triangles
 $\vec{v}\in [P_{2}\times P_{2}]$) while the pressure is piecewise
 linear ($p\in P_{1}$) such that the entire system $\vec{u}\in \fspace
-= [[P_{2}\times P_{2}]\times P_{1}]$ and the variational form of the
-(possibly) non-linear problem can be written 
+= [[P_{2}\times P_{2}]\times P_{1}]$.  The variational form of the
+(possibly) non-linear problem can be written
 \begin{quote}
   \fbox{\parbox{.9\textwidth}{Find $\vec{u}\in \fspace$ such that
       \begin{equation}
@@ -89,7 +109,7 @@ forcing function $\vec{f}$. Elman et. all \cite{elman_finite_2005} provides  the
    p(x,y) =& 60x^{2}y - 20y^{3} \nonumber \\
    \vec{f}(x,y) =& \vec{0} \nonumber 
 \end{align}
-on the unit square $\Omega=[0,1]\times[0,1]$ with dirichlet boundary conditions on velocity interpolated from the
+on the domain  $\Omega=[-1,1]\times[-1,1]$ with dirichlet boundary conditions on velocity interpolated from the
 analytic solution.  Note: the discrete problem with all dirichlet
 conditions on velocity is singular (with a trivial constant null space
 for the pressure) and some care needs to be taken with both direct and
