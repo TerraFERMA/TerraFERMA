@@ -117,7 +117,9 @@ void SpudSolverBucket::initialize()
     if(snestype=="vi")
     {
       #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
-      #if PETSC_VERSION_MINOR > 2
+      #if PETSC_VERSION_MINOR > 3
+      perr = SNESSetType(snes_, SNESVINEWTONRSLS); CHKERRV(perr); 
+      #elif PETSC_VERSION_MINOR == 3
       perr = SNESSetType(snes_, SNESVIRS); CHKERRV(perr); 
       #else
       perr = SNESSetType(snes_, snestype.c_str()); CHKERRV(perr); 
@@ -133,7 +135,11 @@ void SpudSolverBucket::initialize()
     }
     else if(snestype=="ls")
     {
-      perr = SNESSetType(snes_, snestype.c_str()); CHKERRV(perr); 
+      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 3
+      perr = SNESSetType(snes_, SNESNEWTONLS); CHKERRV(perr);
+      #else
+      perr = SNESSetType(snes_, snestype.c_str()); CHKERRV(perr);
+      #endif 
       perr = SNESSetFromOptions(snes_); CHKERRV(perr);               // set-up snes from options (we do this first to ensure that
                                                                      // any duplicated options from the options file overwrite the
                                                                      // command line)
@@ -148,7 +154,11 @@ void SpudSolverBucket::initialize()
       {
         #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 2
         SNESLineSearch linesearch;
+        #if PETSC_VERSION_MINOR > 3
+        perr = SNESGetLineSearch(snes_, &linesearch); CHKERRV(perr);
+        #else
         perr = SNESGetSNESLineSearch(snes_, &linesearch); CHKERRV(perr);
+        #endif
         perr = SNESLineSearchSetType(linesearch, "bt"); CHKERRV(perr);
         perr = SNESLineSearchSetOrder(linesearch, 3); CHKERRV(perr);
         #else
@@ -159,7 +169,11 @@ void SpudSolverBucket::initialize()
       {
         #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 2
         SNESLineSearch linesearch;
+        #if PETSC_VERSION_MINOR > 3
+        perr = SNESGetLineSearch(snes_, &linesearch); CHKERRV(perr);
+        #else
         perr = SNESGetSNESLineSearch(snes_, &linesearch); CHKERRV(perr);
+        #endif
         perr = SNESLineSearchSetType(linesearch, "bt"); CHKERRV(perr);
         perr = SNESLineSearchSetOrder(linesearch, 2); CHKERRV(perr);
         #else
@@ -170,7 +184,11 @@ void SpudSolverBucket::initialize()
       {
         #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 2
         SNESLineSearch linesearch;
+        #if PETSC_VERSION_MINOR > 3
+        perr = SNESGetLineSearch(snes_, &linesearch); CHKERRV(perr);
+        #else
         perr = SNESGetSNESLineSearch(snes_, &linesearch); CHKERRV(perr);
+        #endif
         perr = SNESLineSearchSetType(linesearch, "basic"); CHKERRV(perr);
         #else
         perr = SNESLineSearchSet(snes_, SNESLineSearchNo, PETSC_NULL); CHKERRV(perr); 
@@ -218,7 +236,11 @@ void SpudSolverBucket::initialize()
       #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
       #if PETSC_VERSION_MINOR > 2
       SNESLineSearch linesearch;
+      #if PETSC_VERSION_MINOR > 3
+      perr = SNESGetLineSearch(snes_, &linesearch); CHKERRV(perr);
+      #else
       perr = SNESGetSNESLineSearch(snes_, &linesearch); CHKERRV(perr);
+      #endif
       perr = SNESLineSearchBTSetAlpha(linesearch, alpha); CHKERRV(perr);// FIXME: assumes using bt
       perr = SNESLineSearchSetTolerances(linesearch, PETSC_DEFAULT, maxstep, PETSC_DEFAULT,
                                         PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT);
@@ -787,8 +809,13 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
           "/iterative_method/monitors/preconditioned_residual_graph";// plot a graph of the preconditioned residual
     if (Spud::have_option(buffer.str()))
     {
+      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 3
+      perr = KSPMonitorSet(ksp, KSPMonitorLGResidualNorm, 
+                                             PETSC_NULL, PETSC_NULL); 
+      #else
       perr = KSPMonitorSet(ksp, KSPMonitorLG, 
                                              PETSC_NULL, PETSC_NULL); 
+      #endif
       CHKERRV(perr);
     }
 
@@ -1098,7 +1125,11 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
     spud_err(buffer.str(), serr);                                    // so hard code an if block
     if (ptype == "diag")
     {
+      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 3
+      perr = PCFieldSplitSchurPrecondition(pc, PC_FIELDSPLIT_SCHUR_PRE_A11, PETSC_NULL);
+      #else
       perr = PCFieldSplitSchurPrecondition(pc, PC_FIELDSPLIT_SCHUR_PRE_DIAG, PETSC_NULL);
+      #endif
       CHKERRV(perr);
     }
     else if (ptype == "self")
