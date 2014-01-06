@@ -34,6 +34,32 @@ import traceback
 
 ####################################################################################
 
+class SimulationsErrorInitialization(Exception):
+  def __init__(self, msg = "Error while initializing simulation."):
+    self.message = msg
+
+class SimulationsErrorWriteOptions(Exception):
+  def __init__(self, msg = "Error while writing options."):
+    self.message = msg
+
+class SimulationsErrorConfigure(Exception):
+  def __init__(self, msg = "Error while configuring the simulation."):
+    self.message = msg
+
+class SimulationsErrorBuild(Exception):
+  def __init__(self, msg = "Error while building the simulation."):
+    self.message = msg
+
+class SimulationsErrorRun(Exception):
+  def __init__(self, msg = "Error while running simulation."):
+    self.message = msg
+
+class SimulationsErrorTest(Exception):
+  def __init__(self, msg = "Error while testing simulations."):
+    self.message = msg
+
+####################################################################################
+
 class ThreadIterator(list):
   '''A thread-safe iterator over a list.'''
   def __init__(self, seq):
@@ -286,10 +312,10 @@ class Run:
     if valuesdict is None: valuesdict={}
     for k,v in self.optionsdict[prefix+"values"].iteritems():
       if k in valuesdict:
-        print "ERROR: in updateoptions, %s multiply defined"%(k)
+        self.log("ERROR: in updateoptions, %s multiply defined"%(k))
         if k=="input_file":
-          print "parameter cannot be named input_file"
-        sys.exit(1)
+          self.log("parameter cannot be named input_file")
+        raise SimulationsErrorWriteOptions
       valuesdict[k] = v
     for update in self.optionsdict[prefix+"updates"].itervalues():
       if update is not None:
@@ -367,8 +393,8 @@ class Run:
             p = subprocess.Popen(command, cwd=dirname, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
             retcode = p.wait()
             if retcode!=0:
-              self.log("ERROR Command %s returned %d in directory: %s"%(" ".join(command), retcode, dirname))
-              #sys.exit(1)
+              self.log("ERROR: Command %s returned %d in directory: %s"%(" ".join(command), retcode, dirname))
+              raise SimulationsErrorRun
           
           self.log("  finished in directory %s:"%(os.path.relpath(dirname, self.currentdirectory)))
 
@@ -551,8 +577,8 @@ class Simulation(Run):
                                                currentdirectory, tfdirectory, \
                                                logprefix=logprefix, dependents=[self]))
          else:
-           print "ERROR: Unknown dependency simulation type."
-           sys.exit(1)
+           self.log("ERROR: Unknown dependency simulation type.")
+           raise SimulationsErrorInitialization
 
     # if the input options file is an the output of a dependency then we have to
     # defer generating, configuring and building until runtime
@@ -622,8 +648,8 @@ class Simulation(Run):
                           cwd=dirname)
     retcode = p.wait()
     if retcode!=0:
-      self.log("ERROR cmake returned %d in directory: %s"%(retcode, dirname))
-      sys.exit(1)
+      self.log("ERROR: cmake returned %d in directory: %s"%(retcode, dirname))
+      raise SimulationsErrorConfigure
 
   def build(self, force=False):
 
@@ -632,14 +658,14 @@ class Simulation(Run):
       p = subprocess.Popen(["make", "clean"], cwd=dirname)
       retcode = p.wait()
       if retcode!=0:
-        self.log("ERROR make clean returned %d in directory: %s"%(retcode, dirname))
-        sys.exit(1)
+        self.log("ERROR: make clean returned %d in directory: %s"%(retcode, dirname))
+        raise SimulationsErrorBuild
 
     p = subprocess.Popen(["make"], cwd=dirname)
     retcode = p.wait()
     if retcode!=0:
       self.log("ERROR make returned %d in directory: %s"%(retcode, dirname))
-      sys.exit(1)
+      raise SimulationsErrorBuild
 
   def clean(self):
     Run.clean(self)
@@ -699,7 +725,7 @@ class Simulation(Run):
         retcode = p.wait()
         if retcode!=0:
           self.log("ERROR Command %s returned %d in directory: %s"%(" ".join(command), retcode, dirname))
-          #sys.exit(1)
+          raise SimulationsErrorRun
       
       self.log("  finished in directory %s"%(os.path.relpath(dirname, self.currentdirectory)))
 
@@ -1071,8 +1097,8 @@ class SimulationBatch:
     
     # exit with an error if any failures
     if failcount > 0:
-      self.log("Exiting with error since at least one failure...")
-      sys.exit(1)
+      self.log("ERROR: at least one failure encountered while testing")
+      raise SimulationsErrorTest
 
   def log(self, string):
     if self.logprefix is not None: string = self.logprefix+": "+string
@@ -1231,8 +1257,8 @@ class SimulationHarnessBatch(SimulationBatch):
     
     # exit with an error if any failed
     if failcount > 0:
-      self.log("Exiting with error since at least one failure...")
-      sys.exit(1)
+      self.log("ERROR: at least one failure encountered while testing")
+      raise SimulationsErrorTest
 
   def getrequiredfiles(self, optionpath, dirname=None):
      '''Get a list of the required files listed under the optionpath.  Run python scripts in dirname if supplied.'''
@@ -1363,10 +1389,11 @@ class SimulationHarnessBatch(SimulationBatch):
        # throw an error if the parameter is not in the parent list (if present)
        if parent_parameters is not None:
          if parameter_name not in parent_parameters:
-           print "ERROR: dependency parameter not in parent simulation:"
-           print "parameter %(parameter_name)s (%(parameter_optionpath)s)"%\
-                 {"parameter_name": parameter_name, "paramter_optionpath": parameter_optionpath}
-           sys.exit(1)
+           self.log("ERROR: dependency parameter not in parent simulation:")
+           self.log("parameter %(parameter_name)s (%(parameter_optionpath)s)"%\
+                 {"parameter_name": parameter_name, "parameter_optionpath": parameter_optionpath})
+           
+           raise SimulationsErrorInitialization
        
        # try to get a list of the parameter values (not necessarily specified for child parameters so except failure)
        try:

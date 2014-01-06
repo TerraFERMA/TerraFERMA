@@ -144,8 +144,12 @@ if __name__ == "__main__":
   filenames = filter(partial_filter_simulations, filenames)
 
   curdir = os.getcwd()
-  batch = SimulationHarnessBatch(filenames, os.path.realpath(__file__), curdir, \
-                              os.environ["TF_CMAKE_PATH"], nthreads=args.nthreads)
+  try:
+    batch = SimulationHarnessBatch(filenames, os.path.realpath(__file__), curdir, \
+                                os.environ["TF_CMAKE_PATH"], nthreads=args.nthreads)
+  except SimulationsErrorInitialization:
+    print "Error while initializing the simulations."
+    sys.exit(1)
 
   if args.clean:
     batch.clean()
@@ -160,15 +164,39 @@ if __name__ == "__main__":
     for filename in filenames:
       print os.path.relpath(filename, curdir)
   elif args.generate or args.configure or args.build or args.run or args.test:
-    batch.writeoptions()
+    try:
+      batch.writeoptions()
+    except SimulationsErrorWriteOptions:
+      print "Error while writing options, exiting with error."
+      sys.exit(1)
     if args.configure or args.build or args.run or args.test:
-      batch.configure(force=args.force)
+      try:
+        batch.configure(force=args.force)
+      except SimulationsErrorConfigure:
+        print "Error while configuring simulations, exiting with error."
+        sys.exit(1)
       if args.build or args.run or args.test:
-        batch.build(force=args.force)
+        try: 
+          batch.build(force=args.force)
+        except SimulationsErrorBuild:
+          print "Error while building simulations, exiting with error."
+          sys.exit(1)
         if args.run or args.test:
-          batch.run(force=args.force)
+          try:
+            batch.run(force=args.force)
+          except SimulationsErrorRun:
+            print "Error while running simulations, exiting with error."
+            sys.exit(1)
           if args.test:
-            batch.test(force=args.force)
+            try:
+              batch.test(force=args.force)
+            except SimulationsErrorTest:
+              print "Error while testing simulations, exiting with error."
+              sys.exit(1)
   elif args.justtest:
-    batch.test(force=args.force)
+    try:
+      batch.test(force=args.force)
+    except SimulationsErrorTest:
+      print "Error while testing simulations, exiting with error."
+      sys.exit(1)
 
