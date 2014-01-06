@@ -1,0 +1,320 @@
+<?xml version='1.0' encoding='utf-8'?>
+<terraferma_options>
+  <geometry>
+    <dimension>
+      <integer_value rank="0">2</integer_value>
+    </dimension>
+    <mesh name="Mesh">
+      <source name="File">
+        <file>
+          <string_value lines="1" type="filename">mesh</string_value>
+        </file>
+        <cell>
+          <string_value>triangle</string_value>
+        </cell>
+      </source>
+    </mesh>
+  </geometry>
+  <io>
+    <output_base_name>
+      <string_value lines="1">mms</string_value>
+    </output_base_name>
+    <dump_periods/>
+    <detectors/>
+  </io>
+  <global_parameters>
+    <ufl>
+      <string_value lines="20" type="code" language="python">nu = 0.7</string_value>
+    </ufl>
+  </global_parameters>
+  <system name="MMS">
+    <mesh name="Mesh"/>
+    <ufl_symbol>
+      <string_value lines="1">ut</string_value>
+    </ufl_symbol>
+    <field name="NumericalSolution">
+      <ufl_symbol>
+        <string_value lines="1">t</string_value>
+      </ufl_symbol>
+      <type name="Function">
+        <rank name="Scalar" rank="0">
+          <element name="UserDefined">
+            <family>
+              <string_value>CG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">1</integer_value>
+            </degree>
+          </element>
+          <initial_condition type="initial_condition" name="WholeMesh">
+            <constant>
+              <real_value rank="0">0.0</real_value>
+            </constant>
+          </initial_condition>
+          <boundary_condition name="Sides">
+            <boundary_ids>
+              <integer_value shape="2" rank="1">7 10</integer_value>
+            </boundary_ids>
+            <sub_components name="All">
+              <type type="boundary_condition" name="Dirichlet">
+                <cpp rank="0">
+                  <members>
+                    <string_value type="code" lines="20" language="cpp">GenericFunction_ptr sol_ptr;</string_value>
+                  </members>
+                  <initialization>
+                    <string_value type="code" lines="20" language="cpp">sol_ptr = system()-&gt;fetch_coeff("AnalyticalSolution")-&gt;genericfunction_ptr(time());</string_value>
+                  </initialization>
+                  <eval>
+                    <string_value type="code" lines="20" language="cpp">sol_ptr-&gt;eval(values, x, cell);</string_value>
+                  </eval>
+                </cpp>
+              </type>
+            </sub_components>
+          </boundary_condition>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_visualization/>
+        <include_in_statistics/>
+      </diagnostics>
+    </field>
+    <coefficient name="Velocity">
+      <ufl_symbol>
+        <string_value lines="1">v</string_value>
+      </ufl_symbol>
+      <type name="Expression">
+        <rank name="Vector" rank="1">
+          <element name="UserDefined">
+            <family>
+              <string_value>CG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">1</integer_value>
+            </degree>
+          </element>
+          <value type="value" name="WholeMesh">
+            <python rank="1">
+              <string_value lines="20" type="code" language="python">def val(XX):
+   from math import sin,cos
+   x = XX[0];
+   y = XX[1];
+   x2 = x*x;
+   y2 = y*y;
+   u = sin(5*(x2+y2));
+   v = cos(3*(x2-y2));
+   return (u, v)</string_value>
+            </python>
+          </value>
+        </rank>
+      </type>
+      <diagnostics/>
+    </coefficient>
+    <coefficient name="AnalyticalSolution">
+      <ufl_symbol>
+        <string_value lines="1">at</string_value>
+      </ufl_symbol>
+      <type name="Expression">
+        <rank name="Scalar" rank="0">
+          <element name="UserDefined">
+            <family>
+              <string_value>CG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">1</integer_value>
+            </degree>
+          </element>
+          <value type="value" name="WholeMesh">
+            <python rank="0">
+              <string_value lines="20" type="code" language="python">def val(XX):
+   from math import sin,cos,sqrt
+   omega = 0.0;
+   t = 0.0;
+   x = XX[0];
+   y = XX[1];
+   u = sin(25*x*y + omega*t) - 2*y/(sqrt(x));
+   return u</string_value>
+            </python>
+          </value>
+        </rank>
+      </type>
+      <diagnostics/>
+    </coefficient>
+    <coefficient name="AnalyticalGradient">
+      <ufl_symbol>
+        <string_value lines="1">g</string_value>
+      </ufl_symbol>
+      <type name="Expression">
+        <rank name="Vector" rank="1">
+          <element name="UserDefined">
+            <family>
+              <string_value>CG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">1</integer_value>
+            </degree>
+          </element>
+          <value type="value" name="WholeMesh">
+            <python rank="1">
+              <string_value lines="20" type="code" language="python">def val(XX):
+   from math import sin,cos,sqrt
+   omega = 0.0;
+   t = 0.0;
+   nu = 0.7;
+   x = XX[0];
+   y = XX[1];
+   x4 = x*x*x*x;
+   y2 = y*y;
+   x1p5 = x*sqrt(x)
+   u = 25*y*cos(25*x*y + omega*t) + y/x1p5;
+   v = 25*x*cos(25*x*y + omega*t) - 2/sqrt(x);
+   return (u, v)</string_value>
+              <comment>u = sin(25*x*y + omega*t) - 2*y/(sqrt(x));</comment>
+            </python>
+          </value>
+        </rank>
+      </type>
+      <diagnostics/>
+    </coefficient>
+    <coefficient name="Source">
+      <ufl_symbol>
+        <string_value lines="1">s</string_value>
+      </ufl_symbol>
+      <type name="Expression">
+        <rank name="Scalar" rank="0">
+          <element name="UserDefined">
+            <family>
+              <string_value>CG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">1</integer_value>
+            </degree>
+          </element>
+          <value type="value" name="WholeMesh">
+            <python rank="0">
+              <string_value lines="20" type="code" language="python">def val(XX):
+   from math import sin,cos,sqrt
+   nu = 0.7;
+   omega = 0.0;
+   t = 0.0;
+   adv = 1.0;
+   beta = 0.0;
+   x = XX[0];
+   y = XX[1];
+   x2 = x*x;
+   y2 = y*y;
+   xp5 = sqrt(x);
+   x1p5 = xp5*x;
+   x2p5 = x1p5*x;
+   S = adv*((25*y*cos(25*x*y + omega*t) + y/x1p5)*sin(5*(y2 + x2)) + beta*(sin(25*x*y + omega*t) - 2*y/xp5)*(10*x*cos(5*(y2 + x2)) + 6*y*sin(3*(x2 - y2))) + (25*x*cos(25*x*y + omega*t) - 2/xp5)*cos(3*(x2 - y2))) - nu*(-625*y2*sin(25*x*y + omega*t) - 625*x2*sin(25*x*y + omega*t) - 3*y/(2*x2p5)) + omega*cos(25*x*y + omega*t);
+   return S</string_value>
+              <comment>T(x,y,t,nu,adv,beta,omega) = sin(25*x*y + omega*t) - 2*y/(sqrt(x))&#13;
+T_t = diff(T,t)&#13;
+T_x = diff(T,x)&#13;
+T_y = diff(T,y)&#13;
+T_xx = diff(T_x,x)
+T_yy = diff(T_y,y)
+
+u(x,y,t) = sin(5*(x^2+y^2))&#13;
+v(x,y,t) = cos(3*(x^2-y^2))&#13;
+u_x = diff(u,x)&#13;
+u_y = diff(u,y)&#13;
+v_x = diff(v,x)&#13;
+v_y = diff(v,y)
+
+S = T_t + adv*(u*T_x + v*T_y + beta*(T*(u_x + v_y))) - nu*(T_xx + T_yy)
+#S = adv*((25*y*cos(25*x*y + omega*t) + y/x^(3/2))*sin(5*(y^2 + x^2)) + beta*(sin(25*x*y + omega*t) - 2*y/sqrt(x))*(10*x*cos(5*(y^2 + x^2)) + 6*y*sin(3*(x^2 - y^2))) + (25*x*cos(25*x*y + omega*t) - 2/sqrt(x))*cos(3*(x^2 - y^2))) - nu*(-625*y^2*sin(25*x*y + omega*t) - 625*x^2*sin(25*x*y + omega*t) - 3*y/(2*x^(5/2))) + omega*cos(25*x*y + omega*t)</comment>
+            </python>
+          </value>
+        </rank>
+      </type>
+      <diagnostics/>
+    </coefficient>
+    <coefficient name="AbsoluteDifference">
+      <ufl_symbol>
+        <string_value lines="1">d</string_value>
+      </ufl_symbol>
+      <type name="Expression">
+        <rank name="Scalar" rank="0">
+          <element name="UserDefined">
+            <family>
+              <string_value>CG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">1</integer_value>
+            </degree>
+          </element>
+          <value type="value" name="WholeMesh">
+            <cpp rank="0">
+              <members>
+                <string_value lines="20" type="code" language="cpp">GenericFunction_ptr num_ptr, sol_ptr;</string_value>
+              </members>
+              <initialization>
+                <string_value lines="20" type="code" language="cpp">num_ptr = system()-&gt;fetch_field("NumericalSolution")-&gt;genericfunction_ptr(time());
+sol_ptr = system()-&gt;fetch_coeff("AnalyticalSolution")-&gt;genericfunction_ptr(time());</string_value>
+              </initialization>
+              <eval>
+                <string_value lines="20" type="code" language="cpp">dolfin::Array&lt;double&gt; num(1), sol(1);
+num_ptr-&gt;eval(num, x, cell);
+sol_ptr-&gt;eval(sol, x, cell);
+values[0] = std::abs(num[0] - sol[0]);</string_value>
+              </eval>
+            </cpp>
+          </value>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_statistics>
+          <functional name="Integral">
+            <string_value type="code" lines="20" language="python">int = d*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="L2NormSquared">
+            <string_value type="code" lines="20" language="python">int = d*d*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+        </include_in_statistics>
+      </diagnostics>
+    </coefficient>
+    <nonlinear_solver name="Solver">
+      <type name="SNES">
+        <form name="Residual" rank="0">
+          <string_value lines="20" type="code" language="python">r = (t_t*inner(v_i, grad(t_i)) + nu*inner(grad(t_t), grad(t_i)) - t_t*s)*dx - t_t*nu*g[0]*ds(8) - t_t*nu*g[1]*ds(9)</string_value>
+          <ufl_symbol>
+            <string_value lines="1">r</string_value>
+          </ufl_symbol>
+        </form>
+        <form name="Jacobian" rank="1">
+          <string_value lines="20" type="code" language="python">a = derivative(r, ut_i, ut_a)</string_value>
+          <ufl_symbol>
+            <string_value lines="1">a</string_value>
+          </ufl_symbol>
+        </form>
+        <quadrature_rule name="default"/>
+        <snes_type name="ls">
+          <ls_type name="cubic"/>
+        </snes_type>
+        <relative_error>
+          <real_value rank="0">1.e-12</real_value>
+        </relative_error>
+        <max_iterations>
+          <integer_value rank="0">10</integer_value>
+        </max_iterations>
+        <monitors/>
+        <linear_solver>
+          <iterative_method name="preonly"/>
+          <preconditioner name="lu">
+            <factorization_package name="umfpack"/>
+          </preconditioner>
+        </linear_solver>
+        <never_ignore_solver_failures/>
+      </type>
+    </nonlinear_solver>
+    <solve name="in_timeloop"/>
+  </system>
+</terraferma_options>

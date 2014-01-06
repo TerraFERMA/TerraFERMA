@@ -28,11 +28,14 @@ class ThreadSpudLock:
 
   def load_options(self, filename):
     self.lock.acquire()
-    libspud.load_options(filename)
+    try:
+      libspud.load_options(filename)
+    except:
+      self.lock.release()
 
   def clear_options(self):
     libspud.clear_options()
-    self.lock.release()
+    if self.lock.locked(): self.lock.release()
 
 threadlibspud = ThreadSpudLock()
 

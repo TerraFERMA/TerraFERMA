@@ -1,0 +1,135 @@
+<?xml version='1.0' encoding='utf-8'?>
+<harness_options>
+  <length>
+    <string_value>medium</string_value>
+  </length>
+  <owner>mspieg</owner>
+  <tags>not:branch:dolfin-master</tags>
+  <description>A magma waves test.</description>
+  <simulations>
+    <simulation name="Magma">
+      <input_file>
+        <string_value lines="1" type="filename">magmawaves.tfml</string_value>
+      </input_file>
+      <required_input>
+        <filenames name="pythonfiles">
+          <python>
+            <string_value type="code" lines="20" language="python">import glob
+pythonfiles = glob.glob("python/PySolwave/*.py")</string_value>
+          </python>
+        </filenames>
+      </required_input>
+      <variables>
+        <variable name="Porosity_L2error">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+from math import sqrt
+
+
+det = parser("magmawaves.det")
+stat = parser("magmawaves.stat")
+
+Porosity_L2error = stat["magma"]["Porosity"]["L2error"][-1]
+Porosity_L2error = sqrt(Porosity_L2error)
+</string_value>
+        </variable>
+        <variable name="timestep">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+
+
+det = parser("magmawaves.det")
+stat = parser("magmawaves.stat")
+
+timestep = stat["timestep"]["value"][-1]
+</string_value>
+        </variable>
+        <variable name="Porosity_center">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+
+
+det = parser("magmawaves.det")
+stat = parser("magmawaves.stat")
+
+Porosity_center = det["magma"]["Porosity"]["x0"][0,-1]
+</string_value>
+        </variable>
+        <variable name="Porosity_integral">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+
+
+det = parser("magmawaves.det")
+stat = parser("magmawaves.stat")
+
+Porosity_integral = stat["magma"]["Porosity"]["Integral"][-1]
+</string_value>
+        </variable>
+        <variable name="Pressure_integral">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+
+
+det = parser("magmawaves.det")
+stat = parser("magmawaves.stat")
+
+Pressure_integral = stat["magma"]["Pressure"]["IntegralPressure"][-1]
+</string_value>
+        </variable>
+        <variable name="Pressure_center">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+
+
+det = parser("magmawaves.det")
+stat = parser("magmawaves.stat")
+
+Pressure_center = det["magma"]["Pressure"]["x0"][0,-1]
+</string_value>
+        </variable>
+        <variable name="walltime">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+
+
+det = parser("magmawaves.det")
+stat = parser("magmawaves.stat")
+
+walltime = stat["ElapsedWallTime"]["value"][-1]
+</string_value>
+        </variable>
+      </variables>
+    </simulation>
+  </simulations>
+  <tests>
+    <test name="Porosity_L2error">
+      <string_value lines="20" type="code" language="python">test = sqrt(1.4065673868e-8)
+print "\tvalue=", Porosity_L2error, "test=", test, " "
+assert abs(Porosity_L2error - test) &lt; 1.e-5</string_value>
+    </test>
+    <test name="timestep">
+      <string_value lines="20" type="code" language="python">test = 1282
+print "\tvalue=", timestep, "test=", test, " "
+assert abs(timestep - test) &lt; 1</string_value>
+    </test>
+    <test name="Porosity_center">
+      <string_value lines="20" type="code" language="python">test = 2.3359664311e+00
+print "\tvalue=", Porosity_center, "test=", test, " "
+assert abs(Porosity_center - test) &lt; 0.001</string_value>
+    </test>
+    <test name="Porosity_integral">
+      <string_value lines="20" type="code" language="python">test = 1.0378229285e+00
+print "\tvalue=", Porosity_integral, "test=", test, " "
+assert abs(Porosity_integral - test) &lt; 0.00001</string_value>
+    </test>
+    <test name="Pressure_integral">
+      <string_value lines="20" type="code" language="python">test = 0.
+print "\tvalue=", Pressure_integral, "test=", test, " "
+assert abs(Pressure_integral - test) &lt; 1.e-10</string_value>
+    </test>
+    <test name="Pressure_center">
+      <string_value lines="20" type="code" language="python">test = 0
+print "\tvalue=", Pressure_center, "test=", test, " "
+assert abs(Pressure_center - test) &lt; 1.e-5</string_value>
+    </test>
+    <test name="walltime">
+      <string_value lines="20" type="code" language="python">test = 600.
+print "\tvalue=", walltime, "&lt; ", test, " "
+assert abs(walltime) &lt; test</string_value>
+    </test>
+  </tests>
+</harness_options>

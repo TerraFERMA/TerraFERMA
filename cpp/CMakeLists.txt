@@ -64,7 +64,7 @@ endif()
 
 set(CMAKE_MODULE_PATH $ENV{CMAKE_MODULE_PATH})
 
-find_package(BucketTools REQUIRED)
+find_package(BUCKETTOOLS REQUIRED)
 
 if (NOT BUCKETTOOLS_FOUND)
   message(FATAL_ERROR "Could not find BucketTools.")

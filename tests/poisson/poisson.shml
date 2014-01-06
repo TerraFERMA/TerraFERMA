@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='utf-8'?>
+<harness_options>
+  <length>
+    <string_value>short</string_value>
+  </length>
+  <owner>cwilson</owner>
+  <description>A very simple simulation of Poisson.  Testing nothing.</description>
+  <simulations>
+  <simulation name="Poisson">
+    <input_file>
+      <string_value lines="1" type="filename">poisson.tfml</string_value>
+    </input_file>
+  </simulation>
+  </simulations>
+</harness_options>

@@ -1,0 +1,62 @@
+<?xml version='1.0' encoding='utf-8'?>
+<harness_options>
+  <length>
+    <string_value>medium</string_value>
+  </length>
+  <owner>mspieg</owner>
+  <description>MADDs 1 test using gmsh.</description>
+  <simulations>
+    <simulation name="MADDs1">
+      <input_file>
+        <string_value lines="1" type="filename">madds1.tfml</string_value>
+      </input_file>
+      <dependencies>
+        <run name="Mesh">
+          <input_file>
+            <string_value type="filename" lines="1">ridgemesh.msh</string_value>
+          </input_file>
+          <required_output>
+            <filenames name="meshxmls">
+              <python>
+                <string_value type="code" lines="20" language="python">meshxmls = ["ridgemesh"+ext for ext in [".xml", "_facet_region.xml", "_physical_region.xml"]]</string_value>
+              </python>
+            </filenames>
+          </required_output>
+          <commands>
+            <command name="convert">dolfin-convert ridgemesh.msh ridgemesh.xml</command>
+          </commands>
+        </run>
+      </dependencies>
+      <variables>
+        <variable name="P_0_1">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+
+det = parser("madds1.det")
+
+P_0_1 = det["Stokes"]["Pressure"]["Point"][0,-1]
+</string_value>
+        </variable>
+        <variable name="P_1_1">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+
+det = parser("madds1.det")
+
+P_1_1 = det["Stokes"]["Pressure"]["corner"][0,-1]
+</string_value>
+        </variable>
+      </variables>
+    </simulation>
+  </simulations>
+  <tests>
+    <test name="P_0_1">
+      <string_value lines="20" type="code" language="python">test = -1.2274872965e+00
+print "\tvalue=", P_0_1, "test=", test, " "
+assert abs(P_0_1 - test) &lt; 0.001</string_value>
+    </test>
+    <test name="P_1_1">
+      <string_value lines="20" type="code" language="python">test = 2.0861195420e-02
+print "\tvalue=", P_1_1, "test=", test, " "
+assert abs(P_1_1 - test) &lt; 0.0001</string_value>
+    </test>
+  </tests>
+</harness_options>
