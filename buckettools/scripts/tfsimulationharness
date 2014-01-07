@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# PYTHON_ARGCOMPLETE_OK
 
 # Copyright (C) 2013 Columbia University in the City of New York and others.
 #
@@ -20,12 +21,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
-from buckettools.simulations import *
-from buckettools.threadlibspud import *
-import libspud
-import copy
-
 def filter_simulations(simulation, length=[], parallelism="any", owner=[], tags=[], exclude=[]):
+  import libspud
   libspud.load_options(simulation)
   llength = libspud.get_option("/length").split("\n")[0]
   lowner  = libspud.get_option("/owner").split("\n")[0]
@@ -57,9 +54,13 @@ if __name__ == "__main__":
   import glob
   import sys
   import functools
-
+  import string
 
   import argparse
+  try:
+    import argcomplete
+  except ImportError:
+    pass
   parser = argparse.ArgumentParser( \
                          description="""Run simulations and manipulate the output data.""")
   parser.add_argument('filename', action='store', metavar='filename', type=str, nargs='+',
@@ -100,6 +101,10 @@ if __name__ == "__main__":
   parser.add_argument('-f', '--force', action='store_const', dest='force', const=True, default=False, 
                       required=False,
                       help='force rebuild(s)')
+  try:
+    argcomplete.autocomplete(parser)
+  except NameError:
+    pass
   args = parser.parse_args()
 
   filenames = set()
@@ -109,7 +114,7 @@ if __name__ == "__main__":
       ffull = os.path.normpath(f)
     else:
       ffull = os.path.normpath(os.path.join(os.getcwd(), f))
-  
+
     if args.recurse is None:
 
       for filename in glob.glob(ffull):
@@ -144,59 +149,77 @@ if __name__ == "__main__":
   filenames = filter(partial_filter_simulations, filenames)
 
   curdir = os.getcwd()
+
   try:
-    batch = SimulationHarnessBatch(filenames, os.path.realpath(__file__), curdir, \
-                                os.environ["TF_CMAKE_PATH"], nthreads=args.nthreads)
-  except SimulationsErrorInitialization:
+    import buckettools.simulations as simulations
+  except ImportError:
+    print "Error while importing simulations.  PYTHONPATH set correctly?"
+    sys.exit(1)
+
+  try:
+    batch = simulations.SimulationHarnessBatch(filenames, os.path.realpath(__file__), curdir, \
+                                               os.environ["TF_CMAKE_PATH"], nthreads=args.nthreads)
+  except simulations.SimulationsErrorInitialization:
     print "Error while initializing the simulations."
     sys.exit(1)
 
   if args.clean:
-    batch.clean()
+    try:
+      batch.clean()
+    except:
+      print "Error while cleaning simulations, exiting with error."
+      sys.exit(1)
 
   if args.listinput:
     inputlist = batch.listinput()
     inputlist += filenames
     for requiredinput in inputlist:
       print os.path.relpath(requiredinput, curdir)
-  
+
   if args.justlist:
     for filename in filenames:
       print os.path.relpath(filename, curdir)
   elif args.generate or args.configure or args.build or args.run or args.test:
     try:
       batch.writeoptions()
-    except SimulationsErrorWriteOptions:
+    except simulations.SimulationsErrorWriteOptions:
       print "Error while writing options, exiting with error."
       sys.exit(1)
     if args.configure or args.build or args.run or args.test:
       try:
         batch.configure(force=args.force)
-      except SimulationsErrorConfigure:
+      except simulations.SimulationsErrorConfigure:
         print "Error while configuring simulations, exiting with error."
         sys.exit(1)
       if args.build or args.run or args.test:
         try: 
           batch.build(force=args.force)
-        except SimulationsErrorBuild:
+        except simulations.SimulationsErrorBuild:
           print "Error while building simulations, exiting with error."
           sys.exit(1)
         if args.run or args.test:
           try:
             batch.run(force=args.force)
-          except SimulationsErrorRun:
+          except (simulations.SimulationsErrorRun, simulations.SimulationsErrorWriteOptions, \
+                  simulations.SimulationsErrorConfigure, simulations.SimulationsErrorBuild):
             print "Error while running simulations, exiting with error."
             sys.exit(1)
           if args.test:
             try:
               batch.test(force=args.force)
-            except SimulationsErrorTest:
+            except simulations.SimulationsErrorVariable:
+              print "Error while assigning variables, exiting with error."
+              sys.exit(1)
+            except simulations.SimulationsErrorTest:
               print "Error while testing simulations, exiting with error."
               sys.exit(1)
   elif args.justtest:
     try:
       batch.test(force=args.force)
-    except SimulationsErrorTest:
+    except simulations.SimulationsErrorVariable:
+      print "Error while assigning variables, exiting with error."
+      sys.exit(1)
+    except simulations.SimulationsErrorTest:
       print "Error while testing simulations, exiting with error."
       sys.exit(1)
 

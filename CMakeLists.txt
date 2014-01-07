@@ -86,19 +86,33 @@ set(EXCLUDE_TAGS "not:branch:${GIT_BRANCH} not:petsc:${PETSC_VERSION} not:petsc:
 
 file(
     WRITE ${PROJECT_BINARY_DIR}/copy_test_input.cmake
-"execute_process (
-   COMMAND tfsimulationharness --list-input -r -- *.shml
+"set( LIST_COMMAND tfsimulationharness --list-input -r -- *.shml )
+
+execute_process(
+     COMMAND echo "Running:" \${LIST_COMMAND}
+     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
+     )
+
+execute_process (
+   COMMAND \${LIST_COMMAND}
    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/tests
+   RESULT_VARIABLE RETCODE
    OUTPUT_VARIABLE TEST_INPUT_STRING
    ERROR_VARIABLE TEST_INPUT_ERR
    OUTPUT_STRIP_TRAILING_WHITESPACE
    ERROR_STRIP_TRAILING_WHITESPACE
    )
+
+if (NOT RETCODE EQUAL 0)
+  message(FATAL_ERROR \"Command returned \${RETCODE}\")
+endif()
+
 string(REPLACE \"\\n\" \";\" TEST_INPUT_LIST \${TEST_INPUT_STRING})
 
 MACRO(COPY_IF_DIFFERENT source dest)
   execute_process(
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different \${source} \${dest})
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different \${source} \${dest}
+    )
 ENDMACRO()
 
 foreach(INPUTFILE \${TEST_INPUT_LIST})
@@ -127,7 +141,13 @@ execute_process(
 
 execute_process(
     COMMAND \${CLEAN_COMMAND} 
-    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests )
+    RESULT_VARIABLE RETCODE
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
+    )
+
+if (NOT RETCODE EQUAL 0)
+  message(FATAL_ERROR \"Command returned \${RETCODE}\")
+endif()
 "
     )
 
@@ -152,7 +172,13 @@ execute_process(
 
 execute_process(
     COMMAND \${BUILD_COMMAND}
-    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests )
+    RESULT_VARIABLE RETCODE
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
+    )
+
+if (NOT RETCODE EQUAL 0)
+  message(FATAL_ERROR \"Command returned \${RETCODE}\")
+endif()
 "
     )
 
@@ -178,7 +204,13 @@ execute_process(
 
 execute_process(
     COMMAND \${TEST_COMMAND}
-    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests )
+    RESULT_VARIABLE RETCODE
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
+    )
+
+if (NOT RETCODE EQUAL 0)
+  message(FATAL_ERROR \"Command returned \${RETCODE}\")
+endif()
 "
     )
 
@@ -204,13 +236,51 @@ execute_process(
 
 execute_process(
     COMMAND \${TEST_COMMAND}
-    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests )
+    RESULT_VARIABLE RETCODE
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests 
+    )
+
+if (NOT RETCODE EQUAL 0)
+  message(FATAL_ERROR \"Command returned \${RETCODE}\")
+endif()
 "
     )
 
 add_custom_target(
   mediumtest
   COMMAND ${CMAKE_COMMAND} -P mediumtest.cmake
+  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+  DEPENDS copy_test_input
+  )
+
+file(
+    WRITE ${PROJECT_BINARY_DIR}/longtest.cmake
+"if (NOT DEFINED ENV{THREADS})
+  set( ENV{THREADS} 1 )
+endif()
+
+set( TEST_COMMAND tfsimulationharness --test -l long -n \$ENV{THREADS} -e ${EXCLUDE_TAGS} -r -- *.shml )
+
+execute_process(
+     COMMAND echo "Running:" \${TEST_COMMAND}
+     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
+     )
+
+execute_process(
+    COMMAND \${TEST_COMMAND}
+    RESULT_VARIABLE RETCODE
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests 
+    )
+
+if (NOT RETCODE EQUAL 0)
+  message(FATAL_ERROR \"Command returned \${RETCODE}\")
+endif()
+"
+    )
+
+add_custom_target(
+  longtest
+  COMMAND ${CMAKE_COMMAND} -P longtest.cmake
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   DEPENDS copy_test_input
   )

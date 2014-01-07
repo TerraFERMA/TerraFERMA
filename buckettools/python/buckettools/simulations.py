@@ -24,6 +24,7 @@ import sys
 import hashlib
 import shutil
 import threading
+import Queue
 import copy
 import string
 import glob
@@ -52,6 +53,10 @@ class SimulationsErrorBuild(Exception):
 
 class SimulationsErrorRun(Exception):
   def __init__(self, msg = "Error while running simulation."):
+    self.message = msg
+
+class SimulationsErrorVariable(Exception):
+  def __init__(self, msg = "Error while evaluating variables."):
     self.message = msg
 
 class SimulationsErrorTest(Exception):
@@ -281,7 +286,6 @@ class Run:
     self.lock=threading.Lock()
 
     self.variables = [Variable(name, code) for name, code in self.optionsdict["variables"].iteritems()]
-    self.varsdict = None
 
     self.dependencies = []
     self.alreadyrun = False
@@ -331,6 +335,8 @@ class Run:
   def run(self, force=False):
     
     self.lock.acquire()
+
+    error = False
     
     for dependency in self.dependencies: dependency.run(force=force)
 
@@ -394,12 +400,14 @@ class Run:
             retcode = p.wait()
             if retcode!=0:
               self.log("ERROR: Command %s returned %d in directory: %s"%(" ".join(command), retcode, dirname))
-              raise SimulationsErrorRun
+              error = True
+              break
           
           self.log("  finished in directory %s:"%(os.path.relpath(dirname, self.currentdirectory)))
 
       self.alreadyrun = True
     self.lock.release()
+    if error: raise SimulationsErrorRun
 
   def clean(self):
     try:
@@ -407,14 +415,12 @@ class Run:
     except OSError:
       pass
 
-  def assignvariables(self, force=False):
-    '''Assign the variables for this simulation and its dependencies.'''
+  def evaluatevariables(self):
+    '''Evaluate the variables for this simulation and its dependencies.'''
 
-    # don't do anything if variables have already been assigned
-    if self.varsdict is not None and not force: return
-
-    # set up the variables dictionary (previously initialized to None)
-    self.varsdict = {}
+    error = False
+    # set up the variables dictionary
+    varsdict = {}
     # loop over all the runs
     for r in xrange(self.nruns):
       # change to the run directory to run the python variable assignment
@@ -426,59 +432,29 @@ class Run:
 
       # loop over the variables
       for var in self.variables:
-          # set up a temporary variable dictionary for this variable calculation
-          tmpdict  = {}
-          # try running the variable assignment
-          try:
-            var.run(tmpdict)
-          except:
-            self.log("failure while calculating variable %s." % (str(var.name)))
-            self.varsdict = None
-            break
+        if self.nruns > 1: varsdict = []
+        # set up a temporary variable dictionary for this variable calculation
+        tmpdict  = {}
+        # try running the variable assignment
+        try:
+          var.run(tmpdict)
+        except:
+          self.log("ERROR: failure while calculating variable %s." % (str(var.name)))
+          error = True
+          continue
 
-          # if we only have a single run then just assign this variable to its name in the global variable dictionary
-          if self.nruns==1:
-            self.varsdict[var.name] = tmpdict[var.name]
-          # otherwise if this is the first run set up a list
-          elif r == 1:
-            self.varsdict[var.name] = [tmpdict[var.name]]
-          # append additional runs to the list
-          else:
-            self.varsdict[var.name].append(tmpdict[var.name])
-      # break because something has gone wrong
-      if self.varsdict is None: break
+        if self.nruns>1:
+          varsdict[var.name].append(tmpdict[var.name])
+        else:
+          varsdict[var.name] = tmpdict[var.name]
+
+        self.log("  Assigned %s = %s" % (str(var.name), str(varsdict[var.name])))
     # make sure we change back to the current directory
     os.chdir(self.currentdirectory)
 
-    # if we successfully assigned variables then loop into dependencies
-    if self.varsdict is not None:
-      for dependency in self.dependencies: 
-        # recursively call this function but in the dependency
-        dependency.assignvariables(force=force)
-        # if the dependency returned None then something went wrong and break
-        if dependency.varsdict is None:
-          self.varsdict = None
-          break
+    if error: raise SimulationsErrorVariable
 
-        # otherwise concatenate the dependency variable dictionary with the parent's
-        for name, value in dependency.varsdict.iteritems():
-          # throw an error and break if it's already present
-          if name in self.varsdict:
-            self.log("ERROR: Variable %s defined by simulation %s has been previously defined."%(name, dependency.name))
-            self.varsdict = None
-            break
-          else:
-            self.varsdict[name] = value
-
-        # break from loop if it's already gone wrong
-        if self.varsdict is None: break
-
-    # we've made it this far, let's report what was succesfully assigned
-    if self.varsdict is not None:
-      for var in self.variables:
-        self.log("  Assigned %s = %s" % (str(var.name), str(self.varsdict[var.name])))
-
-    # don't return anything as it's assigned to the class variable varsdict
+    return varsdict
 
   def log(self, string):
     if self.logprefix is not None: string = self.logprefix+": "+string
@@ -677,7 +653,7 @@ class Simulation(Run):
 
   def checkpointrun(self):
 
-    if len(self.optionsdict["checkpoint_values"])==0: return None
+    if len(self.optionsdict["checkpoint_values"])==0: return
     
     for r in xrange(self.nruns):
       dirname = os.path.join(self.rundirectory, "run_"+`r`.zfill(len(`self.nruns`)))
@@ -895,44 +871,86 @@ class SimulationBatch:
     # return the deferment level of the dependencies
     return dlevel
 
-  def threadconfigure(self, force=False):
-    for simulation in self.threadbuilds: simulation.configure(force=force)
+  def threadconfigure(self, queue, force=False):
+    error = None
+    for simulation in self.threadbuilds: 
+      try:
+        simulation.configure(force=force)
+      except:
+        ex_type, ex_value, tb = sys.exc_info()
+        error = ex_type, ex_value, ''.join(traceback.format_tb(tb))
+    queue.put(error)
 
   def configure(self, level=-1, dlevel=0, types=None, force=False):
     threadlist=[]
     self.threadbuilds = ThreadIterator(self.simulationselector(self.builds, level=level, dlevel=dlevel, types=types))
     for i in xrange(self.nthreads):
-      threadlist.append(threading.Thread(target=self.threadconfigure, kwargs={'force':force}))
-      threadlist[-1].start()
+      queue = Queue.Queue()
+      threadlist.append([threading.Thread(target=self.threadconfigure, args=[queue], kwargs={'force':force}), queue])
+      threadlist[-1][0].start()
     for t in threadlist:
       # wait until all threads finish
-      t.join()
+      t[0].join()
+    for t in threadlist:
+      error = t[1].get()
+      if error is not None:
+        ex_type, ex_value, tb_str = error
+        message = '%s (in thread)\n%s' % (ex_value.message, tb_str)
+        raise ex_type(message) 
 
-  def threadbuild(self, force=False):
-    for simulation in self.threadbuilds: simulation.build(force=force)
+  def threadbuild(self, queue, force=False):
+    error = None
+    for simulation in self.threadbuilds: 
+      try:
+        simulation.build(force=force)
+      except:
+        ex_type, ex_value, tb = sys.exc_info()
+        error = ex_type, ex_value, ''.join(traceback.format_tb(tb))
+    queue.put(error)
 
   def build(self, level=-1, dlevel=0, types=None, force=False):
     threadlist=[]
     self.threadbuilds = ThreadIterator(self.simulationselector(self.builds, level=level, dlevel=dlevel, types=types))
     for i in xrange(self.nthreads):
-      threadlist.append(threading.Thread(target=self.threadbuild, kwargs={'force':force})) 
-      threadlist[-1].start()
+      queue = Queue.Queue()
+      threadlist.append([threading.Thread(target=self.threadbuild, args=[queue], kwargs={'force':force}), queue]) 
+      threadlist[-1][0].start()
     for t in threadlist:
       # wait until all threads finish
-      t.join()
+      t[0].join()
+    for t in threadlist:
+      error = t[1].get()
+      if error is not None:
+        ex_type, ex_value, tb_str = error
+        message = '%s (in thread)\n%s' % (ex_value.message, tb_str)
+        raise ex_type(message) 
 
-  def threadrun(self, force=False):
-    for simulation in self.threadruns: simulation.run(force=force)
+  def threadrun(self, queue, force=False):
+    error = None
+    for simulation in self.threadruns: 
+      try:
+        simulation.run(force=force)
+      except:
+        ex_type, ex_value, tb = sys.exc_info()
+        error = ex_type, ex_value, ''.join(traceback.format_tb(tb))
+    queue.put(error)
 
   def run(self, level=-1, dlevel=0, types=None, force=False):
     threadlist=[]
     self.threadruns = ThreadIterator(self.simulationselector(self.runs, level=level, dlevel=dlevel, types=types))
     for i in xrange(self.nthreads):
-      threadlist.append(threading.Thread(target=self.threadrun, kwargs={'force':force}))
-      threadlist[-1].start()
+      queue = Queue.Queue()
+      threadlist.append([threading.Thread(target=self.threadrun, args=[queue], kwargs={'force':force}), queue])
+      threadlist[-1][0].start()
     for t in threadlist:
       # wait until all threads finish
-      t.join() 
+      t[0].join()
+    for t in threadlist:
+      error = t[1].get()
+      if error is not None:
+        ex_type, ex_value, tb_str = error
+        message = '%s (in thread)\n%s' % (ex_value.message, tb_str)
+        raise ex_type(message) 
 
     dlevel += 1
     if len(self.simulationselector(self.runs, level=level, dlevel=dlevel, types=types)) > 0:
@@ -941,31 +959,32 @@ class SimulationBatch:
       self.build(level=level, dlevel=dlevel, types=types, force=force)
       self.run(level=level, dlevel=dlevel, types=types, force=force)
 
-  def threadcheckpointrun(self):
-    for simulation in self.threadruns: simulation.checkpointrun()
+  def threadcheckpointrun(self, queue):
+    error = None
+    for simulation in self.threadruns: 
+      try:
+        simulation.checkpointrun()
+      except:
+        ex_type, ex_value, tb = sys.exc_info()
+        error = ex_type, ex_value, ''.join(traceback.format_tb(tb))
+    queue.put(error)
 
   def checkpointrun(self, level=-1, types=None):
     threadlist=[]
     self.threadruns = ThreadIterator(self.simulationselector(self.runs, level=level, types=types))
     for i in xrange(self.nthreads):
-      threadlist.append(threading.Thread(target=self.threadcheckpointrun))
-      threadlist[-1].start()
+      queue = Queue.Queue()
+      threadlist.append([threading.Thread(target=self.threadcheckpointrun), queue])
+      threadlist[-1][0].start()
     for t in threadlist:
       '''Wait until all threads finish'''
-      t.join() 
-
-  def threadpostprocess(self, force=False):
-    for simulation in self.threadruns: simulation.postprocess(force=force)
-
-  def postprocess(self, level=-1, types=None, force=False):
-    threadlist=[]
-    self.threadruns = ThreadIterator(self.simulationselector(self.runs, level=level, types=types))
-    for i in xrange(self.nthreads):
-      threadlist.append(threading.Thread(target=self.threadpostprocess, kwargs={'force':force}))
-      threadlist[-1].start()
+      t[0].join() 
     for t in threadlist:
-      '''Wait until all threads finish'''
-      t.join() 
+      error = t[1].get()
+      if error is not None:
+        ex_type, ex_value, tb_str = error
+        message = '%s (in thread)\n%s' % (ex_value.message, tb_str)
+        raise ex_type(message) 
 
   def listinput(self, level=-1, dlevel=0, types=None):
     runs = self.simulationselector(self.runs, level=level, dlevel=dlevel, types=types)[::-1]
@@ -977,49 +996,54 @@ class SimulationBatch:
     runs = self.simulationselector(self.runs, level=level, dlevel=dlevel, types=types)[::-1]
     for simulation in runs: simulation.writeoptions()  # not thread safe so don't thread it!
 
-  def threadclean(self):
-    for simulation in self.threadruns: simulation.clean()
+  def threadclean(self, queue):
+    error = None
+    for simulation in self.threadruns: 
+      try:
+        simulation.clean()
+      except:
+        ex_type, ex_value, tb = sys.exc_info()
+        error = ex_type, ex_value, ''.join(traceback.format_tb(tb))
+    queue.put(error)
 
   def clean(self, level=-1, types=None):
     threadlist=[]
     self.threadruns = ThreadIterator(self.simulationselector(self.runs, level=level, types=types))
     for i in xrange(self.nthreads):
-      threadlist.append(threading.Thread(target=self.threadclean))
+      queue = Queue.Queue()
+      threadlist.append([threading.Thread(target=self.threadclean, args=[queue]), queue])
       threadlist[-1].start()
     for t in threadlist:
-      '''Wait until all threads finish'''
-      t.join() 
+      # wait until all threads finish
+      t[0].join() 
+    for t in threadlist:
+      error = t[1].get()
+      if error is not None:
+        ex_type, ex_value, tb_str = error
+        message = '%s (in thread)\n%s' % (ex_value.message, tb_str)
+        raise ex_type(message) 
 
-  def runtests(self, force=False):
-    '''Assign variables and run tests for all simulations.'''
-
-    # get all top level simulations (dependency variable assignment is dealt with recursively)
-    runs = [value['simulation'] for value in self.runs.values() if value['level'] == 0]
-
-    # set up a local variables dictionary
-    varsdict = {}
-    pathdict = {} # used to check if the variable has been repeated
+  def evaluatevariables(self, level=-1, dlevel=None, types=None):
     self.log("Assigning variables:")
-    # loop over the simulations
-    for simulation in runs:
-      # assign the variables within a simulation (and its dependencies)
-      simulation.assignvariables(force=force)
-      
-      # if something went wrong with the variable assignment then break
-      if simulation.varsdict is None:
-        varsdict = None
-        break
+    runs = self.simulationselector(self.runs, level=level, dlevel=dlevel, types=types)[::-1]
+    varsdict = {}
+    pathdict = {}
+    varerror = False
+    for simulation in runs: 
+      try:
+        simvarsdict = simulation.evaluatevariables()  # not thread safe so don't thread it!
+      except SimulationsErrorVariable:
+        varerror = True
+        continue
 
-      # otherwise, loop over the simulation variables dictionary and concatenate it with the local batch dictionary
-      for name, value in simulation.varsdict.iteritems():
+      for name, value in simvarsdict.iteritems():
         # if we're not doing a parameter sweep then the values dictionary should be empty and we only accept
         # unique definitions of variable names
         if len(simulation.optionsdict["values"]) == 0:
           if name in varsdict:
             self.log("ERROR: Variable %s defined by simulation %s has been previously defined."%(name, simulation.name))
-            varsdict = None
-            break
-
+            varerror = True
+            continue
           varsdict[name] = value
         # otherwise we are performing a parameter sweep and by definition there will be multiple values returned
         else:
@@ -1035,8 +1059,8 @@ class SimulationBatch:
             # throw an error if it has been previously defined by a different simulation (from a different parameter sweep)
             if prevdef:
               self.log("ERROR: Variable %s defined by simulation %s has been previously defined."%(name, simulation.name))
-              varsdict = None
-              break
+              varerror = True
+              continue
 
           # otherwise if the name isn't in the varsdict then set up a nestedlist
           # and record the path in the pathdict so we can test for multiply defined variables later
@@ -1045,34 +1069,36 @@ class SimulationBatch:
             pathdict[name] = simulation.path
           # set the values in the parameter sweep using the simulation options dictionary to index the nested list
           varsdict[name][simulation.optionsdict["values"]] = value
-      # something has gone wrong so break from the loop
-      if varsdict is None: break
-      
-    # something has gone wrong assigning the variables so set up a failed status report
-    if varsdict is None:
-      teststatus = ['F' for t in xrange(len(self.tests))]
-    # otherwise run the tests
-    else:
-      self.log("Running tests:")
-      teststatus = []
-      # change directory to the base directory of this group of simulations
-      os.chdir(self.basedirectory)
-      # loop over the tests
-      for test in self.tests:
-        self.log("Running %s:" % test.name)
-        # run the test
-        status = test.run(varsdict)
-        if status == True:
-          self.log("success.")
-          teststatus.append('P')
-        elif status == False:
-          self.log("failure.")
-          teststatus.append('F')
-        else:
-          self.log("failure (info == %s)." % status)
-          teststatus.append('F')
-      # change the directory back to the current directory
-      os.chdir(self.currentdirectory)
+
+    if varerror: raise SimulationsErrorVariable
+
+    return varsdict
+
+  def runtests(self, force=False):
+    '''Assign variables and run tests for all simulations.'''
+    # set up a local variables dictionary
+    varsdict = self.evaluatevariables()
+
+    self.log("Running tests:")
+    teststatus = []
+    # change directory to the base directory of this group of simulations
+    os.chdir(self.basedirectory)
+    # loop over the tests
+    for test in self.tests:
+      self.log("Running %s:" % test.name)
+      # run the test
+      status = test.run(varsdict)
+      if status == True:
+        self.log("success.")
+        teststatus.append('P')
+      elif status == False:
+        self.log("failure.")
+        teststatus.append('F')
+      else:
+        self.log("failure (info == %s)." % status)
+        teststatus.append('F')
+    # change the directory back to the current directory
+    os.chdir(self.currentdirectory)
 
     # print the test status report
     self.log(''.join(teststatus))
@@ -1229,13 +1255,18 @@ class SimulationHarnessBatch(SimulationBatch):
 
     teststatus = ''
     failinggroups = []
+    varerror = False
     # loop over the simulation groups
     for group in self.simulationtestgroups:
       # run the tests on each group
-      groupstatus = group.runtests(force=force)
+      try:
+        groupstatus = group.runtests(force=force)
+      except SimulationsErrorVariable:
+        varerror = True
+        continue
       # append any failing groups to the summary list
       if groupstatus.count('F') > 0:
-        failinggroups.append([group.filename, groupstatus])
+        failinggroups.append([group.logprefix, groupstatus])
       # append the status to the collated list
       teststatus = teststatus + groupstatus
 
@@ -1256,9 +1287,8 @@ class SimulationHarnessBatch(SimulationBatch):
       self.log("Failures: %d" % failcount)
     
     # exit with an error if any failed
-    if failcount > 0:
-      self.log("ERROR: at least one failure encountered while testing")
-      raise SimulationsErrorTest
+    if varerror: raise SimulationsErrorVariable
+    if failcount > 0: raise SimulationsErrorTest
 
   def getrequiredfiles(self, optionpath, dirname=None):
      '''Get a list of the required files listed under the optionpath.  Run python scripts in dirname if supplied.'''
