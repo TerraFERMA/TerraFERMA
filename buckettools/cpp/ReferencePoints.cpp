@@ -251,10 +251,11 @@ void ReferencePoints::init_(const Array_double_ptr coord)
   else
   {
     const dolfin::Cell cell(mesh, cellid);
-    dolfin::UFCCell ufc_cell(cell);
 
     boost::multi_array<double, 2> coordinates(boost::extents[dofmap.cell_dimension(cellid)][gdim]);
-    dofmap.tabulate_coordinates(coordinates, ufc_cell);
+    std::vector<double> vertex_coordinates;
+    cell.get_vertex_coordinates(vertex_coordinates);
+    dofmap.tabulate_coordinates(coordinates, vertex_coordinates, cell);
 
     const std::vector<dolfin::la_index>& cell_dofs = dofmap.cell_dofs(cellid);
 

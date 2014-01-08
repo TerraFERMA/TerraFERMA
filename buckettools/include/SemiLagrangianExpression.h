@@ -127,7 +127,7 @@ namespace buckettools
     double *xstar_;
 
     dolfin::CellIterator *dolfincellit_;
-    dolfin::UFCCell *ufccellstar_;
+    ufc::cell *ufccellstar_;
 
     dolfin::Array<double> *v_, *oldv_, *vstar_;
 

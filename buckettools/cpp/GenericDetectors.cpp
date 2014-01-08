@@ -110,7 +110,8 @@ void GenericDetectors::eval(std::vector< Array_double_ptr > &values,
     else
     {
       const dolfin::Cell cell(*mesh, id);
-      const dolfin::UFCCell ufc_cell(cell);
+      ufc::cell ufc_cell;
+      cell.get_cell_data(ufc_cell);
       function.eval(*value, *positions_[i], ufc_cell);                 // use the dolfin eval to evaluate the function
       values.push_back(value);                                         // record the value
     }

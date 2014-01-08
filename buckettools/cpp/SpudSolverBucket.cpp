@@ -2012,6 +2012,7 @@ boost::unordered_map<uint, double> SpudSolverBucket::cell_value_map_(const boost
 
   const uint gdim = (*mesh).geometry().dim();                        // set up data for expression evaluation
   boost::multi_array<double, 2> coordinates(boost::extents[(*dofmap).max_cell_dimension()][gdim]);
+  std::vector<double> vertex_coordinates;
   dolfin::Array<double> x(gdim);
   uint value_size = 1;
   if (value_exp)
@@ -2034,8 +2035,6 @@ boost::unordered_map<uint, double> SpudSolverBucket::cell_value_map_(const boost
     cellidmeshfunction = (*system_).celldomains();
   }
 
-  dolfin::UFCCell ufc_cell(*mesh);                                   // may need this if value_exp has been passed
-
   for (dolfin::CellIterator cell(*mesh); !cell.end(); ++cell)        // loop over the cells in the mesh
   {
     if (region_ids)
@@ -2054,8 +2053,8 @@ boost::unordered_map<uint, double> SpudSolverBucket::cell_value_map_(const boost
 
     if(value_exp)
     {
-      ufc_cell.update(*cell);
-      (*dofmap).tabulate_coordinates(coordinates, ufc_cell);
+      (*cell).get_vertex_coordinates(vertex_coordinates);
+      (*dofmap).tabulate_coordinates(coordinates, vertex_coordinates, *cell);
     }
 
     for (uint i = 0; i < dof_vec.size(); i++)                        // loop over the cell dof
@@ -2099,6 +2098,7 @@ boost::unordered_map<uint, double> SpudSolverBucket::facet_value_map_(const boos
 
   const uint gdim = (*mesh).geometry().dim();
   boost::multi_array<double, 2> coordinates(boost::extents[(*dofmap).max_cell_dimension()][gdim]);
+  std::vector<double> vertex_coordinates;
   dolfin::Array<double> x(gdim);
   uint value_size = 1;
   if (value_exp)
@@ -2116,8 +2116,6 @@ boost::unordered_map<uint, double> SpudSolverBucket::facet_value_map_(const boos
   dolfin::Array<double> values(value_size);
 
   MeshFunction_size_t_ptr facetidmeshfunction = (*system_).facetdomains();
-
-  dolfin::UFCCell ufc_cell(*mesh);                                   // may need this if value_exp has been passed
 
   for (dolfin::FacetIterator facet(*mesh); !facet.end(); ++facet)    // loop over the facets in the mesh
   {
@@ -2143,8 +2141,8 @@ boost::unordered_map<uint, double> SpudSolverBucket::facet_value_map_(const boos
 
         if (value_exp)
         {
-          ufc_cell.update(cell, facet_number);                       // should we be passing facet_number here?
-          (*dofmap).tabulate_coordinates(coordinates, ufc_cell);
+          cell.get_vertex_coordinates(vertex_coordinates);
+          (*dofmap).tabulate_coordinates(coordinates, vertex_coordinates, cell);
         }
 
         for (uint i = 0; i < facet_dof_vec.size(); i++)              // loop over facet dof

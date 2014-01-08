@@ -194,7 +194,7 @@ void SemiLagrangianExpression::init()
       assert((*vel_).value_dimension(0)==dim_);
     }
 
-    ufccellstar_  = new dolfin::UFCCell(*mesh_);
+    ufccellstar_  = new ufc::cell;
     dolfincellit_ = new dolfin::CellIterator(*mesh_);
     xstar_        = new double[dim_];
     v_            = new dolfin::Array<double>(dim_);
@@ -345,7 +345,7 @@ const bool SemiLagrangianExpression::checkpoint_(const int &index,
     return true;
   }
 
-  (*ufccellstar_).update((*dolfincellit_)[cell_index]);
+  (*dolfincellit_)[cell_index].get_cell_data(*ufccellstar_);
   return false;
 
 }
