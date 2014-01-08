@@ -1012,7 +1012,7 @@ class SimulationBatch:
     for i in xrange(self.nthreads):
       queue = Queue.Queue()
       threadlist.append([threading.Thread(target=self.threadclean, args=[queue]), queue])
-      threadlist[-1].start()
+      threadlist[-1][0].start()
     for t in threadlist:
       # wait until all threads finish
       t[0].join() 
