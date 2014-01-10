@@ -1,3 +1,23 @@
+// Copyright (C) 2013 Columbia University in the City of New York and others.
+//
+// Please see the AUTHORS file in the main source directory for a full list
+// of contributors.
+//
+// This file is part of TerraFERMA.
+//
+// TerraFERMA is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// TerraFERMA is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
+
 #include "SemiLagrangianExpression.h"
 #include "BoostTypes.h"
 #include "Bucket.h"
@@ -174,7 +194,7 @@ void SemiLagrangianExpression::init()
       assert((*vel_).value_dimension(0)==dim_);
     }
 
-    ufccellstar_  = new dolfin::UFCCell(*mesh_);
+    ufccellstar_  = new ufc::cell;
     dolfincellit_ = new dolfin::CellIterator(*mesh_);
     xstar_        = new double[dim_];
     v_            = new dolfin::Array<double>(dim_);
@@ -272,6 +292,7 @@ const bool SemiLagrangianExpression::checkpoint_(const int &index,
                                                  point_map &points, 
                                                  const dolfin::Point &lp) const
 {
+  std::vector<unsigned int> cell_indices;
   int cell_index;
   const dolfin::Point p(dim_, xstar_);
 
@@ -284,20 +305,36 @@ const bool SemiLagrangianExpression::checkpoint_(const int &index,
     {
       update = true;
     }
-    else if (!(*dolfincellit_)[cell_index].intersects(p))
+    else if (!(*dolfincellit_)[cell_index].collides(p))
     {
       update = true;
     }
 
     if (update)
     {
-      cell_index = (*mesh_).intersected_cell(p);
+      cell_indices = (*(*mesh_).bounding_box_tree()).compute_collisions(p);
+      if (cell_indices.size()==0)
+      {
+        cell_index = -1;
+      }
+      else
+      {
+        cell_index = cell_indices[0];
+      }
       (*p_it).second[index] = cell_index;
     }
   }
   else
   {
-    cell_index = (*mesh_).intersected_cell(p);
+    cell_indices = (*(*mesh_).bounding_box_tree()).compute_collisions(p);
+    if (cell_indices.size()==0)
+    {
+      cell_index = -1;
+    }
+    else
+    {
+      cell_index = cell_indices[0];
+    }
     std::vector<int> cells(2, -1);
     cells[index] = cell_index;
     points[lp] = cells;
@@ -308,7 +345,7 @@ const bool SemiLagrangianExpression::checkpoint_(const int &index,
     return true;
   }
 
-  (*ufccellstar_).update((*dolfincellit_)[cell_index]);
+  (*dolfincellit_)[cell_index].get_cell_data(*ufccellstar_);
   return false;
 
 }

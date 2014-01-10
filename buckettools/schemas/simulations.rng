@@ -1,0 +1,490 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+  <!--
+    Copyright (C) 2013 Columbia University in the City of New York and others.
+    
+    Please see the AUTHORS file in the main source directory for a full list
+    of contributors.
+    
+    This file is part of TerraFERMA.
+    
+    TerraFERMA is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Lesser General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+    
+    TerraFERMA is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+    GNU Lesser General Public License for more details.
+    
+    You should have received a copy of the GNU Lesser General Public License
+    along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
+  -->
+  <!--
+    ALL dependencies need to be specified here
+    always included when using with spud package:
+  -->
+  <include href="spud_base.rng"/>
+  <start>
+    <element name="harness_options">
+      <a:documentation>The root node of the options dictionary for the TerraFERMA simulation harness.
+
+This allows TerraFERMA simulations and their dependencies to be run in an 
+automated way through tfsimulationharness.  Parameter
+sweeps may be performed for benchmarking and testing purposes.
+
+Options which are shaded blue are incomplete and require input.
+Greyed out options are optional.
+Black options are active.</a:documentation>
+      <element name="length">
+        <a:documentation>The length category of this simulations suite.
+
+This option can be used by tfsimulationharness to filter the available 
+simulation harness files and decide which simulations to run.</a:documentation>
+        <!-- a hard coded string_value -->
+        <element name="string_value">
+          <choice>
+            <value>special</value>
+            <value>short</value>
+            <value>medium</value>
+            <value>long</value>
+          </choice>
+        </element>
+        <ref name="comment"/>
+      </element>
+      <element name="owner">
+        <a:documentation>The owner id of the simulation creator.
+
+Useful for identifying the expert on this suite.  
+tfsimulationharness can also filter based on the owner.</a:documentation>
+        <data type="string" datatypeLibrary=""/>
+        <ref name="comment"/>
+      </element>
+      <optional>
+        <element name="tags">
+          <a:documentation>Additional, arbitrary tags to include or exclude this 
+simulations suite from tfsimulationharness using the -t (include
+tags) and -e (exclude tags) flags.</a:documentation>
+          <data type="string" datatypeLibrary=""/>
+          <ref name="comment"/>
+        </element>
+      </optional>
+      <element name="description">
+        <a:documentation>A description of what this simulation suite is intended to run.</a:documentation>
+        <data type="string" datatypeLibrary=""/>
+        <ref name="comment"/>
+      </element>
+      <optional>
+        <element name="simulations">
+          <a:documentation>A list of the simulations to run.  Each simulation name should be unique.</a:documentation>
+          <oneOrMore>
+            <ref name="simulation"/>
+          </oneOrMore>
+        </element>
+      </optional>
+      <optional>
+        <element name="tests">
+          <a:documentation>A list of tests to run.  Each test name should be unique.</a:documentation>
+          <oneOrMore>
+            <element name="test">
+              <a:documentation>Define a test in python.
+
+Each test should have a unique name.
+
+Tests have access to all variables defined above.
+
+The test should end with an assert statement which will determine if the test passes or fails.</a:documentation>
+              <attribute name="name">
+                <data type="string"/>
+              </attribute>
+              <ref name="python_code"/>
+            </element>
+          </oneOrMore>
+        </element>
+      </optional>
+      <ref name="comment"/>
+    </element>
+  </start>
+  <define name="simulation_input_file">
+    <element name="input_file">
+      <a:documentation>The input_file for this simulation.
+
+Only a single file name should be entered here, complete with extension.
+This should be a tfml file and is assumed to be libspud compatible.
+
+The input_file does not have to exist but if it doesn't it must be listed
+in the required_output of one of the dependencies of this simulation.</a:documentation>
+      <ref name="filename"/>
+    </element>
+  </define>
+  <define name="run_input_file">
+    <element name="input_file">
+      <a:documentation>The input_file for this run.
+
+Only a single file name should be entered here, complete with extension.
+
+The input_file does not have to exist but if it doesn't it must be listed
+in the required_output of one of the dependencies of this simulation.
+
+By default the input_file is loaded and its contents made available, in the
+variable 'input_file',  as an ascii string to all parameter updating code.  
+This behaviour can be modified if the file can be loaded by libspud by toggling
+the option spud_file below.</a:documentation>
+      <ref name="filename"/>
+      <optional>
+        <element name="spud_file">
+          <a:documentation>When reading in this file treat it as a spud compatible file.</a:documentation>
+          <empty/>
+        </element>
+      </optional>
+    </element>
+  </define>
+  <define name="required_file">
+    <element name="filenames">
+      <a:documentation>Enter filenames, either as a string or returned from python code.
+
+All filenames must have a unique name.</a:documentation>
+      <attribute name="name">
+        <data type="string"/>
+      </attribute>
+      <choice>
+        <element name="string">
+          <a:documentation>Enter one or multiple filenames as a comma, semicolon or space separated list.</a:documentation>
+          <ref name="filename"/>
+        </element>
+        <element name="python">
+          <a:documentation>Enter python code to evaluate a (or a list of) filename(s).
+
+The variable containing the filename(s) MUST share a name with 
+the filenames parent element above. </a:documentation>
+          <ref name="python_code"/>
+        </element>
+      </choice>
+    </element>
+  </define>
+  <define name="required_input">
+    <element name="required_input">
+      <a:documentation>Enter a list of files required as input.
+
+All required_output from dependency simulations/runs are automatically 
+assumed to be required as input so need not be entered here.</a:documentation>
+      <oneOrMore>
+        <ref name="required_file"/>
+      </oneOrMore>
+    </element>
+  </define>
+  <define name="required_output">
+    <element name="required_output">
+      <a:documentation>Enter a list of files that must be output.
+
+This list will be used to check if the simulation has previously successfully run.
+
+If this is a dependency of another simulation, this list will also be used as
+required input to the parent simulation.</a:documentation>
+      <oneOrMore>
+        <ref name="required_file"/>
+      </oneOrMore>
+    </element>
+  </define>
+  <define name="parameters">
+    <element name="parameter_sweep">
+      <a:documentation>Perform a sweep over the listed parameters.  Each parameter requires a unique name.</a:documentation>
+      <zeroOrMore>
+        <element name="parameter">
+          <a:documentation>A parameter definition.
+
+Each parameter should have a unique name.
+
+Parameters should specify a list of values to be swept over and optionally, 
+python code describing how the parameter should be updated.</a:documentation>
+          <attribute name="name">
+            <data type="string"/>
+          </attribute>
+          <element name="values">
+            <a:documentation>A comma, semicolon or space separated list of the parameter values.
+
+The values are input as a string to allow them to be used to uniquely create a folder structure.
+The update python code before should convert them to appropriate types within the input file.</a:documentation>
+            <data type="string" datatypeLibrary=""/>
+            <ref name="comment"/>
+          </element>
+          <optional>
+            <element name="update">
+              <a:documentation>Python code specifying how the input file should be modified to update this parameter.
+
+If no code is provided the parameter will not be modified at this level 
+(but may be modified at other dependency levels).
+
+The values of all the parameters for this simulation will be available to this code using 
+the names given to the parameters above.  They will be formatted as strings and should be converted 
+appropriately within the code.</a:documentation>
+              <ref name="python_code"/>
+              <optional>
+                <element name="single_build">
+                  <a:documentation>Turn this option on if updating this parameter does not require a rebuild.  
+
+If you are unsure about this it is best to leave this option turned off.</a:documentation>
+                  <empty/>
+                  <ref name="comment"/>
+                </element>
+              </optional>
+            </element>
+          </optional>
+        </element>
+      </zeroOrMore>
+      <optional>
+        <element name="number_runs">
+          <a:documentation>The number of times the simulation should be rerun.
+
+Defaults to 1 if not specified.</a:documentation>
+          <ref name="integer"/>
+        </element>
+      </optional>
+    </element>
+  </define>
+  <define name="dependencies">
+    <element name="dependencies">
+      <a:documentation>A list of the dependencies of this simulation.</a:documentation>
+      <zeroOrMore>
+        <ref name="dependency_simulation"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="dependency_run"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="checkpoint">
+    <element name="checkpoint">
+      <a:documentation>Options for updating and restarting simulations from checkpoint.</a:documentation>
+      <oneOrMore>
+        <element name="parameter">
+          <a:documentation>A parameter definition.
+
+Each parameter should have a unique name.
+
+Parameters should specify a value and python code describing how the parameter should be updated.
+
+For example, you may wish to update the finish time of the simulation when picking up for a checkpoint.</a:documentation>
+          <attribute name="name">
+            <data type="string"/>
+          </attribute>
+          <element name="values">
+            <a:documentation>A value.  Unlike for parameter sweeps, only a single value should be entered for checkpoints.
+
+The value is input as a string.
+The update python code before should convert them to appropriate types within the input file.</a:documentation>
+            <data type="string" datatypeLibrary=""/>
+            <ref name="comment"/>
+          </element>
+          <element name="update">
+            <a:documentation>Python code specifying how the input file should be modified to update this parameter.
+
+If no code is provided the parameter will not be modified at this level 
+(but may be modified at other dependency levels).
+
+The values of all the parameters for this simulation will be available to this code using 
+the names given to the parameters above.  They will be formatted as strings and should be converted 
+appropriately within the code.</a:documentation>
+            <ref name="python_code"/>
+          </element>
+        </element>
+      </oneOrMore>
+    </element>
+  </define>
+  <define name="variables">
+    <element name="variables">
+      <a:documentation>A list of tests to run.  Each test name should be unique.</a:documentation>
+      <oneOrMore>
+        <element name="variable">
+          <a:documentation>Define a variable in python.
+
+THE VARIABLE NAME MUST BE UNIQUE ACROSS THE ENTIRE OPTIONS FILE and the python code MUST set that variable name!</a:documentation>
+          <attribute name="name">
+            <data type="string"/>
+          </attribute>
+          <ref name="python_code"/>
+        </element>
+      </oneOrMore>
+    </element>
+  </define>
+  <define name="simulation">
+    <element name="simulation">
+      <a:documentation>Definition of a top level TerraFERMA simulation.</a:documentation>
+      <attribute name="name">
+        <data type="string"/>
+      </attribute>
+      <ref name="simulation_input_file"/>
+      <optional>
+        <ref name="parameters"/>
+      </optional>
+      <optional>
+        <ref name="required_input"/>
+      </optional>
+      <optional>
+        <ref name="required_output"/>
+      </optional>
+      <optional>
+        <ref name="dependencies"/>
+      </optional>
+      <optional>
+        <ref name="checkpoint"/>
+      </optional>
+      <optional>
+        <ref name="variables"/>
+      </optional>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="run_dependency_parameters">
+    <element name="parameter_sweep">
+      <a:documentation>Perform a sweep over the listed parameters.  This list should be a subset of the parent simulation parameters.</a:documentation>
+      <zeroOrMore>
+        <element name="parameter">
+          <a:documentation>A parameter definition.
+
+Each parameter should have a unique name within this list but the 
+names should be a subset of the parent simulation parameter sweep.
+
+Parameters should optionally specify
+python code describing how the parameter should be updated.
+
+Dependency parameters do NOT list values as these are taken from the parent simulation.</a:documentation>
+          <attribute name="name">
+            <data type="string"/>
+          </attribute>
+          <optional>
+            <element name="update">
+              <a:documentation>Python code specifying how the input file should be modified to update this parameter.
+
+If no code is provided the parameter will not be modified at this level 
+(but may be modified at other dependency levels).
+
+The values of all the parameters for this simulation will be available to this code using 
+the names given to the parameters above.  They will be formatted as strings and should be converted 
+appropriately within the code.</a:documentation>
+              <ref name="python_code"/>
+            </element>
+          </optional>
+        </element>
+      </zeroOrMore>
+      <optional>
+        <element name="number_runs">
+          <a:documentation>The number of times the simulation should be rerun.
+
+Defaults to 1 if not specified.</a:documentation>
+          <ref name="integer"/>
+        </element>
+      </optional>
+    </element>
+  </define>
+  <define name="simulation_dependency_parameters">
+    <element name="parameter_sweep">
+      <a:documentation>Perform a sweep over the listed parameters.  This list should be a subset of the parent simulation parameters.</a:documentation>
+      <oneOrMore>
+        <element name="parameter">
+          <a:documentation>A parameter definition.
+
+Each parameter should have a unique name within this list but the 
+names should be a subset of the parent simulation parameter sweep.
+
+Parameters should optionally specify
+python code describing how the parameter should be updated.
+
+Dependency parameters do NOT list values as these are taken from the parent simulation.</a:documentation>
+          <attribute name="name">
+            <data type="string"/>
+          </attribute>
+          <optional>
+            <element name="update">
+              <ref name="python_code"/>
+              <optional>
+                <element name="single_build">
+                  <a:documentation>Turn this option on if updating this parameter does not require a rebuild.  
+
+If you are unsure about this it is best to leave this option turned off.</a:documentation>
+                  <empty/>
+                  <ref name="comment"/>
+                </element>
+              </optional>
+            </element>
+          </optional>
+        </element>
+      </oneOrMore>
+      <optional>
+        <element name="number_runs">
+          <a:documentation>The number of times the simulation should be rerun.
+
+Defaults to 1 if not specified.</a:documentation>
+          <ref name="integer"/>
+        </element>
+      </optional>
+    </element>
+  </define>
+  <define name="commands">
+    <element name="commands">
+      <a:documentation>A list of commands to perform this simulation/run.</a:documentation>
+      <oneOrMore>
+        <element name="command">
+          <a:documentation>A single shell command.</a:documentation>
+          <attribute name="name">
+            <data type="string"/>
+          </attribute>
+          <data type="string" datatypeLibrary=""/>
+        </element>
+      </oneOrMore>
+    </element>
+  </define>
+  <define name="dependency_run">
+    <element name="run">
+      <a:documentation>Definition of a run (not a TerraFERMA simulation).
+
+e.g. perhaps a gmsh run</a:documentation>
+      <attribute name="name">
+        <data type="string"/>
+      </attribute>
+      <ref name="run_input_file"/>
+      <optional>
+        <ref name="run_dependency_parameters"/>
+      </optional>
+      <optional>
+        <ref name="required_input"/>
+      </optional>
+      <optional>
+        <ref name="required_output"/>
+      </optional>
+      <optional>
+        <ref name="commands"/>
+      </optional>
+      <optional>
+        <ref name="variables"/>
+      </optional>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="dependency_simulation">
+    <element name="simulation">
+      <a:documentation>Definition of a dependency TerraFERMA simulation.</a:documentation>
+      <attribute name="name">
+        <data type="string"/>
+      </attribute>
+      <ref name="simulation_input_file"/>
+      <optional>
+        <ref name="simulation_dependency_parameters"/>
+      </optional>
+      <optional>
+        <ref name="required_input"/>
+      </optional>
+      <optional>
+        <ref name="required_output"/>
+      </optional>
+      <optional>
+        <ref name="dependencies"/>
+      </optional>
+      <optional>
+        <ref name="variables"/>
+      </optional>
+      <ref name="comment"/>
+    </element>
+  </define>
+</grammar>

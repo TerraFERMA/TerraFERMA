@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='utf-8'?>
+<harness_options>
+  <length>
+    <string_value>special</string_value>
+  </length>
+  <owner>mspieg</owner>
+  <description>MADDs 1 test.</description>
+  <simulations>
+    <simulation name="MADDs1">
+      <input_file>
+        <string_value type="filename" lines="1">madds1.tfml</string_value>
+      </input_file>
+    </simulation>
+  </simulations>
+</harness_options>

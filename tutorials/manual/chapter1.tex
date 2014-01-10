@@ -1,0 +1,73 @@
+% Copyright (C) 2013 Columbia University in the City of New York and others.
+%
+% Please see the AUTHORS file in the main source directory for a full list
+% of contributors.
+%
+% This file is part of TerraFERMA.
+%
+% TerraFERMA is free software: you can redistribute it and/or modify
+% it under the terms of the GNU Lesser General Public License as published by
+% the Free Software Foundation, either version 3 of the License, or
+% (at your option) any later version.
+%
+% TerraFERMA is distributed in the hope that it will be useful,
+% but WITHOUT ANY WARRANTY; without even the implied warranty of
+% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+% GNU Lesser General Public License for more details.
+%
+% You should have received a copy of the GNU Lesser General Public License
+% along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
+
+\chapter{Introduction}
+
+\TF{},  the\emph{Transparent Finite Element Rapid Model Assembler}, is
+a software system for the rapid and reproducible construction and exploration of coupled multi-physics models.
+
+TerraFERMA leverages three advanced open-source libraries for
+scientific computation that provide high level problem description
+(\href{http://fenicsproject.org}{FEniCS}), composable solvers for
+coupled multi-physics problems
+(\href{https://www.mcs.anl.gov/petsc}{PETSc}) and a science neutral
+options handling system
+(\href{http://www3.imperial.ac.uk/earthscienceandengineering/research/amcg/spud}{SPuD})
+that allows the hierarchical management of all model
+options. TerraFERMA inherits most of its functionality from the
+underlying libraries but adds a layer of control and guidance for
+building reusable and reproducible applications.
+% A manuscript describing the design and basic functionality of TerraFERMA can be found here.
+
+As most of the language of \TF{} is also inherited from the underlying
+libraries it is also well worth looking at the extensive tutorials for
+the \href{http://fenicsproject.org/documentation/tutorial}{FEniCS} project which provide an
+excellent introduction to both finite elements and UFL (Unified form
+language) for describing weak forms.  It is also well worth
+understanding the basic PETSc solver objects for nonlinear solvers
+(SNES), Linear solvers (KSP) and Preconditioners (PC) as we will use
+the same language for describing solver options (although \TF{}
+provides some guidance and subsets of options for choosing).
+
+The purpose of these tutorials is to develop hands-on experience with
+\TF{} through detailed, step-by-step examples starting with the
+simplest problem of Poisson's equation on a unit square to more
+complex multi-physics problems such as time-dependent thermal
+convection.  The key design principal of \TF{} is that computational
+models are, at their most abstract, a \emph{very large} set of
+scientific and computational choices and the purpose of \TF{} is to
+help the user organize, manage and modify those choices in a manner
+that is flexible, reproducible and reusable.
+
+\pagebreak{}
+\section{Getting and installing the \TF{} software}
+\label{sec:gett-inst-tf}
+
+\TF{} is available as an open-source code under a LGPL 3.0
+license.  It is hosted as a
+\href{https://bitbucket.org/tferma/tferma}{git repository}.
+Installation information and scripts for building from source is available on the
+\href{https://bitbucket.org/tferma/tferma/wiki}{Wiki} page. 
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "tftutorials"
+%%% End: 

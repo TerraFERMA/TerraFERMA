@@ -1,3 +1,23 @@
+# Copyright (C) 2013 Columbia University in the City of New York and others.
+#
+# Please see the AUTHORS file in the main source directory for a full list
+# of contributors.
+#
+# This file is part of TerraFERMA.
+#
+# TerraFERMA is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# TerraFERMA is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
+
 # Require CMake 2.8
 cmake_minimum_required(VERSION 2.8)
 
@@ -8,7 +28,7 @@ cmake_minimum_required(VERSION 2.8)
 cmake_policy(SET CMP0004 OLD)
 
 # Get DOLFIN configuration data (dolfin-config.cmake must be in DOLFIN_CMAKE_CONFIG_PATH)
-find_package(dolfin)
+find_package(DOLFIN)
 
 # Default build type (can be overridden by user)
 if (NOT CMAKE_BUILD_TYPE)
@@ -30,10 +50,10 @@ endif()
 # Include directories
 include_directories(${DOLFIN_INCLUDE_DIRS} ${DOLFIN_3RD_PARTY_INCLUDE_DIRS})
 
-project(basebucket)
+project(terraferma)
 
 if (NOT EXECUTABLE)
-  set(EXECUTABLE "basebucket" CACHE STRING
+  set(EXECUTABLE "terraferma" CACHE STRING
        "The name of the executable" FORCE)
 endif()
 
@@ -44,7 +64,7 @@ endif()
 
 set(CMAKE_MODULE_PATH $ENV{CMAKE_MODULE_PATH})
 
-find_package(BucketTools REQUIRED)
+find_package(BUCKETTOOLS REQUIRED)
 
 if (NOT BUCKETTOOLS_FOUND)
   message(FATAL_ERROR "Could not find BucketTools.")

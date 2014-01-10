@@ -1,0 +1,27 @@
+# - Try to find BucketTools
+# Once done (and if successful) this will define
+
+#  BUCKETTOOLS_FOUND        - system has BucketTools
+#  BUCKETTOOLS_INCLUDE_DIRS - include directories for BucketTools
+#  BUCKETTOOLS_LIBRARIES    - libraries for BuckeTools
+#  BUCKETTOOLS_SHARED_DIRS  - location of shared material
+#  BUCKETTOOLS_BIN          - location of executables
+
+message(STATUS "Checking for package 'BucketTools'")
+
+# Include directories
+set(BUCKETTOOLS_INCLUDE_DIRS "@CMAKE_INSTALL_PREFIX@/include")
+mark_as_advanced(BUCKETTOOLS_INCLUDE_DIRS)
+
+# Shared directories
+set(BUCKETTOOLS_SHARED_DIRS "@CMAKE_INSTALL_PREFIX@/share")
+mark_as_advanced(BUCKETTOOLS_SHARED_DIRS)
+
+# Executable directories
+set(BUCKETTOOLS_BIN "@CMAKE_INSTALL_PREFIX@/bin")
+mark_as_advanced(BUCKETTOOLS_BIN)
+
+# BucketTools library
+set(BUCKETTOOLS_LIBRARIES "@CMAKE_INSTALL_PREFIX@/lib/libbuckettools_cpp.so")
+mark_as_advanced(BUCKETTOOLS_LIBRARIES)
+

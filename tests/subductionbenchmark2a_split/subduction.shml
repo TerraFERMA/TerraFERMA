@@ -1,0 +1,64 @@
+<?xml version='1.0' encoding='utf-8'?>
+<harness_options>
+  <length>
+    <string_value>short</string_value>
+  </length>
+  <owner>cwilson</owner>
+  <description>Dummy.</description>
+  <simulations>
+    <simulation name="Subduction">
+      <input_file>
+        <string_value lines="1" type="filename">subduction.tfml</string_value>
+      </input_file>
+      <required_input>
+        <filenames name="meshfiles">
+          <python>
+            <string_value lines="20" type="code" language="python">meshfiles = ["sepran_converted_mesh"+ext for ext in [".xml", "_facet_region.xml", "_physical_region.xml"]]</string_value>
+          </python>
+        </filenames>
+      </required_input>
+      <variables>
+        <variable name="T_11_11">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+
+
+
+det = parser("subduction.det")
+
+T_11_11 = det["Temperature"]["Temperature"]["SlabPoint"][0,-1]-273.</string_value>
+        </variable>
+        <variable name="T_wedge">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+from math import sqrt
+
+
+
+det = parser("subduction.det")
+
+T_wedge = sqrt(sum((det["Temperature"]["Temperature"]["Wedge"][:,-1]-273.)**2)/78.)</string_value>
+        </variable>
+        <variable name="T_slab">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+from math import sqrt
+
+
+
+det = parser("subduction.det")
+
+T_slab = sqrt(sum((det["Temperature"]["Temperature"]["Slab"][:,-1]-273.)**2)/36.)</string_value>
+        </variable>
+      </variables>
+    </simulation>
+  </simulations>
+  <tests>
+    <test name="T_11_11">
+      <string_value lines="20" type="code" language="python">assert abs(T_11_11 - 587.0) &lt; 1.0</string_value>
+    </test>
+    <test name="T_wedge">
+      <string_value lines="20" type="code" language="python">assert abs(T_wedge - 1005.0) &lt; 1.0</string_value>
+    </test>
+    <test name="T_slab">
+      <string_value lines="20" type="code" language="python">assert abs(T_slab - 609.0) &lt; 1.0</string_value>
+    </test>
+  </tests>
+</harness_options>

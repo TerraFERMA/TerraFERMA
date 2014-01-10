@@ -1,0 +1,410 @@
+# Copyright (C) 2013 Columbia University in the City of New York and others.
+#
+# Please see the AUTHORS file in the main source directory for a full list
+# of contributors.
+#
+# This file is part of TerraFERMA.
+#
+# TerraFERMA is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# TerraFERMA is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
+
+# ALL dependencies need to be specified here
+# always included when using with spud package:
+include "spud_base.rnc"
+
+start =
+   (
+      ## The root node of the options dictionary for the TerraFERMA simulation harness.
+      ##
+      ## This allows TerraFERMA simulations and their dependencies to be run in an 
+      ## automated way through tfsimulationharness.  Parameter
+      ## sweeps may be performed for benchmarking and testing purposes.
+      ##
+      ## Options which are shaded blue are incomplete and require input.
+      ## Greyed out options are optional.
+      ## Black options are active.
+      element harness_options {
+         ## The length category of this simulations suite.
+         ##
+         ## This option can be used by tfsimulationharness to filter the available 
+         ## simulation harness files and decide which simulations to run.
+         element length {
+            # a hard coded string_value
+            element string_value {
+              ( "special" | "short" | "medium" | "long" )
+            },
+            comment
+         },
+         ## The owner id of the simulation creator.
+         ##
+         ## Useful for identifying the expert on this suite.  
+         ## tfsimulationharness can also filter based on the owner.
+         element owner {
+            string,
+            comment
+         },
+         ## Additional, arbitrary tags to include or exclude this 
+         ## simulations suite from tfsimulationharness using the -t (include
+         ## tags) and -e (exclude tags) flags.
+         element tags {
+            string,
+            comment
+         }?,
+         ## A description of what this simulation suite is intended to run.
+         element description {
+            string,
+            comment
+         },
+         ## A list of the simulations to run.  Each simulation name should be unique.
+         element simulations {
+            simulation+
+         }?,
+         ## A list of tests to run.  Each test name should be unique.
+         element tests {
+            ## Define a test in python.
+            ##
+            ## Each test should have a unique name.
+            ##
+            ## Tests have access to all variables defined above.
+            ##
+            ## The test should end with an assert statement which will determine if the test passes or fails.
+            element test {
+               attribute name { xsd:string },
+               python_code
+            }+
+         }?,
+         comment
+      }
+   )
+
+simulation_input_file = 
+   (
+      ## The input_file for this simulation.
+      ##
+      ## Only a single file name should be entered here, complete with extension.
+      ## This should be a tfml file and is assumed to be libspud compatible.
+      ##
+      ## The input_file does not have to exist but if it doesn't it must be listed
+      ## in the required_output of one of the dependencies of this simulation.
+      element input_file {
+         filename
+      }
+   )
+
+run_input_file = 
+   (
+      ## The input_file for this run.
+      ##
+      ## Only a single file name should be entered here, complete with extension.
+      ##
+      ## The input_file does not have to exist but if it doesn't it must be listed
+      ## in the required_output of one of the dependencies of this simulation.
+      ## 
+      ## By default the input_file is loaded and its contents made available, in the
+      ## variable 'input_file',  as an ascii string to all parameter updating code.  
+      ## This behaviour can be modified if the file can be loaded by libspud by toggling
+      ## the option spud_file below.
+      element input_file {
+         filename,
+         ## When reading in this file treat it as a spud compatible file.
+         element spud_file {
+           empty
+         }?
+      }
+   )
+
+required_file =
+   (
+      ## Enter filenames, either as a string or returned from python code.
+      ##
+      ## All filenames must have a unique name.
+      element filenames {
+         attribute name { xsd:string },
+         (
+           ## Enter one or multiple filenames as a comma, semicolon or space separated list.
+           element string {
+              filename
+           }|
+           ## Enter python code to evaluate a (or a list of) filename(s).
+           ##
+           ## The variable containing the filename(s) MUST share a name with 
+           ## the filenames parent element above. 
+           element python {
+              python_code
+           }
+         )
+      }
+   )
+
+required_input = 
+   (
+      ## Enter a list of files required as input.
+      ##
+      ## All required_output from dependency simulations/runs are automatically 
+      ## assumed to be required as input so need not be entered here.
+      element required_input {
+         required_file+
+      }
+   )
+
+required_output = 
+   (
+      ## Enter a list of files that must be output.
+      ##
+      ## This list will be used to check if the simulation has previously successfully run.
+      ##
+      ## If this is a dependency of another simulation, this list will also be used as
+      ## required input to the parent simulation.
+      element required_output {
+         required_file+
+      }
+   )
+
+parameters =
+   (
+      ## Perform a sweep over the listed parameters.  Each parameter requires a unique name.
+      element parameter_sweep {
+         ## A parameter definition.
+         ##
+         ## Each parameter should have a unique name.
+         ##
+         ## Parameters should specify a list of values to be swept over and optionally, 
+         ## python code describing how the parameter should be updated.
+         element parameter {
+            attribute name { xsd:string },
+            ## A comma, semicolon or space separated list of the parameter values.
+            ##
+            ## The values are input as a string to allow them to be used to uniquely create a folder structure.
+            ## The update python code before should convert them to appropriate types within the input file.
+            element values {
+               string,
+               comment
+            },
+            ## Python code specifying how the input file should be modified to update this parameter.
+            ##
+            ## If no code is provided the parameter will not be modified at this level 
+            ## (but may be modified at other dependency levels).
+            ## 
+            ## The values of all the parameters for this simulation will be available to this code using 
+            ## the names given to the parameters above.  They will be formatted as strings and should be converted 
+            ## appropriately within the code.
+            element update {
+               python_code,
+               ## Turn this option on if updating this parameter does not require a rebuild.  
+               ## 
+               ## If you are unsure about this it is best to leave this option turned off.
+               element single_build {
+                  empty,
+                  comment
+               }?
+            }?
+         }*,
+         ## The number of times the simulation should be rerun.
+         ##
+         ## Defaults to 1 if not specified.
+         element number_runs {
+            integer
+         }?
+      }
+   )
+
+dependencies = 
+   (
+      ## A list of the dependencies of this simulation.
+      element dependencies {
+         dependency_simulation*,
+         dependency_run*
+      }
+   )
+
+checkpoint =
+   (
+      ## Options for updating and restarting simulations from checkpoint.
+      element checkpoint {
+         ## A parameter definition.
+         ##
+         ## Each parameter should have a unique name.
+         ##
+         ## Parameters should specify a value and python code describing how the parameter should be updated.
+         ##
+         ## For example, you may wish to update the finish time of the simulation when picking up for a checkpoint.
+         element parameter {
+            attribute name { xsd:string },
+            ## A value.  Unlike for parameter sweeps, only a single value should be entered for checkpoints.
+            ##
+            ## The value is input as a string.
+            ## The update python code before should convert them to appropriate types within the input file.
+            element values {
+               string,
+               comment
+            },
+            ## Python code specifying how the input file should be modified to update this parameter.
+            ##
+            ## If no code is provided the parameter will not be modified at this level 
+            ## (but may be modified at other dependency levels).
+            ## 
+            ## The values of all the parameters for this simulation will be available to this code using 
+            ## the names given to the parameters above.  They will be formatted as strings and should be converted 
+            ## appropriately within the code.
+            element update {
+               python_code
+            }
+         }+
+      }
+   )
+
+variables =
+   (
+      ## A list of tests to run.  Each test name should be unique.
+      element variables {
+         ## Define a variable in python.
+         ##
+         ## THE VARIABLE NAME MUST BE UNIQUE ACROSS THE ENTIRE OPTIONS FILE and the python code MUST set that variable name!
+         element variable {
+            attribute name { xsd:string },
+            python_code
+         }+
+      }
+   )
+
+simulation =
+   (
+      ## Definition of a top level TerraFERMA simulation.
+      element simulation {
+         attribute name { xsd:string },
+         simulation_input_file,
+         parameters?,
+         required_input?,
+         required_output?,
+         dependencies?,
+         checkpoint?,
+         variables?,
+         comment
+      }
+   )
+
+run_dependency_parameters = 
+   (
+      ## Perform a sweep over the listed parameters.  This list should be a subset of the parent simulation parameters.
+      element parameter_sweep {
+         ## A parameter definition.
+         ##
+         ## Each parameter should have a unique name within this list but the 
+         ## names should be a subset of the parent simulation parameter sweep.
+         ##
+         ## Parameters should optionally specify
+         ## python code describing how the parameter should be updated.
+         ##
+         ## Dependency parameters do NOT list values as these are taken from the parent simulation.
+         element parameter { 
+            attribute name { xsd:string },
+            ## Python code specifying how the input file should be modified to update this parameter.
+            ##
+            ## If no code is provided the parameter will not be modified at this level 
+            ## (but may be modified at other dependency levels).
+            ## 
+            ## The values of all the parameters for this simulation will be available to this code using 
+            ## the names given to the parameters above.  They will be formatted as strings and should be converted 
+            ## appropriately within the code.
+            element update {
+               python_code
+            }?
+         }*,
+         ## The number of times the simulation should be rerun.
+         ##
+         ## Defaults to 1 if not specified.
+         element number_runs {
+            integer
+         }?
+      }
+   )
+
+simulation_dependency_parameters = 
+   (
+      ## Perform a sweep over the listed parameters.  This list should be a subset of the parent simulation parameters.
+      element parameter_sweep {
+         ## A parameter definition.
+         ##
+         ## Each parameter should have a unique name within this list but the 
+         ## names should be a subset of the parent simulation parameter sweep.
+         ##
+         ## Parameters should optionally specify
+         ## python code describing how the parameter should be updated.
+         ##
+         ## Dependency parameters do NOT list values as these are taken from the parent simulation.
+         element parameter { 
+            attribute name { xsd:string },
+            element update {
+               python_code,
+               ## Turn this option on if updating this parameter does not require a rebuild.  
+               ## 
+               ## If you are unsure about this it is best to leave this option turned off.
+               element single_build {
+                  empty,
+                  comment
+               }?
+            }?
+         }+,
+         ## The number of times the simulation should be rerun.
+         ##
+         ## Defaults to 1 if not specified.
+         element number_runs {
+            integer
+         }?
+      }
+   )
+
+commands =
+   (
+      ## A list of commands to perform this simulation/run.
+      element commands {
+         ## A single shell command.
+         element command {
+            attribute name { xsd:string },
+            string
+         }+
+      }
+   )
+
+dependency_run = 
+   (
+      ## Definition of a run (not a TerraFERMA simulation).
+      ##
+      ## e.g. perhaps a gmsh run
+      element run {
+         attribute name { xsd:string },
+         run_input_file,
+         run_dependency_parameters?,
+         required_input?,
+         required_output?,
+         commands?,
+         variables?,
+         comment
+      }
+   )
+
+dependency_simulation = 
+   (
+      ## Definition of a dependency TerraFERMA simulation.
+      element simulation {
+         attribute name { xsd:string },
+         simulation_input_file,
+         simulation_dependency_parameters?,
+         required_input?,
+         required_output?,
+         dependencies?,
+         variables?,
+         comment
+      }
+   )
+
