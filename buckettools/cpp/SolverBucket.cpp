@@ -825,8 +825,12 @@ void SolverBucket::ksp_check_convergence_(KSP &ksp, int indent)
   indent++;
 
   PC pc;
-  const PCType pctype;
   perr = KSPGetPC(ksp, &pc); CHKERRV(perr);
+  #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 3
+  PCType pctype;
+  #else
+  const PCType pctype;
+  #endif
   perr = PCGetType(pc, &pctype); CHKERRV(perr);
 
   if ((std::string)pctype=="ksp")

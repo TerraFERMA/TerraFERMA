@@ -67,6 +67,7 @@ void GenericDetectors::eval(std::vector< Array_double_ptr > &values,
 
   double* pos;
   uint dim;
+  std::vector<unsigned int> ids;
   int id;
   
   std::map< Mesh_ptr, std::vector< int > >::const_iterator c_it = cell_ids_.find(mesh);
@@ -90,7 +91,15 @@ void GenericDetectors::eval(std::vector< Array_double_ptr > &values,
       pos = (*positions_[i]).data(); 
       dim = (*positions_[i]).size();
       const dolfin::Point point(dim, pos);
-      id = (*mesh).intersected_cell(point);
+      ids = (*(*mesh).bounding_box_tree()).compute_collisions(point);
+      if (ids.size() == 0)
+      {
+        id = -1;
+      }
+      else
+      {
+        id = ids[0];
+      }
       cellids.push_back(id);
     }
 
@@ -101,7 +110,8 @@ void GenericDetectors::eval(std::vector< Array_double_ptr > &values,
     else
     {
       const dolfin::Cell cell(*mesh, id);
-      const dolfin::UFCCell ufc_cell(cell);
+      ufc::cell ufc_cell;
+      cell.get_cell_data(ufc_cell);
       function.eval(*value, *positions_[i], ufc_cell);                 // use the dolfin eval to evaluate the function
       values.push_back(value);                                         // record the value
     }

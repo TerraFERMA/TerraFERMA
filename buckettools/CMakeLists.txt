@@ -108,10 +108,26 @@ file(
 
 install(FILES ${PROJECT_BINARY_DIR}/tfml DESTINATION share/buckettools/diamond/schemata)
 
+# Write a schemata file for tfmls that can be installed
+file(
+    WRITE ${PROJECT_BINARY_DIR}/shml
+    "TerraFERMA Simulation Harness Markup Language\ndefault=${CMAKE_INSTALL_PREFIX}/share/buckettools/schemas/simulations.rng"
+    )
+
+install(FILES ${PROJECT_BINARY_DIR}/shml DESTINATION share/buckettools/diamond/schemata)
+
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/cmake DESTINATION share/buckettools)
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/ufc   DESTINATION share/buckettools)
 
 file(GLOB SCRIPTS ${PROJECT_SOURCE_DIR}/scripts/*)
+file(GLOB EXCLUDESCRIPTS ${PROJECT_SOURCE_DIR}/scripts/.*)
+if(EXCLUDESCRIPTS)
+  list(REMOVE_ITEM SCRIPTS ${EXCLUDESCRIPTS})
+endif()
 install(FILES ${SCRIPTS} DESTINATION bin 
         PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ OWNER_EXECUTE GROUP_EXECUTE WORLD_EXECUTE)
+
+configure_file(${PROJECT_SOURCE_DIR}/cmake/templates/BUCKETTOOLSConfig.cmake.in
+  ${PROJECT_BINARY_DIR}/BUCKETTOOLSConfig.cmake @ONLY)
+install(FILES ${PROJECT_BINARY_DIR}/BUCKETTOOLSConfig.cmake DESTINATION share/buckettools/cmake)
 

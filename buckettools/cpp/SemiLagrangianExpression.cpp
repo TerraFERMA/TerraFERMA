@@ -194,7 +194,7 @@ void SemiLagrangianExpression::init()
       assert((*vel_).value_dimension(0)==dim_);
     }
 
-    ufccellstar_  = new dolfin::UFCCell(*mesh_);
+    ufccellstar_  = new ufc::cell;
     dolfincellit_ = new dolfin::CellIterator(*mesh_);
     xstar_        = new double[dim_];
     v_            = new dolfin::Array<double>(dim_);
@@ -292,6 +292,7 @@ const bool SemiLagrangianExpression::checkpoint_(const int &index,
                                                  point_map &points, 
                                                  const dolfin::Point &lp) const
 {
+  std::vector<unsigned int> cell_indices;
   int cell_index;
   const dolfin::Point p(dim_, xstar_);
 
@@ -304,20 +305,36 @@ const bool SemiLagrangianExpression::checkpoint_(const int &index,
     {
       update = true;
     }
-    else if (!(*dolfincellit_)[cell_index].intersects(p))
+    else if (!(*dolfincellit_)[cell_index].collides(p))
     {
       update = true;
     }
 
     if (update)
     {
-      cell_index = (*mesh_).intersected_cell(p);
+      cell_indices = (*(*mesh_).bounding_box_tree()).compute_collisions(p);
+      if (cell_indices.size()==0)
+      {
+        cell_index = -1;
+      }
+      else
+      {
+        cell_index = cell_indices[0];
+      }
       (*p_it).second[index] = cell_index;
     }
   }
   else
   {
-    cell_index = (*mesh_).intersected_cell(p);
+    cell_indices = (*(*mesh_).bounding_box_tree()).compute_collisions(p);
+    if (cell_indices.size()==0)
+    {
+      cell_index = -1;
+    }
+    else
+    {
+      cell_index = cell_indices[0];
+    }
     std::vector<int> cells(2, -1);
     cells[index] = cell_index;
     points[lp] = cells;
@@ -328,7 +345,7 @@ const bool SemiLagrangianExpression::checkpoint_(const int &index,
     return true;
   }
 
-  (*ufccellstar_).update((*dolfincellit_)[cell_index]);
+  (*dolfincellit_)[cell_index].get_cell_data(*ufccellstar_);
   return false;
 
 }

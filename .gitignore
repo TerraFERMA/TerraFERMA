@@ -1,0 +1,6 @@
+# test directories
+*.build
+*.run
+
+# pyc files
+*.pyc

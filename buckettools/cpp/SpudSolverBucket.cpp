@@ -117,7 +117,9 @@ void SpudSolverBucket::initialize()
     if(snestype=="vi")
     {
       #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
-      #if PETSC_VERSION_MINOR > 2
+      #if PETSC_VERSION_MINOR > 3
+      perr = SNESSetType(snes_, SNESVINEWTONRSLS); CHKERRV(perr); 
+      #elif PETSC_VERSION_MINOR == 3
       perr = SNESSetType(snes_, SNESVIRS); CHKERRV(perr); 
       #else
       perr = SNESSetType(snes_, snestype.c_str()); CHKERRV(perr); 
@@ -133,7 +135,11 @@ void SpudSolverBucket::initialize()
     }
     else if(snestype=="ls")
     {
-      perr = SNESSetType(snes_, snestype.c_str()); CHKERRV(perr); 
+      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 3
+      perr = SNESSetType(snes_, SNESNEWTONLS); CHKERRV(perr);
+      #else
+      perr = SNESSetType(snes_, snestype.c_str()); CHKERRV(perr);
+      #endif 
       perr = SNESSetFromOptions(snes_); CHKERRV(perr);               // set-up snes from options (we do this first to ensure that
                                                                      // any duplicated options from the options file overwrite the
                                                                      // command line)
@@ -148,7 +154,11 @@ void SpudSolverBucket::initialize()
       {
         #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 2
         SNESLineSearch linesearch;
+        #if PETSC_VERSION_MINOR > 3
+        perr = SNESGetLineSearch(snes_, &linesearch); CHKERRV(perr);
+        #else
         perr = SNESGetSNESLineSearch(snes_, &linesearch); CHKERRV(perr);
+        #endif
         perr = SNESLineSearchSetType(linesearch, "bt"); CHKERRV(perr);
         perr = SNESLineSearchSetOrder(linesearch, 3); CHKERRV(perr);
         #else
@@ -159,7 +169,11 @@ void SpudSolverBucket::initialize()
       {
         #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 2
         SNESLineSearch linesearch;
+        #if PETSC_VERSION_MINOR > 3
+        perr = SNESGetLineSearch(snes_, &linesearch); CHKERRV(perr);
+        #else
         perr = SNESGetSNESLineSearch(snes_, &linesearch); CHKERRV(perr);
+        #endif
         perr = SNESLineSearchSetType(linesearch, "bt"); CHKERRV(perr);
         perr = SNESLineSearchSetOrder(linesearch, 2); CHKERRV(perr);
         #else
@@ -170,7 +184,11 @@ void SpudSolverBucket::initialize()
       {
         #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 2
         SNESLineSearch linesearch;
+        #if PETSC_VERSION_MINOR > 3
+        perr = SNESGetLineSearch(snes_, &linesearch); CHKERRV(perr);
+        #else
         perr = SNESGetSNESLineSearch(snes_, &linesearch); CHKERRV(perr);
+        #endif
         perr = SNESLineSearchSetType(linesearch, "basic"); CHKERRV(perr);
         #else
         perr = SNESLineSearchSet(snes_, SNESLineSearchNo, PETSC_NULL); CHKERRV(perr); 
@@ -218,7 +236,11 @@ void SpudSolverBucket::initialize()
       #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
       #if PETSC_VERSION_MINOR > 2
       SNESLineSearch linesearch;
+      #if PETSC_VERSION_MINOR > 3
+      perr = SNESGetLineSearch(snes_, &linesearch); CHKERRV(perr);
+      #else
       perr = SNESGetSNESLineSearch(snes_, &linesearch); CHKERRV(perr);
+      #endif
       perr = SNESLineSearchBTSetAlpha(linesearch, alpha); CHKERRV(perr);// FIXME: assumes using bt
       perr = SNESLineSearchSetTolerances(linesearch, PETSC_DEFAULT, maxstep, PETSC_DEFAULT,
                                         PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT);
@@ -797,8 +819,13 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
           "/iterative_method/monitors/preconditioned_residual_graph";// plot a graph of the preconditioned residual
     if (Spud::have_option(buffer.str()))
     {
+      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 3
+      perr = KSPMonitorSet(ksp, KSPMonitorLGResidualNorm, 
+                                             PETSC_NULL, PETSC_NULL); 
+      #else
       perr = KSPMonitorSet(ksp, KSPMonitorLG, 
                                              PETSC_NULL, PETSC_NULL); 
+      #endif
       CHKERRV(perr);
     }
 
@@ -1113,7 +1140,11 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
     spud_err(buffer.str(), serr);                                    // so hard code an if block
     if (ptype == "diag")
     {
+      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 3
+      perr = PCFieldSplitSchurPrecondition(pc, PC_FIELDSPLIT_SCHUR_PRE_A11, PETSC_NULL);
+      #else
       perr = PCFieldSplitSchurPrecondition(pc, PC_FIELDSPLIT_SCHUR_PRE_DIAG, PETSC_NULL);
+      #endif
       CHKERRV(perr);
     }
     else if (ptype == "self")
@@ -1996,6 +2027,7 @@ boost::unordered_map<uint, double> SpudSolverBucket::cell_value_map_(const boost
 
   const uint gdim = (*mesh).geometry().dim();                        // set up data for expression evaluation
   boost::multi_array<double, 2> coordinates(boost::extents[(*dofmap).max_cell_dimension()][gdim]);
+  std::vector<double> vertex_coordinates;
   dolfin::Array<double> x(gdim);
   uint value_size = 1;
   if (value_exp)
@@ -2018,8 +2050,6 @@ boost::unordered_map<uint, double> SpudSolverBucket::cell_value_map_(const boost
     cellidmeshfunction = (*system_).celldomains();
   }
 
-  dolfin::UFCCell ufc_cell(*mesh);                                   // may need this if value_exp has been passed
-
   for (dolfin::CellIterator cell(*mesh); !cell.end(); ++cell)        // loop over the cells in the mesh
   {
     if (region_ids)
@@ -2038,8 +2068,8 @@ boost::unordered_map<uint, double> SpudSolverBucket::cell_value_map_(const boost
 
     if(value_exp)
     {
-      ufc_cell.update(*cell);
-      (*dofmap).tabulate_coordinates(coordinates, ufc_cell);
+      (*cell).get_vertex_coordinates(vertex_coordinates);
+      (*dofmap).tabulate_coordinates(coordinates, vertex_coordinates, *cell);
     }
 
     for (uint i = 0; i < dof_vec.size(); i++)                        // loop over the cell dof
@@ -2083,6 +2113,7 @@ boost::unordered_map<uint, double> SpudSolverBucket::facet_value_map_(const boos
 
   const uint gdim = (*mesh).geometry().dim();
   boost::multi_array<double, 2> coordinates(boost::extents[(*dofmap).max_cell_dimension()][gdim]);
+  std::vector<double> vertex_coordinates;
   dolfin::Array<double> x(gdim);
   uint value_size = 1;
   if (value_exp)
@@ -2100,8 +2131,6 @@ boost::unordered_map<uint, double> SpudSolverBucket::facet_value_map_(const boos
   dolfin::Array<double> values(value_size);
 
   MeshFunction_size_t_ptr facetidmeshfunction = (*system_).facetdomains();
-
-  dolfin::UFCCell ufc_cell(*mesh);                                   // may need this if value_exp has been passed
 
   for (dolfin::FacetIterator facet(*mesh); !facet.end(); ++facet)    // loop over the facets in the mesh
   {
@@ -2127,8 +2156,8 @@ boost::unordered_map<uint, double> SpudSolverBucket::facet_value_map_(const boos
 
         if (value_exp)
         {
-          ufc_cell.update(cell, facet_number);                       // should we be passing facet_number here?
-          (*dofmap).tabulate_coordinates(coordinates, ufc_cell);
+          cell.get_vertex_coordinates(vertex_coordinates);
+          (*dofmap).tabulate_coordinates(coordinates, vertex_coordinates, cell);
         }
 
         for (uint i = 0; i < facet_dof_vec.size(); i++)              // loop over facet dof
