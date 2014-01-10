@@ -1276,7 +1276,7 @@ class SimulationHarnessBatch(SimulationBatch):
     # if there were failures then summarize the failures
     if failcount > 0:
        print
-       print "Summary of test problems with failures or warnings:"
+       print "Summary of test problems with failures:"
        for group in failinggroups:
           print group[0]+':', group[1]
        print
