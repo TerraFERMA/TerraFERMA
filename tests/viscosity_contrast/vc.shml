@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <harness_options>
   <length>
-    <string_value>special</string_value>
+    <string_value>short</string_value>
   </length>
   <owner>cwilson</owner>
   <description>A solver convergence test with a viscosity contrast.</description>
@@ -13,12 +13,12 @@
       <dependencies>
         <run name="Mesh">
           <input_file>
-            <string_value type="filename" lines="1">square.msh</string_value>
+            <string_value lines="1" type="filename">square.msh</string_value>
           </input_file>
           <required_output>
             <filenames name="xmlfiles">
               <python>
-                <string_value type="code" lines="20" language="python">xmlfiles = ["square"+ext for ext in [".xml", "_facet_region.xml", "_physical_region.xml"]]</string_value>
+                <string_value lines="20" type="code" language="python">xmlfiles = ["square"+ext for ext in [".xml", "_facet_region.xml", "_physical_region.xml"]]</string_value>
               </python>
             </filenames>
           </required_output>
@@ -32,8 +32,7 @@
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
 
 conv = parser("dc_Benton_Solver_ksp.conv")
-conv_it = conv["KSPIteration"]['value'].max()
-</string_value>
+conv_it = conv["KSPIteration"]['value'].max()</string_value>
         </variable>
         <variable name="log_max_its">
           <string_value lines="20" type="code" language="python">import numpy
@@ -43,18 +42,18 @@ loglines = logfile.readlines()
 logfile.close()
 
 logits = numpy.array([int(line.split()[0]) for line in loglines if line.find("KSP Residual norm") &gt; 0 ])
-log_max_its = logits[logits[1:]-logits[:-1] &lt; 0]</string_value>
+log_max_its = logits.max()</string_value>
         </variable>
       </variables>
     </simulation>
   </simulations>
   <tests>
     <test name="conv_it">
-      <string_value lines="20" type="code" language="python">assert abs(conv_it-36) &lt;=2</string_value>
+      <string_value lines="20" type="code" language="python">assert conv_it &lt; 40</string_value>
     </test>
     <test name="log_max_its">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(log_max_its==conv_it)</string_value>
+assert numpy.all(log_max_its==int(conv_it))</string_value>
     </test>
   </tests>
 </harness_options>
