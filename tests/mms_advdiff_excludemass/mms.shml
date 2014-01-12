@@ -11,8 +11,8 @@
         <string_value lines="1" type="filename">mms.tfml</string_value>
       </input_file>
       <parameter_sweep>
-        <parameter name="resolution">
-          <values>0.08 0.04 0.02 0.01 0.005</values>
+        <parameter name="npoints">
+          <values>5 10 20 40 80</values>
         </parameter>
         <parameter name="degree">
           <values>1 2</values>
@@ -34,10 +34,10 @@ for s in xrange(libspud.option_count("/system")):
             <string_value lines="1" type="filename">mesh.geo</string_value>
           </input_file>
           <parameter_sweep>
-            <parameter name="resolution">
+            <parameter name="npoints">
               <update>
                 <string_value lines="20" type="code" language="python">from string import Template as template
-input_file = template(input_file).safe_substitute({"res":resolution})</string_value>
+input_file = template(input_file).safe_substitute({"nhpoints":npoints,"nvpoints":str(int(0.8*float(npoints)))})</string_value>
               </update>
             </parameter>
           </parameter_sweep>
@@ -49,7 +49,7 @@ input_file = template(input_file).safe_substitute({"res":resolution})</string_va
             </filenames>
           </required_output>
           <commands>
-            <command name="GMsh">gmsh -2 -algo del2d mesh.geo -o mesh.msh</command>
+            <command name="GMsh">gmsh -2 mesh.geo -o mesh.msh</command>
             <command name="Convert">dolfin-convert mesh.msh mesh.xml</command>
           </commands>
         </run>
@@ -78,7 +78,7 @@ print error_l2[{'degree':['1']}]
 error_l2_a = numpy.array(error_l2[{'degree':['1']}])
 conv_l2 = numpy.log2(error_l2_a[:-1]/error_l2_a[1:])
 print conv_l2
-assert(numpy.all(conv_l2 &gt; 1.5))</string_value>
+assert(numpy.all(conv_l2 &gt; 1.9))</string_value>
     </test>
     <test name="error_linf_p1">
       <string_value lines="20" type="code" language="python">import numpy
@@ -86,7 +86,7 @@ print error_linf[{'degree':['1']}]
 error_linf_a = numpy.array(error_linf[{'degree':['1']}])
 conv_linf = numpy.log2(error_linf_a[:-1]/error_linf_a[1:])
 print conv_linf
-assert(numpy.all(conv_linf &gt; 1.0))</string_value>
+assert(numpy.all(conv_linf &gt; 1.5))</string_value>
     </test>
     <test name="error_l2_p2">
       <string_value lines="20" type="code" language="python">import numpy
@@ -94,7 +94,7 @@ print error_l2[{'degree':['2']}]
 error_l2_a = numpy.array(error_l2[{'degree':['2']}])
 conv_l2 = numpy.log2(error_l2_a[:-1]/error_l2_a[1:])
 print conv_l2
-assert(numpy.all(conv_l2 &gt; 3.0))</string_value>
+assert(numpy.all(conv_l2 &gt; 2.9))</string_value>
     </test>
     <test name="error_linf_p2">
       <string_value lines="20" type="code" language="python">import numpy
