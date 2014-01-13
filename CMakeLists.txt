@@ -26,10 +26,7 @@ cmake_minimum_required(VERSION 2.8)
 
 project(terraferma)
 
-if (NOT BUCKETTOOLS_DIR)
-  set(BUCKETTOOLS_DIR "${PROJECT_SOURCE_DIR}/buckettools" CACHE PATH
-       "Location of buckettools." FORCE)
-endif()
+set(BUCKETTOOLS_DIR "${PROJECT_SOURCE_DIR}/buckettools")
 
 add_subdirectory(${BUCKETTOOLS_DIR} "buckettools")
 
@@ -47,7 +44,7 @@ module-whatis \"Sets environment for TerraFERMA and Buckettools.\"
 
 setenv       TF_CMAKE_PATH         ${CMAKE_INSTALL_PREFIX}/share/terraferma/cpp
 prepend-path CMAKE_MODULE_PATH     ${CMAKE_INSTALL_PREFIX}/share/buckettools/cmake/modules
-prepend-path PYTHONPATH            ${CMAKE_INSTALL_PREFIX}/${BUCKETTOOLS_PYTHON_INSTALL_DIR}
+prepend-path PYTHONPATH            ${BUCKETTOOLS_PYTHON_INSTALL_DIR}
 prepend-path DIAMOND_CONFIG_PATH   ${CMAKE_INSTALL_PREFIX}/share/buckettools/diamond
 prepend-path PATH                  ${CMAKE_INSTALL_PREFIX}/bin
 
