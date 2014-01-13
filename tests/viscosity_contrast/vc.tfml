@@ -323,9 +323,7 @@ r = rsv + rsp</string_value>
                     <integer_value rank="0">1000</integer_value>
                   </max_iterations>
                   <nonzero_initial_guess/>
-                  <monitors>
-                    <preconditioned_residual/>
-                  </monitors>
+                  <monitors/>
                 </iterative_method>
                 <preconditioner name="gamg">
                   <near_null_space>
@@ -377,9 +375,7 @@ r = rsv + rsp</string_value>
                     <integer_value rank="0">1000</integer_value>
                   </max_iterations>
                   <nonzero_initial_guess/>
-                  <monitors>
-                    <preconditioned_residual/>
-                  </monitors>
+                  <monitors/>
                 </iterative_method>
                 <preconditioner name="sor"/>
               </linear_solver>

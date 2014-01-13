@@ -53,19 +53,45 @@ endif()
 # Include directories
 include_directories(${DOLFIN_INCLUDE_DIRS} ${DOLFIN_3RD_PARTY_INCLUDE_DIRS})
 
-find_package(PythonLibs)
+find_package(PythonInterp 2 REQUIRED)
+
+# Set variables to help find Python library that is compatible with
+# interpreter
+if (PYTHONINTERP_FOUND)
+  # Get Python include path from Python interpretter
+  execute_process(COMMAND "${PYTHON_EXECUTABLE}" -c
+                         "import distutils.sysconfig, sys; sys.stdout.write(distutils.sysconfig.get_python_inc())"
+                  OUTPUT_VARIABLE _PYTHON_INCLUDE_PATH
+                  RESULT_VARIABLE _PYTHON_INCLUDE_RESULT)
+
+  # Get Python library path from interpreter
+  execute_process(COMMAND "${PYTHON_EXECUTABLE}" -c
+                        "import os, sys, inspect; sys.stdout.write(os.path.split(os.path.split(inspect.getfile(inspect))[0])[0])"
+                  OUTPUT_VARIABLE _PYTHON_LIB_PATH
+                  RESULT_VARIABLE _PYTHON_LIB_RESULT)
+
+  # Set include path, if returned by interpreter
+  if ("${_PYTHON_INCLUDE_RESULT}" STREQUAL "0")
+    set(PYTHON_INCLUDE_DIR ${_PYTHON_INCLUDE_PATH})
+  endif()
+
+  # Add a search path for Python library based on output from
+  # iterpreter
+  if ("${_PYTHON_LIB_RESULT}" STREQUAL "0")
+    set(CMAKE_LIBRARY_PATH ${_PYTHON_LIB_PATH})
+  endif()
+else()
+  message(FATAL_ERROR "Could not find python interpreter.")
+endif()
+
+# Find Pythons livs
+find_package(PythonLibs ${PYTHON_VERSION_STRING} EXACT REQUIRED)
 
 if(NOT ${PYTHONLIBS_FOUND})
   message(FATAL_ERROR "Could not find python libraries.")
 endif(NOT ${PYTHONLIBS_FOUND})
 
 include_directories(${PYTHON_INCLUDE_PATH})
-
-find_package(PythonInterp)
-
-if(NOT ${PYTHONINTERP_FOUND})
-  message(FATAL_ERROR "Could not find python interpreter.")
-endif(NOT ${PYTHONINTERP_FOUND})
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules")
 
@@ -81,17 +107,14 @@ add_subdirectory(cpp)
 
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/ DESTINATION include)
 
-if (NOT DEFINED BUCKETTOOLS_PYTHON_INSTALL_DIR)
-  # Get path for pure Python modules
-  execute_process(
-    COMMAND ${PYTHON_EXECUTABLE} -c "import sys, distutils.sysconfig; sys.stdout.write(distutils.sysconfig.get_python_lib(plat_specific=False, prefix='${CMAKE_INSTALL_PREFIX}'))"
+if (PYTHONINTERP_FOUND)
+
+  set(PYTHON_LIB_DISCOVER_STR "import sys, distutils.sysconfig; sys.stdout.write(distutils.sysconfig.get_python_lib(plat_specific=True, prefix='${CMAKE_INSTALL_PREFIX}'))")
+
+  # Probe Python interpreter
+  execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "${PYTHON_LIB_DISCOVER_STR}"
     OUTPUT_VARIABLE BUCKETTOOLS_PYTHON_INSTALL_DIR
     )
-  # Strip off CMAKE_INSTALL_PREFIX (is added later by CMake)
-  string(REGEX REPLACE "${CMAKE_INSTALL_PREFIX}(/|\\\\)([^ ]*)" "\\2"
-    BUCKETTOOLS_PYTHON_INSTALL_DIR "${BUCKETTOOLS_PYTHON_INSTALL_DIR}")
-  set(BUCKETTOOLS_PYTHON_INSTALL_DIR ${BUCKETTOOLS_PYTHON_INSTALL_DIR}
-    CACHE PATH "Python module installation directory.")
 endif()
 
 if (BUCKETTOOLS_PYTHON_INSTALL_DIR)
