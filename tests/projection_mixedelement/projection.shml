@@ -229,132 +229,111 @@ stat = parser("projection.stat")
 snes_dummy_min = stat["SNESProjection"]["Dummy"]["min"]</string_value>
         </variable>
         <variable name="picard_field1_vtu">
-          <string_value type="code" lines="20" language="python">vtu = vtktools.vtu("projection000010.vtu")
+          <string_value lines="20" type="code" language="python">vtu = vtktools.vtu("projection000010.vtu")
 picard_field1_vtu = vtu.GetField("PicardProjection::Field1")</string_value>
         </variable>
         <variable name="snes_resfield2_vtu_1">
-          <string_value lines="20" type="code" language="python">
-import buckettools.vtktools as vtktools
+          <string_value lines="20" type="code" language="python">import buckettools.vtktools as vtktools
 vtu = vtktools.vtu("projection000010.vtu")
 snes_resfield2_vtu_1 = vtu.GetField("SNESProjection::ResidualField2")[:,1]</string_value>
         </variable>
         <variable name="snes_field1_vtu_1">
-          <string_value lines="20" type="code" language="python">
-import buckettools.vtktools as vtktools
+          <string_value lines="20" type="code" language="python">import buckettools.vtktools as vtktools
 vtu = vtktools.vtu("projection000010.vtu")
 snes_field1_vtu_1 = vtu.GetField("SNESProjection::Field1")</string_value>
         </variable>
         <variable name="snes_dummy_vtu">
-          <string_value lines="20" type="code" language="python">
-import buckettools.vtktools as vtktools
+          <string_value lines="20" type="code" language="python">import buckettools.vtktools as vtktools
 vtu = vtktools.vtu("projection000010.vtu")
 snes_dummy_vtu = vtu.GetField("SNESProjection::Dummy")</string_value>
         </variable>
         <variable name="picard_field1_vtu">
-          <string_value lines="20" type="code" language="python">
-import buckettools.vtktools as vtktools
+          <string_value lines="20" type="code" language="python">import buckettools.vtktools as vtktools
 vtu = vtktools.vtu("projection000010.vtu")
 picard_field1_vtu = vtu.GetField("PicardProjection::Field1")</string_value>
         </variable>
         <variable name="snes_resfield2_vtu_0">
-          <string_value lines="20" type="code" language="python">
-import buckettools.vtktools as vtktools
+          <string_value lines="20" type="code" language="python">import buckettools.vtktools as vtktools
 vtu = vtktools.vtu("projection000010.vtu")
 snes_resfield2_vtu_0 = vtu.GetField("SNESProjection::ResidualField2")[:,0]</string_value>
         </variable>
         <variable name="picard_source2_vtu_0">
-          <string_value lines="20" type="code" language="python">
-import buckettools.vtktools as vtktools
+          <string_value lines="20" type="code" language="python">import buckettools.vtktools as vtktools
 vtu = vtktools.vtu("projection000010.vtu")
 picard_source2_vtu_0 = vtu.GetField("PicardProjection::Source2")[:,0]</string_value>
         </variable>
         <variable name="picard_source2_vtu_1">
-          <string_value lines="20" type="code" language="python">
-import buckettools.vtktools as vtktools
+          <string_value lines="20" type="code" language="python">import buckettools.vtktools as vtktools
 vtu = vtktools.vtu("projection000010.vtu")
 picard_source2_vtu_1 = vtu.GetField("PicardProjection::Source2")[:,1]</string_value>
         </variable>
         <variable name="locations_vtu">
-          <string_value lines="20" type="code" language="python">
-import buckettools.vtktools as vtktools
+          <string_value lines="20" type="code" language="python">import buckettools.vtktools as vtktools
 vtu = vtktools.vtu("projection000010.vtu")
 locations_vtu = vtu.GetLocations()</string_value>
         </variable>
         <variable name="picard_resfield1_vtu">
-          <string_value lines="20" type="code" language="python">
-import buckettools.vtktools as vtktools
+          <string_value lines="20" type="code" language="python">import buckettools.vtktools as vtktools
 vtu = vtktools.vtu("projection000010.vtu")
 picard_resfield1_vtu = vtu.GetField("PicardProjection::ResidualField1")</string_value>
         </variable>
         <variable name="picard_resfield2_vtu_1">
-          <string_value lines="20" type="code" language="python">
-import buckettools.vtktools as vtktools
+          <string_value lines="20" type="code" language="python">import buckettools.vtktools as vtktools
 vtu = vtktools.vtu("projection000010.vtu")
 picard_resfield2_vtu_1 = vtu.GetField("PicardProjection::ResidualField2")[:,1]</string_value>
         </variable>
         <variable name="picard_resfield2_vtu_0">
-          <string_value lines="20" type="code" language="python">
-import buckettools.vtktools as vtktools
+          <string_value lines="20" type="code" language="python">import buckettools.vtktools as vtktools
 vtu = vtktools.vtu("projection000010.vtu")
 picard_resfield2_vtu_0 = vtu.GetField("PicardProjection::ResidualField2")[:,0]</string_value>
         </variable>
         <variable name="picard_field2_vtu_0">
-          <string_value lines="20" type="code" language="python">
-import buckettools.vtktools as vtktools
+          <string_value lines="20" type="code" language="python">import buckettools.vtktools as vtktools
 vtu = vtktools.vtu("projection000010.vtu")
 picard_field2_vtu_0 = vtu.GetField("PicardProjection::Field2")[:,0]</string_value>
         </variable>
         <variable name="picard_field2_vtu_1">
-          <string_value lines="20" type="code" language="python">
-import buckettools.vtktools as vtktools
+          <string_value lines="20" type="code" language="python">import buckettools.vtktools as vtktools
 vtu = vtktools.vtu("projection000010.vtu")
 picard_field2_vtu_1 = vtu.GetField("PicardProjection::Field2")[:,1]</string_value>
         </variable>
         <variable name="snes_source2_vtu_0">
-          <string_value lines="20" type="code" language="python">
-import buckettools.vtktools as vtktools
+          <string_value lines="20" type="code" language="python">import buckettools.vtktools as vtktools
 vtu = vtktools.vtu("projection000010.vtu")
 snes_source2_vtu_0 = vtu.GetField("SNESProjection::Source2")[:,0]</string_value>
         </variable>
         <variable name="snes_source2_vtu_1">
-          <string_value lines="20" type="code" language="python">
-import buckettools.vtktools as vtktools
+          <string_value lines="20" type="code" language="python">import buckettools.vtktools as vtktools
 vtu = vtktools.vtu("projection000010.vtu")
 snes_source2_vtu_1 = vtu.GetField("SNESProjection::Source2")[:,1]</string_value>
         </variable>
         <variable name="snes_source1_vtu">
-          <string_value lines="20" type="code" language="python">
-import buckettools.vtktools as vtktools
+          <string_value lines="20" type="code" language="python">import buckettools.vtktools as vtktools
 vtu = vtktools.vtu("projection000010.vtu")
 snes_source1_vtu = vtu.GetField("SNESProjection::Source1")[:,0]</string_value>
         </variable>
         <variable name="picard_source1_vtu">
-          <string_value lines="20" type="code" language="python">
-import buckettools.vtktools as vtktools
+          <string_value lines="20" type="code" language="python">import buckettools.vtktools as vtktools
 vtu = vtktools.vtu("projection000010.vtu")
 picard_source1_vtu = vtu.GetField("PicardProjection::Source1")</string_value>
         </variable>
         <variable name="snes_resfield1_vtu">
-          <string_value lines="20" type="code" language="python">
-import buckettools.vtktools as vtktools
+          <string_value lines="20" type="code" language="python">import buckettools.vtktools as vtktools
 vtu = vtktools.vtu("projection000010.vtu")
 snes_resfield1_vtu = vtu.GetField("SNESProjection::ResidualField1")</string_value>
         </variable>
         <variable name="picard_dummy_vtu">
-          <string_value lines="20" type="code" language="python">
-import buckettools.vtktools as vtktools
+          <string_value lines="20" type="code" language="python">import buckettools.vtktools as vtktools
 vtu = vtktools.vtu("projection000010.vtu")
 picard_dummy_vtu = vtu.GetField("PicardProjection::Dummy")</string_value>
         </variable>
         <variable name="snes_field2_vtu_0">
-          <string_value lines="20" type="code" language="python">
-import buckettools.vtktools as vtktools
+          <string_value lines="20" type="code" language="python">import buckettools.vtktools as vtktools
 vtu = vtktools.vtu("projection000010.vtu")
 snes_field2_vtu_0 = vtu.GetField("SNESProjection::Field2")[:,0]</string_value>
         </variable>
         <variable name="snes_field2_vtu_1">
-          <string_value lines="20" type="code" language="python">
-import buckettools.vtktools as vtktools
+          <string_value lines="20" type="code" language="python">import buckettools.vtktools as vtktools
 vtu = vtktools.vtu("projection000010.vtu")
 snes_field2_vtu_1 = vtu.GetField("SNESProjection::Field2")[:,1]</string_value>
         </variable>
@@ -485,21 +464,45 @@ assert numpy.all(abs(picard_source2_vtu_1-3000.0) &lt; 1.e-9)</string_value>
     </test>
     <test name="locations_vtu">
       <string_value lines="20" type="code" language="python">import numpy
-locations = numpy.array([[ 0.5 ,  0.  ,  0.  ],
- [ 0.25,  0.25,  0.  ],
+tolerance = 1.e-6
+locations = numpy.array([
  [ 0.  ,  0.  ,  0.  ],
- [ 0.  ,  0.5 ,  0.  ],
- [ 0.75,  0.25,  0.  ],
+ [ 0.5 ,  0.  ,  0.  ],
  [ 1.  ,  0.  ,  0.  ],
- [ 1.  ,  0.5 ,  0.  ],
+ [ 0.25,  0.25,  0.  ],
+ [ 0.75,  0.25,  0.  ],
+ [ 0.  ,  0.5 ,  0.  ],
  [ 0.5 ,  0.5 ,  0.  ],
- [ 0.75,  0.75,  0.  ],
+ [ 1.  ,  0.5 ,  0.  ],
  [ 0.25,  0.75,  0.  ],
+ [ 0.75,  0.75,  0.  ],
  [ 0.  ,  1.  ,  0.  ],
+ [ 0.5 ,  1.  ,  0.  ],
  [ 1.  ,  1.  ,  0.  ],
- [ 0.5 ,  1.  ,  0.  ]]) # the p2 locations
+ ]) # the p2 locations
 
-assert numpy.all(locations_vtu == locations)</string_value>
+assert(locations.shape == locations_vtu.shape)
+
+for j in range(locations_vtu.shape[1]):
+  # compute the smallest possible precision given the range of this coordinate
+  epsilon = numpy.finfo(numpy.float).eps * numpy.abs(locations_vtu[:,j]).max()
+  if tolerance&lt;epsilon:
+    # the specified tolerance is smaller than possible machine precision
+    # (or something else went wrong)
+    raise Exception("ERROR: specified tolerance is smaller than machine precision of given locations")
+  # ensure epsilon doesn't get too small (might be for zero for instance)
+  epsilon=max(epsilon,tolerance/100.0)
+  # round to that many decimal places (-2 to be sure) so that
+  # we don't get rounding issues with lexsort
+  locations_vtu[:,j]=numpy.around(locations_vtu[:,j], int(-numpy.log10(epsilon))-2)
+  locations[:,j]=numpy.around(locations[:,j], int(-numpy.log10(epsilon))-2)
+
+# lexical sort on x,y and z coordinates resp. of locations1 and locations2
+sort_index_vtu=numpy.lexsort(locations_vtu.T)
+sort_index=numpy.lexsort(locations.T)
+
+# should now be in same order, so we can check for its biggest difference
+assert(numpy.allclose(locations[sort_index],locations_vtu[sort_index_vtu], atol=tolerance))</string_value>
     </test>
     <test name="picard_resfield1_vtu">
       <string_value lines="20" type="code" language="python">import numpy
