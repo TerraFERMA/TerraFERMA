@@ -65,9 +65,9 @@ if __name__ == "__main__":
                            description="""Configure a TerraFERMA simulation using cmake.""")
     parser.add_argument('filename', action='store', metavar='filename', type=str,
                         help='specify tfml filename')
-    parser.add_argument('-a', '--auxilliary_files', action='store', metavar='filename', dest='auxfiles', 
+    parser.add_argument('-a', '--auxiliary_files', action='store', metavar='filename', dest='auxfiles', 
                         required=False, default=[], nargs='+', 
-                        help='auxilliary files that should be linked in build directory')
+                        help='auxiliary files that should be linked in build directory')
     parser.add_argument('-d', '--build_dir', action='store', metavar='directory', dest='build_dir', 
                         type=str, required=False, default='build', 
                         help='out of tree build directory')
