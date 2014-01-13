@@ -31,10 +31,8 @@ cmake_policy(SET CMP0004 OLD)
 find_package(DOLFIN)
 
 # Default build type (can be overridden by user)
-if (NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING
-    "Choose the type of build, options are: Debug MinSizeRel Release RelWithDebInfo." FORCE)
-endif()
+set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING
+  "Choose the type of build, options are: Debug MinSizeRel Release RelWithDebInfo.")
 
 # Compiler definitions
 add_definitions(${DOLFIN_CXX_DEFINITIONS})
@@ -52,15 +50,11 @@ include_directories(${DOLFIN_INCLUDE_DIRS} ${DOLFIN_3RD_PARTY_INCLUDE_DIRS})
 
 project(terraferma)
 
-if (NOT EXECUTABLE)
-  set(EXECUTABLE "terraferma" CACHE STRING
-       "The name of the executable" FORCE)
-endif()
+set(EXECUTABLE "terraferma" CACHE STRING
+     "The name of the executable")
 
-if (NOT LOGLEVEL)
-  set(LOGLEVEL "INFO" CACHE STRING
-       "The log level used in the run target, options are: DBG, TRACE, PROGRESS, INFO, WARNING, ERROR, CRITICAL." FORCE)
-endif()
+set(LOGLEVEL "INFO" CACHE STRING
+     "The log level used in the run target, options are: DBG, TRACE, PROGRESS, INFO, WARNING, ERROR, CRITICAL.")
 
 set(CMAKE_MODULE_PATH $ENV{CMAKE_MODULE_PATH})
 

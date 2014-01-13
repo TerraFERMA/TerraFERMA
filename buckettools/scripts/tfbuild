@@ -144,13 +144,15 @@ if __name__ == "__main__":
     cmake_path = os.getenv('TF_CMAKE_PATH')
     if cmake_path is None: raise Exception("Could not find TF_CMAKE_PATH in environment.")
 
-    p = subprocess.Popen([cmake_prog,cmake_path,
-                         "-DOPTIONSFILE="+tfmlfile,
-                         "-DEXECUTABLE="+executable]+cmake_options, 
-                         cwd=build_dir)   
-    retcode = p.wait()
-    if retcode != 0:
-      raise Exception("%s returned error code %d in directory %s."%(cmake_prog, retcode, build_dir))
+    # run twice as cmake seems to modify flags on second run
+    for i in xrange(2):
+      p = subprocess.Popen([cmake_prog,cmake_path,
+                           "-DOPTIONSFILE="+tfmlfile,
+                           "-DEXECUTABLE="+executable]+cmake_options, 
+                           cwd=build_dir)   
+      retcode = p.wait()
+      if retcode != 0:
+        raise Exception("%s returned error code %d in directory %s."%(cmake_prog, retcode, build_dir))
 
 
 

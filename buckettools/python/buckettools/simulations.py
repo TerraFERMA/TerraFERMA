@@ -615,17 +615,19 @@ class Simulation(Run):
     except OSError:
       pass
 
-    p = subprocess.Popen(["cmake", \
-                          "-DOPTIONSFILE="+os.path.join(self.builddirectory, self.filename+self.ext), \
-                          "-DCMAKE_BUILD_TYPE=RelWithDebInfo", \
-                          "-DLOGLEVEL=INFO", \
-                          "-DEXECUTABLE="+self.filename, \
-                          os.path.join(self.tfdirectory,os.curdir)],
-                          cwd=dirname)
-    retcode = p.wait()
-    if retcode!=0:
-      self.log("ERROR: cmake returned %d in directory: %s"%(retcode, dirname))
-      raise SimulationsErrorConfigure
+    # run twice as cmake seems to modify flags on second run
+    for i in xrange(2):
+      p = subprocess.Popen(["cmake", \
+                            "-DOPTIONSFILE="+os.path.join(self.builddirectory, self.filename+self.ext), \
+                            "-DCMAKE_BUILD_TYPE=RelWithDebInfo", \
+                            "-DLOGLEVEL=INFO", \
+                            "-DEXECUTABLE="+self.filename, \
+                            os.path.join(self.tfdirectory,os.curdir)],
+                            cwd=dirname)
+      retcode = p.wait()
+      if retcode!=0:
+        self.log("ERROR: cmake returned %d in directory: %s"%(retcode, dirname))
+        raise SimulationsErrorConfigure
 
   def build(self, force=False):
 
