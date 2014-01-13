@@ -387,7 +387,7 @@ class Run:
             try:
               shutil.copy(filepath, os.path.join(dirname, os.path.basename(filepath)))
             except IOError:
-              self.log("WARNING: required input not found, continuing anyway.")
+              self.log("WARNING: required input (%s) not found, continuing anyway."%(filepath))
           
           env = copy.copy(os.environ)
           try:
