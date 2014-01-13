@@ -22,6 +22,6 @@ set(BUCKETTOOLS_BIN "@CMAKE_INSTALL_PREFIX@/bin")
 mark_as_advanced(BUCKETTOOLS_BIN)
 
 # BucketTools library
-set(BUCKETTOOLS_LIBRARIES "@CMAKE_INSTALL_PREFIX@/lib/libbuckettools_cpp.so")
+set(BUCKETTOOLS_LIBRARIES "@BUCKETTOOLS_LIBRARY@")
 mark_as_advanced(BUCKETTOOLS_LIBRARIES)
 
