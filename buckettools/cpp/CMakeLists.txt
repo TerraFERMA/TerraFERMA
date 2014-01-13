@@ -90,6 +90,10 @@ set_source_files_properties(builddefs.h PROPERTIES GENERATED 1)
 add_dependencies(buckettools_cpp builddefs)
 # link to other libraries
 target_link_libraries(buckettools_cpp ${DOLFIN_LIBRARIES} ${DOLFIN_3RD_PARTY_LIBRARIES} ${SPUD_LIBRARIES} ${PYTHON_LIBRARIES})
+get_target_property(BUCKETTOOLS_LIBRARY_LOCATION buckettools_cpp LOCATION)
+get_filename_component(BUCKETTOOLS_LIBRARY_FILENAME ${BUCKETTOOLS_LIBRARY_LOCATION} NAME)
+set(BUCKETTOOLS_LIBRARY "${CMAKE_INSTALL_PREFIX}/lib/${BUCKETTOOLS_LIBRARY_FILENAME}" PARENT_SCOPE)
+message(STATUS "BUCKETTOOLS_LIBRARY ${BUCKETTOOLS_LIBRARY}")
 
 install(TARGETS buckettools_cpp DESTINATION lib)
 
