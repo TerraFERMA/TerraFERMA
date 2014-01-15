@@ -11,7 +11,7 @@ the appropriate variables (for users of the Bash shell).
 
 To update your environment variables, run the following command:
 
-    source ${CMAKE_INSTALL_PREFIX}/share/terraferma/terraferma.config
+    source ${CMAKE_INSTALL_PREFIX}/share/terraferma/terraferma.conf
 
 For future reference, we recommend that you add this command to your
 configuration (.bashrc, .profile or similar).

@@ -33,7 +33,7 @@ add_subdirectory(${BUCKETTOOLS_DIR} "buckettools")
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/cpp DESTINATION share/terraferma)
 
 file(
-    WRITE ${PROJECT_BINARY_DIR}/terraferma.config
+    WRITE ${PROJECT_BINARY_DIR}/terraferma.conf
 "# Helper file for setting non-default TerraFERMA and Buckettools environment variables
 
 # Common Unix variables
@@ -48,7 +48,7 @@ export DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:\$DYLD_LIBRARY_PATH
 "
     )
 
-install(FILES ${PROJECT_BINARY_DIR}/terraferma.config DESTINATION share/terraferma)
+install(FILES ${PROJECT_BINARY_DIR}/terraferma.conf DESTINATION share/terraferma)
 
 file(
     WRITE ${PROJECT_BINARY_DIR}/terraferma.configmodule
