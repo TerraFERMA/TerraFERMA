@@ -236,7 +236,7 @@ void buckettools::parse_arguments(int argc, char** argv)
     std::ostringstream debug_file, err_file;
     debug_file << "terraferma.log";
     err_file << "terraferma.err";
-    int proc = dolfin::MPI::process_number();
+    int proc = dolfin::MPI::process_number(MPI_COMM_WORLD);
     debug_file << "-" << proc;
     err_file << "-" << proc;
 

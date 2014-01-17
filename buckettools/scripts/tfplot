@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# PYTHON_ARGCOMPLETE_OK
 #
 # James Maddison
 # (originally part of fluidity, modified for buckettools by Cian Wilson)
@@ -55,43 +56,51 @@
 Plot data in a .stat formatted file
 """
 
-import getopt
 import os
 import sys
 import time
-
 import gtk
 
-import buckettools.diagnostics.debug as debug
-import buckettools.diagnostics.tools as tools
-import buckettools.diagnostics.gui as gui
-import buckettools.diagnostics.plotting as plotting
+import argparse
+try:
+  import argcomplete
+except ImportError:
+  pass
 
-def Help():
-  debug.dprint("Usage: bucketstatplot [OPTIONS] FILENAME [FILENAME ...]\n" + \
-               "\n" + \
-               "Options:\n" + \
-               "\n" + \
-               "-h  Display this help\n" + \
-               "-v  Verbose mode",  0)
-
-  return
+parser = argparse.ArgumentParser( \
+                       description="""Generate a quick plot a diagnostic file.\n"""
+                                   """\n"""
+                                   """When running tfplot responds to the following keys:\n"""
+                                   """ r : refresh data (update bounds)\n"""
+                                   """ R : refresh data (maintain bounds)\n"""
+                                   """ l : switch to line plot\n"""
+                                   """ s : switch to scatter plot\n"""
+                                   """ x : toggle between linear and log x-axis\n"""
+                                   """ y : toggle between linear and log y-axis\n"""
+                                   """ q : quit""",
+                       formatter_class=argparse.RawTextHelpFormatter)
+parser.add_argument('filename', action='store', metavar='filename', type=str, nargs='+',
+                    help='specify filename(s) - multiple filenames are assumed to be from related checkpoints')
+parser.add_argument('-v', '--verbose', action='store_const', dest='verbose', const=True, default=False, 
+                    required=False,
+                    help='verbose mode')
+try:
+  argcomplete.autocomplete(parser)
+except NameError:
+  pass
+args = parser.parse_args()
 
 try:
-  opts, args = getopt.getopt(sys.argv[1:], "hv")
-except getopt.GetoptError:
-  Help()
-  sys.exit(-1)
-  
-if not ("-v", "") in opts:
-  debug.SetDebugLevel(0)
-  
-if ("-h", "") in opts:
-  Help()
+  import buckettools.diagnostics.debug as debug
+  import buckettools.diagnostics.tools as tools
+  import buckettools.diagnostics.gui as gui
+  import buckettools.diagnostics.plotting as plotting
+except ImportError:
+  print "Error while importing buckettools diagnostics.  PYTHONPATH set correctly?"
   sys.exit(1)
-  
-if len(args) == 0:
-  debug.FatalError("Filename must be specified")
+
+if not args.verbose:
+  debug.SetDebugLevel(0)
 
 class StatplotWindow(gtk.Window):
   def __init__(self, filenames):
@@ -271,7 +280,7 @@ class StatplotWindow(gtk.Window):
     return
 
 # The window
-window = StatplotWindow(args)
+window = StatplotWindow(args.filename)
 window.set_default_size(640, 480)
 
 # Fire up the GUI

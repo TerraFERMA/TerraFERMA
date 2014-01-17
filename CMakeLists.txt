@@ -33,7 +33,25 @@ add_subdirectory(${BUCKETTOOLS_DIR} "buckettools")
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/cpp DESTINATION share/terraferma)
 
 file(
-    WRITE ${PROJECT_BINARY_DIR}/configmodule
+    WRITE ${PROJECT_BINARY_DIR}/terraferma.conf
+"# Helper file for setting non-default TerraFERMA and Buckettools environment variables
+
+# Common Unix variables
+export TF_CMAKE_PATH=${CMAKE_INSTALL_PREFIX}/share/terraferma/cpp
+export CMAKE_MODULE_PATH=${CMAKE_INSTALL_PREFIX}/share/buckettools/cmake/modules:\$CMAKE_MODULE_PATH
+export PYTHONPATH=${BUCKETTOOLS_PYTHON_INSTALL_DIR}:\$PYTHONPATH
+export DIAMOND_CONFIG_PATH=${CMAKE_INSTALL_PREFIX}/share/buckettools/diamond:\$DIAMOND_CONFIG_PATH
+export PATH=${CMAKE_INSTALL_PREFIX}/bin:\$PATH
+
+# Special Mac variables
+export DYLD_LIBRARY_PATH=${CMAKE_INSTALL_PREFIX}/lib:\$DYLD_LIBRARY_PATH
+"
+    )
+
+install(FILES ${PROJECT_BINARY_DIR}/terraferma.conf DESTINATION share/terraferma)
+
+file(
+    WRITE ${PROJECT_BINARY_DIR}/terraferma.configmodule
 "#%Module1.0
 proc ModulesHelp { } {
         global dotversion
@@ -51,10 +69,9 @@ prepend-path PATH                  ${CMAKE_INSTALL_PREFIX}/bin
 # Special Environment variables for resolving Dynamic Libraries on MacOSX
 prepend-path DYLD_LIBRARY_PATH     ${CMAKE_INSTALL_PREFIX}/lib
 "
-
     )
 
-install(FILES ${PROJECT_BINARY_DIR}/configmodule DESTINATION share/terraferma)
+install(FILES ${PROJECT_BINARY_DIR}/terraferma.configmodule DESTINATION share/terraferma)
 
 find_program(HAVE_GIT git)
 if(HAVE_GIT)
@@ -285,3 +302,5 @@ add_custom_target(
 # install tutorials under share
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/tutorials DESTINATION share/terraferma)
 
+# print post-install message
+add_subdirectory(cmake/post-install)

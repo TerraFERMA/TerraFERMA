@@ -136,25 +136,25 @@ class Variable(TestOrVariable):
 ####################################################################################
 
 class NestedList(list):
-  '''A class that implements a nested list structure based on a dictionary of paramters.  
+  '''A class that implements a nested list structure based on a dictionary of parameters.  
      The resulting nested list can be indexed by a dictionary of parameters that works out which
      indices to index into the nested list structure.'''
 
-  def __init__(self, param=None):
+  def __init__(self, parameters=None):
     '''Initialize a nested list.'''
     # initialize the base list class
     super(NestedList, self).__init__()
 
     # record the parameter dictionary or set up an empty one
-    if param is None: param = collections.OrderedDict()
-    self.param = param
+    if parameters is None: parameters = collections.OrderedDict()
+    self.parameters = parameters
 
     # if the parameters have been provided in an ordered dictionary then
     # we respect that order, otherwise we sort the keys alphabetically:
-    if isinstance(self.param, collections.OrderedDict):
-      self.sortedkeys = self.param.keys()
+    if isinstance(self.parameters, collections.OrderedDict):
+      self.sortedkeys = self.parameters.keys()
     else:
-      self.sortedkeys = sorted(self.param.keys())
+      self.sortedkeys = sorted(self.parameters.keys())
 
     # create the nested list structure, beneath the top level list object, self:
     self.createnestedlist(self)
@@ -163,11 +163,11 @@ class NestedList(list):
     '''Recursively set up a nested list.'''
     # if we've reached the bottom of the dictionary then append Nones and done recurse
     if level == len(self.sortedkeys)-1:
-      for val in self.param[self.sortedkeys[level]]: parentlist.append(None)
+      for val in self.parameters[self.sortedkeys[level]]: parentlist.append(None)
     # if we haven't reached the bottom then loop over the values and recursively call
     # this function to set up the sublevels of the nested list
     elif level < len(self.sortedkeys)-1:
-      for val in self.param[self.sortedkeys[level]]: 
+      for val in self.parameters[self.sortedkeys[level]]: 
         childlist = []
         self.createnestedlist(childlist, level=level+1)
         parentlist.append(childlist)
@@ -180,7 +180,7 @@ class NestedList(list):
     # loop over all the keys we want
     for key in self.sortedkeys:
       # get all the values that are allowed for this key
-      paramvals = self.param[key]
+      paramvals = self.parameters[key]
       # if the key is in the input then...
       if key in index:
         # it it has been mentioned then we only take the values requested
@@ -615,17 +615,19 @@ class Simulation(Run):
     except OSError:
       pass
 
-    p = subprocess.Popen(["cmake", \
-                          "-DOPTIONSFILE="+os.path.join(self.builddirectory, self.filename+self.ext), \
-                          "-DCMAKE_BUILD_TYPE=RelWithDebInfo", \
-                          "-DLOGLEVEL=INFO", \
-                          "-DEXECUTABLE="+self.filename, \
-                          os.path.join(self.tfdirectory,os.curdir)],
-                          cwd=dirname)
-    retcode = p.wait()
-    if retcode!=0:
-      self.log("ERROR: cmake returned %d in directory: %s"%(retcode, dirname))
-      raise SimulationsErrorConfigure
+    # run twice as cmake seems to modify flags on second run
+    for i in xrange(2):
+      p = subprocess.Popen(["cmake", \
+                            "-DOPTIONSFILE="+os.path.join(self.builddirectory, self.filename+self.ext), \
+                            "-DCMAKE_BUILD_TYPE=RelWithDebInfo", \
+                            "-DLOGLEVEL=INFO", \
+                            "-DEXECUTABLE="+self.filename, \
+                            os.path.join(self.tfdirectory,os.curdir)],
+                            cwd=dirname)
+      retcode = p.wait()
+      if retcode!=0:
+        self.log("ERROR: cmake returned %d in directory: %s"%(retcode, dirname))
+        raise SimulationsErrorConfigure
 
   def build(self, force=False):
 

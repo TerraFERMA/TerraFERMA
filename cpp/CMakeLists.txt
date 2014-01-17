@@ -28,13 +28,11 @@ cmake_minimum_required(VERSION 2.8)
 cmake_policy(SET CMP0004 OLD)
 
 # Get DOLFIN configuration data (dolfin-config.cmake must be in DOLFIN_CMAKE_CONFIG_PATH)
-find_package(DOLFIN)
+find_package(DOLFIN REQUIRED)
 
 # Default build type (can be overridden by user)
-if (NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING
-    "Choose the type of build, options are: Debug MinSizeRel Release RelWithDebInfo." FORCE)
-endif()
+set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING
+  "Choose the type of build, options are: Debug MinSizeRel Release RelWithDebInfo.")
 
 # Compiler definitions
 add_definitions(${DOLFIN_CXX_DEFINITIONS})
@@ -52,15 +50,11 @@ include_directories(${DOLFIN_INCLUDE_DIRS} ${DOLFIN_3RD_PARTY_INCLUDE_DIRS})
 
 project(terraferma)
 
-if (NOT EXECUTABLE)
-  set(EXECUTABLE "terraferma" CACHE STRING
-       "The name of the executable" FORCE)
-endif()
+set(EXECUTABLE "terraferma" CACHE STRING
+     "The name of the executable")
 
-if (NOT LOGLEVEL)
-  set(LOGLEVEL "INFO" CACHE STRING
-       "The log level used in the run target, options are: DBG, TRACE, PROGRESS, INFO, WARNING, ERROR, CRITICAL." FORCE)
-endif()
+set(LOGLEVEL "INFO" CACHE STRING
+     "The log level used in the run target, options are: DBG, TRACE, PROGRESS, INFO, WARNING, ERROR, CRITICAL.")
 
 set(CMAKE_MODULE_PATH $ENV{CMAKE_MODULE_PATH})
 
@@ -92,12 +86,16 @@ if (PYTHONINTERP_FOUND)
   # Set include path, if returned by interpreter
   if ("${_PYTHON_INCLUDE_RESULT}" STREQUAL "0")
     set(PYTHON_INCLUDE_DIR ${_PYTHON_INCLUDE_PATH})
+  else()
+    message(FATAL_ERROR "Failed to find python include path.")
   endif()
 
   # Add a search path for Python library based on output from
   # iterpreter
   if ("${_PYTHON_LIB_RESULT}" STREQUAL "0")
     set(CMAKE_LIBRARY_PATH ${_PYTHON_LIB_PATH})
+  else()
+    message(FATAL_ERROR "Failed to find python library path.")
   endif()
 else()
   message(FATAL_ERROR "Could not find python interpreter.")
