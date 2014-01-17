@@ -28,7 +28,7 @@ cmake_minimum_required(VERSION 2.8)
 cmake_policy(SET CMP0004 OLD)
 
 # Get DOLFIN configuration data (dolfin-config.cmake must be in DOLFIN_CMAKE_CONFIG_PATH)
-find_package(DOLFIN)
+find_package(DOLFIN REQUIRED)
 
 # Default build type (can be overridden by user)
 set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING
@@ -86,12 +86,16 @@ if (PYTHONINTERP_FOUND)
   # Set include path, if returned by interpreter
   if ("${_PYTHON_INCLUDE_RESULT}" STREQUAL "0")
     set(PYTHON_INCLUDE_DIR ${_PYTHON_INCLUDE_PATH})
+  else()
+    message(FATAL_ERROR "Failed to find python include path.")
   endif()
 
   # Add a search path for Python library based on output from
   # iterpreter
   if ("${_PYTHON_LIB_RESULT}" STREQUAL "0")
     set(CMAKE_LIBRARY_PATH ${_PYTHON_LIB_PATH})
+  else()
+    message(FATAL_ERROR "Failed to find python library path.")
   endif()
 else()
   message(FATAL_ERROR "Could not find python interpreter.")
