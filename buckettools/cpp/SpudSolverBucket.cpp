@@ -1607,7 +1607,7 @@ void SpudSolverBucket::fill_nullspace_(const std::string &optionpath, MatNullSpa
   for (uint i = 0; i<nnulls; i++)                                    // loop over the nullspaces
   {
 
-    PETScVector_ptr nullvec( new dolfin::PETScVector(kspsize, "local") );// create a null vector for this null space
+    PETScVector_ptr nullvec( new dolfin::PETScVector(MPI_COMM_WORLD, kspsize) );// create a null vector for this null space
 
     buffer.str(""); buffer << optionpath <<                          // optionpath of the nullspace
                       "/null_space[" << i << "]";
@@ -1677,7 +1677,7 @@ void SpudSolverBucket::fill_bound_(const std::string &optionpath, PETScVector_pt
 
   uint size = 0;
   size = (*(*(*system_).function()).vector()).local_size();
-  bound.reset( new dolfin::PETScVector(size, "local") );
+  bound.reset( new dolfin::PETScVector(MPI_COMM_WORLD, size) );
 
   if (Spud::have_option(optionpath))
   {
@@ -1832,7 +1832,7 @@ void SpudSolverBucket::fill_values_by_field_(const std::string &optionpath, PETS
   assert(n>0);
   PetscInt *indices;
   PetscMalloc(n*sizeof(PetscInt), &indices);
-  dolfin::PETScVector vvec(n, "local");                             // create a local vector of local size length 
+  dolfin::PETScVector vvec(MPI_COMM_WORLD, n);                       // create a local vector of local size length 
  
   dolfin::la_index ind = 0;
   if(parent_indices)
