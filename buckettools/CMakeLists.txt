@@ -73,12 +73,16 @@ if (PYTHONINTERP_FOUND)
   # Set include path, if returned by interpreter
   if ("${_PYTHON_INCLUDE_RESULT}" STREQUAL "0")
     set(PYTHON_INCLUDE_DIR ${_PYTHON_INCLUDE_PATH})
+  else()
+    message(FATAL_ERROR "Failed to find python include path.")
   endif()
 
   # Add a search path for Python library based on output from
   # iterpreter
   if ("${_PYTHON_LIB_RESULT}" STREQUAL "0")
     set(CMAKE_LIBRARY_PATH ${_PYTHON_LIB_PATH})
+  else()
+    message(FATAL_ERROR "Failed to find python library path.")
   endif()
 else()
   message(FATAL_ERROR "Could not find python interpreter.")
@@ -113,9 +117,16 @@ if (PYTHONINTERP_FOUND)
 
   # Probe Python interpreter
   execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "${PYTHON_LIB_DISCOVER_STR}"
+    RESULT_VARIABLE _BUCKETTOOLS_PYTHON_INSTALL_RESULT
     OUTPUT_VARIABLE _BUCKETTOOLS_PYTHON_INSTALL_DIR
     )
-  set(BUCKETTOOLS_PYTHON_INSTALL_DIR ${_BUCKETTOOLS_PYTHON_INSTALL_DIR} PARENT_SCOPE)
+  
+  if ("${_BUCKETTOOLS_PYTHON_INSTALL_RESULT}" STREQUAL "0")
+    set(BUCKETTOOLS_PYTHON_INSTALL_DIR ${_BUCKETTOOLS_PYTHON_INSTALL_DIR} PARENT_SCOPE)
+    set(BUCKETTOOLS_PYTHON_INSTALL_DIR ${_BUCKETTOOLS_PYTHON_INSTALL_DIR})
+  else()
+    message(FATAL_ERROR "Failed to find python installation path.")
+  endif()
 endif()
 
 if (BUCKETTOOLS_PYTHON_INSTALL_DIR)
