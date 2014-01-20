@@ -62,9 +62,7 @@ PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f,
   const std::vector< const dolfin::DirichletBC* >& bcs = 
                                          (*system).dirichletbcs();   // get the vector of bcs
   const std::vector<ReferencePoints_ptr>& points = (*system).points();// get the vector of reference points
-  Vec_ptr px(&x, dolfin::NoDeleter());                               // convert the iterated snes vector
-  Vec_ptr pf(&f, dolfin::NoDeleter());                               // convert the rhs snes vector
-  dolfin::PETScVector rhs(pf), iteratedvec(px);
+  dolfin::PETScVector rhs(f), iteratedvec(x);
 
   (*(*iteratedfunction).vector()) = iteratedvec;                     // update the iterated system bucket function
 
@@ -148,11 +146,8 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
   const std::vector< const dolfin::DirichletBC* >& bcs = 
                                          (*system).dirichletbcs();   // get the vector of bcs
   const std::vector<ReferencePoints_ptr>& points = (*system).points();// get the vector of reference points
-  Vec_ptr px(&x, dolfin::NoDeleter());                               // convert the iterated snes vector
-  dolfin::PETScVector iteratedvec(px);
-  Mat_ptr pA(A, dolfin::NoDeleter());                                // convert the snes matrix
-  Mat_ptr pB(B, dolfin::NoDeleter());                                // convert the snes matrix pc
-  dolfin::PETScMatrix matrix(pA), matrixpc(pB);
+  dolfin::PETScVector iteratedvec(x);
+  dolfin::PETScMatrix matrix(*A), matrixpc(*B);
 
   (*(*iteratedfunction).vector()) = iteratedvec;                     // update the iterated system bucket function
 
@@ -206,7 +201,7 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
 
     IS_ptr is = (*solver).fetch_solverindexset((*f_it).first);
     Mat_ptr submatrix = (*solver).fetch_solversubmatrix((*f_it).first);
-    perr = MatGetSubMatrix(*(*solvermatrix).mat(), *is, *is, MAT_REUSE_MATRIX, &(*submatrix));
+    perr = MatGetSubMatrix((*solvermatrix).mat(), *is, *is, MAT_REUSE_MATRIX, &(*submatrix));
     CHKERRQ(perr);
 
   }
@@ -258,23 +253,20 @@ PetscErrorCode buckettools::SNESCustomMonitor(SNES snes, PetscInt its,
 
   Vec x;
   perr = SNESGetSolution(snes, &x);  CHKERRQ(perr);                  // get the solution vector from snes
-  Vec_ptr px(&x, dolfin::NoDeleter());                               // and convert it into a dolfin PETScVector
-  dolfin::PETScVector sol(px);
+  dolfin::PETScVector sol(x);
 
   *(*(*system).iteratedfunction()).vector() = sol;
 
   Vec rx;
   perr = SNESGetFunction(snes, &rx, PETSC_NULL, PETSC_NULL);         // get the residual function vector from snes
   CHKERRQ(perr);
-  Vec_ptr prx(&rx, dolfin::NoDeleter());                             // and convert it into a dolfin PETScVector
-  dolfin::PETScVector solresid(prx);
+  dolfin::PETScVector solresid(rx);
 
   *(*(*system).residualfunction()).vector() = solresid;
 
   Vec dx;
   perr = SNESGetSolutionUpdate(snes, &dx);  CHKERRQ(perr);           // get the solution update vector from snes
-  Vec_ptr pdx(&dx, dolfin::NoDeleter());                             // and convert it into a dolfin PETScVector
-  dolfin::PETScVector solupdate(pdx);
+  dolfin::PETScVector solupdate(dx);
 
   *(*(*system).snesupdatefunction()).vector() = solupdate;
 
@@ -333,15 +325,13 @@ PetscErrorCode buckettools::KSPCustomMonitor(KSP ksp, int it,
 
   Vec x;
   perr = KSPBuildSolution(ksp, PETSC_NULL, &x);  CHKERRQ(perr);      // get the solution vector from the ksp
-  Vec_ptr px(&x, dolfin::NoDeleter());                               // and convert it into a dolfin PETScVector
-  dolfin::PETScVector sol(px);
+  dolfin::PETScVector sol(x);
 
   *(*(*system).iteratedfunction()).vector() = sol;
 
   Vec rx;
   perr = KSPBuildResidual(ksp, PETSC_NULL, PETSC_NULL, &rx);  CHKERRQ(perr);// get the residual vector from the ksp
-  Vec_ptr prx(&rx, dolfin::NoDeleter());                             // and convert it into a dolfin PETScVector
-  dolfin::PETScVector solresid(prx);
+  dolfin::PETScVector solresid(rx);
 
   *(*(*system).residualfunction()).vector() = solresid;
 
