@@ -101,7 +101,7 @@ void SolverBucket::solve()
       (*(*bc)).apply(*(*(*system_).iteratedfunction()).vector());    // iterated solution
     }
     *work_ = (*(*(*system_).function()).vector());                   // set the work vector to the function vector
-    perr = SNESSolve(snes_, PETSC_NULL, *(*work_).vec());            // call petsc to perform a snes solve
+    perr = SNESSolve(snes_, PETSC_NULL, (*work_).vec());            // call petsc to perform a snes solve
     if (perr>0)
     {
       dolfin::log(dolfin::ERROR, "ERROR: SNESSolve returned error code %d.", perr);
@@ -240,15 +240,15 @@ void SolverBucket::solve()
           (*matrixpc_).ident_zeros();
         }
 
-        perr = KSPSetOperators(ksp_, *(*matrix_).mat(),              // set the ksp operators with two matrices
-                                     *(*matrixpc_).mat(), 
+        perr = KSPSetOperators(ksp_, (*matrix_).mat(),              // set the ksp operators with two matrices
+                                     (*matrixpc_).mat(), 
                                      SAME_NONZERO_PATTERN); 
         CHKERRV(perr);
       }
       else
       {
-        perr = KSPSetOperators(ksp_, *(*matrix_).mat(),              // set the ksp operators with the same matrices
-                                      *(*matrix_).mat(), 
+        perr = KSPSetOperators(ksp_, (*matrix_).mat(),              // set the ksp operators with the same matrices
+                                      (*matrix_).mat(), 
                                         SAME_NONZERO_PATTERN); 
         CHKERRV(perr);
       }
@@ -276,7 +276,7 @@ void SolverBucket::solve()
 
         IS_ptr is = solverindexsets_[(*f_it).first];
         Mat_ptr submatrix = solversubmatrices_[(*f_it).first];
-        perr = MatGetSubMatrix(*(*solvermatrix).mat(), *is, *is, MAT_REUSE_MATRIX, &(*submatrix));
+        perr = MatGetSubMatrix((*solvermatrix).mat(), *is, *is, MAT_REUSE_MATRIX, &(*submatrix));
         CHKERRV(perr);
 
       }
@@ -285,36 +285,36 @@ void SolverBucket::solve()
       {
         PetscReal norm;
 
-        perr = VecNorm(*(*rhs_).vec(),NORM_2,&norm); CHKERRV(perr);
+        perr = VecNorm((*rhs_).vec(),NORM_2,&norm); CHKERRV(perr);
         dolfin::log(dolfin::get_log_level(), "Picard: 2-norm rhs = %f", norm);
 
-        perr = VecNorm(*(*rhs_).vec(),NORM_INFINITY,&norm); CHKERRV(perr);
+        perr = VecNorm((*rhs_).vec(),NORM_INFINITY,&norm); CHKERRV(perr);
         dolfin::log(dolfin::get_log_level(), "Picard: inf-norm rhs = %f", norm);
 
-        perr = VecNorm(*(*work_).vec(),NORM_2,&norm); CHKERRV(perr);
+        perr = VecNorm((*work_).vec(),NORM_2,&norm); CHKERRV(perr);
         dolfin::log(dolfin::get_log_level(), "Picard: 2-norm work = %f", norm);
 
-        perr = VecNorm(*(*work_).vec(),NORM_INFINITY,&norm); CHKERRV(perr);
+        perr = VecNorm((*work_).vec(),NORM_INFINITY,&norm); CHKERRV(perr);
         dolfin::log(dolfin::get_log_level(), "Picard: inf-norm work = %f", norm);
 
-        perr = MatNorm(*(*matrix_).mat(),NORM_FROBENIUS,&norm); CHKERRV(perr);
+        perr = MatNorm((*matrix_).mat(),NORM_FROBENIUS,&norm); CHKERRV(perr);
         dolfin::log(dolfin::get_log_level(), "Picard: Frobenius norm matrix = %f", norm);
 
-        perr = MatNorm(*(*matrix_).mat(),NORM_INFINITY,&norm); CHKERRV(perr);
+        perr = MatNorm((*matrix_).mat(),NORM_INFINITY,&norm); CHKERRV(perr);
         dolfin::log(dolfin::get_log_level(), "Picard: inf-norm matrix = %f", norm);
 
         if (bilinearpc_)
         {
-          perr = MatNorm(*(*matrixpc_).mat(),NORM_FROBENIUS,&norm); CHKERRV(perr);
+          perr = MatNorm((*matrixpc_).mat(),NORM_FROBENIUS,&norm); CHKERRV(perr);
           dolfin::log(dolfin::get_log_level(), "Picard: Frobenius norm matrix pc = %f", norm);
 
-          perr = MatNorm(*(*matrixpc_).mat(),NORM_INFINITY,&norm); CHKERRV(perr);
+          perr = MatNorm((*matrixpc_).mat(),NORM_INFINITY,&norm); CHKERRV(perr);
           dolfin::log(dolfin::get_log_level(), "Picard: inf-norm matrix pc = %f", norm);
         }
       }
 
       *work_ = (*(*(*system_).iteratedfunction()).vector());         // set the work vector to the iterated function
-      perr = KSPSolve(ksp_, *(*rhs_).vec(), *(*work_).vec());        // perform a linear solve
+      perr = KSPSolve(ksp_, (*rhs_).vec(), (*work_).vec());        // perform a linear solve
       CHKERRV(perr);
       ksp_check_convergence_(ksp_);
       (*(*(*system_).iteratedfunction()).vector()) = *work_;         // update the iterated function with the work vector

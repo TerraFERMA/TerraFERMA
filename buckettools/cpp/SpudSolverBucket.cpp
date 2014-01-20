@@ -91,21 +91,21 @@ void SpudSolverBucket::initialize()
 
     ctx_.solver = this;                                              // the snes context just needs this class... neat, huh?
 
-    perr = SNESSetFunction(snes_, *(*res_).vec(),                    // set the snes function to use the newly allocated residual vector
+    perr = SNESSetFunction(snes_, (*res_).vec(),                    // set the snes function to use the newly allocated residual vector
                                     FormFunction, (void *) &ctx_); 
     CHKERRV(perr);
 
     if (bilinearpc_)                                                 // if we have a pc form
     {
       assert(matrixpc_);
-      perr = SNESSetJacobian(snes_, *(*matrix_).mat(),               // set the snes jacobian to have two matrices
-                  *(*matrixpc_).mat(), FormJacobian, (void *) &ctx_); 
+      perr = SNESSetJacobian(snes_, (*matrix_).mat(),               // set the snes jacobian to have two matrices
+                  (*matrixpc_).mat(), FormJacobian, (void *) &ctx_); 
       CHKERRV(perr);
     }
     else                                                             // otherwise
     {
-      perr = SNESSetJacobian(snes_, *(*matrix_).mat(),               // set the snes jacobian to have the same matrix twice
-                    *(*matrix_).mat(), FormJacobian, (void *) &ctx_); 
+      perr = SNESSetJacobian(snes_, (*matrix_).mat(),               // set the snes jacobian to have the same matrix twice
+                    (*matrix_).mat(), FormJacobian, (void *) &ctx_); 
       CHKERRV(perr);
     }
 
@@ -332,15 +332,15 @@ void SpudSolverBucket::initialize()
 
     if (bilinearpc_)
     {                                                                // if there's a pc associated
-      perr = KSPSetOperators(ksp_, *(*matrix_).mat(),                // set the ksp operators with two matrices
-                                   *(*matrixpc_).mat(), 
+      perr = KSPSetOperators(ksp_, (*matrix_).mat(),                // set the ksp operators with two matrices
+                                   (*matrixpc_).mat(), 
                                    SAME_NONZERO_PATTERN); 
       CHKERRV(perr);
     }
     else
     {
-      perr = KSPSetOperators(ksp_, *(*matrix_).mat(),                // set the ksp operators with the same matrices
-                                   *(*matrix_).mat(), 
+      perr = KSPSetOperators(ksp_, (*matrix_).mat(),                // set the ksp operators with the same matrices
+                                   (*matrix_).mat(), 
                                    SAME_NONZERO_PATTERN); 
       CHKERRV(perr);
     }
@@ -1199,7 +1199,7 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
 
       Mat_ptr submatrix;
       submatrix.reset( new Mat );
-      perr = MatGetSubMatrix(*(*solvermatrices_[prefix+"SchurPC"]).mat(), *is, *is, MAT_INITIAL_MATRIX, &(*submatrix));
+      perr = MatGetSubMatrix((*solvermatrices_[prefix+"SchurPC"]).mat(), *is, *is, MAT_INITIAL_MATRIX, &(*submatrix));
       CHKERRV(perr);
 
       solversubmatrices_[prefix+"SchurPC"] = submatrix;
@@ -1614,10 +1614,10 @@ void SpudSolverBucket::fill_nullspace_(const std::string &optionpath, MatNullSpa
     fill_values_by_field_(buffer.str(), nullvec, 0.0,                // create a vector describing the nullspace based on this optionpath 
                                 parent_indices, NULL);               // (no siblings as null spaces can overlap)
 
-    perr = VecNormalize(*(*nullvec).vec(), PETSC_NULL); CHKERRV(perr);// normalize the null space vector
+    perr = VecNormalize((*nullvec).vec(), PETSC_NULL); CHKERRV(perr);// normalize the null space vector
 
     nullvecs.push_back(nullvec);                                     // keep the null vector in scope by grabbing a reference to it
-    vecs[i] = *(*nullvec).vec();                                     // also collect it in a petsc compatible format (shouldn't take
+    vecs[i] = (*nullvec).vec();                                      // also collect it in a petsc compatible format (shouldn't take
                                                                      // reference though... hence line above, necessary?)
   
   }
@@ -1656,7 +1656,7 @@ void SpudSolverBucket::fill_constraints_()
   buffer.str(""); buffer << optionpath() << "/type/snes_type/constraints/lower_bound";
   fill_bound_(buffer.str(), lb, SNES_VI_NINF);
 
-  perr = SNESVISetVariableBounds(snes_, *(*lb).vec(), *(*ub).vec());
+  perr = SNESVISetVariableBounds(snes_, (*lb).vec(), (*ub).vec());
   CHKERRV(perr);
                                                                      // UGLY HACK: our constant bounds will be overwritten by the dm
                                                                      // in SNESSetUp so let's stop it from doing that by attaching a
@@ -1911,15 +1911,15 @@ void SpudSolverBucket::fill_values_by_field_(const std::string &optionpath, PETS
   background.clear();
 
   VecScatter scatter;                                                // create a petsc scatter object from an object with the same 
-  perr = VecScatterCreate(*vvec.vec(), PETSC_NULL,                  // structure as the vvec vector to one with the same structure
-                          *(*values).vec(), is, &scatter);          // as the null vector using the IS
+  perr = VecScatterCreate(vvec.vec(), PETSC_NULL,                  // structure as the vvec vector to one with the same structure
+                          (*values).vec(), is, &scatter);          // as the null vector using the IS
   CHKERRV(perr);
-  perr = VecScatterBegin(scatter, *vvec.vec(),                      // scatter from the vvec vector to the null vector
-                         *(*values).vec(), INSERT_VALUES, 
+  perr = VecScatterBegin(scatter, vvec.vec(),                      // scatter from the vvec vector to the null vector
+                         (*values).vec(), INSERT_VALUES, 
                          SCATTER_FORWARD); 
   CHKERRV(perr);
-  perr = VecScatterEnd(scatter, *vvec.vec(), 
-                       *(*values).vec(), INSERT_VALUES, 
+  perr = VecScatterEnd(scatter, vvec.vec(), 
+                       (*values).vec(), INSERT_VALUES, 
                        SCATTER_FORWARD); 
   CHKERRV(perr);
   #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1            // necessary or taken care of when object leaves scope?
