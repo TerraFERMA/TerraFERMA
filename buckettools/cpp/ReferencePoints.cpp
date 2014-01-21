@@ -243,7 +243,7 @@ void ReferencePoints::init_(const Array_double_ptr coord)
 
   if (cellid==-1)
   {
-    if (dolfin::MPI::num_processes(MPI_COMM_WORLD) == 1)
+    if (dolfin::MPI::size(MPI_COMM_WORLD) == 1)
     {
       dolfin::log(dolfin::WARNING, "Failed to find cell at requested reference point coordinates.");
     }
