@@ -265,7 +265,7 @@ class SystemBucket:
     if len(self.solvers)==0:
       cpp.append("      dolfin::error(\"Unknown system functionspace in ufc_fetch_functionspace\");\n")
     else:
-      cpp.append(self.solvers[0].functionspace_cpp_no_if())
+      cpp += self.solvers[0].functionspace_cpp_no_if()
     cpp.append("    }\n")
     return cpp
 

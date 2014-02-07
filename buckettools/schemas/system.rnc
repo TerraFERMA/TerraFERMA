@@ -38,6 +38,7 @@ system =
       system_ufl_symbol,
       field_options*,
       coefficient_options*,
+      boundary_condition_system?,
       nonlinear_solver_options*,
       solve_location
     }
@@ -61,6 +62,54 @@ mesh_choice =
         empty
       }
     )
+  )
+
+boundary_condition_system = 
+  (
+    ## Options for the description of a boundary condition
+    element boundary_condition {
+      attribute name { xsd:string },
+      ## A list of the boundary ids (physical ids in gmsh) that this condition applies to  
+      element boundary_ids {
+        integer_vector
+      },
+      ## There are no sub components to a scalar so this is just a dummy tree level for consistency with a vector function
+      element sub_components {
+        attribute name { "All"},
+        ## The boundary condition type.
+        element type {
+          attribute name {"Periodic"},
+          attribute type {"boundary_condition"},
+          periodic_bc
+        }
+      }
+    }
+  )
+
+periodic_bc =
+  (
+    ## A list of the slave boundary ids (physical ids in gmsh).
+    ##
+    ## The master boundary ids are those given for this boundary condition.
+    element slave_boundary_ids {
+      integer_vector
+    },
+    ## A map from the coordinates of the slave degrees of freedom
+    ## to the master degrees of freedom.
+    ##
+    ## A vector described by a python function.
+    ##
+    ## Functions should be of the form:
+    ##
+    ##  def val(x):
+    ##     # Function code
+    ##     return [..., ...] # Return value
+    ##
+    ## The return value must have the same size as the geometric dimension.
+    element coordinate_map {
+      attribute rank { "1" },
+      python_code
+    }
   )
 
 solve_location = 
