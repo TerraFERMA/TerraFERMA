@@ -21,6 +21,7 @@
 #ifndef __SYSTEMFUNCTIONALS_WRAPPER_H
 #define __SYSTEMFUNCTIONALS_WRAPPER_H
 
+#include "PythonPeriodicMap.h"
 #include "BoostTypes.h"
 
 namespace buckettools
@@ -40,7 +41,11 @@ namespace buckettools
                                       const std::string 
                                             &funcionalname, 
                                       const std::string &uflsymbol, 
-                                      Mesh_ptr mesh);
+                                      Mesh_ptr mesh,
+                                      PythonPeriodicMap_ptr periodicmap,
+                                      MeshFunction_size_t_ptr facetdomains,
+                                      const std::vector<std::size_t> &masterids,
+                                      const std::vector<std::size_t> &slaveids);
 
   FunctionSpace_ptr ufc_fetch_coefficientspace_from_functional(
                                       const std::string              // return a (boost shared) pointer to a functionspace for a 
@@ -48,7 +53,11 @@ namespace buckettools
                                       const std::string              // function name and a (base) ufl symbol
                                             &coefficientname, 
                                       const std::string &uflsymbol, 
-                                      Mesh_ptr mesh);
+                                      Mesh_ptr mesh,
+                                      PythonPeriodicMap_ptr periodicmap,
+                                      MeshFunction_size_t_ptr facetdomains,
+                                      const std::vector<std::size_t> &masterids,
+                                      const std::vector<std::size_t> &slaveids);
 
   Form_ptr ufc_fetch_functional(const std::string &systemname,       // return a (boost shared) pointer to a form from a functional
                           const std::string &functionname,           // given a mesh, a function name and a functional name

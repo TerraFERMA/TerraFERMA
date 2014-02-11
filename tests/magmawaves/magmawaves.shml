@@ -4,7 +4,7 @@
     <string_value>medium</string_value>
   </length>
   <owner>mspieg</owner>
-  <tags>not:branch:dolfin-master</tags>
+  <tags>not:branch:dolfin-master not:branch:periodic</tags>
   <description>A magma waves test.</description>
   <simulations>
     <simulation name="Magma">

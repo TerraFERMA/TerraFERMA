@@ -21,6 +21,7 @@
 #ifndef __SYSTEMSOLVERS_WRAPPER_H
 #define __SYSTEMSOLVERS_WRAPPER_H
 
+#include "PythonPeriodicMap.h"
 #include "BoostTypes.h"
 
 namespace buckettools
@@ -34,19 +35,31 @@ namespace buckettools
 
   FunctionSpace_ptr ufc_fetch_functionspace(const std::string        // return a (boost shared) pointer to a functionspace from a
                                             &systemname,             // system given a (boost shared) pointer to a mesh (defaults to the
-                                      Mesh_ptr mesh);                // first solver in the system as they should all be the same)
+                                      Mesh_ptr mesh,                 // first solver in the system as they should all be the same)
+                                      PythonPeriodicMap_ptr periodicmap,
+                                      MeshFunction_size_t_ptr facetdomains,
+                                      const std::vector<std::size_t> &masterids,
+                                      const std::vector<std::size_t> &slaveids);
 
   FunctionSpace_ptr ufc_fetch_functionspace(const std::string        // return a (boost shared) pointer to a functionspace from a
                                             &systemname,             // system given a mesh and a solver name (i.e. does not default
                                       const std::string &solvername, // as above) 
-                                      Mesh_ptr mesh);
+                                      Mesh_ptr mesh,
+                                      PythonPeriodicMap_ptr periodicmap,
+                                      MeshFunction_size_t_ptr facetdomains,
+                                      const std::vector<std::size_t> &masterids,
+                                      const std::vector<std::size_t> &slaveids);
 
   FunctionSpace_ptr ufc_fetch_coefficientspace_from_solver(
                                       const std::string              // return a (boost shared) pointer to a functionspace for a
                                             &systemname,             // coefficient function from a solver given a mesh, a solver name
                                       const std::string &solvername, // and a (base) ufl symbol
                                       const std::string &uflsymbol, 
-                                      Mesh_ptr mesh);
+                                      Mesh_ptr mesh,
+                                      PythonPeriodicMap_ptr periodicmap,
+                                      MeshFunction_size_t_ptr facetdomains,
+                                      const std::vector<std::size_t> &masterids,
+                                      const std::vector<std::size_t> &slaveids);
 
   Form_ptr ufc_fetch_form(const std::string &systemname,             // return a (boost shared) pointer to a form from a solver
                           const std::string &solvername,             // given a functionspace, a solver name, a solver type

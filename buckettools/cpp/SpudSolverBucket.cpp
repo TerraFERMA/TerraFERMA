@@ -615,7 +615,11 @@ void SpudSolverBucket::fill_subforms_(const std::string &optionpath,
           coefficientspace = ufc_fetch_coefficientspace_from_solver( // take a pointer to the functionspace from the ufc
                                         (*system_).name(), name(), 
                                         baseuflsymbol, 
-                                        (*system_).mesh());
+                                        (*system_).mesh(),
+                                        (*system_).periodicmap(),
+                                        (*system_).facetdomains(),
+                                        (*system_).masterids(),
+                                        (*system_).slaveids());
           (*(*system_).bucket()).register_coefficientspace(          // and register it in the parent bucket's map
                                         coefficientspace, 
                                         baseuflsymbol);

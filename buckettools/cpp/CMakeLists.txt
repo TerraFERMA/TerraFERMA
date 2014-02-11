@@ -82,7 +82,7 @@ add_library(buckettools_cpp SHARED
                             GenericDetectors.cpp PointDetectors.cpp PythonDetectors.cpp
                             DiagnosticsFile.cpp StatisticsFile.cpp SteadyStateFile.cpp
                             DetectorsFile.cpp ConvergenceFile.cpp KSPConvergenceFile.cpp
-                            BucketPETScBase.cpp BucketDolfinBase.cpp
+                            PythonPeriodicMap.cpp BucketPETScBase.cpp BucketDolfinBase.cpp
                             ReferencePoints.cpp)
 # tell cmake that this file doesn't exist until build time
 set_source_files_properties(builddefs.h PROPERTIES GENERATED 1)

@@ -112,7 +112,9 @@ namespace buckettools
 
     void fill_fields_();                                             // fill in the data about the system fields (subfunctions)
 
-    void fill_bcs_();                                                // fill in the data about the system bcs
+    void fill_dirichletbcs_();                                       // fill in the data about the system bcs
+
+    void fill_periodicbcs_();                                        // fill in the data about the system bcs
 
     void fill_points_();                                             // fill in the data about the system points
 
