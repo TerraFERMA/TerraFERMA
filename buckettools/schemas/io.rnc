@@ -27,7 +27,8 @@ io =
       output_file_options,
       diagnostic_output_options,
       detectors_options,
-      checkpointing_options
+      checkpointing_options,
+      debugging_options
     }
   )
 
@@ -151,6 +152,23 @@ checkpointing_options =
           integer
         }
       )
+    }?
+  )
+
+debugging_options =
+  (
+    ## Debugging output options.
+    element debugging {
+      ## Outputs a pvd file marking the master and slave entities:
+      ##
+      ## 2: slave entities
+      ##
+      ## 1: master entities
+      ##
+      ## 0: all other entities
+      element periodic_boundaries {
+        empty
+      }?
     }?
   )
 

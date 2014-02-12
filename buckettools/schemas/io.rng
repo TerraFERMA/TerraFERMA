@@ -29,6 +29,7 @@
       <ref name="diagnostic_output_options"/>
       <ref name="detectors_options"/>
       <ref name="checkpointing_options"/>
+      <ref name="debugging_options"/>
     </element>
   </define>
   <define name="output_file_options">
@@ -159,6 +160,25 @@ Defaults to every timestep if unselected.</a:documentation>
             <ref name="integer"/>
           </element>
         </choice>
+      </element>
+    </optional>
+  </define>
+  <define name="debugging_options">
+    <optional>
+      <element name="debugging">
+        <a:documentation>Debugging output options.</a:documentation>
+        <optional>
+          <element name="periodic_boundaries">
+            <a:documentation>Outputs a pvd file marking the master and slave entities:
+
+2: slave entities
+
+1: master entities
+
+0: all other entities</a:documentation>
+            <empty/>
+          </element>
+        </optional>
       </element>
     </optional>
   </define>

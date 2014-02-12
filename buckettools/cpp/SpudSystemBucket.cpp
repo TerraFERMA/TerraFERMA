@@ -434,6 +434,19 @@ void SpudSystemBucket::fill_periodicbcs_()
     }
 
   }
+
+  buffer.str("");  buffer << "/io/debugging/periodic_boundaries";  // output debugging info?
+  if (Spud::have_option(buffer.str()) && periodicmap())
+  {
+    dolfin::File file("periodic_boundaries.pvd");
+    dolfin::MeshFunction<std::size_t> master_slave_entities;
+    for (uint i = 0; i <= (*mesh()).topology().dim(); i++)
+    {
+      master_slave_entities = dolfin::PeriodicBoundaryComputation::masters_slaves(mesh(),
+                                                      *periodicmap(), *facetdomains(), masterids(), slaveids(), i);
+      file << master_slave_entities;
+    }
+  }
 }
 
 //*******************************************************************|************************************************************//
