@@ -28,8 +28,8 @@ def makemesh(vertex_coordinates, cells):
 
     # initialize mesh
     M.open(mesh,shape,tdim,gdim)
-    M.init_vertices(num_vertices, num_vertices)
-    M.init_cells(num_cells, num_cells)
+    M.init_vertices(num_vertices)
+    M.init_cells(num_cells)
 
     # add vertices
     for i in range(num_vertices):
