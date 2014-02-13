@@ -19,8 +19,8 @@
 // along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
 
-#include "DiagnosticsFile.h"
 #include "Bucket.h"
+#include "DiagnosticsFile.h"
 #include "builddefs.h"
 #include <cstdio>
 #include <stdlib.h>

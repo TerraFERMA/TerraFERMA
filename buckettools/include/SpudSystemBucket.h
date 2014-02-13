@@ -22,8 +22,8 @@
 #ifndef __SPUD_SYSTEM_H
 #define __SPUD_SYSTEM_H
 
-#include "BoostTypes.h"
 #include "SystemBucket.h"
+#include "BoostTypes.h"
 #include <dolfin.h>
 
 namespace buckettools

@@ -19,8 +19,8 @@
 // along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
 
-#include "BoostTypes.h"
 #include "SpudSystemBucket.h"
+#include "BoostTypes.h"
 #include "SystemSolversWrapper.h"
 #include "SpudBase.h"
 #include "SpudFunctionBucket.h"

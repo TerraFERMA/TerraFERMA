@@ -22,8 +22,8 @@
 #ifndef __SEMI_LAGRANGIAN_EXPRESSION_H
 #define __SEMI_LAGRANGIAN_EXPRESSION_H
 
-#include "BoostTypes.h"
 #include "Bucket.h"
+#include "BoostTypes.h"
 #include "SystemBucket.h"
 #include <dolfin.h>
 

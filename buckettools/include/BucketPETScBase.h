@@ -22,9 +22,9 @@
 #ifndef __BUCKETPETSC_BASE_H
 #define __BUCKETPETSC_BASE_H
 
+#include "Bucket.h"
 #include "BoostTypes.h"
 #include "petscsnes.h"
-#include "Bucket.h"
 #include "ConvergenceFile.h"
 #include "KSPConvergenceFile.h"
 

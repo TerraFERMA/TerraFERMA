@@ -22,8 +22,8 @@
 #ifndef __PYTHON_PERIODIC_MAP_H
 #define __PYTHON_PERIODIC_MAP_H
 
-#include <dolfin.h>
 #include "Python.h"
+#include <dolfin.h>
 #include "PythonInstance.h"
 #include "BoostTypes.h"
 

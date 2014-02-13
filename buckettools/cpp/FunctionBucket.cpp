@@ -19,9 +19,9 @@
 // along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
 
+#include "SystemBucket.h"
 #include "BoostTypes.h"
 #include "FunctionBucket.h"
-#include "SystemBucket.h"
 #include "Bucket.h"
 #include "BucketDolfinBase.h"
 #include <dolfin.h>
