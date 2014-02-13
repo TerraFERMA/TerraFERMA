@@ -22,10 +22,10 @@
 #ifndef __SYSTEM_H
 #define __SYSTEM_H
 
+#include "PythonPeriodicMap.h"
 #include "BoostTypes.h"
 #include "FunctionBucket.h"
 #include "ReferencePoints.h"
-#include "PythonPeriodicMap.h"
 #include <dolfin.h>
 
 namespace buckettools

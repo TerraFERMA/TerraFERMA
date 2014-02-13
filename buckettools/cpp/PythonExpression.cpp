@@ -19,10 +19,10 @@
 // along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
 
+#include "Python.h"
 #include "PythonExpression.h"
 #include "PythonInstance.h"
 #include <dolfin.h>
-#include "Python.h"
 #include <string>
 
 using namespace buckettools;

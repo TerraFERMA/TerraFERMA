@@ -22,9 +22,9 @@
 #ifndef __INITIAL_CONDITION_EXPRESSION_H
 #define __INITIAL_CONDITION_EXPRESSION_H
 
+#include "Bucket.h"
 #include <dolfin.h>
 #include "BoostTypes.h"
-#include "Bucket.h"
 
 namespace buckettools
 {
