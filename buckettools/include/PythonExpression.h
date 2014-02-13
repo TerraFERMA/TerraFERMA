@@ -22,8 +22,8 @@
 #ifndef __PYTHON_EXPRESSION_H
 #define __PYTHON_EXPRESSION_H
 
-#include <dolfin.h>
 #include "Python.h"
+#include <dolfin.h>
 #include "PythonInstance.h"
 #include "BoostTypes.h"
 
