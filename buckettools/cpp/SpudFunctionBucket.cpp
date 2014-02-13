@@ -19,6 +19,7 @@
 // along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
 
+#include "PythonExpression.h"
 #include "BoostTypes.h"
 #include "SpudFunctionBucket.h"
 #include <dolfin.h>
@@ -29,7 +30,6 @@
 #include "SpudSystemBucket.h"
 #include "SpudBase.h"
 #include "SpudBucket.h"
-#include "PythonExpression.h"
 #include "RegionsExpression.h"
 #include "SemiLagrangianExpression.h"
 

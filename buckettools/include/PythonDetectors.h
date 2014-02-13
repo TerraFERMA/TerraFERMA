@@ -22,9 +22,9 @@
 #ifndef __PYTHON_DETECTORS_H
 #define __PYTHON_DETECTORS_H
 
+#include "PythonInstance.h"
 #include "GenericDetectors.h"
 #include <dolfin.h>
-#include "PythonInstance.h"
 
 namespace buckettools
 {
