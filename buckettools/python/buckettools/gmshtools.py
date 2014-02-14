@@ -24,7 +24,6 @@ from scipy import interpolate as interp
 from scipy import integrate as integ
 from scipy import optimize as opt
 from math import sqrt
-import pylab
 import sys
 
 class GeoFile:
@@ -299,22 +298,22 @@ class Spline(Curve):
 
   def crop(self, left=None, bottom=None, right=None, top=None):
     if left:
-      out = pylab.find(self.x < left)
+      out = numpy.where(self.x < left)[0]
       if (len(out)>0):
         coord = self.intersectx(left)
         self.croppoint(out, coord)
     if right:
-      out = pylab.find(self.x > right)
+      out = numpy.where(self.x > right)[0]
       if (len(out)>0):
         coord = self.intersectx(right)
         self.croppoint(out, coord)
     if bottom:
-      out = pylab.find(self.y < bottom)
+      out = numpy.where(self.y < bottom)[0]
       if (len(out)>0):
         coord = self.intersecty(bottom)
         self.croppoint(out, coord)
     if top:
-      out = pylab.find(self.y > top)
+      out = numpy.where(self.y > top)[0]
       if (len(out)>0):
         coord = self.intersecty(top)
         self.croppoint(out, coord)
@@ -328,14 +327,14 @@ class Spline(Curve):
     self.crop(left=left, bottom=bottom, right=right, top=top)
 
   def findpointx(self, xint):
-    ind = pylab.find(self.x==xint)
+    ind = numpy.where(self.x==xint)[0]
     if (len(ind)==0): 
       return None
     else:
       return self.points[ind[0]]
   
   def findpointy(self, yint):
-    ind = pylab.find(self.y==yint)
+    ind = numpy.where(self.y==yint)[0]
     if (len(ind)==0): 
       return None
     else:
@@ -585,22 +584,22 @@ class InterpolatedSciPySpline:
 
   def crop(self, left=None, bottom=None, right=None, top=None):
     if left is not None:
-      out = pylab.find(self.x < left)
+      out = numpy.where(self.x < left)[0]
       if (len(out)>0):
         coord = self.intersectx(left)
         self.croppoint(out, coord)
     if right is not None:
-      out = pylab.find(self.x > right)
+      out = numpy.where(self.x > right)[0]
       if (len(out)>0):
         coord = self.intersectx(right)
         self.croppoint(out, coord)
     if bottom is not None:
-      out = pylab.find(self.y < bottom)
+      out = numpy.where(self.y < bottom)[0]
       if (len(out)>0):
         coord = self.intersecty(bottom)
         self.croppoint(out, coord)
     if top is not None:
-      out = pylab.find(self.y > top)
+      out = numpy.where(self.y > top)[0]
       if (len(out)>0):
         coord = self.intersecty(top)
         self.croppoint(out, coord)
@@ -614,14 +613,14 @@ class InterpolatedSciPySpline:
     self.crop(left=left, bottom=bottom, right=right, top=top)
 
   def findpointx(self, xint):
-    ind = pylab.find(self.x==xint)
+    ind = numpy.where(self.x==xint)[0]
     if (len(ind)==0): 
       return None
     else:
       return self.points[ind[0]]
   
   def findpointy(self, yint):
-    ind = pylab.find(self.y==yint)
+    ind = numpy.where(self.y==yint)[0]
     if (len(ind)==0): 
       return None
     else:
@@ -855,6 +854,7 @@ class Geometry:
     self.geofile.write(filename)
 
   def pylabplot(self, lineres=100):
+    import pylab
     for interpcurve in self.interpcurves:
       unew = numpy.arange(interpcurve.u[0], interpcurve.u[-1]+((interpcurve.u[-1]-interpcurve.u[0])/(2.*lineres)), 1./lineres)
       pylab.plot(interpcurve(unew)[0], interpcurve(unew)[1], 'b')
