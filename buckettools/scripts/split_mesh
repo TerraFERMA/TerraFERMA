@@ -29,7 +29,6 @@ except ImportError:
   pass
 from copy import copy
 import dolfin
-import pylab
 import numpy
 from buckettools.mesh import writemesh, splitmesh
 import sys

@@ -1,7 +1,6 @@
 import dolfin
 import numpy
 import subprocess
-import pylab
 
 def makemesh(vertex_coordinates, cells):
     "constructs dolfin mesh given numpy arrays of vertex coordinates and cell maps, *does not* output mesh to file"
@@ -69,9 +68,9 @@ def writemesh(filename, vertex_coordinates, cells):
 
 def splitmesh(mesh, facetsubdomain, split_facet_ids, centroid_function, preserve_facet_ids=[], new_facet_ids=None):
   # get the indices of facets (those to be split, those to be preserved and all indexed facets)
-  split_facet_indices = pylab.find([fid in split_facet_ids for fid in facetsubdomain.array()])
-  preserve_facet_indices = pylab.find([fid in preserve_facet_ids for fid in facetsubdomain.array()])
-  all_facet_indices = pylab.find(facetsubdomain.array()!=0)
+  split_facet_indices = numpy.where([fid in split_facet_ids for fid in facetsubdomain.array()])[0]
+  preserve_facet_indices = numpy.where([fid in preserve_facet_ids for fid in facetsubdomain.array()])[0]
+  all_facet_indices = numpy.where(facetsubdomain.array()!=0)[0]
 
   # duplicate the cell data and the coordinate data
   split_cells = numpy.copy(mesh.cells())
@@ -124,6 +123,7 @@ def splitmesh(mesh, facetsubdomain, split_facet_ids, centroid_function, preserve
         cell_centroid = mesh.coordinates()[mesh.cells()[cell_ind]].sum(axis=0)/float(mesh.cells()[cell_ind].size)
         # if the centroid is above the x==y line then switch this cell to using the new split vertices
         if(centroid_function(cell_centroid)):
+          ## need to import pylab if these lines are uncommented
           # pylab.figure(0)
           # pylab.plot(numpy.append(mesh.coordinates()[mesh.cells()[cell_ind]][:,0], mesh.coordinates()[mesh.cells()[cell_ind]][0,0]),
           #            numpy.append(mesh.coordinates()[mesh.cells()[cell_ind]][:,1], mesh.coordinates()[mesh.cells()[cell_ind]][0,1]))
@@ -185,8 +185,8 @@ def splitmesh(mesh, facetsubdomain, split_facet_ids, centroid_function, preserve
                   assert(facetsubdomain[int(facet)] in split_facet_ids)
                   if new_facet_ids:
                     # user has supplied new ids
-                    assert(len(pylab.find([fid==facetsubdomain[int(facet)] for fid in split_facet_ids]))==1)
-                    newid = new_facet_ids[pylab.find([fid==facetsubdomain[int(facet)] for fid in split_facet_ids])[0]]
+                    assert(len(numpy.where([fid==facetsubdomain[int(facet)] for fid in split_facet_ids])[0])==1)
+                    newid = new_facet_ids[numpy.where([fid==facetsubdomain[int(facet)] for fid in split_facet_ids])[0][0]]
                   else:
                     # user hasn't supplied new ids
                     newid = int(`facetsubdomain[int(facet)]`+'00')
@@ -204,8 +204,8 @@ def splitmesh(mesh, facetsubdomain, split_facet_ids, centroid_function, preserve
                   if facetsubdomain[int(facet)] in split_facet_ids:
                     if new_facet_ids:
                       # user has supplied new ids
-                      assert(len(pylab.find([fid==facetsubdomain[int(facet)] for fid in split_facet_ids]))==1)
-                      newid = new_facet_ids[pylab.find([fid==facetsubdomain[int(facet)] for fid in split_facet_ids])[0]]
+                      assert(len(numpy.where([fid==facetsubdomain[int(facet)] for fid in split_facet_ids])[0])==1)
+                      newid = new_facet_ids[numpy.where([fid==facetsubdomain[int(facet)] for fid in split_facet_ids])[0][0]]
                     else:
                       # user hasn't supplied new ids
                       newid = int(`facetsubdomain[int(facet)]`+'00')
