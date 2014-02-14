@@ -83,6 +83,12 @@ if (PYTHONINTERP_FOUND)
                   OUTPUT_VARIABLE _PYTHON_LIB_PATH
                   RESULT_VARIABLE _PYTHON_LIB_RESULT)
 
+  # Get Python version from interpreter (find_package sets this but only for cmake >= 2.8.5, which we don't require)
+  execute_process(COMMAND "${PYTHON_EXECUTABLE}" -c
+                           "import sys; sys.stdout.write(sys.version[:5])"
+                  OUTPUT_VARIABLE _PYTHON_VERSION_STR
+                  RESULT_VARIABLE _PYTHON_VERSION_RESULT)
+
   # Set include path, if returned by interpreter
   if ("${_PYTHON_INCLUDE_RESULT}" STREQUAL "0")
     set(PYTHON_INCLUDE_DIR ${_PYTHON_INCLUDE_PATH})
@@ -97,12 +103,19 @@ if (PYTHONINTERP_FOUND)
   else()
     message(FATAL_ERROR "Failed to find python library path.")
   endif()
+
+  # Add version number based on output from iterpreter
+  if ("${_PYTHON_VERSION_RESULT}" STREQUAL "0")
+    set(PYTHON_VERSION_STR ${_PYTHON_VERSION_STR})
+  else()
+    message(FATAL_ERROR "Failed to find python version.")
+  endif()
 else()
   message(FATAL_ERROR "Could not find python interpreter.")
 endif()
 
 # Find Pythons livs
-find_package(PythonLibs ${PYTHON_VERSION_STRING} EXACT REQUIRED)
+find_package(PythonLibs ${PYTHON_VERSION_STR} EXACT REQUIRED)
 
 if(NOT ${PYTHONLIBS_FOUND})
   message(FATAL_ERROR "Could not find python libraries.")
