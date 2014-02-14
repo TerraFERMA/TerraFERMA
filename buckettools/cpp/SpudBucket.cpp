@@ -19,13 +19,13 @@
 // along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
 
+#include "PythonDetectors.h"
 #include "SpudBucket.h"
 #include "SpudSystemBucket.h"
 #include "SpudBase.h"
 #include "BoostTypes.h"
 #include "BucketDolfinBase.h"
 #include "PointDetectors.h"
-#include "PythonDetectors.h"
 #include "StatisticsFile.h"
 #include "VisualizationWrapper.h"
 #include <dolfin.h>

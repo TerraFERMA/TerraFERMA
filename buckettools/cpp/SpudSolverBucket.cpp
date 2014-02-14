@@ -19,6 +19,7 @@
 // along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
 
+#include "PythonExpression.h"
 #include "BoostTypes.h"
 #include "SpudSolverBucket.h"
 #include <dolfin.h>
@@ -31,7 +32,6 @@
 #include "petscsnes.h"
 #include "ConvergenceFile.h"
 #include "KSPConvergenceFile.h"
-#include "PythonExpression.h"
 #include <boost/algorithm/string/predicate.hpp>
 
 using namespace buckettools;

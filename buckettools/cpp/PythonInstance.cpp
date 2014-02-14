@@ -19,8 +19,8 @@
 // along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
 
-#include "PythonInstance.h"
 #include "Python.h"
+#include "PythonInstance.h"
 #include <string>
 #include <dolfin.h>
 
