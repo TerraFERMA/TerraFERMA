@@ -416,7 +416,7 @@ void SpudFunctionBucket::fill_base_(const uint &index)
       if (Spud::have_option(buffer.str()))
       {
         std::vector< int > constant_shape;
-        serr = Spud::get_option(buffer.str(), constant_shape);
+        serr = Spud::get_option_shape(buffer.str(), constant_shape);
         spud_err(buffer.str(), serr);
         assert(size_int==constant_shape[0]);
       }
@@ -448,7 +448,7 @@ void SpudFunctionBucket::fill_base_(const uint &index)
       if (Spud::have_option(buffer.str()))
       {
         std::vector< int > constant_shape;
-        serr = Spud::get_option(buffer.str(), constant_shape);
+        serr = Spud::get_option_shape(buffer.str(), constant_shape);
         spud_err(buffer.str(), serr);
         assert((shape_int[0]==constant_shape[0])&&(shape_int[1]==constant_shape[1]));
       }
