@@ -392,37 +392,72 @@ void SpudFunctionBucket::fill_base_(const uint &index)
   serr = Spud::get_option(buffer.str(), rank_); 
   spud_err(buffer.str(), serr);
 
-  buffer.str(""); buffer << optionpath()                             // the size of the element (if a vector)
-                                      << "/type/rank/element/size";  // NOTE: defaults to the bucket geometry dimension
-  serr = Spud::get_option(buffer.str(), size_, (*(*system_).bucket()).dimension()); 
-  spud_err(buffer.str(), serr);
-
-  std::vector< int > default_shape(2, (*(*system_).bucket()).dimension());
-  buffer.str(""); buffer << optionpath()                             // the shape of the element (if a tensor)
-                                    << "/type/rank/element/shape";   // NOTE: defaults to the bucket geometry dimension square
-  serr = Spud::get_option(buffer.str(), shape_, default_shape); 
-  spud_err(buffer.str(), serr);
-
-  if (type_=="Constant")                                             // if the type is constant then we won't have element
-  {                                                                  // information with which to set the size and shape
-                                                                     // so they will automatically be defaults... check if that's
-                                                                     // right
-    buffer.str(""); buffer << optionpath() 
-                                    << "/type/rank/value/constant";
-    if (rank_=="Vector")                                             // get spud to tell us the element shape... if it's a vector
-    {                                                                // the size is just the first entry of this
-      std::vector< int > constant_shape;
-      serr = Spud::get_option_shape(buffer.str(), constant_shape); 
-      spud_err(buffer.str(), serr);
-      size_ = constant_shape[0];
-    }
-    if (rank_=="Tensor")                                             // get the spud element shape for a tensor
+  if (rank_=="Vector")
+  {
+    int size_int;
+    if (type_=="Constant")
     {
-      serr = Spud::get_option_shape(buffer.str(), shape_); 
+      buffer.str(""); buffer << optionpath() 
+                                      << "/type/rank/value/constant";
+      std::vector< int > shape_int;
+      serr = Spud::get_option_shape(buffer.str(), shape_int);
       spud_err(buffer.str(), serr);
+      size_int = shape_int[0];
     }
+    else
+    {
+      buffer.str(""); buffer << optionpath()                         // the size of the element (if a vector)
+                                        << "/type/rank/element/size";// NOTE: defaults to the bucket geometry dimension
+      serr = Spud::get_option(buffer.str(), size_int, (*(*system_).bucket()).dimension()); 
+      spud_err(buffer.str(), serr);
+
+      buffer.str(""); buffer << optionpath() 
+                                      << "/type/rank/value/constant";
+      if (Spud::have_option(buffer.str()))
+      {
+        std::vector< int > constant_shape;
+        serr = Spud::get_option(buffer.str(), constant_shape);
+        spud_err(buffer.str(), serr);
+        assert(size_int==constant_shape[0]);
+      }
+    }
+    shape_.resize(1);
+    shape_[0] = size_int;
   }
 
+  if (rank_=="Tensor")
+  {
+    std::vector< int > shape_int;
+    if (type_=="Constant")
+    {
+      buffer.str(""); buffer << optionpath() 
+                                      << "/type/rank/value/constant";
+      serr = Spud::get_option_shape(buffer.str(), shape_int); 
+      spud_err(buffer.str(), serr);
+    }
+    else
+    {
+      buffer.str(""); buffer << optionpath()                         // the shape of the element (if a tensor)
+                                       << "/type/rank/element/shape";// NOTE: defaults to the bucket geometry dimension square
+      std::vector< int > default_shape(2, (*(*system_).bucket()).dimension());
+      serr = Spud::get_option(buffer.str(), shape_int, default_shape); 
+      spud_err(buffer.str(), serr);
+
+      buffer.str(""); buffer << optionpath() 
+                                      << "/type/rank/value/constant";
+      if (Spud::have_option(buffer.str()))
+      {
+        std::vector< int > constant_shape;
+        serr = Spud::get_option(buffer.str(), constant_shape);
+        spud_err(buffer.str(), serr);
+        assert((shape_int[0]==constant_shape[0])&&(shape_int[1]==constant_shape[1]));
+      }
+    }
+    shape_.resize(2);
+    shape_[0] = shape_int[0];
+    shape_[1] = shape_int[1];
+  }
+ 
 }
 
 //*******************************************************************|************************************************************//
@@ -435,11 +470,6 @@ void SpudFunctionBucket::allocate_field_()
 
   assert(type_=="Function");                                         // fields may only be functions
 
-  if (rank_=="Tensor")                                               // broken (untested?) for field tensors
-  {
-    dolfin::error("Tensor fields not hooked up yet, sorry.");
-  }
-  
   int nfields =                                                      // how may fields in the system (i.e. mixed functionspace?)
       Spud::option_count((*dynamic_cast<SpudSystemBucket*>(system_)).optionpath()+"/field");
   if (nfields == 1)                                                  // no subfunctions (this field is identical to the system)
@@ -663,7 +693,7 @@ void SpudFunctionBucket::fill_bc_component_(const std::string &optionpath,
        
     buffer.str(""); buffer << optionpath << "/components";           // do we have any components (i.e. could be scalar)?
     if (Spud::have_option(buffer.str()))
-    {                                                                // FIXME: tensorial components assumed broken!
+    {                                                                
       std::vector<int> subcompids;
       serr = Spud::get_option(buffer.str(), subcompids);             // get a list of the subcomponents 
       spud_err(buffer.str(), serr);
@@ -1139,26 +1169,30 @@ Expression_ptr SpudFunctionBucket::allocate_expression_(
       std::vector<double> values;
       serr = Spud::get_option(constbuffer.str(), values); 
       spud_err(constbuffer.str(), serr);
-      assert(values.size()==size_);
+      assert(values.size()==size());
       expression.reset(new dolfin::Constant(values));
     }
-//    else if (rank==2)
-//    {
-//      std::vector<int> value_shape;
-//      std::vector<double> values; // not sure this will work 
-//                                  // (might have to be std::vector< std::vector<double> >
-//                                  //  but this disagrees with the DOLFIN interface)
-//      serr = Spud::get_option_shape(constbuffer.str(), value_shape); spud_err(constbuffer.str(), serr);
-//      serr = Spud::get_option(constbuffer.str(), values); spud_err(constbuffer.str(), serr);
-//      expression.reset(new dolfin::Constant());
-//    }
-//    else
-//    {
-//      dolfin::error("Unknown rank in init_exp_");
-//    }
-    else                                                             // unable to deal with this rank
+    else if (rank==2)
     {
-      dolfin::error("Don't deal with rank > 1 yet.");
+      std::vector<int> value_shape_int;
+      std::vector< std::vector<double> > values_arr; 
+      serr = Spud::get_option_shape(constbuffer.str(), value_shape_int); spud_err(constbuffer.str(), serr);
+      serr = Spud::get_option(constbuffer.str(), values_arr); spud_err(constbuffer.str(), serr);
+
+      std::vector<std::size_t> value_shape(2);
+      value_shape[0] = value_shape_int[0];
+      value_shape[1] = value_shape_int[1];
+      std::vector<double> values;
+      for (std::vector< std::vector<double> >::const_iterator val = values_arr.begin(); val != values_arr.end(); val++)
+      {
+        values.insert(values.end(), (*val).begin(), (*val).end());
+      }
+      assert(values.size()==size());
+      expression.reset(new dolfin::Constant(value_shape, values));
+    }
+    else
+    {
+      dolfin::error("Unknown rank for constant in init_exp_");
     }
 
     if (time_dependent)                                              // if we've asked if this expression is time dependent
@@ -1189,11 +1223,15 @@ Expression_ptr SpudFunctionBucket::allocate_expression_(
     }
     else if (rank==1)                                                // vector
     {
-      expression.reset(new PythonExpression(size_, pyfunction, time));
+      expression.reset(new PythonExpression(size(), pyfunction, time));
+    }
+    else if (rank==2)
+    {
+      expression.reset(new PythonExpression(shape_, pyfunction, time));
     }
     else
     {
-      dolfin::error("Don't deal with rank > 1 yet.");
+      dolfin::error("Unknown rank for python expression in init_exp_");
     }
 
     if (time_dependent)                                              // if we've asked if this expression is time dependent
@@ -1240,7 +1278,7 @@ Expression_ptr SpudFunctionBucket::allocate_expression_(
 
     expression = cpp_fetch_expression((*system()).name(), name(), 
                                        typestring, expressionname, 
-                                       size_, shape_, 
+                                       size(), shape_, 
                                        (*system()).bucket(), 
                                        system(), time);
 
@@ -1351,13 +1389,19 @@ Expression_ptr SpudFunctionBucket::allocate_expression_(
       }
       else if (rank==1)                                              // vector
       {
-        expression.reset(new SemiLagrangianExpression(size_,
+        expression.reset(new SemiLagrangianExpression(size(),
+                                               (*system()).bucket(), time, 
+                                               function, velocity, outside));
+      }
+      else if (rank==2)                                              // vector
+      {
+        expression.reset(new SemiLagrangianExpression(shape_,
                                                (*system()).bucket(), time, 
                                                function, velocity, outside));
       }
       else
       {
-        dolfin::error("Don't deal with rank > 1 yet.");
+        dolfin::error("Unknown rank for python expression in init_exp_");
       }
 
       if (time_dependent)                                            // if we've asked if this expression is time dependent

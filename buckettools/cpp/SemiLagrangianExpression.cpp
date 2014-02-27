@@ -46,7 +46,7 @@ SemiLagrangianExpression::SemiLagrangianExpression(const Bucket *bucket, const d
 //*******************************************************************|************************************************************//
 // specific constructor (vector)
 //*******************************************************************|************************************************************//
-SemiLagrangianExpression::SemiLagrangianExpression(const uint &dim,
+SemiLagrangianExpression::SemiLagrangianExpression(const std::size_t &dim,
                                                    const Bucket *bucket, const double_ptr time, 
                                                    const std::pair< std::string, std::pair< std::string, std::string > > &function,
                                                    const std::pair< std::string, std::pair< std::string, std::string > > &velocity,
@@ -64,25 +64,6 @@ SemiLagrangianExpression::SemiLagrangianExpression(const uint &dim,
     
 //*******************************************************************|************************************************************//
 // specific constructor (tensor)
-//*******************************************************************|************************************************************//
-SemiLagrangianExpression::SemiLagrangianExpression(const uint &dim0, const uint &dim1,
-                                                   const Bucket *bucket, const double_ptr time, 
-                                                   const std::pair< std::string, std::pair< std::string, std::string > > &function,
-                                                   const std::pair< std::string, std::pair< std::string, std::string > > &velocity,
-                                                   const std::pair< std::string, std::pair< std::string, std::string > > &outside) :
-                                                      dolfin::Expression(dim0, dim1), 
-                                                      bucket_(bucket), 
-                                                      time_(time),
-                                                      funcname_(function),
-                                                      velname_(velocity),
-                                                      outname_(outside),
-                                                      initialized_(false)
-{
-                                                                     // do nothing
-}
-    
-//*******************************************************************|************************************************************//
-// specific constructor (alternate tensor)
 //*******************************************************************|************************************************************//
 SemiLagrangianExpression::SemiLagrangianExpression(const std::vector<std::size_t> &value_shape,
                                                    const Bucket *bucket, const double_ptr time, 

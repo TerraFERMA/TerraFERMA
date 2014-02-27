@@ -40,7 +40,7 @@ PythonExpression::PythonExpression(const std::string &function) :
 //*******************************************************************|************************************************************//
 // specific constructor (vector)
 //*******************************************************************|************************************************************//
-PythonExpression::PythonExpression(const uint &dim, 
+PythonExpression::PythonExpression(const std::size_t &dim, 
                                    const std::string &function) : 
                                             dolfin::Expression(dim), 
                                             pyinst_(function)
@@ -51,19 +51,7 @@ PythonExpression::PythonExpression(const uint &dim,
 //*******************************************************************|************************************************************//
 // specific constructor (tensor)
 //*******************************************************************|************************************************************//
-PythonExpression::PythonExpression(const uint &dim0, 
-                                   const uint &dim1, 
-                                   const std::string &function) : 
-                                      dolfin::Expression(dim0, dim1),
-                                      pyinst_(function)
-{
-  assert(pyinst_.number_arguments()==1);
-}
-
-//*******************************************************************|************************************************************//
-// specific constructor (alternate tensor)
-//*******************************************************************|************************************************************//
-PythonExpression::PythonExpression(const std::vector<std::size_t> 
+PythonExpression::PythonExpression(const std::vector< std::size_t > 
                                                       &value_shape, 
                                    const std::string &function) : 
                                      dolfin::Expression(value_shape), 
@@ -86,7 +74,7 @@ PythonExpression::PythonExpression(const std::string &function, const double_ptr
 //*******************************************************************|************************************************************//
 // specific constructor (vector)
 //*******************************************************************|************************************************************//
-PythonExpression::PythonExpression(const uint &dim, 
+PythonExpression::PythonExpression(const std::size_t &dim, 
                                    const std::string &function,
                                    const double_ptr time) : 
                                             dolfin::Expression(dim), 
@@ -99,21 +87,7 @@ PythonExpression::PythonExpression(const uint &dim,
 //*******************************************************************|************************************************************//
 // specific constructor (tensor)
 //*******************************************************************|************************************************************//
-PythonExpression::PythonExpression(const uint &dim0, 
-                                   const uint &dim1, 
-                                   const std::string &function,
-                                   const double_ptr time) : 
-                                      dolfin::Expression(dim0, dim1),
-                                      pyinst_(function),
-                                      time_(time)
-{
-  assert((pyinst_.number_arguments()==1)||(pyinst_.number_arguments()==2));
-}
-
-//*******************************************************************|************************************************************//
-// specific constructor (alternate tensor)
-//*******************************************************************|************************************************************//
-PythonExpression::PythonExpression(const std::vector<std::size_t> 
+PythonExpression::PythonExpression(const std::vector< std::size_t > 
                                                       &value_shape, 
                                    const std::string &function,
                                    const double_ptr time) : 
@@ -138,11 +112,8 @@ PythonExpression::~PythonExpression()
 void PythonExpression::eval(dolfin::Array<double>& values, 
                             const dolfin::Array<double>& x) const
 {
-  PyObject *pArgs, *pPos, *pT, *px, *pResult;
-  std::size_t meshdim, valdim;
-  
-  valdim = values.size();                                            // the size of the value space 
-                                                                     // (FIXME: doesn't tell us about shape so tensors not supported)
+  PyObject *pArgs, *pPos, *pT, *px, *pxx, *pResult;
+  std::size_t meshdim;
   
   meshdim = x.size();                                                // the coordinates dimension
   pPos=PyTuple_New(meshdim);                                         // prepare a python tuple for the coordinates
@@ -174,16 +145,36 @@ void PythonExpression::eval(dolfin::Array<double>& values,
     dolfin::error("In PythonExpression::eval evaluating pResult");
   }
     
-  if (PySequence_Check(pResult))                                     // is the result a sequence (FIXME: assumed vector, not tensor)
+  if (PySequence_Check(pResult))                                     // is the result a sequence
   {                                                                  // yes, ...
-    for (std::size_t i = 0; i<valdim; i++)                          // loop over the value dimension
+    const std::size_t dim0 = value_dimension(0);
+    for (std::size_t i = 0; i < dim0; i++)                           // loop over the value dimension
     {
       px = PySequence_GetItem(pResult, i);                           // get the item from the python sequence
-      values[i] = PyFloat_AsDouble(px);                              // convert it to a float
-      
-      if (PyErr_Occurred()){                                         // check for errors in conversion
-        PyErr_Print();
-        dolfin::error("In PythonExpression::eval evaluating values");
+      if (PySequence_Check(px))
+      {
+        const std::size_t dim1 = value_dimension(1);
+        for (std::size_t j = 0; j < dim1; j++)
+        {
+          pxx = PySequence_GetItem(px, j);
+          values[i*dim1 + j] = PyFloat_AsDouble(pxx);
+
+          if (PyErr_Occurred()) {
+            PyErr_Print();
+            dolfin::error("In PythonExpression::eval evaluating tensor values");
+          }
+
+          Py_DECREF(pxx);
+        }
+      }
+      else
+      {
+        values[i] = PyFloat_AsDouble(px);                            // convert it to a float
+        
+        if (PyErr_Occurred()){                                       // check for errors in conversion
+          PyErr_Print();
+          dolfin::error("In PythonExpression::eval evaluating vector values");
+        }
       }
       
       Py_DECREF(px);
@@ -195,7 +186,7 @@ void PythonExpression::eval(dolfin::Array<double>& values,
     
     if (PyErr_Occurred()){                                           // check for errors in conversion
       PyErr_Print();
-      dolfin::error("In PythonExpression::eval evaluating values");
+      dolfin::error("In PythonExpression::eval evaluating scalar values");
     }
   }
   

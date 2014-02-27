@@ -49,6 +49,17 @@ InitialConditionExpression::InitialConditionExpression(const uint &dim,
 }
 
 //*******************************************************************|************************************************************//
+// specific constructor (tensor)
+//*******************************************************************|************************************************************//
+InitialConditionExpression::InitialConditionExpression(const std::vector<std::size_t> &value_shape, 
+                      std::map< std::size_t, Expression_ptr > expressions) : 
+                      dolfin::Expression(value_shape), 
+                      expressions_(expressions)
+{
+                                                                     // do nothing
+}
+
+//*******************************************************************|************************************************************//
 // default destructor
 //*******************************************************************|************************************************************//
 InitialConditionExpression::~InitialConditionExpression()

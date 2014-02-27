@@ -77,9 +77,9 @@ class CppExpressionBucket:
     if self.rank == "Scalar":
       cpp.append("    "+self.namespace()+"(const Bucket *bucket, const SystemBucket *system, const double_ptr time) : dolfin::Expression(), bucket_(bucket), system_(system), time_(time), initialized_(false)\n")
     elif self.rank == "Vector":
-      cpp.append("    "+self.namespace()+"(const uint &dim, const Bucket *bucket, const SystemBucket *system, const double_ptr time) : dolfin::Expression(dim), bucket_(bucket), system_(system), time_(time), initialized_(false)\n")
+      cpp.append("    "+self.namespace()+"(const std::size_t &dim, const Bucket *bucket, const SystemBucket *system, const double_ptr time) : dolfin::Expression(dim), bucket_(bucket), system_(system), time_(time), initialized_(false)\n")
     elif self.rank == "Tensor":
-      cpp.append("    "+self.namespace()+"(const std::vector<int> &value_shape, const Bucket *bucket, const SystemBucket *system, const double_ptr time) : dolfin::Expression(value_shape), bucket_(bucket), system_(system), time_(time), initialized_(false)\n")
+      cpp.append("    "+self.namespace()+"(const std::vector<std::size_t> &value_shape, const Bucket *bucket, const SystemBucket *system, const double_ptr time) : dolfin::Expression(value_shape), bucket_(bucket), system_(system), time_(time), initialized_(false)\n")
     else:
       print self.rank
       print "Unknown rank."

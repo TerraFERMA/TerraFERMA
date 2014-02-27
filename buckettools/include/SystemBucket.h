@@ -357,7 +357,7 @@ namespace buckettools
     void attach_solver_coeffs_(SolverBucket_it s_begin,              // attach specific fields or coefficients to solver forms
                                           SolverBucket_it s_end);
 
-    void collect_ics_(const uint &component, const std::size_t &maxrank, // collect the field initial conditions into an initial 
+    void collect_ics_(const uint &components,                        // collect the field initial conditions into an initial 
                       const std::map< std::size_t, Expression_ptr >  // condition expression
                                                   &icexpressions);
 

@@ -382,7 +382,7 @@ void ConvergenceFile::data_field_(FunctionBucket_const_it f_begin,
       {
         for (uint j = 0; j < dim1; j++)
         {
-          dolfin::Function funccomp = func[i][j];                    // take a deep copy of the ijth component of the subfunction
+          dolfin::Function funccomp = func[i*dim1 + j];                    // take a deep copy of the ijth component of the subfunction
           file_ << (*funccomp.vector()).max() << " ";                // maximum for all components
         }
       }
@@ -391,7 +391,7 @@ void ConvergenceFile::data_field_(FunctionBucket_const_it f_begin,
       {
         for (uint j = 0; j < dim1; j++)
         {
-          dolfin::Function funccomp = func[i][j];                    // take a deep copy of the ijth component of the subfunction
+          dolfin::Function funccomp = func[i*dim1 + j];                    // take a deep copy of the ijth component of the subfunction
           file_ << (*funccomp.vector()).min() << " ";                // minimum for all components
         }
       }
@@ -400,7 +400,7 @@ void ConvergenceFile::data_field_(FunctionBucket_const_it f_begin,
       {
         for (uint j = 0; j < dim1; j++)
         {
-          dolfin::Function resfunccomp = resfunc[i][j];              // take a deep copy of the ijth component of the subfunction
+          dolfin::Function resfunccomp = resfunc[i*dim1 + j];              // take a deep copy of the ijth component of the subfunction
           file_ << (*resfunccomp.vector()).max() << " ";             // maximum for all components
         }
       }
@@ -409,7 +409,7 @@ void ConvergenceFile::data_field_(FunctionBucket_const_it f_begin,
       {
         for (uint j = 0; j < dim1; j++)
         {
-          dolfin::Function resfunccomp = resfunc[i][j];              // take a deep copy of the ijth component of the subfunction
+          dolfin::Function resfunccomp = resfunc[i*dim1 + j];              // take a deep copy of the ijth component of the subfunction
           file_ << (*resfunccomp.vector()).min() << " ";             // minimum for all components
         }
       }
@@ -418,7 +418,7 @@ void ConvergenceFile::data_field_(FunctionBucket_const_it f_begin,
       {
         for (uint j = 0; j < dim1; j++)
         {
-          dolfin::Function resfunccomp = resfunc[i][j];              // take a deep copy of the ijth component of the subfunction
+          dolfin::Function resfunccomp = resfunc[i*dim1 + j];              // take a deep copy of the ijth component of the subfunction
           file_ << (*resfunccomp.vector()).norm("l2") << " ";             // maximum for all components
         }
       }
@@ -427,7 +427,7 @@ void ConvergenceFile::data_field_(FunctionBucket_const_it f_begin,
       {
         for (uint j = 0; j < dim1; j++)
         {
-          dolfin::Function resfunccomp = resfunc[i][j];              // take a deep copy of the ijth component of the subfunction
+          dolfin::Function resfunccomp = resfunc[i*dim1 + j];              // take a deep copy of the ijth component of the subfunction
           file_ << (*resfunccomp.vector()).norm("linf") << " ";             // minimum for all components
         }
       }
@@ -441,7 +441,7 @@ void ConvergenceFile::data_field_(FunctionBucket_const_it f_begin,
         {
           for (uint j = 0; j < dim1; j++)
           {
-            dolfin::Function upfunccomp = upfunc[i][j];              // take a deep copy of the ijth component of the subfunction
+            dolfin::Function upfunccomp = upfunc[i*dim1 + j];              // take a deep copy of the ijth component of the subfunction
             file_ << (*upfunccomp.vector()).max() << " ";            // maximum for all components
           }
         }
@@ -450,7 +450,7 @@ void ConvergenceFile::data_field_(FunctionBucket_const_it f_begin,
         {
           for (uint j = 0; j < dim1; j++)
           {
-            dolfin::Function upfunccomp = upfunc[i][j];              // take a deep copy of the ijth component of the subfunction
+            dolfin::Function upfunccomp = upfunc[i*dim1 + j];              // take a deep copy of the ijth component of the subfunction
             file_ << (*upfunccomp.vector()).min() << " ";            // minimum for all components
           }
         }
