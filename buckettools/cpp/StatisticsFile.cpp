@@ -288,7 +288,7 @@ void StatisticsFile::data_field_(FunctionBucket_const_it f_begin,
         {
           for (uint j = 0; j < dim1; j++)
           {
-            dolfin::Function funccomp = func[i][j];                  // take a deep copy of the ijth component of the subfunction
+            dolfin::Function funccomp = func[i*dim1 + j];                  // take a deep copy of the ijth component of the subfunction
             file_ << (*funccomp.vector()).max() << " ";              // maximum for all components
           }
         }
@@ -297,7 +297,7 @@ void StatisticsFile::data_field_(FunctionBucket_const_it f_begin,
         {
           for (uint j = 0; j < dim1; j++)
           {
-            dolfin::Function funccomp = func[i][j];                  // take a deep copy of the ijth component of the subfunction
+            dolfin::Function funccomp = func[i*dim1 + j];                  // take a deep copy of the ijth component of the subfunction
             file_ << (*funccomp.vector()).min() << " ";              // minimum for all components
           }
         }
@@ -306,7 +306,7 @@ void StatisticsFile::data_field_(FunctionBucket_const_it f_begin,
         {
           for (uint j = 0; j < dim1; j++)
           {
-            dolfin::Function resfunccomp = resfunc[i][j];            // take a deep copy of the ijth component of the subfunction
+            dolfin::Function resfunccomp = resfunc[i*dim1 + j];            // take a deep copy of the ijth component of the subfunction
             file_ << (*resfunccomp.vector()).max() << " ";           // maximum for all components
           }
         }
@@ -315,7 +315,7 @@ void StatisticsFile::data_field_(FunctionBucket_const_it f_begin,
         {
           for (uint j = 0; j < dim1; j++)
           {
-            dolfin::Function resfunccomp = resfunc[i][j];            // take a deep copy of the ijth component of the subfunction
+            dolfin::Function resfunccomp = resfunc[i*dim1 + j];            // take a deep copy of the ijth component of the subfunction
             file_ << (*resfunccomp.vector()).min() << " ";           // minimum for all components
           }
         }
@@ -374,7 +374,7 @@ void StatisticsFile::data_coeff_(FunctionBucket_const_it f_begin,
           {
             for (uint j = 0; j < dim1; j++)
             {
-              dolfin::Function funccomp = func[i][j];                // take a deep copy of the ijth component of the subfunction
+              dolfin::Function funccomp = func[i*dim1 + j];                // take a deep copy of the ijth component of the subfunction
               file_ << (*funccomp.vector()).max() << " ";            // maximum for all components
             }
           }
@@ -382,7 +382,7 @@ void StatisticsFile::data_coeff_(FunctionBucket_const_it f_begin,
           {
             for (uint j = 0; j < dim1; j++)
             {
-              dolfin::Function funccomp = func[i][j];                // take a deep copy of the ijth component of the subfunction
+              dolfin::Function funccomp = func[i*dim1 + j];                // take a deep copy of the ijth component of the subfunction
               file_ << (*funccomp.vector()).min() << " ";            // minimum for all components
             }
           }
@@ -425,16 +425,16 @@ void StatisticsFile::data_coeff_(FunctionBucket_const_it f_begin,
           {
             for (uint j = 0; j < dim1; j++)
             {
-              file_ << *std::max_element(&values[(2*j+i)*(*mesh).num_vertices()], 
-                  &values[(2*j+i+1)*(*mesh).num_vertices()]) << " ";// maximum for all components
+              file_ << *std::max_element(&values[(i*dim1 + j)*(*mesh).num_vertices()], 
+                  &values[(i*dim1 + j + 1)*(*mesh).num_vertices()]) << " ";// maximum for all components
             }
           }
           for (uint i = 0; i < dim0; i++)
           {
             for (uint j = 0; j < dim1; j++)
             {
-              file_ << *std::min_element(&values[(2*j+i)*(*mesh).num_vertices()], 
-                  &values[(2*j+i+1)*(*mesh).num_vertices()]) << " ";// maximum for all components
+              file_ << *std::min_element(&values[(i*dim1 + j)*(*mesh).num_vertices()], 
+                  &values[(i*dim1 + j + 1)*(*mesh).num_vertices()]) << " ";// maximum for all components
             }
           }
         }

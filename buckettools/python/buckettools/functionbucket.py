@@ -76,7 +76,7 @@ class FunctionBucket:
                +self.system.cell+", " \
                +`self.degree`
     if self.rank == "Vector":
-      if self.size: ufl_line += ", size="+`self.size`
+      if self.size: ufl_line += ", dim="+`self.size`
     elif self.rank == "Tensor":
       if self.shape: ufl_line += ", shape=("+`self.shape[0]`+","+`self.shape[1]`+")"
       if self.symmetry: ufl_line += ", symmetry=True"

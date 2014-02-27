@@ -322,6 +322,19 @@ const double FunctionBucket::functioninfnorm() const
 }
 
 //*******************************************************************|************************************************************//
+// return the size of the function
+//*******************************************************************|************************************************************//
+const std::size_t FunctionBucket::size() const
+{
+  std::size_t size = 1;
+  for (std::vector<std::size_t>::const_iterator i=shape_.begin(); i != shape_.end(); i++)
+  {
+    size*=(*i);
+  }
+  return size;
+}
+
+//*******************************************************************|************************************************************//
 // return the change in this function over a timestep (only valid for fields and only valid after system changefunction has been
 // updated)
 //*******************************************************************|************************************************************//
