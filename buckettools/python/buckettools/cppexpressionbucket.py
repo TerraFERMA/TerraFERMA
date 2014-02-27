@@ -48,9 +48,9 @@ class CppExpressionBucket:
     cpp.append("#ifndef __"+self.namespace().upper()+"_H\n")
     cpp.append("#define __"+self.namespace().upper()+"_H\n")
     cpp.append("\n")
-    cpp.append("#include \"BoostTypes.h\"\n")
     cpp.append("#include \"Bucket.h\"\n")
     cpp.append("#include \"SystemBucket.h\"\n")
+    cpp.append("#include \"BoostTypes.h\"\n")
     cpp.append("#include <dolfin.h>\n")
     if self.include:
       for line in self.include.split("\n"):
