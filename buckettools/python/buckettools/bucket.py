@@ -74,6 +74,9 @@ class Bucket:
 
     include_cpp = []
     include_cpp.append("\n")
+    include_cpp.append("#include \"SystemFunctionalsWrapper.h\"\n")
+    include_cpp.append("#include \"BoostTypes.h\"\n")
+    include_cpp.append("#include <dolfin.h>\n")
 
     functionalcoefficientspace_cpp         = []
     functionalcoefficientspace_cpp.append("  // A function to return a functionspace (for a coefficient) from a system given a mesh, a functionname and a uflsymbol.\n")
@@ -111,10 +114,6 @@ class Bucket:
       functional_cpp += system.functional_cpp(index=s)
       constantfunctional_cpp += system.constantfunctional_cpp(index=s)
       s += 1
-
-    include_cpp.append("#include \"SystemFunctionalsWrapper.h\"\n")
-    include_cpp.append("#include \"BoostTypes.h\"\n")
-    include_cpp.append("#include <dolfin.h>\n")
 
     functionalcoefficientspace_cpp.append("    else\n")
     functionalcoefficientspace_cpp.append("    {\n")
@@ -284,12 +283,8 @@ class Bucket:
     """Write a cpp header file describing all the cpp expression namespaces in the bucket."""
     cpp = []
 
-    cpp.append("\n")
-    cpp.append("#include \"SystemExpressionsWrapper.h\"\n")
-    cpp.append("#include \"BoostTypes.h\"\n")
-    cpp.append("#include <dolfin.h>\n")
-
     include_cpp = []
+    include_cpp.append("\n")
 
     cppexpression_cpp = []
     cppexpression_cpp.append("  // A function to return an expression for a coefficient from a system given a systemname and a functionname (and its size, shape and private members bucket, system and time.\n")
@@ -308,6 +303,10 @@ class Bucket:
       cppexpression_cpp += system.cppexpression_cpp(index=s)
       cppexpression_init += system.cppexpression_init(index=s)
       s += 1
+
+    include_cpp.append("#include \"SystemExpressionsWrapper.h\"\n")
+    include_cpp.append("#include \"BoostTypes.h\"\n")
+    include_cpp.append("#include <dolfin.h>\n")
 
     cppexpression_cpp.append("    else\n")
     cppexpression_cpp.append("    {\n")
