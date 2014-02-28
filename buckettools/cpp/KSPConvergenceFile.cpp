@@ -318,13 +318,30 @@ void KSPConvergenceFile::data_field_(FunctionBucket_const_it f_begin,
     }
     else if (func.value_rank()==2)                                   // tensor (multiple components)
     {
+      const bool symmetric = ((*(*func.function_space()).element()).num_sub_elements() != func.value_size());
       int dim0 = func.value_dimension(0);
       int dim1 = func.value_dimension(1);
       for (uint i = 0; i < dim0; i++)
       {
         for (uint j = 0; j < dim1; j++)
         {
-          dolfin::Function funccomp = func[i*dim1 + j];                    // take a deep copy of the ijth component of the subfunction
+          std::size_t k; 
+          if (symmetric) 
+          {
+            if (j >= i) 
+            {
+              k = i*dim1 + j - (i*(i+1))/2; 
+            }
+            else
+            { 
+              k = j*dim1 + i - (j*(j+1))/2; 
+            }
+          }
+          else
+          {
+            k = i*dim1 + j;
+          }
+          dolfin::Function funccomp = func[k];                    // take a deep copy of the ijth component of the subfunction
           file_ << (*funccomp.vector()).max() << " ";                // maximum for all components
         }
       }
@@ -333,7 +350,23 @@ void KSPConvergenceFile::data_field_(FunctionBucket_const_it f_begin,
       {
         for (uint j = 0; j < dim1; j++)
         {
-          dolfin::Function funccomp = func[i*dim1 + j];                    // take a deep copy of the ijth component of the subfunction
+          std::size_t k; 
+          if (symmetric) 
+          {
+            if (j >= i) 
+            {
+              k = i*dim1 + j - (i*(i+1))/2; 
+            }
+            else
+            { 
+              k = j*dim1 + i - (j*(j+1))/2; 
+            }
+          }
+          else
+          {
+            k = i*dim1 + j;
+          }
+          dolfin::Function funccomp = func[k];                    // take a deep copy of the ijth component of the subfunction
           file_ << (*funccomp.vector()).min() << " ";                // minimum for all components
         }
       }
@@ -342,7 +375,23 @@ void KSPConvergenceFile::data_field_(FunctionBucket_const_it f_begin,
       {
         for (uint j = 0; j < dim1; j++)
         {
-          dolfin::Function resfunccomp = resfunc[i*dim1 + j];              // take a deep copy of the ijth component of the subfunction
+          std::size_t k; 
+          if (symmetric) 
+          {
+            if (j >= i) 
+            {
+              k = i*dim1 + j - (i*(i+1))/2; 
+            }
+            else
+            { 
+              k = j*dim1 + i - (j*(j+1))/2; 
+            }
+          }
+          else
+          {
+            k = i*dim1 + j;
+          }
+          dolfin::Function resfunccomp = resfunc[k];              // take a deep copy of the ijth component of the subfunction
           file_ << (*resfunccomp.vector()).max() << " ";             // maximum for all components
         }
       }
@@ -351,7 +400,23 @@ void KSPConvergenceFile::data_field_(FunctionBucket_const_it f_begin,
       {
         for (uint j = 0; j < dim1; j++)
         {
-          dolfin::Function resfunccomp = resfunc[i*dim1 + j];              // take a deep copy of the ijth component of the subfunction
+          std::size_t k; 
+          if (symmetric) 
+          {
+            if (j >= i) 
+            {
+              k = i*dim1 + j - (i*(i+1))/2; 
+            }
+            else
+            { 
+              k = j*dim1 + i - (j*(j+1))/2; 
+            }
+          }
+          else
+          {
+            k = i*dim1 + j;
+          }
+          dolfin::Function resfunccomp = resfunc[k];              // take a deep copy of the ijth component of the subfunction
           file_ << (*resfunccomp.vector()).min() << " ";             // minimum for all components
         }
       }
@@ -360,7 +425,23 @@ void KSPConvergenceFile::data_field_(FunctionBucket_const_it f_begin,
       {
         for (uint j = 0; j < dim1; j++)
         {
-          dolfin::Function resfunccomp = resfunc[i*dim1 + j];              // take a deep copy of the ijth component of the subfunction
+          std::size_t k; 
+          if (symmetric) 
+          {
+            if (j >= i) 
+            {
+              k = i*dim1 + j - (i*(i+1))/2; 
+            }
+            else
+            { 
+              k = j*dim1 + i - (j*(j+1))/2; 
+            }
+          }
+          else
+          {
+            k = i*dim1 + j;
+          }
+          dolfin::Function resfunccomp = resfunc[k];              // take a deep copy of the ijth component of the subfunction
           file_ << (*resfunccomp.vector()).norm("l2") << " ";             // maximum for all components
         }
       }
@@ -369,7 +450,23 @@ void KSPConvergenceFile::data_field_(FunctionBucket_const_it f_begin,
       {
         for (uint j = 0; j < dim1; j++)
         {
-          dolfin::Function resfunccomp = resfunc[i*dim1 + j];              // take a deep copy of the ijth component of the subfunction
+          std::size_t k; 
+          if (symmetric) 
+          {
+            if (j >= i) 
+            {
+              k = i*dim1 + j - (i*(i+1))/2; 
+            }
+            else
+            { 
+              k = j*dim1 + i - (j*(j+1))/2; 
+            }
+          }
+          else
+          {
+            k = i*dim1 + j;
+          }
+          dolfin::Function resfunccomp = resfunc[k];              // take a deep copy of the ijth component of the subfunction
           file_ << (*resfunccomp.vector()).norm("linf") << " ";             // minimum for all components
         }
       }

@@ -52,7 +52,7 @@ class SpudFunctionBucket(buckettools.functionbucket.FunctionBucket):
     elif self.rank == "Tensor":
       if libspud.have_option(optionpath+"/type/rank/element/shape"):
         self.shape = libspud.get_option(optionpath+"/type/rank/element/shape")
-      if libspud.have_option(optionpath+"/type/rank/element/symmetry"):
+      if libspud.have_option(optionpath+"/type/rank/element/symmetric"):
         self.symmetry = True
 
     # this should be restricted by the schema to Constant coefficients:
