@@ -295,9 +295,9 @@ void ConvergenceFile::data_field_(FunctionBucket_const_it f_begin,
                                                             f_it++)
   {
     dolfin::Function func =                                          // take a deep copy of the subfunction so the vector is accessible
-      *boost::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).iteratedfunction());
+      *std::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).iteratedfunction());
     dolfin::Function resfunc =                                       // take a deep copy of the subfunction so the vector is accessible
-      *boost::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).residualfunction());
+      *std::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).residualfunction());
     if (func.value_rank()==0)                                        // scalars (no components)
     {
       file_ << (*func.vector()).max() << " ";
@@ -311,7 +311,7 @@ void ConvergenceFile::data_field_(FunctionBucket_const_it f_begin,
       if ((*sol_ptr).type()=="SNES")
       {
         dolfin::Function upfunc =                                   // take a deep copy of the subfunction so the vector is accessible
-          *boost::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).snesupdatefunction());
+          *std::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).snesupdatefunction());
 
         file_ << (*upfunc.vector()).max() << " ";
         file_ << (*upfunc.vector()).min() << " ";
@@ -359,7 +359,7 @@ void ConvergenceFile::data_field_(FunctionBucket_const_it f_begin,
       if ((*sol_ptr).type()=="SNES")
       {
         dolfin::Function upfunc =                                   // take a deep copy of the subfunction so the vector is accessible
-          *boost::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).snesupdatefunction());
+          *std::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).snesupdatefunction());
 
         for (uint i = 0; i < components; i++)
         {
@@ -532,7 +532,7 @@ void ConvergenceFile::data_field_(FunctionBucket_const_it f_begin,
       if ((*sol_ptr).type()=="SNES")
       {
         dolfin::Function upfunc =                                    // take a deep copy of the subfunction so the vector is accessible
-          *boost::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).snesupdatefunction());
+          *std::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).snesupdatefunction());
 
         for (uint i = 0; i < dim0; i++)
         {

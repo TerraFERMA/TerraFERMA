@@ -36,14 +36,14 @@ namespace buckettools
   //*****************************************************************|************************************************************//
   class Bucket;
   class SystemBucket;
-  typedef boost::shared_ptr< SystemBucket > SystemBucket_ptr;
+  typedef std::shared_ptr< SystemBucket > SystemBucket_ptr;
   class FunctionBucket;
-  typedef boost::shared_ptr< FunctionBucket > FunctionBucket_ptr;
+  typedef std::shared_ptr< FunctionBucket > FunctionBucket_ptr;
   typedef std::map< std::string, FunctionBucket_ptr >::const_iterator FunctionBucket_const_it;
   class GenericDetectors;
-  typedef boost::shared_ptr< GenericDetectors > GenericDetectors_ptr;
+  typedef std::shared_ptr< GenericDetectors > GenericDetectors_ptr;
   typedef std::map< std::string, GenericDetectors_ptr >::const_iterator GenericDetectors_const_it;
-  typedef boost::shared_ptr< dolfin::Mesh > Mesh_ptr;
+  typedef std::shared_ptr< dolfin::Mesh > Mesh_ptr;
 
   //*****************************************************************|************************************************************//
   // DetectorsFile class:
@@ -119,7 +119,7 @@ namespace buckettools
 
   };
   
-  typedef boost::shared_ptr< DetectorsFile > DetectorsFile_ptr;          // define a boost shared ptr type for the class
+  typedef std::shared_ptr< DetectorsFile > DetectorsFile_ptr;          // define a boost shared ptr type for the class
 
 }
 #endif

@@ -35,7 +35,7 @@ namespace buckettools
 {
   
   class Bucket;                                                      // predeclare the class itself
-  typedef boost::shared_ptr< Bucket > Bucket_ptr;                    // so we can predeclare a pointer to it
+  typedef std::shared_ptr< Bucket > Bucket_ptr;                    // so we can predeclare a pointer to it
   
   enum output_location { OUTPUT_START, OUTPUT_TIMELOOP, OUTPUT_END };
 
@@ -447,7 +447,7 @@ namespace buckettools
 
   };
 
-  typedef boost::shared_ptr< Bucket > Bucket_ptr;                    // define a boost shared ptr type for the class
+  typedef std::shared_ptr< Bucket > Bucket_ptr;                    // define a boost shared ptr type for the class
 
 }
 #endif

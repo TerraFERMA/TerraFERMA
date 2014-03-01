@@ -79,7 +79,7 @@ namespace buckettools
     
   };
   
-  typedef boost::shared_ptr< PythonDetectors > PythonDetectors_ptr;  // define a (boost shared) pointer for this class type
+  typedef std::shared_ptr< PythonDetectors > PythonDetectors_ptr;  // define a (boost shared) pointer for this class type
   
 }
 

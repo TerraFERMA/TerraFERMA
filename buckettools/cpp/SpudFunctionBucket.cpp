@@ -139,8 +139,8 @@ void SpudFunctionBucket::allocate_coeff_function()
                                                                      // expressions through a user defined cpp expression) so just
                                                                      // zero if for now and we'll intialize it later, once we're
                                                                      // allowed to call eval for the first time
-    (*(*boost::dynamic_pointer_cast< dolfin::Function >(function_)).vector()).zero();
-    (*(*boost::dynamic_pointer_cast< dolfin::Function >(oldfunction_)).vector()).zero();
+    (*(*std::dynamic_pointer_cast< dolfin::Function >(function_)).vector()).zero();
+    (*(*std::dynamic_pointer_cast< dolfin::Function >(oldfunction_)).vector()).zero();
 
     buffer.str(""); buffer << (*system_).name() << "::" << name();     // rename the function as SystemName::CoefficientName
     (*function_).rename(buffer.str(), buffer.str());
@@ -192,11 +192,11 @@ void SpudFunctionBucket::initialize_coeff_expression()
 
     buffer.str(""); buffer << optionpath() << "/type/rank/value";
     initialize_expression_over_regions_(
-        boost::dynamic_pointer_cast< dolfin::Expression >(function_), 
+        std::dynamic_pointer_cast< dolfin::Expression >(function_), 
                                                    buffer.str());    // iteratedfunction_ points at this too so doesn't need
                                                                      // initializing
     initialize_expression_over_regions_(
-        boost::dynamic_pointer_cast< dolfin::Expression >(oldfunction_), 
+        std::dynamic_pointer_cast< dolfin::Expression >(oldfunction_), 
                                                    buffer.str());
     
   }
@@ -221,8 +221,8 @@ void SpudFunctionBucket::initialize_coeff_function()
 
     initialize_expression_over_regions_(tmpexpression, buffer.str());
 
-    (*boost::dynamic_pointer_cast< dolfin::Function >(function_)).interpolate(*tmpexpression);
-    (*boost::dynamic_pointer_cast< dolfin::Function >(oldfunction_)).interpolate(*tmpexpression);
+    (*std::dynamic_pointer_cast< dolfin::Function >(function_)).interpolate(*tmpexpression);
+    (*std::dynamic_pointer_cast< dolfin::Function >(oldfunction_)).interpolate(*tmpexpression);
                                                                      // iteratedfunction_ points at function_
     if (time_dependent)
     {
@@ -245,7 +245,7 @@ void SpudFunctionBucket::copy_diagnostics(FunctionBucket_ptr &function, SystemBu
 
   FunctionBucket::copy_diagnostics(function, system);
 
-  (*boost::dynamic_pointer_cast< SpudFunctionBucket >(function)).functional_optionpaths_ = functional_optionpaths_;
+  (*std::dynamic_pointer_cast< SpudFunctionBucket >(function)).functional_optionpaths_ = functional_optionpaths_;
 
 }
 
@@ -1240,7 +1240,7 @@ Expression_ptr SpudFunctionBucket::allocate_expression_(
 
     if (time_dependent)                                              // if we've asked if this expression is time dependent
     {                                                                // ... it may be
-      *time_dependent = (*boost::dynamic_pointer_cast< PythonExpression >(expression)).time_dependent();
+      *time_dependent = (*std::dynamic_pointer_cast< PythonExpression >(expression)).time_dependent();
     }
 
   }
@@ -1443,7 +1443,7 @@ void SpudFunctionBucket::initialize_expression_over_regions_(
   if (nvs > 1)
   {
     std::map< std::size_t, Expression_ptr > expressions = 
-      (*boost::dynamic_pointer_cast< RegionsExpression >(expression)).expressions();
+      (*std::dynamic_pointer_cast< RegionsExpression >(expression)).expressions();
 
     for (uint i = 0; i < nvs; i++)
     {
@@ -1518,7 +1518,7 @@ void SpudFunctionBucket::initialize_expression_(
     assert(typestring=="value");                                     // double check it's a value expression
 
     double value = dolfin::assemble(*constantfunctional_);
-    *boost::dynamic_pointer_cast< dolfin::Constant >(function_) = value;
+    *std::dynamic_pointer_cast< dolfin::Constant >(function_) = value;
 
   }
   else if (Spud::have_option(cppbuffer.str()))                       // cpp expressions
@@ -1546,7 +1546,7 @@ void SpudFunctionBucket::initialize_expression_(
 
     if (algoname == "SemiLagrangian")
     {
-      (*boost::dynamic_pointer_cast< SemiLagrangianExpression >(expression)).init();
+      (*std::dynamic_pointer_cast< SemiLagrangianExpression >(expression)).init();
     }
     else
     {

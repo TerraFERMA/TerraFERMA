@@ -212,7 +212,7 @@ class CppExpressionBucket:
     else:
       cpp.append("          else if (expressionname ==  \""+self.name+"\")\n")
     cpp.append("          {\n")
-    cpp.append("            (*boost::dynamic_pointer_cast< "+self.namespace()+" >(expression)).init();\n")
+    cpp.append("            (*std::dynamic_pointer_cast< "+self.namespace()+" >(expression)).init();\n")
     cpp.append("          }\n")
     
     return cpp

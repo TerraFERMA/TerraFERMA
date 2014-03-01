@@ -83,7 +83,7 @@ void SpudSystemBucket::allocate_coeff_function()
   for (FunctionBucket_it f_it = coeffs_begin(); f_it != coeffs_end();// loop over all coefficients
                                                               f_it++) 
   {                                                                  // recast as a spud derived class and initialize
-    (*(boost::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).allocate_coeff_function();
+    (*(std::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).allocate_coeff_function();
   }                                                                  // (check that this is a coefficient function within this
                                                                      // function)
 
@@ -110,13 +110,13 @@ void SpudSystemBucket::initialize_fields_and_coefficients()
   for (FunctionBucket_it f_it = fields_begin(); f_it != fields_end();
                                                               f_it++)
   {
-    (*(boost::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).initialize_field();
+    (*(std::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).initialize_field();
   } 
 
   for (FunctionBucket_it f_it = coeffs_begin(); f_it != coeffs_end();
                                                               f_it++)
   {
-    (*(boost::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).initialize_coeff_expression();
+    (*(std::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).initialize_coeff_expression();
   } 
 
                                                                      // after this point, we are allowed to start calling evals on
@@ -131,7 +131,7 @@ void SpudSystemBucket::initialize_fields_and_coefficients()
   for (FunctionBucket_it f_it = coeffs_begin(); f_it != coeffs_end();
                                                               f_it++)
   {
-    (*(boost::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).initialize_coeff_function();
+    (*(std::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).initialize_coeff_function();
   } 
 
   if (fields_size()>0)
@@ -155,7 +155,7 @@ void SpudSystemBucket::initialize_solvers()
     for (SolverBucket_it s_it = solvers_begin(); s_it != solvers_end();// loop over the solver buckets
                                                                 s_it++)
     {
-      (*boost::dynamic_pointer_cast< SpudSolverBucket >((*s_it).second)).initialize();
+      (*std::dynamic_pointer_cast< SpudSolverBucket >((*s_it).second)).initialize();
                                                                        // perform a preassembly of all the matrices to set up
                                                                        // sparsities etc. and set up petsc objects
     }
@@ -380,7 +380,7 @@ void SpudSystemBucket::fill_bcs_()
           b_it = (*(*f_it).second).ordereddirichletbcs_begin(); 
           b_it != (*(*f_it).second).ordereddirichletbcs_end(); b_it++)
     {
-      dirichletbcs_.push_back(&(*boost::dynamic_pointer_cast<dolfin::DirichletBC>((*b_it).second)));                       // add the bcs to a std vector
+      dirichletbcs_.push_back(&(*std::dynamic_pointer_cast<dolfin::DirichletBC>((*b_it).second)));                       // add the bcs to a std vector
     }
   }
 

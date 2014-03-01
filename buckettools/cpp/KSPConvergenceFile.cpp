@@ -262,9 +262,9 @@ void KSPConvergenceFile::data_field_(FunctionBucket_const_it f_begin,
                                                             f_it++)
   {
     dolfin::Function func =                                          // take a deep copy of the subfunction so the vector is accessible
-      *boost::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).iteratedfunction());
+      *std::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).iteratedfunction());
     dolfin::Function resfunc =                                       // take a deep copy of the subfunction so the vector is accessible
-      *boost::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).residualfunction());
+      *std::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).residualfunction());
     if (func.value_rank()==0)                                        // scalars (no components)
     {
       file_ << (*func.vector()).max() << " ";
