@@ -140,7 +140,7 @@
     <nonlinear_solver name="Solver">
       <type name="SNES">
         <form name="Residual" rank="0">
-          <string_value lines="20" type="code" language="python">n = f_e.cell().n
+          <string_value lines="20" type="code" language="python">n = FacetNormal(f_e.cell())
 vnabs = (dot(v, n) + abs(dot(v, n)))/2.0
 vn = dot(v,n)
 
