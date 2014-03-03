@@ -109,7 +109,7 @@ void SpudBucket::fill()
   for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *third* time, this time filling
                                   sys_it != systems_end(); sys_it++) // in the data for the coefficient functions contained within
   {                                                                  // them
-    (*boost::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).allocate_coeff_function();
+    (*std::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).allocate_coeff_function();
   }                                                                  // we couldn't do this before because we might not have had
                                                                      // the right functionspace available
   
@@ -124,19 +124,19 @@ void SpudBucket::fill()
   for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *fourth* time, attaching the
                                   sys_it != systems_end(); sys_it++) // coefficients to the forms and functionals
   {
-    (*boost::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).initialize_forms();
+    (*std::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).initialize_forms();
   }
   
   for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *fifth* time, initializing
                                   sys_it != systems_end(); sys_it++) // the values of any expressions, functionals or functions
   {                                                                  // used by fields or coefficients
-    (*boost::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).initialize_fields_and_coefficients();
+    (*std::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).initialize_fields_and_coefficients();
   }
   
   for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *sixth* time, preassembling
                                   sys_it != systems_end(); sys_it++) // the matrices
   {
-    (*boost::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).initialize_solvers();
+    (*std::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).initialize_solvers();
   }
   
   fill_detectors_();                                                 // put the detectors in the bucket
@@ -161,9 +161,9 @@ void SpudBucket::copy_diagnostics(Bucket_ptr &bucket) const
 
   Bucket::copy_diagnostics(bucket);
 
-  (*boost::dynamic_pointer_cast< SpudBucket >(bucket)).optionpath_ = optionpath_;
-  (*boost::dynamic_pointer_cast< SpudBucket >(bucket)).mesh_optionpaths_ = mesh_optionpaths_;
-  (*boost::dynamic_pointer_cast< SpudBucket >(bucket)).detector_optionpaths_ = detector_optionpaths_;
+  (*std::dynamic_pointer_cast< SpudBucket >(bucket)).optionpath_ = optionpath_;
+  (*std::dynamic_pointer_cast< SpudBucket >(bucket)).mesh_optionpaths_ = mesh_optionpaths_;
+  (*std::dynamic_pointer_cast< SpudBucket >(bucket)).detector_optionpaths_ = detector_optionpaths_;
 
 }
 
@@ -1081,7 +1081,7 @@ void SpudBucket::fill_diagnostics_()
           {
             
             std::vector<GenericFunction_ptr> sysfuncs = 
-                (*boost::dynamic_pointer_cast< SpudSystemBucket >((*s_it).second)).collect_vis_functions();
+                (*std::dynamic_pointer_cast< SpudSystemBucket >((*s_it).second)).collect_vis_functions();
 
             functions.insert(functions.end(), sysfuncs.begin(), sysfuncs.end());
           }

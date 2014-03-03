@@ -35,8 +35,8 @@ namespace buckettools
   //*****************************************************************|************************************************************//
   class Bucket;
   class FunctionBucket;
-  typedef boost::shared_ptr< FunctionBucket > FunctionBucket_ptr;
-  typedef boost::shared_ptr< dolfin::Form > Form_ptr;
+  typedef std::shared_ptr< FunctionBucket > FunctionBucket_ptr;
+  typedef std::shared_ptr< dolfin::Form > Form_ptr;
   typedef std::map< std::string, FunctionBucket_ptr >::const_iterator FunctionBucket_const_it;
   typedef std::map< std::string, Form_ptr >::const_iterator Form_const_it;
 
@@ -118,7 +118,7 @@ namespace buckettools
                           Form_const_it f_end);
   };
   
-  typedef boost::shared_ptr< SteadyStateFile > SteadyStateFile_ptr;  // define a boost shared ptr type for the class
+  typedef std::shared_ptr< SteadyStateFile > SteadyStateFile_ptr;  // define a boost shared ptr type for the class
 
 }
 #endif

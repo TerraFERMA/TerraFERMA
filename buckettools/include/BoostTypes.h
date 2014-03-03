@@ -28,64 +28,64 @@
 namespace buckettools {
 
   //*****************************************************************|************************************************************//
-  // A collection of typedefs for boost pointers to dolfin, petsc and bucket structures
+  // A collection of typedefs for std pointers to dolfin, petsc and bucket structures
   //*****************************************************************|************************************************************//
 
   //*****************************************************************|************************************************************//
-  // boost shared pointers to basic objects
+  // std shared pointers to basic objects
   //*****************************************************************|************************************************************//
 
-  typedef boost::shared_ptr< int >    int_ptr;
-  typedef boost::shared_ptr< double > double_ptr;
-  typedef boost::shared_ptr< bool >   bool_ptr;
+  typedef std::shared_ptr< int >    int_ptr;
+  typedef std::shared_ptr< double > double_ptr;
+  typedef std::shared_ptr< bool >   bool_ptr;
 
   //*****************************************************************|************************************************************//
-  // boost shared pointers to bucket objects
+  // std shared pointers to bucket objects
   //*****************************************************************|************************************************************//
 
   class Bucket;                                                      // predeclaration
-  typedef boost::shared_ptr< Bucket >           Bucket_ptr;
+  typedef std::shared_ptr< Bucket >           Bucket_ptr;
   class SystemBucket;                                                // predeclaration
-  typedef boost::shared_ptr< SystemBucket >     SystemBucket_ptr;
+  typedef std::shared_ptr< SystemBucket >     SystemBucket_ptr;
   class FunctionBucket;                                              // predeclaration
-  typedef boost::shared_ptr< FunctionBucket >   FunctionBucket_ptr;
+  typedef std::shared_ptr< FunctionBucket >   FunctionBucket_ptr;
   class SolverBucket;                                                // predeclaration
-  typedef boost::shared_ptr< SolverBucket >     SolverBucket_ptr;
+  typedef std::shared_ptr< SolverBucket >     SolverBucket_ptr;
   class GenericDetectors;                                            // predeclaration
-  typedef boost::shared_ptr< GenericDetectors > GenericDetectors_ptr;
+  typedef std::shared_ptr< GenericDetectors > GenericDetectors_ptr;
   class ReferencePoints;                                             // predeclaration
-  typedef boost::shared_ptr< ReferencePoints >  ReferencePoints_ptr;
+  typedef std::shared_ptr< ReferencePoints >  ReferencePoints_ptr;
 
   //*****************************************************************|************************************************************//
-  // boost shared pointers to dolfin objects
+  // std shared pointers to dolfin objects
   //*****************************************************************|************************************************************//
 
-  typedef boost::shared_ptr< dolfin::GenericFunction >              GenericFunction_ptr;
-  typedef boost::shared_ptr< dolfin::Constant >                     Constant_ptr;
-  typedef boost::shared_ptr< dolfin::Expression >                   Expression_ptr;
-  typedef boost::shared_ptr< dolfin::Mesh >                         Mesh_ptr;
-  typedef boost::shared_ptr< dolfin::MeshFunction< std::size_t > >  MeshFunction_size_t_ptr;
-  typedef boost::shared_ptr< dolfin::FunctionSpace >                FunctionSpace_ptr;
-  typedef boost::shared_ptr< dolfin::Function >                     Function_ptr;
-  typedef boost::shared_ptr< dolfin::DirichletBC >                  DirichletBC_ptr;
-  typedef boost::shared_ptr< dolfin::Form >                         Form_ptr;
-  typedef boost::shared_ptr< dolfin::PETScMatrix >                  PETScMatrix_ptr;
-  typedef boost::shared_ptr< dolfin::PETScVector >                  PETScVector_ptr;
-  typedef boost::shared_ptr< dolfin::File >                         File_ptr;
-  typedef boost::shared_ptr< dolfin::Array<double> >                Array_double_ptr;
+  typedef std::shared_ptr< dolfin::GenericFunction >              GenericFunction_ptr;
+  typedef std::shared_ptr< dolfin::Constant >                     Constant_ptr;
+  typedef std::shared_ptr< dolfin::Expression >                   Expression_ptr;
+  typedef std::shared_ptr< dolfin::Mesh >                         Mesh_ptr;
+  typedef std::shared_ptr< dolfin::MeshFunction< std::size_t > >  MeshFunction_size_t_ptr;
+  typedef std::shared_ptr< dolfin::FunctionSpace >                FunctionSpace_ptr;
+  typedef std::shared_ptr< dolfin::Function >                     Function_ptr;
+  typedef std::shared_ptr< dolfin::DirichletBC >                  DirichletBC_ptr;
+  typedef std::shared_ptr< dolfin::Form >                         Form_ptr;
+  typedef std::shared_ptr< dolfin::PETScMatrix >                  PETScMatrix_ptr;
+  typedef std::shared_ptr< dolfin::PETScVector >                  PETScVector_ptr;
+  typedef std::shared_ptr< dolfin::File >                         File_ptr;
+  typedef std::shared_ptr< dolfin::Array<double> >                Array_double_ptr;
 
   //*****************************************************************|************************************************************//
-  // boost shared pointers to petsc objects
+  // std shared pointers to petsc objects
   //*****************************************************************|************************************************************//
 
-  typedef boost::shared_ptr< KSP > KSP_ptr;
-  typedef boost::shared_ptr< PC >  PC_ptr;
-  typedef boost::shared_ptr< IS >  IS_ptr;
-  typedef boost::shared_ptr< Mat > Mat_ptr;
-  typedef boost::shared_ptr< Vec > Vec_ptr;
+  typedef std::shared_ptr< KSP > KSP_ptr;
+  typedef std::shared_ptr< PC >  PC_ptr;
+  typedef std::shared_ptr< IS >  IS_ptr;
+  typedef std::shared_ptr< Mat > Mat_ptr;
+  typedef std::shared_ptr< Vec > Vec_ptr;
 
   //*****************************************************************|************************************************************//
-  // iterators to boost shared pointers in map pointer structures
+  // iterators to std shared pointers in map pointer structures
   //*****************************************************************|************************************************************//
 
   typedef std::map< std::string, SystemBucket_ptr >::iterator            SystemBucket_it;

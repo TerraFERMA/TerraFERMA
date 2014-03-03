@@ -375,7 +375,7 @@ void SpudSolverBucket::copy_diagnostics(SolverBucket_ptr &solver, SystemBucket_p
 
   SolverBucket::copy_diagnostics(solver, system);
 
-  (*boost::dynamic_pointer_cast< SpudSolverBucket >(solver)).form_optionpaths_ = form_optionpaths_;
+  (*std::dynamic_pointer_cast< SpudSolverBucket >(solver)).form_optionpaths_ = form_optionpaths_;
 
 }
 
@@ -686,7 +686,7 @@ void SpudSolverBucket::initialize_tensors_()
   assembler.finalize_tensor = false;
   assembler.keep_diagonal = true;
    
-  work_.reset( new dolfin::PETScVector(*boost::dynamic_pointer_cast<dolfin::PETScVector>((*(*system_).function()).vector())) ); 
+  work_.reset( new dolfin::PETScVector(*std::dynamic_pointer_cast<dolfin::PETScVector>((*(*system_).function()).vector())) ); 
   (*work_).zero();
 
   matrix_.reset(new dolfin::PETScMatrix);                            // allocate the matrix
@@ -1464,7 +1464,7 @@ boost::unordered_set<uint> SpudSolverBucket::field_dof_set_(const std::string &o
   
   assert(num_sub_elements==0);
 
-  boost::shared_ptr<const dolfin::GenericDofMap> dofmap = (*functionspace).dofmap();
+  std::shared_ptr<const dolfin::GenericDofMap> dofmap = (*functionspace).dofmap();
 
   if (boundary_ids)                                                  // do we have boundary id restrictions
   {                                                                  // yes, then get the dofs over these boundaries
@@ -1488,7 +1488,7 @@ boost::unordered_set<uint> SpudSolverBucket::field_dof_set_(const std::string &o
 //*******************************************************************|************************************************************//
 // return a vector of dofs from the given dofmap possibly for a subset of the region ids as specified
 //*******************************************************************|************************************************************//
-boost::unordered_set<uint> SpudSolverBucket::cell_dof_set_(const boost::shared_ptr<const dolfin::GenericDofMap> dofmap,
+boost::unordered_set<uint> SpudSolverBucket::cell_dof_set_(const std::shared_ptr<const dolfin::GenericDofMap> dofmap,
                                                            const std::vector<int>* region_ids)
 {
   std::stringstream buffer;                                          // optionpath buffer
@@ -1535,7 +1535,7 @@ boost::unordered_set<uint> SpudSolverBucket::cell_dof_set_(const boost::shared_p
 //*******************************************************************|************************************************************//
 // return a vector of dofs from the given dofmap for the boundary ids specified
 //*******************************************************************|************************************************************//
-boost::unordered_set<uint> SpudSolverBucket::facet_dof_set_(const boost::shared_ptr<const dolfin::GenericDofMap> dofmap,
+boost::unordered_set<uint> SpudSolverBucket::facet_dof_set_(const std::shared_ptr<const dolfin::GenericDofMap> dofmap,
                                                             const std::vector<int>* boundary_ids)
 {
   Spud::OptionError serr;                                            // spud error code
@@ -1994,7 +1994,7 @@ boost::unordered_map<uint, double> SpudSolverBucket::field_value_map_(const std:
   
   assert(num_sub_elements==0);
 
-  boost::shared_ptr<const dolfin::GenericDofMap> dofmap = (*functionspace).dofmap();
+  std::shared_ptr<const dolfin::GenericDofMap> dofmap = (*functionspace).dofmap();
 
   if (boundary_ids)                                                  // do we have boundary ids specified?
   {                                                                  // yes...
@@ -2018,7 +2018,7 @@ boost::unordered_map<uint, double> SpudSolverBucket::field_value_map_(const std:
 //*******************************************************************|************************************************************//
 // return an unordered map from dofs to null space values from the given dofmap possibly just for the region ids specified
 //*******************************************************************|************************************************************//
-boost::unordered_map<uint, double> SpudSolverBucket::cell_value_map_(const boost::shared_ptr<const dolfin::GenericDofMap> dofmap,
+boost::unordered_map<uint, double> SpudSolverBucket::cell_value_map_(const std::shared_ptr<const dolfin::GenericDofMap> dofmap,
                                                                   const std::vector<int>* region_ids,
                                                                   Expression_ptr value_exp, const double* value_const,
                                                                   const uint &exp_index)
@@ -2102,7 +2102,7 @@ boost::unordered_map<uint, double> SpudSolverBucket::cell_value_map_(const boost
 //*******************************************************************|************************************************************//
 // return an unordered map from dofs to null space values from the given dofmap for the boundary ids specified
 //*******************************************************************|************************************************************//
-boost::unordered_map<uint, double> SpudSolverBucket::facet_value_map_(const boost::shared_ptr<const dolfin::GenericDofMap> dofmap,
+boost::unordered_map<uint, double> SpudSolverBucket::facet_value_map_(const std::shared_ptr<const dolfin::GenericDofMap> dofmap,
                                                                    const std::vector<int>* boundary_ids, 
                                                                    Expression_ptr value_exp, const double *value_const, 
                                                                    const uint &exp_index)

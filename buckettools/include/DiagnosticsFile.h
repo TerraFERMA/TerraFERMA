@@ -31,7 +31,7 @@ namespace buckettools
 {
 
   class Bucket;
-  typedef boost::shared_ptr< Bucket > Bucket_ptr;
+  typedef std::shared_ptr< Bucket > Bucket_ptr;
 
   //*****************************************************************|************************************************************//
   // DiagnosticsFile class:
@@ -122,7 +122,7 @@ namespace buckettools
     
   };
   
-  typedef boost::shared_ptr< DiagnosticsFile > DiagnosticsFile_ptr;  // define a boost shared ptr type for the class
+  typedef std::shared_ptr< DiagnosticsFile > DiagnosticsFile_ptr;  // define a boost shared ptr type for the class
 
 }
 #endif

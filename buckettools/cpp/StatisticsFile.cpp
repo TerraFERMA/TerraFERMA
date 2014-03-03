@@ -242,9 +242,9 @@ void StatisticsFile::data_field_(FunctionBucket_const_it f_begin,
     if ((*(*f_it).second).include_in_statistics())                   // check if they should be included in the diagnostics
     {                                                                // yes, start with the default stats... min and max
       dolfin::Function func =                                        // take a deep copy of the subfunction so the vector is accessible
-        *boost::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).function());
+        *std::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).function());
       dolfin::Function resfunc =                                     // take a deep copy of the subfunction so the vector is accessible
-        *boost::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).residualfunction());
+        *std::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).residualfunction());
       if (func.value_rank()==0)                                      // scalars (no components)
       {
         file_ << (*func.vector()).max() << " ";
@@ -411,7 +411,7 @@ void StatisticsFile::data_coeff_(FunctionBucket_const_it f_begin,
       if ((*(*f_it).second).type()=="Function")                      // this is a function coefficient so it has a vector member
       {
         dolfin::Function func =                                      // take a deep copy of the subfunction so the vector is accessible
-          *boost::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).function());
+          *std::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).function());
         if (func.value_rank()==0)                                    // scalars (no components)
         {
           file_ << (*func.vector()).max() << " ";
