@@ -4,7 +4,7 @@
     <string_value>short</string_value>
   </length>
   <owner>cwilson</owner>
-  <tags>not:branch:dolfin-master</tags>
+  <tags>not:branch:dolfin-master not:branch:vtkfile</tags>
   <description>Blankenbach convection benchmark 1a.</description>
   <simulations>
     <simulation name="RBConvection">

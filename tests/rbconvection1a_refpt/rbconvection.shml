@@ -4,7 +4,7 @@
     <string_value>short</string_value>
   </length>
   <owner>cwilson</owner>
-  <tags>not:branch:dolfin-master</tags>
+  <tags>not:branch:dolfin-master not:branch:vtkfile</tags>
   <description>A test of the reference point in rbconvection.</description>
   <simulations>
     <simulation name="RBConvection">
