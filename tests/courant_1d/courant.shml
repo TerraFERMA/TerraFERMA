@@ -4,7 +4,7 @@
     <string_value>short</string_value>
   </length>
   <owner>cwilson</owner>
-  <tags>not:branch:dolfin-master not:branch:periodic</tags>
+  <tags>not:branch:dolfin-master not:branch:periodic not:branch:vtkfile</tags>
   <description>A 1D test of a field base Courant number.</description>
   <simulations>
     <simulation name="Courant">
