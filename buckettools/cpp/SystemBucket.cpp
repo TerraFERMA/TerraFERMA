@@ -65,7 +65,7 @@ void SystemBucket::solve()
 
     cap_values();
 
-    (*(*residualfunction_).vector()) = (*boost::dynamic_pointer_cast< dolfin::GenericVector >((*(*s_it).second).residual_vector()));
+    (*(*residualfunction_).vector()) = (*std::dynamic_pointer_cast< dolfin::GenericVector >((*(*s_it).second).residual_vector()));
     // update_nonlinear...
   }
 
@@ -915,17 +915,37 @@ void SystemBucket::checkpoint()
 //*******************************************************************|************************************************************//
 // given a map from components to field initial condition expressions initialize the system initial condition expression
 //*******************************************************************|************************************************************//
-void SystemBucket::collect_ics_(const uint &component, const std::size_t &maxrank,
-              const std::map< std::size_t, Expression_ptr > &icexpressions)
+void SystemBucket::collect_ics_(const uint &components, const std::map< std::size_t, Expression_ptr > &icexpressions)
 {
-  if (component==1 && maxrank==0)
+  const std::size_t nfields = icexpressions.size();
+  if (nfields==1)                                                    // single field
   {
-    icexpression_.reset(new InitialConditionExpression(icexpressions));// the system function is scalar so set up a scalar ic expression
+    const std::size_t rank = (*(*icexpressions.begin()).second).value_rank();
+    if (rank==0)                                                     // scalar
+    {
+      icexpression_.reset(new InitialConditionExpression(icexpressions));
+    }
+    else if (rank==1)                                                // vector
+    {
+      icexpression_.reset(new InitialConditionExpression(components, icexpressions));
+    }
+    else if (rank==2)                                                // tensor
+    {
+      std::vector<std::size_t> value_shape(2, 0);
+      for (uint i=0; i<rank; i++)
+      {
+        value_shape[i] = (*(*icexpressions.begin()).second).value_dimension(i);
+      }
+      icexpression_.reset(new InitialConditionExpression(value_shape, icexpressions));
+    }
+    else
+    {
+      dolfin::error("Unknown rank in collect_ics_");
+    }
   }
-  else
-  {                                                                  // multiple components so set up a multi-component ic
-                                                                     // expression
-    icexpression_.reset( new InitialConditionExpression(component, icexpressions));
+  else                                                               // vectors are the general case for a mixed function
+  {
+    icexpression_.reset(new InitialConditionExpression(components, icexpressions));
   }
 }
 

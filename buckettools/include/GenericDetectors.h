@@ -117,7 +117,7 @@ namespace buckettools
     
   };
   
-  typedef boost::shared_ptr< GenericDetectors > GenericDetectors_ptr;// define a (boost shared) pointer to the class type
+  typedef std::shared_ptr< GenericDetectors > GenericDetectors_ptr;// define a (boost shared) pointer to the class type
   
 }
 

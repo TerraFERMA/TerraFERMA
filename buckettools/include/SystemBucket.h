@@ -31,9 +31,9 @@ namespace buckettools
 {
 
   class Bucket;                                                      // predeclaration
-  typedef boost::shared_ptr< Bucket > Bucket_ptr;                    // so we can predeclare a pointer to it
+  typedef std::shared_ptr< Bucket > Bucket_ptr;                    // so we can predeclare a pointer to it
   class SystemBucket;                                                // predeclare the class itself
-  typedef boost::shared_ptr< SystemBucket > SystemBucket_ptr;        // so we can predeclare a pointer to it
+  typedef std::shared_ptr< SystemBucket > SystemBucket_ptr;        // so we can predeclare a pointer to it
   
   enum functionbucket_type { SOLVE_START, SOLVE_TIMELOOP, SOLVE_DIAGNOSTICS, SOLVE_NEVER };
 
@@ -347,7 +347,7 @@ namespace buckettools
     void attach_solver_coeffs_(SolverBucket_it s_begin,              // attach specific fields or coefficients to solver forms
                                           SolverBucket_it s_end);
 
-    void collect_ics_(const uint &component, const std::size_t &maxrank, // collect the field initial conditions into an initial 
+    void collect_ics_(const uint &components,                        // collect the field initial conditions into an initial 
                       const std::map< std::size_t, Expression_ptr >  // condition expression
                                                   &icexpressions);
 
@@ -429,7 +429,7 @@ namespace buckettools
 
   };
 
-  typedef boost::shared_ptr< SystemBucket > SystemBucket_ptr;        // define a (boost shared) pointer to the system class type
+  typedef std::shared_ptr< SystemBucket > SystemBucket_ptr;        // define a (boost shared) pointer to the system class type
 
 }
 #endif

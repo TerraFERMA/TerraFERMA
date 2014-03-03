@@ -49,7 +49,7 @@ namespace buckettools
 
   };
 
-  typedef boost::shared_ptr< EventHandler > EventHandler_ptr;        // define a boost shared ptr type for the class
+  typedef std::shared_ptr< EventHandler > EventHandler_ptr;        // define a boost shared ptr type for the class
 
 }
 #endif

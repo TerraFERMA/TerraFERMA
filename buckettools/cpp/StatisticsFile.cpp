@@ -242,9 +242,9 @@ void StatisticsFile::data_field_(FunctionBucket_const_it f_begin,
     if ((*(*f_it).second).include_in_statistics())                   // check if they should be included in the diagnostics
     {                                                                // yes, start with the default stats... min and max
       dolfin::Function func =                                        // take a deep copy of the subfunction so the vector is accessible
-        *boost::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).function());
+        *std::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).function());
       dolfin::Function resfunc =                                     // take a deep copy of the subfunction so the vector is accessible
-        *boost::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).residualfunction());
+        *std::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).residualfunction());
       if (func.value_rank()==0)                                      // scalars (no components)
       {
         file_ << (*func.vector()).max() << " ";
@@ -282,13 +282,30 @@ void StatisticsFile::data_field_(FunctionBucket_const_it f_begin,
       }
       else if (func.value_rank()==2)                                 // tensor (multiple components)
       {
+        const bool symmetric = ((*(*func.function_space()).element()).num_sub_elements() != func.value_size());
         int dim0 = func.value_dimension(0);
         int dim1 = func.value_dimension(1);
         for (uint i = 0; i < dim0; i++)
         {
           for (uint j = 0; j < dim1; j++)
           {
-            dolfin::Function funccomp = func[i][j];                  // take a deep copy of the ijth component of the subfunction
+            std::size_t k; 
+            if (symmetric) 
+            {
+              if (j >= i) 
+              {
+                k = i*dim1 + j - (i*(i+1))/2; 
+              }
+              else
+              { 
+                k = j*dim1 + i - (j*(j+1))/2; 
+              }
+            }
+            else
+            {
+              k = i*dim1 + j;
+            }
+            dolfin::Function funccomp = func[k];                     // take a deep copy of the ijth component of the subfunction
             file_ << (*funccomp.vector()).max() << " ";              // maximum for all components
           }
         }
@@ -297,7 +314,23 @@ void StatisticsFile::data_field_(FunctionBucket_const_it f_begin,
         {
           for (uint j = 0; j < dim1; j++)
           {
-            dolfin::Function funccomp = func[i][j];                  // take a deep copy of the ijth component of the subfunction
+            std::size_t k; 
+            if (symmetric) 
+            {
+              if (j >= i) 
+              {
+                k = i*dim1 + j - (i*(i+1))/2; 
+              }
+              else
+              { 
+                k = j*dim1 + i - (j*(j+1))/2; 
+              }
+            }
+            else
+            {
+              k = i*dim1 + j;
+            }
+            dolfin::Function funccomp = func[k];                     // take a deep copy of the ijth component of the subfunction
             file_ << (*funccomp.vector()).min() << " ";              // minimum for all components
           }
         }
@@ -306,7 +339,23 @@ void StatisticsFile::data_field_(FunctionBucket_const_it f_begin,
         {
           for (uint j = 0; j < dim1; j++)
           {
-            dolfin::Function resfunccomp = resfunc[i][j];            // take a deep copy of the ijth component of the subfunction
+            std::size_t k; 
+            if (symmetric) 
+            {
+              if (j >= i) 
+              {
+                k = i*dim1 + j - (i*(i+1))/2; 
+              }
+              else
+              { 
+                k = j*dim1 + i - (j*(j+1))/2; 
+              }
+            }
+            else
+            {
+              k = i*dim1 + j;
+            }
+            dolfin::Function resfunccomp = resfunc[k];               // take a deep copy of the ijth component of the subfunction
             file_ << (*resfunccomp.vector()).max() << " ";           // maximum for all components
           }
         }
@@ -315,7 +364,23 @@ void StatisticsFile::data_field_(FunctionBucket_const_it f_begin,
         {
           for (uint j = 0; j < dim1; j++)
           {
-            dolfin::Function resfunccomp = resfunc[i][j];            // take a deep copy of the ijth component of the subfunction
+            std::size_t k; 
+            if (symmetric) 
+            {
+              if (j >= i) 
+              {
+                k = i*dim1 + j - (i*(i+1))/2; 
+              }
+              else
+              { 
+                k = j*dim1 + i - (j*(j+1))/2; 
+              }
+            }
+            else
+            {
+              k = i*dim1 + j;
+            }
+            dolfin::Function resfunccomp = resfunc[k];               // take a deep copy of the ijth component of the subfunction
             file_ << (*resfunccomp.vector()).min() << " ";           // minimum for all components
           }
         }
@@ -346,7 +411,7 @@ void StatisticsFile::data_coeff_(FunctionBucket_const_it f_begin,
       if ((*(*f_it).second).type()=="Function")                      // this is a function coefficient so it has a vector member
       {
         dolfin::Function func =                                      // take a deep copy of the subfunction so the vector is accessible
-          *boost::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).function());
+          *std::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).function());
         if (func.value_rank()==0)                                    // scalars (no components)
         {
           file_ << (*func.vector()).max() << " ";
@@ -368,13 +433,30 @@ void StatisticsFile::data_coeff_(FunctionBucket_const_it f_begin,
         }
         else if (func.value_rank()==2)                               // tensor (multiple components)
         {
+          const bool symmetric = ((*(*func.function_space()).element()).num_sub_elements() != func.value_size());
           int dim0 = func.value_dimension(0);
           int dim1 = func.value_dimension(1);
           for (uint i = 0; i < dim0; i++)
           {
             for (uint j = 0; j < dim1; j++)
             {
-              dolfin::Function funccomp = func[i][j];                // take a deep copy of the ijth component of the subfunction
+              std::size_t k; 
+              if (symmetric) 
+              {
+                if (j >= i) 
+                {
+                  k = i*dim1 + j - (i*(i+1))/2; 
+                }
+                else
+                { 
+                  k = j*dim1 + i - (j*(j+1))/2; 
+                }
+              }
+              else
+              {
+                k = i*dim1 + j;
+              }
+              dolfin::Function funccomp = func[k];                   // take a deep copy of the ijth component of the subfunction
               file_ << (*funccomp.vector()).max() << " ";            // maximum for all components
             }
           }
@@ -382,7 +464,23 @@ void StatisticsFile::data_coeff_(FunctionBucket_const_it f_begin,
           {
             for (uint j = 0; j < dim1; j++)
             {
-              dolfin::Function funccomp = func[i][j];                // take a deep copy of the ijth component of the subfunction
+              std::size_t k; 
+              if (symmetric) 
+              {
+                if (j >= i) 
+                {
+                  k = i*dim1 + j - (i*(i+1))/2; 
+                }
+                else
+                { 
+                  k = j*dim1 + i - (j*(j+1))/2; 
+                }
+              }
+              else
+              {
+                k = i*dim1 + j;
+              }
+              dolfin::Function funccomp = func[k];                   // take a deep copy of the ijth component of the subfunction
               file_ << (*funccomp.vector()).min() << " ";            // minimum for all components
             }
           }
@@ -425,16 +523,16 @@ void StatisticsFile::data_coeff_(FunctionBucket_const_it f_begin,
           {
             for (uint j = 0; j < dim1; j++)
             {
-              file_ << *std::max_element(&values[(2*j+i)*(*mesh).num_vertices()], 
-                  &values[(2*j+i+1)*(*mesh).num_vertices()]) << " ";// maximum for all components
+              file_ << *std::max_element(&values[(i*dim1 + j)*(*mesh).num_vertices()], 
+                  &values[(i*dim1 + j + 1)*(*mesh).num_vertices()]) << " ";// maximum for all components
             }
           }
           for (uint i = 0; i < dim0; i++)
           {
             for (uint j = 0; j < dim1; j++)
             {
-              file_ << *std::min_element(&values[(2*j+i)*(*mesh).num_vertices()], 
-                  &values[(2*j+i+1)*(*mesh).num_vertices()]) << " ";// maximum for all components
+              file_ << *std::min_element(&values[(i*dim1 + j)*(*mesh).num_vertices()], 
+                  &values[(i*dim1 + j + 1)*(*mesh).num_vertices()]) << " ";// maximum for all components
             }
           }
         }

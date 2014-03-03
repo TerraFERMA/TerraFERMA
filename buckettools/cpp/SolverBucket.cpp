@@ -182,7 +182,7 @@ void SolverBucket::solve()
 
     if(*visualizationmonitor_ || convfile_)
     {
-      *(*(*system()).residualfunction()).vector() = (*boost::dynamic_pointer_cast< dolfin::GenericVector >(residual_vector()));
+      *(*(*system()).residualfunction()).vector() = (*std::dynamic_pointer_cast< dolfin::GenericVector >(residual_vector()));
       if (*visualizationmonitor_)
       {
         (*pvdfile).write(functions, *visfuncspace, (double) iteration_count());
@@ -342,7 +342,7 @@ void SolverBucket::solve()
 
       if(*visualizationmonitor_ || convfile_)
       {
-        *(*(*system()).residualfunction()).vector() = (*boost::dynamic_pointer_cast< dolfin::GenericVector >(residual_vector()));
+        *(*(*system()).residualfunction()).vector() = (*std::dynamic_pointer_cast< dolfin::GenericVector >(residual_vector()));
         if (*visualizationmonitor_)
         {
           (*pvdfile).write(functions, *visfuncspace, (double) iteration_count());

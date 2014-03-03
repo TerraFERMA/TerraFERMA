@@ -65,7 +65,7 @@ void DiagnosticsFile::header_constants_()
   char cbuffer[maxlencbuffer];
   int cerr;
   
-  constant_tag_("GitHash", "string", __GIT_SHA__);               // the mercurial changeset id
+  constant_tag_("GitHash", "string", __GIT_SHA__);                   // the git sha
   
   buffer.str("");
   buffer << __DATE__;

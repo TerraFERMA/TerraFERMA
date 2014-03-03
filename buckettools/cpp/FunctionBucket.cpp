@@ -98,7 +98,7 @@ const double FunctionBucket::max(const double_ptr time, const int *index0, const
       ((functiontype_==FUNCTIONBUCKET_COEFF)&&(type()=="Function")) )
   {
     dolfin::Function func =                                        // take a deep copy of the subfunction so the vector is accessible
-      *boost::dynamic_pointer_cast< const dolfin::Function >(function);
+      *std::dynamic_pointer_cast< const dolfin::Function >(function);
 
     if (index0 && index1)
     {
@@ -168,7 +168,7 @@ const double FunctionBucket::min(const double_ptr time, const int *index0, const
       ((functiontype_==FUNCTIONBUCKET_COEFF)&&(type()=="Function")) )
   {
     dolfin::Function func =                                        // take a deep copy of the subfunction so the vector is accessible
-      *boost::dynamic_pointer_cast< const dolfin::Function >(function);
+      *std::dynamic_pointer_cast< const dolfin::Function >(function);
 
     if (index0 && index1)
     {
@@ -238,7 +238,7 @@ const double FunctionBucket::infnorm(const double_ptr time, const int *index0, c
       ((functiontype_==FUNCTIONBUCKET_COEFF)&&(type()=="Function")) )
   {
     dolfin::Function func =                                        // take a deep copy of the subfunction so the vector is accessible
-      *boost::dynamic_pointer_cast< const dolfin::Function >(function);
+      *std::dynamic_pointer_cast< const dolfin::Function >(function);
 
     if (index0 && index1)
     {
@@ -322,6 +322,19 @@ const double FunctionBucket::functioninfnorm() const
 }
 
 //*******************************************************************|************************************************************//
+// return the size of the function
+//*******************************************************************|************************************************************//
+const std::size_t FunctionBucket::size() const
+{
+  std::size_t size = 1;
+  for (std::vector<std::size_t>::const_iterator i=shape_.begin(); i != shape_.end(); i++)
+  {
+    size*=(*i);
+  }
+  return size;
+}
+
+//*******************************************************************|************************************************************//
 // return the change in this function over a timestep (only valid for fields and only valid after system changefunction has been
 // updated)
 //*******************************************************************|************************************************************//
@@ -335,7 +348,7 @@ const double FunctionBucket::change()
       assert(changefunction_);
 
       dolfin::Function changefunc =                                    // take a deep copy of the subfunction so the vector is accessible
-        *boost::dynamic_pointer_cast< const dolfin::Function >(changefunction());
+        *std::dynamic_pointer_cast< const dolfin::Function >(changefunction());
       *change_ = (*changefunc.vector()).norm(change_normtype_);
 
       *change_calculated_=true;
@@ -417,12 +430,12 @@ void FunctionBucket::refresh(const bool force)
   {
     if (coefficientfunction_)
     {
-      (*boost::dynamic_pointer_cast< dolfin::Function >(function_)).interpolate(*coefficientfunction_);
+      (*std::dynamic_pointer_cast< dolfin::Function >(function_)).interpolate(*coefficientfunction_);
     }
     if (constantfunctional_)
     {
       double value = dolfin::assemble(*constantfunctional_);
-      *boost::dynamic_pointer_cast< dolfin::Constant >(function_) = value;
+      *std::dynamic_pointer_cast< dolfin::Constant >(function_) = value;
     }
   }
   else
@@ -438,15 +451,15 @@ void FunctionBucket::update()
 {
   if (coefficientfunction_)
   {
-    (*(*boost::dynamic_pointer_cast< dolfin::Function >(oldfunction_)).vector()) = 
-      (*(*boost::dynamic_pointer_cast< dolfin::Function >(function_)).vector());
+    (*(*std::dynamic_pointer_cast< dolfin::Function >(oldfunction_)).vector()) = 
+      (*(*std::dynamic_pointer_cast< dolfin::Function >(function_)).vector());
                                                                      // update the oldfunction to the new function value
   }
 
   if (constantfunctional_)
   {
-    *boost::dynamic_pointer_cast< dolfin::Constant >(oldfunction_) = 
-        double(*boost::dynamic_pointer_cast< dolfin::Constant >(function_));
+    *std::dynamic_pointer_cast< dolfin::Constant >(oldfunction_) = 
+        double(*std::dynamic_pointer_cast< dolfin::Constant >(function_));
   }
 
   for (Form_const_it f_it = functionals_begin(); f_it != functionals_end(); f_it++)
@@ -462,7 +475,7 @@ void FunctionBucket::update_timedependent()
 {
   if (coefficientfunction_)
   {
-    (*boost::dynamic_pointer_cast< dolfin::Function >(function_)).interpolate(*coefficientfunction_);
+    (*std::dynamic_pointer_cast< dolfin::Function >(function_)).interpolate(*coefficientfunction_);
   }
 }
 
@@ -474,7 +487,7 @@ void FunctionBucket::update_nonlinear()
   if (constantfunctional_)
   {
     double value = dolfin::assemble(*constantfunctional_);
-    *boost::dynamic_pointer_cast< dolfin::Constant >(function_) = value;
+    *std::dynamic_pointer_cast< dolfin::Constant >(function_) = value;
   }
 }
 

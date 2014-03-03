@@ -51,24 +51,18 @@ namespace buckettools
     
     PythonExpression(const std::string &function);                   // specific constructor (scalar)
     
-    PythonExpression(const uint &dim, const std::string &function);  // specific constructor (vector)
+    PythonExpression(const std::size_t &dim, const std::string &function);  // specific constructor (vector)
     
-    PythonExpression(const uint &dim0, const uint &dim1,             // specific constructor (tensor)
-                     const std::string &function);
-    
-    PythonExpression(const std::vector<std::size_t> &value_shape,    // specific constructor (alternate tensor)
+    PythonExpression(const std::vector< std::size_t > &value_shape,          // specific constructor (tensor)
                      const std::string &function);
     
     PythonExpression(const std::string &function, 
                                             const double_ptr time);  // specific constructor (scalar)
     
-    PythonExpression(const uint &dim, const std::string &function, 
+    PythonExpression(const std::size_t &dim, const std::string &function, 
                                             const double_ptr time);  // specific constructor (vector)
     
-    PythonExpression(const uint &dim0, const uint &dim1,             // specific constructor (tensor)
-                     const std::string &function, const double_ptr time);
-    
-    PythonExpression(const std::vector<std::size_t> &value_shape,           // specific constructor (alternate tensor)
+    PythonExpression(const std::vector< std::size_t > &value_shape,          // specific constructor (tensor)
                      const std::string &function, const double_ptr time);
     
     virtual ~PythonExpression();                                     // default destructor
