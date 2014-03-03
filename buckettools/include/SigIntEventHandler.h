@@ -63,7 +63,7 @@ namespace buckettools
 
   };
 
-  typedef boost::shared_ptr< SigIntEventHandler > 
+  typedef std::shared_ptr< SigIntEventHandler > 
                                              SigIntEventHandler_ptr; // define a boost shared ptr type for the class
 }
 #endif

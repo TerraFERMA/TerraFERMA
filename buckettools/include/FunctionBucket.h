@@ -29,9 +29,9 @@ namespace buckettools
 {
 
   class SystemBucket;                                                // predeclare
-  typedef boost::shared_ptr< SystemBucket > SystemBucket_ptr;        // so we can predeclare a pointer to it
+  typedef std::shared_ptr< SystemBucket > SystemBucket_ptr;        // so we can predeclare a pointer to it
   class FunctionBucket;                                              // predeclare the class itself
-  typedef boost::shared_ptr< FunctionBucket > FunctionBucket_ptr;    // so we can predeclare a pointer to it
+  typedef std::shared_ptr< FunctionBucket > FunctionBucket_ptr;    // so we can predeclare a pointer to it
   
   enum function_type { FUNCTIONBUCKET_FIELD, FUNCTIONBUCKET_COEFF };
 
@@ -119,10 +119,9 @@ namespace buckettools
     const std::string rank() const                                   // return a string describing the rank of the function
     { return rank_; }
 
-    const uint size() const                                          // return the size of a vector function
-    { return size_; }
+    const std::size_t size() const;                                  // return the size of a vector function
 
-    const std::vector< int > shape() const                           // return the shape of a tensor function
+    const std::vector< std::size_t > shape() const                   // return the shape of a tensor function
     { return shape_; }
 
     SystemBucket* system()                                           // return a pointer to the parent system
@@ -368,9 +367,7 @@ namespace buckettools
 
     Expression_ptr icexpression_;                                    // (boost shared) pointer to an expression describing the initial condition
 
-    int size_;                                                       // size of the function (most relevant for rank 1, vectors)
-
-    std::vector< int > shape_;                                       // shape of the function (most relevant for rank 2, tensors)
+    std::vector< std::size_t > shape_;                               // shape of the function
 
     std::string rank_;                                               // a *string* describing the rank of the function
     
@@ -430,7 +427,7 @@ namespace buckettools
 
   };
 
-  typedef boost::shared_ptr< FunctionBucket > FunctionBucket_ptr;    // define a (boost shared) pointer to the function bucket class type
+  typedef std::shared_ptr< FunctionBucket > FunctionBucket_ptr;    // define a (boost shared) pointer to the function bucket class type
 
 }
 #endif

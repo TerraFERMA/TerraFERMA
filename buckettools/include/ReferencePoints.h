@@ -111,7 +111,7 @@ namespace buckettools
     
   };
 
-  typedef boost::shared_ptr< ReferencePoints > ReferencePoints_ptr;    // define a (boost shared) pointer for this class type
+  typedef std::shared_ptr< ReferencePoints > ReferencePoints_ptr;    // define a (boost shared) pointer for this class type
 
 }
 

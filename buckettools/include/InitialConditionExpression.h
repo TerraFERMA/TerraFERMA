@@ -55,6 +55,9 @@ namespace buckettools
     InitialConditionExpression(const uint &dim,                      // specific constructor (vector)
                       std::map< std::size_t, Expression_ptr > expressions);
     
+    InitialConditionExpression(const std::vector<std::size_t> &value_shape,// specific constructor (tensor)
+                      std::map< std::size_t, Expression_ptr > expressions);
+    
     
     virtual ~InitialConditionExpression();                           // default destructor
     

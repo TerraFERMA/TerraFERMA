@@ -153,11 +153,11 @@ namespace buckettools
                                               const uint parent_component=0,
                                               uint rank=0);          // set up a dof set based on a field
 
-    boost::unordered_set<uint> cell_dof_set_(const boost::shared_ptr<const dolfin::GenericDofMap> dofmap,
+    boost::unordered_set<uint> cell_dof_set_(const std::shared_ptr<const dolfin::GenericDofMap> dofmap,
                                              const std::vector<int>* region_ids);
                                                                      // set up a dof set over cells
 
-    boost::unordered_set<uint> facet_dof_set_(const boost::shared_ptr<const dolfin::GenericDofMap> dofmap,
+    boost::unordered_set<uint> facet_dof_set_(const std::shared_ptr<const dolfin::GenericDofMap> dofmap,
                                               const std::vector<int>* boundary_ids);
                                                                      // set up a dof set over facets
 
@@ -186,12 +186,12 @@ namespace buckettools
                                                      uint rank=0,    // set up a map describing e.g. the null space values for a field
                                                      uint exp_index=0);
 
-    boost::unordered_map<uint, double> cell_value_map_(const boost::shared_ptr<const dolfin::GenericDofMap> dofmap,
+    boost::unordered_map<uint, double> cell_value_map_(const std::shared_ptr<const dolfin::GenericDofMap> dofmap,
                                                     const std::vector<int>* region_ids,
                                                     Expression_ptr value_exp, const double *value_const,
                                                     const uint &exp_index);// set up a map describing e.g. the null space values over cells
 
-    boost::unordered_map<uint, double> facet_value_map_(const boost::shared_ptr<const dolfin::GenericDofMap> dofmap,
+    boost::unordered_map<uint, double> facet_value_map_(const std::shared_ptr<const dolfin::GenericDofMap> dofmap,
                                                      const std::vector<int>* boundary_ids,
                                                      Expression_ptr value_exp, const double *value_const,
                                                      const uint &exp_index);// set up a map describing e.g. the  null space values over a boundary
@@ -222,7 +222,7 @@ namespace buckettools
     
   };
  
-  typedef boost::shared_ptr< SpudSolverBucket > SpudSolverBucket_ptr;// define a (boost shared) pointer to a spud solver bucket class
+  typedef std::shared_ptr< SpudSolverBucket > SpudSolverBucket_ptr;// define a (boost shared) pointer to a spud solver bucket class
 
 }
 #endif

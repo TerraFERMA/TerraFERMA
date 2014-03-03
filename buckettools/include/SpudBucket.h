@@ -184,7 +184,7 @@ namespace buckettools
 
   };
 
-  typedef boost::shared_ptr< SpudBucket > SpudBucket_ptr;            // define a boost shared pointer type for this class
+  typedef std::shared_ptr< SpudBucket > SpudBucket_ptr;            // define a boost shared pointer type for this class
 
 }
 #endif

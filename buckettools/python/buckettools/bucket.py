@@ -288,7 +288,7 @@ class Bucket:
 
     cppexpression_cpp = []
     cppexpression_cpp.append("  // A function to return an expression for a coefficient from a system given a systemname and a functionname (and its size, shape and private members bucket, system and time.\n")
-    cppexpression_cpp.append("  Expression_ptr cpp_fetch_expression(const std::string &systemname, const std::string &functionname, const std::string &expressiontype, const std::string &expressionname, const uint &size, const std::vector<int> &shape, const Bucket *bucket, const SystemBucket *system, const double_ptr time)\n")
+    cppexpression_cpp.append("  Expression_ptr cpp_fetch_expression(const std::string &systemname, const std::string &functionname, const std::string &expressiontype, const std::string &expressionname, const std::size_t &size, const std::vector<std::size_t> &shape, const Bucket *bucket, const SystemBucket *system, const double_ptr time)\n")
     cppexpression_cpp.append("  {\n")
     cppexpression_cpp.append("    Expression_ptr expression;\n")
  

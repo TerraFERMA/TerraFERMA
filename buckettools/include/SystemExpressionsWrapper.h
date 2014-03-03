@@ -36,8 +36,8 @@ namespace buckettools
                           const std::string &functionname,           // given a system, function & expression name and a bucket
                           const std::string &expressiontype,         // and an expression type (initial_condition, boudary_condition,
                           const std::string &expressionname,         // value)
-                          const uint &size, 
-                          const std::vector<int> &shape, 
+                          const std::size_t &size, 
+                          const std::vector<std::size_t> &shape, 
                           const Bucket *bucket,  
                           const SystemBucket *system,
                           const double_ptr time);

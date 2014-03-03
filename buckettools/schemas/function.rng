@@ -983,7 +983,7 @@ dependent on time.
 For example, to extract a boost shared pointer to a generic function for a coefficient called 
 "ExampleCoefficient", we should have declared in the members section above:
 
-boost::shared_pointer&lt; dolfin::GenericFunction &gt; examplecoeff;
+std::shared_pointer&lt; dolfin::GenericFunction &gt; examplecoeff;
 
 or (utilizing the typedefs available to us through BoostTypes.h:
 
