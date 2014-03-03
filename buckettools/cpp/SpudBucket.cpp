@@ -1081,7 +1081,7 @@ void SpudBucket::fill_diagnostics_()
           {
             
             std::vector<GenericFunction_ptr> sysfuncs = 
-                (*boost::dynamic_pointer_cast< SpudSystemBucket >((*s_it).second)).collect_vis_functions();
+                (*std::dynamic_pointer_cast< SpudSystemBucket >((*s_it).second)).collect_vis_functions();
 
             functions.insert(functions.end(), sysfuncs.begin(), sysfuncs.end());
           }
