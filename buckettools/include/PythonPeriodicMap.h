@@ -74,7 +74,7 @@ namespace buckettools
 
   };
 
-  typedef boost::shared_ptr< PythonPeriodicMap > PythonPeriodicMap_ptr;// define a (boost shared) pointer type for the python
+  typedef std::shared_ptr< PythonPeriodicMap > PythonPeriodicMap_ptr;// define a (boost shared) pointer type for the python
                                                                      // periodic map
 
 }
