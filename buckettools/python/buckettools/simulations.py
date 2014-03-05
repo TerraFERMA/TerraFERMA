@@ -324,6 +324,7 @@ class Run:
 
   def updateoptions(self, valuesdict=None, prefix=""):
     os.chdir(self.basedirectory)
+    sys.path.append(self.basedirectory)
     if valuesdict is None: valuesdict={}
     for k,v in self.optionsdict[prefix+"values"].iteritems():
       if k in valuesdict:
@@ -335,6 +336,7 @@ class Run:
     for update in self.optionsdict[prefix+"updates"].itervalues():
       if update is not None:
         exec update in valuesdict
+    sys.path.remove(self.basedirectory)
     os.chdir(self.currentdirectory)
 
   def configure(self, force=False):
@@ -650,7 +652,35 @@ class Simulation(Run):
         self.log("ERROR: make clean returned %d in directory: %s"%(retcode, dirname))
         raise SimulationsErrorBuild
 
-    p = subprocess.Popen(["make"], cwd=dirname)
+    requiredinput = self.getrequiredinput(0)
+
+    input_changed = False
+    for filepath in requiredinput:
+      try:
+        checksum = hashlib.md5(open(os.path.join(dirname, os.path.basename(filepath))).read()).hexdigest()
+      except:
+        checksum = None
+      try:
+        input_changed = input_changed or checksum != hashlib.md5(open(filepath).read()).hexdigest()
+      except IOError:
+        self.log("WARNING: Unable to open %s"%(filepath))
+        input_changed = True
+
+    if input_changed or force:
+      # file has changed or a recompilation is necessary
+      for filepath in requiredinput:
+        try:
+          shutil.copy(filepath, os.path.join(dirname, os.path.basename(filepath)))
+        except IOError:
+          self.log("WARNING: required input (%s) not found, continuing anyway."%(filepath))
+
+    env = copy.copy(os.environ)
+    try:
+      env["PYTHONPATH"] = ":".join([dirname, env["PYTHONPATH"]])
+    except KeyError:
+      env["PYTHONPATH"] = dirname
+
+    p = subprocess.Popen(["make"], cwd=dirname, env=env)
     retcode = p.wait()
     if retcode!=0:
       self.log("ERROR make returned %d in directory: %s"%(retcode, dirname))
