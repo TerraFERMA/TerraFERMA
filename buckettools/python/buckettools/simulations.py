@@ -259,6 +259,9 @@ class Run:
 
     filename = os.path.basename(path)
     self.filename, self.ext = os.path.splitext(filename)
+    self.spudfile = False
+    if "spudfile" in self.optionsdict:
+      self.spudfile = self.optionsdict["spudfile"]
 
     self.name = self.optionsdict["name"]
 
@@ -293,23 +296,31 @@ class Run:
     self.deferred = False # can't have deferred runs when you have no dependencies
 
   def writeoptions(self):
-    
-    inputfile = open(os.path.join(self.runinputdirectory, self.filename+self.ext))
-    inputstr = inputfile.read()
-    inputfile.close()
-    
-    valuesdict = {"input_file":inputstr}
-    self.updateoptions(valuesdict=valuesdict)
 
     try:
       os.makedirs(self.rundirectory)
     except OSError:
       pass
-    
-    inputstr = valuesdict["input_file"]
-    outputfile = open(os.path.join(self.rundirectory, self.filename+self.ext), 'w')
-    outputfile.write(inputstr)
-    outputfile.close()
+      
+    if self.spudfile:
+      threadlibspud.load_options(os.path.join(self.runinputdirectory, self.filename+self.ext))
+
+      self.updateoptions()
+
+      libspud.write_options(os.path.join(self.rundirectory, self.filename+self.ext))
+      threadlibspud.clear_options()
+    else:
+      inputfile = open(os.path.join(self.runinputdirectory, self.filename+self.ext))
+      inputstr = inputfile.read()
+      inputfile.close()
+      
+      valuesdict = {"input_file":inputstr}
+      self.updateoptions(valuesdict=valuesdict)
+
+      inputstr = valuesdict["input_file"]
+      outputfile = open(os.path.join(self.rundirectory, self.filename+self.ext), 'w')
+      outputfile.write(inputstr)
+      outputfile.close()
 
   def updateoptions(self, valuesdict=None, prefix=""):
     os.chdir(self.basedirectory)
@@ -1484,6 +1495,7 @@ class SimulationHarnessBatch(SimulationBatch):
      dependency_options[path]["name"]      = name
      if run:
        dependency_options[path]["type"]    = Run
+       dependency_options[path]["spudfile"] = libspud.have_option(optionpath+"/input_file/spud_file")
      else:
        dependency_options[path]["type"]    = Simulation
      dependency_options[path]["input"]     = required_input
