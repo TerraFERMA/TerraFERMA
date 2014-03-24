@@ -259,6 +259,9 @@ class Run:
 
     filename = os.path.basename(path)
     self.filename, self.ext = os.path.splitext(filename)
+    self.spudfile = False
+    if "spudfile" in self.optionsdict:
+      self.spudfile = self.optionsdict["spudfile"]
 
     self.name = self.optionsdict["name"]
 
@@ -293,26 +296,35 @@ class Run:
     self.deferred = False # can't have deferred runs when you have no dependencies
 
   def writeoptions(self):
-    
-    inputfile = open(os.path.join(self.runinputdirectory, self.filename+self.ext))
-    inputstr = inputfile.read()
-    inputfile.close()
-    
-    valuesdict = {"input_file":inputstr}
-    self.updateoptions(valuesdict=valuesdict)
 
     try:
       os.makedirs(self.rundirectory)
     except OSError:
       pass
-    
-    inputstr = valuesdict["input_file"]
-    outputfile = open(os.path.join(self.rundirectory, self.filename+self.ext), 'w')
-    outputfile.write(inputstr)
-    outputfile.close()
+      
+    if self.spudfile:
+      threadlibspud.load_options(os.path.join(self.runinputdirectory, self.filename+self.ext))
+
+      self.updateoptions()
+
+      libspud.write_options(os.path.join(self.rundirectory, self.filename+self.ext))
+      threadlibspud.clear_options()
+    else:
+      inputfile = open(os.path.join(self.runinputdirectory, self.filename+self.ext))
+      inputstr = inputfile.read()
+      inputfile.close()
+      
+      valuesdict = {"input_file":inputstr}
+      self.updateoptions(valuesdict=valuesdict)
+
+      inputstr = valuesdict["input_file"]
+      outputfile = open(os.path.join(self.rundirectory, self.filename+self.ext), 'w')
+      outputfile.write(inputstr)
+      outputfile.close()
 
   def updateoptions(self, valuesdict=None, prefix=""):
     os.chdir(self.basedirectory)
+    sys.path.append(self.basedirectory)
     if valuesdict is None: valuesdict={}
     for k,v in self.optionsdict[prefix+"values"].iteritems():
       if k in valuesdict:
@@ -324,6 +336,7 @@ class Run:
     for update in self.optionsdict[prefix+"updates"].itervalues():
       if update is not None:
         exec update in valuesdict
+    sys.path.remove(self.basedirectory)
     os.chdir(self.currentdirectory)
 
   def configure(self, force=False):
@@ -639,7 +652,35 @@ class Simulation(Run):
         self.log("ERROR: make clean returned %d in directory: %s"%(retcode, dirname))
         raise SimulationsErrorBuild
 
-    p = subprocess.Popen(["make"], cwd=dirname)
+    requiredinput = self.getrequiredinput(0)
+
+    input_changed = False
+    for filepath in requiredinput:
+      try:
+        checksum = hashlib.md5(open(os.path.join(dirname, os.path.basename(filepath))).read()).hexdigest()
+      except:
+        checksum = None
+      try:
+        input_changed = input_changed or checksum != hashlib.md5(open(filepath).read()).hexdigest()
+      except IOError:
+        self.log("WARNING: Unable to open %s"%(filepath))
+        input_changed = True
+
+    if input_changed or force:
+      # file has changed or a recompilation is necessary
+      for filepath in requiredinput:
+        try:
+          shutil.copy(filepath, os.path.join(dirname, os.path.basename(filepath)))
+        except IOError:
+          self.log("WARNING: required input (%s) not found, continuing anyway."%(filepath))
+
+    env = copy.copy(os.environ)
+    try:
+      env["PYTHONPATH"] = ":".join([dirname, env["PYTHONPATH"]])
+    except KeyError:
+      env["PYTHONPATH"] = dirname
+
+    p = subprocess.Popen(["make"], cwd=dirname, env=env)
     retcode = p.wait()
     if retcode!=0:
       self.log("ERROR make returned %d in directory: %s"%(retcode, dirname))
@@ -1484,6 +1525,7 @@ class SimulationHarnessBatch(SimulationBatch):
      dependency_options[path]["name"]      = name
      if run:
        dependency_options[path]["type"]    = Run
+       dependency_options[path]["spudfile"] = libspud.have_option(optionpath+"/input_file/spud_file")
      else:
        dependency_options[path]["type"]    = Simulation
      dependency_options[path]["input"]     = required_input
