@@ -147,13 +147,15 @@ void PythonExpression::eval(dolfin::Array<double>& values,
     
   if (PySequence_Check(pResult))                                     // is the result a sequence
   {                                                                  // yes, ...
-    const std::size_t dim0 = value_dimension(0);
+    const std::size_t dim0 = PySequence_Length(pResult);
+    assert(dim0 <= values.size());
     for (std::size_t i = 0; i < dim0; i++)                           // loop over the value dimension
     {
       px = PySequence_GetItem(pResult, i);                           // get the item from the python sequence
       if (PySequence_Check(px))
       {
-        const std::size_t dim1 = value_dimension(1);
+        const std::size_t dim1 = PySequence_Length(px);
+        assert(dim0*dim1 == values.size());
         for (std::size_t j = 0; j < dim1; j++)
         {
           pxx = PySequence_GetItem(px, j);
