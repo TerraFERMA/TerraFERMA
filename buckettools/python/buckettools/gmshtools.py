@@ -399,7 +399,8 @@ class InterpolatedSciPySpline:
     self.update()
 
   def __call__(self, u, der=0):
-    return interp.splev(u, self.tck, der=der)
+    x, y = interp.splev(u, self.tck, der=der)
+    return [float(x), float(y)]
 
   def update(self):
     self.x = numpy.array([self.points[i].x for i in range(len(self.points))])
@@ -504,7 +505,8 @@ class InterpolatedSciPySpline:
   def intersecty(self, yint):
     spoint = self.uintersecty(yint)
     assert(len(spoint)==1)
-    return interp.splev(spoint, self.tck)
+    x,y = interp.splev(spoint[0], self.tck)
+    return [float(x),float(y)]
       
   def uintersecty(self, yint):
     tck = self.copytck()
@@ -517,7 +519,8 @@ class InterpolatedSciPySpline:
   def intersectx(self, xint):
     spoint = self.uintersectx(xint)
     assert(len(spoint)==1)
-    return interp.splev(spoint, self.tck)
+    x,y = interp.splev(spoint[0], self.tck)
+    return [float(x),float(y)]
 
   def uintersectx(self, xint):
     tck = self.copytck()
