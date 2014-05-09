@@ -79,7 +79,7 @@ if __name__ == "__main__":
   parser.add_argument("-t", "--tags", action='store', metavar='tag', default=[], nargs='+', 
                       help="run only tests that have specific tags (if unspecified will run all tags)")
   parser.add_argument("-e", "--exclude", action='store', metavar='tag', default=[], nargs='+', 
-                      help="run only tests that do not have specific tags (takes precidence over -t, if unspecified will not exclude any tags)")
+                      help="run only tests that do not have specific tags (takes precedence over -t, if unspecified will not exclude any tags)")
   parser.add_argument("--generate", action='store_const', dest='generate', const=True, default=False, required=False,
                       help="generate the simulation directories and input")
   parser.add_argument("--configure", action='store_const', dest='configure', const=True, default=False, required=False,
