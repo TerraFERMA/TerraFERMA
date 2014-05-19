@@ -69,6 +69,8 @@ namespace buckettools
     // Functions used to run the model
     //***************************************************************|***********************************************************//
 
+    void evaluate_initial_fields();                                  // evaluate the initial values of the fields
+
     void solve();                                                    // solve the solvers in this system (in order)
 
     void update();                                                   // update the functions in this system at the end of a timestep

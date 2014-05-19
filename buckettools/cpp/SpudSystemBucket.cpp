@@ -106,43 +106,36 @@ void SpudSystemBucket::initialize_forms()
 //*******************************************************************|************************************************************//
 // attach coefficients to forms and functionals
 //*******************************************************************|************************************************************//
-void SpudSystemBucket::initialize_fields_and_coefficients()
+void SpudSystemBucket::initialize_fields_and_coefficient_expressions()
 {
-  dolfin::info("Initializing fields and coefficients for system %s", name().c_str());
+  dolfin::info("Initializing fields and coefficient expressions for system %s", name().c_str());
 
-  for (FunctionBucket_it f_it = fields_begin(); f_it != fields_end();
+  for (int_FunctionBucket_it f_it = orderedfields_begin(); f_it != orderedfields_end();
                                                               f_it++)
   {
     (*(std::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).initialize_field();
   } 
 
-  for (FunctionBucket_it f_it = coeffs_begin(); f_it != coeffs_end();
+  for (int_FunctionBucket_it f_it = orderedcoeffs_begin(); f_it != orderedcoeffs_end();
                                                               f_it++)
   {
     (*(std::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).initialize_coeff_expression();
   } 
 
-                                                                     // after this point, we are allowed to start calling evals on
-                                                                     // some of the expressions that have just been initialized
-                                                                     // (this wasn't allowed up until now as all cpp expressions
-                                                                     // potentially need initializing before eval will return the
-                                                                     // right answer)
-                                                                     // NOTE: even now there are potential inter dependencies! We
-                                                                     // just deal with them by evaluating things in the order the
-                                                                     // user specified.
+}
 
-  for (FunctionBucket_it f_it = coeffs_begin(); f_it != coeffs_end();
+//*******************************************************************|************************************************************//
+// attach coefficients to forms and functionals
+//*******************************************************************|************************************************************//
+void SpudSystemBucket::initialize_coefficient_functions()
+{
+  dolfin::info("Initializing coefficient functions for system %s", name().c_str());
+
+  for (int_FunctionBucket_it f_it = orderedcoeffs_begin(); f_it != orderedcoeffs_end();
                                                               f_it++)
   {
     (*(std::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).initialize_coeff_function();
   } 
-
-  if (fields_size()>0)
-  {
-    apply_ic_();                                                     // apply the initial condition to the system function
-    apply_dirichletbc_();                                            // apply the Dirichlet boundary conditions we just collected
-    apply_referencepoints_();                                        // apply the reference points we just collected
-  }
 
 }
 
