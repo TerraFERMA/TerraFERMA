@@ -5,7 +5,7 @@ from waveerrors import *
 
 sw = SolitaryWave(5,3,0,2,400)
 
-mesh = UnitSquare(64,64)
+mesh = UnitSquareMesh(64,64)
 V = FunctionSpace(mesh,"CG",2)
 f = ProjectSolitaryWave(V,[0.5,0.5],64.,sw)
 plot(f)
