@@ -129,10 +129,31 @@ void SpudBucket::fill()
   for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *fifth* time, initializing
                                   sys_it != systems_end(); sys_it++) // the values of any expressions, functionals or functions
   {                                                                  // used by fields or coefficients
-    (*std::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).initialize_fields_and_coefficients();
+    (*std::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).initialize_fields_and_coefficient_expressions();
   }
   
-  for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *sixth* time, preassembling
+                                                                     // after this point, we are allowed to start calling evals on
+                                                                     // some of the expressions that have just been initialized
+                                                                     // (this wasn't allowed up until now as all cpp expressions
+                                                                     // potentially need initializing before eval will return the
+                                                                     // right answer)
+                                                                     // NOTE: even now there are potential inter dependencies! We
+                                                                     // just deal with them by evaluating coefficient functions 
+                                                                     // in the order the user specified followed by fields last.
+
+  for (int_SystemBucket_it sys_it = orderedsystems_begin();          // loop over the systems for a *sixth* time, initializing
+                           sys_it != orderedsystems_end(); sys_it++) // the values of any coefficient functions
+  {                                                                  
+    (*std::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).initialize_coefficient_functions();
+  }
+  
+  for (int_SystemBucket_it sys_it = orderedsystems_begin();          // loop over the systems for a *seventh* time, initializing
+                           sys_it != orderedsystems_end(); sys_it++) // the values of the fields
+  {
+    (*(*sys_it).second).evaluate_initial_fields();
+  }
+  
+  for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *eighth* time, preassembling
                                   sys_it != systems_end(); sys_it++) // the matrices
   {
     (*std::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).initialize_solvers();
