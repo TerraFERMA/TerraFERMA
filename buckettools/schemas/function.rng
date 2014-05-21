@@ -80,21 +80,21 @@ Expressions are not defined on functionspaces but require an element to be descr
               <attribute name="name">
                 <value>Scalar</value>
               </attribute>
-              <ref name="scalar_coefficient_function_expression_options"/>
+              <ref name="scalar_coefficient_expression_options"/>
             </element>
             <element name="rank">
               <a:documentation>The rank of the coefficient (vector, rank 1).</a:documentation>
               <attribute name="name">
                 <value>Vector</value>
               </attribute>
-              <ref name="vector_coefficient_function_expression_options"/>
+              <ref name="vector_coefficient_expression_options"/>
             </element>
             <element name="rank">
               <a:documentation>The rank of the coefficient (tensor, rank 2).</a:documentation>
               <attribute name="name">
                 <value>Tensor</value>
               </attribute>
-              <ref name="tensor_coefficient_function_expression_options"/>
+              <ref name="tensor_coefficient_expression_options"/>
             </element>
           </choice>
         </element>
@@ -142,21 +142,21 @@ Functions require a functionspace, which will be defined on the same mesh as the
               <attribute name="name">
                 <value>Scalar</value>
               </attribute>
-              <ref name="scalar_coefficient_function_expression_options"/>
+              <ref name="scalar_coefficient_function_options"/>
             </element>
             <element name="rank">
               <a:documentation>The rank of the coefficient (vector, rank 1).</a:documentation>
               <attribute name="name">
                 <value>Vector</value>
               </attribute>
-              <ref name="vector_coefficient_function_expression_options"/>
+              <ref name="vector_coefficient_function_options"/>
             </element>
             <element name="rank">
               <a:documentation>The rank of the coefficient (tensor, rank 2).</a:documentation>
               <attribute name="name">
                 <value>Tensor</value>
               </attribute>
-              <ref name="tensor_coefficient_function_expression_options"/>
+              <ref name="tensor_coefficient_function_options"/>
             </element>
           </choice>
         </element>
@@ -231,7 +231,7 @@ Functions require a functionspace, which will be defined on the same mesh as the
       </element>
     </optional>
   </define>
-  <define name="scalar_coefficient_function_expression_options">
+  <define name="scalar_coefficient_expression_options">
     <attribute name="rank">
       <value>0</value>
     </attribute>
@@ -240,7 +240,7 @@ Functions require a functionspace, which will be defined on the same mesh as the
       <ref name="prescribed_expression_scalar"/>
     </oneOrMore>
   </define>
-  <define name="vector_coefficient_function_expression_options">
+  <define name="vector_coefficient_expression_options">
     <attribute name="rank">
       <value>1</value>
     </attribute>
@@ -249,13 +249,40 @@ Functions require a functionspace, which will be defined on the same mesh as the
       <ref name="prescribed_expression_vector"/>
     </oneOrMore>
   </define>
-  <define name="tensor_coefficient_function_expression_options">
+  <define name="tensor_coefficient_expression_options">
     <attribute name="rank">
       <value>2</value>
     </attribute>
     <ref name="element_options_tensor"/>
     <oneOrMore>
       <ref name="prescribed_expression_tensor"/>
+    </oneOrMore>
+  </define>
+  <define name="scalar_coefficient_function_options">
+    <attribute name="rank">
+      <value>0</value>
+    </attribute>
+    <ref name="element_options_scalar"/>
+    <oneOrMore>
+      <ref name="prescribed_function_scalar"/>
+    </oneOrMore>
+  </define>
+  <define name="vector_coefficient_function_options">
+    <attribute name="rank">
+      <value>1</value>
+    </attribute>
+    <ref name="element_options_vector"/>
+    <oneOrMore>
+      <ref name="prescribed_function_vector"/>
+    </oneOrMore>
+  </define>
+  <define name="tensor_coefficient_function_options">
+    <attribute name="rank">
+      <value>2</value>
+    </attribute>
+    <ref name="element_options_tensor"/>
+    <oneOrMore>
+      <ref name="prescribed_function_tensor"/>
     </oneOrMore>
   </define>
   <define name="scalar_coefficient_constant_options">
@@ -798,6 +825,90 @@ of functions is included.</a:documentation>
       </element>
     </choice>
   </define>
+  <define name="prescribed_function_scalar">
+    <choice>
+      <element name="value">
+        <a:documentation>Options for the description of an expression over the domain</a:documentation>
+        <attribute name="name">
+          <value>WholeMesh</value>
+        </attribute>
+        <attribute name="type">
+          <value>value</value>
+        </attribute>
+        <ref name="prescribed_scalar_time_w_internal"/>
+      </element>
+      <element name="value">
+        <a:documentation>Options for the description of an expression over regions</a:documentation>
+        <attribute name="name">
+          <data type="string"/>
+        </attribute>
+        <attribute name="type">
+          <value>value</value>
+        </attribute>
+        <element name="region_ids">
+          <a:documentation>A list of the region ids (physical ids in gmsh) that this expression applies to</a:documentation>
+          <ref name="integer_vector"/>
+        </element>
+        <ref name="prescribed_scalar_time_w_internal"/>
+      </element>
+    </choice>
+  </define>
+  <define name="prescribed_function_vector">
+    <choice>
+      <element name="value">
+        <a:documentation>Options for the description of an expression over the domain</a:documentation>
+        <attribute name="name">
+          <value>WholeMesh</value>
+        </attribute>
+        <attribute name="type">
+          <value>value</value>
+        </attribute>
+        <ref name="prescribed_vector_time_w_internal"/>
+      </element>
+      <element name="value">
+        <a:documentation>Options for the description of an expression over regions</a:documentation>
+        <attribute name="name">
+          <data type="string"/>
+        </attribute>
+        <attribute name="type">
+          <value>value</value>
+        </attribute>
+        <element name="region_ids">
+          <a:documentation>A list of the region ids (physical ids in gmsh) that this expression applies to</a:documentation>
+          <ref name="integer_vector"/>
+        </element>
+        <ref name="prescribed_vector_time_w_internal"/>
+      </element>
+    </choice>
+  </define>
+  <define name="prescribed_function_tensor">
+    <choice>
+      <element name="value">
+        <a:documentation>Options for the description of an expression over the domain</a:documentation>
+        <attribute name="name">
+          <value>WholeMesh</value>
+        </attribute>
+        <attribute name="type">
+          <value>value</value>
+        </attribute>
+        <ref name="prescribed_tensor_time_w_internal"/>
+      </element>
+      <element name="value">
+        <a:documentation>Options for the description of an expression over regions</a:documentation>
+        <attribute name="name">
+          <data type="string"/>
+        </attribute>
+        <attribute name="type">
+          <value>value</value>
+        </attribute>
+        <element name="region_ids">
+          <a:documentation>A list of the region ids (physical ids in gmsh) that this expression applies to</a:documentation>
+          <ref name="integer_vector"/>
+        </element>
+        <ref name="prescribed_tensor_time_w_internal"/>
+      </element>
+    </choice>
+  </define>
   <define name="prescribed_scalar_constant">
     <element name="constant">
       <a:documentation>A constant scalar</a:documentation>
@@ -1025,6 +1136,23 @@ examplecoeff.eval(values, x, cell);
       <ref name="cpp_code"/>
     </element>
   </define>
+  <define name="time_independent_cpp">
+    <optional>
+      <element name="time_independent">
+        <a:documentation>cpp functions are automatically assumed to be time varying.  
+
+Turning on this option means they only get evaluated once (at
+the start of the simtulation).</a:documentation>
+        <empty/>
+      </element>
+    </optional>
+  </define>
+  <define name="prescribed_cpp_time">
+    <ref name="prescribed_cpp"/>
+  </define>
+  <define name="prescribed_cpp_time" combine="interleave">
+    <ref name="time_independent_cpp"/>
+  </define>
   <define name="prescribed_scalar_cpp">
     <element name="cpp">
       <a:documentation>A scalar described by a derived dolfin expression using c++ code.</a:documentation>
@@ -1050,6 +1178,33 @@ examplecoeff.eval(values, x, cell);
         <value>2</value>
       </attribute>
       <ref name="prescribed_cpp"/>
+    </element>
+  </define>
+  <define name="prescribed_scalar_cpp_time">
+    <element name="cpp">
+      <a:documentation>A scalar described by a derived dolfin expression using c++ code.</a:documentation>
+      <attribute name="rank">
+        <value>0</value>
+      </attribute>
+      <ref name="prescribed_cpp_time"/>
+    </element>
+  </define>
+  <define name="prescribed_vector_cpp_time">
+    <element name="cpp">
+      <a:documentation>A vector described by a derived dolfin expression using c++ code.</a:documentation>
+      <attribute name="rank">
+        <value>1</value>
+      </attribute>
+      <ref name="prescribed_cpp_time"/>
+    </element>
+  </define>
+  <define name="prescribed_tensor_cpp_time">
+    <element name="cpp">
+      <a:documentation>A tensor described by a derived dolfin expression using c++ code.</a:documentation>
+      <attribute name="rank">
+        <value>2</value>
+      </attribute>
+      <ref name="prescribed_cpp_time"/>
     </element>
   </define>
   <define name="prescribed_internal">
@@ -1208,6 +1363,21 @@ and the functionspace must be identical to the original system's functionspace.<
   <define name="prescribed_scalar_w_file" combine="choice">
     <ref name="prescribed_scalar"/>
   </define>
+  <define name="prescribed_scalar_time">
+    <ref name="prescribed_scalar_cpp_time"/>
+  </define>
+  <define name="prescribed_scalar_time" combine="choice">
+    <ref name="prescribed_scalar_python"/>
+  </define>
+  <define name="prescribed_scalar_time" combine="choice">
+    <ref name="prescribed_scalar_constant"/>
+  </define>
+  <define name="prescribed_scalar_time_w_internal">
+    <ref name="prescribed_scalar_internal"/>
+  </define>
+  <define name="prescribed_scalar_time_w_internal" combine="choice">
+    <ref name="prescribed_scalar_time"/>
+  </define>
   <define name="prescribed_vector">
     <ref name="prescribed_vector_cpp"/>
   </define>
@@ -1229,6 +1399,21 @@ and the functionspace must be identical to the original system's functionspace.<
   <define name="prescribed_vector_w_file" combine="choice">
     <ref name="prescribed_vector"/>
   </define>
+  <define name="prescribed_vector_time">
+    <ref name="prescribed_vector_cpp_time"/>
+  </define>
+  <define name="prescribed_vector_time" combine="choice">
+    <ref name="prescribed_vector_python"/>
+  </define>
+  <define name="prescribed_vector_time" combine="choice">
+    <ref name="prescribed_vector_constant"/>
+  </define>
+  <define name="prescribed_vector_time_w_internal">
+    <ref name="prescribed_vector_internal"/>
+  </define>
+  <define name="prescribed_vector_time_w_internal" combine="choice">
+    <ref name="prescribed_vector_time"/>
+  </define>
   <define name="prescribed_tensor">
     <ref name="prescribed_tensor_cpp"/>
   </define>
@@ -1249,5 +1434,20 @@ and the functionspace must be identical to the original system's functionspace.<
   </define>
   <define name="prescribed_tensor_w_file" combine="choice">
     <ref name="prescribed_tensor"/>
+  </define>
+  <define name="prescribed_tensor_time">
+    <ref name="prescribed_tensor_cpp_time"/>
+  </define>
+  <define name="prescribed_tensor_time" combine="choice">
+    <ref name="prescribed_tensor_python"/>
+  </define>
+  <define name="prescribed_tensor_time" combine="choice">
+    <ref name="prescribed_tensor_constant"/>
+  </define>
+  <define name="prescribed_tensor_time_w_internal">
+    <ref name="prescribed_tensor_internal"/>
+  </define>
+  <define name="prescribed_tensor_time_w_internal" combine="choice">
+    <ref name="prescribed_tensor_time"/>
   </define>
 </grammar>

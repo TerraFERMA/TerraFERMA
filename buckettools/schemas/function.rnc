@@ -72,17 +72,17 @@ coefficient_options =
             ## The rank of the coefficient (scalar, rank 0).
             element rank {
               attribute name { "Scalar" },
-              scalar_coefficient_function_expression_options
+              scalar_coefficient_expression_options
             }|
             ## The rank of the coefficient (vector, rank 1).
             element rank {
               attribute name { "Vector" },
-              vector_coefficient_function_expression_options
+              vector_coefficient_expression_options
             }|
             ## The rank of the coefficient (tensor, rank 2).
             element rank {
               attribute name { "Tensor" },
-              tensor_coefficient_function_expression_options
+              tensor_coefficient_expression_options
             }
           )
         }|
@@ -118,17 +118,17 @@ coefficient_options =
             ## The rank of the coefficient (scalar, rank 0).
             element rank {
               attribute name { "Scalar" },
-              scalar_coefficient_function_expression_options
+              scalar_coefficient_function_options
             }|
             ## The rank of the coefficient (vector, rank 1).
             element rank {
               attribute name { "Vector" },
-              vector_coefficient_function_expression_options
+              vector_coefficient_function_options
             }|
             ## The rank of the coefficient (tensor, rank 2).
             element rank {
               attribute name { "Tensor" },
-              tensor_coefficient_function_expression_options
+              tensor_coefficient_function_options
             }
           )
         }
@@ -182,25 +182,46 @@ field_manipulation_options =
     }?
   )
 
-scalar_coefficient_function_expression_options =
+scalar_coefficient_expression_options =
   (
     attribute rank { "0" },
     element_options_scalar,
     prescribed_expression_scalar+
   )
 
-vector_coefficient_function_expression_options =
+vector_coefficient_expression_options =
   (
     attribute rank { "1" },
     element_options_vector,
     prescribed_expression_vector+
   )
 
-tensor_coefficient_function_expression_options =
+tensor_coefficient_expression_options =
   (
     attribute rank { "2" },
     element_options_tensor,
     prescribed_expression_tensor+
+  )
+
+scalar_coefficient_function_options =
+  (
+    attribute rank { "0" },
+    element_options_scalar,
+    prescribed_function_scalar+
+  )
+
+vector_coefficient_function_options =
+  (
+    attribute rank { "1" },
+    element_options_vector,
+    prescribed_function_vector+
+  )
+
+tensor_coefficient_function_options =
+  (
+    attribute rank { "2" },
+    element_options_tensor,
+    prescribed_function_tensor+
   )
 
 scalar_coefficient_constant_options =
@@ -619,6 +640,66 @@ prescribed_expression_tensor =
     }
   )
 
+prescribed_function_scalar = 
+  (
+    ## Options for the description of an expression over the domain
+    element value {
+      attribute name {"WholeMesh"},
+      attribute type {"value"},
+      prescribed_scalar_time_w_internal
+    }|
+    ## Options for the description of an expression over regions
+    element value {
+      attribute name { xsd:string },
+      attribute type {"value"},
+      ## A list of the region ids (physical ids in gmsh) that this expression applies to
+      element region_ids {
+        integer_vector
+      },
+      prescribed_scalar_time_w_internal
+    }
+  )
+
+prescribed_function_vector = 
+  (
+    ## Options for the description of an expression over the domain
+    element value {
+      attribute name {"WholeMesh"},
+      attribute type {"value"},
+      prescribed_vector_time_w_internal
+    }|
+    ## Options for the description of an expression over regions
+    element value {
+      attribute name { xsd:string },
+      attribute type {"value"},
+      ## A list of the region ids (physical ids in gmsh) that this expression applies to
+      element region_ids {
+        integer_vector
+      },
+      prescribed_vector_time_w_internal
+    }
+  )
+
+prescribed_function_tensor = 
+  (
+    ## Options for the description of an expression over the domain
+    element value {
+      attribute name {"WholeMesh"},
+      attribute type {"value"},
+      prescribed_tensor_time_w_internal
+    }|
+    ## Options for the description of an expression over regions
+    element value {
+      attribute name { xsd:string },
+      attribute type {"value"},
+      ## A list of the region ids (physical ids in gmsh) that this expression applies to
+      element region_ids {
+        integer_vector
+      },
+      prescribed_tensor_time_w_internal
+    }
+  )
+
 prescribed_scalar_constant =
   (
     (
@@ -843,6 +924,20 @@ prescribed_cpp =
     }
   )
 
+time_independent_cpp = 
+  (
+    ## cpp functions are automatically assumed to be time varying.  
+    ##
+    ## Turning on this option means they only get evaluated once (at
+    ## the start of the simtulation).
+    element time_independent {
+      empty
+    }?
+  )
+
+prescribed_cpp_time = prescribed_cpp
+prescribed_cpp_time &= time_independent_cpp
+
 prescribed_scalar_cpp =
   (
     ## A scalar described by a derived dolfin expression using c++ code.
@@ -867,6 +962,33 @@ prescribed_tensor_cpp =
     element cpp {
       attribute rank { "2" },
       prescribed_cpp
+    }
+  )
+
+prescribed_scalar_cpp_time =
+  (
+    ## A scalar described by a derived dolfin expression using c++ code.
+    element cpp {
+      attribute rank { "0" },
+      prescribed_cpp_time
+    }
+  )
+
+prescribed_vector_cpp_time =
+  (
+    ## A vector described by a derived dolfin expression using c++ code.
+    element cpp {
+      attribute rank { "1" },
+      prescribed_cpp_time
+    }
+  )
+
+prescribed_tensor_cpp_time =
+  (
+    ## A tensor described by a derived dolfin expression using c++ code.
+    element cpp {
+      attribute rank { "2" },
+      prescribed_cpp_time
     }
   )
 
@@ -995,6 +1117,13 @@ prescribed_scalar_w_internal |= prescribed_scalar
 prescribed_scalar_w_file = prescribed_file
 prescribed_scalar_w_file |= prescribed_scalar
 
+prescribed_scalar_time = prescribed_scalar_cpp_time
+prescribed_scalar_time |= prescribed_scalar_python
+prescribed_scalar_time |= prescribed_scalar_constant
+
+prescribed_scalar_time_w_internal = prescribed_scalar_internal
+prescribed_scalar_time_w_internal |= prescribed_scalar_time
+
 prescribed_vector = prescribed_vector_cpp
 prescribed_vector |= prescribed_vector_python
 prescribed_vector |= prescribed_vector_constant
@@ -1005,6 +1134,13 @@ prescribed_vector_w_internal |= prescribed_vector
 prescribed_vector_w_file = prescribed_file
 prescribed_vector_w_file |= prescribed_vector
 
+prescribed_vector_time = prescribed_vector_cpp_time
+prescribed_vector_time |= prescribed_vector_python
+prescribed_vector_time |= prescribed_vector_constant
+
+prescribed_vector_time_w_internal = prescribed_vector_internal
+prescribed_vector_time_w_internal |= prescribed_vector_time
+
 prescribed_tensor = prescribed_tensor_cpp
 prescribed_tensor |= prescribed_tensor_python
 prescribed_tensor |= prescribed_tensor_constant
@@ -1014,4 +1150,11 @@ prescribed_tensor_w_internal |= prescribed_tensor
 
 prescribed_tensor_w_file = prescribed_file
 prescribed_tensor_w_file |= prescribed_tensor
+
+prescribed_tensor_time = prescribed_tensor_cpp_time
+prescribed_tensor_time |= prescribed_tensor_python
+prescribed_tensor_time |= prescribed_tensor_constant
+
+prescribed_tensor_time_w_internal = prescribed_tensor_internal
+prescribed_tensor_time_w_internal |= prescribed_tensor_time
 
