@@ -1287,8 +1287,9 @@ Expression_ptr SpudFunctionBucket::allocate_expression_(
                                        system(), time);
 
     if (time_dependent)                                              // if we've asked if this expression is time dependent
-    {                                                                // ... assume it is (otherwise why would you be using a cpp expression?)
-      *time_dependent = true;
+    {                                                                // ... check (but by default assume it is)
+      buffer.str(""); buffer << optionpath << "cpp/time_independent";
+      *time_dependent = !Spud::have_option(buffer.str());
     }
 
   }
