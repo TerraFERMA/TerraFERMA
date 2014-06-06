@@ -47,10 +47,10 @@ file(
            ERROR_STRIP_TRAILING_WHITESPACE
            )
         if(GIT_ERR)
-           set(GIT_SHA "git_log_not_found")
+           set(GIT_SHA git_log_not_found)
         endif(GIT_ERR)
     else(HAVE_GIT)
-        set(GIT_SHA "git_not_found")
+        set(GIT_SHA git_not_found)
     endif(HAVE_GIT)
     configure_file(\${SRC} \${DST} @ONLY)
     "
