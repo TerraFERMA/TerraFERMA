@@ -281,6 +281,7 @@ fixed number of Newton steps).</a:documentation>
             <empty/>
           </element>
         </choice>
+        <ref name="snes_convergence_test"/>
         <optional>
           <element name="alpha">
             <a:documentation>The scalar such that .5*f_{n+1} . f_{n+1} &lt;= .5*f_n . f_n - alpha |p_n . J . f_n|.
@@ -339,6 +340,7 @@ NOTE: only available with Petsc &gt;= 3.2 and with petsc &gt; 3.2 this maps to v
             </element>
           </optional>
         </element>
+        <ref name="snes_convergence_test"/>
       </element>
       <element name="snes_type">
         <a:documentation>The SNES type.  KSP only - treat as a linear problem.</a:documentation>
@@ -1696,5 +1698,23 @@ nullspaces python functions must be attached underneath the description of the f
         </element>
       </element>
     </optional>
+  </define>
+  <define name="snes_convergence_test">
+    <choice>
+      <element name="convergence_test">
+        <a:documentation>Default convergence test. See SNESConvergedReason.</a:documentation>
+        <attribute name="name">
+          <value>default</value>
+        </attribute>
+        <empty/>
+      </element>
+      <element name="convergence_test">
+        <a:documentation>Skip standard convergence tests, allowing maximum iterations to be reached.</a:documentation>
+        <attribute name="name">
+          <value>skip</value>
+        </attribute>
+        <empty/>
+      </element>
+    </choice>
   </define>
 </grammar>
