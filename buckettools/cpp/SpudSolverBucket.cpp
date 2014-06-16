@@ -261,6 +261,18 @@ void SpudSolverBucket::initialize()
                                                                      // command line)
     }
 
+    buffer.str(""); buffer << optionpath() << "/type/snes_type/convergence_test/name";
+    if (Spud::have_option(buffer.str()))
+    {
+      std::string convtest;
+      serr = Spud::get_option(buffer.str(), convtest);
+      if (convtest=="skip")
+      {
+        perr = SNESSetConvergenceTest(snes_, SNESSkipConverged, 
+                                            PETSC_NULL, PETSC_NULL);
+      }
+    }
+
     buffer.str(""); buffer << optionpath() 
                                         << "/type/monitors/residual";
     if (Spud::have_option(buffer.str()))
@@ -784,6 +796,17 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
     else
     {
       perr = KSPSetInitialGuessNonzero(ksp, PETSC_TRUE); 
+      CHKERRV(perr);
+    }
+
+    buffer.str(""); buffer << optionpath << 
+                                  "/iterative_method/restart";
+    if (Spud::have_option(buffer.str()))
+    {
+      PetscInt restart;
+      serr = Spud::get_option(buffer.str(), restart);
+      spud_err(buffer.str(), serr);
+      perr = KSPGMRESSetRestart(ksp, restart);
       CHKERRV(perr);
     }
 

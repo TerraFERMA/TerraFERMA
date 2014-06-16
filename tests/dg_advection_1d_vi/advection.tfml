@@ -188,6 +188,7 @@ r = r_m + r_a + r_fS + r_fs1 + r_fs2</string_value>
               <monitors/>
             </lower_bound>
           </constraints>
+          <convergence_test name="default"/>
         </snes_type>
         <relative_error>
           <real_value rank="0">1.e-6</real_value>
