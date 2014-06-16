@@ -69,7 +69,6 @@ PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f,
   (*bucket).update_nonlinear();                                      // update nonlinear coefficients
 
   dolfin::Assembler assembler;
-  assembler.reset_sparsity = false;
   assembler.assemble(rhs, *(*solver).linear_form());
   for(uint i = 0; i < bcs.size(); ++i)                               // loop over the bcs
   {
@@ -155,7 +154,6 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
 
   dolfin::SystemAssembler assembler((*solver).bilinear_form(), (*solver).linear_form(),
                                     bcs);
-  assembler.reset_sparsity = false;
   assembler.assemble(matrix);                                        // assemble the matrix from the context bilinear form
   for(uint i = 0; i < points.size(); ++i)                            // loop over the reference points
   {
@@ -170,7 +168,6 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
   {
     dolfin::SystemAssembler assemblerpc((*solver).bilinearpc_form(), (*solver).linear_form(),
                                       bcs);
-    assemblerpc.reset_sparsity = false;
     assemblerpc.assemble(matrixpc);
     for(uint i = 0; i < points.size(); ++i)                          // loop over the points
     {
@@ -188,7 +185,6 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
     PETScMatrix_ptr solvermatrix = (*solver).fetch_solvermatrix((*f_it).first);
     dolfin::SystemAssembler assemblerform((*f_it).second, (*solver).linear_form(),
                                       bcs);
-    assemblerform.reset_sparsity = false;
     assemblerform.assemble(*solvermatrix);
     for(uint i = 0; i < points.size(); ++i)                          // loop over the points
     {

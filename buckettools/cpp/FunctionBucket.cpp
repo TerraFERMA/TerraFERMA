@@ -366,7 +366,8 @@ const double FunctionBucket::change()
 //*******************************************************************|************************************************************//
 const double FunctionBucket::functionalchange(Form_const_it f_it)
 {
-  return std::abs(functionalvalue(f_it)-oldfunctionalvalue(f_it));
+  const double fvalue = functionalvalue(f_it);
+  return std::abs(fvalue-oldfunctionalvalue(f_it))/std::max(std::abs(fvalue), DOLFIN_EPS);
 }
 
 //*******************************************************************|************************************************************//

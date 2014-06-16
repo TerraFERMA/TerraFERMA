@@ -213,6 +213,7 @@ snes =
             empty
           }
         ),
+        snes_convergence_test,
         ## The scalar such that .5*f_{n+1} . f_{n+1} <= .5*f_n . f_n - alpha |p_n . J . f_n|.
         ##
         ## We are finding the zero of f() so the one dimensional minimization problem we are 
@@ -258,7 +259,8 @@ snes =
            element lower_bound {
              is_constraints
            }?
-        }
+        },
+        snes_convergence_test
       }|
       ## The SNES type.  KSP only - treat as a linear problem.
       element snes_type {
@@ -1505,5 +1507,19 @@ generic_solver_options =
            }?
          }
       }?
+   )
+
+snes_convergence_test = 
+   (
+     ## Default convergence test. See SNESConvergedReason.
+     element convergence_test {
+       attribute name { "default" },
+       empty
+     }|
+     ## Skip standard convergence tests, allowing maximum iterations to be reached.
+     element convergence_test {
+       attribute name { "skip" },
+       empty
+     }
    )
 

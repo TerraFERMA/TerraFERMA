@@ -54,6 +54,22 @@ SystemBucket::~SystemBucket()
 }
 
 //*******************************************************************|************************************************************//
+// evaluate the fields at their initial values
+//*******************************************************************|************************************************************//
+void SystemBucket::evaluate_initial_fields()
+{
+  dolfin::info("Evaluating initial fields for system %s", name().c_str());
+
+  if (fields_size()>0)
+  {
+    apply_ic_();                                                     // apply the initial condition to the system function
+    apply_dirichletbc_();                                            // apply the Dirichlet boundary conditions we just collected
+    apply_referencepoints_();                                        // apply the reference points we just collected
+  }
+
+}
+
+//*******************************************************************|************************************************************//
 // loop over the ordered solver buckets in the bucket, calling solve on each of them
 //*******************************************************************|************************************************************//
 void SystemBucket::solve()

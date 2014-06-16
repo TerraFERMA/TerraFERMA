@@ -63,7 +63,9 @@ namespace buckettools
 
     void initialize_forms();                                         // initialize the forms and functionals by attaching the coeffs
 
-    void initialize_fields_and_coefficients();                       // initialize the expressions that fields and coefficients use
+    void initialize_fields_and_coefficient_expressions();            // initialize the expressions that fields and coefficients use
+
+    void initialize_coefficient_functions();                         // initialize the coefficients functions
 
     void initialize_solvers();                                       // initialize the matrices related to forms as well as the
                                                                      // petsc objects
