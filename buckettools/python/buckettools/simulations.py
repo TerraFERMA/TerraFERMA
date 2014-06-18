@@ -854,7 +854,15 @@ class SimulationBatch:
     while s < len(self.simulations):
       # if the rundirectory (which is used to identify unique simulations) is already registered then delete this simulation
       if self.simulations[s].rundirectory in self.runs:
+        # get the previous definition
+        oldsim = self.runs[self.simulations[s].rundirectory]
+        # pop the new definition
         tmpsim = self.simulations.pop(s)
+        # join the variables of the old and new simulations
+        oldsimvar = set([(var.name, var.code) for var in oldsim['simulation'].variables])
+        oldsimvar = oldsimvar.union(set([(var.name, var.code) for var in tmpsim.variables]))
+        oldsim['simulation'].variables = [Variable(var[0], var[1]) for var in oldsimvar]
+        # delete the duplicate definition
         del tmpsim
       # otherwise register the simulation in the run dictionary using its rundirectory as an identifier
       else:
@@ -892,6 +900,10 @@ class SimulationBatch:
         tmpsim = simulation.dependencies.pop(s)
         # add dependents of the new definition to the old definition
         oldsim['simulation'].dependents += tmpsim.dependents
+        # join the variables of the old and new simulations
+        oldsimvar = set([(var.name, var.code) for var in oldsim['simulation'].variables])
+        oldsimvar = oldsimvar.union(set([(var.name, var.code) for var in tmpsim.variables]))
+        oldsim['simulation'].variables = [Variable(var[0], var[1]) for var in oldsimvar]
         # delete the new (repeated definition)
         del tmpsim
         # insert the old definition into the slot previously occupied by the new one
@@ -1108,7 +1120,18 @@ class SimulationBatch:
           # otherwise if the name isn't in the varsdict then set up a nestedlist
           # and record the path in the pathdict so we can test for multiply defined variables later
           if not name in varsdict:
-            varsdict[name] = NestedList(self.globaloptionsdict[simulation.path]["values"])
+            def dependentwalk(simulation):
+              paths = []
+              for dependent in simulation.dependents:
+                paths += dependentwalk(dependent)
+              if len(simulation.dependents)==0 or simulation.path in self.globaloptionsdict: 
+                paths += [simulation.path]
+              return paths
+            paths = dependentwalk(simulation)
+            values = collections.OrderedDict()
+            for path in paths:
+              values.update(self.globaloptionsdict[path]["values"])
+            varsdict[name] = NestedList(values)
             pathdict[name] = simulation.path
           # set the values in the parameter sweep using the simulation options dictionary to index the nested list
           varsdict[name][simulation.optionsdict["values"]] = value
