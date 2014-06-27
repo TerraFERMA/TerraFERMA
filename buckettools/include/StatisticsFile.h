@@ -61,7 +61,7 @@ namespace buckettools
     // Constructors and destructors
     //***************************************************************|***********************************************************//
     
-    StatisticsFile(const std::string &name);                         // specific constructor
+    StatisticsFile(const std::string &name, const MPI_Comm &comm);   // specific constructor
  
     ~StatisticsFile();                                               // default destructor
     
@@ -87,20 +87,17 @@ namespace buckettools
     // Header writing functions (continued)
     //***************************************************************|***********************************************************//
 
-    void header_bucket_(uint &column);                               // write the header for the bucket (non-constant and 
+    void header_bucket_();                                           // write the header for the bucket (non-constant and 
                                                                      // timestepping entries)
 
-    void header_system_(const SystemBucket_ptr sys_ptr,              // write the header for a system
-                        uint &column);
+    void header_system_(const SystemBucket_ptr sys_ptr);             // write the header for a system
 
     void header_func_(FunctionBucket_const_it f_begin,               // write the header for a set of functions
-                      FunctionBucket_const_it f_end, 
-                      uint &column);
+                      FunctionBucket_const_it f_end); 
 
     void header_functional_(const FunctionBucket_ptr f_ptr,          // write the header for a set of functionals of a function
                             Form_const_it f_begin,
-                            Form_const_it f_end, 
-                            uint &column);
+                            Form_const_it f_end);
 
     //***************************************************************|***********************************************************//
     // Data writing functions (continued)

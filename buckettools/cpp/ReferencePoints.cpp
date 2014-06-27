@@ -231,7 +231,7 @@ void ReferencePoints::init_(const Array_double_ptr coord)
   assert(dim==gdim);
   const dolfin::Point point(dim, pos);
   int cellid;
-  std::vector<unsigned int> cellids = (*mesh.bounding_box_tree()).compute_collisions(point);
+  std::vector<unsigned int> cellids = (*mesh.bounding_box_tree()).compute_entity_collisions(point);
   if (cellids.size()==0)
   {
     cellid = -1;

@@ -1051,7 +1051,8 @@ void SpudBucket::fill_diagnostics_()
 {
   std::stringstream buffer;                                          // optionpath buffer
 
-  statfile_.reset( new StatisticsFile(output_basename()+".stat") );
+  statfile_.reset( new StatisticsFile(output_basename()+".stat", 
+                           (*(*meshes_begin()).second).mpi_comm()) );
   (*statfile_).write_header(*this);
 
   int npdets = Spud::option_count("/io/detectors/point");            // number of point detectors
@@ -1063,14 +1064,16 @@ void SpudBucket::fill_diagnostics_()
       dolfin::error("Requested detectors but selected no field to include.");
     }
 
-    detfile_.reset( new DetectorsFile(output_basename()+".det") );
+    detfile_.reset( new DetectorsFile(output_basename()+".det", 
+                           (*(*meshes_begin()).second).mpi_comm()) );
     (*detfile_).write_header(*this);
   }
 
   if ((Spud::option_count("/system/field/diagnostics/include_in_statistics/functional/include_in_steady_state")+
        Spud::option_count("/system/field/diagnostics/include_in_steady_state"))>0)
   {
-    steadyfile_.reset( new SteadyStateFile(output_basename()+".steady") );
+    steadyfile_.reset( new SteadyStateFile(output_basename()+".steady",
+                           (*(*meshes_begin()).second).mpi_comm()) );
     (*steadyfile_).write_header(*this);
   }
 

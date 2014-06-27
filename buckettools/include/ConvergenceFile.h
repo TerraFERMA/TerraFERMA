@@ -64,6 +64,7 @@ namespace buckettools
     //***************************************************************|***********************************************************//
     
     ConvergenceFile(const std::string &name, 
+                    const MPI_Comm &comm,
                     const std::string &systemname, 
                     const std::string &solvername);                  // specific constructor
  
@@ -99,17 +100,15 @@ namespace buckettools
     // Header writing functions (continued)
     //***************************************************************|***********************************************************//
 
-    void header_iteration_(uint &column);                            // write the header for iterations 
+    void header_iteration_();                                        // write the header for iterations 
     
-    void header_bucket_(uint &column);                               // write the header for the bucket (non-constant and 
+    void header_bucket_();                                           // write the header for the bucket (non-constant and 
                                                                      // timestepping entries)
 
-    void header_system_(const SystemBucket_ptr sys_ptr,              // write the header for a system
-                        uint &column);
+    void header_system_(const SystemBucket_ptr sys_ptr);             // write the header for a system
 
     void header_func_(FunctionBucket_const_it f_begin,               // write the header for a set of functions
-                      FunctionBucket_const_it f_end, 
-                      uint &column);
+                      FunctionBucket_const_it f_end);
 
     //***************************************************************|***********************************************************//
     // Data writing functions (continued)

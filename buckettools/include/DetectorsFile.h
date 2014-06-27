@@ -63,7 +63,7 @@ namespace buckettools
     // Constructors and destructors
     //***************************************************************|***********************************************************//
     
-    DetectorsFile(const std::string name);                           // specific constructor
+    DetectorsFile(const std::string name, const MPI_Comm &comm);     // specific constructor
     
     ~DetectorsFile();                                                // default destructor
     
@@ -89,21 +89,21 @@ namespace buckettools
     // Header writing functions (continued)
     //***************************************************************|***********************************************************//
 
-    void header_bucket_(uint &column);
+    void header_bucket_();
     
     void header_detector_(GenericDetectors_const_it d_begin,
-                          GenericDetectors_const_it d_end,
-                          uint &column);
+                          GenericDetectors_const_it d_end);
     
     void header_func_(FunctionBucket_const_it f_begin,
                       FunctionBucket_const_it f_end,
                       GenericDetectors_const_it d_begin,
-                      GenericDetectors_const_it d_end,
-                      uint &column);
+                      GenericDetectors_const_it d_end);
     
     //***************************************************************|***********************************************************//
     // Data writing functions (continued)
     //***************************************************************|***********************************************************//
+
+    void data_timestep_();
 
     void data_bucket_();
     
@@ -116,6 +116,18 @@ namespace buckettools
                     GenericDetectors_const_it d_end,
                     Mesh_ptr mesh);
     
+
+    //***************************************************************|***********************************************************//
+    // Private members
+    //***************************************************************|***********************************************************//
+
+#ifdef HAS_MPI
+    MPI_File mpifile_;
+
+    MPI_Offset mpiwritelocation_;
+#endif
+    
+    uint mpiwritecount_;
 
   };
   

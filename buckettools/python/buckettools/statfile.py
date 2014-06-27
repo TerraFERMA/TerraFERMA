@@ -221,7 +221,7 @@ for example:
             assert(type == "integer")            
             integer_size = int(value)            
             if not integer_size == 4:
-              raise Exception("Unexpected integer size: " + str(real_size))
+              raise Exception("Unexpected integer size: " + str(integer_size))
        
         nOutput = (os.path.getsize(filename + ".dat") / (nColumns * real_size)) / subsample
         

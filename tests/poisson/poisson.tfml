@@ -23,7 +23,11 @@
       <string_value lines="1">poisson</string_value>
     </output_base_name>
     <dump_periods/>
-    <detectors/>
+    <detectors>
+      <point name="Point">
+        <real_value shape="2" dim1="dim" rank="1">0.484375 0.515625</real_value>
+      </point>
+    </detectors>
   </io>
   <global_parameters/>
   <system name="SNESPoisson">
@@ -75,6 +79,7 @@
             <quadrature_rule name="default"/>
           </functional>
         </include_in_statistics>
+        <include_in_detectors/>
       </diagnostics>
     </field>
     <coefficient name="Source">

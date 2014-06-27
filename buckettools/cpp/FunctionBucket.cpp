@@ -232,7 +232,7 @@ const double FunctionBucket::min(const double_ptr time, const int *index0, const
 const double FunctionBucket::infnorm(const double_ptr time, const int *index0, const int *index1) const
 {
   const GenericFunction_ptr function = genericfunction_ptr(time);
-  double normvalue;
+  double normvalue, lnormvalue;
 
   if (  functiontype_==FUNCTIONBUCKET_FIELD || 
       ((functiontype_==FUNCTIONBUCKET_COEFF)&&(type()=="Function")) )
@@ -275,22 +275,23 @@ const double FunctionBucket::infnorm(const double_ptr time, const int *index0, c
       assert(*index0 < (*function).value_dimension(0));
       assert(*index1 < (*function).value_dimension(1));
 
-      normvalue = std::abs(*std::max_element(&values[(2*(*index1)+(*index0))*nvert], 
-                           &values[(2*(*index1)+(*index0)+1)*nvert], abslessthan));
+      lnormvalue = std::abs(*std::max_element(&values[(2*(*index1)+(*index0))*nvert], 
+                                              &values[(2*(*index1)+(*index0)+1)*nvert], abslessthan));
     }
     else if (index0)
     {
       assert((*function).value_rank()==1);
       assert(*index0 < (*function).value_size());
 
-      normvalue = std::abs(*std::max_element(&values[(*index0)*nvert], 
-                           &values[((*index0)+1)*nvert], abslessthan));
+      lnormvalue = std::abs(*std::max_element(&values[(*index0)*nvert], 
+                                              &values[((*index0)+1)*nvert], abslessthan));
     }
     else
     {
-      normvalue = std::abs(*std::max_element(&values[0], 
-                           &values[nvert], abslessthan));
+      lnormvalue = std::abs(*std::max_element(&values[0], 
+                                             &values[nvert], abslessthan));
     }
+    normvalue = dolfin::MPI::max((*mesh).mpi_comm(), lnormvalue);
   }
 
   return normvalue;
@@ -340,16 +341,19 @@ const std::size_t FunctionBucket::size() const
 //*******************************************************************|************************************************************//
 const double FunctionBucket::change()
 {
-  if(change_calculated_)
+  if(change_calculated_)                                             // just testing pointer is associated
   {
     assert(change_);
     if(!*change_calculated_)
     {
       assert(changefunction_);
 
-      dolfin::Function changefunc =                                    // take a deep copy of the subfunction so the vector is accessible
+      dolfin::Function changefunc =                                  // take a deep copy of the subfunction so the vector is accessible
         *std::dynamic_pointer_cast< const dolfin::Function >(changefunction());
-      *change_ = (*changefunc.vector()).norm(change_normtype_);
+      dolfin::Function func =                                        // take a deep copy of the subfunction so the vector is accessible
+        *std::dynamic_pointer_cast< const dolfin::Function >(function());
+      *change_ = (*changefunc.vector()).norm(change_normtype_)/
+                 (*func.vector()).norm(change_normtype_);
 
       *change_calculated_=true;
     }

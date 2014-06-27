@@ -299,7 +299,8 @@ void SpudSolverBucket::initialize()
         buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
                                << (*system()).name() << "_" 
                                << name() << "_snes.conv";
-        convfile_.reset( new ConvergenceFile(buffer.str(),           // allocate the file but don't write the header yet as the
+        convfile_.reset( new ConvergenceFile(buffer.str(),
+                                      (*(*system_).mesh()).mpi_comm(),// allocate the file but don't write the header yet as the
                                       (*system()).name(), name()) ); // bucket isn't complete
       }
       perr = SNESMonitorSet(snes_, SNESCustomMonitor,                // set a custom snes monitor
@@ -334,7 +335,8 @@ void SpudSolverBucket::initialize()
       buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
                              << (*system()).name() << "_" 
                              << name() << "_picard.conv";
-      convfile_.reset( new ConvergenceFile(buffer.str(),             // allocate the file but don't write the header yet as the
+      convfile_.reset( new ConvergenceFile(buffer.str(), 
+                                    (*(*system_).mesh()).mpi_comm(), // allocate the file but don't write the header yet as the
                                     (*system()).name(), name()) );   // bucket isn't complete
     }
 
@@ -848,7 +850,8 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
       buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
                              << (*system()).name() << "_" 
                              << name() << "_ksp.conv";
-      kspconvfile_.reset( new KSPConvergenceFile(buffer.str(),       // allocate the file but don't write the header yet as the
+      kspconvfile_.reset( new KSPConvergenceFile(buffer.str(), 
+                                    (*(*system_).mesh()).mpi_comm(), // allocate the file but don't write the header yet as the
                                     (*system()).name(), name()) );   // bucket isn't complete
       perr = KSPMonitorSet(ksp, KSPCustomMonitor, 
                                              &kspmctx_, PETSC_NULL); 

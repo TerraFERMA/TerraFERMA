@@ -21,6 +21,7 @@
 
 #include "DetectorsFile.h"
 #include "Bucket.h"
+#include "MPIBase.h"
 #include <cstdio>
 #include <string>
 #include <fstream>
@@ -31,9 +32,34 @@ using namespace buckettools;
 //*******************************************************************|************************************************************//
 // specific constructor
 //*******************************************************************|************************************************************//
-DetectorsFile::DetectorsFile(const std::string name) : DiagnosticsFile(name)
+DetectorsFile::DetectorsFile(const std::string name, const MPI_Comm &comm) : DiagnosticsFile(name, comm)
 {
-                                                                     // do nothing... all handled by DiagnosticsFile constructor
+  if (dolfin::MPI::size(mpicomm_)>1)
+  {
+#ifdef HAS_MPI                                                       // presumably true as size returned > 1
+    int mpierr;
+    mpierr = MPI_File_open(mpicomm_, (char*)(name_+".dat").c_str(),  // delete the previous dat file - FIXME: ugly hack
+                           MPI_MODE_CREATE + MPI_MODE_RDWR + MPI_MODE_DELETE_ON_CLOSE, 
+                           MPI_INFO_NULL, &mpifile_);
+    mpi_err(mpierr);
+    mpierr = MPI_File_close(&mpifile_);
+    mpi_err(mpierr);
+
+    mpierr = MPI_File_open(mpicomm_, (char*)(name_+".dat").c_str(), 
+                           MPI_MODE_CREATE + MPI_MODE_RDWR, 
+                           MPI_INFO_NULL, &mpifile_);
+    if (mpierr!=MPI_SUCCESS)
+    {
+      dolfin::error("MPI Error %d while trying to open MPI_File.", mpierr);
+    }
+#endif
+  }
+
+  mpiwritecount_ = 0;                                                // incremented at every data dump
+#ifdef HAS_MPI
+  mpiwritelocation_ = 0;
+#endif
+
 }
 
 //*******************************************************************|************************************************************//
@@ -41,7 +67,16 @@ DetectorsFile::DetectorsFile(const std::string name) : DiagnosticsFile(name)
 //*******************************************************************|************************************************************//
 DetectorsFile::~DetectorsFile()
 {
-                                                                     // do nothing... all handled by DiagnosticsFile destructor
+  if (dolfin::MPI::size(mpicomm_)>1)
+  {
+#ifdef HAS_MPI                                                       // presumably true as size return > 1
+    int mpierr = MPI_File_close(&mpifile_);
+    if (mpierr!=MPI_SUCCESS)
+    {
+      dolfin::error("MPI error %d while trying to close MPI_file.", mpierr);
+    }
+#endif
+  }
 }
 
 //*******************************************************************|************************************************************//
@@ -51,13 +86,20 @@ void DetectorsFile::write_header(const Bucket &bucket)
 {
   bucket.copy_diagnostics(bucket_);
 
-  uint column = 1;
-  
-  file_ << "<header>" << std::endl;
-  header_constants_();
-  header_timestep_(column);
-  header_bucket_(column);
-  file_ << "</header>" << std::endl;
+  if (dolfin::MPI::rank(mpicomm_)==0)
+  {
+    file_ << "<header>" << std::endl;
+  }
+
+  header_constants_(dolfin::MPI::size(mpicomm_)>1);
+  header_timestep_();
+  header_bucket_();
+
+  if (dolfin::MPI::rank(mpicomm_)==0)
+  {
+    file_ << "</header>" << std::endl;
+  }
+
 }
 
 //*******************************************************************|************************************************************//
@@ -69,20 +111,103 @@ void DetectorsFile::write_data()
   data_timestep_();
   data_bucket_();
   
-  file_ << std::endl << std::flush;
+  if (dolfin::MPI::size(mpicomm_)>1)
+  {
+    mpiwritecount_++;
+    // quick sanity check...
+#ifdef HAS_MPI
+    int mpierr;
+    MPI_Aint doublesize;
+    mpierr = MPI_Type_extent(MPI_DOUBLE_PRECISION, &doublesize);
+    mpi_err(mpierr);
+    assert(mpiwritelocation_==mpiwritecount_*ncolumns_*doublesize);
+#endif
+  }
+  else
+  {
+    file_ << std::endl << std::flush;
+  }
   
 }
 
 //*******************************************************************|************************************************************//
+// write data to the file for values relating to timestepping
+//*******************************************************************|************************************************************//
+void DetectorsFile::data_timestep_()
+{
+  
+  if (dolfin::MPI::size(mpicomm_)==1)
+  {
+    DiagnosticsFile::data_timestep_();
+  }
+  else
+  {
+#ifdef HAS_MPI
+    int mpierr;
+    double value;
+
+    MPI_Aint doublesize;
+    mpierr = MPI_Type_extent(MPI_DOUBLE_PRECISION, &doublesize);
+    mpi_err(mpierr);
+
+    value = (double)(*bucket_).timestep_count();                     // we recast this to make it easier to count columns
+    if (dolfin::MPI::rank(mpicomm_)==0)
+    {
+      mpierr = MPI_File_write_at(mpifile_, mpiwritelocation_, 
+                                 &value, 1, 
+                                 MPI_DOUBLE_PRECISION, 
+                                 MPI_STATUS_IGNORE);
+      mpi_err(mpierr);
+    }
+    mpiwritelocation_ += doublesize;
+
+    value = (*bucket_).current_time();
+    if (dolfin::MPI::rank(mpicomm_)==0)
+    {
+      mpierr = MPI_File_write_at(mpifile_, mpiwritelocation_, 
+                                 &value, 1, 
+                                 MPI_DOUBLE_PRECISION, 
+                                 MPI_STATUS_IGNORE);
+      mpi_err(mpierr);
+    }
+    mpiwritelocation_ += doublesize;
+
+    value = (*bucket_).elapsed_walltime();
+    if (dolfin::MPI::rank(mpicomm_)==0)
+    {
+      mpierr = MPI_File_write_at(mpifile_, mpiwritelocation_, 
+                                 &value, 1, 
+                                 MPI_DOUBLE_PRECISION, 
+                                 MPI_STATUS_IGNORE);
+      mpi_err(mpierr);
+    }
+    mpiwritelocation_ += doublesize;
+
+    value = (*bucket_).timestep();
+    if (dolfin::MPI::rank(mpicomm_)==0)
+    {
+      mpierr = MPI_File_write_at(mpifile_, mpiwritelocation_, 
+                                 &value, 1, 
+                                 MPI_DOUBLE_PRECISION, 
+                                 MPI_STATUS_IGNORE);
+      mpi_err(mpierr);
+    }
+    mpiwritelocation_ += doublesize;
+#endif
+  }
+  
+}
+
+
+//*******************************************************************|************************************************************//
 // write header for the model described in the given bucket
 //*******************************************************************|************************************************************//
-void DetectorsFile::header_bucket_(uint &column)
+void DetectorsFile::header_bucket_()
 {
   std::stringstream buffer;
 
   header_detector_((*bucket_).detectors_begin(), 
-                   (*bucket_).detectors_end(), 
-                   column);
+                   (*bucket_).detectors_end());
 
   for (SystemBucket_const_it sys_it = (*bucket_).systems_begin();    // loop over the systems
                           sys_it != (*bucket_).systems_end(); sys_it++)
@@ -90,12 +215,12 @@ void DetectorsFile::header_bucket_(uint &column)
     header_func_((*(*sys_it).second).fields_begin(),                 // write the header for the fields in the system
                  (*(*sys_it).second).fields_end(), 
                  (*bucket_).detectors_begin(), 
-                 (*bucket_).detectors_end(), column);
+                 (*bucket_).detectors_end());
 
     header_func_((*(*sys_it).second).coeffs_begin(),                 // write the header for the coefficients in the system
                  (*(*sys_it).second).coeffs_end(), 
                  (*bucket_).detectors_begin(),
-                 (*bucket_).detectors_end(), column);
+                 (*bucket_).detectors_end());
   }
   
 }
@@ -104,8 +229,7 @@ void DetectorsFile::header_bucket_(uint &column)
 // write header for the detectors
 //*******************************************************************|************************************************************//
 void DetectorsFile::header_detector_(GenericDetectors_const_it d_begin, 
-                                     GenericDetectors_const_it d_end, 
-                                     uint &column)
+                                     GenericDetectors_const_it d_end)
 {
   std::stringstream buffer;
 
@@ -116,9 +240,8 @@ void DetectorsFile::header_detector_(GenericDetectors_const_it d_begin,
     {
       buffer.str("");
       buffer << "position_" << dim;                                  // describe the detector positions
-      tag_((*(*d_it).second).name(), column, buffer.str(), 
+      tag_((*(*d_it).second).name(), buffer.str(), 
                                       "", (*(*d_it).second).size());
-      column+=(*(*d_it).second).size();
     }
   }
   
@@ -130,8 +253,7 @@ void DetectorsFile::header_detector_(GenericDetectors_const_it d_begin,
 void DetectorsFile::header_func_(FunctionBucket_const_it f_begin, 
                                  FunctionBucket_const_it f_end, 
                                  GenericDetectors_const_it d_begin,
-                                 GenericDetectors_const_it d_end,
-                                 uint &column)
+                                 GenericDetectors_const_it d_end)
 {
   std::stringstream buffer;
 
@@ -146,9 +268,8 @@ void DetectorsFile::header_func_(FunctionBucket_const_it f_begin,
       {
         if ((*(*(*f_it).second).function()).value_rank()==0)
         {
-          tag_((*(*f_it).second).name(), column, (*(*d_it).second).name(), 
+          tag_((*(*f_it).second).name(), (*(*d_it).second).name(), 
                 (*(*(*f_it).second).system()).name(), (*(*d_it).second).size());
-          column+=(*(*d_it).second).size();
         }
         else if ((*(*(*f_it).second).function()).value_rank()==1)
         {
@@ -156,9 +277,8 @@ void DetectorsFile::header_func_(FunctionBucket_const_it f_begin,
           {
             buffer.str("");
             buffer << (*(*f_it).second).name() << "_" << dim;
-            tag_(buffer.str(), column, (*(*d_it).second).name(), 
+            tag_(buffer.str(), (*(*d_it).second).name(), 
                   (*(*(*f_it).second).system()).name(), (*(*d_it).second).size());
-            column+=(*(*d_it).second).size();
           }
         }
         else if ((*(*(*f_it).second).function()).value_rank()==2)
@@ -169,9 +289,8 @@ void DetectorsFile::header_func_(FunctionBucket_const_it f_begin,
             {
               buffer.str("");
               buffer << (*(*f_it).second).name() << "_" << dim0 << "_" << dim1;
-              tag_(buffer.str(), column, (*(*d_it).second).name(), 
+              tag_(buffer.str(), (*(*d_it).second).name(), 
                    (*(*(*f_it).second).system()).name(), (*(*d_it).second).size());
-              column+=(*(*d_it).second).size();
             }
           }
         }
@@ -191,8 +310,11 @@ void DetectorsFile::header_func_(FunctionBucket_const_it f_begin,
 void DetectorsFile::data_bucket_()
 {
   
-  file_.setf(std::ios::scientific);
-  file_.precision(10);
+  if (dolfin::MPI::size(mpicomm_)==1)
+  {
+    file_.setf(std::ios::scientific);
+    file_.precision(10);
+  }
   
   data_detector_((*bucket_).detectors_begin(), 
                  (*bucket_).detectors_end());
@@ -213,7 +335,10 @@ void DetectorsFile::data_bucket_()
                (*(*sys_it).second).mesh());
   }
 
-  file_.unsetf(std::ios::scientific);
+  if(dolfin::MPI::size(mpicomm_)==1)
+  {
+    file_.unsetf(std::ios::scientific);
+  }
   
 }
 
@@ -223,7 +348,17 @@ void DetectorsFile::data_bucket_()
 void DetectorsFile::data_detector_(GenericDetectors_const_it d_begin,
                                    GenericDetectors_const_it d_end)
 {
-  
+
+  const bool parallel = dolfin::MPI::size(mpicomm_)>1;
+  const bool rank0 = dolfin::MPI::rank(mpicomm_)==0;                 // since all processors know the positions only rank 0 writes
+                                                                     // perhaps all processes should write?
+#ifdef HAS_MPI
+  int mpierr;
+  MPI_Aint doublesize;
+  mpierr = MPI_Type_extent(MPI_DOUBLE_PRECISION, &doublesize);
+  mpi_err(mpierr);
+#endif
+
   for ( GenericDetectors_const_it d_it = d_begin; 
                                            d_it != d_end; d_it++)
   {
@@ -233,7 +368,27 @@ void DetectorsFile::data_detector_(GenericDetectors_const_it d_begin,
                                       (*(*d_it).second).begin(); 
                             pos < (*(*d_it).second).end(); pos++)
       {   
-        file_ << (**pos)[dim] << " ";
+        if (parallel)
+        {
+#ifdef HAS_MPI
+          if(rank0)
+          {
+            mpierr = MPI_File_write_at(mpifile_, mpiwritelocation_, 
+                                       &(**pos)[dim], 1, 
+                                       MPI_DOUBLE_PRECISION, 
+                                       MPI_STATUS_IGNORE);
+            mpi_err(mpierr);
+          }
+          mpiwritelocation_ += doublesize;
+#endif
+        }
+        else
+        {
+          if(rank0)
+          {
+            file_ << (**pos)[dim] << " ";
+          }
+        }
       }
     }
   }
@@ -250,6 +405,15 @@ void DetectorsFile::data_func_(FunctionBucket_const_it f_begin,
                                Mesh_ptr mesh)
 {
   
+  const bool parallel = dolfin::MPI::size(mpicomm_)>1;
+  
+#ifdef HAS_MPI
+  int mpierr;
+  MPI_Aint doublesize;
+  mpierr = MPI_Type_extent(MPI_DOUBLE_PRECISION, &doublesize);
+  mpi_err(mpierr);
+#endif
+
   for ( FunctionBucket_const_it f_it = f_begin; f_it != f_end; f_it++)
   {
     
@@ -263,16 +427,40 @@ void DetectorsFile::data_func_(FunctionBucket_const_it f_begin,
         GenericFunction_ptr func = (*(*f_it).second).function();
 
         (*(*d_it).second).eval(values, *func, mesh);
+        std::vector< int > ids = (*(*d_it).second).detector_ids(mesh);
+        assert(values.size()==ids.size());
         
         for (uint dim = 0; dim < (*func).value_size(); dim++)
         {
-          for(std::vector< Array_double_ptr >::const_iterator val = 
-                                                      values.begin();
-                                           val < values.end(); val++)
+          for(uint i=0; i < values.size(); i++)
           {
-            file_ << (**val)[dim] << " ";
+            if (parallel)
+            {
+#ifdef HAS_MPI
+              MPI_Offset location = mpiwritelocation_ 
+                                  + (dim*((*(*d_it).second).size()) 
+                                     + ids[i])*doublesize;
+              mpierr = MPI_File_write_at(mpifile_, location, 
+                                         &(*values[i])[dim], 1, 
+                                         MPI_DOUBLE_PRECISION, 
+                                         MPI_STATUS_IGNORE);
+              mpi_err(mpierr);
+#endif
+            }
+            else
+            {
+              file_ << (*values[i])[dim] << " ";
+            }
           }
         }
+
+        if (parallel)
+        {
+#ifdef HAS_MPI
+          mpiwritelocation_ += (*func).value_size()*(*(*d_it).second).size()*doublesize;
+#endif
+        }
+
       }
     }
   }

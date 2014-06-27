@@ -89,7 +89,7 @@ void buckettools::spud_err(const std::string &optionpath,
       }
       break;
     default:                                                         // unknown error
-      dolfin::error("Unknown option error. Key is: ", 
+      dolfin::error("Unknown option error. Key is: %s", 
                                                  optionpath.c_str());
   }
 

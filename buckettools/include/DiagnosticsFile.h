@@ -53,17 +53,13 @@ namespace buckettools
     // Constructors and destructors
     //***************************************************************|***********************************************************//
 
-    DiagnosticsFile();                                               // default constructor
-    
-    DiagnosticsFile(const std::string &name);                        // specific constructor
+    DiagnosticsFile(const std::string &name, const MPI_Comm &comm);  // specific constructor
     
     virtual ~DiagnosticsFile();                                      // default destructor
     
     //***************************************************************|***********************************************************//
     // Closing
     //***************************************************************|***********************************************************//
-
-    const bool is_open() const;                                      // check if file is open
 
     void close();                                                    // close the file
     
@@ -77,39 +73,43 @@ namespace buckettools
     // Base data
     //***************************************************************|***********************************************************//
 
-    std::string name_;                                               // file name
-
     std::ofstream file_;                                             // file stream
 
+    std::string name_;                                               // file name
+
     Bucket_ptr bucket_;                                              // a partial copy of the bucket
+
+    MPI_Comm mpicomm_;                                               // mpi comm
+
+    uint ncolumns_;                                                  // total number of columns
 
     //***************************************************************|***********************************************************//
     // Header writing functions
     //***************************************************************|***********************************************************//
 
-    void header_constants_();                                        // write the header entries for constant values that do not 
+    void header_constants_()
+    { header_constants_(false); }
+
+    void header_constants_(const bool &binary);                      // write the header entries for constant values that do not 
                                                                      // appear later again in the file
     
-    void header_timestep_(uint &column);                             // write the header for a dynamic simulation (including columns 
-                                                                     // for the elapsed time, timestep etc.)
+    void header_timestep_();                                         // write the header for a dynamic simulation
+                                                                     // (the elapsed time, timestep etc.)
     
     void constant_tag_(const std::string &name,                      // write a header tag for a constant value
                        const std::string &type, 
                        const std::string &value);
     
     void tag_(const std::string &name,                               // write a header tag for a temporal value that does not belong
-              const uint &column,                                    // to a system or have components
-              const std::string &statistic)
-    { tag_(name, column, statistic, "", 0); }
+              const std::string &statistic)                          // to a system or have components
+    { tag_(name, statistic, "", 0); }
 
     void tag_(const std::string &name,                               // write a header tag for a temporal value that does not have
-              const uint &column,                                    // components
-              const std::string &statistic,
+              const std::string &statistic,                          // components
               const std::string &system)
-    { tag_(name, column, statistic, system, 0); }
+    { tag_(name, statistic, system, 0); }
     
     void tag_(const std::string &name,                               // write a header tag for a temporal value (most generic)
-              const uint &column,
               const std::string &statistic,
               const std::string &system,
               const uint &components);
@@ -119,6 +119,12 @@ namespace buckettools
     //***************************************************************|***********************************************************//
 
     void data_timestep_();                                           // write the data for timestepping for a dynamic simulation
+
+    void data_function_(dolfin::Function &func)                      // write generic data for a function (field or coefficient function)
+    { data_function_(func, false); }
+
+    void data_function_(dolfin::Function &func, 
+                        const bool &include_norms);
     
   };
   

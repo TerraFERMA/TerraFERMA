@@ -72,12 +72,12 @@ PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f,
   assembler.assemble(rhs, *(*solver).linear_form());
   for(uint i = 0; i < bcs.size(); ++i)                               // loop over the bcs
   {
-    (*bcs[i]).apply(rhs, iteratedvec);
+    (*bcs[i]).apply(rhs, (*(*iteratedfunction).vector()));
   }
   
   for(uint i = 0; i < points.size(); ++i)                            // loop over the reference points
   {
-    (*points[i]).apply(rhs, iteratedvec);
+    (*points[i]).apply(rhs, (*(*iteratedfunction).vector()));
   }
   
   if ((*solver).monitor_norms())

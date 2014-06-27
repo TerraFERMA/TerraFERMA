@@ -32,7 +32,7 @@ using namespace buckettools;
 //*******************************************************************|************************************************************//
 // specific constructor
 //*******************************************************************|************************************************************//
-StatisticsFile::StatisticsFile(const std::string &name) : DiagnosticsFile(name)
+StatisticsFile::StatisticsFile(const std::string &name, const MPI_Comm &comm) : DiagnosticsFile(name, comm)
 {
                                                                      // do nothing... all handled by DiagnosticsFile constructor
 }
@@ -52,13 +52,17 @@ void StatisticsFile::write_header(const Bucket &bucket)
 {
   bucket.copy_diagnostics(bucket_);
 
-  uint column = 1;                                                   // keep count of how many columns there are
-  
-  file_ << "<header>" << std::endl;                                  // initialize header xml
+  if (dolfin::MPI::rank(mpicomm_)==0)
+  {
+    file_ << "<header>" << std::endl;                                // initialize header xml
+  }
   header_constants_();                                               // write constant tags
-  header_timestep_(column);                                          // write tags for the timesteps
-  header_bucket_(column);                                            // write tags for the actual bucket variables - fields etc.
-  file_ << "</header>" << std::endl << std::flush;                   // finalize header xml
+  header_timestep_();                                                // write tags for the timesteps
+  header_bucket_();                                                  // write tags for the actual bucket variables - fields etc.
+  if (dolfin::MPI::rank(mpicomm_)==0)
+  {
+    file_ << "</header>" << std::endl << std::flush;                 // finalize header xml
+  }
 }
 
 //*******************************************************************|************************************************************//
@@ -70,26 +74,29 @@ void StatisticsFile::write_data()
   data_timestep_();                                                 // write the timestepping information
   data_bucket_();                                                   // write the bucket data
   
-  file_ << std::endl << std::flush;                                 // flush the buffer
+  if (dolfin::MPI::rank(mpicomm_)==0)
+  {
+    file_ << std::endl << std::flush;                               // flush the buffer
+  }
   
 }
 
 //*******************************************************************|************************************************************//
 // write a header for the model systems, fields and coefficients in the given bucket
 //*******************************************************************|************************************************************//
-void StatisticsFile::header_bucket_(uint &column)
+void StatisticsFile::header_bucket_()
 {
 
-  for (SystemBucket_const_it sys_it = (*bucket_).systems_begin();        // loop over the systems
+  for (SystemBucket_const_it sys_it = (*bucket_).systems_begin();    // loop over the systems
                           sys_it != (*bucket_).systems_end(); sys_it++)
   {
-//    header_system_((*sys_it).second, column);                        // write the header for the system itself
+//    header_system_((*sys_it).second);                               // write the header for the system itself
 
     header_func_((*(*sys_it).second).fields_begin(),                // write the header for the fields in the system
-                          (*(*sys_it).second).fields_end(), column);
+                          (*(*sys_it).second).fields_end());
 
     header_func_((*(*sys_it).second).coeffs_begin(),                // write the header for the coefficients in the system
-                          (*(*sys_it).second).coeffs_end(), column);
+                          (*(*sys_it).second).coeffs_end());
   }
 
 }
@@ -97,19 +104,17 @@ void StatisticsFile::header_bucket_(uint &column)
 //*******************************************************************|************************************************************//
 // write a header for the model systems in the given bucket
 //*******************************************************************|************************************************************//
-void StatisticsFile::header_system_(const SystemBucket_ptr sys_ptr, 
-                                     uint &column)
+void StatisticsFile::header_system_(const SystemBucket_ptr sys_ptr)
 {
-  tag_((*sys_ptr).name(), column++, "max");
-  tag_((*sys_ptr).name(), column++, "min");
+  tag_((*sys_ptr).name(), "max");
+  tag_((*sys_ptr).name(), "min");
 }
 
 //*******************************************************************|************************************************************//
 // write a header for a set of model fields
 //*******************************************************************|************************************************************//
 void StatisticsFile::header_func_(FunctionBucket_const_it f_begin, 
-                                  FunctionBucket_const_it f_end, 
-                                  uint &column)
+                                  FunctionBucket_const_it f_end)
 {
   for (FunctionBucket_const_it f_it = f_begin; f_it != f_end;        // loop over the given functions
                                                       f_it++)
@@ -118,55 +123,47 @@ void StatisticsFile::header_func_(FunctionBucket_const_it f_begin,
     {                                                                // yes, then populate header with default stats (min and max)
       if ((*(*(*f_it).second).function()).value_rank()==0)           // scalar (no components)
       {
-        tag_((*(*f_it).second).name(), column++, "max", 
+        tag_((*(*f_it).second).name(), "max", 
                               (*(*(*f_it).second).system()).name());
-        tag_((*(*f_it).second).name(), column++, "min", 
+        tag_((*(*f_it).second).name(), "min", 
                               (*(*(*f_it).second).system()).name());
         if ((*(*f_it).second).residualfunction())                    // all fields should get in here
         {
-          tag_((*(*f_it).second).name(), column++, "res_max", 
+          tag_((*(*f_it).second).name(), "res_max", 
                                 (*(*(*f_it).second).system()).name());
-          tag_((*(*f_it).second).name(), column++, "res_min", 
+          tag_((*(*f_it).second).name(), "res_min", 
                                 (*(*(*f_it).second).system()).name());
         }
       }
       else if ((*(*(*f_it).second).function()).value_rank()==1)      // vector (value_size components)
       {
         int components = (*(*(*f_it).second).function()).value_size();
-        tag_((*(*f_it).second).name(), column, "max", 
+        tag_((*(*f_it).second).name(), "max", 
                   (*(*(*f_it).second).system()).name(), components);
-        column+=components;
-        tag_((*(*f_it).second).name(), column, "min", 
+        tag_((*(*f_it).second).name(), "min", 
                   (*(*(*f_it).second).system()).name(), components);
-        column+=components;
         if ((*(*f_it).second).residualfunction())                    // all fields should get in here
         {
-          tag_((*(*f_it).second).name(), column, "res_max", 
+          tag_((*(*f_it).second).name(), "res_max", 
                     (*(*(*f_it).second).system()).name(), components);
-          column+=components;
-          tag_((*(*f_it).second).name(), column, "res_min", 
+          tag_((*(*f_it).second).name(), "res_min", 
                     (*(*(*f_it).second).system()).name(), components);
-          column+=components;
         }
       }
       else if ((*(*(*f_it).second).function()).value_rank()==2)      // tensor (value_dimension product components)
       {
         int components = 
           (*(*(*f_it).second).function()).value_dimension(0)*(*(*(*f_it).second).function()).value_dimension(1);
-        tag_((*(*f_it).second).name(), column, "max", 
+        tag_((*(*f_it).second).name(), "max", 
                   (*(*(*f_it).second).system()).name(), components);
-        column+=components;
-        tag_((*(*f_it).second).name(), column, "min", 
+        tag_((*(*f_it).second).name(), "min", 
                   (*(*(*f_it).second).system()).name(), components);
-        column+=components;
         if ((*(*f_it).second).residualfunction())                    // all fields should get in here
         {
-          tag_((*(*f_it).second).name(), column, "res_max", 
+          tag_((*(*f_it).second).name(), "res_max", 
                     (*(*(*f_it).second).system()).name(), components);
-          column+=components;
-          tag_((*(*f_it).second).name(), column, "res_min", 
+          tag_((*(*f_it).second).name(), "res_min", 
                     (*(*(*f_it).second).system()).name(), components);
-          column+=components;
         }
       }
       else                                                           // unknown rank
@@ -176,7 +173,7 @@ void StatisticsFile::header_func_(FunctionBucket_const_it f_begin,
 
       header_functional_((*f_it).second, 
                         (*(*f_it).second).functionals_begin(),       // write header for any functionals associated with this field
-                        (*(*f_it).second).functionals_end(), column);
+                        (*(*f_it).second).functionals_end());
     }
   }
 }
@@ -186,12 +183,11 @@ void StatisticsFile::header_func_(FunctionBucket_const_it f_begin,
 //*******************************************************************|************************************************************//
 void StatisticsFile::header_functional_(const FunctionBucket_ptr f_ptr, 
                                         Form_const_it f_begin, 
-                                        Form_const_it f_end, 
-                                        uint &column)
+                                        Form_const_it f_end)
 {
   for (Form_const_it f_it = f_begin; f_it != f_end; f_it++)          // loop over the functional forms associated with the given
   {                                                                  // function bucket
-    tag_((*f_ptr).name(), column++, (*f_it).first,                   // write tags for each functional
+    tag_((*f_ptr).name(), (*f_it).first,                   // write tags for each functional
                                   (*(*f_ptr).system()).name());
   }
 }
@@ -202,8 +198,11 @@ void StatisticsFile::header_functional_(const FunctionBucket_ptr f_ptr,
 void StatisticsFile::data_bucket_()
 {
   
-  file_.setf(std::ios::scientific);
-  file_.precision(10);
+  if (dolfin::MPI::rank(mpicomm_)==0)
+  {
+    file_.setf(std::ios::scientific);
+    file_.precision(10);
+  }
   
   for (SystemBucket_const_it sys_it = (*bucket_).systems_begin(); 
                           sys_it != (*bucket_).systems_end(); sys_it++)
@@ -217,7 +216,10 @@ void StatisticsFile::data_bucket_()
                                 (*(*sys_it).second).coeffs_end());
   }
 
-  file_.unsetf(std::ios::scientific);
+  if (dolfin::MPI::rank(mpicomm_)==0)
+  {
+    file_.unsetf(std::ios::scientific);
+  }
   
 }
 
@@ -226,15 +228,20 @@ void StatisticsFile::data_bucket_()
 //*******************************************************************|************************************************************//
 void StatisticsFile::data_system_(const SystemBucket_ptr sys_ptr)
 {
-  file_ << (*(*(*sys_ptr).function()).vector()).max() << " ";
-  file_ << (*(*(*sys_ptr).function()).vector()).min() << " ";
+  double max = (*(*(*sys_ptr).function()).vector()).max();
+  double min = (*(*(*sys_ptr).function()).vector()).min();
+  if (dolfin::MPI::rank(mpicomm_)==0)
+  {
+    file_ << max << " ";
+    file_ << min << " ";
+  }
 }
 
 //*******************************************************************|************************************************************//
 // write data for a set of fields
 //*******************************************************************|************************************************************//
 void StatisticsFile::data_field_(FunctionBucket_const_it f_begin, 
-                                  FunctionBucket_const_it f_end)
+                                 FunctionBucket_const_it f_end)
 {
   for (FunctionBucket_const_it f_it = f_begin; f_it != f_end;        // loop over the given fields
                                                             f_it++)
@@ -243,152 +250,13 @@ void StatisticsFile::data_field_(FunctionBucket_const_it f_begin,
     {                                                                // yes, start with the default stats... min and max
       dolfin::Function func =                                        // take a deep copy of the subfunction so the vector is accessible
         *std::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).function());
+
+      data_function_(func);
+
       dolfin::Function resfunc =                                     // take a deep copy of the subfunction so the vector is accessible
         *std::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).residualfunction());
-      if (func.value_rank()==0)                                      // scalars (no components)
-      {
-        file_ << (*func.vector()).max() << " ";
-        file_ << (*func.vector()).min() << " ";
 
-        file_ << (*resfunc.vector()).max() << " ";
-        file_ << (*resfunc.vector()).min() << " ";
-      }
-      else if (func.value_rank()==1)                                 // vectors (multiple components)
-      {
-        int components = func.value_size();
-        for (uint i = 0; i < components; i++)
-        {
-          dolfin::Function funccomp = func[i];                       // take a deep copy of the component of the subfunction
-          file_ << (*funccomp.vector()).max() << " ";                // maximum for all components
-        }
-
-        for (uint i = 0; i < components; i++)
-        {
-          dolfin::Function funccomp = func[i];                       // take a deep copy of the component of the subfunction
-          file_ << (*funccomp.vector()).min() << " ";                // minimum for all components
-        }
-
-        for (uint i = 0; i < components; i++)
-        {
-          dolfin::Function resfunccomp = resfunc[i];
-          file_ << (*resfunccomp.vector()).max() << " ";             // maximum for all components
-        }
-
-        for (uint i = 0; i < components; i++)
-        {
-          dolfin::Function resfunccomp = resfunc[i];                 // take a deep copy of the component of the subfunction
-          file_ << (*resfunccomp.vector()).min() << " ";             // minimum for all components
-        }
-      }
-      else if (func.value_rank()==2)                                 // tensor (multiple components)
-      {
-        const bool symmetric = ((*(*func.function_space()).element()).num_sub_elements() != func.value_size());
-        int dim0 = func.value_dimension(0);
-        int dim1 = func.value_dimension(1);
-        for (uint i = 0; i < dim0; i++)
-        {
-          for (uint j = 0; j < dim1; j++)
-          {
-            std::size_t k; 
-            if (symmetric) 
-            {
-              if (j >= i) 
-              {
-                k = i*dim1 + j - (i*(i+1))/2; 
-              }
-              else
-              { 
-                k = j*dim1 + i - (j*(j+1))/2; 
-              }
-            }
-            else
-            {
-              k = i*dim1 + j;
-            }
-            dolfin::Function funccomp = func[k];                     // take a deep copy of the ijth component of the subfunction
-            file_ << (*funccomp.vector()).max() << " ";              // maximum for all components
-          }
-        }
-
-        for (uint i = 0; i < dim0; i++)
-        {
-          for (uint j = 0; j < dim1; j++)
-          {
-            std::size_t k; 
-            if (symmetric) 
-            {
-              if (j >= i) 
-              {
-                k = i*dim1 + j - (i*(i+1))/2; 
-              }
-              else
-              { 
-                k = j*dim1 + i - (j*(j+1))/2; 
-              }
-            }
-            else
-            {
-              k = i*dim1 + j;
-            }
-            dolfin::Function funccomp = func[k];                     // take a deep copy of the ijth component of the subfunction
-            file_ << (*funccomp.vector()).min() << " ";              // minimum for all components
-          }
-        }
-
-        for (uint i = 0; i < dim0; i++)
-        {
-          for (uint j = 0; j < dim1; j++)
-          {
-            std::size_t k; 
-            if (symmetric) 
-            {
-              if (j >= i) 
-              {
-                k = i*dim1 + j - (i*(i+1))/2; 
-              }
-              else
-              { 
-                k = j*dim1 + i - (j*(j+1))/2; 
-              }
-            }
-            else
-            {
-              k = i*dim1 + j;
-            }
-            dolfin::Function resfunccomp = resfunc[k];               // take a deep copy of the ijth component of the subfunction
-            file_ << (*resfunccomp.vector()).max() << " ";           // maximum for all components
-          }
-        }
-
-        for (uint i = 0; i < dim0; i++)
-        {
-          for (uint j = 0; j < dim1; j++)
-          {
-            std::size_t k; 
-            if (symmetric) 
-            {
-              if (j >= i) 
-              {
-                k = i*dim1 + j - (i*(i+1))/2; 
-              }
-              else
-              { 
-                k = j*dim1 + i - (j*(j+1))/2; 
-              }
-            }
-            else
-            {
-              k = i*dim1 + j;
-            }
-            dolfin::Function resfunccomp = resfunc[k];               // take a deep copy of the ijth component of the subfunction
-            file_ << (*resfunccomp.vector()).min() << " ";           // minimum for all components
-          }
-        }
-      }
-      else                                                           // unknown rank
-      {
-        dolfin::error("In StatisticsFile::data_field_, unknown function rank.");
-      }
+      data_function_(resfunc);
 
       data_functional_((*f_it).second, 
                        (*(*f_it).second).functionals_begin(),        // wttie data for all functionals associated with this field
@@ -412,83 +280,8 @@ void StatisticsFile::data_coeff_(FunctionBucket_const_it f_begin,
       {
         dolfin::Function func =                                      // take a deep copy of the subfunction so the vector is accessible
           *std::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).function());
-        if (func.value_rank()==0)                                    // scalars (no components)
-        {
-          file_ << (*func.vector()).max() << " ";
-          file_ << (*func.vector()).min() << " ";
-        }
-        else if (func.value_rank()==1)                               // vectors (multiple components)
-        {
-          int components = func.value_size();
-          for (uint i = 0; i < components; i++)
-          {
-            dolfin::Function funccomp = func[i];                     // take a deep copy of the component of the subfunction
-            file_ << (*funccomp.vector()).max() << " ";              // maximum for all components
-          }
-          for (uint i = 0; i < components; i++)
-          {
-            dolfin::Function funccomp = func[i];                     // take a deep copy of the component of the subfunction
-            file_ << (*funccomp.vector()).min() << " ";              // minimum for all components
-          }
-        }
-        else if (func.value_rank()==2)                               // tensor (multiple components)
-        {
-          const bool symmetric = ((*(*func.function_space()).element()).num_sub_elements() != func.value_size());
-          int dim0 = func.value_dimension(0);
-          int dim1 = func.value_dimension(1);
-          for (uint i = 0; i < dim0; i++)
-          {
-            for (uint j = 0; j < dim1; j++)
-            {
-              std::size_t k; 
-              if (symmetric) 
-              {
-                if (j >= i) 
-                {
-                  k = i*dim1 + j - (i*(i+1))/2; 
-                }
-                else
-                { 
-                  k = j*dim1 + i - (j*(j+1))/2; 
-                }
-              }
-              else
-              {
-                k = i*dim1 + j;
-              }
-              dolfin::Function funccomp = func[k];                   // take a deep copy of the ijth component of the subfunction
-              file_ << (*funccomp.vector()).max() << " ";            // maximum for all components
-            }
-          }
-          for (uint i = 0; i < dim0; i++)
-          {
-            for (uint j = 0; j < dim1; j++)
-            {
-              std::size_t k; 
-              if (symmetric) 
-              {
-                if (j >= i) 
-                {
-                  k = i*dim1 + j - (i*(i+1))/2; 
-                }
-                else
-                { 
-                  k = j*dim1 + i - (j*(j+1))/2; 
-                }
-              }
-              else
-              {
-                k = i*dim1 + j;
-              }
-              dolfin::Function funccomp = func[k];                   // take a deep copy of the ijth component of the subfunction
-              file_ << (*funccomp.vector()).min() << " ";            // minimum for all components
-            }
-          }
-        }
-        else                                                         // unknown rank
-        {
-          dolfin::error("In StatisticsFile::data_coeff_, unknown function rank.");
-        }
+
+        data_function_(func);
       }
       else                                                           // no vector available
       {
@@ -496,23 +289,42 @@ void StatisticsFile::data_coeff_(FunctionBucket_const_it f_begin,
         GenericFunction_ptr func = (*(*f_it).second).function();
         std::vector< double > values;
         (*func).compute_vertex_values(values, *mesh);
+        double lmax, lmin, max, min;
         if ((*func).value_rank()==0)                                 // scalars (no components)
         {
-          file_ << *std::max_element(&values[0], &values[values.size()]) << " ";
-          file_ << *std::min_element(&values[0], &values[values.size()]) << " ";
+          lmax = *std::max_element(&values[0], &values[values.size()]);
+          max = dolfin::MPI::max(mpicomm_, lmax);
+          lmin = *std::min_element(&values[0], &values[values.size()]);
+          min = dolfin::MPI::min(mpicomm_, lmin);
+
+          if (dolfin::MPI::rank(mpicomm_)==0)
+          {
+            file_ << max << " ";
+            file_ << min << " ";
+          }
         }
         else if ((*func).value_rank()==1)                            // vectors (multiple components)
         {
           int components = (*func).value_size();
           for (uint i = 0; i < components; i++)
           {
-            file_ << *std::max_element(&values[i*(*mesh).num_vertices()], 
-                &values[(i+1)*(*mesh).num_vertices()]) << " ";// maximum for all components
+            lmax = *std::max_element(&values[i*(*mesh).num_vertices()],
+                &values[(i+1)*(*mesh).num_vertices()]);
+            max = dolfin::MPI::max(mpicomm_, lmax);
+            if (dolfin::MPI::rank(mpicomm_)==0)
+            {
+              file_ << max << " ";                                   // maximum for all components
+            }
           }
           for (uint i = 0; i < components; i++)
           {
-            file_ << *std::min_element(&values[i*(*mesh).num_vertices()], 
-                &values[(i+1)*(*mesh).num_vertices()]) << " ";// maximum for all components
+            lmin = *std::min_element(&values[i*(*mesh).num_vertices()],
+                &values[(i+1)*(*mesh).num_vertices()]);
+            min = dolfin::MPI::min(mpicomm_, lmin);
+            if (dolfin::MPI::rank(mpicomm_)==0)
+            {
+              file_ << min << " ";                                   // maximum for all components
+            }
           }
         }
         else if ((*func).value_rank()==2)                            // tensor (multiple components)
@@ -523,16 +335,26 @@ void StatisticsFile::data_coeff_(FunctionBucket_const_it f_begin,
           {
             for (uint j = 0; j < dim1; j++)
             {
-              file_ << *std::max_element(&values[(i*dim1 + j)*(*mesh).num_vertices()], 
-                  &values[(i*dim1 + j + 1)*(*mesh).num_vertices()]) << " ";// maximum for all components
+              lmax = *std::max_element(&values[(i*dim1 + j)*(*mesh).num_vertices()],
+                  &values[(i*dim1 + j + 1)*(*mesh).num_vertices()]);
+              max = dolfin::MPI::max(mpicomm_, lmax);
+              if (dolfin::MPI::rank(mpicomm_)==0)
+              {
+                file_ << max << " ";                                 // maximum for all components
+              }
             }
           }
           for (uint i = 0; i < dim0; i++)
           {
             for (uint j = 0; j < dim1; j++)
             {
-              file_ << *std::min_element(&values[(i*dim1 + j)*(*mesh).num_vertices()], 
-                  &values[(i*dim1 + j + 1)*(*mesh).num_vertices()]) << " ";// maximum for all components
+              lmin = *std::min_element(&values[(i*dim1 + j)*(*mesh).num_vertices()],
+                  &values[(i*dim1 + j + 1)*(*mesh).num_vertices()]);
+              min = dolfin::MPI::min(mpicomm_, lmin);
+              if (dolfin::MPI::rank(mpicomm_)==0)
+              {
+                file_ << min << " ";                                 // minimum for all components
+              }
             }
           }
         }
@@ -559,7 +381,10 @@ void StatisticsFile::data_functional_(FunctionBucket_ptr f_ptr,
   for (Form_const_it s_it = s_begin; s_it != s_end; s_it++)          // loop over the given functionals
   {
     const double statistic = (*f_ptr).functionalvalue(s_it);         // get the value of the functional
-    file_ << statistic << " ";                                       // write to file
+    if (dolfin::MPI::rank(mpicomm_)==0)
+    {
+      file_ << statistic << " ";                                     // write to file
+    }
   }
 }
 
