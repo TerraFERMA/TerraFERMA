@@ -109,11 +109,6 @@ void ReferencePoints::apply(dolfin::GenericMatrix* A,
                             dolfin::GenericVector* b,
                             const dolfin::GenericVector* x) const
 {
-  if (dof_.size()==0)
-  {
-    return;                                                          // nothing to do
-  }
-
   check_arguments_(A, b, x);                                         // check arguments
 
   const double spring = std::numeric_limits<double>::max()*std::numeric_limits<double>::epsilon();
@@ -241,14 +236,7 @@ void ReferencePoints::init_(const Array_double_ptr coord)
     cellid = cellids[0];
   }
 
-  if (cellid==-1)
-  {
-    if (dolfin::MPI::size(MPI_COMM_WORLD) == 1)
-    {
-      dolfin::log(dolfin::WARNING, "Failed to find cell at requested reference point coordinates.");
-    }
-  }
-  else
+  if (cellid >= 0)
   {
     const dolfin::Cell cell(mesh, cellid);
 
@@ -260,7 +248,6 @@ void ReferencePoints::init_(const Array_double_ptr coord)
     const std::vector<dolfin::la_index>& cell_dofs = dofmap.cell_dofs(cellid);
 
     std::vector<double> dist(dofmap.cell_dimension(cellid), 0.0);
-
     for (uint i = 0; i < dofmap.cell_dimension(cellid); ++i)
     {
       for (uint j = 0; j < gdim; ++j)
@@ -269,15 +256,12 @@ void ReferencePoints::init_(const Array_double_ptr coord)
       }
     }
 
-    double mindist = *std::min_element(&dist[0], &dist[dist.size()]);
-    for (uint i = 0; i < dofmap.cell_dimension(cellid); ++i)
+    const uint i = std::distance(&dist[0], std::min_element(&dist[0], &dist[dist.size()]));
+    std::pair<uint, uint> ownership_range = dofmap.ownership_range();
+    if (cell_dofs[i] >= ownership_range.first && cell_dofs[i] < ownership_range.second)
     {
-      if (std::fabs(dist[i]-mindist) < DOLFIN_EPS)
-      {
-        dof_.push_back(cell_dofs[i]);
-      }
+      dof_.push_back(cell_dofs[i]);
     }
-    
   }
 
 }
