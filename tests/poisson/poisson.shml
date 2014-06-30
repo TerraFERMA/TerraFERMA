@@ -39,6 +39,10 @@ fmin = stat["SNESPoisson"]["Field"]["min"][-1]</string_value>
 stat = parser("poisson.stat")
 fint = stat["SNESPoisson"]["Field"]["Integral"][-1]</string_value>
         </variable>
+        <variable name="nlogs">
+          <string_value type="code" lines="20" language="python">import glob
+nlogs = len(glob.glob("terraferma.log-?"))</string_value>
+        </variable>
       </variables>
     </simulation>
   </simulations>
@@ -70,6 +74,9 @@ value = 0.12498977447
 print "fint = ", value
 assert(all(abs(array(fint)-value)/value &lt; 1.e-2))</string_value>
       <comment>simple regression test</comment>
+    </test>
+    <test name="nlogs">
+      <string_value type="code" lines="20" language="python">assert(all([nlogs[i]==int(nlogs.parameters.values()[0][i]) for i in xrange(len(nlogs))]))</string_value>
     </test>
   </tests>
 </harness_options>
