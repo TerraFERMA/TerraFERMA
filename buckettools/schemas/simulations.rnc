@@ -101,6 +101,16 @@ simulation_input_file =
       }
    )
 
+simulation_number_processes = 
+   (
+      ## The base number_processes that this simulation should be run on.
+      ##
+      ## This may be scaled with the parameter process_scale but if unset defaults to 1.
+      element number_processes {
+         integer
+      }?
+   )
+
 run_input_file = 
    (
       ## The input_file for this run.
@@ -207,6 +217,12 @@ parameters =
                   empty,
                   comment
                }?
+            }?,
+            ## The factor to scale the number_processes by depending on the value of this parameter.
+            ## 
+            ## There should be the same number of integer scales as there are parameter values.
+            element process_scale {
+              integer_vector 
             }?
          }*,
          ## The number of times the simulation should be rerun.
@@ -283,6 +299,7 @@ simulation =
       element simulation {
          attribute name { xsd:string },
          simulation_input_file,
+         simulation_number_processes,
          parameters?,
          required_input?,
          required_output?,
@@ -353,6 +370,12 @@ simulation_dependency_parameters =
                   empty,
                   comment
                }?
+            }?,
+            ## The factor to scale the number_processes by depending on the value of this parameter.
+            ## 
+            ## There should be the same number of integer scales as there are parameter values.
+            element process_scale {
+              integer_vector 
             }?
          }+,
          ## The number of times the simulation should be rerun.
@@ -399,6 +422,7 @@ dependency_simulation =
       element simulation {
          attribute name { xsd:string },
          simulation_input_file,
+         simulation_number_processes,
          simulation_dependency_parameters?,
          required_input?,
          required_output?,

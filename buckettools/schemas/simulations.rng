@@ -118,6 +118,16 @@ in the required_output of one of the dependencies of this simulation.</a:documen
       <ref name="filename"/>
     </element>
   </define>
+  <define name="simulation_number_processes">
+    <optional>
+      <element name="number_processes">
+        <a:documentation>The base number_processes that this simulation should be run on.
+
+This may be scaled with the parameter process_scale but if unset defaults to 1.</a:documentation>
+        <ref name="integer"/>
+      </element>
+    </optional>
+  </define>
   <define name="run_input_file">
     <element name="input_file">
       <a:documentation>The input_file for this run.
@@ -231,6 +241,14 @@ If you are unsure about this it is best to leave this option turned off.</a:docu
               </optional>
             </element>
           </optional>
+          <optional>
+            <element name="process_scale">
+              <a:documentation>The factor to scale the number_processes by depending on the value of this parameter.
+
+There should be the same number of integer scales as there are parameter values.</a:documentation>
+              <ref name="integer_vector"/>
+            </element>
+          </optional>
         </element>
       </zeroOrMore>
       <optional>
@@ -315,6 +333,7 @@ THE VARIABLE NAME MUST BE UNIQUE ACROSS THE ENTIRE OPTIONS FILE and the python c
         <data type="string"/>
       </attribute>
       <ref name="simulation_input_file"/>
+      <ref name="simulation_number_processes"/>
       <optional>
         <ref name="parameters"/>
       </optional>
@@ -409,6 +428,14 @@ If you are unsure about this it is best to leave this option turned off.</a:docu
               </optional>
             </element>
           </optional>
+          <optional>
+            <element name="process_scale">
+              <a:documentation>The factor to scale the number_processes by depending on the value of this parameter.
+
+There should be the same number of integer scales as there are parameter values.</a:documentation>
+              <ref name="integer_vector"/>
+            </element>
+          </optional>
         </element>
       </oneOrMore>
       <optional>
@@ -469,6 +496,7 @@ e.g. perhaps a gmsh run</a:documentation>
         <data type="string"/>
       </attribute>
       <ref name="simulation_input_file"/>
+      <ref name="simulation_number_processes"/>
       <optional>
         <ref name="simulation_dependency_parameters"/>
       </optional>
