@@ -10,13 +10,24 @@
       <input_file>
         <string_value lines="1" type="filename">advection.tfml</string_value>
       </input_file>
-      <required_input>
-        <filenames name="meshxmls">
-          <python>
-            <string_value lines="20" type="code" language="python">meshxmls = ["interval"+ext for ext in [".xml", "_physical_region.xml", "_facet_region.xml"]]</string_value>
-          </python>
-        </filenames>
-      </required_input>
+      <dependencies>
+        <run name="Mesh">
+          <input_file>
+            <string_value lines="1" type="filename">interval.geo</string_value>
+          </input_file>
+          <required_output>
+            <filenames name="meshfiles">
+              <string>
+                <string_value type="filename" lines="1">interval.xml</string_value>
+              </string>
+            </filenames>
+          </required_output>
+          <commands>
+            <command name="GMsh">gmsh -1 interval.geo</command>
+            <command name="Convert">dolfin-convert interval.msh interval.xml</command>
+          </commands>
+        </run>
+      </dependencies>
       <variables>
         <variable name="lower_bound">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser

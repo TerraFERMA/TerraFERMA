@@ -4,19 +4,30 @@
     <string_value>short</string_value>
   </length>
   <owner>cwilson</owner>
-  <description>Subduction</description>
+  <description>van Keken subduction benchmark 2b</description>
   <simulations>
     <simulation name="Subduction">
       <input_file>
         <string_value lines="1" type="filename">subduction.tfml</string_value>
       </input_file>
-      <required_input>
-        <filenames name="meshfiles">
-          <python>
-            <string_value lines="20" type="code" language="python">meshfiles = ["sepran_converted_mesh"+ext for ext in [".xml", "_facet_region.xml", "_physical_region.xml"]]</string_value>
-          </python>
-        </filenames>
-      </required_input>
+      <dependencies>
+        <run name="GMsh">
+          <input_file>
+            <string_value lines="1" type="filename">subduction.geo</string_value>
+          </input_file>
+          <required_output>
+            <filenames name="mesh">
+              <string>
+                <string_value lines="1" type="filename">subduction.xml</string_value>
+              </string>
+            </filenames>
+          </required_output>
+          <commands>
+            <command name="GMsh">gmsh -2 -algo del2d subduction.geo -o subduction.msh</command>
+            <command name="Convert">dolfin-convert subduction.msh subduction.xml</command>
+          </commands>
+        </run>
+      </dependencies>
       <variables>
         <variable name="T_11_11">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -52,13 +63,13 @@ T_slab = sqrt(sum((det["Solid"]["Temperature"]["Slab"][:,-1]-273.)**2)/36.)</str
   </simulations>
   <tests>
     <test name="T_11_11">
-      <string_value lines="20" type="code" language="python">assert abs(T_11_11 - 582.0) &lt; 1.0</string_value>
+      <string_value lines="20" type="code" language="python">assert abs(T_11_11 - 583.4) &lt; 1.0</string_value>
     </test>
     <test name="T_wedge">
-      <string_value lines="20" type="code" language="python">assert abs(T_wedge - 1000.5) &lt; 1.0</string_value>
+      <string_value lines="20" type="code" language="python">assert abs(T_wedge - 1001.4) &lt; 1.0</string_value>
     </test>
     <test name="T_slab">
-      <string_value lines="20" type="code" language="python">assert abs(T_slab - 602.0) &lt; 1.0</string_value>
+      <string_value lines="20" type="code" language="python">assert abs(T_slab - 602.8) &lt; 1.0</string_value>
     </test>
   </tests>
 </harness_options>

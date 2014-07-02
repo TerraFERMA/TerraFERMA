@@ -721,7 +721,7 @@ void SpudFunctionBucket::fill_bc_component_(const std::string &optionpath,
          for (std::vector<int>::const_iterator bcid = bcids.begin(); // loop over the boundary ids
                                             bcid < bcids.end(); bcid++)
          {                                                           // create a new bc on each boundary id for this subcomponent
-           DirichletBC_ptr bc(new dolfin::DirichletBC(*subfunctionspace, *bcexp, *(*system_).facetdomains(), *bcid));
+           DirichletBC_ptr bc(new dolfin::DirichletBC(*subfunctionspace, *bcexp, *bcid));
            namebuffer.str(""); namebuffer << bcname << "::" 
                                       << *subcompid << "::" << *bcid;// assemble a name incorporating the boundary id
            register_dirichletbc(bc, namebuffer.str());               // register the bc in the function bucket
@@ -734,7 +734,7 @@ void SpudFunctionBucket::fill_bc_component_(const std::string &optionpath,
       for (std::vector<int>::const_iterator bcid = bcids.begin();    // loop over the boundary ids
                                           bcid < bcids.end(); bcid++)
       {                                                              // create a bc on each boundary id for all components
-        DirichletBC_ptr bc(new dolfin::DirichletBC(*functionspace(), *bcexp, *(*system_).facetdomains(), *bcid));
+        DirichletBC_ptr bc(new dolfin::DirichletBC(*functionspace(), *bcexp, *bcid));
         namebuffer.str(""); namebuffer << bcname << "::" << *bcid;   // assemble a name for this bc incorporating the boundary id
         register_dirichletbc(bc, namebuffer.str());                  // register the bc in the function bucket
       }

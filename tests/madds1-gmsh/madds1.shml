@@ -18,7 +18,7 @@
           <required_output>
             <filenames name="meshxmls">
               <python>
-                <string_value type="code" lines="20" language="python">meshxmls = ["ridgemesh"+ext for ext in [".xml", "_facet_region.xml", "_physical_region.xml"]]</string_value>
+                <string_value type="code" lines="20" language="python">meshxmls = ["ridgemesh"+ext for ext in [".xml"]]</string_value>
               </python>
             </filenames>
           </required_output>

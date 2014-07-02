@@ -454,9 +454,7 @@ const int Bucket::checkpoint_count() const
 //*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a dolfin mesh in the bucket data maps
 //*******************************************************************|************************************************************//
-void Bucket::register_mesh(Mesh_ptr mesh, const std::string &name,
-                           MeshFunction_size_t_ptr celldomains, 
-                           MeshFunction_size_t_ptr facetdomains)
+void Bucket::register_mesh(Mesh_ptr mesh, const std::string &name)
 {
   Mesh_it m_it = meshes_.find(name);                                 // check if a mesh with this name already exists
   if (m_it != meshes_end())
@@ -467,8 +465,6 @@ void Bucket::register_mesh(Mesh_ptr mesh, const std::string &name,
   else
   {
     meshes_[name] = mesh;                                            // if not, insert it into the meshes_ map
-    celldomains_[name] = celldomains;
-    facetdomains_[name] = facetdomains;
   }
 }
 
@@ -481,40 +477,6 @@ Mesh_ptr Bucket::fetch_mesh(const std::string &name)
   if (m_it == meshes_end())
   {
     dolfin::error("Mesh named \"%s\" does not exist in bucket.",     // if it doesn't, issue an error
-                                                    name.c_str());
-  }
-  else
-  {
-    return (*m_it).second;                                           // if it does, return a (boost shared) pointer to it
-  }
-}
-
-//*******************************************************************|************************************************************//
-// return a (boost shared) pointer to a dolfin mesh function in the bucket data maps
-//*******************************************************************|************************************************************//
-MeshFunction_size_t_ptr Bucket::fetch_celldomains(const std::string &name)
-{
-  MeshFunction_size_t_it m_it = celldomains_.find(name);             // check if this mesh function exists in the celldomains_ map
-  if (m_it == celldomains_end())
-  {
-    dolfin::error("MeshFunction celldomain named \"%s\" does not exist in bucket.",// if it doesn't, issue an error
-                                                    name.c_str());
-  }
-  else
-  {
-    return (*m_it).second;                                           // if it does, return a (boost shared) pointer to it
-  }
-}
-
-//*******************************************************************|************************************************************//
-// return a (boost shared) pointer to a dolfin mesh function in the bucket data maps
-//*******************************************************************|************************************************************//
-MeshFunction_size_t_ptr Bucket::fetch_facetdomains(const std::string &name)
-{
-  MeshFunction_size_t_it m_it = facetdomains_.find(name);            // check if this mesh function exists in the facetdomains_ map
-  if (m_it == facetdomains_end())
-  {
-    dolfin::error("MeshFunction facetdomain named \"%s\" does not exist in bucket.",// if it doesn't, issue an error
                                                     name.c_str());
   }
   else
@@ -553,70 +515,6 @@ Mesh_it Bucket::meshes_end()
 Mesh_const_it Bucket::meshes_end() const
 {
   return meshes_.end();
-}
-
-//*******************************************************************|************************************************************//
-// return an iterator to the beginning of the celldomains_ map
-//*******************************************************************|************************************************************//
-MeshFunction_size_t_it Bucket::celldomains_begin()
-{
-  return celldomains_.begin();
-}
-
-//*******************************************************************|************************************************************//
-// return a constant iterator to the beginning of the celldomains_ map
-//*******************************************************************|************************************************************//
-MeshFunction_size_t_const_it Bucket::celldomains_begin() const
-{
-  return celldomains_.begin();
-}
-
-//*******************************************************************|************************************************************//
-// return an iterator to the end of the celldomains_ map
-//*******************************************************************|************************************************************//
-MeshFunction_size_t_it Bucket::celldomains_end()
-{
-  return celldomains_.end();
-}
-
-//*******************************************************************|************************************************************//
-// return a constant iterator to the end of the celldomains_ map
-//*******************************************************************|************************************************************//
-MeshFunction_size_t_const_it Bucket::celldomains_end() const
-{
-  return celldomains_.end();
-}
-
-//*******************************************************************|************************************************************//
-// return an iterator to the beginning of the facetdomains_ map
-//*******************************************************************|************************************************************//
-MeshFunction_size_t_it Bucket::facetdomains_begin()
-{
-  return facetdomains_.begin();
-}
-
-//*******************************************************************|************************************************************//
-// return a constant iterator to the beginning of the facetdomains_ map
-//*******************************************************************|************************************************************//
-MeshFunction_size_t_const_it Bucket::facetdomains_begin() const
-{
-  return facetdomains_.begin();
-}
-
-//*******************************************************************|************************************************************//
-// return an iterator to the end of the facetdomains_ map
-//*******************************************************************|************************************************************//
-MeshFunction_size_t_it Bucket::facetdomains_end()
-{
-  return facetdomains_.end();
-}
-
-//*******************************************************************|************************************************************//
-// return a constant iterator to the end of the facetdomains_ map
-//*******************************************************************|************************************************************//
-MeshFunction_size_t_const_it Bucket::facetdomains_end() const
-{
-  return facetdomains_.end();
 }
 
 //*******************************************************************|************************************************************//

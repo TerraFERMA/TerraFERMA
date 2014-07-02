@@ -7,7 +7,7 @@
     <mesh name="Mesh">
       <source name="File">
         <file>
-          <string_value lines="1" type="filename">sepran_converted_mesh</string_value>
+          <string_value lines="1" type="filename">subduction</string_value>
         </file>
         <cell>
           <string_value>triangle</string_value>

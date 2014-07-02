@@ -192,9 +192,7 @@ void SpudBucket::copy_diagnostics(Bucket_ptr &bucket) const
 //*******************************************************************|************************************************************//
 void SpudBucket::register_mesh(Mesh_ptr mesh, 
                                const std::string &name, 
-                               const std::string &optionpath,
-                               MeshFunction_size_t_ptr celldomains, 
-                               MeshFunction_size_t_ptr facetdomains)
+                               const std::string &optionpath)
 {
   Mesh_it m_it = meshes_.find(name);                                 // check if a mesh with this name already exists
   if (m_it != meshes_end())
@@ -206,8 +204,6 @@ void SpudBucket::register_mesh(Mesh_ptr mesh,
   {
     meshes_[name]           = mesh;                                  // if not register it in the map
     mesh_optionpaths_[name] = optionpath;                            // also register its optionpath
-    celldomains_[name] = celldomains;
-    facetdomains_[name] = facetdomains;
   }
 }
 
@@ -664,8 +660,6 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
   spud_err(buffer.str(), serr);
 
   Mesh_ptr mesh;                                                     // initialize the pointer
-  MeshFunction_size_t_ptr edgeids;
-  MeshFunction_size_t_ptr cellids;
 
   if (source=="File")                                                // source is a file
   {
@@ -673,7 +667,6 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     buffer.str(""); buffer << optionpath << "/source/file";
     serr = Spud::get_option(buffer.str(), basename); 
     spud_err(buffer.str(), serr);
-
 
     std::ifstream file;                                              // dummy file stream to test if files exist
                                                                      // (better way of doing this?)
@@ -703,46 +696,6 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     }
     (*mesh).init();                                                  // initialize the mesh (maps between dimensions etc.)
 
-    filename.str(""); filename << basename << "_facet_region.xml";   // check if the edge subdomain mesh function file exists
-    file.open(filename.str().c_str(), std::ifstream::in);
-    if (file)                                                        // if it does then attach it to the dolfin MeshData structure 
-    {                                                                // using the dolfin reserved name for exterior facets
-      file.close();
-
-      edgeids.reset(new dolfin::MeshFunction<std::size_t>(*mesh, filename.str()));
-    }
-    else
-    {
-      filename.str(""); filename << basename << "_facet_region.xml.gz";// check if the edge subdomain mesh function file exists
-      file.open(filename.str().c_str(), std::ifstream::in);
-      if (file)                                                      // if it does then attach it to the dolfin MeshData structure 
-      {                                                              // using the dolfin reserved name for exterior facets
-        file.close();
-
-        edgeids.reset(new dolfin::MeshFunction<std::size_t>(*mesh, filename.str()));
-      }
-    }
-
-    filename.str(""); filename << basename << "_physical_region.xml";// check if the region subdomain mesh function file exists
-    file.open(filename.str().c_str(), std::ifstream::in);
-    if (file)                                                        // if it does then attach it to the dolfin MeshData structure 
-    {                                                                // using the dolfin reserved name for cell domains
-      file.close();
-
-      cellids.reset(new dolfin::MeshFunction<std::size_t>(*mesh, filename.str()));
-    }
-    else
-    {
-      filename.str(""); filename << basename << "_physical_region.xml.gz";// check if the region subdomain mesh function file exists
-      file.open(filename.str().c_str(), std::ifstream::in);
-      if (file)                                                        // if it does then attach it to the dolfin MeshData structure 
-      {                                                                // using the dolfin reserved name for cell domains
-        file.close();
-
-        cellids.reset(new dolfin::MeshFunction<std::size_t>(*mesh, filename.str()));
-      }
-    }
-
   }
   else if (source=="UnitInterval")                                   // source is an internally generated dolfin mesh
   {
@@ -756,9 +709,17 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     Side left(0, 0.0);
     Side right(0, 1.0);
 
-    edgeids.reset(new dolfin::MeshFunction<std::size_t>(*mesh, 0, 0));
-    left.mark(*edgeids, 1);
-    right.mark(*edgeids, 2);
+    dolfin::MeshFunction<std::size_t> edgeids(mesh, 0, 0);
+    left.mark(edgeids, 1);
+    right.mark(edgeids, 2);
+
+    std::map<std::size_t, std::size_t>& markers = 
+                                      (*mesh).domains().markers(0);
+    for (uint i = 0; i < edgeids.size(); i++)
+    {
+      markers[i] = edgeids[i];
+    }
+
   }
   else if (source=="Interval")                                       // source is an internally generated dolfin mesh
   {
@@ -782,9 +743,17 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     Side left(0, leftx);
     Side right(0, rightx);
 
-    edgeids.reset(new dolfin::MeshFunction<std::size_t>(*mesh, 0, 0));
-    left.mark(*edgeids, 1);
-    right.mark(*edgeids, 2);
+    dolfin::MeshFunction<std::size_t> edgeids(mesh, 0, 0);
+    left.mark(edgeids, 1);
+    right.mark(edgeids, 2);
+
+    std::map<std::size_t, std::size_t>& markers = 
+                                      (*mesh).domains().markers(0);
+    for (uint i = 0; i < edgeids.size(); i++)
+    {
+      markers[i] = edgeids[i];
+    }
+
   }
   else if (source=="UnitSquare")                                     // source is an internally generated dolfin mesh
   {
@@ -805,11 +774,18 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     Side bottom(1, 0.0);
     Side top(1, 1.0);
 
-    edgeids.reset(new dolfin::MeshFunction<std::size_t>(*mesh, 1, 0));
-    left.mark(*edgeids, 1);
-    right.mark(*edgeids, 2);
-    bottom.mark(*edgeids, 3);
-    top.mark(*edgeids, 4);
+    dolfin::MeshFunction<std::size_t> edgeids(mesh, 1, 0);
+    left.mark(edgeids, 1);
+    right.mark(edgeids, 2);
+    bottom.mark(edgeids, 3);
+    top.mark(edgeids, 4);
+
+    std::map<std::size_t, std::size_t>& markers = 
+                                      (*mesh).domains().markers(1);
+    for (uint i = 0; i < edgeids.size(); i++)
+    {
+      markers[i] = edgeids[i];
+    }
   }
   else if (source=="Rectangle")                                      // source is an internally generated dolfin mesh
   {
@@ -842,11 +818,18 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     Side bottom(1, lowerleft[1]);
     Side top(1, upperright[1]);
 
-    edgeids.reset(new dolfin::MeshFunction<std::size_t>(*mesh, 1, 0));
-    left.mark(*edgeids, 1);
-    right.mark(*edgeids, 2);
-    bottom.mark(*edgeids, 3);
-    top.mark(*edgeids, 4);
+    dolfin::MeshFunction<std::size_t> edgeids(mesh, 1, 0);
+    left.mark(edgeids, 1);
+    right.mark(edgeids, 2);
+    bottom.mark(edgeids, 3);
+    top.mark(edgeids, 4);
+
+    std::map<std::size_t, std::size_t>& markers = 
+                                      (*mesh).domains().markers(1);
+    for (uint i = 0; i < edgeids.size(); i++)
+    {
+      markers[i] = edgeids[i];
+    }
   }
   else if (source=="UnitCircle")                                     // source is an internally generated dolfin mesh
   {
@@ -887,13 +870,20 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     Side back(1, 0.0);
     Side front(1, 1.0);
 
-    edgeids.reset(new dolfin::MeshFunction<std::size_t>(*mesh, 2, 0));
-    left.mark(*edgeids, 1);
-    right.mark(*edgeids, 2);
-    bottom.mark(*edgeids, 3);
-    top.mark(*edgeids, 4);
-    back.mark(*edgeids, 5);
-    front.mark(*edgeids, 6);
+    dolfin::MeshFunction<std::size_t> edgeids(mesh, 2, 0);
+    left.mark(edgeids, 1);
+    right.mark(edgeids, 2);
+    bottom.mark(edgeids, 3);
+    top.mark(edgeids, 4);
+    back.mark(edgeids, 5);
+    front.mark(edgeids, 6);
+
+    std::map<std::size_t, std::size_t>& markers = 
+                                      (*mesh).domains().markers(2);
+    for (uint i = 0; i < edgeids.size(); i++)
+    {
+      markers[i] = edgeids[i];
+    }
   }
   else if (source=="Box")                                            // source is an internally generated dolfin mesh
   {
@@ -929,21 +919,27 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     Side back(1, lowerbackleft[1]);
     Side front(1, upperfrontright[1]);
 
-    edgeids.reset(new dolfin::MeshFunction<std::size_t>(*mesh, 2, 0));
-    left.mark(*edgeids, 1);
-    right.mark(*edgeids, 2);
-    bottom.mark(*edgeids, 3);
-    top.mark(*edgeids, 4);
-    back.mark(*edgeids, 5);
-    front.mark(*edgeids, 6);
+    dolfin::MeshFunction<std::size_t> edgeids(mesh, 2, 0);
+    left.mark(edgeids, 1);
+    right.mark(edgeids, 2);
+    bottom.mark(edgeids, 3);
+    top.mark(edgeids, 4);
+    back.mark(edgeids, 5);
+    front.mark(edgeids, 6);
+
+    std::map<std::size_t, std::size_t>& markers = 
+                                      (*mesh).domains().markers(2);
+    for (uint i = 0; i < edgeids.size(); i++)
+    {
+      markers[i] = edgeids[i];
+    }
   }
   else                                                               // source is unrecognised
   {
     dolfin::error("Unknown mesh source.");
   }
 
-  register_mesh(mesh, meshname, optionpath,
-                cellids, edgeids);                                   // put the new mesh in the bucket
+  register_mesh(mesh, meshname, optionpath);                         // put the new mesh in the bucket
 }
 
 //*******************************************************************|************************************************************//

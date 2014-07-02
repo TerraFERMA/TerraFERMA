@@ -152,16 +152,9 @@ namespace buckettools
     // Mesh data access
     //***************************************************************|***********************************************************//
 
-    void register_mesh(Mesh_ptr mesh, const std::string &name,
-                       MeshFunction_size_t_ptr celldomains = MeshFunction_size_t_ptr(),
-                       MeshFunction_size_t_ptr facetdomains = MeshFunction_size_t_ptr());
-                                                                     // register a mesh with the given name in the bucket
+    void register_mesh(Mesh_ptr mesh, const std::string &name);      // register a mesh with the given name in the bucket
 
     Mesh_ptr fetch_mesh(const std::string &name);                    // return a (boost shared) pointer to a mesh with the given name
-    
-    MeshFunction_size_t_ptr fetch_celldomains(const std::string &name);// return a (boost shared) pointer to a meshfunction with the given name
-
-    MeshFunction_size_t_ptr fetch_facetdomains(const std::string &name);// return a (boost shared) pointer to a meshfunction with the given name
     
     Mesh_it meshes_begin();                                          // return an iterator to the beginning of the meshes
 
@@ -170,22 +163,6 @@ namespace buckettools
     Mesh_it meshes_end();                                            // return an iterator to the end of the meshes
 
     Mesh_const_it meshes_end() const;                                // return a constant iterator to the end of the meshes
- 
-    MeshFunction_size_t_it celldomains_begin();                      // return an iterator to the beginning of the meshfunctions
-
-    MeshFunction_size_t_const_it celldomains_begin() const;          // return a constant iterator to the beginning of the meshfunctions
-
-    MeshFunction_size_t_it celldomains_end();                        // return an iterator to the end of the meshefunctions
-
-    MeshFunction_size_t_const_it celldomains_end() const;            // return a constant iterator to the end of the meshfunctions
- 
-    MeshFunction_size_t_it facetdomains_begin();                      // return an iterator to the beginning of the meshfunctions
-
-    MeshFunction_size_t_const_it facetdomains_begin() const;          // return a constant iterator to the beginning of the meshfunctions
-
-    MeshFunction_size_t_it facetdomains_end();                        // return an iterator to the end of the meshefunctions
-
-    MeshFunction_size_t_const_it facetdomains_end() const;            // return a constant iterator to the end of the meshfunctions
  
     //***************************************************************|***********************************************************//
     // System data access
@@ -360,12 +337,6 @@ namespace buckettools
     //***************************************************************|***********************************************************//
 
     std::map< std::string, Mesh_ptr > meshes_;                       // a map from mesh names to (boost shared) pointers to meshes
-
-    std::map< std::string, MeshFunction_size_t_ptr > celldomains_;   // a map from mesh names to (boost shared) pointers to
-                                                                     // meshfunctions describing the cellids
-
-    std::map< std::string, MeshFunction_size_t_ptr > facetdomains_;  // a map from mesh names to (boost shared) pointers to
-                                                                     // meshfunctions describing the facetids
 
     std::map< std::string, SystemBucket_ptr > systems_;              // a map from system names to (boost shared) pointers to systems
 
