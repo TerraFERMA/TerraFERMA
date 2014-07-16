@@ -157,7 +157,7 @@ void buckettools::parse_arguments(int argc, char** argv)
     {"petsc-info", no_argument,       0, 'p'},
     {"verbose",    optional_argument, 0, 'v'},
     {"version",    no_argument,       0, 'V'},
-    {0,            0,                 0, 0}                             // terminated with an array of zeros
+    {0,            0,                 0, 0}                          // terminated with an array of zeros
   };
   int option_index = 0;
   int verbosity;

@@ -84,7 +84,8 @@ void SpudSolverBucket::initialize()
   if (type()=="SNES")                                                // if this is a snes solver.  FIXME: switch to enum check
   {
 
-    perr = SNESCreate(PETSC_COMM_WORLD, &snes_); CHKERRV(perr);      // create the petsc snes object
+    perr = SNESCreate((*(*system_).mesh()).mpi_comm(), &snes_); 
+    CHKERRV(perr);                                                   // create the petsc snes object
 
     perr = SNESSetOptionsPrefix(snes_, prefix.str().c_str());        // set its petsc options name prefix to SystemName_SolverName
     CHKERRV(perr);
@@ -321,14 +322,17 @@ void SpudSolverBucket::initialize()
     buffer.str(""); buffer << optionpath() << "/type/monitors/view_snes";
     if (Spud::have_option(buffer.str()))
     {
-      perr = SNESView(snes_, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);// turn on snesview so we get some debugging info
+      perr = SNESView(snes_, 
+             PETSC_VIEWER_STDOUT_((*(*system_).mesh()).mpi_comm())); 
+      CHKERRV(perr);                                                 // turn on snesview so we get some debugging info
     }
 
   }
   else if (type()=="Picard")                                         // if this is a picard solver
   {
 
-    perr = KSPCreate(PETSC_COMM_WORLD, &ksp_); CHKERRV(perr);        // create a ksp object from the variable in the solverbucket
+    perr = KSPCreate((*(*system_).mesh()).mpi_comm(), &ksp_); 
+    CHKERRV(perr);                                                   // create a ksp object from the variable in the solverbucket
 
     if (Spud::have_option(optionpath()+"/type/monitors/convergence_file"))
     {
@@ -361,7 +365,9 @@ void SpudSolverBucket::initialize()
     buffer.str(""); buffer << optionpath() << "/type/linear_solver/monitors/view_ksp";
     if (Spud::have_option(buffer.str()))
     {
-      perr = KSPView(ksp_, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr); // turn on kspview so we get some debugging info
+      perr = KSPView(ksp_, 
+             PETSC_VIEWER_STDOUT_((*(*system_).mesh()).mpi_comm())); 
+      CHKERRV(perr);                                                 // turn on kspview so we get some debugging info
     }
 
   }
@@ -1025,6 +1031,19 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
                                                                      // subsets of the parent_indices vector (if associated) that
                                                                      // will themselves become the parent_indices on the next
                                                                      // recursion)
+  uint offset = 0;
+  if (parent_indices)
+  {
+    std::vector<uint> p_sizes;
+    dolfin::MPI::all_gather((*(*system_).mesh()).mpi_comm(), 
+                            (uint)(*parent_indices).size(), p_sizes);
+    uint rank = dolfin::MPI::rank((*(*system_).mesh()).mpi_comm());
+    for (uint i = 0; i < rank; i++)                                  // FIXME: Here we have assumed that dofs indices are ordered by
+    {                                                                // process number
+      offset += p_sizes[i];
+    }
+  }
+
   std::vector<uint> prev_indices;
 
   buffer.str(""); buffer << optionpath << "/fieldsplit";
@@ -1038,7 +1057,7 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
     if (i==0)
     {
       fill_is_by_field_(buffer.str(), is,                            // setup an IS for each fieldsplit
-                        indices, parent_indices,
+                        indices, offset, parent_indices,
                         NULL);
 
       prev_indices = indices;                                        // should already be sorted so don't bother doing it again
@@ -1046,7 +1065,7 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
     else
     {
       fill_is_by_field_(buffer.str(), is,                            // setup an IS for each fieldsplit
-                        indices, parent_indices,
+                        indices, offset, parent_indices,
                         &prev_indices);
 
       prev_indices.insert(prev_indices.end(), indices.begin(), indices.end());
@@ -1183,10 +1202,10 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
       IS_ptr is;
       is.reset( new IS );
       #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
-      perr = ISCreateGeneral(PETSC_COMM_WORLD, n, petscindices, 
-                                        PETSC_OWN_POINTER, &(*is));  // create the general index set based on the indices
+      perr = ISCreateGeneral((*(*system_).mesh()).mpi_comm(), n, 
+                            petscindices, PETSC_OWN_POINTER, &(*is));// create the general index set based on the indices
       #else
-      perr = ISCreateGeneral(PETSC_COMM_WORLD, n, 
+      perr = ISCreateGeneral((*(*system_).mesh()).mpi_comm(), n, 
                                                petscindices, &(*is));// create the general index set based on the indices
       #endif
       CHKERRV(perr);
@@ -1195,10 +1214,15 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
                  "/composite_type::schur/schur_preconditioner::user";
       if (Spud::have_option(buffer.str()+"/monitors/view_index_set"))
       {
-        std::string isname = prefix+"SchurPC";
-        dolfin::log(dolfin::INFO, "ISView: %s (%s)", 
-                             isname.c_str(), buffer.str().c_str());
-        perr = ISView(*is, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr); // isview?
+        if (dolfin::MPI::rank((*(*system_).mesh()).mpi_comm())==0)
+        {
+          std::string isname = prefix+"SchurPC";
+          dolfin::log(dolfin::INFO, "ISView: %s (%s)", 
+                               isname.c_str(), buffer.str().c_str());
+        }
+        perr = ISView(*is, 
+              PETSC_VIEWER_STDOUT_((*(*system_).mesh()).mpi_comm())); 
+        CHKERRV(perr);                                               // isview?
       }
 
       #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
@@ -1280,6 +1304,7 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
 //*******************************************************************|************************************************************//
 void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is, 
                                          std::vector<uint> &child_indices, 
+                                         const uint &offset,
                                          const std::vector<uint>* parent_indices,
                                          const std::vector<uint>* sibling_indices)
 {
@@ -1304,7 +1329,7 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
   else
   {
 
-    bool mixedsystem = (((*system_).fields_size())>1);
+    const bool mixedsystem = (((*system_).fields_size())>1);
 
     for (uint i = 0; i < nfields; i++)                               // loop over the fields that have been specified
     {
@@ -1355,7 +1380,7 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
   assert(n>0);
   PetscInt *indices;
   PetscMalloc(n*sizeof(PetscInt), &indices);
- 
+
   uint ind = 0;
   if(parent_indices)
   {                                                                  // we have been passed a list of parent indices... 
@@ -1376,7 +1401,7 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
           dolfin::error("IS indices are not a subset of a parent fieldsplit, shouldn't happen here.");
         }
       }
-      indices[ind] = p_ind;                                          // found the child index in the parent_indices so copy it into
+      indices[ind] = p_ind + offset;                                 // found the child index in the parent_indices so copy it into
                                                                      // the PetscInt array
       ind++;                                                         // increment the array index
       p_ind++;                                                       // indices shouldn't be repeated so increment the parent too
@@ -1398,10 +1423,11 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
   }
 
   #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
-  perr = ISCreateGeneral(PETSC_COMM_WORLD, n, indices, 
+  perr = ISCreateGeneral((*(*system_).mesh()).mpi_comm(), n, indices, 
                                     PETSC_OWN_POINTER, &is);         // create the general index set based on the indices
   #else
-  perr = ISCreateGeneral(PETSC_COMM_WORLD, n, indices, &is);         // create the general index set based on the indices
+  perr = ISCreateGeneral((*(*system_).mesh()).mpi_comm(), n, indices, 
+                                                                &is);// create the general index set based on the indices
   #endif
   CHKERRV(perr);
   if (Spud::have_option(optionpath+"/monitors/view_index_set"))
@@ -1411,9 +1437,14 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
     serr = Spud::get_option(buffer.str(), isname);
     spud_err(buffer.str(), serr);
     
-    dolfin::log(dolfin::INFO, "ISView: %s (%s)", 
-                                isname.c_str(), optionpath.c_str());
-    perr = ISView(is, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);      // isview?
+    if (dolfin::MPI::rank((*(*system_).mesh()).mpi_comm())==0)
+    {
+      dolfin::log(dolfin::INFO, "ISView: %s (%s)", 
+                                  isname.c_str(), optionpath.c_str());
+    }
+    perr = ISView(is, 
+              PETSC_VIEWER_STDOUT_((*(*system_).mesh()).mpi_comm()));
+    CHKERRV(perr);                                                   // isview?
   }
 
   #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
@@ -1526,12 +1557,12 @@ boost::unordered_set<uint> SpudSolverBucket::cell_dof_set_(const std::shared_ptr
     }
 
     std::vector<dolfin::la_index> dof_vec = (*dofmap).cell_dofs((*cell).index());
-    for (std::vector<dolfin::la_index>::const_iterator dof_it =           // loop over the cell dof
+    for (std::vector<dolfin::la_index>::const_iterator dof_it =      // loop over the cell dof
                                     dof_vec.begin(); 
                                     dof_it < dof_vec.end(); 
                                     dof_it++)
     {
-      dof_set.insert((uint) *dof_it);                                       // and insert each one into the unordered set
+      dof_set.insert((uint) *dof_it);                                // and insert each one into the unordered set
     }                                                                // (i.e. if it hasn't been added already)
   }
 
@@ -1618,7 +1649,7 @@ void SpudSolverBucket::fill_nullspace_(const std::string &optionpath, MatNullSpa
   for (uint i = 0; i<nnulls; i++)                                    // loop over the nullspaces
   {
 
-    PETScVector_ptr nullvec( new dolfin::PETScVector(MPI_COMM_WORLD, kspsize) );// create a null vector for this null space
+    PETScVector_ptr nullvec( new dolfin::PETScVector((*(*system_).mesh()).mpi_comm(), kspsize) );// create a null vector for this null space
 
     buffer.str(""); buffer << optionpath <<                          // optionpath of the nullspace
                       "/null_space[" << i << "]";
@@ -1633,8 +1664,8 @@ void SpudSolverBucket::fill_nullspace_(const std::string &optionpath, MatNullSpa
   
   }
 
-  perr = MatNullSpaceCreate(PETSC_COMM_WORLD, PETSC_FALSE, nnulls, 
-                                                      vecs, &SP); 
+  perr = MatNullSpaceCreate((*(*system_).mesh()).mpi_comm(), 
+                            PETSC_FALSE, nnulls, vecs, &SP); 
   CHKERRV(perr);
 
   buffer.str(""); buffer << optionpath << 
@@ -1642,7 +1673,8 @@ void SpudSolverBucket::fill_nullspace_(const std::string &optionpath, MatNullSpa
   if (Spud::have_option(buffer.str()))
   {
     #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
-    perr = MatNullSpaceView(SP, PETSC_VIEWER_STDOUT_SELF); 
+    perr = MatNullSpaceView(SP, 
+           PETSC_VIEWER_STDOUT_((*(*system_).mesh()).mpi_comm())); 
     CHKERRV(perr);
     #else
     dolfin::log(dolfin::WARNING, "Cannot set view_null_space monitor with PETSc < 3.2.");
@@ -1688,7 +1720,7 @@ void SpudSolverBucket::fill_bound_(const std::string &optionpath, PETScVector_pt
 
   uint size = 0;
   size = (*(*(*system_).function()).vector()).local_size();
-  bound.reset( new dolfin::PETScVector(MPI_COMM_WORLD, size) );
+  bound.reset( new dolfin::PETScVector((*(*system_).mesh()).mpi_comm(), size) );
 
   if (Spud::have_option(optionpath))
   {
@@ -1735,7 +1767,7 @@ void SpudSolverBucket::fill_values_by_field_(const std::string &optionpath, PETS
   else
   {
 
-    bool mixedsystem = (((*system_).fields_size())>1);
+    const bool mixedsystem = (((*system_).fields_size())>1);
 
     for (uint i = 0; i < nfields; i++)                               // loop over the fields that have been specified
     {
@@ -1843,7 +1875,7 @@ void SpudSolverBucket::fill_values_by_field_(const std::string &optionpath, PETS
   assert(n>0);
   PetscInt *indices;
   PetscMalloc(n*sizeof(PetscInt), &indices);
-  dolfin::PETScVector vvec(MPI_COMM_WORLD, n);                       // create a local vector of local size length 
+  dolfin::PETScVector vvec((*(*system_).mesh()).mpi_comm(), n);      // create a local vector of local size length 
  
   dolfin::la_index ind = 0;
   if(parent_indices)
@@ -1890,38 +1922,44 @@ void SpudSolverBucket::fill_values_by_field_(const std::string &optionpath, PETS
 
   IS is;
   #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
-  perr = ISCreateGeneral(PETSC_COMM_WORLD, n, indices, 
+  perr = ISCreateGeneral((*(*system_).mesh()).mpi_comm(), n, indices, 
                                     PETSC_OWN_POINTER, &is);         // create the general index set based on the indices
   #else
-  perr = ISCreateGeneral(PETSC_COMM_WORLD, n, indices, &is);         // create the general index set based on the indices
+  perr = ISCreateGeneral((*(*system_).mesh()).mpi_comm(), n, indices, 
+                                                       &is);         // create the general index set based on the indices
   PetscFree(indices);                                                // free the PetscInt array of indices
   #endif
   CHKERRV(perr);
    
   if (Spud::have_option(optionpath+"/monitors/view_index_set"))
   {
-    buffer.str(""); buffer << optionpath << "/name";                 // IS Name
-    if (Spud::have_option(buffer.str()))
+    if (dolfin::MPI::rank((*(*system_).mesh()).mpi_comm())==0)
     {
-      std::string isname;
-      serr = Spud::get_option(buffer.str(), isname);
-      spud_err(buffer.str(), serr);
-      dolfin::log(dolfin::INFO, "ISView: %s (%s)", 
-                                  isname.c_str(), optionpath.c_str());
+      buffer.str(""); buffer << optionpath << "/name";               // IS Name
+      if (Spud::have_option(buffer.str()))
+      {
+        std::string isname;
+        serr = Spud::get_option(buffer.str(), isname);
+        spud_err(buffer.str(), serr);
+        dolfin::log(dolfin::INFO, "ISView: %s (%s)", 
+                                    isname.c_str(), optionpath.c_str());
+      }
+      else
+      {
+        dolfin::log(dolfin::INFO, "ISView: (%s)", 
+                                    optionpath.c_str());
+      }
     }
-    else
-    {
-      dolfin::log(dolfin::INFO, "ISView: (%s)", 
-                                  optionpath.c_str());
-    }
-    perr = ISView(is, PETSC_VIEWER_STDOUT_SELF); CHKERRV(perr);      // isview?
+    perr = ISView(is, 
+           PETSC_VIEWER_STDOUT_((*(*system_).mesh()).mpi_comm())); 
+    CHKERRV(perr);                                                 // isview?
   }
 
   std::vector<double> background((*values).local_size(), background_value);
   (*values).set_local(background);
   background.clear();
 
-  VecScatter scatter;                                                // create a petsc scatter object from an object with the same 
+  VecScatter scatter;                                              // create a petsc scatter object from an object with the same 
   perr = VecScatterCreate(vvec.vec(), PETSC_NULL,                  // structure as the vvec vector to one with the same structure
                           (*values).vec(), is, &scatter);          // as the null vector using the IS
   CHKERRV(perr);
@@ -2335,7 +2373,7 @@ void SpudSolverBucket::restrict_is_indices_(std::vector<uint> &indices,
       {                                                              // a sibling index to ignore... give a warning
         overlap = true;
       }
-      c_ind++;                                                       // indices shouldn't be repeated so incredment the child too
+      c_ind++;                                                       // indices shouldn't be repeated so increment the child too
     }
     for (uint i = c_ind; i < c_size; i++)
     {
