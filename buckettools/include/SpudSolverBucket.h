@@ -140,28 +140,6 @@ namespace buckettools
                          const std::string prefix, 
                          const std::vector<uint>* parent_indices);
 
-    void fill_is_by_field_(const std::string &optionpath, IS &is,    // set up a petsc index set
-                           std::vector<uint> &child_indices,
-                           const uint &offset,
-                           const std::vector<uint>* parent_indices,
-                           const std::vector<uint>* sibling_indices);
-
-    boost::unordered_set<uint> field_dof_set_(const std::string &optionpath,
-                                              const FunctionSpace_ptr functionspace,
-                                              const std::vector<int>* components,
-                                              const std::vector<int>* region_ids,
-                                              const std::vector<int>* boundary_ids,
-                                              const uint parent_component=0,
-                                              uint rank=0);          // set up a dof set based on a field
-
-    boost::unordered_set<uint> cell_dof_set_(const std::shared_ptr<const dolfin::GenericDofMap> dofmap,
-                                             const std::vector<int>* region_ids);
-                                                                     // set up a dof set over cells
-
-    boost::unordered_set<uint> facet_dof_set_(const std::shared_ptr<const dolfin::GenericDofMap> dofmap,
-                                              const std::vector<int>* boundary_ids);
-                                                                     // set up a dof set over facets
-
     void fill_nullspace_(const std::string &optionpath, 
                          MatNullSpace &SP,
                          const std::vector<uint>* parent_indices);   // fill a petsc null space object
@@ -197,6 +175,17 @@ namespace buckettools
                                                      Expression_ptr value_exp, const double *value_const,
                                                      const uint &exp_index);// set up a map describing e.g. the  null space values over a boundary
 
+    void get_is_options_(const std::string &optionpath,              // get the IS options for all fields named (in the options dictionary)
+                         std::vector<std::string> &field_names,
+                         std::vector<std::vector<int>* > &field_components,
+                         std::vector<std::vector<int>* > &field_region_ids,
+                         std::vector<std::vector<int>* > &field_boundary_ids);
+
+    void clean_is_options_(std::vector<std::string> &field_names,    // clean up the IS options (basically call destroy below)
+                           std::vector<std::vector<int>* > &field_components,
+                           std::vector<std::vector<int>* > &field_region_ids,
+                           std::vector<std::vector<int>* > &field_boundary_ids);
+
     void is_by_field_restrictions_(const std::string &optionpath,
                                    std::vector<int>* &components,
                                    std::vector<int>* &region_ids,
@@ -207,10 +196,6 @@ namespace buckettools
     void destroy_is_field_restrictions_(std::vector<int>* &components,// destroy the objects describing any restrictions on an IS by field
                                         std::vector<int>* &region_ids,
                                         std::vector<int>* &boundary_ids);
-
-    void restrict_is_indices_(std::vector<uint> &indices,            // restrict the indices describing an IS based on the parent,
-                              const std::vector<uint>* parent_indices,// sibling and parallel ownership
-                              const std::vector<uint>* sibling_indices);
 
     void initialize_tensors_();                                      // fill the tensor data structures of the solver bucket
 
