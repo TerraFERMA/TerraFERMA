@@ -1362,8 +1362,8 @@ void SpudSolverBucket::get_is_options_(const std::string &optionpath,
     spud_err(buffer.str(), serr);
       
     FunctionBucket_ptr field = (*system_).fetch_field(field_names[i]);
-    const std::string fieldrank = (*field).rank();                   // field rank
-    const int fieldsize = (*field).size();                           // field size
+    const std::size_t fieldrank = (*field).rank();                   // field rank
+    const std::size_t fieldsize = (*field).size();                   // field size
 
     buffer.str(""); buffer << optionpath << "/field[" << i << "]";
     is_by_field_restrictions_(buffer.str(),                          // get any restrictions on the IS
@@ -1553,8 +1553,8 @@ void SpudSolverBucket::fill_values_by_field_(const std::string &optionpath, PETS
       
       FunctionBucket_ptr field = (*system_).fetch_field(fieldname);  // using the name, get the
       const int fieldindex = (*field).index();                       // field index
-      const std::string fieldrank = (*field).rank();                 // field rank
-      const int fieldsize = (*field).size();                         // and field size
+      const std::size_t fieldrank = (*field).rank();                 // field rank
+      const std::size_t fieldsize = (*field).size();                 // and field size
 
       FunctionSpace_ptr functionspace;                               // grab the functionspace
       if (mixedsystem)
@@ -1584,11 +1584,11 @@ void SpudSolverBucket::fill_values_by_field_(const std::string &optionpath, PETS
         serr = Spud::get_option(buffer.str(), pyfunction);
         spud_err(buffer.str(), serr);
 
-        if (fieldrank=="Scalar")
+        if (fieldrank==0)
         {
           value_exp.reset( new PythonExpression(pyfunction) );
         }
-        else if (fieldrank=="Vector")
+        else if (fieldrank==1)
         {
           int size = fieldsize;
           if (components)
@@ -2013,8 +2013,8 @@ void SpudSolverBucket::is_by_field_restrictions_(const std::string &optionpath,
                                                  std::vector<int>* &components,
                                                  std::vector<int>* &region_ids,
                                                  std::vector<int>* &boundary_ids,
-                                                 const std::string &fieldrank,
-                                                 const int &fieldsize)
+                                                 const std::size_t &fieldrank,
+                                                 const std::size_t &fieldsize)
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
@@ -2026,11 +2026,11 @@ void SpudSolverBucket::is_by_field_restrictions_(const std::string &optionpath,
     serr = Spud::get_option(buffer.str(), *components);            // get the components
     spud_err(buffer.str(), serr);
 
-    if(fieldrank=="Scalar")
+    if(fieldrank==0)
     {
       dolfin::error("Requested null space components of a scalar field.");
     }
-    else if(fieldrank=="Vector")
+    else if(fieldrank==1)
     {
       std::vector<int>::iterator max_comp_it =                  
            std::max_element((*components).begin(), (*components).end()); // check the maximum requested component exists

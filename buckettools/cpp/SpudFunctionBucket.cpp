@@ -400,13 +400,16 @@ void SpudFunctionBucket::fill_base_(const uint &index)
   serr = Spud::get_option(buffer.str(), type_);                      // (as string)
   spud_err(buffer.str(), serr);
 
+  std::string strrank;
   buffer.str(""); buffer << optionpath() << "/type/rank/name";       // field or coefficient rank (as string)
-  serr = Spud::get_option(buffer.str(), rank_); 
+  serr = Spud::get_option(buffer.str(), strrank); 
   spud_err(buffer.str(), serr);
 
-  if (rank_=="Vector")
-  {
-    int size_int;
+  shape_.resize(0);                                                  // start by assuming scalar
+
+  if (strrank=="Vector")                                             // if it's a vector we find the shape
+  {                                                                  // 2 ways depending on if it's a constant
+    int size_int;                                                    // or an expression
     if (type_=="Constant")
     {
       buffer.str(""); buffer << optionpath() 
@@ -424,20 +427,26 @@ void SpudFunctionBucket::fill_base_(const uint &index)
       spud_err(buffer.str(), serr);
 
       buffer.str(""); buffer << optionpath() 
-                                      << "/type/rank/value/constant";
-      if (Spud::have_option(buffer.str()))
+                                      << "/type/rank/value";
+      int nvalues = Spud::option_count(buffer.str());
+      for (uint i = 0; i < nvalues; i++)
       {
-        std::vector< int > constant_shape;
-        serr = Spud::get_option_shape(buffer.str(), constant_shape);
-        spud_err(buffer.str(), serr);
-        assert(size_int==constant_shape[0]);
+        buffer.str(""); buffer << optionpath() 
+                                        << "/type/rank/value[" << i << "]/constant";
+        if (Spud::have_option(buffer.str()))
+        {
+          std::vector< int > constant_shape;
+          serr = Spud::get_option_shape(buffer.str(), constant_shape);
+          spud_err(buffer.str(), serr);
+          assert(size_int==constant_shape[0]);                       // just checking!
+        }
       }
     }
     shape_.resize(1);
     shape_[0] = size_int;
   }
 
-  if (rank_=="Tensor")
+  if (strrank=="Tensor")
   {
     std::vector< int > shape_int;
     if (type_=="Constant")
@@ -456,13 +465,19 @@ void SpudFunctionBucket::fill_base_(const uint &index)
       spud_err(buffer.str(), serr);
 
       buffer.str(""); buffer << optionpath() 
-                                      << "/type/rank/value/constant";
-      if (Spud::have_option(buffer.str()))
+                                      << "/type/rank/value";
+      int nvalues = Spud::option_count(buffer.str());
+      for (uint i = 0; i < nvalues; i++)
       {
-        std::vector< int > constant_shape;
-        serr = Spud::get_option_shape(buffer.str(), constant_shape);
-        spud_err(buffer.str(), serr);
-        assert((shape_int[0]==constant_shape[0])&&(shape_int[1]==constant_shape[1]));
+        buffer.str(""); buffer << optionpath() 
+                                        << "/type/rank/value[" << i << "]/constant";
+        if (Spud::have_option(buffer.str()))
+        {
+          std::vector< int > constant_shape;
+          serr = Spud::get_option_shape(buffer.str(), constant_shape);
+          spud_err(buffer.str(), serr);
+          assert((shape_int[0]==constant_shape[0])&&(shape_int[1]==constant_shape[1]));// just checking!
+        }
       }
     }
     shape_.resize(2);

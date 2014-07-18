@@ -1110,8 +1110,6 @@ void SystemBucket::fill_is_by_field(const std::vector<std::string> &field_names,
       
       FunctionBucket_ptr field = fetch_field(fieldname);             // using the name, get the
       const int fieldindex = (*field).index();                       // field index
-      const std::string fieldrank = (*field).rank();                 // field rank
-      const int fieldsize = (*field).size();                         // field size
 
       FunctionSpace_ptr functionspace;
       if (mixedsystem)
