@@ -124,6 +124,8 @@ namespace buckettools
     const std::vector< std::size_t > shape() const                   // return the shape of the function
     { return shape_; }
 
+    const bool symmetric() const;                                    // return if this is a symmetric tensor field (false otherwise)
+
     SystemBucket* system()                                           // return a pointer to the parent system
     { return system_; }
 
@@ -385,7 +387,9 @@ namespace buckettools
 
     std::string change_normtype_;                                    // norm type to evaluate the change in
 
-    double_ptr lower_cap_, upper_cap_;                               // caps on a field
+    std::vector<double_ptr> lower_cap_, upper_cap_;                  // caps on a field
+
+    std::vector<IS> component_is_;                                   // IS for components (into system vector!)
 
     //***************************************************************|***********************************************************//
     // Pointers data
@@ -409,6 +413,12 @@ namespace buckettools
     
     std::map< int, DirichletBC_ptr > ordereddirichletbcs_;           // map from int to (boost shared) pointers to dirichlet bcs
 
+    //***************************************************************|***********************************************************//
+    // Filling data
+    //***************************************************************|***********************************************************//
+
+    void fill_is_();                                                 // fill the index sets for this function's components
+ 
     //***************************************************************|***********************************************************//
     // Output functions (continued)
     //***************************************************************|***********************************************************//

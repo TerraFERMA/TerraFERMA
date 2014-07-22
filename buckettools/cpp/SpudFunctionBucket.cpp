@@ -74,6 +74,8 @@ void SpudFunctionBucket::fill_field(const uint &index)
   fill_functionals_();                                               // fill in data about the functionals (doesn't attach
                                                                      // coefficients)
 
+  fill_is_();                                                        // fill information about the component index sets
+
   if(include_in_visualization())
   {
                                                                      // allocate a pvd file (field specific so could be moved)
@@ -631,31 +633,21 @@ void SpudFunctionBucket::allocate_field_()
                             (*(*system_).bucket()).start_time_ptr());// allocate the expression
   }
 
-  buffer.str(""); buffer << optionpath() 
-                   << "/type/rank/cap_values";
-  if(Spud::have_option(buffer.str()))
+  lower_cap_.resize(size());
+  upper_cap_.resize(size());
+  buffer.str(""); buffer << optionpath()                             // find out how many value caps there are
+                                << "/type/rank/value_cap";
+  int ncaps = Spud::option_count(buffer.str());
+  if (ncaps > 0)                                                     // if we have any...
   {
-    buffer.str(""); buffer << optionpath() 
-                     << "/type/rank/cap_values/upper_cap";
-    if(Spud::have_option(buffer.str()))
+    for (uint i = 0; i < ncaps; i++)                                 // loop over the caps
     {
-      upper_cap_.reset( new double );
-      serr = Spud::get_option(buffer.str(), *upper_cap_);
-      spud_err(buffer.str(), serr);
+      buffer.str(""); buffer << optionpath() 
+                    << "/type/rank/value_cap[" << i << "]";
+      fill_cap_(buffer.str());                                       // and fill in details about the cap
     }
-    
-    buffer.str(""); buffer << optionpath() 
-                     << "/type/rank/cap_values/lower_cap";
-    if(Spud::have_option(buffer.str()))
-    {
-      lower_cap_.reset( new double );
-      serr = Spud::get_option(buffer.str(), *lower_cap_);
-      spud_err(buffer.str(), serr);
-    }
-
   }
-  
-
+    
 }
 
 //*******************************************************************|************************************************************//
@@ -805,6 +797,83 @@ void SpudFunctionBucket::fill_point_(const std::string &optionpath)
   {
     ReferencePoints_ptr point(new ReferencePoints(coord, functionspace(), pointname));
     register_point(point, pointname);                                // register the point in the function bucket
+  }
+}
+
+//*******************************************************************|************************************************************//
+// fill the details of a value cap assuming the buckettools schema
+//*******************************************************************|************************************************************//
+void SpudFunctionBucket::fill_cap_(const std::string &optionpath)
+{
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud error code
+
+  double_ptr upper_cap;
+  buffer.str(""); buffer << optionpath << "/upper_cap";
+  if(Spud::have_option(buffer.str()))
+  {
+    upper_cap.reset( new double );
+    serr = Spud::get_option(buffer.str(), *upper_cap);
+    spud_err(buffer.str(), serr);
+  }
+  
+  double_ptr lower_cap;
+  buffer.str(""); buffer << optionpath << "/lower_cap";
+  if(Spud::have_option(buffer.str()))
+  {
+    lower_cap.reset( new double );
+    serr = Spud::get_option(buffer.str(), *lower_cap);
+    spud_err(buffer.str(), serr);
+  }
+  
+  std::vector<int> subcompids;
+  buffer.str(""); buffer << optionpath 
+                         << "/sub_components/components";            // how many subcomponents exist?
+  if (Spud::have_option(buffer.str()))
+  {                                                                  // FIXME: tensorial components assumed broken!
+    serr = Spud::get_option(buffer.str(), subcompids);               // get a list of the subcomponents 
+    spud_err(buffer.str(), serr);
+  }
+  else
+  {
+    subcompids.resize(size());
+    std::iota(subcompids.begin(), subcompids.end(), 0);
+  }
+    
+  for (std::vector<int>::const_iterator subcompid =                // loop over those subcomponents
+                                        subcompids.begin(); 
+                    subcompid < subcompids.end(); subcompid++)
+  {
+    assert(*subcompid<size());
+
+    if (upper_cap)
+    {
+      if (upper_cap_[*subcompid])
+      {
+        dolfin::log(dolfin::INFO, "WARNING: Multiple upper caps applied to %s::%s (component %d).  Taking minimum.",
+                                  (*system_).name().c_str(), name().c_str(), *subcompid);
+        *upper_cap_[*subcompid] = std::min(*upper_cap_[*subcompid], *upper_cap);
+      }
+      else
+      {
+        upper_cap_[*subcompid] = upper_cap;
+      }
+    }
+
+    if (lower_cap)
+    {
+      if (lower_cap_[*subcompid])
+      {
+        dolfin::log(dolfin::INFO, "WARNING: Multiple lower caps applied to %s::%s (component %d).  Taking maximum.",
+                                  (*system_).name().c_str(), name().c_str(), *subcompid);
+        *lower_cap_[*subcompid] = std::max(*lower_cap_[*subcompid], *lower_cap);
+      }
+      else
+      {
+        lower_cap_[*subcompid] = lower_cap;
+      }
+    }
+     
   }
 }
 

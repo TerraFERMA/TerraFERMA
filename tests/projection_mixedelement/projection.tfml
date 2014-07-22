@@ -151,6 +151,15 @@
               <real_value shape="2" dim1="dim" rank="1">0.0 0.0</real_value>
             </constant>
           </initial_condition>
+          <value_cap name="Cap">
+            <upper_cap>
+              <real_value rank="0">5000.0</real_value>
+            </upper_cap>
+            <lower_cap>
+              <real_value rank="0">4000.0</real_value>
+            </lower_cap>
+            <sub_components name="All"/>
+          </value_cap>
         </rank>
       </type>
       <diagnostics>
@@ -239,7 +248,7 @@
         <rank name="Vector" rank="1">
           <value type="value" name="WholeMesh">
             <constant name="dim">
-              <real_value shape="2" dim1="dim" rank="1">4000.0 5000.0</real_value>
+              <real_value shape="2" dim1="dim" rank="1">3000.0 6000.0</real_value>
             </constant>
           </value>
         </rank>

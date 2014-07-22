@@ -24,6 +24,7 @@
 #include "SystemBucket.h"
 #include "Bucket.h"
 #include "BucketDolfinBase.h"
+#include "DolfinPETScBase.h"
 #include <dolfin.h>
 #include <string>
 
@@ -336,6 +337,19 @@ const std::size_t FunctionBucket::size() const
 }
 
 //*******************************************************************|************************************************************//
+// return if the function is symmetric or not (only true for fields)
+//*******************************************************************|************************************************************//
+const bool FunctionBucket::symmetric() const
+{
+  bool symmetric = false;
+  if (functionspace_ && rank()==2)
+  {
+    symmetric = (*(*functionspace_).element()).num_sub_elements() != size();
+  }
+  return symmetric;
+}
+
+//*******************************************************************|************************************************************//
 // return the change in this function over a timestep (only valid for fields and only valid after system changefunction has been
 // updated)
 //*******************************************************************|************************************************************//
@@ -501,33 +515,58 @@ void FunctionBucket::update_nonlinear()
 //*******************************************************************|************************************************************//
 void FunctionBucket::cap_values()
 {
-  if (lower_cap_ || upper_cap_)
+  const std::size_t lsize = size();
+
+  bool cap = false;
+  for(uint i = 0; i < lsize; i++)
   {
-
-    std::pair<uint, uint> ownership_range =                          // the parallel ownership range of the system functionspace
-                      (*(*functionspace()).dofmap()).ownership_range();
-    for (uint i = ownership_range.first; i < ownership_range.second; i++)
+    if (upper_cap_[i] || lower_cap_[i])
     {
-      if(upper_cap_)
-      {
-        if ((*(*(*system()).function()).vector())[i] > *upper_cap_)
-        {
-          (*(*(*system()).function()).vector()).setitem(i, *upper_cap_);
-        }
-      }
-
-      if(lower_cap_)
-      {
-        if ((*(*(*system()).function()).vector())[i] < *lower_cap_)
-        {
-          (*(*(*system()).function()).vector()).setitem(i, *lower_cap_);
-        }
-      }
-
-      (*(*(*system()).function()).vector()).apply("insert");
+      cap = true;
     }
- 
   }
+
+  if (!cap)
+  {
+    return;
+  }
+
+  PetscErrorCode perr;                                               // petsc error code
+  GenericVector_ptr sysvec = (*(*system()).function()).vector();
+
+  for (uint i = 0; i < lsize; i++)
+  {
+    PetscInt np;
+    const PetscInt *pindices;
+    perr = ISGetLocalSize(component_is_[i], &np);
+    CHKERRV(perr);
+    perr = ISGetIndices(component_is_[i], &pindices);
+    CHKERRV(perr);
+
+    for (uint j = 0; j < np; j++)
+    {
+      if (upper_cap_[i])
+      {
+        if ((*sysvec)[pindices[j]] > *upper_cap_[i])
+        {
+          (*sysvec).setitem(pindices[j], *upper_cap_[i]);
+        }
+      }
+
+      if (lower_cap_[i])
+      {
+        if ((*sysvec)[pindices[j]] < *lower_cap_[i])
+        {
+          (*sysvec).setitem(pindices[j], *lower_cap_[i]);
+        }
+      }
+    }
+
+    perr = ISRestoreIndices(component_is_[i], &pindices);
+    CHKERRV(perr);
+  }
+
+  (*sysvec).apply("insert");
 }
 
 //*******************************************************************|************************************************************//
@@ -1023,6 +1062,24 @@ const std::string FunctionBucket::functionals_str(int indent) const
     s << indentation << "Functional " << (*f_it).first  << std::endl;
   }
   return s.str();
+}
+
+//*******************************************************************|************************************************************//
+// fill the component is's
+//*******************************************************************|************************************************************//
+void FunctionBucket::fill_is_()
+{
+  assert(functiontype_ == FUNCTIONBUCKET_FIELD);
+
+  component_is_.resize(size());
+  for (int i = 0; i < size(); i++)
+  {
+    std::vector<uint> indices = functionspace_dofs(functionspace(), i);
+    restrict_is_indices(indices, functionspace());
+    component_is_[i] = convert_vector_to_is((*(*system_).mesh()).mpi_comm(), 
+                                            indices);
+  }
+  
 }
 
 //*******************************************************************|************************************************************//

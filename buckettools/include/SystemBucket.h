@@ -95,18 +95,6 @@ namespace buckettools
 
     void initialize_diagnostics() const;                             // initialize any diagnostic output from this system
 
-    void fill_is_by_field(const std::vector<std::string> &field_names,// fill an IS for this system based on the options provided
-                          const std::vector<std::vector<int>* > &field_components,
-                          const std::vector<std::vector<int>* > &field_region_ids,
-                          const std::vector<std::vector<int>* > &field_boundary_ids,
-                          IS &is, std::vector<uint> &child_indices, 
-                          const uint &offset, const std::vector<uint>* parent_indices,
-                          const std::vector<uint>* sibling_indices);
-
-    void restrict_is_indices(std::vector<uint> &indices,             // restrict the indices describing an IS based on the parent,
-                             const std::vector<uint>* parent_indices,// sibling and parallel ownership
-                             const std::vector<uint>* sibling_indices);
-
     //***************************************************************|***********************************************************//
     // Base data access
     //***************************************************************|***********************************************************//
@@ -372,21 +360,6 @@ namespace buckettools
     void apply_dirichletbc_();                                       // apply the Dirichlet bcs to the system function
 
     void apply_referencepoints_();                                   // apply the reference points to the system function
-
-    boost::unordered_set<uint> field_dof_set_(const FunctionSpace_ptr functionspace,
-                                              const std::vector<int>* components,
-                                              const std::vector<int>* region_ids,
-                                              const std::vector<int>* boundary_ids,
-                                              const uint parent_component=0,
-                                              uint rank=0);          // set up a dof set based on a field
-
-    boost::unordered_set<uint> cell_dof_set_(const std::shared_ptr<const dolfin::GenericDofMap> dofmap,
-                                             const std::vector<int>* region_ids);
-                                                                     // set up a dof set over cells
-
-    boost::unordered_set<uint> facet_dof_set_(const std::shared_ptr<const dolfin::GenericDofMap> dofmap,
-                                              const std::vector<int>* boundary_ids);
-                                                                     // set up a dof set over facets
 
     //***************************************************************|***********************************************************//
     // Base data

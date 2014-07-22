@@ -100,19 +100,10 @@ namespace buckettools
                        const std::string &type, 
                        const std::string &value);
     
-    void tag_(const std::string &name,                               // write a header tag for a temporal value that does not belong
-              const std::string &statistic)                          // to a system or have components
-    { tag_(name, statistic, "", 0); }
-
-    void tag_(const std::string &name,                               // write a header tag for a temporal value that does not have
-              const std::string &statistic,                          // components
-              const std::string &system)
-    { tag_(name, statistic, system, 0); }
-    
-    void tag_(const std::string &name,                               // write a header tag for a temporal value (most generic)
+    void tag_(const std::string &name,                               // write a header tag for a temporal value
               const std::string &statistic,
-              const std::string &system,
-              const uint &components);
+              const std::string &system="",
+              const uint &components=0);
 
     //***************************************************************|***********************************************************//
     // Data writing functions
@@ -120,11 +111,8 @@ namespace buckettools
 
     void data_timestep_();                                           // write the data for timestepping for a dynamic simulation
 
-    void data_function_(dolfin::Function &func)                      // write generic data for a function (field or coefficient function)
-    { data_function_(func, false); }
-
-    void data_function_(dolfin::Function &func, 
-                        const bool &include_norms);
+    void data_function_(dolfin::Function &func,                      // write generic data for a function (field or coefficient function) 
+                        const bool &include_norms=false);
     
   };
   

@@ -144,7 +144,7 @@ scalar_field_function_options =
     initial_condition_scalar+,
     boundary_condition_scalar*,
     reference_point_scalar?,
-    field_manipulation_options
+    value_cap_scalar?
   )
 
 vector_field_function_options =
@@ -154,7 +154,7 @@ vector_field_function_options =
     initial_condition_vector+,
     boundary_condition_vector*,
     reference_point_tensor*,
-    field_manipulation_options
+    value_cap_tensor*
   )
 
 tensor_field_function_options =
@@ -164,13 +164,13 @@ tensor_field_function_options =
     initial_condition_tensor+,
     boundary_condition_tensor*,
     reference_point_tensor*,
-    field_manipulation_options
+    value_cap_tensor*
   )
 
 field_manipulation_options = 
   (
     ## Cap the values of the field after every solve
-    element cap_values {
+    element value_cap {
       ## Do not let the maximum value exceed this cap
       element upper_cap {
         real
@@ -487,11 +487,6 @@ reference_point_scalar =
       ## The coordinates of the reference point.  The node nearest these coordinates will be used.
       element coordinates {
         real_dim_vector
-      },
-      ## There are no sub components to a scalar so this is just a dummy tree level for consistency with a vector function.
-      element sub_components {
-        attribute name {"All"},
-        empty
       }
     }
   )
@@ -544,6 +539,80 @@ reference_point_tensor =
       )
     }
   )
+
+value_cap_scalar = 
+  (
+    ## Cap the values of the field after every solve
+    element value_cap {
+      attribute name { "Cap" },
+      ## Do not let the maximum value exceed this cap
+      element upper_cap {
+        real
+      }?,
+      ## Do not let the minimum value fall below this cap
+      element lower_cap {
+        real
+      }?
+    }
+  )
+
+value_cap_tensor = 
+  (
+    ## Cap the values of the field after every solve
+    element value_cap {
+      attribute name { "Cap" },
+      ## Do not let the maximum value exceed this cap
+      element upper_cap {
+        real
+      }?,
+      ## Do not let the minimum value fall below this cap
+      element lower_cap {
+        real
+      }?,
+      (
+        ## Cap all the vector/tensor components.
+        element sub_components {
+          attribute name {"All"},
+          empty
+        }|
+        ## Cap a subset of the vector/tensor components.
+        element sub_components {
+          attribute name { "Subset" },
+          ## A list of the vector/tensor components to which this reference point applies (indexes from 0 by row first for tensors).
+          element components {
+            integer_vector
+          }
+        }
+      )
+    }|
+    element value_cap {
+      attribute name {xsd:string },
+      ## Do not let the maximum value exceed this cap
+      element upper_cap {
+        real
+      }?,
+      ## Do not let the minimum value fall below this cap
+      element lower_cap {
+        real
+      }?,
+      (
+        ## Cap all the vector/tensor components.
+        element sub_components {
+          attribute name {"All"},
+          empty
+        }|
+        ## Cap a subset of the vector/tensor components.
+        element sub_components {
+          attribute name { "Subset" },
+          ## A list of the vector/tensor components to which this reference point applies (indexes from 0 by row first for tensors).
+          element components {
+            integer_vector
+          }
+        }
+      )
+    }
+  )
+
 
 prescribed_constant_scalar = 
   (

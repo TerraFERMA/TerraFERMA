@@ -136,6 +136,12 @@ namespace buckettools
                          const std::string prefix, 
                          const std::vector<uint>* parent_indices);
 
+    void fill_is_by_field_(const std::string &optionpath, IS &is,    // set up a petsc index set
+                           std::vector<uint> &child_indices,
+                           const uint &offset,
+                           const std::vector<uint>* parent_indices,
+                           const std::vector<uint>* sibling_indices);
+
     void fill_pc_fieldsplit_(const std::string &optionpath, PC &pc,  // fill the information about a fieldsplit pc
                          const std::string prefix, 
                          const std::vector<uint>* parent_indices);

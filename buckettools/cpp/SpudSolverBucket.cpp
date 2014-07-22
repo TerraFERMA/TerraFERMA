@@ -32,6 +32,7 @@
 #include "petscsnes.h"
 #include "ConvergenceFile.h"
 #include "KSPConvergenceFile.h"
+#include "DolfinPETScBase.h"
 #include <boost/algorithm/string/predicate.hpp>
 
 using namespace buckettools;
@@ -1052,67 +1053,36 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
   {
     buffer.str(""); buffer << optionpath << 
                                         "/fieldsplit[" << i << "]";
-
-    std::vector<std::string> field_names;
-    std::vector<std::vector<int>* > field_components;
-    std::vector<std::vector<int>* > field_region_ids;
-    std::vector<std::vector<int>* > field_boundary_ids;
-    get_is_options_(buffer.str(), field_names,
-                    field_components, field_region_ids,
-                    field_boundary_ids);
-
     std::vector<uint> indices;
     IS is;
     if (i==0)
     {
-      (*system_).fill_is_by_field(field_names, field_components,     // setup an IS for each fieldsplit
-                                  field_region_ids, 
-                                  field_boundary_ids, 
-                                  is, indices, 
-                                  offset, parent_indices, 
-                                  NULL);
+      fill_is_by_field_(buffer.str(),                                // setup an IS for each fieldsplit
+                        is, indices, 
+                        offset, parent_indices, 
+                        NULL);
 
       prev_indices = indices;                                        // should already be sorted so don't bother doing it again
     }
     else
     {
-      (*system_).fill_is_by_field(field_names, field_components,
-                                  field_region_ids, 
-                                  field_boundary_ids, 
-                                  is, indices, 
-                                  offset, parent_indices,
-                                  &prev_indices);
+      fill_is_by_field_(buffer.str(),
+                        is, indices, 
+                        offset, parent_indices,
+                        &prev_indices);
 
       prev_indices.insert(prev_indices.end(), indices.begin(), indices.end());
       std::sort(prev_indices.begin(), prev_indices.end());           // sort the vector of prev_indices
     }
 
-    clean_is_options_(field_names, field_components, 
-                      field_region_ids, field_boundary_ids);
-
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
     buffer.str(""); buffer << optionpath << 
                                         "/fieldsplit[" 
                                          << i << "]/name";
     std::string fsname;
     serr = Spud::get_option(buffer.str(), fsname);
     spud_err(buffer.str(), serr);
-    
-    buffer.str(""); buffer << optionpath << 
-                                         "/fieldsplit[" << i <<
-                                         "]/monitors/view_index_set";
-    if (Spud::have_option(buffer.str()))
-    {
-      if (dolfin::MPI::rank((*(*system_).mesh()).mpi_comm())==0)
-      {
-        dolfin::log(dolfin::INFO, "ISView: %s (%s)", 
-                                 fsname.c_str(), optionpath.c_str());
-      }
-      perr = ISView(is, 
-              PETSC_VIEWER_STDOUT_((*(*system_).mesh()).mpi_comm()));
-      CHKERRV(perr);                                                 // isview?
-    }
 
-    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
     buffer.str(""); buffer << prefix << fsname;
     perr = PCFieldSplitSetIS(pc, buffer.str().c_str(), is);          // set the fs using that IS
     CHKERRV(perr);
@@ -1330,65 +1300,108 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
 }
 
 //*******************************************************************|************************************************************//
-// using the optionpath get the is options for all the fields named
+// Fill a petsc IS object from fields
+// IS's may be set up by field name, components of the field, regions of the domain of the field  and surfaces of the domain of the
+// field.
+// Additionally the resulting IS is checked for consistency with any parents or siblings in the tree.
 //*******************************************************************|************************************************************//
-void SpudSolverBucket::get_is_options_(const std::string &optionpath, 
-                                       std::vector<std::string> &field_names,
-                                       std::vector<std::vector<int>* > &field_components,
-                                       std::vector<std::vector<int>* > &field_region_ids,
-                                       std::vector<std::vector<int>* > &field_boundary_ids)
+void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is, 
+                                         std::vector<uint> &child_indices, 
+                                         const uint &offset,
+                                         const std::vector<uint>* parent_indices,
+                                         const std::vector<uint>* sibling_indices)
 {
-  std::stringstream buffer;
-  Spud::OptionError serr;
 
-  buffer.str(""); buffer << optionpath << "/field";
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud error code
+  PetscErrorCode perr;                                               // petsc error code
+
+  buffer.str(""); buffer << optionpath << "/field";                  // loop over the fields used to describe this IS
   int nfields = Spud::option_count(buffer.str());
 
-  field_names.clear();
-  field_components.clear();
-  field_region_ids.clear();
-  field_boundary_ids.clear();
-  
-  field_names.resize(nfields, "unknown");
-  field_components.resize(nfields, NULL);
-  field_region_ids.resize(nfields, NULL);
-  field_boundary_ids.resize(nfields, NULL);
-
-  for (uint i = 0; i < nfields; i++)
+  child_indices.clear();
+  if (nfields==0)                                                    // if no fields have been specified... **no fields**
   {
-    buffer.str(""); buffer << optionpath << "/field[" << i <<        // get the field name
-                                                          "]/name";
-    serr = Spud::get_option(buffer.str(), field_names[i]); 
-    spud_err(buffer.str(), serr);
-      
-    FunctionBucket_ptr field = (*system_).fetch_field(field_names[i]);
-    const std::size_t fieldrank = (*field).rank();                   // field rank
-    const std::size_t fieldsize = (*field).size();                   // field size
+    std::pair<uint, uint> ownership_range =                          // the parallel ownership range of the system functionspace
+            (*(*(*system_).functionspace()).dofmap()).ownership_range();
+    for (uint i = ownership_range.first; i < ownership_range.second; i++)
+    {
+      child_indices.push_back(i);
+    }
+  }
+  else
+  {
 
-    buffer.str(""); buffer << optionpath << "/field[" << i << "]";
-    is_by_field_restrictions_(buffer.str(),                          // get any restrictions on the IS
-                              field_components[i], field_region_ids[i], field_boundary_ids[i], 
-                              fieldrank, fieldsize);
+    const bool mixedsystem = ((*system_).fields_size()>1);
+
+    for (uint i = 0; i < nfields; i++)                               // loop over the fields that have been specified
+    {
+
+      std::string fieldname;
+      buffer.str(""); buffer << optionpath << "/field[" << i <<      // get the field name
+                                                            "]/name";
+      serr = Spud::get_option(buffer.str(), fieldname); 
+      spud_err(buffer.str(), serr);
+      
+      FunctionBucket_ptr field = (*system_).fetch_field(fieldname);  // using the name, get the
+      const int fieldindex = (*field).index();                       // field index
+      const std::size_t fieldrank = (*field).rank();                 // field rank
+      const std::size_t fieldsize = (*field).size();                 // field size
+
+      FunctionSpace_ptr functionspace;
+      if (mixedsystem)
+      {
+        functionspace = (*(*system_).functionspace())[fieldindex];
+      }
+      else
+      {
+        functionspace = (*system_).functionspace();
+      }
+
+      std::vector<int>* components = NULL;
+      std::vector<int>* region_ids = NULL;
+      std::vector<int>* boundary_ids = NULL;
+      buffer.str(""); buffer << optionpath << "/field[" << i << "]";
+      is_by_field_restrictions_(buffer.str(),                        // get any restrictions on the IS
+                                components, region_ids, boundary_ids, 
+                                fieldrank, fieldsize);
+     
+      std::vector<uint> tmp_indices;
+      tmp_indices  = functionspace_dofs(functionspace, 
+                                        (*system_).celldomains(),
+                                        (*system_).facetdomains(),
+                                        components, region_ids, 
+                                        boundary_ids);
+
+      child_indices.insert(child_indices.end(), tmp_indices.begin(), tmp_indices.end());
+
+      destroy_is_field_restrictions_(components, region_ids, boundary_ids);
+    }
   }
 
-}
+  restrict_is_indices(child_indices, (*system_).functionspace(), 
+                                     parent_indices, 
+                                     sibling_indices);
 
-//*******************************************************************|************************************************************//
-// clean the index set options
-//*******************************************************************|************************************************************//
-void SpudSolverBucket::clean_is_options_(std::vector<std::string> &field_names,
-                                         std::vector<std::vector<int>* > &field_components,
-                                         std::vector<std::vector<int>* > &field_region_ids,
-                                         std::vector<std::vector<int>* > &field_boundary_ids)
-{
-  uint nfields = field_names.size();
-  assert(field_components.size() == nfields);
-  assert(field_region_ids.size() == nfields);
-  assert(field_boundary_ids.size() == nfields);
+  is = convert_vector_to_is((*(*system_).mesh()).mpi_comm(), 
+                            child_indices,
+                            offset, parent_indices);
 
-  for (uint i = 0; i < nfields; i++)
+  if (Spud::have_option(optionpath+"/monitors/view_index_set"))
   {
-    destroy_is_field_restrictions_(field_components[i], field_region_ids[i], field_boundary_ids[i]);
+    buffer.str(""); buffer << optionpath << "/name";                 // IS Name
+    std::string isname;
+    serr = Spud::get_option(buffer.str(), isname);
+    spud_err(buffer.str(), serr);
+    
+    if (dolfin::MPI::rank((*(*system_).mesh()).mpi_comm())==0)
+    {
+      dolfin::log(dolfin::INFO, "ISView: %s (%s)", 
+                                  isname.c_str(), optionpath.c_str());
+    }
+    perr = ISView(is, 
+              PETSC_VIEWER_STDOUT_((*(*system_).mesh()).mpi_comm()));
+    CHKERRV(perr);                                                   // isview?
   }
 
 }
@@ -1641,7 +1654,7 @@ void SpudSolverBucket::fill_values_by_field_(const std::string &optionpath, PETS
     child_indices.push_back((*c_it).first);
   }
 
-  (*system_).restrict_is_indices(child_indices, parent_indices, sibling_indices);// restrict based on the parents (intersection) and possibly
+  restrict_is_indices(child_indices, (*system_).functionspace(), parent_indices, sibling_indices);// restrict based on the parents (intersection) and possibly
                                                                      // siblings 
 
   PetscInt n=child_indices.size();                                   // setup a simpler structure for petsc
