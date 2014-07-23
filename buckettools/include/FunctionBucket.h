@@ -124,6 +124,8 @@ namespace buckettools
     const std::vector< std::size_t > shape() const                   // return the shape of the function
     { return shape_; }
 
+    const std::size_t dimension(const std::size_t &i) const;         // return the size of a given dimension
+
     const bool symmetric() const;                                    // return if this is a symmetric tensor field (false otherwise)
 
     SystemBucket* system()                                           // return a pointer to the parent system

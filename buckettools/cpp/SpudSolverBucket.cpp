@@ -1345,8 +1345,8 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
       
       FunctionBucket_ptr field = (*system_).fetch_field(fieldname);  // using the name, get the
       const int fieldindex = (*field).index();                       // field index
-      const std::size_t fieldrank = (*field).rank();                 // field rank
-      const std::size_t fieldsize = (*field).size();                 // field size
+      const std::vector<std::size_t> fieldshape = (*field).shape();  // field shape
+      const bool fieldsymmetric = (*field).symmetric();              // field symmetric
 
       FunctionSpace_ptr functionspace;
       if (mixedsystem)
@@ -1364,7 +1364,7 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
       buffer.str(""); buffer << optionpath << "/field[" << i << "]";
       is_by_field_restrictions_(buffer.str(),                        // get any restrictions on the IS
                                 components, region_ids, boundary_ids, 
-                                fieldrank, fieldsize);
+                                fieldshape, fieldsymmetric);
      
       std::vector<uint> tmp_indices;
       tmp_indices  = functionspace_dofs(functionspace, 
@@ -1566,8 +1566,8 @@ void SpudSolverBucket::fill_values_by_field_(const std::string &optionpath, PETS
       
       FunctionBucket_ptr field = (*system_).fetch_field(fieldname);  // using the name, get the
       const int fieldindex = (*field).index();                       // field index
-      const std::size_t fieldrank = (*field).rank();                 // field rank
-      const std::size_t fieldsize = (*field).size();                 // and field size
+      const std::vector<std::size_t> fieldshape = (*field).shape();  // field shape
+      const bool fieldsymmetric = (*field).symmetric();              // tensor field symmetric
 
       FunctionSpace_ptr functionspace;                               // grab the functionspace
       if (mixedsystem)
@@ -1586,7 +1586,7 @@ void SpudSolverBucket::fill_values_by_field_(const std::string &optionpath, PETS
                                     << "/field[" << i << "]";
       is_by_field_restrictions_(buffer.str(),                        // get the standard restrictions on an IS
                                 components, region_ids, boundary_ids,
-                                fieldrank, fieldsize);
+                                fieldshape, fieldsymmetric);
      
       Expression_ptr value_exp;
       buffer.str(""); buffer << optionpath << "/field[" 
@@ -1597,13 +1597,13 @@ void SpudSolverBucket::fill_values_by_field_(const std::string &optionpath, PETS
         serr = Spud::get_option(buffer.str(), pyfunction);
         spud_err(buffer.str(), serr);
 
-        if (fieldrank==0)
+        if (fieldshape.size()==0)
         {
           value_exp.reset( new PythonExpression(pyfunction) );
         }
-        else if (fieldrank==1)
+        else if (fieldshape.size()==1)
         {
-          int size = fieldsize;
+          int size = (*field).size();
           if (components)
           {
             size = (*components).size();
@@ -2026,8 +2026,8 @@ void SpudSolverBucket::is_by_field_restrictions_(const std::string &optionpath,
                                                  std::vector<int>* &components,
                                                  std::vector<int>* &region_ids,
                                                  std::vector<int>* &boundary_ids,
-                                                 const std::size_t &fieldrank,
-                                                 const std::size_t &fieldsize)
+                                                 const std::vector<std::size_t> &fieldshape,
+                                                 const bool &fieldsymmetric)
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
@@ -2039,21 +2039,37 @@ void SpudSolverBucket::is_by_field_restrictions_(const std::string &optionpath,
     serr = Spud::get_option(buffer.str(), *components);            // get the components
     spud_err(buffer.str(), serr);
 
-    if(fieldrank==0)
+    if(fieldshape.size()==0)
     {
-      dolfin::error("Requested null space components of a scalar field.");
+      dolfin::error("Requested components of a scalar field.");
     }
-    else if(fieldrank==1)
+    else if(fieldshape.size()==1)
     {
       std::vector<int>::iterator max_comp_it =                  
            std::max_element((*components).begin(), (*components).end()); // check the maximum requested component exists
       
-      assert(*max_comp_it < fieldsize);
-      assert((*components).size() <= fieldsize);
+      assert(*max_comp_it < fieldshape[0]);
+      assert((*components).size() <= fieldshape[0]);
     }
-    else                                                             // FIXME: tensors!
+    else if(fieldshape.size()==2)
     {
-      dolfin::error("Only deal with scalar and vector null spaces for now.");
+      std::vector<int>::iterator max_comp_it = 
+           std::max_element((*components).begin(), (*components).end()); // check the maximum requested component exists
+
+      if (fieldsymmetric)
+      {
+        assert(*max_comp_it < fieldshape[0]*fieldshape[1] - ((fieldshape[0]-1)*fieldshape[0])/2);
+        assert((*components).size() < fieldshape[0]*fieldshape[1] - ((fieldshape[0]-1)*fieldshape[0])/2);
+      }
+      else
+      {
+        assert(*max_comp_it < fieldshape[0]*fieldshape[1]);
+        assert((*components).size() <= fieldshape[0]*fieldshape[1]);
+      }
+    }
+    else
+    {
+      dolfin::error("Unknown rank.");
     }
   }
 

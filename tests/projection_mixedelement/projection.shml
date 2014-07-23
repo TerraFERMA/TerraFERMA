@@ -215,61 +215,117 @@ stat = parser("projection.stat")
 
 snes_dummy_max = stat["SNESProjection"]["Dummy"]["max"]</string_value>
         </variable>
-        <variable name="snes_field3_min_0">
+        <variable name="snes_field3_min_00">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_field3_min_0 = stat["SNESProjection"]["Field3"]["max"][0][-1]</string_value>
+snes_field3_min_00 = stat["SNESProjection"]["Field3"]["max"][0][-1]</string_value>
         </variable>
-        <variable name="snes_field3_max_0">
+        <variable name="snes_field3_max_00">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_field3_max_0 = stat["SNESProjection"]["Field3"]["min"][0][-1]</string_value>
+snes_field3_max_00 = stat["SNESProjection"]["Field3"]["min"][0][-1]</string_value>
         </variable>
-        <variable name="snes_field3_int_0">
+        <variable name="snes_field3_int_00">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_field3_int_0 = stat["SNESProjection"]["Field3"]["Integral0"][-1]</string_value>
+snes_field3_int_00 = stat["SNESProjection"]["Field3"]["Integral00"][-1]</string_value>
         </variable>
-        <variable name="snes_source3_int_0">
+        <variable name="snes_source3_int_00">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_source3_int_0 = stat["SNESProjection"]["Source3"]["Integral0"][-1]</string_value>
+snes_source3_int_00 = stat["SNESProjection"]["Source3"]["Integral00"][-1]</string_value>
         </variable>
-        <variable name="snes_field3_min_1">
+        <variable name="snes_field3_min_01">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_field3_min_1 = stat["SNESProjection"]["Field3"]["max"][1][-1]</string_value>
+snes_field3_min_01 = stat["SNESProjection"]["Field3"]["max"][1][-1]</string_value>
         </variable>
-        <variable name="snes_field3_max_1">
+        <variable name="snes_field3_max_01">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_field3_max_1 = stat["SNESProjection"]["Field3"]["min"][1][-1]</string_value>
+snes_field3_max_01 = stat["SNESProjection"]["Field3"]["min"][1][-1]</string_value>
         </variable>
-        <variable name="snes_field3_int_1">
+        <variable name="snes_field3_int_01">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_field3_int_1 = stat["SNESProjection"]["Field3"]["Integral1"][-1]</string_value>
+snes_field3_int_01 = stat["SNESProjection"]["Field3"]["Integral01"][-1]</string_value>
         </variable>
-        <variable name="snes_source3_int_1">
+        <variable name="snes_source3_int_01">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_source3_int_1 = stat["SNESProjection"]["Source3"]["Integral1"][-1]</string_value>
+snes_source3_int_01 = stat["SNESProjection"]["Source3"]["Integral01"][-1]</string_value>
+        </variable>
+        <variable name="snes_field3_min_10">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+
+stat = parser("projection.stat")
+
+snes_field3_min_10 = stat["SNESProjection"]["Field3"]["max"][2][-1]</string_value>
+        </variable>
+        <variable name="snes_field3_max_10">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+
+stat = parser("projection.stat")
+
+snes_field3_max_10 = stat["SNESProjection"]["Field3"]["min"][2][-1]</string_value>
+        </variable>
+        <variable name="snes_field3_int_10">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+
+stat = parser("projection.stat")
+
+snes_field3_int_10 = stat["SNESProjection"]["Field3"]["Integral10"][-1]</string_value>
+        </variable>
+        <variable name="snes_source3_int_10">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+
+stat = parser("projection.stat")
+
+snes_source3_int_10 = stat["SNESProjection"]["Source3"]["Integral10"][-1]</string_value>
+        </variable>
+        <variable name="snes_field3_min_11">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+
+stat = parser("projection.stat")
+
+snes_field3_min_11 = stat["SNESProjection"]["Field3"]["max"][3][-1]</string_value>
+        </variable>
+        <variable name="snes_field3_max_11">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+
+stat = parser("projection.stat")
+
+snes_field3_max_11 = stat["SNESProjection"]["Field3"]["min"][3][-1]</string_value>
+        </variable>
+        <variable name="snes_field3_int_11">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+
+stat = parser("projection.stat")
+
+snes_field3_int_11 = stat["SNESProjection"]["Field3"]["Integral11"][-1]</string_value>
+        </variable>
+        <variable name="snes_source3_int_11">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+
+stat = parser("projection.stat")
+
+snes_source3_int_11 = stat["SNESProjection"]["Source3"]["Integral11"][-1]</string_value>
         </variable>
         <variable name="snes_dummy_min">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -417,45 +473,85 @@ assert numpy.all(abs(numpy.array(snes_field2_int_1) - 3000.0) &lt; 1.e-7)</strin
 
 assert numpy.all(abs(numpy.array(snes_source2_int_1) - 3000.0) &lt; 1.e-7)</string_value>
     </test>
-    <test name="snes_field3_min_0">
+    <test name="snes_field3_min_00">
       <string_value lines="20" type="code" language="python">import numpy
 
-assert numpy.all(abs(numpy.array(snes_field3_min_0) - 4000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_field3_min_00) - 4000.0) &lt; 1.e-7)</string_value>
     </test>
-    <test name="snes_field3_max_0">
+    <test name="snes_field3_max_00">
       <string_value lines="20" type="code" language="python">import numpy
 
-assert numpy.all(abs(numpy.array(snes_field3_max_0) - 4000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_field3_max_00) - 4000.0) &lt; 1.e-7)</string_value>
     </test>
-    <test name="snes_field3_int_0">
+    <test name="snes_field3_int_00">
       <string_value lines="20" type="code" language="python">import numpy
 
-assert numpy.all(abs(numpy.array(snes_field3_int_0) - 4000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_field3_int_00) - 4000.0) &lt; 1.e-7)</string_value>
     </test>
-    <test name="snes_source3_int_0">
+    <test name="snes_source3_int_00">
       <string_value lines="20" type="code" language="python">import numpy
 
-assert numpy.all(abs(numpy.array(snes_source3_int_0) - 3000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_source3_int_00) - 3000.0) &lt; 1.e-7)</string_value>
     </test>
-    <test name="snes_field3_min_1">
+    <test name="snes_field3_min_01">
       <string_value lines="20" type="code" language="python">import numpy
 
-assert numpy.all(abs(numpy.array(snes_field3_min_1) - 5000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_field3_min_01) - 4250.0) &lt; 1.e-7)</string_value>
     </test>
-    <test name="snes_field3_max_1">
+    <test name="snes_field3_max_01">
       <string_value lines="20" type="code" language="python">import numpy
 
-assert numpy.all(abs(numpy.array(snes_field3_max_1) - 5000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_field3_max_01) - 4250.0) &lt; 1.e-7)</string_value>
     </test>
-    <test name="snes_field3_int_1">
+    <test name="snes_field3_int_01">
       <string_value lines="20" type="code" language="python">import numpy
 
-assert numpy.all(abs(numpy.array(snes_field3_int_1) - 5000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_field3_int_01) - 4250.0) &lt; 1.e-7)</string_value>
     </test>
-    <test name="snes_source3_int_1">
+    <test name="snes_source3_int_01">
       <string_value lines="20" type="code" language="python">import numpy
 
-assert numpy.all(abs(numpy.array(snes_source3_int_1) - 6000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_source3_int_01) - 4250.0) &lt; 1.e-7)</string_value>
+    </test>
+    <test name="snes_field3_min_10">
+      <string_value lines="20" type="code" language="python">import numpy
+
+assert numpy.all(abs(numpy.array(snes_field3_min_10) - 4750.0) &lt; 1.e-7)</string_value>
+    </test>
+    <test name="snes_field3_max_10">
+      <string_value lines="20" type="code" language="python">import numpy
+
+assert numpy.all(abs(numpy.array(snes_field3_max_10) - 4750.0) &lt; 1.e-7)</string_value>
+    </test>
+    <test name="snes_field3_int_10">
+      <string_value lines="20" type="code" language="python">import numpy
+
+assert numpy.all(abs(numpy.array(snes_field3_int_10) - 4750.0) &lt; 1.e-7)</string_value>
+    </test>
+    <test name="snes_source3_int_10">
+      <string_value lines="20" type="code" language="python">import numpy
+
+assert numpy.all(abs(numpy.array(snes_source3_int_10) - 4750.0) &lt; 1.e-7)</string_value>
+    </test>
+    <test name="snes_field3_min_11">
+      <string_value lines="20" type="code" language="python">import numpy
+
+assert numpy.all(abs(numpy.array(snes_field3_min_11) - 5000.0) &lt; 1.e-7)</string_value>
+    </test>
+    <test name="snes_field3_max_11">
+      <string_value lines="20" type="code" language="python">import numpy
+
+assert numpy.all(abs(numpy.array(snes_field3_max_11) - 5000.0) &lt; 1.e-7)</string_value>
+    </test>
+    <test name="snes_field3_int_11">
+      <string_value lines="20" type="code" language="python">import numpy
+
+assert numpy.all(abs(numpy.array(snes_field3_int_11) - 5000.0) &lt; 1.e-7)</string_value>
+    </test>
+    <test name="snes_source3_int_11">
+      <string_value lines="20" type="code" language="python">import numpy
+
+assert numpy.all(abs(numpy.array(snes_source3_int_11) - 6000.0) &lt; 1.e-7)</string_value>
     </test>
     <test name="snes_dummy_max">
       <string_value lines="20" type="code" language="python">import numpy

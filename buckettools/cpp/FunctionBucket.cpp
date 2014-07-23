@@ -337,6 +337,19 @@ const std::size_t FunctionBucket::size() const
 }
 
 //*******************************************************************|************************************************************//
+// return the dimension of the function
+//*******************************************************************|************************************************************//
+const std::size_t FunctionBucket::dimension(const std::size_t &i) const
+{
+  if (i >= shape_.size())
+  {
+    dolfin::error("Illegal axis %d for dimension for value of rank %d",
+                 i, shape_.size());
+  }
+  return shape_[i];
+}
+
+//*******************************************************************|************************************************************//
 // return if the function is symmetric or not (only true for fields)
 //*******************************************************************|************************************************************//
 const bool FunctionBucket::symmetric() const
@@ -1071,13 +1084,53 @@ void FunctionBucket::fill_is_()
 {
   assert(functiontype_ == FUNCTIONBUCKET_FIELD);
 
-  component_is_.resize(size());
-  for (int i = 0; i < size(); i++)
+  const std::size_t lsize = size();
+  component_is_.resize(lsize);
+
+  const std::size_t lrank = rank();
+  if (lrank==0||lrank==1)
   {
-    std::vector<uint> indices = functionspace_dofs(functionspace(), i);
-    restrict_is_indices(indices, functionspace());
-    component_is_[i] = convert_vector_to_is((*(*system_).mesh()).mpi_comm(), 
-                                            indices);
+    for (int i = 0; i < lsize; i++)
+    {
+      std::vector<uint> indices = functionspace_dofs(functionspace(), i);
+      restrict_is_indices(indices, functionspace());
+      component_is_[i] = convert_vector_to_is((*(*system_).mesh()).mpi_comm(), 
+                                              indices);
+    }
+  }
+  else if (lrank==2)
+  {
+    const std::size_t dim0 = dimension(0);
+    const std::size_t dim1 = dimension(1);
+    const bool lsymmetric = symmetric();
+    for (int i = 0; i < dim0; i++)
+    {
+      for (int j = 0; j < dim1; j++)
+      {
+        std::size_t k = i*dim1 + j;
+        std::size_t kf = k;
+        if (lsymmetric)
+        {
+          if (j >= i)
+          {
+            kf = i*dim1 + j - (i*(i+1))/2;
+          }
+          else
+          {
+            kf = j*dim1 + i - (j*(j+1))/2;
+          }
+        }
+
+        std::vector<uint> indices = functionspace_dofs(functionspace(), kf);
+        restrict_is_indices(indices, functionspace());
+        component_is_[k] = convert_vector_to_is((*(*system_).mesh()).mpi_comm(), 
+                                                indices);
+      }
+    }
+  }
+  else
+  {
+    dolfin::error("Unknonwn rank in fill_is_.");
   }
   
 }

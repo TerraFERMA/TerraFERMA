@@ -196,8 +196,8 @@ namespace buckettools
                                    std::vector<int>* &components,
                                    std::vector<int>* &region_ids,
                                    std::vector<int>* &boundary_ids,
-                                   const std::size_t &fieldrank,
-                                   const std::size_t &fieldsize);    // set up the restrictions on an IS by field
+                                   const std::vector<std::size_t> &fieldshape,
+                                   const bool &fieldsymmetric);      // set up the restrictions on an IS by field
 
     void destroy_is_field_restrictions_(std::vector<int>* &components,// destroy the objects describing any restrictions on an IS by field
                                         std::vector<int>* &region_ids,

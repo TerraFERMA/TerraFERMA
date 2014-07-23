@@ -41,8 +41,7 @@ namespace buckettools
                                        const std::vector<int>* components=NULL,
                                        const std::vector<int>* region_ids=NULL,
                                        const std::vector<int>* boundary_ids=NULL,
-                                       const uint parent_component=0,
-                                       uint rank=0);                            // set up a dof set based on a field
+                                       uint depth=0);                            // set up a dof set based on a field
 
   boost::unordered_set<uint> cell_dof_set(const FunctionSpace_ptr functionspace,
                                           MeshFunction_size_t_ptr cellidmeshfunction=NULL,

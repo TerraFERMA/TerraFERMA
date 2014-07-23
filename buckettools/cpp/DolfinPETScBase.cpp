@@ -45,10 +45,10 @@ std::vector<uint> buckettools::functionspace_dofs(const FunctionSpace_ptr functi
                                                   const std::vector<int>* components,
                                                   const std::vector<int>* region_ids,
                                                   const std::vector<int>* boundary_ids,
-                                                  const uint parent_component,
-                                                  uint rank)
+                                                  uint depth)
 {
-  assert(rank<=2);                                                   // component logic below only makes sense for rank <= 2
+  assert(depth<=1);                                                   // component logic below only makes sense if we've 
+                                                                      // only iterated at most once
 
   std::vector<uint> dofs;
   boost::unordered_set<uint> dof_set;
@@ -56,35 +56,16 @@ std::vector<uint> buckettools::functionspace_dofs(const FunctionSpace_ptr functi
   const uint num_sub_elements = (*(*functionspace).element()).num_sub_elements();
   if (num_sub_elements>0)
   {
+    depth++;
 
     for (uint i = 0; i < num_sub_elements; i++)
     {
       if (components)
       {
-        const uint num_sub_sub_elements = (*(*(*functionspace)[i]).element()).num_sub_elements();
-        std::vector<uint> possible_components;
-        if (num_sub_sub_elements>0)
-        {
-          for (uint j=0; j < num_sub_sub_elements; j++)
-          {
-            possible_components.push_back(i*num_sub_elements + j);
-          }
-        }
-        else
-        {
-          possible_components.push_back(parent_component*num_sub_elements + i);
-        }
-        bool include=false;
-        for (std::vector<uint>::const_iterator c_it = possible_components.begin();
-                                             c_it != possible_components.end();
-                                             c_it++)
-        {
-          std::vector<int>::const_iterator comp = std::find((*components).begin(), 
-                                                            (*components).end(), 
-                                                            *c_it);
-          include = include || comp != (*components).end();
-        }
-        if (!include)
+        std::vector<int>::const_iterator comp = std::find((*components).begin(), 
+                                                          (*components).end(), 
+                                                          i);
+        if (comp==(*components).end())
         {
           continue;                                                  // component not requested so continue
         }
@@ -94,8 +75,7 @@ std::vector<uint> buckettools::functionspace_dofs(const FunctionSpace_ptr functi
       tmp_dofs = functionspace_dofs((*functionspace)[i], 
                                     cellidmeshfunction, facetidmeshfunction,
                                     components, region_ids, boundary_ids,
-                                    (parent_component*num_sub_elements + i), 
-                                    rank++);
+                                    depth);
       dof_set.insert(tmp_dofs.begin(), tmp_dofs.end());
     }
 
