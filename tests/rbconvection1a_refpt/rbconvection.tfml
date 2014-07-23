@@ -219,7 +219,6 @@
             <coordinates>
               <real_value shape="2" dim1="dim" rank="1">0.5 0.5</real_value>
             </coordinates>
-            <sub_components name="All"/>
           </reference_point>
         </rank>
       </type>
