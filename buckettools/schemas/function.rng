@@ -179,6 +179,9 @@ Functions require a functionspace, which will be defined on the same mesh as the
       <ref name="reference_point_scalar"/>
     </optional>
     <optional>
+      <ref name="zero_point_scalar"/>
+    </optional>
+    <optional>
       <ref name="value_cap_scalar"/>
     </optional>
   </define>
@@ -197,6 +200,9 @@ Functions require a functionspace, which will be defined on the same mesh as the
       <ref name="reference_point_tensor"/>
     </zeroOrMore>
     <zeroOrMore>
+      <ref name="zero_point_tensor"/>
+    </zeroOrMore>
+    <zeroOrMore>
       <ref name="value_cap_tensor"/>
     </zeroOrMore>
   </define>
@@ -213,6 +219,9 @@ Functions require a functionspace, which will be defined on the same mesh as the
     </zeroOrMore>
     <zeroOrMore>
       <ref name="reference_point_tensor"/>
+    </zeroOrMore>
+    <zeroOrMore>
+      <ref name="zero_point_tensor"/>
     </zeroOrMore>
     <zeroOrMore>
       <ref name="value_cap_tensor"/>
@@ -673,6 +682,79 @@ of functions is included.</a:documentation>
         </attribute>
         <element name="coordinates">
           <a:documentation>The coordinates of the reference point.  The node nearest these coordinates will be used.</a:documentation>
+          <ref name="real_dim_vector"/>
+        </element>
+        <choice>
+          <element name="sub_components">
+            <a:documentation>Zero a subset of the vector/tensor components at this reference point.</a:documentation>
+            <attribute name="name">
+              <value>Subset</value>
+            </attribute>
+            <element name="components">
+              <a:documentation>A list of the vector/tensor components to which this reference point applies (indexes from 0 by row first for tensors).</a:documentation>
+              <ref name="integer_vector"/>
+            </element>
+          </element>
+          <element name="sub_components">
+            <a:documentation>Zero all the vector/tensor components at this reference point.</a:documentation>
+            <attribute name="name">
+              <value>All</value>
+            </attribute>
+            <empty/>
+          </element>
+        </choice>
+      </element>
+    </choice>
+  </define>
+  <define name="zero_point_scalar">
+    <element name="zero_point">
+      <a:documentation>Options for the description of a reference point at which field values are zeroed.</a:documentation>
+      <attribute name="name">
+        <value>Point</value>
+      </attribute>
+      <element name="coordinates">
+        <a:documentation>The coordinates of the reference point.  The node nearest these coordinates will be used.</a:documentation>
+        <ref name="real_dim_vector"/>
+      </element>
+    </element>
+  </define>
+  <define name="zero_point_tensor">
+    <choice>
+      <element name="zero_point">
+        <a:documentation>Options for the description of a zero point at which field values are zeroed.</a:documentation>
+        <attribute name="name">
+          <value>Point</value>
+        </attribute>
+        <element name="coordinates">
+          <a:documentation>The coordinates of the zero point.</a:documentation>
+          <ref name="real_dim_vector"/>
+        </element>
+        <choice>
+          <element name="sub_components">
+            <a:documentation>Zero all the vector/tensor components at this zero point.</a:documentation>
+            <attribute name="name">
+              <value>All</value>
+            </attribute>
+            <empty/>
+          </element>
+          <element name="sub_components">
+            <a:documentation>Zero a subset of the vector/tensor components at this zero point.</a:documentation>
+            <attribute name="name">
+              <value>Subset</value>
+            </attribute>
+            <element name="components">
+              <a:documentation>A list of the vector/tensor components to which this zero point applies (indexes from 0 by row first for tensors).</a:documentation>
+              <ref name="integer_vector"/>
+            </element>
+          </element>
+        </choice>
+      </element>
+      <element name="zero_point">
+        <attribute name="name">
+          <data type="string"/>
+        </attribute>
+        <element name="coordinates">
+          <a:documentation>The coordinates of the zero point.</a:documentation>
           <ref name="real_dim_vector"/>
         </element>
         <choice>

@@ -114,7 +114,7 @@ namespace buckettools
 
     void fill_bcs_();                                                // fill in the data about the system bcs
 
-    void fill_points_();                                             // fill in the data about the system points
+    void fill_referencepoints_();                                    // fill in the data about the system points
 
     void fill_coeffs_();                                             // fill in the coefficient information
 

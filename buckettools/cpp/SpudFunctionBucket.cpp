@@ -32,6 +32,7 @@
 #include "SpudBucket.h"
 #include "RegionsExpression.h"
 #include "SemiLagrangianExpression.h"
+#include "PointDetectors.h"
 
 using namespace buckettools;
 
@@ -601,14 +602,28 @@ void SpudFunctionBucket::allocate_field_()
     
   buffer.str(""); buffer << optionpath()                             // find out how many reference points bcs there are
                                 << "/type/rank/reference_point";
-  int npoints = Spud::option_count(buffer.str());
-  if (npoints > 0)                                                   // if we have any...
+  int nrpoints = Spud::option_count(buffer.str());
+  if (nrpoints > 0)                                                  // if we have any...
   {
-    for (uint i = 0; i < npoints; i++)                               // loop over the points
+    for (uint i = 0; i < nrpoints; i++)                              // loop over the points
     {
       buffer.str(""); buffer << optionpath() 
                     << "/type/rank/reference_point[" << i << "]";
-      fill_point_(buffer.str());                                     // and fill in details about the reference point
+      fill_reference_point_(buffer.str());                           // and fill in details about the reference point
+    }
+  }
+    
+  zeropoints_.resize(size());
+  buffer.str(""); buffer << optionpath()                             // find out how many zero points bcs there are
+                                << "/type/rank/zero_point";
+  int nzpoints = Spud::option_count(buffer.str());
+  if (nzpoints > 0)                                                  // if we have any...
+  {
+    for (uint i = 0; i < nzpoints; i++)                              // loop over the points
+    {
+      buffer.str(""); buffer << optionpath() 
+                    << "/type/rank/zero_point[" << i << "]";
+      fill_zero_point_(buffer.str());                                // and fill in details about the reference point
     }
   }
     
@@ -757,7 +772,7 @@ void SpudFunctionBucket::fill_bc_component_(const std::string &optionpath,
 //*******************************************************************|************************************************************//
 // fill the details of a reference point assuming the buckettools schema
 //*******************************************************************|************************************************************//
-void SpudFunctionBucket::fill_point_(const std::string &optionpath)
+void SpudFunctionBucket::fill_reference_point_(const std::string &optionpath)
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
@@ -775,7 +790,7 @@ void SpudFunctionBucket::fill_point_(const std::string &optionpath)
   buffer.str(""); buffer << optionpath 
                          << "/sub_components/components";            // how many subcomponents exist?
   if (Spud::have_option(buffer.str()))
-  {                                                                  // FIXME: tensorial components assumed broken!
+  {
     std::vector<int> subcompids;
     serr = Spud::get_option(buffer.str(), subcompids);               // get a list of the subcomponents 
     spud_err(buffer.str(), serr);
@@ -789,14 +804,61 @@ void SpudFunctionBucket::fill_point_(const std::string &optionpath)
                                     (*functionspace())[*subcompid];  // happily dolfin caches this for us
        
       ReferencePoints_ptr point(new ReferencePoints(coord, subfunctionspace, pointname));
-      register_point(point, pointname);                              // register the point in the function bucket
+      register_referencepoint(point, pointname);                     // register the point in the function bucket
        
     }
   }
   else                                                               // no components (scalar or using all components)
   {
     ReferencePoints_ptr point(new ReferencePoints(coord, functionspace(), pointname));
-    register_point(point, pointname);                                // register the point in the function bucket
+    register_referencepoint(point, pointname);                       // register the point in the function bucket
+  }
+}
+
+//*******************************************************************|************************************************************//
+// fill the details of a zero point assuming the buckettools schema
+//*******************************************************************|************************************************************//
+void SpudFunctionBucket::fill_zero_point_(const std::string &optionpath)
+{
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud error code
+  
+  std::string pointname;                                             // point name
+  buffer.str(""); buffer << optionpath << "/name";
+  serr = Spud::get_option(buffer.str(), pointname); 
+  spud_err(buffer.str(), serr);
+  
+  std::vector<double> coord;                                         // the coordinate of the reference point
+  buffer.str(""); buffer << optionpath << "/coordinates";
+  serr = Spud::get_option(buffer.str(), coord);
+  spud_err(buffer.str(), serr);
+
+  PointDetectors_ptr zeropoint( new PointDetectors(coord, pointname) );
+  
+  std::vector<int> subcompids;
+  buffer.str(""); buffer << optionpath 
+                         << "/sub_components/components";            // how many subcomponents exist?
+  if (Spud::have_option(buffer.str()))
+  {
+    serr = Spud::get_option(buffer.str(), subcompids);               // get a list of the subcomponents 
+    spud_err(buffer.str(), serr);
+  }
+  else
+  {
+    subcompids.resize(size());
+    std::iota(subcompids.begin(), subcompids.end(), 0);
+  }
+    
+  for (std::vector<int>::const_iterator subcompid =                // loop over those subcomponents
+                                        subcompids.begin(); 
+                    subcompid < subcompids.end(); subcompid++)
+  {
+    if (zeropoints_[*subcompid])
+    {
+      dolfin::log(dolfin::INFO, "WARNING: Multiple zero points applied to %s::%s (component %d).  Taking latest.",
+                                (*system_).name().c_str(), name().c_str(), *subcompid);
+    }
+    zeropoints_[*subcompid] = zeropoint;
   }
 }
 
@@ -830,7 +892,7 @@ void SpudFunctionBucket::fill_cap_(const std::string &optionpath)
   buffer.str(""); buffer << optionpath 
                          << "/sub_components/components";            // how many subcomponents exist?
   if (Spud::have_option(buffer.str()))
-  {                                                                  // FIXME: tensorial components assumed broken!
+  {
     serr = Spud::get_option(buffer.str(), subcompids);               // get a list of the subcomponents 
     spud_err(buffer.str(), serr);
   }

@@ -377,6 +377,9 @@ void SpudSolverBucket::initialize()
     dolfin::error("Unknown solver type.");
   }
 
+  create_nullspace();                                                // this should be safe to call now as null spaces will
+                                                                     // have been initialized from all the solvers
+
 }
 
 //*******************************************************************|************************************************************//
@@ -765,9 +768,16 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
   PC pc;
   perr = KSPGetPC(ksp, &pc); CHKERRV(perr);                          // get the pc from the ksp
 
+  uint parent_offset = 0;
+  if (parent_indices)
+  {
+    parent_offset = dolfin::MPI::global_offset((*(*system_).mesh()).mpi_comm(),
+                                               (*parent_indices).size(), true);
+  }
+
   fill_pc_(optionpath, pc,
            prefix,
-           parent_indices);
+           parent_offset, parent_indices);
 
   if(iterative_method != "preonly")                                  // tolerances (and monitors) only apply to iterative methods
   {
@@ -880,7 +890,7 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
   if (Spud::have_option(buffer.str()))
   {
     MatNullSpace SP;                                                 // create a set of nullspaces in a null space object
-    fill_nullspace_(buffer.str(), SP, parent_indices);
+    fill_nullspace_(buffer.str(), SP, parent_offset, parent_indices);
 
     perr = KSPSetNullSpace(ksp, SP); CHKERRV(perr);                  // attach it to the ksp
     #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
@@ -897,6 +907,7 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
 //*******************************************************************|************************************************************//
 void SpudSolverBucket::fill_pc_(const std::string &optionpath, PC &pc, 
                                 const std::string prefix,
+                                const uint &parent_offset,
                                 const std::vector<uint>* parent_indices)
 {
   std::stringstream buffer;                                          // optionpath buffer
@@ -921,7 +932,7 @@ void SpudSolverBucket::fill_pc_(const std::string &optionpath, PC &pc,
                                     "/preconditioner/linear_solver";
     KSP subksp;                                                      // create a subksp from this pc
     perr = PCKSPGetKSP(pc, &subksp); CHKERRV(perr);
-    fill_ksp_(buffer.str(), subksp, prefix, parent_indices);// recursively fill the ksp data (i.e. go back to this routine)
+    fill_ksp_(buffer.str(), subksp, prefix, parent_indices);         // recursively fill the ksp data (i.e. go back to this routine)
   }
   else if (preconditioner=="lsc")                                    // would be nice to put subksp options for lsc here
   {
@@ -930,7 +941,8 @@ void SpudSolverBucket::fill_pc_(const std::string &optionpath, PC &pc,
   else if (preconditioner=="fieldsplit")                             // if the pc is a fieldsplit
   {
     buffer.str(""); buffer << optionpath << "/preconditioner";
-    fill_pc_fieldsplit_(buffer.str(), pc, prefix, parent_indices);   // fill the fieldsplit data (will end up back here again
+    fill_pc_fieldsplit_(buffer.str(), pc, prefix, parent_offset, 
+                                                  parent_indices);   // fill the fieldsplit data (will end up back here again
                                                                      // eventually)
   }
   else if (preconditioner=="lu")                                     // if the pc is direct
@@ -984,7 +996,7 @@ void SpudSolverBucket::fill_pc_(const std::string &optionpath, PC &pc,
     perr = KSPGetPC(*subksp, &subpc); CHKERRV(perr);                  // get the sub pc from the sub ksp
     fill_pc_(optionpath+"/preconditioner", subpc,
              prefix, 
-             parent_indices);
+             parent_offset, parent_indices);
 
   }
 
@@ -998,7 +1010,7 @@ void SpudSolverBucket::fill_pc_(const std::string &optionpath, PC &pc,
     CHKERRV(perr);
 
     MatNullSpace SP;                                                 // create a set of nullspaces in a null space object
-    fill_nullspace_(buffer.str(), SP, parent_indices);
+    fill_nullspace_(buffer.str(), SP, parent_offset, parent_indices);
 
     perr = MatSetNearNullSpace(pmat, SP); CHKERRV(perr);
 
@@ -1020,6 +1032,7 @@ void SpudSolverBucket::fill_pc_(const std::string &optionpath, PC &pc,
 //*******************************************************************|************************************************************//
 void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath, 
                                            PC &pc, const std::string prefix,
+                                           const uint &parent_offset,
                                            const std::vector<uint>* parent_indices)
 {
 
@@ -1032,19 +1045,6 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
                                                                      // subsets of the parent_indices vector (if associated) that
                                                                      // will themselves become the parent_indices on the next
                                                                      // recursion)
-  uint offset = 0;
-  if (parent_indices)
-  {
-    std::vector<uint> p_sizes;
-    dolfin::MPI::all_gather((*(*system_).mesh()).mpi_comm(), 
-                            (uint)(*parent_indices).size(), p_sizes);
-    uint rank = dolfin::MPI::rank((*(*system_).mesh()).mpi_comm());
-    for (uint i = 0; i < rank; i++)                                  // FIXME?: Here we have assumed that dofs indices are ordered by
-    {                                                                // process number
-      offset += p_sizes[i];
-    }
-  }
-
   std::vector<uint> prev_indices;
 
   buffer.str(""); buffer << optionpath << "/fieldsplit";
@@ -1054,28 +1054,30 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
     buffer.str(""); buffer << optionpath << 
                                         "/fieldsplit[" << i << "]";
     std::vector<uint> indices;
-    IS is;
     if (i==0)
     {
-      fill_is_by_field_(buffer.str(),                                // setup an IS for each fieldsplit
-                        is, indices, 
-                        offset, parent_indices, 
-                        NULL);
+      fill_indices_values_by_field_(buffer.str(),                                // setup an IS for each fieldsplit
+                                    indices, NULL, 
+                                    parent_indices, 
+                                    NULL);
 
       prev_indices = indices;                                        // should already be sorted so don't bother doing it again
     }
     else
     {
-      fill_is_by_field_(buffer.str(),
-                        is, indices, 
-                        offset, parent_indices,
-                        &prev_indices);
+      fill_indices_values_by_field_(buffer.str(),
+                                    indices, NULL, 
+                                    parent_indices,
+                                    &prev_indices);
 
       prev_indices.insert(prev_indices.end(), indices.begin(), indices.end());
       std::sort(prev_indices.begin(), prev_indices.end());           // sort the vector of prev_indices
     }
 
-    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
+    IS is = convert_vector_to_is((*(*system_).mesh()).mpi_comm(), 
+                                 indices,
+                                 parent_offset, parent_indices);
+
     buffer.str(""); buffer << optionpath << 
                                         "/fieldsplit[" 
                                          << i << "]/name";
@@ -1083,6 +1085,21 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
     serr = Spud::get_option(buffer.str(), fsname);
     spud_err(buffer.str(), serr);
 
+    buffer.str(""); buffer << optionpath << "/fieldsplit[" 
+                                    << i << "]/monitors/view_index_set";
+    if (Spud::have_option(buffer.str()))
+    {
+      if (dolfin::MPI::rank((*(*system_).mesh()).mpi_comm())==0)
+      {
+        dolfin::log(dolfin::INFO, "ISView: %s (%s)", 
+                                    fsname.c_str(), optionpath.c_str());
+      }
+      perr = ISView(is, 
+                PETSC_VIEWER_STDOUT_((*(*system_).mesh()).mpi_comm()));
+      CHKERRV(perr);                                                   // isview?
+    }
+
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
     buffer.str(""); buffer << prefix << fsname;
     perr = PCFieldSplitSetIS(pc, buffer.str().c_str(), is);          // set the fs using that IS
     CHKERRV(perr);
@@ -1305,11 +1322,11 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
 // field.
 // Additionally the resulting IS is checked for consistency with any parents or siblings in the tree.
 //*******************************************************************|************************************************************//
-void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is, 
-                                         std::vector<uint> &child_indices, 
-                                         const uint &offset,
-                                         const std::vector<uint>* parent_indices,
-                                         const std::vector<uint>* sibling_indices)
+void SpudSolverBucket::fill_indices_values_by_field_(const std::string &optionpath,
+                                                     std::vector<uint> &child_indices, 
+                                                     PETScVector_ptr values,
+                                                     const std::vector<uint>* parent_indices,
+                                                     const std::vector<uint>* sibling_indices)
 {
 
   std::stringstream buffer;                                          // optionpath buffer
@@ -1319,6 +1336,12 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
   buffer.str(""); buffer << optionpath << "/field";                  // loop over the fields used to describe this IS
   int nfields = Spud::option_count(buffer.str());
 
+  PETScVector_ptr tmp_values;
+  if (values)
+  {
+    tmp_values.reset( new dolfin::PETScVector(*values) );
+  }
+ 
   child_indices.clear();
   if (nfields==0)                                                    // if no fields have been specified... **no fields**
   {
@@ -1327,6 +1350,10 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
     for (uint i = ownership_range.first; i < ownership_range.second; i++)
     {
       child_indices.push_back(i);
+      if (tmp_values)
+      {
+        (*tmp_values).setitem(i, 1.0);
+      }
     }
   }
   else
@@ -1361,47 +1388,38 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
       std::vector<int>* components = NULL;
       std::vector<int>* region_ids = NULL;
       std::vector<int>* boundary_ids = NULL;
+      dolfin::Expression* value_exp = NULL;
+      double *value_const = NULL;
       buffer.str(""); buffer << optionpath << "/field[" << i << "]";
-      is_by_field_restrictions_(buffer.str(),                        // get any restrictions on the IS
-                                components, region_ids, boundary_ids, 
-                                fieldshape, fieldsymmetric);
+      field_restrictions_(buffer.str(),                              // get any restrictions on the IS
+                          components, region_ids, boundary_ids, 
+                          value_exp, value_const, 
+                          fieldshape, fieldsymmetric);
      
       std::vector<uint> tmp_indices;
-      tmp_indices  = functionspace_dofs(functionspace, 
-                                        (*system_).celldomains(),
-                                        (*system_).facetdomains(),
-                                        components, region_ids, 
-                                        boundary_ids);
+      tmp_indices  = functionspace_dofs_values(functionspace, 
+                                               (*system_).celldomains(),
+                                               (*system_).facetdomains(),
+                                               components, region_ids, 
+                                               boundary_ids,
+                                               tmp_values, value_exp, value_const);
 
       child_indices.insert(child_indices.end(), tmp_indices.begin(), tmp_indices.end());
 
-      destroy_is_field_restrictions_(components, region_ids, boundary_ids);
+      destroy_field_restrictions_(components, region_ids, 
+                                  boundary_ids, value_exp, 
+                                  value_const);
     }
   }
 
-  restrict_is_indices(child_indices, (*system_).functionspace(), 
-                                     parent_indices, 
-                                     sibling_indices);
+  restrict_indices(child_indices, 
+                   (*system_).functionspace(), 
+                   parent_indices, 
+                   sibling_indices);
 
-  is = convert_vector_to_is((*(*system_).mesh()).mpi_comm(), 
-                            child_indices,
-                            offset, parent_indices);
-
-  if (Spud::have_option(optionpath+"/monitors/view_index_set"))
+  if(values)
   {
-    buffer.str(""); buffer << optionpath << "/name";                 // IS Name
-    std::string isname;
-    serr = Spud::get_option(buffer.str(), isname);
-    spud_err(buffer.str(), serr);
-    
-    if (dolfin::MPI::rank((*(*system_).mesh()).mpi_comm())==0)
-    {
-      dolfin::log(dolfin::INFO, "ISView: %s (%s)", 
-                                  isname.c_str(), optionpath.c_str());
-    }
-    perr = ISView(is, 
-              PETSC_VIEWER_STDOUT_((*(*system_).mesh()).mpi_comm()));
-    CHKERRV(perr);                                                   // isview?
+    restrict_values(values, tmp_values, child_indices);
   }
 
 }
@@ -1410,7 +1428,7 @@ void SpudSolverBucket::fill_is_by_field_(const std::string &optionpath, IS &is,
 // fill a petsc nullspace object using the options in the optionpath provided
 //*******************************************************************|************************************************************//
 void SpudSolverBucket::fill_nullspace_(const std::string &optionpath, MatNullSpace &SP,
-                                       const std::vector<uint>* parent_indices)
+                                       const uint &parent_offset, const std::vector<uint>* parent_indices)
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
@@ -1419,35 +1437,110 @@ void SpudSolverBucket::fill_nullspace_(const std::string &optionpath, MatNullSpa
   buffer.str(""); buffer << optionpath << "/null_space";
   int nnulls = Spud::option_count(buffer.str());                     // how many null spaces?
 
-  std::vector< PETScVector_ptr > nullvecs;                           // collect the null space vectors here (so we maintain a reference)
-  Vec vecs[nnulls];                                                  // and here (for the petsc interface)
+  PETScVector_ptr sysvec = std::dynamic_pointer_cast<dolfin::PETScVector>((*(*system_).function()).vector());
 
-  uint kspsize = 0;
-  if(parent_indices)
-  {                                                                  // if parent_indices is associated then this is a null space
-    kspsize = (*parent_indices).size();                              // of a subksp so the kspsize is not the whole thing
-  }                                                                  // FIXME: broken in parallel?
-  else
-  {                                                                 
-    kspsize = (*(*(*system_).function()).vector()).size();           // otherwise, this is quite easy - just the size of the parent
-  }                                                                  // system function
+  Vec vecs[nnulls];                                                  // and here (for the petsc interface)
 
   for (uint i = 0; i<nnulls; i++)                                    // loop over the nullspaces
   {
 
-    PETScVector_ptr nullvec( new dolfin::PETScVector((*(*system_).mesh()).mpi_comm(), kspsize) );// create a null vector for this null space
+    std::vector<uint> indices;                                       // the indices of the system vector used in the null space
+    PETScVector_ptr nullvec( new dolfin::PETScVector(*sysvec) );
+    (*nullvec).zero();                                               // create a null vector (with the size and attributes of the
+                                                                     // system)
 
     buffer.str(""); buffer << optionpath <<                          // optionpath of the nullspace
                       "/null_space[" << i << "]";
-    fill_values_by_field_(buffer.str(), nullvec, 0.0,                // create a vector describing the nullspace based on this optionpath 
-                                parent_indices, NULL);               // (no siblings as null spaces can overlap)
+    fill_indices_values_by_field_(buffer.str(), indices, nullvec,    // create a vector describing the nullspace based on this optionpath 
+                                  parent_indices);                   // (no siblings as null spaces can overlap)
 
     perr = VecNormalize((*nullvec).vec(), PETSC_NULL); CHKERRV(perr);// normalize the null space vector
 
-    nullvecs.push_back(nullvec);                                     // keep the null vector in scope by grabbing a reference to it
-    vecs[i] = (*nullvec).vec();                                      // also collect it in a petsc compatible format (shouldn't take
-                                                                     // reference though... hence line above, necessary?)
-  
+    buffer.str(""); buffer << optionpath << "/null_space[" 
+                                 << i << "]/remove_from_rhs";
+    if (Spud::have_option(buffer.str()))
+    {
+      nullspacevectors_.push_back(nullvec);                          // permanently store system wide null vector
+    }
+
+    IS sis = convert_vector_to_is((*(*system_).mesh()).mpi_comm(),   // this IS indexes from the system vector into the child
+                                 indices);
+
+    IS pis = convert_vector_to_is((*(*system_).mesh()).mpi_comm(),   // this IS indexes from the parent vector into the child
+                                 indices,
+                                 parent_offset, parent_indices);
+
+    buffer.str(""); buffer << optionpath << "/null_space[" 
+                                 << i << "]/monitors/view_index_set";
+    if (Spud::have_option(buffer.str()))
+    {
+      buffer.str(""); buffer << optionpath << 
+                                          "/null_space[" 
+                                           << i << "]/name";
+      std::string nsname;
+      serr = Spud::get_option(buffer.str(), nsname);
+      spud_err(buffer.str(), serr);
+
+      if (dolfin::MPI::rank((*(*system_).mesh()).mpi_comm())==0)
+      {
+        dolfin::log(dolfin::INFO, "ISView: nullspace (system) %s (%s)", 
+                                    nsname.c_str(), optionpath.c_str());
+      }
+      perr = ISView(sis, 
+                PETSC_VIEWER_STDOUT_((*(*system_).mesh()).mpi_comm()));
+      CHKERRV(perr);                                                 // isview?
+
+      if (dolfin::MPI::rank((*(*system_).mesh()).mpi_comm())==0)
+      {
+        dolfin::log(dolfin::INFO, "ISView: nullspace (subsystem) %s (%s)", 
+                                    nsname.c_str(), optionpath.c_str());
+      }
+      perr = ISView(pis, 
+                PETSC_VIEWER_STDOUT_((*(*system_).mesh()).mpi_comm()));
+      CHKERRV(perr);                                                 // isview?
+    }
+
+    perr = VecCreate((*(*system_).mesh()).mpi_comm(), &vecs[i]);
+    CHKERRV(perr);
+    if (parent_indices)
+    {
+      perr = VecSetSizes(vecs[i], (*parent_indices).size(), 
+                                             PETSC_DECIDE);
+      CHKERRV(perr);
+    }
+    else
+    {
+      perr = VecSetSizes(vecs[i], (*nullvec).local_size(), 
+                                             PETSC_DECIDE);
+      CHKERRV(perr);
+    }
+    perr = VecSetUp(vecs[i]);
+    perr = VecSet(vecs[i], (double) 0.0); CHKERRV(perr);
+
+    VecScatter scatter;
+    perr = VecScatterCreate((*nullvec).vec(), sis, 
+                            vecs[i], pis, 
+                            &scatter);
+    CHKERRV(perr);
+    perr = VecScatterBegin(scatter, 
+                           (*nullvec).vec(), vecs[i], 
+                           INSERT_VALUES, SCATTER_FORWARD);
+    CHKERRV(perr);
+    perr = VecScatterEnd(scatter,
+                         (*nullvec).vec(), vecs[i],
+                         INSERT_VALUES, SCATTER_FORWARD);
+    CHKERRV(perr);
+
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1          // necessary or taken care of when object leaves scope?
+    perr = VecScatterDestroy(&scatter); CHKERRV(perr);      
+    perr = ISDestroy(&sis); CHKERRV(perr);
+    perr = ISDestroy(&pis); CHKERRV(perr);
+    #else
+    perr = VecScatterDestroy(scatter); CHKERRV(perr);
+    perr = ISDestroy(sis); CHKERRV(perr);
+    perr = ISDestroy(pis); CHKERRV(perr);
+    #endif
+
   }
 
   perr = MatNullSpaceCreate((*(*system_).mesh()).mpi_comm(), 
@@ -1487,7 +1580,7 @@ void SpudSolverBucket::fill_constraints_()
 
   perr = SNESVISetVariableBounds(snes_, (*lb).vec(), (*ub).vec());
   CHKERRV(perr);
-                                                                     // UGLY HACK: our constant bounds will be overwritten by the dm
+                                                                     // FIXME: UGLY HACK: our constant bounds will be overwritten by the dm
                                                                      // in SNESSetUp so let's stop it from doing that by attaching a
                                                                      // dummy variable bounds computation - does nothing!
   perr = SNESVISetComputeVariableBounds(snes_, SNESVIDummyComputeVariableBounds);
@@ -1504,530 +1597,34 @@ void SpudSolverBucket::fill_constraints_()
 void SpudSolverBucket::fill_bound_(const std::string &optionpath, PETScVector_ptr &bound, const double &background_value)
 {
 
-  uint size = 0;
-  size = (*(*(*system_).function()).vector()).local_size();
-  bound.reset( new dolfin::PETScVector((*(*system_).mesh()).mpi_comm(), size) );
+  PETScVector_ptr sysvec = std::dynamic_pointer_cast<dolfin::PETScVector>((*(*system_).function()).vector());
+  bound.reset( new dolfin::PETScVector(*sysvec) );
+
+  std::vector<double> background((*bound).local_size(), background_value);
+  (*bound).set_local(background);
+  (*bound).apply("insert");
+  background.clear();
 
   if (Spud::have_option(optionpath))
   {
-    fill_values_by_field_(optionpath, bound, background_value,        // create a vector describing a bound based on this optionpath 
-                                NULL, NULL);
+    std::vector<uint> indices;
+    fill_indices_values_by_field_(optionpath, indices, bound);
+    indices.clear();
   }
-  else
-  {
-    std::vector<double> background(size, background_value);
-    (*bound).set_local(background);
-    background.clear();
-  }
-
-}
-
-//*******************************************************************|************************************************************//
-// Fill a vector of values from the options tree.
-// IS's may be set up by field name, components of the field, regions of the domain of the field  and surfaces of the domain of the
-// field.
-// Additionally the resulting IS is checked for consistency with any parents in the tree.
-//*******************************************************************|************************************************************//
-void SpudSolverBucket::fill_values_by_field_(const std::string &optionpath, PETScVector_ptr values,
-                                             const double &background_value,
-                                             const std::vector<uint>* parent_indices,
-                                             const std::vector<uint>* sibling_indices)
-{
-  std::stringstream buffer;                                          // optionpath buffer
-  Spud::OptionError serr;                                            // spud error code
-  PetscErrorCode perr;                                               // petsc error code
-
-  buffer.str(""); buffer << optionpath << "/field";                  // loop over the fields used to describe this vector
-  int nfields = Spud::option_count(buffer.str());
-
-  boost::unordered_map<uint, double> value_map;
-  if (nfields==0)                                                    // if no fields have been specified...
-  {
-    std::pair<uint, uint> ownership_range =                          // the parallel ownership range of the system functionspace
-            (*(*(*system_).functionspace()).dofmap()).ownership_range();
-    for (uint i = ownership_range.first; i < ownership_range.second; i++)
-    {
-      value_map[i] = 1.0;                                            // we assume a constant value of one
-    }
-  }
-  else
-  {
-
-    const bool mixedsystem = (((*system_).fields_size())>1);
-
-    for (uint i = 0; i < nfields; i++)                               // loop over the fields that have been specified
-    {
-
-      std::string fieldname;
-      buffer.str(""); buffer << optionpath << "/field[" << i <<      // get the field name
-                                                            "]/name";
-      serr = Spud::get_option(buffer.str(), fieldname); 
-      spud_err(buffer.str(), serr);
-      
-      FunctionBucket_ptr field = (*system_).fetch_field(fieldname);  // using the name, get the
-      const int fieldindex = (*field).index();                       // field index
-      const std::vector<std::size_t> fieldshape = (*field).shape();  // field shape
-      const bool fieldsymmetric = (*field).symmetric();              // tensor field symmetric
-
-      FunctionSpace_ptr functionspace;                               // grab the functionspace
-      if (mixedsystem)
-      {
-        functionspace = (*(*system_).functionspace())[fieldindex];
-      }
-      else
-      {
-        functionspace = (*system_).functionspace();
-      }
-
-      std::vector<int>* components = NULL;
-      std::vector<int>* region_ids = NULL;
-      std::vector<int>* boundary_ids = NULL;
-      buffer.str(""); buffer << optionpath 
-                                    << "/field[" << i << "]";
-      is_by_field_restrictions_(buffer.str(),                        // get the standard restrictions on an IS
-                                components, region_ids, boundary_ids,
-                                fieldshape, fieldsymmetric);
-     
-      Expression_ptr value_exp;
-      buffer.str(""); buffer << optionpath << "/field[" 
-                                            << i << "]/python";
-      if (Spud::have_option(buffer.str()))
-      {
-        std::string pyfunction;
-        serr = Spud::get_option(buffer.str(), pyfunction);
-        spud_err(buffer.str(), serr);
-
-        if (fieldshape.size()==0)
-        {
-          value_exp.reset( new PythonExpression(pyfunction) );
-        }
-        else if (fieldshape.size()==1)
-        {
-          int size = (*field).size();
-          if (components)
-          {
-            size = (*components).size();
-          }
-          value_exp.reset( new PythonExpression(size, pyfunction) );
-        }
-        else                                                         // FIXME: Tensor support!
-        {
-          dolfin::error("Tensor value maps not implemented yet.");
-        }
-      }
-
-      double *value_const = NULL;
-      buffer.str(""); buffer << optionpath << "/field[" 
-                                            << i << "]/constant";
-      if (Spud::have_option(buffer.str()))
-      {
-        value_const = new double;
-        serr = Spud::get_option(buffer.str(), *value_const);
-        spud_err(buffer.str(), serr);
-      }
-
-      boost::unordered_map<uint, double> tmp_map;
-      buffer.str(""); buffer << optionpath << "/field[" << i << "]";
-      tmp_map = field_value_map_(buffer.str(), functionspace,        // for each field construct a map describing the indices and
-                             components, region_ids,                 // values
-                             boundary_ids, value_exp, value_const);
-      value_map.insert(tmp_map.begin(), tmp_map.end());
-
-      destroy_is_field_restrictions_(components, 
-                                     region_ids, 
-                                     boundary_ids);
-      if(value_const)
-      {
-        delete(value_const);
-        value_const = NULL;
-      }
-
-    }
-  }
-
-  std::vector<uint> child_indices;                    
-  for (boost::unordered_map<uint, double>::const_iterator            // construct a vector of indices which we'll restrict and order then use
-                                              c_it = value_map.begin(); // to index the map
-                                              c_it != value_map.end();
-                                              c_it++)
-  {
-    child_indices.push_back((*c_it).first);
-  }
-
-  restrict_is_indices(child_indices, (*system_).functionspace(), parent_indices, sibling_indices);// restrict based on the parents (intersection) and possibly
-                                                                     // siblings 
-
-  PetscInt n=child_indices.size();                                   // setup a simpler structure for petsc
-  assert(n>0);
-  PetscInt *indices;
-  PetscMalloc(n*sizeof(PetscInt), &indices);
-  dolfin::PETScVector vvec((*(*system_).mesh()).mpi_comm(), n);      // create a local vector of local size length 
- 
-  dolfin::la_index ind = 0;
-  if(parent_indices)
-  {                                                                  // we have been passed a list of parent indices... 
-                                                                     // our child indices must be a  subset of this list and indexed
-                                                                     // into it so let's do that now while we convert structures...
-    uint p_size = (*parent_indices).size();
-    uint p_ind = 0;
-    for (std::vector<uint>::const_iterator                           // loop over the child indices
-                                        c_it = child_indices.begin(); 
-                                        c_it != child_indices.end(); 
-                                        c_it++)
-    {
-      while ((*parent_indices)[p_ind] != *c_it)                      // child_indices is sorted, so parent_indices should be too...
-      {                                                              // search parent_indices until the current child index is found
-        p_ind++;
-        if (p_ind == p_size)                                         // or we reach the end of the parent_indices...
-        {                                                            // and throw an error
-          dolfin::error("IS indices are not a subset of a parent fieldsplit, shouldn't happen here.");
-        }
-      }
-      indices[ind] = p_ind;                                          // found the child index in the parent_indices so copy it into
-                                                                     // the PetscInt array
-      vvec.set(&value_map[(*c_it)], 1, &ind);                        // set the null vector to the value in the map
-      ind++;                                                         // increment the array index
-      p_ind++;                                                       // indices shouldn't be repeated so increment the parent too
-    } 
-    assert(ind==n);                                                  // these should be equal
-  }
-  else
-  {
-    for (std::vector<uint>::const_iterator                           // loop over the child_indices
-                                      ind_it = child_indices.begin(); 
-                                      ind_it != child_indices.end(); 
-                                      ind_it++)
-    {
-      indices[ind] = *ind_it;                                        // insert them into the PetscInt array
-      vvec.set(&value_map[(*ind_it)], 1, &ind);                        // set the null vector to the value in the map
-      ind++;                                                         // increment the array index
-    }
-    // these should be equal
-    assert(ind==n);                                                  // these should be equal
-  }
-
-  IS is;
-  #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
-  perr = ISCreateGeneral((*(*system_).mesh()).mpi_comm(), n, indices, 
-                                    PETSC_OWN_POINTER, &is);         // create the general index set based on the indices
-  #else
-  perr = ISCreateGeneral((*(*system_).mesh()).mpi_comm(), n, indices, 
-                                                       &is);         // create the general index set based on the indices
-  PetscFree(indices);                                                // free the PetscInt array of indices
-  #endif
-  CHKERRV(perr);
-   
-  if (Spud::have_option(optionpath+"/monitors/view_index_set"))
-  {
-    if (dolfin::MPI::rank((*(*system_).mesh()).mpi_comm())==0)
-    {
-      buffer.str(""); buffer << optionpath << "/name";               // IS Name
-      if (Spud::have_option(buffer.str()))
-      {
-        std::string isname;
-        serr = Spud::get_option(buffer.str(), isname);
-        spud_err(buffer.str(), serr);
-        dolfin::log(dolfin::INFO, "ISView: %s (%s)", 
-                                    isname.c_str(), optionpath.c_str());
-      }
-      else
-      {
-        dolfin::log(dolfin::INFO, "ISView: (%s)", 
-                                    optionpath.c_str());
-      }
-    }
-    perr = ISView(is, 
-           PETSC_VIEWER_STDOUT_((*(*system_).mesh()).mpi_comm())); 
-    CHKERRV(perr);                                                   // isview?
-  }
-
-  std::vector<double> background((*values).local_size(), background_value);
-  (*values).set_local(background);
-  background.clear();
-
-  VecScatter scatter;                                                // create a petsc scatter object from an object with the same 
-  perr = VecScatterCreate(vvec.vec(), PETSC_NULL,                    // structure as the vvec vector to one with the same structure
-                          (*values).vec(), is, &scatter);            // as the null vector using the IS
-  CHKERRV(perr);
-  perr = VecScatterBegin(scatter, vvec.vec(),                        // scatter from the vvec vector to the null vector
-                         (*values).vec(), INSERT_VALUES, 
-                         SCATTER_FORWARD); 
-  CHKERRV(perr);
-  perr = VecScatterEnd(scatter, vvec.vec(), 
-                       (*values).vec(), INSERT_VALUES, 
-                       SCATTER_FORWARD); 
-  CHKERRV(perr);
-  #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1            // necessary or taken care of when object leaves scope?
-  perr = VecScatterDestroy(&scatter); CHKERRV(perr);      
-  perr = ISDestroy(&is); CHKERRV(perr);
-  #else
-  perr = VecScatterDestroy(scatter); CHKERRV(perr);
-  perr = ISDestroy(is); CHKERRV(perr);
-  #endif
-
-  (*values).apply("");                                               // finish assembly of the null vector, just in case
-
-}
-
-//*******************************************************************|************************************************************//
-// return a map from dofs to null space values from the given functionspace for a field
-//*******************************************************************|************************************************************//
-boost::unordered_map<uint, double> SpudSolverBucket::field_value_map_(const std::string &optionpath,
-                                                                   const FunctionSpace_ptr functionspace,
-                                                                   const std::vector<int>* components,
-                                                                   const std::vector<int>* region_ids,
-                                                                   const std::vector<int>* boundary_ids, 
-                                                                   Expression_ptr value_exp, const double *value_const,
-                                                                   const uint parent_component,
-                                                                   uint rank, uint exp_index)
-{
-  std::stringstream buffer;                                          // optionpath buffer
-  Spud::OptionError serr;                                            // spud error code
-
-  assert(rank<=2);                                                   // component logic below only makes sense for rank <= 2
-
-  boost::unordered_map<uint, double> value_map;
-
-  const uint num_sub_elements = (*(*functionspace).element()).num_sub_elements();
-
-  if (num_sub_elements>0)
-  {
-
-    for (uint i = 0; i < num_sub_elements; i++)
-    {
-      if (components)
-      {
-        std::vector<int>::const_iterator comp = std::find((*components).begin(), 
-                                           (*components).end(), 
-                                           parent_component*num_sub_elements + i);
-        if (comp == (*components).end())
-        {
-          continue;                                                  // component not requested so continue
-        }
-        exp_index = comp - (*components).begin();                    // work out the index into the expression for this component
-      }
-      else
-      {
-        exp_index = i;
-      }
-
-      boost::unordered_map<uint, double> tmp_map;
-      tmp_map = field_value_map_(optionpath, (*functionspace)[i], 
-                                 components, region_ids,
-                                 boundary_ids, value_exp, value_const, 
-                                 (parent_component*num_sub_elements + i), 
-                                 rank++, exp_index);
-      value_map.insert(tmp_map.begin(), tmp_map.end());
-    }
-
-    return value_map;
-  }
-  
-  assert(num_sub_elements==0);
-
-  std::shared_ptr<const dolfin::GenericDofMap> dofmap = (*functionspace).dofmap();
-
-  if (boundary_ids)                                                  // do we have boundary ids specified?
-  {                                                                  // yes...
-    if (region_ids)                                                  // if we have boundary_ids then we're only interested
-    {                                                                // in cell dofs if we have region_ids specified too
-      value_map = cell_value_map_(dofmap, region_ids, value_exp, value_const, exp_index);
-    }
-    boost::unordered_map<uint, double> facet_value_map;
-    facet_value_map = facet_value_map_(dofmap, boundary_ids, value_exp, value_const, exp_index);
-    value_map.insert(facet_value_map.begin(), facet_value_map.end());
-  }
-  else
-  {
-    value_map = cell_value_map_(dofmap, region_ids, value_exp, value_const, exp_index);
-  }
-
-  return value_map;
-
-}
-
-//*******************************************************************|************************************************************//
-// return an unordered map from dofs to null space values from the given dofmap possibly just for the region ids specified
-//*******************************************************************|************************************************************//
-boost::unordered_map<uint, double> SpudSolverBucket::cell_value_map_(const std::shared_ptr<const dolfin::GenericDofMap> dofmap,
-                                                                  const std::vector<int>* region_ids,
-                                                                  Expression_ptr value_exp, const double* value_const,
-                                                                  const uint &exp_index)
-{
-  Spud::OptionError serr;                                            // spud error code
-
-  boost::unordered_map<uint, double> value_map;
-
-  Mesh_ptr mesh = (*system_).mesh();                                 // get the mesh
-
-  const uint gdim = (*mesh).geometry().dim();                        // set up data for expression evaluation
-  boost::multi_array<double, 2> coordinates(boost::extents[(*dofmap).max_cell_dimension()][gdim]);
-  std::vector<double> vertex_coordinates;
-  dolfin::Array<double> x(gdim);
-  uint value_size = 1;
-  if (value_exp)
-  {
-    for (uint i = 0; i < (*value_exp).value_rank(); i++)
-    {
-      value_size *= (*value_exp).value_dimension(i);
-    }
-    assert(!value_const);
-  }
-  else
-  {
-    assert(value_const);
-  }
-  dolfin::Array<double> values(value_size);
-
-  MeshFunction_size_t_ptr cellidmeshfunction;
-  if (region_ids)
-  {
-    cellidmeshfunction = (*system_).celldomains();
-  }
-
-  for (dolfin::CellIterator cell(*mesh); !cell.end(); ++cell)        // loop over the cells in the mesh
-  {
-    if (region_ids)
-    {
-      int cellid = (*cellidmeshfunction)[(*cell).index()];           // get the cell region id from the mesh function
-
-      std::vector<int>::const_iterator id = std::find((*region_ids).begin(), 
-                                             (*region_ids).end(), cellid);
-      if (id == (*region_ids).end())
-      {
-        continue;                                                    // region id not requested so continue
-      }
-    }
-
-    std::vector<dolfin::la_index> dof_vec = (*dofmap).cell_dofs((*cell).index());
-
-    if(value_exp)
-    {
-      (*cell).get_vertex_coordinates(vertex_coordinates);
-      (*dofmap).tabulate_coordinates(coordinates, vertex_coordinates, *cell);
-    }
-
-    for (uint i = 0; i < dof_vec.size(); i++)                        // loop over the cell dof
-    {
-      if(value_exp)
-      {
-        for (uint j = 0; j < gdim; j++)
-        {
-          x[j] = coordinates[i][j];
-        }
-        (*value_exp).eval(values, x);                                // evaluate te expression
-        value_map[(uint) dof_vec[i]] = values[exp_index];            // and set the null space to that
-      }
-      else
-      {
-        value_map[(uint) dof_vec[i]] = *value_const;                 // and insert each one into the unordered map
-                                                                     // assuming a constant
-      }
-    }
-  }
-
-  return value_map;
-
-}
-
-//*******************************************************************|************************************************************//
-// return an unordered map from dofs to null space values from the given dofmap for the boundary ids specified
-//*******************************************************************|************************************************************//
-boost::unordered_map<uint, double> SpudSolverBucket::facet_value_map_(const std::shared_ptr<const dolfin::GenericDofMap> dofmap,
-                                                                   const std::vector<int>* boundary_ids, 
-                                                                   Expression_ptr value_exp, const double *value_const, 
-                                                                   const uint &exp_index)
-{
-  Spud::OptionError serr;                                            // spud error code
-
-  assert(boundary_ids);
-
-  boost::unordered_map<uint, double> value_map;                         // set up an unordered set of dof
-
-  Mesh_ptr mesh = (*system_).mesh();                                 // get the mesh
-
-  const uint gdim = (*mesh).geometry().dim();
-  boost::multi_array<double, 2> coordinates(boost::extents[(*dofmap).max_cell_dimension()][gdim]);
-  std::vector<double> vertex_coordinates;
-  dolfin::Array<double> x(gdim);
-  uint value_size = 1;
-  if (value_exp)
-  {
-    for (uint i = 0; i < (*value_exp).value_rank(); i++)
-    {
-      value_size *= (*value_exp).value_dimension(i);
-    }
-    assert(!value_const);
-  }
-  else
-  {
-    assert(value_const);
-  }
-  dolfin::Array<double> values(value_size);
-
-  MeshFunction_size_t_ptr facetidmeshfunction = (*system_).facetdomains();
-
-  for (dolfin::FacetIterator facet(*mesh); !facet.end(); ++facet)    // loop over the facets in the mesh
-  {
-    int facetid = (*facetidmeshfunction)[(*facet).index()];          // get the facet boundary id from the mesh function
-
-    for (std::vector<int>::const_iterator id =                       // loop over the boundary ids that have been requested
-                                (*boundary_ids).begin(); 
-                                id != (*boundary_ids).end(); id++)
-    {
-      if(facetid==*id)                                               // check if this facet should be included
-      {                                                              // yes...
-
-        const dolfin::Cell cell(*mesh,                               // get cell to which facet belongs
-               (*facet).entities((*mesh).topology().dim())[0]);      // (there may be two, but pick first)
-
-        const std::size_t facet_number = cell.index(*facet);         // get the local index of the facet w.r.t. the cell
-
-        std::vector<dolfin::la_index> cell_dof_vec;
-        cell_dof_vec = (*dofmap).cell_dofs(cell.index());            // get the cell dof (potentially for all components)
-        
-        std::vector<std::size_t> facet_dof_vec((*dofmap).num_facet_dofs(), 0);
-        (*dofmap).tabulate_facet_dofs(facet_dof_vec, facet_number);
-
-        if (value_exp)
-        {
-          cell.get_vertex_coordinates(vertex_coordinates);
-          (*dofmap).tabulate_coordinates(coordinates, vertex_coordinates, cell);
-        }
-
-        for (uint i = 0; i < facet_dof_vec.size(); i++)              // loop over facet dof
-        {
-          if(value_exp)
-          {
-            for (uint j = 0; j < gdim; j++)
-            {
-              x[j] = coordinates[i][j];
-            }
-            (*value_exp).eval(values, x);                            // evaluate the null space expression
-            value_map[(uint) cell_dof_vec[facet_dof_vec[i]]] = values[exp_index];
-          }
-          else
-          {
-            value_map[(uint) cell_dof_vec[facet_dof_vec[i]]] = *value_const;// and insert each one into the unordered map
-          }                                                          // assuming a constant
-        }                                                         
-      }
-    }
-  }
-
-  return value_map;
 
 }
 
 //*******************************************************************|************************************************************//
 // using the optionpath set up any restrictions we place on the field IS (i.e. region ids, components or boundary_ids)
 //*******************************************************************|************************************************************//
-void SpudSolverBucket::is_by_field_restrictions_(const std::string &optionpath,
-                                                 std::vector<int>* &components,
-                                                 std::vector<int>* &region_ids,
-                                                 std::vector<int>* &boundary_ids,
-                                                 const std::vector<std::size_t> &fieldshape,
-                                                 const bool &fieldsymmetric)
+void SpudSolverBucket::field_restrictions_(const std::string &optionpath,
+                                           std::vector<int>* &components,
+                                           std::vector<int>* &region_ids,
+                                           std::vector<int>* &boundary_ids,
+                                           dolfin::Expression* &value_exp,
+                                           double* &value_const,
+                                           const std::vector<std::size_t> &fieldshape,
+                                           const bool &fieldsymmetric)
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
@@ -2089,15 +1686,62 @@ void SpudSolverBucket::is_by_field_restrictions_(const std::string &optionpath,
     spud_err(buffer.str(), serr);
   }
 
+  buffer.str(""); buffer << optionpath << "/python";
+  if (Spud::have_option(buffer.str()))
+  {
+    std::string pyfunction;
+    serr = Spud::get_option(buffer.str(), pyfunction);
+    spud_err(buffer.str(), serr);
+
+    if (fieldshape.size()==0)
+    {
+      value_exp = new PythonExpression(pyfunction);
+    }
+    else if (fieldshape.size()==1)
+    {
+      int size = fieldshape[0];
+      if (components)
+      {
+        size = (*components).size();
+      }
+      value_exp = new PythonExpression(size, pyfunction);
+    }
+    else if (fieldshape.size()==2)
+    {
+      if (components)
+      {
+        value_exp = new PythonExpression((*components).size(), pyfunction);
+      }
+      else
+      {
+        value_exp = new PythonExpression(fieldshape, pyfunction);
+      }
+    }
+    else
+    {
+      dolfin::error("Unknown rank.");
+    }
+  }
+
+  buffer.str(""); buffer << optionpath << "/constant";
+  if (Spud::have_option(buffer.str()))
+  {
+    value_const = new double;
+    serr = Spud::get_option(buffer.str(), *value_const);
+    spud_err(buffer.str(), serr);
+  }
+
 
 }
 
 //*******************************************************************|************************************************************//
 // destroy any restrictions we place on the field IS (i.e. region ids, components or boundary_ids)
 //*******************************************************************|************************************************************//
-void SpudSolverBucket::destroy_is_field_restrictions_(std::vector<int>* &components,
-                                                      std::vector<int>* &region_ids,
-                                                      std::vector<int>* &boundary_ids)
+void SpudSolverBucket::destroy_field_restrictions_(std::vector<int>* &components,
+                                                   std::vector<int>* &region_ids,
+                                                   std::vector<int>* &boundary_ids,
+                                                   dolfin::Expression* &value_exp,
+                                                   double* &value_const)
 {
   if(components)
   {
@@ -2113,6 +1757,16 @@ void SpudSolverBucket::destroy_is_field_restrictions_(std::vector<int>* &compone
   {
     delete boundary_ids;
     boundary_ids = NULL;
+  }
+  if (value_exp)
+  {
+    delete value_exp;
+    value_exp = NULL;
+  }
+  if (value_const)
+  {
+    delete value_const;
+    value_const = NULL;
   }
 
 }

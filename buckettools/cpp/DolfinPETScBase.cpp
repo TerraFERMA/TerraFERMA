@@ -24,38 +24,44 @@
 
 using namespace buckettools;
 
+//*******************************************************************|************************************************************//
+// return a vector of dofs from the given functionspace for a field
+//*******************************************************************|************************************************************//
 std::vector<uint> buckettools::functionspace_dofs(const FunctionSpace_ptr functionspace,
                                                   const int &component)
 {
   std::vector<int>* components;
   components = new std::vector<int>;
   (*components).push_back(component);
-  std::vector<uint> indices = functionspace_dofs(functionspace, NULL, NULL,
-                                                 components, NULL, NULL);
+  std::vector<uint> indices = functionspace_dofs_values(functionspace, NULL, NULL,
+                                                        components, NULL, NULL,
+                                                        NULL, NULL, NULL);
   delete components;
   components = NULL;
   return indices;
 }
+
 //*******************************************************************|************************************************************//
 // return a vector of dofs from the given functionspace for a field
 //*******************************************************************|************************************************************//
-std::vector<uint> buckettools::functionspace_dofs(const FunctionSpace_ptr functionspace,
-                                                  MeshFunction_size_t_ptr cellidmeshfunction,
-                                                  MeshFunction_size_t_ptr facetidmeshfunction,
-                                                  const std::vector<int>* components,
-                                                  const std::vector<int>* region_ids,
-                                                  const std::vector<int>* boundary_ids,
-                                                  uint depth)
+std::vector<uint> buckettools::functionspace_dofs_values(const FunctionSpace_ptr functionspace,
+                                                         MeshFunction_size_t_ptr cellidmeshfunction,
+                                                         MeshFunction_size_t_ptr facetidmeshfunction,
+                                                         const std::vector<int>* components,
+                                                         const std::vector<int>* region_ids,
+                                                         const std::vector<int>* boundary_ids,
+                                                         PETScVector_ptr values, 
+                                                         const dolfin::Expression* value_exp, const double *value_const,
+                                                         uint depth, uint exp_index)
 {
-  assert(depth<=1);                                                   // component logic below only makes sense if we've 
-                                                                      // only iterated at most once
-
   std::vector<uint> dofs;
   boost::unordered_set<uint> dof_set;
 
   const uint num_sub_elements = (*(*functionspace).element()).num_sub_elements();
   if (num_sub_elements>0)
   {
+    assert(depth==0);                                                // component logic below only makes sense if we only end up
+                                                                     // here on the first iteration
     depth++;
 
     for (uint i = 0; i < num_sub_elements; i++)
@@ -69,13 +75,19 @@ std::vector<uint> buckettools::functionspace_dofs(const FunctionSpace_ptr functi
         {
           continue;                                                  // component not requested so continue
         }
+        exp_index = comp - (*components).begin();                    // work out the index into the expression for this component
+      }
+      else
+      {
+        exp_index = i;
       }
 
       std::vector<uint> tmp_dofs;
-      tmp_dofs = functionspace_dofs((*functionspace)[i], 
-                                    cellidmeshfunction, facetidmeshfunction,
-                                    components, region_ids, boundary_ids,
-                                    depth);
+      tmp_dofs = functionspace_dofs_values((*functionspace)[i], 
+                                           cellidmeshfunction, facetidmeshfunction,
+                                           components, region_ids, boundary_ids,
+                                           values, value_exp, value_const, 
+                                           depth, exp_index);
       dof_set.insert(tmp_dofs.begin(), tmp_dofs.end());
     }
 
@@ -89,21 +101,31 @@ std::vector<uint> buckettools::functionspace_dofs(const FunctionSpace_ptr functi
   {                                                                  // yes, then get the dofs over these boundaries
     if (region_ids)
     {
-      dof_set = cell_dof_set(functionspace, cellidmeshfunction, 
-                                            region_ids);             // if we have boundary_ids then we're only interested
-    }                                                                // in cell dofs if we have region_ids specified too
+      dof_set = cell_dofs_values(functionspace, cellidmeshfunction,  // if we have boundary_ids then we're only interested
+                                  region_ids,                        // in cell dofs if we have region_ids specified too
+                                  values, value_exp, value_const, 
+                                  exp_index);
+    }                                                            
     boost::unordered_set<uint> f_dof_set;
-    f_dof_set = facet_dof_set(functionspace, facetidmeshfunction, 
-                                                 boundary_ids);
+    f_dof_set = facet_dofs_values(functionspace, facetidmeshfunction, 
+                                  boundary_ids,
+                                  values, value_exp, value_const, 
+                                  exp_index);
     dof_set.insert(f_dof_set.begin(), f_dof_set.end());
   }
   else                                                               // no boundary_ids specified so let's hope we have some
   {                                                                  // cells to fill the goody bag with
-    dof_set = cell_dof_set(functionspace, cellidmeshfunction, 
-                                          region_ids);
+    dof_set = cell_dofs_values(functionspace, cellidmeshfunction, 
+                                region_ids,
+                                values, value_exp, value_const, 
+                                exp_index);
   }
 
   dofs.insert(dofs.end(), dof_set.begin(), dof_set.end());
+  if (values)
+  {
+    (*values).apply("insert");
+  }
   return dofs;
 
 }
@@ -112,14 +134,45 @@ std::vector<uint> buckettools::functionspace_dofs(const FunctionSpace_ptr functi
 // return a set of dofs from the given functionspace possibly for a subset of the region ids as specified
 // FIXME: once mesh domain information is used cellidmeshfunction should be taken directly from the mesh
 //*******************************************************************|************************************************************//
-boost::unordered_set<uint> buckettools::cell_dof_set(const FunctionSpace_ptr functionspace,
-                                                     MeshFunction_size_t_ptr cellidmeshfunction,
-                                                     const std::vector<int>* region_ids)
+boost::unordered_set<uint> buckettools::cell_dofs_values(const FunctionSpace_ptr functionspace,
+                                                         MeshFunction_size_t_ptr cellidmeshfunction,
+                                                         const std::vector<int>* region_ids,
+                                                         PETScVector_ptr values, 
+                                                         const dolfin::Expression* value_exp, const double* value_const,
+                                                         const uint &exp_index)
 {
   boost::unordered_set<uint> dof_set;
 
   std::shared_ptr<const dolfin::GenericDofMap> dofmap = (*functionspace).dofmap();
   const_Mesh_ptr mesh = (*functionspace).mesh();
+
+  const uint gdim = (*mesh).geometry().dim();                        // set up data for expression evaluation
+  boost::multi_array<double, 2> coordinates(boost::extents[(*dofmap).max_cell_dimension()][gdim]);
+  std::vector<double> vertex_coordinates;
+  dolfin::Array<double> x(gdim);
+
+  uint value_size = 1;
+  if (value_exp)
+  {
+    for (uint i = 0; i < (*value_exp).value_rank(); i++)
+    {
+      value_size *= (*value_exp).value_dimension(i);
+    }
+    assert(!value_const);
+    assert(values);
+  }
+  dolfin::Array<double> values_array(value_size);
+
+  if (values)
+  {
+    assert(value_const||value_exp);
+  }
+
+  if (value_const)
+  {
+    assert(!value_exp);
+    assert(values);
+  }
 
   for (dolfin::CellIterator cell(*mesh); !cell.end(); ++cell)       // loop over the cells in the mesh
   {
@@ -136,13 +189,34 @@ boost::unordered_set<uint> buckettools::cell_dof_set(const FunctionSpace_ptr fun
     }
 
     std::vector<dolfin::la_index> dof_vec = (*dofmap).cell_dofs((*cell).index());
-    for (std::vector<dolfin::la_index>::const_iterator dof_it =      // loop over the cell dof
-                                    dof_vec.begin(); 
-                                    dof_it < dof_vec.end(); 
-                                    dof_it++)
+
+    if(value_exp)
     {
-      dof_set.insert((uint) *dof_it);                                // and insert each one into the unordered set
-    }                                                                // (i.e. if it hasn't been added already)
+      (*cell).get_vertex_coordinates(vertex_coordinates);
+      (*dofmap).tabulate_coordinates(coordinates, vertex_coordinates, *cell);
+    }
+
+    for (uint i = 0; i < dof_vec.size(); i++)                        // loop over the cell dof
+    {
+      dof_set.insert((uint) dof_vec[i]);                             // and insert each one into the unordered set
+      if (values)
+      {
+        if(value_exp)
+        {
+          for (uint j = 0; j < gdim; j++)
+          {
+            x[j] = coordinates[i][j];
+          }
+          (*value_exp).eval(values_array, x);                        // evaluate te expression
+          (*values).setitem(dof_vec[i], values_array[exp_index]);    // and set the values to that
+        }
+        else
+        {
+          (*values).setitem(dof_vec[i], *value_const);               // and insert each one into the unordered map
+                                                                     // assuming a constant
+        }
+      }
+    }
   }
 
   return dof_set;
@@ -153,14 +227,47 @@ boost::unordered_set<uint> buckettools::cell_dof_set(const FunctionSpace_ptr fun
 // return a set of dofs from the given dofmap for the boundary ids specified
 // FIXME: once mesh domain information is used facetidmeshfunction should be taken directly from the mesh
 //*******************************************************************|************************************************************//
-boost::unordered_set<uint> buckettools::facet_dof_set(const FunctionSpace_ptr functionspace,
-                                                      MeshFunction_size_t_ptr facetidmeshfunction,
-                                                      const std::vector<int>* boundary_ids)
+boost::unordered_set<uint> buckettools::facet_dofs_values(const FunctionSpace_ptr functionspace,
+                                                          MeshFunction_size_t_ptr facetidmeshfunction,
+                                                          const std::vector<int>* boundary_ids,
+                                                          PETScVector_ptr values, 
+                                                          const dolfin::Expression* value_exp, const double* value_const,
+                                                          const uint &exp_index)
 {
   boost::unordered_set<uint> dof_set;                                // set up an unordered set of dof
 
+  assert(boundary_ids);
+
   std::shared_ptr<const dolfin::GenericDofMap> dofmap = (*functionspace).dofmap();
   const_Mesh_ptr mesh = (*functionspace).mesh();
+
+  const uint gdim = (*mesh).geometry().dim();
+  boost::multi_array<double, 2> coordinates(boost::extents[(*dofmap).max_cell_dimension()][gdim]);
+  std::vector<double> vertex_coordinates;
+  dolfin::Array<double> x(gdim);
+
+  uint value_size = 1;
+  if (value_exp)
+  {
+    for (uint i = 0; i < (*value_exp).value_rank(); i++)
+    {
+      value_size *= (*value_exp).value_dimension(i);
+    }
+    assert(!value_const);
+    assert(values);
+  }
+  dolfin::Array<double> values_array(value_size);
+
+  if (values)
+  {
+    assert(value_const||value_exp);
+  }
+
+  if (value_const)
+  {
+    assert(!value_exp);
+    assert(values);
+  }
 
   for (dolfin::FacetIterator facet(*mesh); !facet.end(); ++facet)   // loop over the facets in the mesh
   {
@@ -184,13 +291,34 @@ boost::unordered_set<uint> buckettools::facet_dof_set(const FunctionSpace_ptr fu
         std::vector<std::size_t> facet_dof_vec((*dofmap).num_facet_dofs(), 0);
         (*dofmap).tabulate_facet_dofs(facet_dof_vec, facet_number);
 
-        for (std::vector<std::size_t>::const_iterator dof_it =       // loop over the cell dof
-                                facet_dof_vec.begin(); 
-                                dof_it < facet_dof_vec.end(); 
-                                dof_it++)
+        if (value_exp)
         {
-          dof_set.insert((uint) cell_dof_vec[*dof_it]);              // and insert each one into the unordered set
-        }                                                            // (i.e. if it hasn't been added already)
+          cell.get_vertex_coordinates(vertex_coordinates);
+          (*dofmap).tabulate_coordinates(coordinates, vertex_coordinates, cell);
+        }
+
+        for (uint i = 0; i < facet_dof_vec.size(); i++)              // loop over facet dof
+        {
+          dof_set.insert((uint) cell_dof_vec[facet_dof_vec[i]]);     // and insert each one into the unordered set
+          if (values)
+          {
+            if(value_exp)
+            {
+              for (uint j = 0; j < gdim; j++)
+              {
+                x[j] = coordinates[i][j];
+              }
+              (*value_exp).eval(values_array, x);                    // evaluate the values expression
+              (*values).setitem((uint) cell_dof_vec[facet_dof_vec[i]], 
+                                       values_array[exp_index]);
+            }
+            else
+            {
+              (*values).setitem((uint) cell_dof_vec[facet_dof_vec[i]], 
+                                       *value_const);                // and insert each one into the unordered map
+            }                                                        // assuming a constant
+          }
+        }                                                         
       }
     }
   }
@@ -202,10 +330,10 @@ boost::unordered_set<uint> buckettools::facet_dof_set(const FunctionSpace_ptr fu
 //*******************************************************************|************************************************************//
 // restrict a vector of indices by its parent (intersection) or sibling (complement), also by parallel ownership
 //*******************************************************************|************************************************************//
-void buckettools::restrict_is_indices(std::vector<uint> &indices, 
-                                      const FunctionSpace_ptr functionspace,
-                                      const std::vector<uint>* parent_indices, 
-                                      const std::vector<uint>* sibling_indices)
+void buckettools::restrict_indices(std::vector<uint> &indices, 
+                                   const FunctionSpace_ptr functionspace,
+                                   const std::vector<uint>* parent_indices, 
+                                   const std::vector<uint>* sibling_indices)
 {
 
   std::vector<uint> tmp_indices = indices;
@@ -325,12 +453,48 @@ void buckettools::restrict_is_indices(std::vector<uint> &indices,
   }
 }
 
+void buckettools::restrict_values(PETScVector_ptr values, 
+                                  PETScVector_ptr tmp_values,
+                                  const std::vector<uint> &indices)
+{
+  PetscErrorCode perr;                                               // petsc error code
+
+  assert(values);
+  assert(tmp_values);
+
+  IS is = convert_vector_to_is((*values).mpi_comm(),                 // this IS indexes from the system vector into whatever the
+                               indices);                             // null space vector is (because we haven't supplied
+                                                                     // parent_indices for the conversion)
+  VecScatter scatter;
+  perr = VecScatterCreate((*tmp_values).vec(), is, 
+                          (*values).vec(), is, 
+                          &scatter);
+  CHKERRV(perr);
+  perr = VecScatterBegin(scatter, 
+                         (*tmp_values).vec(), (*values).vec(), 
+                         INSERT_VALUES, SCATTER_FORWARD);
+  CHKERRV(perr);
+  perr = VecScatterEnd(scatter,
+                       (*tmp_values).vec(), (*values).vec(),
+                       INSERT_VALUES, SCATTER_FORWARD);
+  CHKERRV(perr);
+
+  #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1            // necessary or taken care of when object leaves scope?
+  perr = VecScatterDestroy(&scatter); CHKERRV(perr);      
+  perr = ISDestroy(&is); CHKERRV(perr);
+  #else
+  perr = VecScatterDestroy(scatter); CHKERRV(perr);
+  perr = ISDestroy(is); CHKERRV(perr);
+  #endif
+
+}
+
 //*******************************************************************|************************************************************//
 // Fill a petsc IS object based on the supplied indices.
 //*******************************************************************|************************************************************//
 IS buckettools::convert_vector_to_is(const MPI_Comm &comm,
                                      const std::vector<uint> &indices,
-                                     const uint &offset, 
+                                     const uint &parent_offset, 
                                      const std::vector<uint>* parent_indices)
 {
 
@@ -342,7 +506,10 @@ IS buckettools::convert_vector_to_is(const MPI_Comm &comm,
   assert(pos==indices.end());                                        // test that the incoming indices are sorted
 
   PetscInt n=indices.size();                                         // setup a simpler structure for petsc
-  assert(n>0);
+  if (dolfin::MPI::size(comm) == 1)
+  {
+    assert(n>0);                                                     // not necessarily true on more than one process
+  }
   PetscInt *pindices;
   PetscMalloc(n*sizeof(PetscInt), &pindices);
 
@@ -366,7 +533,7 @@ IS buckettools::convert_vector_to_is(const MPI_Comm &comm,
           dolfin::error("IS indices are not a subset of a parent fieldsplit, shouldn't happen here.");
         }
       }
-      pindices[ind] = p_ind + offset;                                // found the child index in the parent_indices so copy it into
+      pindices[ind] = p_ind + parent_offset;                         // found the child index in the parent_indices so copy it into
                                                                      // the PetscInt array
       ind++;                                                         // increment the array index
       p_ind++;                                                       // indices shouldn't be repeated so increment the parent too

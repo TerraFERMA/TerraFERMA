@@ -156,7 +156,9 @@ namespace buckettools
                             const std::string &bcname,
                             const std::vector<int> &bcids);
 
-    void fill_point_(const std::string &optionpath);                 // fill in the point for this function
+    void fill_reference_point_(const std::string &optionpath);       // fill in the point for this function
+
+    void fill_zero_point_(const std::string &optionpath);            // fill in the point for this function
 
     void fill_cap_(const std::string &optionpath);                   // fill in a cap for this function
 

@@ -79,7 +79,7 @@ void SystemBucket::solve()
   {
     (*(*s_it).second).solve();
 
-    cap_values();
+    postprocess_values();
 
     (*(*residualfunction_).vector()) = (*std::dynamic_pointer_cast< dolfin::GenericVector >((*(*s_it).second).residual_vector()));
     // update_nonlinear...
@@ -217,12 +217,12 @@ void SystemBucket::resetcalculated()
 //*******************************************************************|************************************************************//
 // cap the value of the fields in this system
 //*******************************************************************|************************************************************//
-void SystemBucket::cap_values()
+void SystemBucket::postprocess_values()
 {
   for (FunctionBucket_it f_it = fields_begin();
                                   f_it != fields_end(); f_it++)
   {
-    (*(*f_it).second).cap_values();
+    (*(*f_it).second).postprocess_values();
   }
 }
 
@@ -735,35 +735,35 @@ void SystemBucket::output(const bool &write_vis)
 }
 
 //*******************************************************************|************************************************************//
-// return an iterator to the beginning of the points_ vector
+// return an iterator to the beginning of the referencepoints_ vector
 //*******************************************************************|************************************************************//
-std::vector<ReferencePoints_ptr>::iterator SystemBucket::points_begin()
+std::vector<ReferencePoints_ptr>::iterator SystemBucket::referencepoints_begin()
 {
-  return points_.begin();
+  return referencepoints_.begin();
 }
 
 //*******************************************************************|************************************************************//
-// return a constant iterator to the beginning of the points_ vector
+// return a constant iterator to the beginning of the referencepoints_ vector
 //*******************************************************************|************************************************************//
-std::vector<ReferencePoints_ptr>::const_iterator SystemBucket::points_begin() const
+std::vector<ReferencePoints_ptr>::const_iterator SystemBucket::referencepoints_begin() const
 {
-  return points_.begin();
+  return referencepoints_.begin();
 }
 
 //*******************************************************************|************************************************************//
-// return an iterator to the end of the points_ vector
+// return an iterator to the end of the referencepoints_ vector
 //*******************************************************************|************************************************************//
-std::vector<ReferencePoints_ptr>::iterator SystemBucket::points_end()
+std::vector<ReferencePoints_ptr>::iterator SystemBucket::referencepoints_end()
 {
-  return points_.end();
+  return referencepoints_.end();
 }
 
 //*******************************************************************|************************************************************//
-// return a constant iterator to the end of the points_ vector
+// return a constant iterator to the end of the referencepoints_ vector
 //*******************************************************************|************************************************************//
-std::vector<ReferencePoints_ptr>::const_iterator SystemBucket::points_end() const
+std::vector<ReferencePoints_ptr>::const_iterator SystemBucket::referencepoints_end() const
 {
-  return points_.end();
+  return referencepoints_.end();
 }
 
 //*******************************************************************|************************************************************//
@@ -1012,8 +1012,8 @@ void SystemBucket::apply_referencepoints_()
                                 f_it != orderedfields_end(); f_it++)
   {
     for (ReferencePoints_const_it                                    // loop over all the points
-         p_it = (*(*f_it).second).points_begin(); 
-         p_it != (*(*f_it).second).points_end(); p_it++)
+         p_it = (*(*f_it).second).referencepoints_begin(); 
+         p_it != (*(*f_it).second).referencepoints_end(); p_it++)
     {
       (*(*p_it).second).apply((*(*oldfunction_).vector()));
       (*(*p_it).second).apply((*(*iteratedfunction_).vector()));

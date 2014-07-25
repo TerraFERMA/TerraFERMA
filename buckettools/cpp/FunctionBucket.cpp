@@ -526,29 +526,54 @@ void FunctionBucket::update_nonlinear()
 //*******************************************************************|************************************************************//
 // cap the values in the vector associated with this functionspace
 //*******************************************************************|************************************************************//
-void FunctionBucket::cap_values()
+void FunctionBucket::postprocess_values()
 {
+  assert(functiontype_ == FUNCTIONBUCKET_FIELD);
+
   const std::size_t lsize = size();
 
   bool cap = false;
+  bool zero = false;
   for(uint i = 0; i < lsize; i++)
   {
     if (upper_cap_[i] || lower_cap_[i])
     {
       cap = true;
     }
+    if (zeropoints_[i])
+    {
+      zero = true;
+    }
   }
 
-  if (!cap)
+  if (!(cap||zero))
   {
     return;
   }
 
   PetscErrorCode perr;                                               // petsc error code
-  GenericVector_ptr sysvec = (*(*system()).function()).vector();
+  PETScVector_ptr sysvec = std::dynamic_pointer_cast<dolfin::PETScVector>((*(*system()).iteratedfunction()).vector());
 
   for (uint i = 0; i < lsize; i++)
   {
+    double value = 0.0;
+    if (zeropoints_[i])
+    {
+      std::vector< Array_double_ptr > values;
+      (*zeropoints_[i]).eval(values, *function(), (*system_).mesh());
+      double lvalue = 0.0;
+      if (values.size()>0)
+      {
+        assert(values.size()==1);
+        lvalue = (*values[0])[i];
+      }
+      std::size_t nvals = dolfin::MPI::sum((*(*system_).mesh()).mpi_comm(),  // we calculate this just in case more than 1 process
+                                   values.size());                   // found the same value
+      assert(nvals>0);
+      value = dolfin::MPI::sum((*(*system_).mesh()).mpi_comm(),
+                               lvalue)/nvals;
+    }
+
     PetscInt np;
     const PetscInt *pindices;
     perr = ISGetLocalSize(component_is_[i], &np);
@@ -573,13 +598,20 @@ void FunctionBucket::cap_values()
           (*sysvec).setitem(pindices[j], *lower_cap_[i]);
         }
       }
+
+      if (zeropoints_[i])
+      {
+        (*sysvec).setitem(pindices[j], (*sysvec)[pindices[j]]-value);
+      }
     }
 
     perr = ISRestoreIndices(component_is_[i], &pindices);
     CHKERRV(perr);
+
   }
 
   (*sysvec).apply("insert");
+  *(*(*system_).function()).vector() = *sysvec;
 }
 
 //*******************************************************************|************************************************************//
@@ -634,7 +666,7 @@ void FunctionBucket::copy_diagnostics(FunctionBucket_ptr &function, SystemBucket
 
   (*function).bcexpressions_ = bcexpressions_;
   (*function).bcs_ = bcs_;
-  (*function).points_ = points_;
+  (*function).referencepoints_ = referencepoints_;
 
 }
 
@@ -923,10 +955,10 @@ int_DirichletBC_const_it FunctionBucket::ordereddirichletbcs_end() const
 //*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a reference point in the function bucket data maps
 //*******************************************************************|************************************************************//
-void FunctionBucket::register_point(ReferencePoints_ptr point, const std::string &name)
+void FunctionBucket::register_referencepoint(ReferencePoints_ptr point, const std::string &name)
 {
-  ReferencePoints_it p_it = points_.find(name);                       // check if the name already exists
-  if (p_it != points_.end())
+  ReferencePoints_it p_it = referencepoints_.find(name);             // check if the name already exists
+  if (p_it != referencepoints_.end())
   {
     dolfin::error(                                                   // if it does, issue an error
         "ReferencePoints named \"%s\" already exists in function.", 
@@ -934,40 +966,40 @@ void FunctionBucket::register_point(ReferencePoints_ptr point, const std::string
   }
   else
   {
-    points_[name] = point;                                           // if not, register the bc
+    referencepoints_[name] = point;                                  // if not, register the bc
   }
 }
 
 //*******************************************************************|************************************************************//
-// return an iterator to the beginning of the points_ map
+// return an iterator to the beginning of the referencepoints_ map
 //*******************************************************************|************************************************************//
-ReferencePoints_it FunctionBucket::points_begin()
+ReferencePoints_it FunctionBucket::referencepoints_begin()
 {
-  return points_.begin();
+  return referencepoints_.begin();
 }
 
 //*******************************************************************|************************************************************//
-// return a constant iterator to the beginning of the points_ map
+// return a constant iterator to the beginning of the referencepoints_ map
 //*******************************************************************|************************************************************//
-ReferencePoints_const_it FunctionBucket::points_begin() const
+ReferencePoints_const_it FunctionBucket::referencepoints_begin() const
 {
-  return points_.begin();
+  return referencepoints_.begin();
 }
 
 //*******************************************************************|************************************************************//
-// return an iterator to the end of the points_ map
+// return an iterator to the end of the referencepoints_ map
 //*******************************************************************|************************************************************//
-ReferencePoints_it FunctionBucket::points_end()
+ReferencePoints_it FunctionBucket::referencepoints_end()
 {
-  return points_.end();
+  return referencepoints_.end();
 }
 
 //*******************************************************************|************************************************************//
-// return a constant iterator to the end of the points_ map
+// return a constant iterator to the end of the referencepoints_ map
 //*******************************************************************|************************************************************//
-ReferencePoints_const_it FunctionBucket::points_end() const
+ReferencePoints_const_it FunctionBucket::referencepoints_end() const
 {
-  return points_.end();
+  return referencepoints_.end();
 }
 
 //*******************************************************************|************************************************************//
@@ -1093,7 +1125,7 @@ void FunctionBucket::fill_is_()
     for (int i = 0; i < lsize; i++)
     {
       std::vector<uint> indices = functionspace_dofs(functionspace(), i);
-      restrict_is_indices(indices, functionspace());
+      restrict_indices(indices, functionspace());
       component_is_[i] = convert_vector_to_is((*(*system_).mesh()).mpi_comm(), 
                                               indices);
     }
@@ -1122,7 +1154,7 @@ void FunctionBucket::fill_is_()
         }
 
         std::vector<uint> indices = functionspace_dofs(functionspace(), kf);
-        restrict_is_indices(indices, functionspace());
+        restrict_indices(indices, functionspace());
         component_is_[k] = convert_vector_to_is((*(*system_).mesh()).mpi_comm(), 
                                                 indices);
       }

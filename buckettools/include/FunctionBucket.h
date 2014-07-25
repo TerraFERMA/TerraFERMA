@@ -23,6 +23,7 @@
 #define __FUNCTIONBUCKET_H
 
 #include "BoostTypes.h"
+#include "PointDetectors.h"
 #include <dolfin.h>
 
 namespace buckettools
@@ -211,7 +212,7 @@ namespace buckettools
 
     void update_timedependent();                                     // update the function if it is potentially time dependent
 
-    void cap_values();                                               // cap the values in the system vector associated with a field
+    void postprocess_values();                                       // cap the values in the system vector associated with a field
 
     //***************************************************************|***********************************************************//
     // Filling data
@@ -290,16 +291,16 @@ namespace buckettools
     // Reference point data access
     //***************************************************************|***********************************************************//
 
-    void register_point(ReferencePoints_ptr point, 
+    void register_referencepoint(ReferencePoints_ptr point, 
                                         const std::string &name);    // register a point in this function
 
-    ReferencePoints_it points_begin();                                // return an iterator to the beginning of the points of this function
+    ReferencePoints_it referencepoints_begin();                      // return an iterator to the beginning of the points of this function
 
-    ReferencePoints_const_it points_begin() const;                    // return a constant iterator to the beginning of the points of this function
+    ReferencePoints_const_it referencepoints_begin() const;          // return a constant iterator to the beginning of the points of this function
 
-    ReferencePoints_it points_end();                                  // return an iterator to the end of the points of this function
+    ReferencePoints_it referencepoints_end();                        // return an iterator to the end of the points of this function
 
-    ReferencePoints_const_it points_end() const;                      // return a constant iterator to the end of the points of this function
+    ReferencePoints_const_it referencepoints_end() const;            // return a constant iterator to the end of the points of this function
 
     //***************************************************************|***********************************************************//
     // Output functions
@@ -427,7 +428,9 @@ namespace buckettools
 
     virtual void checkpoint_options_();                              // checkpoint the options system for the functionbucket
 
-    std::map< std::string, ReferencePoints_ptr > points_;            // map from bc::id names to (boost shared) pointers to bcs
+    std::map< std::string, ReferencePoints_ptr > referencepoints_;   // map from bc::id names to (boost shared) pointers to bcs
+
+    std::vector< PointDetectors_ptr > zeropoints_;                   // a list of zero points
     
     //***************************************************************|***********************************************************//
     // Emptying data

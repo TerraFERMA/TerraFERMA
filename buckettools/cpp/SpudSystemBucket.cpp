@@ -64,7 +64,7 @@ void SpudSystemBucket::fill()
 
   fill_bcs_();                                                       // fill in data about the bcs relative to the system (includes
                                                                      // periodic)
-  fill_points_();                                                    // initialize the reference point array of this system
+  fill_referencepoints_();                                           // initialize the reference point array of this system
  
   fill_coeffs_();                                                    // initialize the coefficient expressions (and constants)
                                                                      // (can't do coefficient functions now because it's unlikely we 
@@ -382,16 +382,16 @@ void SpudSystemBucket::fill_bcs_()
 //*******************************************************************|************************************************************//
 // fill in the data about the system points (just grabs them from the fields)
 //*******************************************************************|************************************************************//
-void SpudSystemBucket::fill_points_()
+void SpudSystemBucket::fill_referencepoints_()
 {
   for (int_FunctionBucket_const_it f_it = orderedfields_begin();     // loop over all the fields
                                 f_it != orderedfields_end(); f_it++)
   {
-    for (ReferencePoints_const_it                                     // loop over all the points
-          p_it = (*(*f_it).second).points_begin(); 
-          p_it != (*(*f_it).second).points_end(); p_it++)
+    for (ReferencePoints_const_it                                    // loop over all the points
+          p_it = (*(*f_it).second).referencepoints_begin(); 
+          p_it != (*(*f_it).second).referencepoints_end(); p_it++)
     {
-      points_.push_back((*p_it).second);                             // add the point to a std vector
+      referencepoints_.push_back((*p_it).second);                    // add the point to a std vector
     }
   }
 }

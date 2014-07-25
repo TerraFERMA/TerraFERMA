@@ -144,6 +144,7 @@ scalar_field_function_options =
     initial_condition_scalar+,
     boundary_condition_scalar*,
     reference_point_scalar?,
+    zero_point_scalar?,
     value_cap_scalar?
   )
 
@@ -154,6 +155,7 @@ vector_field_function_options =
     initial_condition_vector+,
     boundary_condition_vector*,
     reference_point_tensor*,
+    zero_point_tensor*,
     value_cap_tensor*
   )
 
@@ -164,6 +166,7 @@ tensor_field_function_options =
     initial_condition_tensor+,
     boundary_condition_tensor*,
     reference_point_tensor*,
+    zero_point_tensor*,
     value_cap_tensor*
   )
 
@@ -519,6 +522,67 @@ reference_point_tensor =
     element reference_point {
       attribute name {xsd:string },
       ## The coordinates of the reference point.  The node nearest these coordinates will be used.
+      element coordinates {
+        real_dim_vector
+      },
+      (
+        ## Zero a subset of the vector/tensor components at this reference point.
+        element sub_components {
+          attribute name { "Subset" },
+          ## A list of the vector/tensor components to which this reference point applies (indexes from 0 by row first for tensors).
+          element components {
+            integer_vector
+          }
+        }|
+        ## Zero all the vector/tensor components at this reference point.
+        element sub_components {
+          attribute name {"All"},
+          empty
+        }
+      )
+    }
+  )
+
+zero_point_scalar = 
+  (
+    ## Options for the description of a reference point at which field values are zeroed.
+    element zero_point {
+      attribute name { "Point" },
+      ## The coordinates of the reference point.  The node nearest these coordinates will be used.
+      element coordinates {
+        real_dim_vector
+      }
+    }
+  )
+
+zero_point_tensor = 
+  (
+    ## Options for the description of a zero point at which field values are zeroed.
+    element zero_point {
+      attribute name { "Point" },
+      ## The coordinates of the zero point.
+      element coordinates {
+        real_dim_vector
+      },
+      (
+        ## Zero all the vector/tensor components at this zero point.
+        element sub_components {
+          attribute name {"All"},
+          empty
+        }|
+        ## Zero a subset of the vector/tensor components at this zero point.
+        element sub_components {
+          attribute name { "Subset" },
+          ## A list of the vector/tensor components to which this zero point applies (indexes from 0 by row first for tensors).
+          element components {
+            integer_vector
+          }
+        }
+      )
+    }|
+    element zero_point {
+      attribute name {xsd:string },
+      ## The coordinates of the zero point.
       element coordinates {
         real_dim_vector
       },

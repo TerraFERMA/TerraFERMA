@@ -462,6 +462,16 @@ is_fieldsplit =
 is_null_space =
   (
     is_field_null*,
+    ## Removes the null space from the rhs after assembly.
+    element remove_from_rhs {
+      empty
+    }?,
+    is_monitor
+  )
+
+is_near_null_space =
+  (
+    is_field_null*,
     is_monitor
   )
 
@@ -1006,7 +1016,7 @@ near_null_space =
         ## nullspaces python functions must be attached underneath the description of the field.
         element null_space {
           attribute name { xsd:string },
-          is_null_space
+          is_near_null_space
         }+,
         element monitors {
           ## Prints PETSc information about this null space

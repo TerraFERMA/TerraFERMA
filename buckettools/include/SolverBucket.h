@@ -81,6 +81,9 @@ namespace buckettools
 
     void initialize_diagnostics() const;                             // initialize any diagnostic output in the solver
 
+    void create_nullspace();                                         // take any stored nullspace vectors and convert them into a
+                                                                     // PETSc null space object
+
     //***************************************************************|***********************************************************//
     // Base data access
     //***************************************************************|***********************************************************//
@@ -131,6 +134,9 @@ namespace buckettools
 
     PETScVector_ptr rhsbc()
     { return rhsbc_; }
+
+    MatNullSpace nullspace()
+    { return sp_; }
 
     //***************************************************************|***********************************************************//
     // Form data access
@@ -252,6 +258,11 @@ namespace buckettools
     //***************************************************************|***********************************************************//
 
     std::map< std::string, Form_ptr > forms_;                        // a map from the form names to the form pointers
+
+    std::vector< PETScVector_ptr > nullspacevectors_;                // a vector of null space vectors to be removed from the rhs
+                                                                     // after assembly
+
+    MatNullSpace sp_;                                                // PETSc matnullspace object
 
     //***************************************************************|***********************************************************//
     // Emptying data

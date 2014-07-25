@@ -84,7 +84,7 @@ namespace buckettools
 
     void resetcalculated();                                          // reset the calculated booleans
 
-    void cap_values();                                               // cap the values of the fields in this system
+    void postprocess_values();                                       // cap the values of the fields in this system
 
     //***************************************************************|***********************************************************//
     // Filling data
@@ -275,19 +275,19 @@ namespace buckettools
     // Reference point data access
     //***************************************************************|***********************************************************//
 
-    std::vector<ReferencePoints_ptr>::iterator points_begin();        // return an iterator to the beginning of the system reference
+    std::vector<ReferencePoints_ptr>::iterator referencepoints_begin();// return an iterator to the beginning of the system reference
                                                                      // points
 
-    std::vector<ReferencePoints_ptr>::const_iterator points_begin()   // return a constant iterator to the beginning of the system
+    std::vector<ReferencePoints_ptr>::const_iterator referencepoints_begin()// return a constant iterator to the beginning of the system
                                                           const;     // reference points
 
-    std::vector<ReferencePoints_ptr>::iterator points_end();          // return an iterator to the end of the system reference points
+    std::vector<ReferencePoints_ptr>::iterator referencepoints_end();// return an iterator to the end of the system reference points
 
-    std::vector<ReferencePoints_ptr>::const_iterator points_end()     // return a constant iterator to the end of the system
+    std::vector<ReferencePoints_ptr>::const_iterator referencepoints_end()// return a constant iterator to the end of the system
                                                           const;     // reference points
 
-    const std::vector< ReferencePoints_ptr > points() const           // return a constant vector of system reference points
-    { return points_; }
+    const std::vector< ReferencePoints_ptr > referencepoints() const // return a constant vector of system reference points
+    { return referencepoints_; }
     
     //***************************************************************|***********************************************************//
     // Output functions
@@ -417,7 +417,7 @@ namespace buckettools
 
     std::vector< const dolfin::DirichletBC* > dirichletbcs_;         // a vector of (boost shared) poitners to the dirichlet bcs
 
-    std::vector< ReferencePoints_ptr > points_;                       // a vector of (boost shared) poitners to reference points
+    std::vector< ReferencePoints_ptr > referencepoints_;             // a vector of (boost shared) poitners to reference points
 
     //***************************************************************|***********************************************************//
     // Output functions (continued)

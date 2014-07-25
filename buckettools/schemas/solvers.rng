@@ -560,6 +560,18 @@ If left unspecified, defaults to the whole boundary of the above region(s) (if s
     <zeroOrMore>
       <ref name="is_field_null"/>
     </zeroOrMore>
+    <optional>
+      <element name="remove_from_rhs">
+        <a:documentation>Removes the null space from the rhs after assembly.</a:documentation>
+        <empty/>
+      </element>
+    </optional>
+    <ref name="is_monitor"/>
+  </define>
+  <define name="is_near_null_space">
+    <zeroOrMore>
+      <ref name="is_field_null"/>
+    </zeroOrMore>
     <ref name="is_monitor"/>
   </define>
   <define name="is_constraints">
@@ -1104,7 +1116,7 @@ nullspaces python functions must be attached underneath the description of the f
           <attribute name="name">
             <data type="string"/>
           </attribute>
-          <ref name="is_null_space"/>
+          <ref name="is_near_null_space"/>
         </element>
       </oneOrMore>
       <element name="monitors">

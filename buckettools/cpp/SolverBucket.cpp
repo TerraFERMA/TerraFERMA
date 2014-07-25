@@ -58,20 +58,29 @@ SolverBucket::~SolverBucket()
   if(type()=="SNES" && !copy_)
   {
     #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
-    perr = SNESDestroy(&snes_); CHKERRV(perr);                        // destroy the snes object
+    perr = SNESDestroy(&snes_); CHKERRV(perr);                       // destroy the snes object
     #else
-    perr = SNESDestroy(snes_); CHKERRV(perr);                         // destroy the snes object
+    perr = SNESDestroy(snes_); CHKERRV(perr);                        // destroy the snes object
     #endif
   }
 
   if(type()=="Picard" && !copy_)
   {
     #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
-    perr = KSPDestroy(&ksp_); CHKERRV(perr);                          // destroy the ksp object
+    perr = KSPDestroy(&ksp_); CHKERRV(perr);                         // destroy the ksp object
     #else
     perr = KSPDestroy(ksp_); CHKERRV(perr);                          // destroy the ksp object
     #endif
   }
+
+  //if(sp_)
+  //{
+  //  #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
+  //  perr = MatNullSpaceDestroy(&sp_); CHKERRV(perr);                 // destroy the null space object
+  //  #else
+  //  perr = MatNullSpaceDestroy(sp_); CHKERRV(perr);                  // destroy the null space object
+  //  #endif
+  //}
 
 }
 
@@ -128,8 +137,8 @@ void SolverBucket::solve()
     }
 
     for(std::vector<ReferencePoints_ptr>::const_iterator p = 
-                                    (*system_).points_begin(); 
-                                p != (*system_).points_end(); p++)
+                                    (*system_).referencepoints_begin(); 
+                                p != (*system_).referencepoints_end(); p++)
     {                                                                // apply reference points to residual (should we do this?!)
       (*(*p)).apply(*res_, (*(*(*system_).iteratedfunction()).vector()));
     }
@@ -177,8 +186,8 @@ void SolverBucket::solve()
       assembler.assemble(*matrix_, *rhs_);
 
       for(std::vector<ReferencePoints_ptr>::const_iterator p =       // loop over the collected vector of system reference points
-                                      (*system_).points_begin(); 
-                                  p != (*system_).points_end(); p++)
+                                      (*system_).referencepoints_begin(); 
+                                  p != (*system_).referencepoints_end(); p++)
       {
         (*(*p)).apply(*matrix_, *rhs_);                              // apply the reference points to the matrix and rhs
       }
@@ -196,8 +205,8 @@ void SolverBucket::solve()
         assemblerpc.assemble(*matrixpc_);
 
         for(std::vector<ReferencePoints_ptr>::const_iterator p =     // loop over the collected vector of system reference points
-                                        (*system_).points_begin(); 
-                                    p != (*system_).points_end(); p++)
+                                        (*system_).referencepoints_begin(); 
+                                    p != (*system_).referencepoints_end(); p++)
         {
           (*(*p)).apply(*matrixpc_);                                 // apply the reference points to the pc matrix
         }
@@ -229,8 +238,8 @@ void SolverBucket::solve()
         assemblerform.assemble(*solvermatrix);
 
         for(std::vector<ReferencePoints_ptr>::const_iterator p =     // loop over the collected vector of system reference points
-                                        (*system_).points_begin(); 
-                                    p != (*system_).points_end(); p++)
+                                        (*system_).referencepoints_begin(); 
+                                    p != (*system_).referencepoints_end(); p++)
         {
           (*(*p)).apply(*solvermatrix);                              // apply the reference points to the pc matrix
         }
@@ -294,8 +303,8 @@ void SolverBucket::solve()
         (*(*bc)).apply(*res_, (*(*(*system_).iteratedfunction()).vector()));
       }
       for(std::vector<ReferencePoints_ptr>::const_iterator p = 
-                                      (*system_).points_begin(); 
-                                  p != (*system_).points_end(); p++)
+                                      (*system_).referencepoints_begin(); 
+                                  p != (*system_).referencepoints_end(); p++)
       {                                                              // apply reference points to residual (should we do this?!)
         (*(*p)).apply(*res_, (*(*(*system_).iteratedfunction()).vector()));
       }
@@ -427,6 +436,30 @@ void SolverBucket::initialize_diagnostics() const                    // doesn't 
   if (kspconvfile_)
   {
     (*kspconvfile_).write_header((*(*system()).bucket()));
+  }
+}
+
+//*******************************************************************|************************************************************//
+// create a null space object
+//*******************************************************************|************************************************************//
+void SolverBucket::create_nullspace()
+{
+  std::size_t nnulls = nullspacevectors_.size();
+  if (nnulls > 0)
+  {
+    PetscErrorCode perr;                                             // petsc error code
+    Vec vecs[nnulls];
+    for (uint i = 0; i < nnulls; i++)
+    {
+      vecs[i] = (*(nullspacevectors_[i])).vec();
+    }
+    perr = MatNullSpaceCreate((*(nullspacevectors_[0])).mpi_comm(), 
+                              PETSC_FALSE, nnulls, vecs, &sp_); 
+    CHKERRV(perr);
+  }
+  else
+  {
+    sp_ = PETSC_NULL;
   }
 }
 

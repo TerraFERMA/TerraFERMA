@@ -124,30 +124,29 @@ namespace buckettools
     void fill_solverforms_(const std::string &optionpath, 
                            const std::string &prefix="");            // fill the form data of a linear solver
 
-    void fill_ksp_(const std::string &optionpath, KSP &ksp, 
-                                  const std::string prefix)          // fill the information about a parent ksp
-    { fill_ksp_(optionpath, ksp, prefix, NULL); }
-
     void fill_ksp_(const std::string &optionpath, KSP &ksp,          // fill the information about a child ksp
-                         const std::string prefix, 
-                         const std::vector<uint>* parent_indices);
+                   const std::string prefix, 
+                   const std::vector<uint>* parent_indices=NULL);
 
     void fill_pc_(const std::string &optionpath, PC &pc,             // fill the information about a pc
-                         const std::string prefix, 
-                         const std::vector<uint>* parent_indices);
+                  const std::string prefix, 
+                  const uint &parent_offset, 
+                  const std::vector<uint>* parent_indices);
 
-    void fill_is_by_field_(const std::string &optionpath, IS &is,    // set up a petsc index set
-                           std::vector<uint> &child_indices,
-                           const uint &offset,
-                           const std::vector<uint>* parent_indices,
-                           const std::vector<uint>* sibling_indices);
+    void fill_indices_values_by_field_(const std::string &optionpath,
+                                       std::vector<uint> &child_indices,
+                                       PETScVector_ptr values=NULL,
+                                       const std::vector<uint>* parent_indices=NULL,
+                                       const std::vector<uint>* sibling_indices=NULL);
 
     void fill_pc_fieldsplit_(const std::string &optionpath, PC &pc,  // fill the information about a fieldsplit pc
-                         const std::string prefix, 
-                         const std::vector<uint>* parent_indices);
+                             const std::string prefix, 
+                             const uint &parent_offset, 
+                             const std::vector<uint>* parent_indices);
 
     void fill_nullspace_(const std::string &optionpath, 
                          MatNullSpace &SP,
+                         const uint &parent_offset, 
                          const std::vector<uint>* parent_indices);   // fill a petsc null space object
 
     void fill_constraints_();                                        // fill constraints on snes vi
@@ -155,53 +154,20 @@ namespace buckettools
     void fill_bound_(const std::string &optionpath, 
                          PETScVector_ptr &bound, const double &background_value);   // fill petsc vectors containing the bounds for snes vi
 
-    void fill_values_by_field_(const std::string &optionpath,    // fill a vector describing e.g. a null space
-                                   PETScVector_ptr values,
-                                   const double &value,
-                                   const std::vector<uint>* parent_indices,
-                                   const std::vector<uint>* sibling_indices);
+    void field_restrictions_(const std::string &optionpath,
+                             std::vector<int>* &components,
+                             std::vector<int>* &region_ids,
+                             std::vector<int>* &boundary_ids,
+                             dolfin::Expression* &value_exp,
+                             double* &value_const,
+                             const std::vector<std::size_t> &fieldshape,
+                             const bool &fieldsymmetric);            // set up the restrictions on an IS by field
 
-    boost::unordered_map<uint, double> field_value_map_(const std::string &optionpath,
-                                                     const FunctionSpace_ptr functionspace,
-                                                     const std::vector<int>* components,
-                                                     const std::vector<int>* region_ids,
-                                                     const std::vector<int>* boundary_ids,
-                                                     Expression_ptr value_exp, const double *value_const,
-                                                     const uint parent_component=0,
-                                                     uint rank=0,    // set up a map describing e.g. the null space values for a field
-                                                     uint exp_index=0);
-
-    boost::unordered_map<uint, double> cell_value_map_(const std::shared_ptr<const dolfin::GenericDofMap> dofmap,
-                                                    const std::vector<int>* region_ids,
-                                                    Expression_ptr value_exp, const double *value_const,
-                                                    const uint &exp_index);// set up a map describing e.g. the null space values over cells
-
-    boost::unordered_map<uint, double> facet_value_map_(const std::shared_ptr<const dolfin::GenericDofMap> dofmap,
-                                                     const std::vector<int>* boundary_ids,
-                                                     Expression_ptr value_exp, const double *value_const,
-                                                     const uint &exp_index);// set up a map describing e.g. the  null space values over a boundary
-
-    void get_is_options_(const std::string &optionpath,              // get the IS options for all fields named (in the options dictionary)
-                         std::vector<std::string> &field_names,
-                         std::vector<std::vector<int>* > &field_components,
-                         std::vector<std::vector<int>* > &field_region_ids,
-                         std::vector<std::vector<int>* > &field_boundary_ids);
-
-    void clean_is_options_(std::vector<std::string> &field_names,    // clean up the IS options (basically call destroy below)
-                           std::vector<std::vector<int>* > &field_components,
-                           std::vector<std::vector<int>* > &field_region_ids,
-                           std::vector<std::vector<int>* > &field_boundary_ids);
-
-    void is_by_field_restrictions_(const std::string &optionpath,
-                                   std::vector<int>* &components,
-                                   std::vector<int>* &region_ids,
-                                   std::vector<int>* &boundary_ids,
-                                   const std::vector<std::size_t> &fieldshape,
-                                   const bool &fieldsymmetric);      // set up the restrictions on an IS by field
-
-    void destroy_is_field_restrictions_(std::vector<int>* &components,// destroy the objects describing any restrictions on an IS by field
-                                        std::vector<int>* &region_ids,
-                                        std::vector<int>* &boundary_ids);
+    void destroy_field_restrictions_(std::vector<int>* &components,  // destroy the objects describing any restrictions on an IS by field
+                                     std::vector<int>* &region_ids,
+                                     std::vector<int>* &boundary_ids,
+                                     dolfin::Expression* &value_exp,
+                                     double* &value_const);
 
     void initialize_tensors_();                                      // fill the tensor data structures of the solver bucket
 
