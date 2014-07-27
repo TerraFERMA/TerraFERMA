@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <harness_options>
   <length>
-    <string_value>special</string_value>
+    <string_value>short</string_value>
   </length>
   <owner>cwilson</owner>
   <description>A manufactured solution convergence test.</description>
