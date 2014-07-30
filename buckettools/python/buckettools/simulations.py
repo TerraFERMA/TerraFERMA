@@ -411,6 +411,7 @@ class Run:
             env["PYTHONPATH"] = dirname
 
           for command in commands:
+            print command
             p = subprocess.Popen(command, cwd=dirname, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
             retcode = p.wait()
             if retcode!=0:
@@ -766,17 +767,23 @@ class Simulation(Run):
 
   def getcheckpointcommands(self, basefile):
     nprocs = self.getnprocs()
+    valgrind_opts = self.optionsdict["valgrind"]
     commands = [[]]
     if nprocs > 1:
       commands[0] += ["mpiexec", "-np", `nprocs`]
+    if valgrind_opts is not None:
+      commands[0] += ["valgrind"]+valgrind_opts
     commands[0] += [os.path.join(self.builddirectory, "build", self.filename), "-vINFO", "-l", basefile]
     return commands
 
   def getcommands(self):
     nprocs = self.getnprocs()
+    valgrind_opts = self.optionsdict["valgrind"]
     commands = [[]]
     if nprocs > 1:
       commands[0] += ["mpiexec", "-np", `nprocs`]
+    if valgrind_opts is not None:
+      commands[0] += ["valgrind"]+valgrind_opts
     commands[0] += [os.path.join(self.builddirectory, "build", self.filename), "-vINFO", "-l", self.filename+self.ext]
     return commands
 
@@ -1314,6 +1321,11 @@ class SimulationHarnessBatch(SimulationBatch):
         except libspud.SpudKeyError:
           number_processes = 1
 
+        try:
+          valgrind_options = libspud.get_option(simulation_optionpath+"/valgrind_options").split()
+        except libspud.SpudKeyError:
+          valgrind_options = None
+
         # fetch required input and output for this simulation (used to copy files into rundirectory 
         # and establish if run has successfully completed
         required_input  = self.getrequiredfiles(simulation_optionpath+"/required_input", dirname)
@@ -1342,6 +1354,7 @@ class SimulationHarnessBatch(SimulationBatch):
         harnessfileoptionsdict[simulation_path] = {}
         harnessfileoptionsdict[simulation_path]["name"]      = simulation_name
         harnessfileoptionsdict[simulation_path]["nprocs"]    = number_processes
+        harnessfileoptionsdict[simulation_path]["valgrind"]  = valgrind_options
         harnessfileoptionsdict[simulation_path]["type"]      = Simulation
         harnessfileoptionsdict[simulation_path]["input"]     = required_input
         harnessfileoptionsdict[simulation_path]["output"]    = required_output
@@ -1638,6 +1651,10 @@ class SimulationHarnessBatch(SimulationBatch):
          dependency_options[path]["nprocs"] = libspud.get_option(optionpath+"/number_processes")
        except libspud.SpudKeyError:
          dependency_options[path]["nprocs"] = 1
+       try:
+         dependency_options[path]["valgrind"] = libspud.get_option(optionpath+"/valgrind_options").split()
+       except libspud.SpudKeyError:
+         dependency_options[path]["valgrind"] = None
      dependency_options[path]["input"]     = required_input
      dependency_options[path]["output"]    = required_output
      dependency_options[path]["updates"]   = parameter_updates

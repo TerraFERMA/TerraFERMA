@@ -101,6 +101,19 @@ simulation_input_file =
       }
    )
 
+simulation_valgrind_options =
+   (
+      ## Turning this option on runs the simulation through valgrind with whatever
+      ## options are specified here.  e.g.:
+      ##
+      ## --tool=callgrind
+      ##
+      ## --tool=memcheck
+      element valgrind_options {
+        string
+      }?
+   )
+
 simulation_number_processes = 
    (
       ## The base number_processes that this simulation should be run on.
@@ -300,6 +313,7 @@ simulation =
          attribute name { xsd:string },
          simulation_input_file,
          simulation_number_processes,
+         simulation_valgrind_options,
          parameters?,
          required_input?,
          required_output?,
@@ -423,6 +437,7 @@ dependency_simulation =
          attribute name { xsd:string },
          simulation_input_file,
          simulation_number_processes,
+         simulation_valgrind_options,
          simulation_dependency_parameters?,
          required_input?,
          required_output?,
