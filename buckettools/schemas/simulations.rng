@@ -118,6 +118,19 @@ in the required_output of one of the dependencies of this simulation.</a:documen
       <ref name="filename"/>
     </element>
   </define>
+  <define name="simulation_valgrind_options">
+    <optional>
+      <element name="valgrind_options">
+        <a:documentation>Turning this option on runs the simulation through valgrind with whatever
+options are specified here.  e.g.:
+
+--tool=callgrind
+
+--tool=memcheck</a:documentation>
+        <data type="string" datatypeLibrary=""/>
+      </element>
+    </optional>
+  </define>
   <define name="simulation_number_processes">
     <optional>
       <element name="number_processes">
@@ -334,6 +347,7 @@ THE VARIABLE NAME MUST BE UNIQUE ACROSS THE ENTIRE OPTIONS FILE and the python c
       </attribute>
       <ref name="simulation_input_file"/>
       <ref name="simulation_number_processes"/>
+      <ref name="simulation_valgrind_options"/>
       <optional>
         <ref name="parameters"/>
       </optional>
@@ -497,6 +511,7 @@ e.g. perhaps a gmsh run</a:documentation>
       </attribute>
       <ref name="simulation_input_file"/>
       <ref name="simulation_number_processes"/>
+      <ref name="simulation_valgrind_options"/>
       <optional>
         <ref name="simulation_dependency_parameters"/>
       </optional>
