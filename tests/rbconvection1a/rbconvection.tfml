@@ -61,7 +61,7 @@
       <real_value rank="0">0.0</real_value>
     </current_time>
     <number_timesteps>
-      <integer_value rank="0">1</integer_value>
+      <integer_value rank="0">10</integer_value>
     </number_timesteps>
     <timestep>
       <coefficient name="Timestep">
