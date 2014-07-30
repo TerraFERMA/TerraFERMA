@@ -107,11 +107,8 @@ namespace buckettools
 
     void data_system_(const SystemBucket_ptr sys_ptr);               // write the data for a system
 
-    void data_field_(FunctionBucket_const_it f_begin,                // write the data for a set of fields
-                     FunctionBucket_const_it f_end);
-
-    void data_coeff_(FunctionBucket_const_it f_begin,                // write the data for a set of coefficients
-                     FunctionBucket_const_it f_end);
+    void data_func_(FunctionBucket_const_it f_begin,                 // write the data for a set of functions
+                    FunctionBucket_const_it f_end);
 
     void data_functional_(FunctionBucket_ptr f_ptr,
                           Form_const_it s_begin,                     // write the data for a set of functionals

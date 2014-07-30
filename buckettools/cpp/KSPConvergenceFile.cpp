@@ -60,18 +60,12 @@ void KSPConvergenceFile::write_header(const Bucket &bucket)
 {
   bucket.copy_diagnostics(bucket_);
 
-  if (dolfin::MPI::rank(mpicomm_)==0)
-  {
-    file_ << "<header>" << std::endl;                                // initialize header xml
-  }
+  header_open_();
   header_constants_();                                               // write constant tags
   header_timestep_();                                                // write tags for the timesteps
   header_iteration_();                                               // write tags for the iterations
   header_bucket_();                                                  // write tags for the actual bucket variables - fields etc.
-  if (dolfin::MPI::rank(mpicomm_)==0)
-  {
-    file_ << "</header>" << std::endl << std::flush;                 // finalize header xml
-  }
+  header_close_();
 }
 
 //*******************************************************************|************************************************************//
@@ -84,10 +78,7 @@ void KSPConvergenceFile::write_data(const int &kspit)
   data_iteration_(kspit);                                            // write the iteration information
   data_bucket_();                                                    // write the bucket data
   
-  if (dolfin::MPI::rank(mpicomm_)==0)
-  {
-    file_ << std::endl << std::flush;                                // flush the buffer
-  }
+  data_endlineflush_();
   
 }
 
@@ -158,42 +149,26 @@ void KSPConvergenceFile::header_func_(FunctionBucket_const_it f_begin,
       tag_((*(*f_it).second).name(), "res_norm(linf)", 
                             (*(*(*f_it).second).system()).name());
     }
-    else if ((*(*(*f_it).second).function()).value_rank()==1)        // vector (value_size components)
+    else
     {
-      int components = (*(*(*f_it).second).function()).value_size();
       tag_((*(*f_it).second).name(), "max", 
-                (*(*(*f_it).second).system()).name(), components);
+                (*(*(*f_it).second).system()).name(), 
+                (*(*f_it).second).size());
       tag_((*(*f_it).second).name(), "min", 
-                (*(*(*f_it).second).system()).name(), components);
+                (*(*(*f_it).second).system()).name(), 
+                (*(*f_it).second).size());
       tag_((*(*f_it).second).name(), "res_max", 
-                (*(*(*f_it).second).system()).name(), components);
+                (*(*(*f_it).second).system()).name(), 
+                (*(*f_it).second).size());
       tag_((*(*f_it).second).name(), "res_min", 
-                (*(*(*f_it).second).system()).name(), components);
+                (*(*(*f_it).second).system()).name(), 
+                (*(*f_it).second).size());
       tag_((*(*f_it).second).name(), "res_norm(l2)", 
-                (*(*(*f_it).second).system()).name(), components);
+                (*(*(*f_it).second).system()).name(), 
+                (*(*f_it).second).size());
       tag_((*(*f_it).second).name(), "res_norm(linf)", 
-                (*(*(*f_it).second).system()).name(), components);
-    }
-    else if ((*(*(*f_it).second).function()).value_rank()==2)        // tensor (value_dimension product components)
-    {
-      int components = 
-        (*(*(*f_it).second).function()).value_dimension(0)*(*(*(*f_it).second).function()).value_dimension(1);
-      tag_((*(*f_it).second).name(), "max", 
-                (*(*(*f_it).second).system()).name(), components);
-      tag_((*(*f_it).second).name(), "min", 
-                (*(*(*f_it).second).system()).name(), components);
-      tag_((*(*f_it).second).name(), "res_max", 
-                (*(*(*f_it).second).system()).name(), components);
-      tag_((*(*f_it).second).name(), "res_min", 
-                (*(*(*f_it).second).system()).name(), components);
-      tag_((*(*f_it).second).name(), "res_norm(l2)", 
-                (*(*(*f_it).second).system()).name(), components);
-      tag_((*(*f_it).second).name(), "res_norm(linf)", 
-                (*(*(*f_it).second).system()).name(), components);
-    }
-    else                                                             // unknown rank
-    {
-      dolfin::error("In KSPConvergenceFile::header_bucket_, unknown function rank.");
+                (*(*(*f_it).second).system()).name(), 
+                (*(*f_it).second).size());
     }
 
   }
@@ -206,12 +181,9 @@ void KSPConvergenceFile::data_iteration_(const int &kspit)
 {
   SolverBucket_ptr sol_ptr = (*(*bucket_).fetch_system(systemname_)).fetch_solver(solvername_);
   
-  if (dolfin::MPI::rank(mpicomm_)==0)
-  {
-    file_ << (*bucket_).iteration_count() << " ";  
-    file_ << (*sol_ptr).iteration_count() << " ";
-    file_ << kspit << " ";
-  }
+  data_((*bucket_).iteration_count());  
+  data_((*sol_ptr).iteration_count());
+  data_(kspit);
 }
 
 //*******************************************************************|************************************************************//
@@ -221,21 +193,9 @@ void KSPConvergenceFile::data_bucket_()
 {
   SystemBucket_ptr sys_ptr = (*bucket_).fetch_system(systemname_);
   
-  if (dolfin::MPI::rank(mpicomm_)==0)
-  {
-    file_.setf(std::ios::scientific);
-    file_.precision(10);
-  }
-  
   data_system_(sys_ptr);
-
   data_field_((*sys_ptr).fields_begin(), (*sys_ptr).fields_end());
 
-  if (dolfin::MPI::rank(mpicomm_)==0)
-  {
-    file_.unsetf(std::ios::scientific);
-  }
-  
 }
 
 //*******************************************************************|************************************************************//
@@ -254,14 +214,7 @@ void KSPConvergenceFile::data_system_(const SystemBucket_ptr sys_ptr)
   values.push_back((*(*(*sys_ptr).residualfunction()).vector()).norm("l2"));
   values.push_back((*(*(*sys_ptr).residualfunction()).vector()).norm("linf"));
 
-  if (dolfin::MPI::rank(mpicomm_)==0)
-  {
-    for (std::vector<double>::const_iterator v = values.begin(); 
-                                                  v < values.end(); v++)
-    {
-      file_ << *v << " ";
-    }
-  }
+  data_(values);
 }
 
 //*******************************************************************|************************************************************//
@@ -275,15 +228,30 @@ void KSPConvergenceFile::data_field_(FunctionBucket_const_it f_begin,
   for (FunctionBucket_const_it f_it = f_begin; f_it != f_end;        // loop over the given fields
                                                             f_it++)
   {
-    dolfin::Function func =                                          // take a deep copy of the subfunction so the vector is accessible
-      *std::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).iteratedfunction());
+    
+    const std::size_t lsize = (*(*f_it).second).size();
+    std::vector<double> max(lsize), min(lsize), 
+                        l2norm(lsize), linfnorm(lsize);
 
-    data_function_(func);
+    for (uint i = 0; i<lsize; i++)
+    {
+      max[i] = (*(*f_it).second).max("iterated", i);
+      min[i] = (*(*f_it).second).min("iterated", i);
+    }
+    data_(max);
+    data_(min);
 
-    dolfin::Function resfunc =                                       // take a deep copy of the subfunction so the vector is accessible
-      *std::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).residualfunction());
-
-    data_function_(resfunc, true);
+    for (uint i = 0; i<lsize; i++)
+    {
+      max[i] = (*(*f_it).second).max("residual", i);
+      min[i] = (*(*f_it).second).min("residual", i);
+      l2norm[i]   = (*(*f_it).second).norm("residual", "l2",   i);
+      linfnorm[i] = (*(*f_it).second).norm("residual", "linf", i);
+    }
+    data_(max);
+    data_(min);
+    data_(l2norm);
+    data_(linfnorm);
   }
 }
 

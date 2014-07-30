@@ -72,38 +72,39 @@ namespace buckettools
                                                                      // so it will be necessary to make a deep copy to access
                                                                      // the vector
 
-    const double max(const double_ptr time, const int* index0, 
-                                            const int* index1) const;// max of the function at the given time
+    const GenericFunction_ptr genericfunction_ptr(                   // similar to the other genericfunction_ptr subroutine 
+                                 const std::string &function_type) const; // except here the function_type is more general and described
+                                                                     // by a string
 
-    const double max(const double_ptr time, const int* index0) const
-    { return max(time, index0, NULL); }
+    dolfin::PETScVector vector(const std::string &function_type,     // return a vector of values for this function bucket and
+                                        const int &component) const; // the specified function_type
 
-    const double max(const double_ptr time) const
-    { return max(time, NULL, NULL); }
+    dolfin::PETScVector vector(const std::string &function_type, 
+                            const std::vector<int>* components=NULL) 
+                                                              const;
+    IS component_is(const int &component) const;
 
-    const double min(const double_ptr time, const int* index0, 
-                                            const int* index1) const;// min of the function at the given time
+    IS components_is(const std::vector<int>* components=NULL) const;
 
-    const double min(const double_ptr time, const int* index0) const
-    { return min(time, index0, NULL); }
+    const double max(const std::string &function_type, 
+                     const uint component) const;
 
-    const double min(const double_ptr time) const
-    { return min(time, NULL, NULL); }
+    const double max(const std::string &function_type, 
+                     const std::vector<int>* components=NULL) const;
 
-    const double infnorm(const double_ptr time, const int* index0, 
-                                            const int* index1) const;// infnorm of the function at the given time
+    const double min(const std::string &function_type, 
+                     const uint component) const;
 
-    const double infnorm(const double_ptr time, const int* index0) const
-    { return infnorm(time, index0, NULL); }
+    const double min(const std::string &function_type, 
+                     const std::vector<int>* components=NULL) const;
 
-    const double infnorm(const double_ptr time) const
-    { return infnorm(time, NULL, NULL); }
+    const double norm(const std::string &function_type, 
+                      const std::string &norm_type, 
+                      const uint component) const;
 
-    const double functionmax() const;                                // max of the function
-
-    const double functionmin() const;                                // min of the function
-
-    const double functioninfnorm() const;                            // infnorm of the function
+    const double norm(const std::string &function_type, 
+                      const std::string &norm_type, 
+                      const std::vector<int>* components=NULL) const;
 
     const std::string name() const                                   // return a constant string giving the function name
     { return name_; }

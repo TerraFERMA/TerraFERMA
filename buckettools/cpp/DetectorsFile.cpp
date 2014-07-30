@@ -86,19 +86,11 @@ void DetectorsFile::write_header(const Bucket &bucket)
 {
   bucket.copy_diagnostics(bucket_);
 
-  if (dolfin::MPI::rank(mpicomm_)==0)
-  {
-    file_ << "<header>" << std::endl;
-  }
-
+  header_open_();
   header_constants_(dolfin::MPI::size(mpicomm_)>1);
   header_timestep_();
   header_bucket_();
-
-  if (dolfin::MPI::rank(mpicomm_)==0)
-  {
-    file_ << "</header>" << std::endl;
-  }
+  header_close_();
 
 }
 
@@ -125,7 +117,7 @@ void DetectorsFile::write_data()
   }
   else
   {
-    file_ << std::endl << std::flush;
+    data_endlineflush_();
   }
   
 }
@@ -310,12 +302,6 @@ void DetectorsFile::header_func_(FunctionBucket_const_it f_begin,
 void DetectorsFile::data_bucket_()
 {
   
-  if (dolfin::MPI::size(mpicomm_)==1)
-  {
-    file_.setf(std::ios::scientific);
-    file_.precision(10);
-  }
-  
   data_detector_((*bucket_).detectors_begin(), 
                  (*bucket_).detectors_end());
 
@@ -335,11 +321,6 @@ void DetectorsFile::data_bucket_()
                (*(*sys_it).second).mesh());
   }
 
-  if(dolfin::MPI::size(mpicomm_)==1)
-  {
-    file_.unsetf(std::ios::scientific);
-  }
-  
 }
 
 //*******************************************************************|************************************************************//
@@ -384,10 +365,7 @@ void DetectorsFile::data_detector_(GenericDetectors_const_it d_begin,
         }
         else
         {
-          if(rank0)
-          {
-            file_ << (**pos)[dim] << " ";
-          }
+          data_((**pos)[dim]);
         }
       }
     }
@@ -449,7 +427,7 @@ void DetectorsFile::data_func_(FunctionBucket_const_it f_begin,
             }
             else
             {
-              file_ << (*values[i])[dim] << " ";
+              data_((*values[i])[dim]);
             }
           }
         }

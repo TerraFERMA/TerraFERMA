@@ -61,10 +61,12 @@ const GenericFunction_ptr FunctionBucket::genericfunction_ptr(const double_ptr t
 {
   if (time == (*(*system()).bucket()).current_time_ptr())
   {
+    assert(iteratedfunction_);
     return iteratedfunction_;
   }
   else if (time == (*(*system()).bucket()).old_time_ptr())
   {
+    assert(oldfunction_);
     return oldfunction_;
   }
   else if (time == (*(*system()).bucket()).start_time_ptr())
@@ -78,249 +80,217 @@ const GenericFunction_ptr FunctionBucket::genericfunction_ptr(const double_ptr t
       assert((*time-DOLFIN_EPS)<=(*(*system()).bucket()).old_time());// check we're at the old time and this is valid (FIXME: not a
                                                                      // sufficient check as this should only be called in the 
                                                                      // initialization routine, where this is guaranteed anyway!)
+      assert(oldfunction_);
       return oldfunction_;
     }
   }
   else
   {
-    dolfin::error("Unknown time pointer when returning function in genericfunction(time).");
+    dolfin::error("Unknown time pointer when returning function in genericfunction_ptr(time).");
   }
 }
 
 //*******************************************************************|************************************************************//
-// return the maximum of the function bucket at the given time
+// return a pointer to a generic function, which one depends on the function_type requested
 //*******************************************************************|************************************************************//
-const double FunctionBucket::max(const double_ptr time, const int *index0, const int *index1) const
+const GenericFunction_ptr FunctionBucket::genericfunction_ptr(const std::string &function_type) const
 {
-  const GenericFunction_ptr function = genericfunction_ptr(time);
-  double maxvalue;
-
-  if (  functiontype_==FUNCTIONBUCKET_FIELD || 
-      ((functiontype_==FUNCTIONBUCKET_COEFF)&&(type()=="Function")) )
+  if (function_type=="iterated")
   {
-    dolfin::Function func =                                        // take a deep copy of the subfunction so the vector is accessible
-      *std::dynamic_pointer_cast< const dolfin::Function >(function);
-
-    if (index0 && index1)
-    {
-      assert(func.value_rank()==2);
-      assert(*index0 < (*function).value_dimension(0));
-      assert(*index1 < (*function).value_dimension(1));
-
-      dolfin::Function funccomp = func[*index0][*index1];
-      maxvalue = (*funccomp.vector()).max();
-    }
-    else if (index0)
-    {
-      assert(func.value_rank()==1);
-      assert(*index0 < (*function).value_size());
-
-      dolfin::Function funccomp = func[*index0];
-      maxvalue = (*funccomp.vector()).max();
-    }
-    else
-    {
-      maxvalue = (*func.vector()).max();
-    }
+    assert(iteratedfunction_);
+    return iteratedfunction_;
+  }
+  else if (function_type=="old")
+  {
+    assert(oldfunction_);
+    return oldfunction_;
+  }
+  else if (function_type=="residual")
+  {
+    assert(residualfunction_);
+    return residualfunction_;
+  }
+  else if (function_type=="change")
+  {
+    assert(changefunction_);
+    return changefunction_;
+  }
+  else if (function_type=="snesupdate")
+  {
+    assert(snesupdatefunction_);
+    return snesupdatefunction_;
   }
   else
   {
-    Mesh_ptr mesh = (*system()).mesh();
-    const int nvert = (*mesh).num_vertices();
-    std::vector< double > values;
-    (*function).compute_vertex_values(values, *mesh);
-
-    if (index0 && index1)
-    {
-      assert((*function).value_rank()==2);
-      assert(*index0 < (*function).value_dimension(0));
-      assert(*index1 < (*function).value_dimension(1));
-
-      maxvalue = *std::max_element(&values[(2*(*index1)+(*index0))*nvert], 
-                  &values[(2*(*index1)+(*index0)+1)*nvert]);  // maximum for requested component
-    }
-    else if (index0)
-    {
-      assert((*function).value_rank()==1);
-      assert(*index0 < (*function).value_size());
-
-      maxvalue = *std::max_element(&values[(*index0)*nvert], 
-                  &values[((*index0)+1)*nvert]);              // maximum for requested component
-    }
-    else
-    {
-      maxvalue = *std::max_element(&values[0], &values[values.size()]);
-    }
+    dolfin::error("Unknown function type when returning function in genercfunction_ptr(function_type).");
   }
-
-  return maxvalue;
-  
 }
 
 //*******************************************************************|************************************************************//
-// return the minimum of the function bucket at the given time
+// return a vector of values describing the function for the given function_type
 //*******************************************************************|************************************************************//
-const double FunctionBucket::min(const double_ptr time, const int *index0, const int *index1) const
+dolfin::PETScVector FunctionBucket::vector(const std::string &function_type, const int &component) const
 {
-  const GenericFunction_ptr function = genericfunction_ptr(time);
-  double minvalue;
+  std::vector<int> components(1, component);
+  return vector(function_type, &components);
+}
 
-  if (  functiontype_==FUNCTIONBUCKET_FIELD || 
-      ((functiontype_==FUNCTIONBUCKET_COEFF)&&(type()=="Function")) )
+//*******************************************************************|************************************************************//
+// return a vector of values describing the function for the given function_type
+//*******************************************************************|************************************************************//
+dolfin::PETScVector FunctionBucket::vector(const std::string &function_type, const std::vector<int>* components) const
+{
+  PetscErrorCode perr;                                               // petsc error code
+  GenericFunction_ptr u = genericfunction_ptr(function_type);
+  Mesh_ptr mesh = (*system_).mesh();
+
+  const_Function_ptr uf = std::dynamic_pointer_cast<const dolfin::Function>(u);
+  const_PETScVector_ptr fv;
+  if (uf)
   {
-    dolfin::Function func =                                        // take a deep copy of the subfunction so the vector is accessible
-      *std::dynamic_pointer_cast< const dolfin::Function >(function);
-
-    if (index0 && index1)
-    {
-      assert(func.value_rank()==2);
-      assert(*index0 < (*function).value_dimension(0));
-      assert(*index1 < (*function).value_dimension(1));
-
-      dolfin::Function funccomp = func[*index0][*index1];
-      minvalue = (*funccomp.vector()).min();
-    }
-    else if (index0)
-    {
-      assert(func.value_rank()==1);
-      assert(*index0 < (*function).value_size());
-
-      dolfin::Function funccomp = func[*index0];
-      minvalue = (*funccomp.vector()).min();
-    }
-    else
-    {
-      minvalue = (*func.vector()).min();
-    }
+    fv = std::dynamic_pointer_cast<const dolfin::PETScVector>((*uf).vector());
   }
   else
   {
-    Mesh_ptr mesh = (*system()).mesh();
-    const int nvert = (*mesh).num_vertices();
     std::vector< double > values;
-    (*function).compute_vertex_values(values, *mesh);
+    (*u).compute_vertex_values(values, *mesh);
 
-    if (index0 && index1)
-    {
-      assert((*function).value_rank()==2);
-      assert(*index0 < (*function).value_dimension(0));
-      assert(*index1 < (*function).value_dimension(1));
+    std::size_t offset = 
+                dolfin::MPI::global_offset((*mesh).mpi_comm(),
+                                           values.size(),
+                                           true);
 
-      minvalue = *std::min_element(&values[(2*(*index1)+(*index0))*nvert], 
-                  &values[(2*(*index1)+(*index0)+1)*nvert]);  // minimum for requested component
-    }
-    else if (index0)
-    {
-      assert((*function).value_rank()==1);
-      assert(*index0 < (*function).value_size());
-
-      minvalue = *std::min_element(&values[(*index0)*nvert], 
-                  &values[((*index0)+1)*nvert]);              // minimum for requested component
-    }
-    else
-    {
-      minvalue = *std::min_element(&values[0], &values[values.size()]);
-    }
+    PETScVector_ptr tv( new dolfin::PETScVector() );
+    (*tv).init((*mesh).mpi_comm(), std::make_pair(offset, offset+values.size()));
+    (*tv).set_local(values);
+    fv = std::const_pointer_cast<const dolfin::PETScVector>(tv);
   }
 
-  return minvalue;
-  
+  IS is = components_is(components);
+  PetscInt size;
+  perr = ISGetLocalSize(is, &size);
+  std::size_t offset = 
+              dolfin::MPI::global_offset((*mesh).mpi_comm(),
+                                         size, true);
+
+  dolfin::PETScVector sv;
+  sv.init((*mesh).mpi_comm(), std::make_pair(offset, offset+size));
+
+  VecScatter scatter;
+  perr = VecScatterCreate((*fv).vec(), is, 
+                          sv.vec(), PETSC_NULL, 
+                          &scatter);
+  perr = VecScatterBegin(scatter, 
+                         (*fv).vec(), sv.vec(), 
+                         INSERT_VALUES, SCATTER_FORWARD);
+  perr = VecScatterEnd(scatter,
+                       (*fv).vec(), sv.vec(),
+                       INSERT_VALUES, SCATTER_FORWARD);
+
+  #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1            // necessary or taken care of when object leaves scope?
+  perr = VecScatterDestroy(&scatter);
+  perr = ISDestroy(&is);
+  #else
+  perr = VecScatterDestroy(scatter);
+  perr = ISDestroy(is);
+  #endif
+
+  return sv;
 }
 
 //*******************************************************************|************************************************************//
-// return the infnorm of the function bucket at the given time
+// return an IS describing the requested component
+// NOTE: IS should be destroyed after use
 //*******************************************************************|************************************************************//
-const double FunctionBucket::infnorm(const double_ptr time, const int *index0, const int *index1) const
+IS FunctionBucket::component_is(const int &component) const
 {
-  const GenericFunction_ptr function = genericfunction_ptr(time);
-  double normvalue, lnormvalue;
+  std::vector<int> components(1, component);
+  return components_is(&components);
+}
 
-  if (  functiontype_==FUNCTIONBUCKET_FIELD || 
-      ((functiontype_==FUNCTIONBUCKET_COEFF)&&(type()=="Function")) )
+//*******************************************************************|************************************************************//
+// return an IS describing the requested components
+// NOTE: IS should be destroyed after use
+//*******************************************************************|************************************************************//
+IS FunctionBucket::components_is(const std::vector<int>* components) const
+{
+  Mesh_ptr mesh = (*system_).mesh();
+  PetscErrorCode perr;                                               // petsc error code
+
+  std::vector<int> subcomponents;
+  if (components)
   {
-    dolfin::Function func =                                        // take a deep copy of the subfunction so the vector is accessible
-      *std::dynamic_pointer_cast< const dolfin::Function >(function);
-
-    if (index0 && index1)
-    {
-      assert(func.value_rank()==2);
-      assert(*index0 < (*function).value_dimension(0));
-      assert(*index1 < (*function).value_dimension(1));
-
-      dolfin::Function funccomp = func[*index0][*index1];
-      normvalue = (*funccomp.vector()).norm("linf");
-    }
-    else if (index0)
-    {
-      assert(func.value_rank()==1);
-      assert(*index0 < (*function).value_size());
-
-      dolfin::Function funccomp = func[*index0];
-      normvalue = (*funccomp.vector()).norm("linf");
-    }
-    else
-    {
-      normvalue = (*func.vector()).norm("linf");
-    }
+    subcomponents = *components;
   }
   else
   {
-    Mesh_ptr mesh = (*system()).mesh();
-    const int nvert = (*mesh).num_vertices();
-    std::vector< double > values;
-    (*function).compute_vertex_values(values, *mesh);
-
-    if (index0 && index1)
-    {
-      assert((*function).value_rank()==2);
-      assert(*index0 < (*function).value_dimension(0));
-      assert(*index1 < (*function).value_dimension(1));
-
-      lnormvalue = std::abs(*std::max_element(&values[(2*(*index1)+(*index0))*nvert], 
-                                              &values[(2*(*index1)+(*index0)+1)*nvert], abslessthan));
-    }
-    else if (index0)
-    {
-      assert((*function).value_rank()==1);
-      assert(*index0 < (*function).value_size());
-
-      lnormvalue = std::abs(*std::max_element(&values[(*index0)*nvert], 
-                                              &values[((*index0)+1)*nvert], abslessthan));
-    }
-    else
-    {
-      lnormvalue = std::abs(*std::max_element(&values[0], 
-                                             &values[nvert], abslessthan));
-    }
-    normvalue = dolfin::MPI::max((*mesh).mpi_comm(), lnormvalue);
+    subcomponents.resize(size());
+    std::iota(subcomponents.begin(), subcomponents.end(), 0);
   }
 
-  return normvalue;
-  
+  IS islist[subcomponents.size()];
+  for (uint i = 0; i < subcomponents.size(); i++)
+  {
+    islist[i] = component_is_[subcomponents[i]];
+  }
+  IS isall;
+  perr = ISConcatenate((*mesh).mpi_comm(), subcomponents.size(), islist, &isall);
+
+  return isall;
 }
 
 //*******************************************************************|************************************************************//
-// return the maximum of the function at the current time
+// return the maximum of the function bucket
 //*******************************************************************|************************************************************//
-const double FunctionBucket::functionmax() const
+const double FunctionBucket::max(const std::string &function_type, const uint component) const
 {
-  return max((*(*system()).bucket()).current_time_ptr());
+  std::vector<int> components(1, component);
+  return max(function_type, &components);
 }
 
 //*******************************************************************|************************************************************//
-// return the minimum of the function at the current time
+// return the maximum of the function bucket
 //*******************************************************************|************************************************************//
-const double FunctionBucket::functionmin() const
+const double FunctionBucket::max(const std::string &function_type, const std::vector<int>* components) const
 {
-  return min((*(*system()).bucket()).current_time_ptr());
+  dolfin::PETScVector pvector = vector(function_type, components);
+  return pvector.max();
 }
 
 //*******************************************************************|************************************************************//
-// return the infnorm of the function at the current time
+// return the minimum of the function bucket
 //*******************************************************************|************************************************************//
-const double FunctionBucket::functioninfnorm() const
+const double FunctionBucket::min(const std::string &function_type, const uint component) const
 {
-  return infnorm((*(*system()).bucket()).current_time_ptr());
+  std::vector<int> components(1, component);
+  return min(function_type, &components);
+}
+
+//*******************************************************************|************************************************************//
+// return the minimum of the function bucket
+//*******************************************************************|************************************************************//
+const double FunctionBucket::min(const std::string &function_type, const std::vector<int>* components) const
+{
+  dolfin::PETScVector pvector = vector(function_type, components);
+  return pvector.min();
+}
+
+//*******************************************************************|************************************************************//
+// return the norm of the function bucket
+//*******************************************************************|************************************************************//
+const double FunctionBucket::norm(const std::string &function_type, const std::string &norm_type, const uint component) const
+{
+  std::vector<int> components(1, component);
+  return norm(function_type, norm_type, &components);
+}
+
+//*******************************************************************|************************************************************//
+// return the norm of the function bucket
+//*******************************************************************|************************************************************//
+const double FunctionBucket::norm(const std::string &function_type, const std::string &norm_type, const std::vector<int>* components) const
+{
+  dolfin::PETScVector pvector = vector(function_type, components);
+  return pvector.norm(norm_type);
 }
 
 //*******************************************************************|************************************************************//
@@ -375,12 +345,8 @@ const double FunctionBucket::change()
     {
       assert(changefunction_);
 
-      dolfin::Function changefunc =                                  // take a deep copy of the subfunction so the vector is accessible
-        *std::dynamic_pointer_cast< const dolfin::Function >(changefunction());
-      dolfin::Function func =                                        // take a deep copy of the subfunction so the vector is accessible
-        *std::dynamic_pointer_cast< const dolfin::Function >(function());
-      *change_ = (*changefunc.vector()).norm(change_normtype_)/
-                 (*func.vector()).norm(change_normtype_);
+      *change_ = norm("change", change_normtype_)/
+                 norm("iterated", change_normtype_);
 
       *change_calculated_=true;
     }
@@ -644,6 +610,7 @@ void FunctionBucket::copy_diagnostics(FunctionBucket_ptr &function, SystemBucket
 
   (*function).name_ = name_;
   (*function).index_ = index_;
+  (*function).shape_ = shape_;
 
   (*function).functionspace_ = functionspace_;
 
@@ -667,6 +634,7 @@ void FunctionBucket::copy_diagnostics(FunctionBucket_ptr &function, SystemBucket
   (*function).bcexpressions_ = bcexpressions_;
   (*function).bcs_ = bcs_;
   (*function).referencepoints_ = referencepoints_;
+  (*function).component_is_ = component_is_;
 
 }
 
@@ -1114,55 +1082,75 @@ const std::string FunctionBucket::functionals_str(int indent) const
 //*******************************************************************|************************************************************//
 void FunctionBucket::fill_is_()
 {
-  assert(functiontype_ == FUNCTIONBUCKET_FIELD);
-
   const std::size_t lsize = size();
+  Mesh_ptr mesh = (*system_).mesh();
+
   component_is_.resize(lsize);
 
-  const std::size_t lrank = rank();
-  if (lrank==0||lrank==1)
+  if (functionspace())                                               // field and function coefficients should end up here
   {
-    for (int i = 0; i < lsize; i++)
+    const std::size_t lrank = rank();
+    if (lrank==0||lrank==1)
     {
-      std::vector<uint> indices = functionspace_dofs(functionspace(), i);
-      restrict_indices(indices, functionspace());
-      component_is_[i] = convert_vector_to_is((*(*system_).mesh()).mpi_comm(), 
-                                              indices);
-    }
-  }
-  else if (lrank==2)
-  {
-    const std::size_t dim0 = dimension(0);
-    const std::size_t dim1 = dimension(1);
-    const bool lsymmetric = symmetric();
-    for (int i = 0; i < dim0; i++)
-    {
-      for (int j = 0; j < dim1; j++)
+      for (int i = 0; i < lsize; i++)
       {
-        std::size_t k = i*dim1 + j;
-        std::size_t kf = k;
-        if (lsymmetric)
-        {
-          if (j >= i)
-          {
-            kf = i*dim1 + j - (i*(i+1))/2;
-          }
-          else
-          {
-            kf = j*dim1 + i - (j*(j+1))/2;
-          }
-        }
-
-        std::vector<uint> indices = functionspace_dofs(functionspace(), kf);
+        std::vector<uint> indices = functionspace_dofs(functionspace(), i);
         restrict_indices(indices, functionspace());
-        component_is_[k] = convert_vector_to_is((*(*system_).mesh()).mpi_comm(), 
+        component_is_[i] = convert_vector_to_is((*mesh).mpi_comm(), 
                                                 indices);
       }
     }
+    else if (lrank==2)
+    {
+      const std::size_t dim0 = dimension(0);
+      const std::size_t dim1 = dimension(1);
+      const bool lsymmetric = symmetric();
+      for (int i = 0; i < dim0; i++)
+      {
+        for (int j = 0; j < dim1; j++)
+        {
+          std::size_t k = i*dim1 + j;
+          std::size_t kf = k;
+          if (lsymmetric)
+          {
+            if (j >= i)
+            {
+              kf = i*dim1 + j - (i*(i+1))/2;
+            }
+            else
+            {
+              kf = j*dim1 + i - (j*(j+1))/2;
+            }
+          }
+
+          std::vector<uint> indices = functionspace_dofs(functionspace(), kf);
+          restrict_indices(indices, functionspace());
+          component_is_[k] = convert_vector_to_is((*mesh).mpi_comm(), 
+                                                  indices);
+        }
+      }
+    }
+    else
+    {
+      dolfin::error("Unknonwn rank in fill_is_.");
+    }
   }
-  else
-  {
-    dolfin::error("Unknonwn rank in fill_is_.");
+  else                                                               // only expression coefficients and constants
+  {                                                                  // should end up here, in which case we're just
+                                                                     // indexing into a vector of vertex values
+      const std::size_t nv = (*mesh).num_vertices();
+      std::size_t offset = 
+                  dolfin::MPI::global_offset((*mesh).mpi_comm(),
+                                             lsize*nv,
+                                             true);
+      for (int i = 0; i < lsize; i++)
+      {
+        std::vector<uint> indices(nv);
+        std::iota(indices.begin(), indices.end(), offset + i*(*mesh).num_vertices());
+        component_is_[i] = convert_vector_to_is((*mesh).mpi_comm(), 
+                                                indices);
+      }
+    
   }
   
 }

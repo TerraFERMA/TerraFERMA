@@ -52,17 +52,11 @@ void SteadyStateFile::write_header(const Bucket &bucket)
 {
   bucket.copy_diagnostics(bucket_);
 
-  if (dolfin::MPI::rank(mpicomm_)==0)
-  {
-    file_ << "<header>" << std::endl;                                // initialize header xml
-  }
+  header_open_();
   header_constants_();                                               // write constant tags
   header_timestep_();                                                // write tags for the timesteps
   header_bucket_();                                                  // write tags for the actual bucket variables - fields etc.
-  if (dolfin::MPI::rank(mpicomm_)==0)
-  {
-    file_ << "</header>" << std::endl << std::flush;                 // finalize header xml
-  }
+  header_close_();
 }
 
 //*******************************************************************|************************************************************//
@@ -74,10 +68,7 @@ void SteadyStateFile::write_data()
   data_timestep_();                                                 // write the timestepping information
   data_bucket_();                                                   // write the bucket data
   
-  if (dolfin::MPI::rank(mpicomm_)==0)
-  {
-    file_ << std::endl << std::flush;                               // flush the buffer
-  }
+  data_endlineflush_();
   
 }
 
@@ -159,12 +150,6 @@ void SteadyStateFile::header_functional_(const FunctionBucket_ptr f_ptr,
 void SteadyStateFile::data_bucket_()
 {
   
-  if (dolfin::MPI::rank(mpicomm_)==0)
-  {
-    file_.setf(std::ios::scientific);
-    file_.precision(10);
-  }
-
   for (SystemBucket_const_it sys_it = (*bucket_).systems_begin(); 
                           sys_it != (*bucket_).systems_end(); sys_it++)
   {
@@ -176,11 +161,6 @@ void SteadyStateFile::data_bucket_()
                                 (*(*sys_it).second).coeffs_end());
   }
 
-  if (dolfin::MPI::rank(mpicomm_)==0)
-  {
-    file_.unsetf(std::ios::scientific);
-  }
-  
 }
 
 //*******************************************************************|************************************************************//
@@ -195,10 +175,7 @@ void SteadyStateFile::data_field_(FunctionBucket_const_it f_begin,
     if ((*(*f_it).second).include_in_steadystate())                  // check if they should be included in the steady state file
     {
       const double change = (*(*f_it).second).change();
-      if (dolfin::MPI::rank(mpicomm_)==0)
-      {
-        file_ << change << " ";
-      }
+      data_(change);
     }
 
     data_functional_((*f_it).second,
@@ -234,10 +211,7 @@ void SteadyStateFile::data_functional_(FunctionBucket_ptr f_ptr,
     if ((*f_ptr).include_functional_in_steadystate((*s_it).first))
     {
       double change = (*f_ptr).functionalchange(s_it);               // assemble the functional
-      if (dolfin::MPI::rank(mpicomm_)==0)
-      {
-        file_ << change << " ";                                      // write to file
-      }
+      data_(change);
     }
   }
 }

@@ -131,11 +131,11 @@ void SpudFunctionBucket::allocate_coeff_function()
       dolfin::error("Unable to allocate coefficient as no matching functionspace found.");
     }
 
-    FunctionSpace_ptr coefficientspace =                             // grab the functionspace for this coefficient from the bucket
+    functionspace_ =                                                 // grab the functionspace for this coefficient from the bucket
           (*(*system_).bucket()).fetch_coefficientspace(uflsymbol());// data maps
 
-    function_.reset( new dolfin::Function(*coefficientspace) );      // allocate the function on this functionspace
-    oldfunction_.reset( new dolfin::Function(*coefficientspace) );   // allocate the old function on this functionspace
+    function_.reset( new dolfin::Function(*functionspace_) );        // allocate the function on this functionspace
+    oldfunction_.reset( new dolfin::Function(*functionspace_) );     // allocate the old function on this functionspace
     iteratedfunction_ = function_;                                   // just point this at the function
 
                                                                      // can't initialize this yet (it may depend on other
@@ -150,6 +150,8 @@ void SpudFunctionBucket::allocate_coeff_function()
 
     buffer.str(""); buffer << (*system_).name() << "::Old" << name();  // rename the old function as SystemName::OldCoefficientName
     (*oldfunction_).rename(buffer.str(), buffer.str());
+
+    fill_is_();                                                       // we finally have a functionspace so can set up is's
 
   }
 
@@ -1026,6 +1028,8 @@ void SpudFunctionBucket::allocate_coeff_expression_()
     {
       fill_constantfunctional_();
     }
+
+    fill_is_();
   }
 
 }

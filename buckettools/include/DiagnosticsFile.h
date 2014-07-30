@@ -93,6 +93,10 @@ namespace buckettools
     void header_constants_(const bool &binary);                      // write the header entries for constant values that do not 
                                                                      // appear later again in the file
     
+    void header_open_();                                             // open the header section
+
+    void header_close_();                                            // close the header section
+
     void header_timestep_();                                         // write the header for a dynamic simulation
                                                                      // (the elapsed time, timestep etc.)
     
@@ -109,10 +113,15 @@ namespace buckettools
     // Data writing functions
     //***************************************************************|***********************************************************//
 
+    void data_endlineflush_();
+
     void data_timestep_();                                           // write the data for timestepping for a dynamic simulation
 
-    void data_function_(dolfin::Function &func,                      // write generic data for a function (field or coefficient function) 
-                        const bool &include_norms=false);
+    void data_(const int &value);                                    // write generic data to the file
+
+    void data_(const double &value);                                 // write generic data to the file
+
+    void data_(const std::vector<double> &values);                   // write generic data to the file
     
   };
   
