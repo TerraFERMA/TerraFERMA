@@ -25,6 +25,11 @@
 #include <dolfin.h>
 #include "petscsnes.h"
 
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/member.hpp>
+#include <boost/multi_index/hashed_index.hpp>
+#include <boost/multi_index/sequenced_index.hpp>
+
 namespace buckettools {
 
   //*****************************************************************|************************************************************//
@@ -92,10 +97,6 @@ namespace buckettools {
   // iterators to std shared pointers in map pointer structures
   //*****************************************************************|************************************************************//
 
-  typedef std::map< std::string, SystemBucket_ptr >::iterator            SystemBucket_it;
-  typedef std::map< std::string, SystemBucket_ptr >::const_iterator      SystemBucket_const_it;
-  typedef std::map< int, SystemBucket_ptr >::iterator                    int_SystemBucket_it;
-  typedef std::map< int, SystemBucket_ptr >::const_iterator              int_SystemBucket_const_it;
   typedef std::map< std::string, Mesh_ptr >::iterator                    Mesh_it;
   typedef std::map< std::string, Mesh_ptr >::const_iterator              Mesh_const_it;
   typedef std::map< std::string, MeshFunction_size_t_ptr >::iterator     MeshFunction_size_t_it;
@@ -136,7 +137,32 @@ namespace buckettools {
   typedef std::map< std::string, double_ptr >::const_iterator            double_ptr_const_it;
   typedef std::map< std::string, bool_ptr >::iterator                    bool_ptr_it;
   typedef std::map< std::string, bool_ptr >::const_iterator              bool_ptr_const_it;
-  
+
+  struct om_key_seq{};
+  struct om_key_hash{};
+
+  template<typename Tkey, typename Tvalue>
+  struct om_item {
+    Tkey   first; 
+    Tvalue second;
+    om_item (Tkey &key, Tvalue &value) : first(key), second(value) {}
+  };
+
+  template<typename Tkey, typename Tvalue>
+  using ordered_map = boost::multi_index::multi_index_container<
+                            om_item<Tkey, Tvalue>,
+                            boost::multi_index::indexed_by<
+                              boost::multi_index::hashed_unique<boost::multi_index::tag<om_key_hash>, 
+                                                                boost::multi_index::member<om_item<Tkey,Tvalue>, Tkey, &om_item<Tkey,Tvalue>::first>>,
+                              boost::multi_index::sequenced<boost::multi_index::tag<om_key_seq> >
+                            >
+                          >;
+
+  typedef boost::multi_index::index<ordered_map<std::string,SystemBucket_ptr>,om_key_hash>::type::iterator           SystemBucket_hash_it;
+  typedef boost::multi_index::index<ordered_map<std::string,SystemBucket_ptr>,om_key_hash>::type::const_iterator     SystemBucket_const_hash_it;
+  typedef boost::multi_index::index<ordered_map<std::string,SystemBucket_ptr>,om_key_seq>::type::iterator            SystemBucket_it;
+  typedef boost::multi_index::index<ordered_map<std::string,SystemBucket_ptr>,om_key_seq>::type::const_iterator      SystemBucket_const_it;
+
 }
 
 #endif

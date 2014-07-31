@@ -77,7 +77,7 @@ namespace buckettools
 
     std::string name_;                                               // file name
 
-    Bucket_ptr bucket_;                                              // a partial copy of the bucket
+    Bucket_ptr bucket_;                                              // a pointer to the bucket
 
     MPI_Comm mpicomm_;                                               // mpi comm
 

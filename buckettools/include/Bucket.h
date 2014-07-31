@@ -192,7 +192,7 @@ namespace buckettools
     //***************************************************************|***********************************************************//
 
     void register_system(SystemBucket_ptr system,                    // register a system with the given name in the bucket
-                                           const std::string &name);
+                                           std::string name);
 
     SystemBucket_ptr fetch_system(const std::string &name);          // return a (boost shared) pointer to a system with the given name
     
@@ -206,18 +206,6 @@ namespace buckettools
     SystemBucket_it systems_end();                                   // return an iterator to the end of the systems
 
     SystemBucket_const_it systems_end() const;                       // return a constant iterator to the end of the systems
-
-    int_SystemBucket_it orderedsystems_begin();                      // return an iterator to the beginning of the systems (in user
-                                                                     //                                            prescribed order)
-
-    int_SystemBucket_const_it orderedsystems_begin() const;          // return a constant iterator to the beginning of the systems (in user
-                                                                     //                                            prescribed order)
-
-    int_SystemBucket_it orderedsystems_end();                        // return an iterator to the end of the systems (in user
-                                                                     //                                            prescribed order)
-
-    int_SystemBucket_const_it orderedsystems_end() const;            // return a constant iterator to the end of the systems (in user
-                                                                     //                                            prescribed order)
 
     //***************************************************************|***********************************************************//
     // UFL symbol data access
@@ -367,10 +355,8 @@ namespace buckettools
     std::map< std::string, MeshFunction_size_t_ptr > facetdomains_;  // a map from mesh names to (boost shared) pointers to
                                                                      // meshfunctions describing the facetids
 
-    std::map< std::string, SystemBucket_ptr > systems_;              // a map from system names to (boost shared) pointers to systems
+    ordered_map<std::string, SystemBucket_ptr> systems_;             // a map from system names to (boost shared) pointers to systems
 
-    std::map< int, SystemBucket_ptr > orderedsystems_;               // an ordered (user defined) map from system names to (boost
-                                                                     // shared) pointers to systems
     std::map< std::string, GenericDetectors_ptr > detectors_;        // a map from detector set name to (boost shared) pointers to detectors
 
     //***************************************************************|***********************************************************//

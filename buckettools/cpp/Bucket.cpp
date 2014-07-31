@@ -123,8 +123,8 @@ void Bucket::run()
 //*******************************************************************|************************************************************//
 void Bucket::solve(const int &location)
 {
-  for (int_SystemBucket_const_it s_it = orderedsystems_begin(); 
-                              s_it != orderedsystems_end(); s_it++)
+  for (SystemBucket_const_it s_it = systems_begin(); 
+                             s_it != systems_end(); s_it++)
   {
     if((*(*s_it).second).solve_location()==location)
     {
@@ -138,8 +138,8 @@ void Bucket::solve(const int &location)
 //*******************************************************************|************************************************************//
 void Bucket::resetcalculated()
 {
-  for (int_SystemBucket_const_it s_it = orderedsystems_begin(); 
-                                 s_it != orderedsystems_end(); s_it++)
+  for (SystemBucket_const_it s_it = systems_begin(); 
+                             s_it != systems_end(); s_it++)
   {
     (*(*s_it).second).resetcalculated();
   }
@@ -150,8 +150,8 @@ void Bucket::resetcalculated()
 //*******************************************************************|************************************************************//
 void Bucket::update()
 {
-  for (int_SystemBucket_const_it s_it = orderedsystems_begin(); 
-                                 s_it != orderedsystems_end(); s_it++)
+  for (SystemBucket_const_it s_it = systems_begin(); 
+                             s_it != systems_end(); s_it++)
   {
     (*(*s_it).second).update();
   }
@@ -225,8 +225,8 @@ void Bucket::update_timestep()
 //*******************************************************************|************************************************************//
 void Bucket::update_timedependent()
 {
-  for (int_SystemBucket_const_it s_it = orderedsystems_begin(); 
-                             s_it != orderedsystems_end(); s_it++)
+  for (SystemBucket_const_it s_it = systems_begin(); 
+                             s_it != systems_end(); s_it++)
   {
     (*(*s_it).second).update_timedependent();
   }
@@ -237,8 +237,8 @@ void Bucket::update_timedependent()
 //*******************************************************************|************************************************************//
 void Bucket::update_nonlinear()
 {
-  for (int_SystemBucket_const_it s_it = orderedsystems_begin(); 
-                             s_it != orderedsystems_end(); s_it++)
+  for (SystemBucket_const_it s_it = systems_begin(); 
+                             s_it != systems_end(); s_it++)
   {
     (*(*s_it).second).update_nonlinear();
   }
@@ -347,7 +347,7 @@ void Bucket::copy_diagnostics(Bucket_ptr &bucket) const
   (*bucket).meshes_ = meshes_;
 
   for (SystemBucket_const_it sys_it = systems_begin();               // loop over the systems
-                           sys_it != systems_end(); sys_it++)
+                                 sys_it != systems_end(); sys_it++)
   {                                                                  
     SystemBucket_ptr system;                                         // create a new system
     
@@ -623,10 +623,10 @@ MeshFunction_size_t_const_it Bucket::facetdomains_end() const
 // register a (boost shared) pointer to a system bucket in the bucket data maps
 //*******************************************************************|************************************************************//
 void Bucket::register_system(SystemBucket_ptr system, 
-                                         const std::string &name)
+                                         std::string name)
 {
-  SystemBucket_it s_it = systems_.find(name);                        // check if a system with this name already exists
-  if (s_it != systems_end())
+  SystemBucket_hash_it s_it = systems_.get<om_key_hash>().find(name);     // check if a system with this name already exists
+  if (s_it != systems_.get<om_key_hash>().end())
   {
     dolfin::error(
             "SystemBucket named \"%s\" already exists in bucket",    // if it does, issue an error
@@ -634,9 +634,7 @@ void Bucket::register_system(SystemBucket_ptr system,
   }
   else
   {
-    systems_[name] = system;                                         // if not insert it into the systems_ map
-    orderedsystems_[(int) systems_.size()] = system;                 // also insert it in the order it was registered in the 
-                                                                     // orderedsystems_ map
+    systems_.insert(om_item<std::string,SystemBucket_ptr>(name, system));// if not insert it into the systems_ map
   }
 }
 
@@ -645,8 +643,8 @@ void Bucket::register_system(SystemBucket_ptr system,
 //*******************************************************************|************************************************************//
 SystemBucket_ptr Bucket::fetch_system(const std::string &name)
 {
-  SystemBucket_it s_it = systems_.find(name);                        // check if a system with this name exists in the bucket
-  if (s_it == systems_end())
+  SystemBucket_hash_it s_it = systems_.get<om_key_hash>().find(name);     // check if a system with this name already exists
+  if (s_it == systems_.get<om_key_hash>().end())
   {
     dolfin::error(                                                   // if it doesn't, issue an error
             "SystemBucket named \"%s\" does not exist in bucket.", 
@@ -664,8 +662,8 @@ SystemBucket_ptr Bucket::fetch_system(const std::string &name)
 const SystemBucket_ptr Bucket::fetch_system(const std::string &name) 
                                                               const
 {
-  SystemBucket_const_it s_it = systems_.find(name);                  // check if a system with this name exists in the bucket
-  if (s_it == systems_end())
+  SystemBucket_const_hash_it s_it = systems_.get<om_key_hash>().find(name);     // check if a system with this name already exists
+  if (s_it == systems_.get<om_key_hash>().end())
   {
     dolfin::error(
               "SystemBucket named \"%s\" does not exist in bucket.", // if it doesn't, throw an error
@@ -682,7 +680,7 @@ const SystemBucket_ptr Bucket::fetch_system(const std::string &name)
 //*******************************************************************|************************************************************//
 SystemBucket_it Bucket::systems_begin()
 {
-  return systems_.begin();
+  return systems_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -690,7 +688,7 @@ SystemBucket_it Bucket::systems_begin()
 //*******************************************************************|************************************************************//
 SystemBucket_const_it Bucket::systems_begin() const
 {
-  return systems_.begin();
+  return systems_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -698,7 +696,7 @@ SystemBucket_const_it Bucket::systems_begin() const
 //*******************************************************************|************************************************************//
 SystemBucket_it Bucket::systems_end()
 {
-  return systems_.end();
+  return systems_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -706,39 +704,7 @@ SystemBucket_it Bucket::systems_end()
 //*******************************************************************|************************************************************//
 SystemBucket_const_it Bucket::systems_end() const
 {
-  return systems_.end();
-}
-
-//*******************************************************************|************************************************************//
-// return an iterator to the beginning of the orderedsystems_ map
-//*******************************************************************|************************************************************//
-int_SystemBucket_it Bucket::orderedsystems_begin()
-{
-  return orderedsystems_.begin();
-}
-
-//*******************************************************************|************************************************************//
-// return a constant iterator to the beginning of the orderedsystems_ map
-//*******************************************************************|************************************************************//
-int_SystemBucket_const_it Bucket::orderedsystems_begin() const
-{
-  return orderedsystems_.begin();
-}
-
-//*******************************************************************|************************************************************//
-// return an iterator to the end of the orderedsystems_ map
-//*******************************************************************|************************************************************//
-int_SystemBucket_it Bucket::orderedsystems_end()
-{
-  return orderedsystems_.end();
-}
-
-//*******************************************************************|************************************************************//
-// return a constant iterator to the end of the orderedsystems_ map
-//*******************************************************************|************************************************************//
-int_SystemBucket_const_it Bucket::orderedsystems_end() const
-{
-  return orderedsystems_.end();
+  return systems_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -987,8 +953,8 @@ void Bucket::output(const int &location)
 
   bool systems_solved = false;
 
-  for (int_SystemBucket_const_it s_it = orderedsystems_begin();      // loop over the systems (in order)
-                              s_it != orderedsystems_end(); s_it++)
+  for (SystemBucket_const_it s_it = systems_begin();      // loop over the systems (in order)
+                             s_it != systems_end(); s_it++)
   {
     if((*(*s_it).second).solve_location()==SOLVE_DIAGNOSTICS)        // find if any are meant to be solved before output
     {                                                                // check it has fields included in the current output
@@ -1024,7 +990,7 @@ void Bucket::output(const int &location)
   }
 
   for (SystemBucket_it s_it = systems_begin(); s_it != systems_end();// loop over the systems
-                                                              s_it++)
+                                                             s_it++)
   {
     (*(*s_it).second).output(write_vis);                             // and output pvd files
   }
@@ -1057,9 +1023,9 @@ void Bucket::checkpoint(const int &location)
 
   dolfin::log(dolfin::INFO, "Checkpointing simulation.");
 
-  
+ 
   for (SystemBucket_it s_it = systems_begin(); 
-                                  s_it != systems_end(); s_it++)
+                       s_it != systems_end(); s_it++)
   {
     (*(*s_it).second).checkpoint();
   }
@@ -1108,7 +1074,7 @@ const std::string Bucket::systems_str(const int &indent) const
 {
   std::stringstream s;
   for ( SystemBucket_const_it s_it = systems_begin(); 
-                                      s_it != systems_end(); s_it++ )
+                              s_it != systems_end(); s_it++ )
   {
     s << (*(*s_it).second).str(indent);
   }
@@ -1168,7 +1134,7 @@ void Bucket::fill_uflsymbols_()
   }
 
   for (SystemBucket_const_it s_it = systems_begin();                 // loop over the systems
-                                      s_it != systems_end(); s_it++)
+                             s_it != systems_end(); s_it++)
   {
     SystemBucket_ptr system = (*s_it).second;
     register_uflsymbol((*system).function(),                         // current system function
@@ -1209,7 +1175,6 @@ void Bucket::empty_()
 {
   meshes_.clear();
   systems_.clear();
-  orderedsystems_.clear();
   baseuflsymbols_.clear();
   uflsymbols_.clear();
   coefficientspaces_.clear();
@@ -1237,7 +1202,7 @@ bool Bucket::steadystate_()
   {
     double maxchange = 0.0;
     for (SystemBucket_it s_it = systems_begin(); 
-                                    s_it != systems_end(); s_it++)
+                         s_it != systems_end(); s_it++)
     {
       double systemchange = (*(*s_it).second).maxchange();
       dolfin::log(dolfin::DBG, "  steady state systemchange = %e", systemchange);
@@ -1284,8 +1249,8 @@ void Bucket::solve_at_start_()
 {
   bool systems_solved = false;
 
-  for (int_SystemBucket_const_it s_it = orderedsystems_begin(); 
-                              s_it != orderedsystems_end(); s_it++)
+  for (SystemBucket_const_it s_it = systems_begin(); 
+                             s_it != systems_end(); s_it++)
   {
     if((*(*s_it).second).solve_location()==SOLVE_START)
     {

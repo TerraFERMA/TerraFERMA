@@ -141,14 +141,14 @@ void SpudBucket::fill()
                                                                      // just deal with them by evaluating coefficient functions 
                                                                      // in the order the user specified followed by fields last.
 
-  for (int_SystemBucket_it sys_it = orderedsystems_begin();          // loop over the systems for a *sixth* time, initializing
-                           sys_it != orderedsystems_end(); sys_it++) // the values of any coefficient functions
+  for (SystemBucket_it sys_it = systems_begin();          // loop over the systems for a *sixth* time, initializing
+                       sys_it != systems_end(); sys_it++) // the values of any coefficient functions
   {                                                                  
     (*std::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).initialize_coefficient_functions();
   }
   
-  for (int_SystemBucket_it sys_it = orderedsystems_begin();          // loop over the systems for a *seventh* time, initializing
-                           sys_it != orderedsystems_end(); sys_it++) // the values of the fields
+  for (SystemBucket_it sys_it = systems_begin();          // loop over the systems for a *seventh* time, initializing
+                       sys_it != systems_end(); sys_it++) // the values of the fields
   {
     (*(*sys_it).second).evaluate_initial_fields();
   }
