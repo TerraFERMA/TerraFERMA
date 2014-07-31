@@ -158,14 +158,12 @@ namespace buckettools
     const bool solved() const                                        // return a boolean indicating if this system has been solved
     { return *solved_; }                                              // for or not
 
-    //const PETScVector_ptr residual_vector() const;                   // return the residual of the last solver in the system
-
     //***************************************************************|***********************************************************//
     // Field data access
     //***************************************************************|***********************************************************//
 
     void register_field(FunctionBucket_ptr field, 
-                                           const std::string &name); // register a field (subfunction) with the given name
+                                           std::string name); // register a field (subfunction) with the given name
 
     FunctionBucket_ptr fetch_field(const std::string &name);         // return a (boost shared) pointer to a field with the given
                                                                      // name
@@ -181,14 +179,6 @@ namespace buckettools
 
     FunctionBucket_const_it fields_end() const;                      // return a constant iterator to the end of the fields
 
-    int_FunctionBucket_it orderedfields_begin();                     // return an iterator to the beginning of the ordered fields
-
-    int_FunctionBucket_const_it orderedfields_begin() const;         // return a constant iterator to the beginning of the ordered fields
-
-    int_FunctionBucket_it orderedfields_end();                       // return an iterator to the end of the ordered fields
-
-    int_FunctionBucket_const_it orderedfields_end() const;           // return a constant iterator to the end of the ordered fields
-
     const int fields_size() const;                                   // return the number of fields
 
     //***************************************************************|***********************************************************//
@@ -196,7 +186,7 @@ namespace buckettools
     //***************************************************************|***********************************************************//
 
     void register_coeff(FunctionBucket_ptr coeff, 
-                                           const std::string &name); // register a coefficient with the given name
+                                           std::string name); // register a coefficient with the given name
 
     FunctionBucket_ptr fetch_coeff(const std::string &name);         // return a (boost shared) pointer to a coefficient with the
                                                                      // given name
@@ -212,14 +202,6 @@ namespace buckettools
     FunctionBucket_it coeffs_end();                                  // return an iterator to the end of the coefficients
 
     FunctionBucket_const_it coeffs_end() const;                      // return a constant iterator to the end of the coefficients
-
-    int_FunctionBucket_it orderedcoeffs_begin();                     // return an iterator to the beginning of the ordered coeffs
-
-    int_FunctionBucket_const_it orderedcoeffs_begin() const;         // return a constant iterator to the beginning of the ordered coeffs
-
-    int_FunctionBucket_it orderedcoeffs_end();                       // return an iterator to the end of the ordered coeffs
-
-    int_FunctionBucket_const_it orderedcoeffs_end() const;           // return a constant iterator to the end of the ordered coeffs
 
     //***************************************************************|***********************************************************//
     // Solver bucket data access
@@ -377,15 +359,11 @@ namespace buckettools
     // Pointers data
     //***************************************************************|***********************************************************//
 
-    std::map< std::string, FunctionBucket_ptr > fields_;             // a map from field names to (boost shared) pointers to fields
+    ordered_map< std::string, FunctionBucket_ptr > fields_;             // a map from field names to (boost shared) pointers to fields
     
-    std::map< int, FunctionBucket_ptr > orderedfields_;              // an ordered (user defined)  map to (boost shared) pointers to fields
-    
-    std::map< std::string, FunctionBucket_ptr > coeffs_;             // a map from coefficient names to (boost shared) pointers to
+    ordered_map< std::string, FunctionBucket_ptr > coeffs_;             // a map from coefficient names to (boost shared) pointers to
                                                                      // coefficients
 
-    std::map< int, FunctionBucket_ptr > orderedcoeffs_;              // an ordered (user defined)  map to (boost shared) pointers to coeffs
-    
     ordered_map<std::string, SolverBucket_ptr> solvers_;             // a map from solver bucket names to (boost shared) pointers to
                                                                      // solver buckets
 

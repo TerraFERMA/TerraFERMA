@@ -26,6 +26,7 @@
 #include <fstream>
 #include <string>
 #include "DiagnosticsFile.h"
+#include "BoostTypes.h"
 
 namespace buckettools
 {
@@ -38,9 +39,7 @@ namespace buckettools
   typedef std::shared_ptr< SystemBucket > SystemBucket_ptr;
   class FunctionBucket;
   typedef std::shared_ptr< FunctionBucket > FunctionBucket_ptr;
-  typedef std::map< std::string, FunctionBucket_ptr >::const_iterator FunctionBucket_const_it;
   typedef std::shared_ptr< dolfin::Form > Form_ptr;
-  typedef std::map< std::string, Form_ptr >::const_iterator Form_const_it;
 
   //*****************************************************************|************************************************************//
   // StatisticsFile class:

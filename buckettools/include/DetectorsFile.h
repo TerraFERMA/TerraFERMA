@@ -27,6 +27,7 @@
 #include <string>
 #include <dolfin.h>
 #include "DiagnosticsFile.h"
+#include "BoostTypes.h"
 
 namespace buckettools
 {
@@ -39,10 +40,8 @@ namespace buckettools
   typedef std::shared_ptr< SystemBucket > SystemBucket_ptr;
   class FunctionBucket;
   typedef std::shared_ptr< FunctionBucket > FunctionBucket_ptr;
-  typedef std::map< std::string, FunctionBucket_ptr >::const_iterator FunctionBucket_const_it;
   class GenericDetectors;
   typedef std::shared_ptr< GenericDetectors > GenericDetectors_ptr;
-  typedef std::map< std::string, GenericDetectors_ptr >::const_iterator GenericDetectors_const_it;
   typedef std::shared_ptr< dolfin::Mesh > Mesh_ptr;
 
   //*****************************************************************|************************************************************//

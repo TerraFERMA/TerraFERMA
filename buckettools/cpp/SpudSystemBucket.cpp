@@ -107,13 +107,13 @@ void SpudSystemBucket::initialize_fields_and_coefficient_expressions()
 {
   dolfin::info("Initializing fields and coefficient expressions for system %s", name().c_str());
 
-  for (int_FunctionBucket_it f_it = orderedfields_begin(); f_it != orderedfields_end();
+  for (FunctionBucket_it f_it = fields_begin(); f_it != fields_end();
                                                               f_it++)
   {
     (*(std::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).initialize_field();
   } 
 
-  for (int_FunctionBucket_it f_it = orderedcoeffs_begin(); f_it != orderedcoeffs_end();
+  for (FunctionBucket_it f_it = coeffs_begin(); f_it != coeffs_end();
                                                               f_it++)
   {
     (*(std::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).initialize_coeff_expression();
@@ -128,7 +128,7 @@ void SpudSystemBucket::initialize_coefficient_functions()
 {
   dolfin::info("Initializing coefficient functions for system %s", name().c_str());
 
-  for (int_FunctionBucket_it f_it = orderedcoeffs_begin(); f_it != orderedcoeffs_end();
+  for (FunctionBucket_it f_it = coeffs_begin(); f_it != coeffs_end();
                                                               f_it++)
   {
     (*(std::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).initialize_coeff_function();
@@ -366,8 +366,8 @@ void SpudSystemBucket::fill_bcs_()
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
 
-  for (int_FunctionBucket_const_it f_it = orderedfields_begin();     // loop over all the fields
-                                f_it != orderedfields_end(); f_it++)
+  for (FunctionBucket_const_it f_it = fields_begin();     // loop over all the fields
+                                f_it != fields_end(); f_it++)
   {
     for (int_DirichletBC_const_it                                    // loop over the dirichlet bcs
           b_it = (*(*f_it).second).ordereddirichletbcs_begin(); 
@@ -384,8 +384,8 @@ void SpudSystemBucket::fill_bcs_()
 //*******************************************************************|************************************************************//
 void SpudSystemBucket::fill_referencepoints_()
 {
-  for (int_FunctionBucket_const_it f_it = orderedfields_begin();     // loop over all the fields
-                                f_it != orderedfields_end(); f_it++)
+  for (FunctionBucket_const_it f_it = fields_begin();     // loop over all the fields
+                                f_it != fields_end(); f_it++)
   {
     for (ReferencePoints_const_it                                    // loop over all the points
           p_it = (*(*f_it).second).referencepoints_begin(); 

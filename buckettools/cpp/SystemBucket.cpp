@@ -104,14 +104,14 @@ void SystemBucket::update()
   
                                                                      // fields share a vector with the system function so no need to
                                                                      // update them...
-  for (int_FunctionBucket_it f_it = orderedfields_begin();           // except that they contain functionals which need updating
-                           f_it != orderedfields_end(); f_it++) 
+  for (FunctionBucket_it f_it = fields_begin();           // except that they contain functionals which need updating
+                           f_it != fields_end(); f_it++) 
   {
     (*(*f_it).second).update();
   }
 
-  for (int_FunctionBucket_it f_it = orderedcoeffs_begin();           // also loop over coefficients again to update any coefficient
-                           f_it != orderedcoeffs_end(); f_it++)      // functions, constant functionals or statistic functionals
+  for (FunctionBucket_it f_it = coeffs_begin();           // also loop over coefficients again to update any coefficient
+                           f_it != coeffs_end(); f_it++)      // functions, constant functionals or statistic functionals
   {
     (*(*f_it).second).update();
   }
@@ -128,8 +128,8 @@ void SystemBucket::update()
 void SystemBucket::update_timedependent()
 {
 
-  for (int_FunctionBucket_it f_it = orderedcoeffs_begin();           // loop over coefficients again to update any constant
-                           f_it != orderedcoeffs_end(); f_it++)      // functionals
+  for (FunctionBucket_it f_it = coeffs_begin();           // loop over coefficients again to update any constant
+                           f_it != coeffs_end(); f_it++)      // functionals
   {
     (*(*f_it).second).update_timedependent();                        // this does nothing to non constant functionals
   }
@@ -142,8 +142,8 @@ void SystemBucket::update_timedependent()
 void SystemBucket::update_nonlinear()
 {
 
-  for (int_FunctionBucket_it f_it = orderedcoeffs_begin();           // loop over coefficients again to update any constant
-                           f_it != orderedcoeffs_end(); f_it++)      // functionals
+  for (FunctionBucket_it f_it = coeffs_begin();           // loop over coefficients again to update any constant
+                           f_it != coeffs_end(); f_it++)      // functionals
   {
     (*(*f_it).second).update_nonlinear();                            // this does nothing to non constant functionals
   }
@@ -317,30 +317,20 @@ const Function_ptr SystemBucket::function_ptr(const double_ptr time) const
   }
 }
 
-////*******************************************************************|************************************************************//
-//// return the residual associated with the last solver in this system
-////*******************************************************************|************************************************************//
-//const PETScVector_ptr SystemBucket::residual_vector() const
-//{
-//  return (*(*(solvers_.lower_bound((int) solvers_.size()))).second).residual_vector();
-//}
-
 //*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a field function bucket in the system bucket data maps
 //*******************************************************************|************************************************************//
-void SystemBucket::register_field(FunctionBucket_ptr field, const std::string &name)
+void SystemBucket::register_field(FunctionBucket_ptr field, std::string name)
 {
-  FunctionBucket_it f_it = fields_.find(name);                       // check if name already exists
-  if (f_it != fields_.end())
+  FunctionBucket_hash_it f_it = fields_.get<om_key_hash>().find(name);                       // check if name already exists
+  if (f_it != fields_.get<om_key_hash>().end())
   {
     dolfin::error("Field named \"%s\" already exists in system.",    // if it does, issue an error
                                                 name.c_str());
   }
   else
   {
-    fields_[name] = field;                                           // if not, add it to the fields_ map
-    orderedfields_[(int) fields_.size()] = field;                    // and into the orderedfields_ map, assuming that the
-                                                                     // insertion order is the order they are to be calculated
+    fields_.insert(om_item<std::string, FunctionBucket_ptr>(name,field));                                           // if not, add it to the fields_ map
   }
 }
 
@@ -349,8 +339,8 @@ void SystemBucket::register_field(FunctionBucket_ptr field, const std::string &n
 //*******************************************************************|************************************************************//
 FunctionBucket_ptr SystemBucket::fetch_field(const std::string &name)
 {
-  FunctionBucket_it f_it = fields_.find(name);                       // check if name already exists
-  if (f_it == fields_.end())
+  FunctionBucket_hash_it f_it = fields_.get<om_key_hash>().find(name);                       // check if name already exists
+  if (f_it == fields_.get<om_key_hash>().end())
   {
     dolfin::error("Field named \"%s\" does not exist in system.",    // if it doesn't, issue an error
                                                     name.c_str());
@@ -366,8 +356,8 @@ FunctionBucket_ptr SystemBucket::fetch_field(const std::string &name)
 //*******************************************************************|************************************************************//
 const FunctionBucket_ptr SystemBucket::fetch_field(const std::string &name) const
 {
-  FunctionBucket_const_it f_it = fields_.find(name);                 // check if name already exists
-  if (f_it == fields_.end())
+  FunctionBucket_hash_it f_it = fields_.get<om_key_hash>().find(name);                       // check if name already exists
+  if (f_it == fields_.get<om_key_hash>().end())
   {
     dolfin::error("Field named \"%s\" does not exist in system.",    // if it doesn't, issue an error
                                                     name.c_str());
@@ -384,7 +374,7 @@ const FunctionBucket_ptr SystemBucket::fetch_field(const std::string &name) cons
 //*******************************************************************|************************************************************//
 FunctionBucket_it SystemBucket::fields_begin()
 {
-  return fields_.begin();
+  return fields_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -392,7 +382,7 @@ FunctionBucket_it SystemBucket::fields_begin()
 //*******************************************************************|************************************************************//
 FunctionBucket_const_it SystemBucket::fields_begin() const
 {
-  return fields_.begin();
+  return fields_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -400,7 +390,7 @@ FunctionBucket_const_it SystemBucket::fields_begin() const
 //*******************************************************************|************************************************************//
 FunctionBucket_it SystemBucket::fields_end()
 {
-  return fields_.end();
+  return fields_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -408,39 +398,7 @@ FunctionBucket_it SystemBucket::fields_end()
 //*******************************************************************|************************************************************//
 FunctionBucket_const_it SystemBucket::fields_end() const
 {
-  return fields_.end();
-}
-
-//*******************************************************************|************************************************************//
-// return an iterator to the beginning of the orderedfields_ map
-//*******************************************************************|************************************************************//
-int_FunctionBucket_it SystemBucket::orderedfields_begin()
-{
-  return orderedfields_.begin();
-}
-
-//*******************************************************************|************************************************************//
-// return a constant iterator to the beginning of the orderedfields_ map
-//*******************************************************************|************************************************************//
-int_FunctionBucket_const_it SystemBucket::orderedfields_begin() const
-{
-  return orderedfields_.begin();
-}
-
-//*******************************************************************|************************************************************//
-// return an iterator to the end of the orderedfields_ map
-//*******************************************************************|************************************************************//
-int_FunctionBucket_it SystemBucket::orderedfields_end()
-{
-  return orderedfields_.end();
-}
-
-//*******************************************************************|************************************************************//
-// return a constant iterator to the end of the orderedfields_ map
-//*******************************************************************|************************************************************//
-int_FunctionBucket_const_it SystemBucket::orderedfields_end() const
-{
-  return orderedfields_.end();
+  return fields_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -454,10 +412,10 @@ const int SystemBucket::fields_size() const
 //*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a coefficient function bucket in the system bucket data maps
 //*******************************************************************|************************************************************//
-void SystemBucket::register_coeff(FunctionBucket_ptr coeff, const std::string &name)
+void SystemBucket::register_coeff(FunctionBucket_ptr coeff, std::string name)
 {
-  FunctionBucket_it f_it = coeffs_.find(name);                       // check if name already exists
-  if (f_it != coeffs_.end())
+  FunctionBucket_hash_it f_it = coeffs_.get<om_key_hash>().find(name);                       // check if name already exists
+  if (f_it != coeffs_.get<om_key_hash>().end())
   {
     dolfin::error(                                                   // if it does, issue an error
               "Coefficient named \"%s\" already exists in system.", 
@@ -465,9 +423,7 @@ void SystemBucket::register_coeff(FunctionBucket_ptr coeff, const std::string &n
   }
   else
   {
-    coeffs_[name] = coeff;                                           // if it doesn't, register the function bucket
-    orderedcoeffs_[(int) coeffs_.size()] = coeff;                    // and into the orderedcoeffs_ map, assuming that the
-                                                                     // insertion order is the order they are to be calculated
+    coeffs_.insert(om_item<std::string,FunctionBucket_ptr>(name,coeff));          // if it doesn't, register the function bucket
   }
 }
 
@@ -476,8 +432,8 @@ void SystemBucket::register_coeff(FunctionBucket_ptr coeff, const std::string &n
 //*******************************************************************|************************************************************//
 FunctionBucket_ptr SystemBucket::fetch_coeff(const std::string &name)
 {
-  FunctionBucket_it f_it = coeffs_.find(name);                       // check if the name already exists
-  if (f_it == coeffs_.end())
+  FunctionBucket_hash_it f_it = coeffs_.get<om_key_hash>().find(name);                       // check if the name already exists
+  if (f_it == coeffs_.get<om_key_hash>().end())
   {
     dolfin::error(                                                   // if it doesn't, issue an error
             "Coefficient named \"%s\" does not exist in system.", 
@@ -494,8 +450,8 @@ FunctionBucket_ptr SystemBucket::fetch_coeff(const std::string &name)
 //*******************************************************************|************************************************************//
 const FunctionBucket_ptr SystemBucket::fetch_coeff(const std::string &name) const
 {
-  FunctionBucket_const_it f_it = coeffs_.find(name);                 // check if the name already exists
-  if (f_it == coeffs_.end())
+  FunctionBucket_const_hash_it f_it = coeffs_.get<om_key_hash>().find(name);                 // check if the name already exists
+  if (f_it == coeffs_.get<om_key_hash>().end())
   {
     dolfin::error(                                                   // if it doesn't, issue an error
             "Coefficient named \"%s\" does not exist in system.", 
@@ -512,7 +468,7 @@ const FunctionBucket_ptr SystemBucket::fetch_coeff(const std::string &name) cons
 //*******************************************************************|************************************************************//
 FunctionBucket_it SystemBucket::coeffs_begin()
 {
-  return coeffs_.begin();
+  return coeffs_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -520,7 +476,7 @@ FunctionBucket_it SystemBucket::coeffs_begin()
 //*******************************************************************|************************************************************//
 FunctionBucket_const_it SystemBucket::coeffs_begin() const
 {
-  return coeffs_.begin();
+  return coeffs_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -528,7 +484,7 @@ FunctionBucket_const_it SystemBucket::coeffs_begin() const
 //*******************************************************************|************************************************************//
 FunctionBucket_it SystemBucket::coeffs_end()
 {
-  return coeffs_.end();
+  return coeffs_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -536,39 +492,7 @@ FunctionBucket_it SystemBucket::coeffs_end()
 //*******************************************************************|************************************************************//
 FunctionBucket_const_it SystemBucket::coeffs_end() const
 {
-  return coeffs_.end();
-}
-
-//*******************************************************************|************************************************************//
-// return an iterator to the beginning of the orderedcoeffs_ map
-//*******************************************************************|************************************************************//
-int_FunctionBucket_it SystemBucket::orderedcoeffs_begin()
-{
-  return orderedcoeffs_.begin();
-}
-
-//*******************************************************************|************************************************************//
-// return a constant iterator to the beginning of the orderedcoeffs_ map
-//*******************************************************************|************************************************************//
-int_FunctionBucket_const_it SystemBucket::orderedcoeffs_begin() const
-{
-  return orderedcoeffs_.begin();
-}
-
-//*******************************************************************|************************************************************//
-// return an iterator to the end of the orderedcoeffs_ map
-//*******************************************************************|************************************************************//
-int_FunctionBucket_it SystemBucket::orderedcoeffs_end()
-{
-  return orderedcoeffs_.end();
-}
-
-//*******************************************************************|************************************************************//
-// return a constant iterator to the end of the orderedcoeffs_ map
-//*******************************************************************|************************************************************//
-int_FunctionBucket_const_it SystemBucket::orderedcoeffs_end() const
-{
-  return orderedcoeffs_.end();
+  return coeffs_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -826,8 +750,8 @@ const std::string SystemBucket::fields_str(const int &indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
-  for ( FunctionBucket_const_it f_it = fields_.begin();              // loop over the fields
-                                    f_it != fields_.end(); f_it++ )
+  for ( FunctionBucket_const_it f_it = fields_begin();              // loop over the fields
+                                    f_it != fields_end(); f_it++ )
   {
     s << (*(*f_it).second).str(indent);
   }
@@ -841,8 +765,8 @@ const std::string SystemBucket::coeffs_str(const int &indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
-  for ( FunctionBucket_const_it f_it = coeffs_.begin();              // loop over the coefficients
-                                  f_it != coeffs_.end(); f_it++ )
+  for ( FunctionBucket_const_it f_it = coeffs_begin();              // loop over the coefficients
+                                  f_it != coeffs_end(); f_it++ )
   {
     s << (*(*f_it).second).str(indent);
   }
@@ -955,8 +879,8 @@ void SystemBucket::apply_ic_()
 //*******************************************************************|************************************************************//
 void SystemBucket::apply_dirichletbc_()
 {
-  for (int_FunctionBucket_const_it f_it = orderedfields_begin();     // loop over all the fields
-                                f_it != orderedfields_end(); f_it++)
+  for (FunctionBucket_const_it f_it = fields_begin();     // loop over all the fields
+                                f_it != fields_end(); f_it++)
   {
     for (int_DirichletBC_const_it                                    // loop over all the bcs
          b_it = (*(*f_it).second).ordereddirichletbcs_begin(); 
@@ -974,8 +898,8 @@ void SystemBucket::apply_dirichletbc_()
 //*******************************************************************|************************************************************//
 void SystemBucket::apply_referencepoints_()
 {
-  for (int_FunctionBucket_const_it f_it = orderedfields_begin();     // loop over all the fields
-                                f_it != orderedfields_end(); f_it++)
+  for (FunctionBucket_const_it f_it = fields_begin();     // loop over all the fields
+                                f_it != fields_end(); f_it++)
   {
     for (ReferencePoints_const_it                                    // loop over all the points
          p_it = (*(*f_it).second).referencepoints_begin(); 
@@ -1038,9 +962,7 @@ void SystemBucket::checkpoint_options_()
 void SystemBucket::empty_()
 {
   fields_.clear();
-  orderedfields_.clear();
   coeffs_.clear();
-  orderedcoeffs_.clear();
   solvers_.clear();
 }
 
