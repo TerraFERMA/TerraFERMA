@@ -74,8 +74,8 @@ void SystemBucket::evaluate_initial_fields()
 //*******************************************************************|************************************************************//
 void SystemBucket::solve()
 {
-  for (int_SolverBucket_const_it s_it = orderedsolvers_begin(); 
-                                s_it != orderedsolvers_end(); s_it++)
+  for (SolverBucket_const_it s_it = solvers_begin(); 
+                             s_it != solvers_end(); s_it++)
   {
     (*(*s_it).second).solve();
 
@@ -317,13 +317,13 @@ const Function_ptr SystemBucket::function_ptr(const double_ptr time) const
   }
 }
 
-//*******************************************************************|************************************************************//
-// return the residual associated with the last solver in this system
-//*******************************************************************|************************************************************//
-const PETScVector_ptr SystemBucket::residual_vector() const
-{
-  return (*(*(orderedsolvers_.lower_bound((int) solvers_.size()))).second).residual_vector();
-}
+////*******************************************************************|************************************************************//
+//// return the residual associated with the last solver in this system
+////*******************************************************************|************************************************************//
+//const PETScVector_ptr SystemBucket::residual_vector() const
+//{
+//  return (*(*(solvers_.lower_bound((int) solvers_.size()))).second).residual_vector();
+//}
 
 //*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a field function bucket in the system bucket data maps
@@ -574,11 +574,11 @@ int_FunctionBucket_const_it SystemBucket::orderedcoeffs_end() const
 //*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a solver bucket in the system bucket data maps
 //*******************************************************************|************************************************************//
-void SystemBucket::register_solver(SolverBucket_ptr solver, const std::string &name)
+void SystemBucket::register_solver(SolverBucket_ptr solver, std::string name)
 {
   // First check if a solver with this name already exists
-  SolverBucket_it s_it = solvers_.find(name);                        // check if this name exists already
-  if (s_it != solvers_.end())
+  SolverBucket_hash_it s_it = solvers_.get<om_key_hash>().find(name);     // check if a solver with this name already exists
+  if (s_it != solvers_.get<om_key_hash>().end())
   {
     dolfin::error(                                                   // if it does, issue an error
               "SolverBucket named \"%s\" already exists in system.", 
@@ -586,9 +586,7 @@ void SystemBucket::register_solver(SolverBucket_ptr solver, const std::string &n
   }
   else
   {
-    solvers_[name] = solver;                                         // if not then insert it into the solvers_ map
-    orderedsolvers_[(int) solvers_.size()] = solver;                 // and into the orderedsolvers_ map, assuming that the
-                                                                     // insertion order is the order they are to be solved
+    solvers_.insert(om_item<std::string,SolverBucket_ptr>(name, solver)); // if not then insert it into the solvers_ map
   }
 }
 
@@ -597,8 +595,8 @@ void SystemBucket::register_solver(SolverBucket_ptr solver, const std::string &n
 //*******************************************************************|************************************************************//
 SolverBucket_ptr SystemBucket::fetch_solver(const std::string &name)
 {
-  SolverBucket_it s_it = solvers_.find(name);                        // check if name already exists
-  if (s_it == solvers_.end())
+  SolverBucket_hash_it s_it = solvers_.get<om_key_hash>().find(name);     // check if a solver with this name already exists
+  if (s_it == solvers_.get<om_key_hash>().end())
   {
     dolfin::error("SolverBucket named \"%s\" does not exist in system.",// if it doesn't, issue an error
                                                     name.c_str());
@@ -614,8 +612,8 @@ SolverBucket_ptr SystemBucket::fetch_solver(const std::string &name)
 //*******************************************************************|************************************************************//
 const SolverBucket_ptr SystemBucket::fetch_solver(const std::string &name) const
 {
-  SolverBucket_const_it s_it = solvers_.find(name);                        // check if name already exists
-  if (s_it == solvers_.end())
+  SolverBucket_hash_it s_it = solvers_.get<om_key_hash>().find(name);     // check if a solver with this name already exists
+  if (s_it == solvers_.get<om_key_hash>().end())
   {
     dolfin::error("SolverBucket named \"%s\" does not exist in system.",// if it doesn't, issue an error
                                                     name.c_str());
@@ -631,7 +629,7 @@ const SolverBucket_ptr SystemBucket::fetch_solver(const std::string &name) const
 //*******************************************************************|************************************************************//
 SolverBucket_it SystemBucket::solvers_begin()
 {
-  return solvers_.begin();
+  return solvers_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -639,7 +637,7 @@ SolverBucket_it SystemBucket::solvers_begin()
 //*******************************************************************|************************************************************//
 SolverBucket_const_it SystemBucket::solvers_begin() const
 {
-  return solvers_.begin();
+  return solvers_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -647,7 +645,7 @@ SolverBucket_const_it SystemBucket::solvers_begin() const
 //*******************************************************************|************************************************************//
 SolverBucket_it SystemBucket::solvers_end()
 {
-  return solvers_.end();
+  return solvers_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -655,39 +653,7 @@ SolverBucket_it SystemBucket::solvers_end()
 //*******************************************************************|************************************************************//
 SolverBucket_const_it SystemBucket::solvers_end() const
 {
-  return solvers_.end();
-}
-
-//*******************************************************************|************************************************************//
-// return an iterator to the beginning of the orderedsolvers_ map
-//*******************************************************************|************************************************************//
-int_SolverBucket_it SystemBucket::orderedsolvers_begin()
-{
-  return orderedsolvers_.begin();
-}
-
-//*******************************************************************|************************************************************//
-// return a constant iterator to the beginning of the orderedsolvers_ map
-//*******************************************************************|************************************************************//
-int_SolverBucket_const_it SystemBucket::orderedsolvers_begin() const
-{
-  return orderedsolvers_.begin();
-}
-
-//*******************************************************************|************************************************************//
-// return an iterator to the end of the orderedsolvers_ map
-//*******************************************************************|************************************************************//
-int_SolverBucket_it SystemBucket::orderedsolvers_end()
-{
-  return orderedsolvers_.end();
-}
-
-//*******************************************************************|************************************************************//
-// return a constant iterator to the end of the orderedsolvers_ map
-//*******************************************************************|************************************************************//
-int_SolverBucket_const_it SystemBucket::orderedsolvers_end() const
-{
-  return orderedsolvers_.end();
+  return solvers_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -890,8 +856,8 @@ const std::string SystemBucket::solvers_str(const int &indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
-  for ( SolverBucket_const_it s_it = solvers_.begin();               // loop over the solvers
-                                s_it != solvers_.end(); s_it++ )
+  for ( SolverBucket_const_it s_it = solvers_begin();               // loop over the solvers
+                                s_it != solvers_end(); s_it++ )
   {
     s << (*(*s_it).second).str(indent);
   }
@@ -1076,6 +1042,5 @@ void SystemBucket::empty_()
   coeffs_.clear();
   orderedcoeffs_.clear();
   solvers_.clear();
-  orderedsolvers_.clear();
 }
 

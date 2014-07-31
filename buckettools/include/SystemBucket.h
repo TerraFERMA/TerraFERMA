@@ -158,7 +158,7 @@ namespace buckettools
     const bool solved() const                                        // return a boolean indicating if this system has been solved
     { return *solved_; }                                              // for or not
 
-    const PETScVector_ptr residual_vector() const;                   // return the residual of the last solver in the system
+    //const PETScVector_ptr residual_vector() const;                   // return the residual of the last solver in the system
 
     //***************************************************************|***********************************************************//
     // Field data access
@@ -226,7 +226,7 @@ namespace buckettools
     //***************************************************************|***********************************************************//
 
     void register_solver(SolverBucket_ptr solver, 
-                                           const std::string &name); // register a solver bucket with the given name
+                                           std::string name);        // register a solver bucket with the given name
 
     SolverBucket_ptr fetch_solver(const std::string &name);          // return a (boost shared) pointer to a solver with the
                                                                      // given name
@@ -242,17 +242,6 @@ namespace buckettools
     SolverBucket_it solvers_end();                                   // return an iterator to the end of the solver buckets
 
     SolverBucket_const_it solvers_end() const;                       // return a constant iterator to the end of the solver buckets
-
-    int_SolverBucket_it orderedsolvers_begin();                      // return an iterator to the beginning of the ordered solver
-                                                                     // buckets
-
-    int_SolverBucket_const_it orderedsolvers_begin() const;          // return a constant iterator to the beginning of the ordered
-                                                                     // solver buckets
-
-    int_SolverBucket_it orderedsolvers_end();                        // return an iterator to the end of the ordered solver buckets
-
-    int_SolverBucket_const_it orderedsolvers_end() const;            // return a constant iterator to the end of the ordered solver
-                                                                     // buckets
 
     //***************************************************************|***********************************************************//
     // BC data access
@@ -307,28 +296,16 @@ namespace buckettools
     const bool include_in_detectors() const;                         // return a boolean indicating if this system has fields to 
                                                                      // be included in steadystate output
     
-    virtual const std::string str() const                            // return a string describing the contents of the system
-    { return str(0); }
-
-    virtual const std::string str(int indent) const;                 // return an indented string describing the contents of the
+    virtual const std::string str(int indent=0) const;               // return an indented string describing the contents of the
                                                                      // system
 
-    virtual const std::string fields_str() const                     // return a string describing the fields in the system
-    { return fields_str(0); }
-
-    virtual const std::string fields_str(const int &indent) const;   // return an indented string describing the fields in the
+    virtual const std::string fields_str(const int &indent=0) const; // return an indented string describing the fields in the
                                                                      // system
 
-    virtual const std::string coeffs_str() const                     // return a string describing the coefficients in the system
-    { return coeffs_str(0); }
-
-    virtual const std::string coeffs_str(const int &indent) const;   // return an indented string describing the fields in the
+    virtual const std::string coeffs_str(const int &indent=0) const; // return an indented string describing the fields in the
                                                                      // system
 
-    virtual const std::string solvers_str() const                    // return a string describing the solver buckets in the system
-    { return coeffs_str(0); }
-
-    virtual const std::string solvers_str(const int &indent) const;  // return an indented string describing the solver buckets in
+    virtual const std::string solvers_str(const int &indent=0) const;// return an indented string describing the solver buckets in
                                                                      // the system
 
     void checkpoint();                                               // checkpoint the system
@@ -409,11 +386,8 @@ namespace buckettools
 
     std::map< int, FunctionBucket_ptr > orderedcoeffs_;              // an ordered (user defined)  map to (boost shared) pointers to coeffs
     
-    std::map< std::string, SolverBucket_ptr > solvers_;              // a map from solver bucket names to (boost shared) pointers to
+    ordered_map<std::string, SolverBucket_ptr> solvers_;             // a map from solver bucket names to (boost shared) pointers to
                                                                      // solver buckets
-
-    std::map< int, SolverBucket_ptr > orderedsolvers_;               // an ordered (user defined) map to
-                                                                     // (boost shared) pointers to solver buckets
 
     std::vector< const dolfin::DirichletBC* > dirichletbcs_;         // a vector of (boost shared) poitners to the dirichlet bcs
 

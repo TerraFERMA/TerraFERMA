@@ -270,26 +270,14 @@ namespace buckettools
 
     const std::string str() const;                                   // return a string describing the bucket contents
     
-    virtual const std::string meshes_str() const                     // return a string describing the meshes in the bucket
-    { return meshes_str(0); }
+    virtual const std::string meshes_str(const int &indent=0) const; // return an indented string describing the meshes in the bucket
 
-    virtual const std::string meshes_str(const int &indent) const;   // return an indented string describing the meshes in the bucket
-
-    const std::string systems_str() const                            // return a string describing the systems in the bucket
-    { return systems_str(0); }
-
-    const std::string systems_str(const int &indent) const;          // return an indented string describing the systems in the bucket
-
-    virtual const std::string coefficientspaces_str() const          // return a string describing the coefficient functionspaces
-    { return coefficientspaces_str(0); }                             // contained in the bucket
+    const std::string systems_str(const int &indent=0) const;        // return an indented string describing the systems in the bucket
 
     virtual const std::string coefficientspaces_str(const int        // return an indented string describing the coefficient functionspaces
-                                                    &indent) const;  // contained in the bucket
+                                                    &indent=0) const;// contained in the bucket
 
-    virtual const std::string uflsymbols_str() const                 // return a string describing the ufl symbols contained in the
-    { return uflsymbols_str(0); }                                    // bucket
-
-    virtual const std::string uflsymbols_str(const int &indent)      // return an indented string describing the ufl symbols contained in the
+    virtual const std::string uflsymbols_str(const int &indent=0)    // return an indented string describing the ufl symbols contained in the
                                                            const;    // bucket
 
   //*****************************************************************|***********************************************************//

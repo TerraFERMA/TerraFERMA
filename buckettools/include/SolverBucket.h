@@ -183,16 +183,10 @@ namespace buckettools
     // Output functions
     //***************************************************************|***********************************************************//
 
-    virtual const std::string str() const                            // return a string describing the contents of this solver
-    { return str(0); }
-
-    virtual const std::string str(int indent) const;                 // return an indented string describing the contents of this
+    virtual const std::string str(int indent=0) const;               // return an indented string describing the contents of this
                                                                      // solver
 
-    virtual const std::string forms_str() const                      // return a string describing the forms in this solver
-    { return forms_str(0); }
-
-    virtual const std::string forms_str(const int &indent) const;    // return an indented string describing the forms in this
+    virtual const std::string forms_str(const int &indent=0) const;  // return an indented string describing the forms in this
                                                                      // solver
 
   //*****************************************************************|***********************************************************//

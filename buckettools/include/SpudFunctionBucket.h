@@ -112,15 +112,9 @@ namespace buckettools
     const bool include_in_detectors() const;                         // return a boolean indicating if this function is to 
                                                                      // be included in steadystate output
     
-    const std::string str() const                                    // return a string describing the contents of this function
-    { return str(0); }
+    const std::string str(int indent=0) const;                       // return an indented string describing the contents of this function
 
-    const std::string str(int indent) const;                         // return an indented string describing the contents of this function
-
-    const std::string functionals_str() const                        // return a string describing the functionals of this function
-    { return str(0); }
-
-    const std::string functionals_str(const int &indent) const;      // return an indented string describing the functionals of this function
+    const std::string functionals_str(const int &indent=0) const;    // return an indented string describing the functionals of this function
 
   //*****************************************************************|***********************************************************//
   // Private functions

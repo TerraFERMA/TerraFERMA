@@ -84,10 +84,7 @@ namespace buckettools
     // Output functions
     //***************************************************************|***********************************************************//
 
-    const std::string str() const                                    // return a string describing the contents of the system
-    { return str(0); }
-
-    const std::string str(int indent) const;                         // return an indented string describing the contents of the
+    const std::string str(int indent=0) const;                       // return an indented string describing the contents of the
                                                                      // system
 
   //*****************************************************************|***********************************************************//

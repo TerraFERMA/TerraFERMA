@@ -119,15 +119,9 @@ namespace buckettools
     // Output functions
     //***************************************************************|***********************************************************//
 
-    const std::string meshes_str() const                             // return a string describing the meshes
-    { return meshes_str(0); }
+    const std::string meshes_str(const int &indent=0) const;         // return an indented string describing the meshes
 
-    const std::string meshes_str(const int &indent) const;           // return an indented string describing the meshes
-
-    const std::string detectors_str() const                          // return a string describing the meshes
-    { return detectors_str(0); }
-
-    const std::string detectors_str(const int &indent) const;        // return an indented string describing the meshes
+    const std::string detectors_str(const int &indent=0) const;      // return an indented string describing the meshes
 
   //*****************************************************************|***********************************************************//
   // Private functions

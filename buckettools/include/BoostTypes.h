@@ -109,10 +109,6 @@ namespace buckettools {
   typedef std::map< std::string, FunctionBucket_ptr >::const_iterator    FunctionBucket_const_it;
   typedef std::map< int, FunctionBucket_ptr >::iterator                  int_FunctionBucket_it;
   typedef std::map< int, FunctionBucket_ptr >::const_iterator            int_FunctionBucket_const_it;
-  typedef std::map< std::string, SolverBucket_ptr >::iterator            SolverBucket_it;
-  typedef std::map< std::string, SolverBucket_ptr >::const_iterator      SolverBucket_const_it;
-  typedef std::map< int, SolverBucket_ptr >::iterator                    int_SolverBucket_it;
-  typedef std::map< int, SolverBucket_ptr >::const_iterator              int_SolverBucket_const_it;
   typedef std::map< std::string, GenericFunction_ptr >::iterator         GenericFunction_it;
   typedef std::map< std::string, GenericFunction_ptr >::const_iterator   GenericFunction_const_it;
   typedef std::map< std::string, Function_ptr >::iterator                Function_it;
@@ -162,6 +158,11 @@ namespace buckettools {
   typedef boost::multi_index::index<ordered_map<std::string,SystemBucket_ptr>,om_key_hash>::type::const_iterator     SystemBucket_const_hash_it;
   typedef boost::multi_index::index<ordered_map<std::string,SystemBucket_ptr>,om_key_seq>::type::iterator            SystemBucket_it;
   typedef boost::multi_index::index<ordered_map<std::string,SystemBucket_ptr>,om_key_seq>::type::const_iterator      SystemBucket_const_it;
+
+  typedef boost::multi_index::index<ordered_map<std::string,SolverBucket_ptr>,om_key_hash>::type::iterator           SolverBucket_hash_it;
+  typedef boost::multi_index::index<ordered_map<std::string,SolverBucket_ptr>,om_key_hash>::type::const_iterator     SolverBucket_const_hash_it;
+  typedef boost::multi_index::index<ordered_map<std::string,SolverBucket_ptr>,om_key_seq>::type::iterator            SolverBucket_it;
+  typedef boost::multi_index::index<ordered_map<std::string,SolverBucket_ptr>,om_key_seq>::type::const_iterator      SolverBucket_const_it;
 
 }
 

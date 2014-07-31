@@ -327,16 +327,10 @@ namespace buckettools
     virtual const bool include_in_detectors() const;                 // return a boolean indicating if this function is included in 
                                                                      // detectors output
 
-    virtual const std::string str() const                            // return a string describing the contents of this function
-    { return str(0); }
-
-    virtual const std::string str(int indent) const;                 // return an indented string describing the contents 
+    virtual const std::string str(int indent=0) const;               // return an indented string describing the contents 
                                                                      // of this function
 
-    virtual const std::string functionals_str() const                // return a string describing the functionals of this function
-    { return functionals_str(0); }
-
-    virtual const std::string functionals_str(int indent) const;     // return an indented string describing the functionals 
+    virtual const std::string functionals_str(int indent=0) const;   // return an indented string describing the functionals 
                                                                      // of this function
 
     void checkpoint();                                               // checkpoint the functionbucket
