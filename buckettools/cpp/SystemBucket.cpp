@@ -320,7 +320,7 @@ const Function_ptr SystemBucket::function_ptr(const double_ptr time) const
 //*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a field function bucket in the system bucket data maps
 //*******************************************************************|************************************************************//
-void SystemBucket::register_field(FunctionBucket_ptr field, std::string name)
+void SystemBucket::register_field(FunctionBucket_ptr field, const std::string &name)
 {
   FunctionBucket_hash_it f_it = fields_.get<om_key_hash>().find(name);                       // check if name already exists
   if (f_it != fields_.get<om_key_hash>().end())
@@ -330,7 +330,7 @@ void SystemBucket::register_field(FunctionBucket_ptr field, std::string name)
   }
   else
   {
-    fields_.insert(om_item<std::string, FunctionBucket_ptr>(name,field));                                           // if not, add it to the fields_ map
+    fields_.insert(om_item<const std::string, FunctionBucket_ptr>(name,field));                                           // if not, add it to the fields_ map
   }
 }
 
@@ -412,7 +412,7 @@ const int SystemBucket::fields_size() const
 //*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a coefficient function bucket in the system bucket data maps
 //*******************************************************************|************************************************************//
-void SystemBucket::register_coeff(FunctionBucket_ptr coeff, std::string name)
+void SystemBucket::register_coeff(FunctionBucket_ptr coeff, const std::string &name)
 {
   FunctionBucket_hash_it f_it = coeffs_.get<om_key_hash>().find(name);                       // check if name already exists
   if (f_it != coeffs_.get<om_key_hash>().end())
@@ -423,7 +423,7 @@ void SystemBucket::register_coeff(FunctionBucket_ptr coeff, std::string name)
   }
   else
   {
-    coeffs_.insert(om_item<std::string,FunctionBucket_ptr>(name,coeff));          // if it doesn't, register the function bucket
+    coeffs_.insert(om_item<const std::string,FunctionBucket_ptr>(name,coeff));          // if it doesn't, register the function bucket
   }
 }
 
@@ -498,7 +498,7 @@ FunctionBucket_const_it SystemBucket::coeffs_end() const
 //*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a solver bucket in the system bucket data maps
 //*******************************************************************|************************************************************//
-void SystemBucket::register_solver(SolverBucket_ptr solver, std::string name)
+void SystemBucket::register_solver(SolverBucket_ptr solver, const std::string &name)
 {
   // First check if a solver with this name already exists
   SolverBucket_hash_it s_it = solvers_.get<om_key_hash>().find(name);     // check if a solver with this name already exists
@@ -510,7 +510,7 @@ void SystemBucket::register_solver(SolverBucket_ptr solver, std::string name)
   }
   else
   {
-    solvers_.insert(om_item<std::string,SolverBucket_ptr>(name, solver)); // if not then insert it into the solvers_ map
+    solvers_.insert(om_item<const std::string,SolverBucket_ptr>(name, solver)); // if not then insert it into the solvers_ map
   }
 }
 

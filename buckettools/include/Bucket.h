@@ -153,15 +153,15 @@ namespace buckettools
     //***************************************************************|***********************************************************//
 
     void register_mesh(Mesh_ptr mesh, const std::string &name,
-                       MeshFunction_size_t_ptr celldomains = MeshFunction_size_t_ptr(),
-                       MeshFunction_size_t_ptr facetdomains = MeshFunction_size_t_ptr());
+                       MeshFunction_size_t_ptr celldomains  = NULL,
+                       MeshFunction_size_t_ptr facetdomains = NULL);
                                                                      // register a mesh with the given name in the bucket
 
     Mesh_ptr fetch_mesh(const std::string &name);                    // return a (boost shared) pointer to a mesh with the given name
     
-    MeshFunction_size_t_ptr fetch_celldomains(const std::string &name);// return a (boost shared) pointer to a meshfunction with the given name
+    MeshFunction_size_t_ptr fetch_celldomains(const std::string &name);     // return a (boost shared) pointer to a meshfunction with the given name
 
-    MeshFunction_size_t_ptr fetch_facetdomains(const std::string &name);// return a (boost shared) pointer to a meshfunction with the given name
+    MeshFunction_size_t_ptr fetch_facetdomains(const std::string &name);    // return a (boost shared) pointer to a meshfunction with the given name
     
     Mesh_it meshes_begin();                                          // return an iterator to the beginning of the meshes
 
@@ -192,7 +192,7 @@ namespace buckettools
     //***************************************************************|***********************************************************//
 
     void register_system(SystemBucket_ptr system,                    // register a system with the given name in the bucket
-                                           std::string name);
+                                          const std::string &name);
 
     SystemBucket_ptr fetch_system(const std::string &name);          // return a (boost shared) pointer to a system with the given name
     
@@ -335,15 +335,15 @@ namespace buckettools
     // Pointers data
     //***************************************************************|***********************************************************//
 
-    std::map< std::string, Mesh_ptr > meshes_;                       // a map from mesh names to (boost shared) pointers to meshes
+    ordered_map<const std::string, Mesh_ptr> meshes_;                // a map from mesh names to (boost shared) pointers to meshes
 
-    std::map< std::string, MeshFunction_size_t_ptr > celldomains_;   // a map from mesh names to (boost shared) pointers to
+    ordered_map<const std::string, MeshFunction_size_t_ptr> celldomains_;   // a map from mesh names to (boost shared) pointers to
                                                                      // meshfunctions describing the cellids
 
-    std::map< std::string, MeshFunction_size_t_ptr > facetdomains_;  // a map from mesh names to (boost shared) pointers to
+    ordered_map<const std::string, MeshFunction_size_t_ptr> facetdomains_;  // a map from mesh names to (boost shared) pointers to
                                                                      // meshfunctions describing the facetids
 
-    ordered_map<std::string, SystemBucket_ptr> systems_;             // a map from system names to (boost shared) pointers to systems
+    ordered_map<const std::string, SystemBucket_ptr> systems_;             // a map from system names to (boost shared) pointers to systems
 
     std::map< std::string, GenericDetectors_ptr > detectors_;        // a map from detector set name to (boost shared) pointers to detectors
 

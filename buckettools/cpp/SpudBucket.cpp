@@ -196,18 +196,18 @@ void SpudBucket::register_mesh(Mesh_ptr mesh,
                                MeshFunction_size_t_ptr celldomains, 
                                MeshFunction_size_t_ptr facetdomains)
 {
-  Mesh_it m_it = meshes_.find(name);                                 // check if a mesh with this name already exists
-  if (m_it != meshes_end())
+  Mesh_hash_it m_it = meshes_.get<om_key_hash>().find(name);                                 // check if a mesh with this name already exists
+  if (m_it != meshes_.get<om_key_hash>().end())
   {
     dolfin::error("Mesh named \"%s\" already exists in spudbucket.", // if it does, issue an error
                                                       name.c_str());
   }
   else
   {
-    meshes_[name]           = mesh;                                  // if not register it in the map
+    meshes_.insert(om_item<const std::string,Mesh_ptr>(name,mesh));                                  // if not register it in the map
     mesh_optionpaths_[name] = optionpath;                            // also register its optionpath
-    celldomains_[name] = celldomains;
-    facetdomains_[name] = facetdomains;
+    celldomains_.insert(om_item<const std::string,MeshFunction_size_t_ptr>(name,celldomains));
+    facetdomains_.insert(om_item<const std::string,MeshFunction_size_t_ptr>(name,facetdomains));
   }
 }
 

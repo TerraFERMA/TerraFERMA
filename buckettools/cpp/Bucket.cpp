@@ -458,17 +458,17 @@ void Bucket::register_mesh(Mesh_ptr mesh, const std::string &name,
                            MeshFunction_size_t_ptr celldomains, 
                            MeshFunction_size_t_ptr facetdomains)
 {
-  Mesh_it m_it = meshes_.find(name);                                 // check if a mesh with this name already exists
-  if (m_it != meshes_end())
+  Mesh_hash_it m_it = meshes_.get<om_key_hash>().find(name);                                 // check if a mesh with this name already exists
+  if (m_it != meshes_.get<om_key_hash>().end())
   {
     dolfin::error("Mesh named \"%s\" already exists in bucket.",     // if it does, issue an error
                                                     name.c_str());
   }
   else
   {
-    meshes_[name] = mesh;                                            // if not, insert it into the meshes_ map
-    celldomains_[name] = celldomains;
-    facetdomains_[name] = facetdomains;
+    meshes_.insert(om_item<const std::string, Mesh_ptr>(name,mesh));      // if not, add it to the meshes_ map
+    celldomains_.insert(om_item<const std::string, MeshFunction_size_t_ptr>(name,celldomains));
+    facetdomains_.insert(om_item<const std::string, MeshFunction_size_t_ptr>(name,facetdomains));
   }
 }
 
@@ -477,8 +477,8 @@ void Bucket::register_mesh(Mesh_ptr mesh, const std::string &name,
 //*******************************************************************|************************************************************//
 Mesh_ptr Bucket::fetch_mesh(const std::string &name)
 {
-  Mesh_it m_it = meshes_.find(name);                                 // check if this mesh exists in the meshes_ map
-  if (m_it == meshes_end())
+  Mesh_hash_it m_it = meshes_.get<om_key_hash>().find(name);                                 // check if this mesh exists in the meshes_ map
+  if (m_it == meshes_.get<om_key_hash>().end())
   {
     dolfin::error("Mesh named \"%s\" does not exist in bucket.",     // if it doesn't, issue an error
                                                     name.c_str());
@@ -494,8 +494,8 @@ Mesh_ptr Bucket::fetch_mesh(const std::string &name)
 //*******************************************************************|************************************************************//
 MeshFunction_size_t_ptr Bucket::fetch_celldomains(const std::string &name)
 {
-  MeshFunction_size_t_it m_it = celldomains_.find(name);             // check if this mesh function exists in the celldomains_ map
-  if (m_it == celldomains_end())
+  MeshFunction_size_t_hash_it m_it = celldomains_.get<om_key_hash>().find(name);             // check if this mesh function exists in the celldomains_ map
+  if (m_it == celldomains_.get<om_key_hash>().end())
   {
     dolfin::error("MeshFunction celldomain named \"%s\" does not exist in bucket.",// if it doesn't, issue an error
                                                     name.c_str());
@@ -511,8 +511,8 @@ MeshFunction_size_t_ptr Bucket::fetch_celldomains(const std::string &name)
 //*******************************************************************|************************************************************//
 MeshFunction_size_t_ptr Bucket::fetch_facetdomains(const std::string &name)
 {
-  MeshFunction_size_t_it m_it = facetdomains_.find(name);            // check if this mesh function exists in the facetdomains_ map
-  if (m_it == facetdomains_end())
+  MeshFunction_size_t_hash_it m_it = facetdomains_.get<om_key_hash>().find(name);            // check if this mesh function exists in the facetdomains_ map
+  if (m_it == facetdomains_.get<om_key_hash>().end())
   {
     dolfin::error("MeshFunction facetdomain named \"%s\" does not exist in bucket.",// if it doesn't, issue an error
                                                     name.c_str());
@@ -528,7 +528,7 @@ MeshFunction_size_t_ptr Bucket::fetch_facetdomains(const std::string &name)
 //*******************************************************************|************************************************************//
 Mesh_it Bucket::meshes_begin()
 {
-  return meshes_.begin();
+  return meshes_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -536,7 +536,7 @@ Mesh_it Bucket::meshes_begin()
 //*******************************************************************|************************************************************//
 Mesh_const_it Bucket::meshes_begin() const
 {
-  return meshes_.begin();
+  return meshes_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -544,7 +544,7 @@ Mesh_const_it Bucket::meshes_begin() const
 //*******************************************************************|************************************************************//
 Mesh_it Bucket::meshes_end()
 {
-  return meshes_.end();
+  return meshes_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -552,7 +552,7 @@ Mesh_it Bucket::meshes_end()
 //*******************************************************************|************************************************************//
 Mesh_const_it Bucket::meshes_end() const
 {
-  return meshes_.end();
+  return meshes_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -560,7 +560,7 @@ Mesh_const_it Bucket::meshes_end() const
 //*******************************************************************|************************************************************//
 MeshFunction_size_t_it Bucket::celldomains_begin()
 {
-  return celldomains_.begin();
+  return celldomains_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -568,7 +568,7 @@ MeshFunction_size_t_it Bucket::celldomains_begin()
 //*******************************************************************|************************************************************//
 MeshFunction_size_t_const_it Bucket::celldomains_begin() const
 {
-  return celldomains_.begin();
+  return celldomains_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -576,7 +576,7 @@ MeshFunction_size_t_const_it Bucket::celldomains_begin() const
 //*******************************************************************|************************************************************//
 MeshFunction_size_t_it Bucket::celldomains_end()
 {
-  return celldomains_.end();
+  return celldomains_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -584,7 +584,7 @@ MeshFunction_size_t_it Bucket::celldomains_end()
 //*******************************************************************|************************************************************//
 MeshFunction_size_t_const_it Bucket::celldomains_end() const
 {
-  return celldomains_.end();
+  return celldomains_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -592,7 +592,7 @@ MeshFunction_size_t_const_it Bucket::celldomains_end() const
 //*******************************************************************|************************************************************//
 MeshFunction_size_t_it Bucket::facetdomains_begin()
 {
-  return facetdomains_.begin();
+  return facetdomains_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -600,7 +600,7 @@ MeshFunction_size_t_it Bucket::facetdomains_begin()
 //*******************************************************************|************************************************************//
 MeshFunction_size_t_const_it Bucket::facetdomains_begin() const
 {
-  return facetdomains_.begin();
+  return facetdomains_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -608,7 +608,7 @@ MeshFunction_size_t_const_it Bucket::facetdomains_begin() const
 //*******************************************************************|************************************************************//
 MeshFunction_size_t_it Bucket::facetdomains_end()
 {
-  return facetdomains_.end();
+  return facetdomains_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -616,14 +616,14 @@ MeshFunction_size_t_it Bucket::facetdomains_end()
 //*******************************************************************|************************************************************//
 MeshFunction_size_t_const_it Bucket::facetdomains_end() const
 {
-  return facetdomains_.end();
+  return facetdomains_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a system bucket in the bucket data maps
 //*******************************************************************|************************************************************//
 void Bucket::register_system(SystemBucket_ptr system, 
-                                         std::string name)
+                                         const std::string &name)
 {
   SystemBucket_hash_it s_it = systems_.get<om_key_hash>().find(name);     // check if a system with this name already exists
   if (s_it != systems_.get<om_key_hash>().end())
@@ -634,7 +634,7 @@ void Bucket::register_system(SystemBucket_ptr system,
   }
   else
   {
-    systems_.insert(om_item<std::string,SystemBucket_ptr>(name, system));// if not insert it into the systems_ map
+    systems_.insert(om_item<const std::string,SystemBucket_ptr>(name, system));// if not insert it into the systems_ map
   }
 }
 

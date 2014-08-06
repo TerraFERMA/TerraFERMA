@@ -163,7 +163,7 @@ namespace buckettools
     //***************************************************************|***********************************************************//
 
     void register_field(FunctionBucket_ptr field, 
-                                           std::string name); // register a field (subfunction) with the given name
+                                          const std::string &name); // register a field (subfunction) with the given name
 
     FunctionBucket_ptr fetch_field(const std::string &name);         // return a (boost shared) pointer to a field with the given
                                                                      // name
@@ -186,7 +186,7 @@ namespace buckettools
     //***************************************************************|***********************************************************//
 
     void register_coeff(FunctionBucket_ptr coeff, 
-                                           std::string name); // register a coefficient with the given name
+                                          const std::string &name); // register a coefficient with the given name
 
     FunctionBucket_ptr fetch_coeff(const std::string &name);         // return a (boost shared) pointer to a coefficient with the
                                                                      // given name
@@ -208,7 +208,7 @@ namespace buckettools
     //***************************************************************|***********************************************************//
 
     void register_solver(SolverBucket_ptr solver, 
-                                           std::string name);        // register a solver bucket with the given name
+                                          const std::string &name);        // register a solver bucket with the given name
 
     SolverBucket_ptr fetch_solver(const std::string &name);          // return a (boost shared) pointer to a solver with the
                                                                      // given name
@@ -359,12 +359,12 @@ namespace buckettools
     // Pointers data
     //***************************************************************|***********************************************************//
 
-    ordered_map< std::string, FunctionBucket_ptr > fields_;             // a map from field names to (boost shared) pointers to fields
+    ordered_map<const std::string, FunctionBucket_ptr> fields_;             // a map from field names to (boost shared) pointers to fields
     
-    ordered_map< std::string, FunctionBucket_ptr > coeffs_;             // a map from coefficient names to (boost shared) pointers to
+    ordered_map<const std::string, FunctionBucket_ptr> coeffs_;             // a map from coefficient names to (boost shared) pointers to
                                                                      // coefficients
 
-    ordered_map<std::string, SolverBucket_ptr> solvers_;             // a map from solver bucket names to (boost shared) pointers to
+    ordered_map<const std::string, SolverBucket_ptr> solvers_;             // a map from solver bucket names to (boost shared) pointers to
                                                                      // solver buckets
 
     std::vector< const dolfin::DirichletBC* > dirichletbcs_;         // a vector of (boost shared) poitners to the dirichlet bcs
