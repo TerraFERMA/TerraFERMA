@@ -79,7 +79,7 @@ namespace buckettools
     //***************************************************************|***********************************************************//
 
     void register_mesh(Mesh_ptr mesh, const std::string &name,       // register a mesh with a given name (and an optionpath)
-                       const std::string &optionpath,
+                       std::string optionpath,
                        MeshFunction_size_t_ptr celldomains = MeshFunction_size_t_ptr(),
                        MeshFunction_size_t_ptr facetdomains = MeshFunction_size_t_ptr());
 
@@ -101,7 +101,7 @@ namespace buckettools
 
     void register_detector(GenericDetectors_ptr detector,            // register a detector with a given name (and an optionpath)
                            const std::string &name, 
-                           const std::string &option_path);
+                           std::string option_path);
     
     std::string fetch_detector_optionpath(const std::string &name);  // return the optionpath associated with the named detector
 
@@ -140,9 +140,9 @@ namespace buckettools
     // Pointers data
     //***************************************************************|***********************************************************//
 
-    std::map< std::string, std::string > mesh_optionpaths_;          // a map from mesh names to spud mesh optionpaths
+    ordered_map< const std::string, std::string > mesh_optionpaths_;          // a map from mesh names to spud mesh optionpaths
 
-    std::map< std::string, std::string > detector_optionpaths_;      // a map from detector names to spud detector optionpaths
+    ordered_map< const std::string, std::string > detector_optionpaths_;      // a map from detector names to spud detector optionpaths
 
     //***************************************************************|***********************************************************//
     // Filling data (continued)

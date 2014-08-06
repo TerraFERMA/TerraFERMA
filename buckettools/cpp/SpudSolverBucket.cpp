@@ -404,7 +404,7 @@ void SpudSolverBucket::copy_diagnostics(SolverBucket_ptr &solver, SystemBucket_p
 //*******************************************************************|************************************************************//
 void SpudSolverBucket::register_form(Form_ptr form, 
                                       const std::string &name, 
-                                      const std::string &optionpath)
+                                      std::string optionpath)
 {
   Form_it f_it = forms_.find(name);                                  // check if name exists
   if (f_it != forms_.end())
@@ -415,8 +415,59 @@ void SpudSolverBucket::register_form(Form_ptr form,
   else
   {
     forms_[name]            = form;                                  // if not, insert form pointer into data map
-    form_optionpaths_[name] = optionpath;                            // and do the same for its optionpath
+    form_optionpaths_.insert(om_item<const std::string, std::string>(name, optionpath));                            // and do the same for its optionpath
   }
+}
+
+//*******************************************************************|************************************************************//
+// return a string containing the named form's optionpath
+//*******************************************************************|************************************************************//
+const std::string SpudSolverBucket::fetch_form_optionpath(const std::string &name) const
+{
+  string_hash_it s_it = form_optionpaths_.get<om_key_hash>().find(name);
+                                                                     // check if the name already exists
+  if (s_it == form_optionpaths_.get<om_key_hash>().end())
+  {
+    dolfin::error(                                                   // if it doesn't, issue an error
+            "Functional named \"%s\" does not exist in function.", 
+                                                      name.c_str());
+  }
+  else
+  {
+    return (*s_it).second;                                           // if it does, return it
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the beginning of the form_optionpaths_ map
+//*******************************************************************|************************************************************//
+string_it SpudSolverBucket::form_optionpaths_begin()
+{
+  return form_optionpaths_.get<om_key_seq>().begin();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the beginning of the form_optionpaths_ map
+//*******************************************************************|************************************************************//
+string_const_it SpudSolverBucket::form_optionpaths_begin() const
+{
+  return form_optionpaths_.get<om_key_seq>().begin();
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the end of the form_optionpaths_ map
+//*******************************************************************|************************************************************//
+string_it SpudSolverBucket::form_optionpaths_end()
+{
+  return form_optionpaths_.get<om_key_seq>().end();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the end of the form_optionpaths_ map
+//*******************************************************************|************************************************************//
+string_const_it SpudSolverBucket::form_optionpaths_end() const
+{
+  return form_optionpaths_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -441,8 +492,8 @@ const std::string SpudSolverBucket::forms_str(const int &indent) const
   std::stringstream s;
   std::string indentation (indent*2, ' ');
 
-  for ( string_const_it s_it = form_optionpaths_.begin(); 
-                            s_it != form_optionpaths_.end(); s_it++ )
+  for ( string_const_it s_it = form_optionpaths_begin(); 
+                            s_it != form_optionpaths_end(); s_it++ )
   {
     s << indentation << "Form " << (*s_it).first << " (" << 
                                 (*s_it).second  << ")" << std::endl;
@@ -571,7 +622,7 @@ void SpudSolverBucket::fill_forms_()
     if(boost::algorithm::ends_with((*f_it).first, "SchurPC"))
     {
       register_solverform((*f_it).second, (*f_it).first);
-      solverident_zeros_[(*f_it).first] = Spud::have_option(form_optionpaths_[(*f_it).first]+"/ident_zeros");
+      solverident_zeros_[(*f_it).first] = Spud::have_option(fetch_form_optionpath((*f_it).first)+"/ident_zeros");
     }
   }
 

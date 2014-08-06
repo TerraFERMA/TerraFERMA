@@ -76,7 +76,17 @@ namespace buckettools
     //***************************************************************|***********************************************************//
 
     void register_form(Form_ptr form, const std::string &name,       // register a form with the given name and optionpath in the solver
-                                   const std::string &optionpath);   // bucket
+                                   std::string optionpath);   // bucket
+
+    const std::string fetch_form_optionpath(const std::string &name) const;// return the optionpath of the named form
+
+    string_it form_optionpaths_begin();                          
+
+    string_const_it form_optionpaths_begin() const;   
+
+    string_it form_optionpaths_end();              
+
+    string_const_it form_optionpaths_end() const;   
 
     //***************************************************************|***********************************************************//
     // Output functions
@@ -102,7 +112,7 @@ namespace buckettools
     // Pointers data
     //***************************************************************|***********************************************************//
 
-    std::map< std::string, std::string > form_optionpaths_;          // a map from form names to form optionpaths
+    ordered_map< const std::string, std::string > form_optionpaths_;          // a map from form names to form optionpaths
     
     //***************************************************************|***********************************************************//
     // Filling data (continued)

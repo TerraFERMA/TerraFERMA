@@ -259,7 +259,7 @@ void SpudFunctionBucket::copy_diagnostics(FunctionBucket_ptr &function, SystemBu
 //*******************************************************************|************************************************************//
 void SpudFunctionBucket::register_functional(Form_ptr functional, 
                                       const std::string &name, 
-                                      const std::string &optionpath)
+                                      std::string optionpath)
 {
   Form_it f_it = functionals_.find(name);                            // check if name already exists
   if (f_it != functionals_.end())
@@ -271,7 +271,7 @@ void SpudFunctionBucket::register_functional(Form_ptr functional,
   else
   {
     functionals_[name]            = functional;                      // it not, insert the form into the maps
-    functional_optionpaths_[name] = optionpath;                      // and its optionpath too
+    functional_optionpaths_.insert(om_item<const std::string, std::string>(name, optionpath)); // and its optionpath too
     double_ptr value;
     value.reset( new double(0.0) );
     functional_values_[name]      = value;
@@ -288,9 +288,9 @@ void SpudFunctionBucket::register_functional(Form_ptr functional,
 //*******************************************************************|************************************************************//
 const std::string SpudFunctionBucket::fetch_functional_optionpath(const std::string &name) const
 {
-  std::map< std::string, std::string >::const_iterator s_it = functional_optionpaths_.find(name);
+  string_hash_it s_it = functional_optionpaths_.get<om_key_hash>().find(name);
                                                                      // check if the name already exists
-  if (s_it == functional_optionpaths_.end())
+  if (s_it == functional_optionpaths_.get<om_key_hash>().end())
   {
     dolfin::error(                                                   // if it doesn't, issue an error
             "Functional named \"%s\" does not exist in function.", 
@@ -300,6 +300,38 @@ const std::string SpudFunctionBucket::fetch_functional_optionpath(const std::str
   {
     return (*s_it).second;                                           // if it does, return it
   }
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the beginning of the functional_optionpaths_ map
+//*******************************************************************|************************************************************//
+string_it SpudFunctionBucket::functional_optionpaths_begin()
+{
+  return functional_optionpaths_.get<om_key_seq>().begin();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the beginning of the functional_optionpaths_ map
+//*******************************************************************|************************************************************//
+string_const_it SpudFunctionBucket::functional_optionpaths_begin() const
+{
+  return functional_optionpaths_.get<om_key_seq>().begin();
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the end of the functional_optionpaths_ map
+//*******************************************************************|************************************************************//
+string_it SpudFunctionBucket::functional_optionpaths_end()
+{
+  return functional_optionpaths_.get<om_key_seq>().end();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the end of the functional_optionpaths_ map
+//*******************************************************************|************************************************************//
+string_const_it SpudFunctionBucket::functional_optionpaths_end() const
+{
+  return functional_optionpaths_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -373,8 +405,8 @@ const std::string SpudFunctionBucket::functionals_str(const int &indent)
   std::stringstream s;
   std::string indentation (indent*2, ' ');
 
-  for ( string_const_it s_it = functional_optionpaths_.begin(); 
-                      s_it != functional_optionpaths_.end(); s_it++ )
+  for ( string_const_it s_it = functional_optionpaths_begin(); 
+                      s_it != functional_optionpaths_end(); s_it++ )
   {
     s << indentation << "Functional " << (*s_it).first << " (" 
                               << (*s_it).second  << ")" << std::endl;

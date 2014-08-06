@@ -87,18 +87,13 @@ namespace buckettools {
   // std shared pointers to petsc objects
   //*****************************************************************|************************************************************//
 
-  typedef std::shared_ptr< KSP > KSP_ptr;
-  typedef std::shared_ptr< PC >  PC_ptr;
   typedef std::shared_ptr< IS >  IS_ptr;
   typedef std::shared_ptr< Mat > Mat_ptr;
-  typedef std::shared_ptr< Vec > Vec_ptr;
 
   //*****************************************************************|************************************************************//
   // iterators to std shared pointers in map pointer structures
   //*****************************************************************|************************************************************//
 
-  typedef std::map< std::string, std::string >::iterator                 string_it;
-  typedef std::map< std::string, std::string >::const_iterator           string_const_it;
   typedef std::map< std::string, FunctionSpace_ptr >::iterator           FunctionSpace_it;
   typedef std::map< std::string, FunctionSpace_ptr >::const_iterator     FunctionSpace_const_it;
   typedef std::map< std::string, GenericFunction_ptr >::iterator         GenericFunction_it;
@@ -170,6 +165,11 @@ namespace buckettools {
   typedef boost::multi_index::index<ordered_map<const std::string,MeshFunction_size_t_ptr>,om_key_hash>::type::const_iterator MeshFunction_size_t_const_hash_it;
   typedef boost::multi_index::index<ordered_map<const std::string,MeshFunction_size_t_ptr>,om_key_seq>::type::iterator        MeshFunction_size_t_it;
   typedef boost::multi_index::index<ordered_map<const std::string,MeshFunction_size_t_ptr>,om_key_seq>::type::const_iterator  MeshFunction_size_t_const_it;
+
+  typedef boost::multi_index::index<ordered_map<const std::string,std::string>,om_key_hash>::type::iterator       string_hash_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,std::string>,om_key_hash>::type::const_iterator string_const_hash_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,std::string>,om_key_seq>::type::iterator        string_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,std::string>,om_key_seq>::type::const_iterator  string_const_it;
 
 }
 

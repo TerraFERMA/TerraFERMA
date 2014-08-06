@@ -710,11 +710,11 @@ SystemBucket_const_it Bucket::systems_end() const
 //*******************************************************************|************************************************************//
 // register a base ufl symbol (associated with the derived ufl symbol) in the bucket data maps
 //*******************************************************************|************************************************************//
-void Bucket::register_baseuflsymbol(const std::string &baseuflsymbol, 
+void Bucket::register_baseuflsymbol(std::string baseuflsymbol, 
                                     const std::string &uflsymbol)
 {
-  string_it s_it = baseuflsymbols_.find(uflsymbol);                  // check if this ufl symbol already exists
-  if (s_it != baseuflsymbols_.end())
+  string_hash_it s_it = baseuflsymbols_.get<om_key_hash>().find(uflsymbol);                  // check if this ufl symbol already exists
+  if (s_it != baseuflsymbols_.get<om_key_hash>().end())
   {
     dolfin::error(                                                   // if it does, issue an error
             "Name with ufl symbol \"%s\" already exists in the bucket.", 
@@ -722,7 +722,7 @@ void Bucket::register_baseuflsymbol(const std::string &baseuflsymbol,
   }
   else
   {
-    baseuflsymbols_[uflsymbol] = baseuflsymbol;                      // if it doesn't, assign the baseuflsymbol to the maps
+    baseuflsymbols_.insert(om_item<const std::string,std::string>(uflsymbol,baseuflsymbol));           // if it doesn't, assign the baseuflsymbol to the maps
   }
 }
 
@@ -732,8 +732,8 @@ void Bucket::register_baseuflsymbol(const std::string &baseuflsymbol,
 const std::string Bucket::fetch_baseuflsymbol(
                                 const std::string &uflsymbol) const
 {
-  string_const_it s_it = baseuflsymbols_.find(uflsymbol);            // check if this ufl symbol exists
-  if (s_it == baseuflsymbols_.end())
+  string_const_hash_it s_it = baseuflsymbols_.get<om_key_hash>().find(uflsymbol);            // check if this ufl symbol exists
+  if (s_it == baseuflsymbols_.get<om_key_hash>().end())
   {
     dolfin::error(                                                   // if it doesn't, issue an error
             "Name with uflsymbol \"%s\" does not exist in the bucket.", 
@@ -751,8 +751,8 @@ const std::string Bucket::fetch_baseuflsymbol(
 const bool Bucket::contains_baseuflsymbol(
                               const std::string &uflsymbol) const
 {
-  string_const_it s_it = baseuflsymbols_.find(uflsymbol);
-  return s_it != baseuflsymbols_.end();
+  string_const_hash_it s_it = baseuflsymbols_.get<om_key_hash>().find(uflsymbol);
+  return s_it != baseuflsymbols_.get<om_key_hash>().end();
 }
 
 //*******************************************************************|************************************************************//

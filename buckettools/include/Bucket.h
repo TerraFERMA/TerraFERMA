@@ -211,7 +211,7 @@ namespace buckettools
     // UFL symbol data access
     //***************************************************************|***********************************************************//
 
-    void register_baseuflsymbol(const std::string &baseuflsymbol,    // register a function name with a ufl symbol
+    void register_baseuflsymbol(std::string baseuflsymbol,    // register a function name with a ufl symbol
                                 const std::string &uflsymbol);  
 
     const std::string fetch_baseuflsymbol(const std::string          // return a string containing the function name belonging to a ufl symbol
@@ -389,7 +389,7 @@ namespace buckettools
     // Pointers data (continued)
     //***************************************************************|***********************************************************//
 
-    std::map< std::string, std::string > baseuflsymbols_;            // a map from derived ufl symbols to their base symbol
+    ordered_map< const std::string, std::string > baseuflsymbols_;   // a map from derived ufl symbols to their base symbol
     
     std::map< std::string, GenericFunction_ptr > uflsymbols_;        // a map from derived ufl symbols to field and coefficient pointers
 

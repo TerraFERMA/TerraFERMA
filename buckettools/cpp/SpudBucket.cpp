@@ -192,7 +192,7 @@ void SpudBucket::copy_diagnostics(Bucket_ptr &bucket) const
 //*******************************************************************|************************************************************//
 void SpudBucket::register_mesh(Mesh_ptr mesh, 
                                const std::string &name, 
-                               const std::string &optionpath,
+                               std::string optionpath,
                                MeshFunction_size_t_ptr celldomains, 
                                MeshFunction_size_t_ptr facetdomains)
 {
@@ -205,7 +205,7 @@ void SpudBucket::register_mesh(Mesh_ptr mesh,
   else
   {
     meshes_.insert(om_item<const std::string,Mesh_ptr>(name,mesh));                                  // if not register it in the map
-    mesh_optionpaths_[name] = optionpath;                            // also register its optionpath
+    mesh_optionpaths_.insert(om_item<const std::string,std::string>(name,optionpath));                            // also register its optionpath
     celldomains_.insert(om_item<const std::string,MeshFunction_size_t_ptr>(name,celldomains));
     facetdomains_.insert(om_item<const std::string,MeshFunction_size_t_ptr>(name,facetdomains));
   }
@@ -216,8 +216,8 @@ void SpudBucket::register_mesh(Mesh_ptr mesh,
 //*******************************************************************|************************************************************//
 std::string SpudBucket::fetch_mesh_optionpath(const std::string &name)
 {
-  string_it s_it = mesh_optionpaths_.find(name);                     // check if a mesh with this name exists
-  if (s_it == mesh_optionpaths_end())
+  string_hash_it s_it = mesh_optionpaths_.get<om_key_hash>().find(name);                     // check if a mesh with this name exists
+  if (s_it == mesh_optionpaths_.get<om_key_hash>().end())
   {
     dolfin::error("Mesh named \"%s\" does not exist in spudbucket.", // if it doesn't, issue an error
                                                       name.c_str());
@@ -233,7 +233,7 @@ std::string SpudBucket::fetch_mesh_optionpath(const std::string &name)
 //*******************************************************************|************************************************************//
 string_it SpudBucket::mesh_optionpaths_begin()
 {
-  return mesh_optionpaths_.begin();
+  return mesh_optionpaths_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -241,7 +241,7 @@ string_it SpudBucket::mesh_optionpaths_begin()
 //*******************************************************************|************************************************************//
 string_const_it SpudBucket::mesh_optionpaths_begin() const
 {
-  return mesh_optionpaths_.begin();
+  return mesh_optionpaths_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -249,7 +249,7 @@ string_const_it SpudBucket::mesh_optionpaths_begin() const
 //*******************************************************************|************************************************************//
 string_it SpudBucket::mesh_optionpaths_end()
 {
-  return mesh_optionpaths_.end();
+  return mesh_optionpaths_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -257,7 +257,7 @@ string_it SpudBucket::mesh_optionpaths_end()
 //*******************************************************************|************************************************************//
 string_const_it SpudBucket::mesh_optionpaths_end() const
 {
-  return mesh_optionpaths_.end();
+  return mesh_optionpaths_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -265,7 +265,7 @@ string_const_it SpudBucket::mesh_optionpaths_end() const
 //*******************************************************************|************************************************************//
 void SpudBucket::register_detector(GenericDetectors_ptr detector, 
                                const std::string &name, 
-                               const std::string &optionpath)
+                               std::string optionpath)
 {
   GenericDetectors_it d_it = detectors_.find(name);                  // check if a detector set with this name already exists
   if (d_it != detectors_end())
@@ -277,7 +277,7 @@ void SpudBucket::register_detector(GenericDetectors_ptr detector,
   else
   {
     detectors_[name]            = detector;                          // if not register it in the map
-    detector_optionpaths_[name] = optionpath;                        // also register its optionpath
+    detector_optionpaths_.insert(om_item<const std::string, std::string>(name,optionpath));                        // also register its optionpath
   }
 }
 
@@ -286,8 +286,8 @@ void SpudBucket::register_detector(GenericDetectors_ptr detector,
 //*******************************************************************|************************************************************//
 std::string SpudBucket::fetch_detector_optionpath(const std::string &name)
 {
-  string_it s_it = detector_optionpaths_.find(name);                 // check if a mesh with this name exists
-  if (s_it == detector_optionpaths_end())
+  string_hash_it s_it = detector_optionpaths_.get<om_key_hash>().find(name);                 // check if a mesh with this name exists
+  if (s_it == detector_optionpaths_.get<om_key_hash>().end())
   {
     dolfin::error(
               "Detector named \"%s\" does not exist in spudbucket.",
@@ -304,7 +304,7 @@ std::string SpudBucket::fetch_detector_optionpath(const std::string &name)
 //*******************************************************************|************************************************************//
 string_it SpudBucket::detector_optionpaths_begin()
 {
-  return detector_optionpaths_.begin();
+  return detector_optionpaths_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -312,7 +312,7 @@ string_it SpudBucket::detector_optionpaths_begin()
 //*******************************************************************|************************************************************//
 string_const_it SpudBucket::detector_optionpaths_begin() const
 {
-  return detector_optionpaths_.begin();
+  return detector_optionpaths_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -320,7 +320,7 @@ string_const_it SpudBucket::detector_optionpaths_begin() const
 //*******************************************************************|************************************************************//
 string_it SpudBucket::detector_optionpaths_end()
 {
-  return detector_optionpaths_.end();
+  return detector_optionpaths_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -328,7 +328,7 @@ string_it SpudBucket::detector_optionpaths_end()
 //*******************************************************************|************************************************************//
 string_const_it SpudBucket::detector_optionpaths_end() const
 {
-  return detector_optionpaths_.end();
+  return detector_optionpaths_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//

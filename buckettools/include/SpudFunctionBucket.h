@@ -86,9 +86,17 @@ namespace buckettools
 
     void register_functional(Form_ptr functional, 
                                     const std::string &name,         // register a functional with the given name and optionpath
-                                    const std::string &optionpath);
+                                    std::string optionpath);
 
     const std::string fetch_functional_optionpath(const std::string &name) const;// return the optionpath of the named functional
+
+    string_it functional_optionpaths_begin();                          
+
+    string_const_it functional_optionpaths_begin() const;   
+
+    string_it functional_optionpaths_end();              
+
+    string_const_it functional_optionpaths_end() const;   
 
     //***************************************************************|***********************************************************//
     // Output functions
@@ -132,7 +140,7 @@ namespace buckettools
     // Pointers data
     //***************************************************************|***********************************************************//
 
-    std::map< std::string, std::string > functional_optionpaths_;    // a map from funcional name to functional optionpath
+    ordered_map< const std::string, std::string > functional_optionpaths_;    // a map from funcional name to functional optionpath
     
     //***************************************************************|***********************************************************//
     // Filling data
