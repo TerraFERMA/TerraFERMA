@@ -500,15 +500,15 @@ const KSPConvergenceFile_ptr SolverBucket::ksp_convergence_file() const
 //*******************************************************************|************************************************************//
 void SolverBucket::register_form(Form_ptr form, const std::string &name)
 {
-  Form_it f_it = forms_.find(name);                                  // check if this name already exists
-  if (f_it != forms_.end())
+  Form_hash_it f_it = forms_.get<om_key_hash>().find(name);                                  // check if this name already exists
+  if (f_it != forms_.get<om_key_hash>().end())
   {
     dolfin::error("Form named \"%s\" already exists in solver.",     // if it does, issue an error
                                                   name.c_str());
   }
   else
   {
-    forms_[name] = form;                                             // if not, register the form in the maps
+    forms_.insert(om_item<const std::string, Form_ptr>(name, form));                                             // if not, register the form in the maps
   }
 }
 
@@ -517,8 +517,8 @@ void SolverBucket::register_form(Form_ptr form, const std::string &name)
 //*******************************************************************|************************************************************//
 bool SolverBucket::contains_form(const std::string &name)                   
 {
-  Form_it f_it = forms_.find(name);
-  return f_it != forms_.end();
+  Form_hash_it f_it = forms_.get<om_key_hash>().find(name);
+  return f_it != forms_.get<om_key_hash>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -526,8 +526,8 @@ bool SolverBucket::contains_form(const std::string &name)
 //*******************************************************************|************************************************************//
 Form_ptr SolverBucket::fetch_form(const std::string &name)
 {
-  Form_it f_it = forms_.find(name);                                  // check if this name already exists
-  if (f_it == forms_.end())
+  Form_hash_it f_it = forms_.get<om_key_hash>().find(name);                                  // check if this name already exists
+  if (f_it == forms_.get<om_key_hash>().end())
   {
     dolfin::error("Form named \"%s\" does not exist in solver.",     // if it doesn't, issue an error
                                                     name.c_str());
@@ -543,7 +543,7 @@ Form_ptr SolverBucket::fetch_form(const std::string &name)
 //*******************************************************************|************************************************************//
 Form_it SolverBucket::forms_begin()
 {
-  return forms_.begin();
+  return forms_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -551,7 +551,7 @@ Form_it SolverBucket::forms_begin()
 //*******************************************************************|************************************************************//
 Form_const_it SolverBucket::forms_begin() const
 {
-  return forms_.begin();
+  return forms_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -559,7 +559,7 @@ Form_const_it SolverBucket::forms_begin() const
 //*******************************************************************|************************************************************//
 Form_it SolverBucket::forms_end()
 {
-  return forms_.end();
+  return forms_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -567,7 +567,7 @@ Form_it SolverBucket::forms_end()
 //*******************************************************************|************************************************************//
 Form_const_it SolverBucket::forms_end() const
 {
-  return forms_.end();
+  return forms_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -575,15 +575,15 @@ Form_const_it SolverBucket::forms_end() const
 //*******************************************************************|************************************************************//
 void SolverBucket::register_solverform(Form_ptr form, const std::string &name)
 {
-  Form_it f_it = solverforms_.find(name);                            // check if this name already exists
-  if (f_it != solverforms_.end())
+  Form_hash_it f_it = solverforms_.get<om_key_hash>().find(name);                            // check if this name already exists
+  if (f_it != solverforms_.get<om_key_hash>().end())
   {
     dolfin::error("Solver form named \"%s\" already exists in solver.",     // if it does, issue an error
                                                   name.c_str());
   }
   else
   {
-    solverforms_[name] = form;                                             // if not, register the form in the maps
+    solverforms_.insert(om_item<const std::string, Form_ptr>(name, form));                                             // if not, register the form in the maps
   }
 }
 
@@ -592,7 +592,7 @@ void SolverBucket::register_solverform(Form_ptr form, const std::string &name)
 //*******************************************************************|************************************************************//
 Form_it SolverBucket::solverforms_begin()
 {
-  return solverforms_.begin();
+  return solverforms_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -600,7 +600,7 @@ Form_it SolverBucket::solverforms_begin()
 //*******************************************************************|************************************************************//
 Form_const_it SolverBucket::solverforms_begin() const
 {
-  return solverforms_.begin();
+  return solverforms_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -608,7 +608,7 @@ Form_const_it SolverBucket::solverforms_begin() const
 //*******************************************************************|************************************************************//
 Form_it SolverBucket::solverforms_end()
 {
-  return solverforms_.end();
+  return solverforms_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -616,7 +616,7 @@ Form_it SolverBucket::solverforms_end()
 //*******************************************************************|************************************************************//
 Form_const_it SolverBucket::solverforms_end() const
 {
-  return solverforms_.end();
+  return solverforms_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -711,7 +711,7 @@ const std::string SolverBucket::forms_str(const int &indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
-  for ( Form_const_it f_it = forms_.begin(); f_it != forms_.end(); f_it++ )
+  for ( Form_const_it f_it = forms_begin(); f_it != forms_end(); f_it++ )
   {
     s << indentation << "Form " << (*f_it).first  << std::endl;
   }

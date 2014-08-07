@@ -632,7 +632,6 @@ void FunctionBucket::copy_diagnostics(FunctionBucket_ptr &function, SystemBucket
   (*function).functional_calculated_ = functional_calculated_;
 
   (*function).bcexpressions_ = bcexpressions_;
-  (*function).bcs_ = bcs_;
   (*function).referencepoints_ = referencepoints_;
   (*function).component_is_ = component_is_;
 
@@ -643,8 +642,8 @@ void FunctionBucket::copy_diagnostics(FunctionBucket_ptr &function, SystemBucket
 //*******************************************************************|************************************************************//
 void FunctionBucket::register_functional(Form_ptr functional, const std::string &name)
 {
-  Form_it f_it = functionals_.find(name);                            // check if the name already exists
-  if (f_it != functionals_.end())
+  Form_hash_it f_it = functionals_.get<om_key_hash>().find(name);                            // check if the name already exists
+  if (f_it != functionals_.get<om_key_hash>().end())
   {
     dolfin::error(                                                   // if it does, issue an error
             "Functional named \"%s\" already exists in function.", 
@@ -652,7 +651,7 @@ void FunctionBucket::register_functional(Form_ptr functional, const std::string 
   }
   else
   {
-    functionals_[name] = functional;                                 // if not, insert it into the functionals_ map
+    functionals_.insert(om_item<const std::string, Form_ptr>(name, functional));                                 // if not, insert it into the functionals_ map
     double_ptr value;
     value.reset( new double(0.0) );
     functional_values_[name]      = value;
@@ -669,8 +668,8 @@ void FunctionBucket::register_functional(Form_ptr functional, const std::string 
 //*******************************************************************|************************************************************//
 Form_ptr FunctionBucket::fetch_functional(const std::string &name)
 {
-  Form_it f_it = functionals_.find(name);                            // check if the name already exists
-  if (f_it == functionals_.end())
+  Form_hash_it f_it = functionals_.get<om_key_hash>().find(name);                            // check if the name already exists
+  if (f_it == functionals_.get<om_key_hash>().end())
   {
     dolfin::error(                                                   // if it doesn't, issue an error
             "Functional named \"%s\" does not exist in function.", 
@@ -687,7 +686,7 @@ Form_ptr FunctionBucket::fetch_functional(const std::string &name)
 //*******************************************************************|************************************************************//
 Form_it FunctionBucket::functionals_begin()
 {
-  return functionals_.begin();
+  return functionals_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -695,7 +694,7 @@ Form_it FunctionBucket::functionals_begin()
 //*******************************************************************|************************************************************//
 Form_const_it FunctionBucket::functionals_begin() const
 {
-  return functionals_.begin();
+  return functionals_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -703,7 +702,7 @@ Form_const_it FunctionBucket::functionals_begin() const
 //*******************************************************************|************************************************************//
 Form_it FunctionBucket::functionals_end()
 {
-  return functionals_.end();
+  return functionals_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -711,7 +710,7 @@ Form_it FunctionBucket::functionals_end()
 //*******************************************************************|************************************************************//
 Form_const_it FunctionBucket::functionals_end() const
 {
-  return functionals_.end();
+  return functionals_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -753,95 +752,10 @@ Expression_ptr FunctionBucket::fetch_bcexpression(const std::string &name)
 //*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a bc in the function bucket data maps
 //*******************************************************************|************************************************************//
-void FunctionBucket::register_bc(DirichletBC_ptr bc, const std::string &name)
-{
-  DirichletBC_it bc_it = bcs_.find(name);                      // check if the name already exists
-  if (bc_it != bcs_.end())
-  {
-    dolfin::error(                                                   // if it does, issue an error
-        "BoundaryCondition named \"%s\" already exists in function.", 
-                                                    name.c_str());
-  }
-  else
-  {
-    bcs_[name] = bc;                                                 // if not, register the bc
-    orderedbcs_[(int) bcs_.size()] = bc;                             // also insert it in the order it was registered in the 
-  }
-}
-
-//*******************************************************************|************************************************************//
-// return an iterator to the beginning of the bcs_ map
-//*******************************************************************|************************************************************//
-DirichletBC_it FunctionBucket::bcs_begin()
-{
-  return bcs_.begin();
-}
-
-//*******************************************************************|************************************************************//
-// return a constant iterator to the beginning of the bcs_ map
-//*******************************************************************|************************************************************//
-DirichletBC_const_it FunctionBucket::bcs_begin() const
-{
-  return bcs_.begin();
-}
-
-//*******************************************************************|************************************************************//
-// return an iterator to the end of the bcs_ map
-//*******************************************************************|************************************************************//
-DirichletBC_it FunctionBucket::bcs_end()
-{
-  return bcs_.end();
-}
-
-//*******************************************************************|************************************************************//
-// return a constant iterator to the end of the bcs_ map
-//*******************************************************************|************************************************************//
-DirichletBC_const_it FunctionBucket::bcs_end() const
-{
-  return bcs_.end();
-}
-
-//*******************************************************************|************************************************************//
-// return an iterator to the beginning of the orderedbcs_ map
-//*******************************************************************|************************************************************//
-int_DirichletBC_it FunctionBucket::orderedbcs_begin()
-{
-  return orderedbcs_.begin();
-}
-
-//*******************************************************************|************************************************************//
-// return a constant iterator to the beginning of the orderedbcs_ map
-//*******************************************************************|************************************************************//
-int_DirichletBC_const_it FunctionBucket::orderedbcs_begin() const
-{
-  return orderedbcs_.begin();
-}
-
-//*******************************************************************|************************************************************//
-// return an iterator to the end of the orderedbcs_ map
-//*******************************************************************|************************************************************//
-int_DirichletBC_it FunctionBucket::orderedbcs_end()
-{
-  return orderedbcs_.end();
-}
-
-//*******************************************************************|************************************************************//
-// return a constant iterator to the end of the orderedbcs_ map
-//*******************************************************************|************************************************************//
-int_DirichletBC_const_it FunctionBucket::orderedbcs_end() const
-{
-  return orderedbcs_.end();
-}
-
-//*******************************************************************|************************************************************//
-// register a (boost shared) pointer to a bc in the function bucket data maps
-//*******************************************************************|************************************************************//
 void FunctionBucket::register_dirichletbc(DirichletBC_ptr bc, const std::string &name)
 {
-  DirichletBC_it bc_it;
-  
-  bc_it = dirichletbcs_.find(name);                                  // check if the name already exists
-  if (bc_it != dirichletbcs_.end())
+  DirichletBC_hash_it bc_it = dirichletbcs_.get<om_key_hash>().find(name);                                  // check if the name already exists
+  if (bc_it != dirichletbcs_.get<om_key_hash>().end())
   {
     dolfin::error(                                                   // if it does, issue an error
         "Dirichlet BoundaryCondition named \"%s\" already exists in function.", 
@@ -849,11 +763,8 @@ void FunctionBucket::register_dirichletbc(DirichletBC_ptr bc, const std::string 
   }
   else
   {
-    dirichletbcs_[name] = bc;                                        // if not, register the bc
-    ordereddirichletbcs_[(int) dirichletbcs_.size()] = bc;           // also insert it in the order it was registered in the 
+    dirichletbcs_.insert(om_item<const std::string, DirichletBC_ptr>(name, bc));                                        // if not, register the bc
   }
-
-  register_bc(bc, name);                                             // register the dirichlet bc in the normal maps too
 }
 
 //*******************************************************************|************************************************************//
@@ -861,7 +772,7 @@ void FunctionBucket::register_dirichletbc(DirichletBC_ptr bc, const std::string 
 //*******************************************************************|************************************************************//
 DirichletBC_it FunctionBucket::dirichletbcs_begin()
 {
-  return dirichletbcs_.begin();
+  return dirichletbcs_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -869,7 +780,7 @@ DirichletBC_it FunctionBucket::dirichletbcs_begin()
 //*******************************************************************|************************************************************//
 DirichletBC_const_it FunctionBucket::dirichletbcs_begin() const
 {
-  return dirichletbcs_.begin();
+  return dirichletbcs_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -877,7 +788,7 @@ DirichletBC_const_it FunctionBucket::dirichletbcs_begin() const
 //*******************************************************************|************************************************************//
 DirichletBC_it FunctionBucket::dirichletbcs_end()
 {
-  return dirichletbcs_.end();
+  return dirichletbcs_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -885,39 +796,7 @@ DirichletBC_it FunctionBucket::dirichletbcs_end()
 //*******************************************************************|************************************************************//
 DirichletBC_const_it FunctionBucket::dirichletbcs_end() const
 {
-  return dirichletbcs_.end();
-}
-
-//*******************************************************************|************************************************************//
-// return an iterator to the beginning of the ordereddirichletbcs_ map
-//*******************************************************************|************************************************************//
-int_DirichletBC_it FunctionBucket::ordereddirichletbcs_begin()
-{
-  return ordereddirichletbcs_.begin();
-}
-
-//*******************************************************************|************************************************************//
-// return a constant iterator to the beginning of the ordereddirichletbcs_ map
-//*******************************************************************|************************************************************//
-int_DirichletBC_const_it FunctionBucket::ordereddirichletbcs_begin() const
-{
-  return ordereddirichletbcs_.begin();
-}
-
-//*******************************************************************|************************************************************//
-// return an iterator to the end of the ordereddirichletbcs_ map
-//*******************************************************************|************************************************************//
-int_DirichletBC_it FunctionBucket::ordereddirichletbcs_end()
-{
-  return ordereddirichletbcs_.end();
-}
-
-//*******************************************************************|************************************************************//
-// return a constant iterator to the end of the ordereddirichletbcs_ map
-//*******************************************************************|************************************************************//
-int_DirichletBC_const_it FunctionBucket::ordereddirichletbcs_end() const
-{
-  return ordereddirichletbcs_.end();
+  return dirichletbcs_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -925,8 +804,8 @@ int_DirichletBC_const_it FunctionBucket::ordereddirichletbcs_end() const
 //*******************************************************************|************************************************************//
 void FunctionBucket::register_referencepoint(ReferencePoints_ptr point, const std::string &name)
 {
-  ReferencePoints_it p_it = referencepoints_.find(name);             // check if the name already exists
-  if (p_it != referencepoints_.end())
+  ReferencePoints_hash_it p_it = referencepoints_.get<om_key_hash>().find(name);             // check if the name already exists
+  if (p_it != referencepoints_.get<om_key_hash>().end())
   {
     dolfin::error(                                                   // if it does, issue an error
         "ReferencePoints named \"%s\" already exists in function.", 
@@ -934,7 +813,7 @@ void FunctionBucket::register_referencepoint(ReferencePoints_ptr point, const st
   }
   else
   {
-    referencepoints_[name] = point;                                  // if not, register the bc
+    referencepoints_.insert(om_item<const std::string,ReferencePoints_ptr>(name, point));             // if not, register the bc
   }
 }
 
@@ -943,7 +822,7 @@ void FunctionBucket::register_referencepoint(ReferencePoints_ptr point, const st
 //*******************************************************************|************************************************************//
 ReferencePoints_it FunctionBucket::referencepoints_begin()
 {
-  return referencepoints_.begin();
+  return referencepoints_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -951,7 +830,7 @@ ReferencePoints_it FunctionBucket::referencepoints_begin()
 //*******************************************************************|************************************************************//
 ReferencePoints_const_it FunctionBucket::referencepoints_begin() const
 {
-  return referencepoints_.begin();
+  return referencepoints_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -959,7 +838,7 @@ ReferencePoints_const_it FunctionBucket::referencepoints_begin() const
 //*******************************************************************|************************************************************//
 ReferencePoints_it FunctionBucket::referencepoints_end()
 {
-  return referencepoints_.end();
+  return referencepoints_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -967,7 +846,7 @@ ReferencePoints_it FunctionBucket::referencepoints_end()
 //*******************************************************************|************************************************************//
 ReferencePoints_const_it FunctionBucket::referencepoints_end() const
 {
-  return referencepoints_.end();
+  return referencepoints_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -1070,7 +949,7 @@ const std::string FunctionBucket::functionals_str(int indent) const
 {
   std::stringstream s;
   std::string indentation (indent*2, ' ');
-  for ( Form_const_it f_it = functionals_.begin(); f_it != functionals_.end(); f_it++ )
+  for ( Form_const_it f_it = functionals_begin(); f_it != functionals_end(); f_it++ )
   {
     s << indentation << "Functional " << (*f_it).first  << std::endl;
   }
@@ -1178,7 +1057,6 @@ void FunctionBucket::empty_()
 {
   functionals_.clear();
   bcexpressions_.clear();
-  bcs_.clear();
-  orderedbcs_.clear();
+  dirichletbcs_.clear();
 }
 

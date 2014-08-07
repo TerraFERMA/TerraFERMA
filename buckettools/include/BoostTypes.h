@@ -98,26 +98,10 @@ namespace buckettools {
   typedef std::map< std::string, FunctionSpace_ptr >::const_iterator     FunctionSpace_const_it;
   typedef std::map< std::string, GenericFunction_ptr >::iterator         GenericFunction_it;
   typedef std::map< std::string, GenericFunction_ptr >::const_iterator   GenericFunction_const_it;
-  typedef std::map< std::string, Function_ptr >::iterator                Function_it;
-  typedef std::map< std::string, Function_ptr >::const_iterator          Function_const_it;
   typedef std::map< std::string, Expression_ptr >::iterator              Expression_it;
   typedef std::map< std::string, Expression_ptr >::const_iterator        Expression_const_it;
-  typedef std::map< std::string, DirichletBC_ptr >::iterator             DirichletBC_it;
-  typedef std::map< std::string, DirichletBC_ptr >::const_iterator       DirichletBC_const_it;
-  typedef std::map< int, DirichletBC_ptr >::iterator                     int_DirichletBC_it;
-  typedef std::map< int, DirichletBC_ptr >::const_iterator               int_DirichletBC_const_it;
-  typedef std::map< std::string, ReferencePoints_ptr >::iterator         ReferencePoints_it;
-  typedef std::map< std::string, ReferencePoints_ptr >::const_iterator   ReferencePoints_const_it;
   typedef std::map< std::size_t, Expression_ptr >::iterator              size_t_Expression_it;
   typedef std::map< std::size_t, Expression_ptr >::const_iterator        size_t_Expression_const_it;
-  typedef std::map< int, FunctionSpace_ptr >::iterator                   int_FunctionSpace_it;
-  typedef std::map< int, FunctionSpace_ptr >::const_iterator             int_FunctionSpace_const_it;
-  typedef std::map< std::string, Form_ptr >::iterator                    Form_it;
-  typedef std::map< std::string, Form_ptr >::const_iterator              Form_const_it;
-  typedef std::map< std::string, GenericDetectors_ptr >::iterator        GenericDetectors_it;
-  typedef std::map< std::string, GenericDetectors_ptr >::const_iterator  GenericDetectors_const_it;
-  typedef std::map< std::string, double_ptr >::iterator                  double_ptr_it;
-  typedef std::map< std::string, double_ptr >::const_iterator            double_ptr_const_it;
   typedef std::map< std::string, bool_ptr >::iterator                    bool_ptr_it;
   typedef std::map< std::string, bool_ptr >::const_iterator              bool_ptr_const_it;
 
@@ -170,6 +154,26 @@ namespace buckettools {
   typedef boost::multi_index::index<ordered_map<const std::string,std::string>,om_key_hash>::type::const_iterator string_const_hash_it;
   typedef boost::multi_index::index<ordered_map<const std::string,std::string>,om_key_seq>::type::iterator        string_it;
   typedef boost::multi_index::index<ordered_map<const std::string,std::string>,om_key_seq>::type::const_iterator  string_const_it;
+
+  typedef boost::multi_index::index<ordered_map<const std::string,GenericDetectors_ptr>,om_key_hash>::type::iterator       GenericDetectors_hash_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,GenericDetectors_ptr>,om_key_hash>::type::const_iterator GenericDetectors_const_hash_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,GenericDetectors_ptr>,om_key_seq>::type::iterator        GenericDetectors_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,GenericDetectors_ptr>,om_key_seq>::type::const_iterator  GenericDetectors_const_it;
+
+  typedef boost::multi_index::index<ordered_map<const std::string,Form_ptr>,om_key_hash>::type::iterator       Form_hash_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,Form_ptr>,om_key_hash>::type::const_iterator Form_const_hash_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,Form_ptr>,om_key_seq>::type::iterator        Form_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,Form_ptr>,om_key_seq>::type::const_iterator  Form_const_it;
+
+  typedef boost::multi_index::index<ordered_map<const std::string,DirichletBC_ptr>,om_key_hash>::type::iterator       DirichletBC_hash_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,DirichletBC_ptr>,om_key_hash>::type::const_iterator DirichletBC_const_hash_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,DirichletBC_ptr>,om_key_seq>::type::iterator        DirichletBC_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,DirichletBC_ptr>,om_key_seq>::type::const_iterator  DirichletBC_const_it;
+
+  typedef boost::multi_index::index<ordered_map<const std::string,ReferencePoints_ptr>,om_key_hash>::type::iterator       ReferencePoints_hash_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,ReferencePoints_ptr>,om_key_hash>::type::const_iterator ReferencePoints_const_hash_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,ReferencePoints_ptr>,om_key_seq>::type::iterator        ReferencePoints_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,ReferencePoints_ptr>,om_key_seq>::type::const_iterator  ReferencePoints_const_it;
 
 }
 

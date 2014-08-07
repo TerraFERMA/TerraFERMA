@@ -406,15 +406,15 @@ void SpudSolverBucket::register_form(Form_ptr form,
                                       const std::string &name, 
                                       std::string optionpath)
 {
-  Form_it f_it = forms_.find(name);                                  // check if name exists
-  if (f_it != forms_.end())
+  Form_hash_it f_it = forms_.get<om_key_hash>().find(name);                                  // check if name exists
+  if (f_it != forms_.get<om_key_hash>().end())
   {
     dolfin::error("Form named \"%s\" already exists in function.",   // if it does, issue an error
                                                     name.c_str());
   }
   else
   {
-    forms_[name]            = form;                                  // if not, insert form pointer into data map
+    forms_.insert(om_item<const std::string, Form_ptr>(name, form));                                  // if not, insert form pointer into data map
     form_optionpaths_.insert(om_item<const std::string, std::string>(name, optionpath));                            // and do the same for its optionpath
   }
 }
@@ -429,7 +429,7 @@ const std::string SpudSolverBucket::fetch_form_optionpath(const std::string &nam
   if (s_it == form_optionpaths_.get<om_key_hash>().end())
   {
     dolfin::error(                                                   // if it doesn't, issue an error
-            "Functional named \"%s\" does not exist in function.", 
+            "Form named \"%s\" does not exist in solver.", 
                                                       name.c_str());
   }
   else

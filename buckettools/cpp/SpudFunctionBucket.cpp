@@ -261,8 +261,8 @@ void SpudFunctionBucket::register_functional(Form_ptr functional,
                                       const std::string &name, 
                                       std::string optionpath)
 {
-  Form_it f_it = functionals_.find(name);                            // check if name already exists
-  if (f_it != functionals_.end())
+  Form_hash_it f_it = functionals_.get<om_key_hash>().find(name);                            // check if name already exists
+  if (f_it != functionals_.get<om_key_hash>().end())
   {
     dolfin::error(                                                   // if it does, issue an error
             "Functional named \"%s\" already exists in function.", 
@@ -270,7 +270,7 @@ void SpudFunctionBucket::register_functional(Form_ptr functional,
   }
   else
   {
-    functionals_[name]            = functional;                      // it not, insert the form into the maps
+    functionals_.insert(om_item<const std::string, Form_ptr>(name, functional));                      // it not, insert the form into the maps
     functional_optionpaths_.insert(om_item<const std::string, std::string>(name, optionpath)); // and its optionpath too
     double_ptr value;
     value.reset( new double(0.0) );

@@ -250,25 +250,6 @@ namespace buckettools
 
     Expression_ptr fetch_bcexpression(const std::string &name);      // return a (boost shared) pointer to a bc expression with the given name
 
-    void register_bc(DirichletBC_ptr bc, 
-                                        const std::string &name);    // register a bc in this function
-
-    DirichletBC_it bcs_begin();                                      // return an iterator to the beginning of the bcs of this function
-
-    DirichletBC_const_it bcs_begin() const;                          // return a constant iterator to the beginning of the bcs of this function
-
-    DirichletBC_it bcs_end();                                        // return an iterator to the end of the bcs of this function
-
-    DirichletBC_const_it bcs_end() const;                            // return a constant iterator to the end of the bcs of this function
-
-    int_DirichletBC_it orderedbcs_begin();                           // return an iterator to the beginning of the ordered bcs of this function
-
-    int_DirichletBC_const_it orderedbcs_begin() const;               // return a constant iterator to the beginning of the ordered bcs of this function
-
-    int_DirichletBC_it orderedbcs_end();                             // return an iterator to the end of the ordered bcs of this function
-
-    int_DirichletBC_const_it orderedbcs_end() const;                 // return a constant iterator to the end of the ordered bcs of this function
-
     void register_dirichletbc(DirichletBC_ptr bc, 
                                         const std::string &name);    // register a Dirichlet bc in this function
 
@@ -279,14 +260,6 @@ namespace buckettools
     DirichletBC_it dirichletbcs_end();                               // return an iterator to the end of the bcs of this function
 
     DirichletBC_const_it dirichletbcs_end() const;                   // return a constant iterator to the end of the bcs of this function
-
-    int_DirichletBC_it ordereddirichletbcs_begin();                  // return an iterator to the beginning of the ordered bcs of this function
-
-    int_DirichletBC_const_it ordereddirichletbcs_begin() const;      // return a constant iterator to the beginning of the ordered bcs of this function
-
-    int_DirichletBC_it ordereddirichletbcs_end();                    // return an iterator to the end of the ordered bcs of this function
-
-    int_DirichletBC_const_it ordereddirichletbcs_end() const;        // return a constant iterator to the end of the ordered bcs of this function
 
     //***************************************************************|***********************************************************//
     // Reference point data access
@@ -393,7 +366,7 @@ namespace buckettools
     // Pointers data
     //***************************************************************|***********************************************************//
 
-    std::map< std::string, Form_ptr > functionals_;                  // map from functional names to form (boost shared) pointers
+    ordered_map<const std::string, Form_ptr> functionals_;           // map from functional names to form (boost shared) pointers
 
     std::map< std::string, double_ptr > functional_values_,          // map from functional names to functional values
                                         oldfunctional_values_;
@@ -403,14 +376,12 @@ namespace buckettools
 
     std::map< std::string, Expression_ptr > bcexpressions_;          // map from bc names to bc expression (boost shared) pointers
     
-    std::map< std::string, DirichletBC_ptr > bcs_;                   // map from bc::id names to (boost shared) pointers to bcs
-    
-    std::map< int, DirichletBC_ptr > orderedbcs_;                    // map from int to (boost shared) pointers to bcs
+    ordered_map<const std::string, DirichletBC_ptr> dirichletbcs_;   // map from bc::id names to (boost shared) pointers to dirichlet bcs
 
-    std::map< std::string, DirichletBC_ptr > dirichletbcs_;          // map from bc::id names to (boost shared) pointers to dirichlet bcs
-    
-    std::map< int, DirichletBC_ptr > ordereddirichletbcs_;           // map from int to (boost shared) pointers to dirichlet bcs
+    ordered_map<const std::string, ReferencePoints_ptr> referencepoints_;   // map from bc::id names to (boost shared) pointers to bcs
 
+    std::vector< PointDetectors_ptr > zeropoints_;                   // a list of zero points
+    
     //***************************************************************|***********************************************************//
     // Filling data
     //***************************************************************|***********************************************************//
@@ -423,10 +394,6 @@ namespace buckettools
 
     virtual void checkpoint_options_();                              // checkpoint the options system for the functionbucket
 
-    std::map< std::string, ReferencePoints_ptr > referencepoints_;   // map from bc::id names to (boost shared) pointers to bcs
-
-    std::vector< PointDetectors_ptr > zeropoints_;                   // a list of zero points
-    
     //***************************************************************|***********************************************************//
     // Emptying data
     //***************************************************************|***********************************************************//

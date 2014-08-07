@@ -369,9 +369,9 @@ void SpudSystemBucket::fill_bcs_()
   for (FunctionBucket_const_it f_it = fields_begin();     // loop over all the fields
                                 f_it != fields_end(); f_it++)
   {
-    for (int_DirichletBC_const_it                                    // loop over the dirichlet bcs
-          b_it = (*(*f_it).second).ordereddirichletbcs_begin(); 
-          b_it != (*(*f_it).second).ordereddirichletbcs_end(); b_it++)
+    for (DirichletBC_const_it                                    // loop over the dirichlet bcs
+          b_it = (*(*f_it).second).dirichletbcs_begin(); 
+          b_it != (*(*f_it).second).dirichletbcs_end(); b_it++)
     {
       dirichletbcs_.push_back(&(*std::dynamic_pointer_cast<dolfin::DirichletBC>((*b_it).second)));                       // add the bcs to a std vector
     }

@@ -882,9 +882,9 @@ void SystemBucket::apply_dirichletbc_()
   for (FunctionBucket_const_it f_it = fields_begin();     // loop over all the fields
                                 f_it != fields_end(); f_it++)
   {
-    for (int_DirichletBC_const_it                                    // loop over all the bcs
-         b_it = (*(*f_it).second).ordereddirichletbcs_begin(); 
-         b_it != (*(*f_it).second).ordereddirichletbcs_end(); b_it++)
+    for (DirichletBC_const_it                                    // loop over all the bcs
+         b_it = (*(*f_it).second).dirichletbcs_begin(); 
+         b_it != (*(*f_it).second).dirichletbcs_end(); b_it++)
     {
       (*(*b_it).second).apply((*(*oldfunction_).vector()));
       (*(*b_it).second).apply((*(*iteratedfunction_).vector()));

@@ -207,7 +207,7 @@ namespace buckettools
 
     Form_ptr linear_, bilinear_, bilinearpc_, residual_;             // (boost shared) pointers to forms
 
-    std::map< std::string, Form_ptr > solverforms_;                  // (boost shared) pointers to forms under linear solver 
+    ordered_map<const std::string, Form_ptr> solverforms_;                  // (boost shared) pointers to forms under linear solver 
 
     PETScMatrix_ptr matrix_, matrixpc_;                              // dolfin petsc matrix types
 
@@ -251,7 +251,7 @@ namespace buckettools
     // Pointers data
     //***************************************************************|***********************************************************//
 
-    std::map< std::string, Form_ptr > forms_;                        // a map from the form names to the form pointers
+    ordered_map<const std::string, Form_ptr> forms_;                        // a map from the form names to the form pointers
 
     std::vector< PETScVector_ptr > nullspacevectors_;                // a vector of null space vectors to be removed from the rhs
                                                                      // after assembly

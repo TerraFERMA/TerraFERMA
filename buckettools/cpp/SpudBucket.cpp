@@ -164,7 +164,7 @@ void SpudBucket::fill()
   fill_diagnostics_();                                               // this should be called last because it initializes the
                                                                      // diagnostic files, which must use a complete bucket
 
-  dolfin::log(dolfin::DBG, str().c_str());
+  dolfin::log(dolfin::INFO, str().c_str());
 
 }
 
@@ -267,8 +267,8 @@ void SpudBucket::register_detector(GenericDetectors_ptr detector,
                                const std::string &name, 
                                std::string optionpath)
 {
-  GenericDetectors_it d_it = detectors_.find(name);                  // check if a detector set with this name already exists
-  if (d_it != detectors_end())
+  GenericDetectors_hash_it d_it = detectors_.get<om_key_hash>().find(name);                  // check if a detector set with this name already exists
+  if (d_it != detectors_.get<om_key_hash>().end())
   {
     dolfin::error(
               "Detector named \"%s\" already exists in spudbucket.", // if it does, issue an error
@@ -276,7 +276,7 @@ void SpudBucket::register_detector(GenericDetectors_ptr detector,
   }
   else
   {
-    detectors_[name]            = detector;                          // if not register it in the map
+    detectors_.insert(om_item<const std::string, GenericDetectors_ptr>(name, detector));                          // if not register it in the map
     detector_optionpaths_.insert(om_item<const std::string, std::string>(name,optionpath));                        // also register its optionpath
   }
 }
