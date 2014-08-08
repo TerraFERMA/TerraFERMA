@@ -172,12 +172,6 @@ namespace buckettools
 
     void initialize_tensors_();                                      // fill the tensor data structures of the solver bucket
 
-    //***************************************************************|***********************************************************//
-    // Emptying data
-    //***************************************************************|***********************************************************//
-
-    void empty_();                                           // empty the derived and base class data structures
-
     
   };
  

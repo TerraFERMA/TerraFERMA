@@ -52,7 +52,6 @@ SpudFunctionBucket::SpudFunctionBucket(const std::string &optionpath,
 //*******************************************************************|************************************************************//
 SpudFunctionBucket::~SpudFunctionBucket()
 {
-  empty_();                                                  // empty the data in the derived class
 }
 
 //*******************************************************************|************************************************************//
@@ -1755,14 +1754,5 @@ void SpudFunctionBucket::checkpoint_options_()
   serr = Spud::set_option_attribute(buffer.str(), "initial_condition");
   spud_err(buffer.str(), serr, Spud::SPUD_NEW_KEY_WARNING);
 
-}
-
-//*******************************************************************|************************************************************//
-// empty the data structures in the spudfunctionbucket
-//*******************************************************************|************************************************************//
-void SpudFunctionBucket::empty_()
-{
-  functional_optionpaths_.clear();
-  FunctionBucket::empty_();
 }
 

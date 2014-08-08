@@ -204,12 +204,6 @@ namespace buckettools
 
     void checkpoint_options_();                                      // checkpoint the options system for the spudfunctionbucket
 
-    //***************************************************************|***********************************************************//
-    // Emptying data
-    //***************************************************************|***********************************************************//
-
-    void empty_();                                                   // empty the data structures of this function bucket
-
   };
  
   typedef std::shared_ptr< SpudFunctionBucket >                    // define a (boost shared) pointer for this function class type

@@ -51,11 +51,9 @@ SolverBucket::SolverBucket(SystemBucket* system) : system_(system)
 //*******************************************************************|************************************************************//
 SolverBucket::~SolverBucket()
 {
-  empty_();                                                          // empty the solver bucket data structures
-
   PetscErrorCode perr;                                               // petsc error code
 
-  if(type()=="SNES" && !copy_)
+  if(type()=="SNES")
   {
     #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
     perr = SNESDestroy(&snes_); CHKERRV(perr);                       // destroy the snes object
@@ -64,7 +62,7 @@ SolverBucket::~SolverBucket()
     #endif
   }
 
-  if(type()=="Picard" && !copy_)
+  if(type()=="Picard")
   {
     #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
     perr = KSPDestroy(&ksp_); CHKERRV(perr);                         // destroy the ksp object
@@ -73,14 +71,36 @@ SolverBucket::~SolverBucket()
     #endif
   }
 
-  //if(sp_)
-  //{
-  //  #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
-  //  perr = MatNullSpaceDestroy(&sp_); CHKERRV(perr);                 // destroy the null space object
-  //  #else
-  //  perr = MatNullSpaceDestroy(sp_); CHKERRV(perr);                  // destroy the null space object
-  //  #endif
-  //}
+  if(sp_)
+  {
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
+    perr = MatNullSpaceDestroy(&sp_); CHKERRV(perr);                 // destroy the null space object
+    #else
+    perr = MatNullSpaceDestroy(sp_); CHKERRV(perr);                  // destroy the null space object
+    #endif
+  }
+
+  for (std::map<std::string, IS>::iterator is_it = solverindexsets_.begin();
+                                           is_it != solverindexsets_.end();
+                                           is_it++)
+  {
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
+    perr = ISDestroy(&(*is_it).second); CHKERRV(perr);                  // destroy the IS, necessary?
+    #else
+    perr = ISDestroy((*is_it).second); CHKERRV(perr);                   // destroy the IS, necessary?
+    #endif
+  }
+
+  for (std::map<std::string, Mat>::iterator mat_it = solversubmatrices_.begin();
+                                            mat_it != solversubmatrices_.end();
+                                            mat_it++)
+  {
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
+    perr = MatDestroy(&(*mat_it).second); CHKERRV(perr);                  // destroy the IS, necessary?
+    #else
+    perr = MatDestroy((*mat_it).second); CHKERRV(perr);                   // destroy the IS, necessary?
+    #endif
+  }
 
 }
 
@@ -249,9 +269,9 @@ void SolverBucket::solve()
           (*solvermatrix).ident_zeros();
         }
 
-        IS_ptr is = solverindexsets_[(*f_it).first];
-        Mat_ptr submatrix = solversubmatrices_[(*f_it).first];
-        perr = MatGetSubMatrix((*solvermatrix).mat(), *is, *is, MAT_REUSE_MATRIX, &(*submatrix));
+        IS is = solverindexsets_[(*f_it).first];
+        Mat submatrix = solversubmatrices_[(*f_it).first];
+        perr = MatGetSubMatrix((*solvermatrix).mat(), is, is, MAT_REUSE_MATRIX, &submatrix);
         CHKERRV(perr);
 
       }
@@ -621,9 +641,9 @@ PETScMatrix_ptr SolverBucket::fetch_solvermatrix(const std::string &name)
 //*******************************************************************|************************************************************//
 // return a (boost shared) pointer to an index set for this solver sub matrix
 //*******************************************************************|************************************************************//
-IS_ptr SolverBucket::fetch_solverindexset(const std::string &name)
+IS SolverBucket::fetch_solverindexset(const std::string &name)
 {
-  std::map< std::string, IS_ptr >::iterator s_it = 
+  std::map< std::string, IS >::iterator s_it = 
                                          solverindexsets_.find(name);// check if this name already exists
   if (s_it == solverindexsets_.end())
   {
@@ -657,9 +677,9 @@ bool SolverBucket::solverident_zeros(const std::string &name)
 //*******************************************************************|************************************************************//
 // return a (boost shared) pointer to a petsc matrix from the solver bucket data maps
 //*******************************************************************|************************************************************//
-Mat_ptr SolverBucket::fetch_solversubmatrix(const std::string &name)
+Mat SolverBucket::fetch_solversubmatrix(const std::string &name)
 {
-  std::map< std::string, Mat_ptr >::iterator s_it = 
+  std::map< std::string, Mat >::iterator s_it = 
                                           solversubmatrices_.find(name);// check if this name already exists
   if (s_it == solversubmatrices_.end())
   {
@@ -808,13 +828,5 @@ void SolverBucket::ksp_check_convergence_(KSP &ksp, int indent)
     }
   }
   
-}
-
-//*******************************************************************|************************************************************//
-// empty the data structures in the solver bucket
-//*******************************************************************|************************************************************//
-void SolverBucket::empty_()
-{
-  forms_.clear();
 }
 

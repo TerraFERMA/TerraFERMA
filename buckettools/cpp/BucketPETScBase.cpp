@@ -201,9 +201,9 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
       (*solvermatrix).ident_zeros();
     }
 
-    IS_ptr is = (*solver).fetch_solverindexset((*f_it).first);
-    Mat_ptr submatrix = (*solver).fetch_solversubmatrix((*f_it).first);
-    perr = MatGetSubMatrix((*solvermatrix).mat(), *is, *is, MAT_REUSE_MATRIX, &(*submatrix));
+    IS is = (*solver).fetch_solverindexset((*f_it).first);
+    Mat submatrix = (*solver).fetch_solversubmatrix((*f_it).first);
+    perr = MatGetSubMatrix((*solvermatrix).mat(), is, is, MAT_REUSE_MATRIX, &submatrix);
     CHKERRQ(perr);
 
   }

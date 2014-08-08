@@ -51,7 +51,17 @@ FunctionBucket::FunctionBucket(SystemBucket* system) : system_(system)
 //*******************************************************************|************************************************************//
 FunctionBucket::~FunctionBucket()
 {
-  empty_();                                                          // empty the function data maps
+  PetscErrorCode perr;                                               // petsc error code
+
+  for (std::vector<IS>::iterator is = component_is_.begin(); 
+                                 is != component_is_.end(); is++)
+  {
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
+    perr = ISDestroy(&(*is)); CHKERRV(perr);                            // destroy the IS, necessary?
+    #else
+    perr = ISDestroy(*is); CHKERRV(perr);                             // destroy the IS, necessary?
+    #endif
+  }
 }
 
 //*******************************************************************|************************************************************//
@@ -1017,15 +1027,5 @@ void FunctionBucket::checkpoint()
 void FunctionBucket::checkpoint_options_()
 {
   dolfin::error("Failed to find virtual function checkpoint_options_.");
-}
-
-//*******************************************************************|************************************************************//
-// empty the data structures in the function bucket
-//*******************************************************************|************************************************************//
-void FunctionBucket::empty_()
-{
-  functionals_.clear();
-  bcexpressions_.clear();
-  dirichletbcs_.clear();
 }
 

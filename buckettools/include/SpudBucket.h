@@ -168,12 +168,6 @@ namespace buckettools
 
     void checkpoint_options_();                                      // checkpoint the options system for the bucket
 
-    //***************************************************************|***********************************************************//
-    // Emptying data
-    //***************************************************************|***********************************************************//
-
-    void empty_();
-
   };
 
   typedef std::shared_ptr< SpudBucket > SpudBucket_ptr;            // define a boost shared pointer type for this class

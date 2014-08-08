@@ -54,7 +54,18 @@ Bucket::Bucket(const std::string &name) : name_(name)
 //*******************************************************************|************************************************************//
 Bucket::~Bucket()
 {
-  empty_();                                                          // empty the data structures (unnecessary?)
+  if(statfile_)
+  {  
+    (*statfile_).close();
+  }
+  if(detfile_)
+  {  
+    (*detfile_).close();
+  }
+  if(steadyfile_)
+  {  
+    (*steadyfile_).close();
+  }
 }
 
 //*******************************************************************|************************************************************//
@@ -1123,24 +1134,6 @@ void Bucket::fill_uflsymbols_()
       register_uflsymbol((*coeff).iteratedfunction(),                // iterated coefficient
                                       (*coeff).uflsymbol()+"_i");
     }
-  }
-}
-
-//*******************************************************************|************************************************************//
-// empty the data structures in the bucket
-//*******************************************************************|************************************************************//
-void Bucket::empty_()
-{
-  meshes_.clear();
-  systems_.clear();
-  baseuflsymbols_.clear();
-  uflsymbols_.clear();
-  coefficientspaces_.clear();
-  detectors_.clear();
-
-  if(statfile_)
-  {  
-    (*statfile_).close();
   }
 }
 

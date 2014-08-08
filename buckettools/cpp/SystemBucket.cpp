@@ -50,7 +50,6 @@ SystemBucket::SystemBucket(Bucket* bucket) : bucket_(bucket)
 //*******************************************************************|************************************************************//
 SystemBucket::~SystemBucket()
 {
-  empty_();                                                          // empty the data structures
 }
 
 //*******************************************************************|************************************************************//
@@ -895,13 +894,4 @@ void SystemBucket::checkpoint_options_()
   dolfin::error("Failed to find virtual function checkpoint_options_.");
 }
 
-//*******************************************************************|************************************************************//
-// empty the data structures in the system bucket
-//*******************************************************************|************************************************************//
-void SystemBucket::empty_()
-{
-  fields_.clear();
-  coeffs_.clear();
-  solvers_.clear();
-}
 

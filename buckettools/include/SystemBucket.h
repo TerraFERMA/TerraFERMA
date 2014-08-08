@@ -374,12 +374,6 @@ namespace buckettools
 
     virtual void checkpoint_options_();                              // checkpoint the options system for the systembucket
 
-    //***************************************************************|***********************************************************//
-    // Emptying data
-    //***************************************************************|***********************************************************//
-
-    void empty_();                                                   // empty the data structures in this system
-
   };
 
   typedef std::shared_ptr< SystemBucket > SystemBucket_ptr;        // define a (boost shared) pointer to the system class type

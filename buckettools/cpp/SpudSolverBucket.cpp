@@ -53,7 +53,6 @@ SpudSolverBucket::SpudSolverBucket(const std::string &optionpath,
 //*******************************************************************|************************************************************//
 SpudSolverBucket::~SpudSolverBucket()
 {
-  empty_();                                                          // empty the data in the derived class
 }
 
 //*******************************************************************|************************************************************//
@@ -532,8 +531,6 @@ void SpudSolverBucket::fill_base_()
 
   iteration_count_.reset( new int );
   *iteration_count_ = 0;
-
-  copy_ = false;
 
   buffer.str(""); buffer << optionpath() << 
                                 "/type/monitors/norms";
@@ -1253,14 +1250,13 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
       }
       assert(ind==n);                                                // these should be equal
 
-      IS_ptr is;
-      is.reset( new IS );
+      IS is;
       #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
       perr = ISCreateGeneral((*(*system_).mesh()).mpi_comm(), n, 
-                            petscindices, PETSC_OWN_POINTER, &(*is));// create the general index set based on the indices
+                            petscindices, PETSC_OWN_POINTER, &is);// create the general index set based on the indices
       #else
       perr = ISCreateGeneral((*(*system_).mesh()).mpi_comm(), n, 
-                                               petscindices, &(*is));// create the general index set based on the indices
+                                               petscindices, &is);// create the general index set based on the indices
       #endif
       CHKERRV(perr);
       
@@ -1274,7 +1270,7 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
           dolfin::log(dolfin::INFO, "ISView: %s (%s)", 
                                isname.c_str(), buffer.str().c_str());
         }
-        perr = ISView(*is, 
+        perr = ISView(is, 
               PETSC_VIEWER_STDOUT_((*(*system_).mesh()).mpi_comm())); 
         CHKERRV(perr);                                               // isview?
       }
@@ -1286,14 +1282,13 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
 
       solverindexsets_[prefix+"SchurPC"] = is;
 
-      Mat_ptr submatrix;
-      submatrix.reset( new Mat );
-      perr = MatGetSubMatrix((*solvermatrices_[prefix+"SchurPC"]).mat(), *is, *is, MAT_INITIAL_MATRIX, &(*submatrix));
+      Mat submatrix;
+      perr = MatGetSubMatrix((*solvermatrices_[prefix+"SchurPC"]).mat(), is, is, MAT_INITIAL_MATRIX, &submatrix);
       CHKERRV(perr);
 
       solversubmatrices_[prefix+"SchurPC"] = submatrix;
       
-      perr = PCFieldSplitSchurPrecondition(pc, PC_FIELDSPLIT_SCHUR_PRE_USER, *submatrix);
+      perr = PCFieldSplitSchurPrecondition(pc, PC_FIELDSPLIT_SCHUR_PRE_USER, submatrix);
       CHKERRV(perr);
     }
     else
@@ -1803,14 +1798,5 @@ void SpudSolverBucket::destroy_field_restrictions_(std::vector<int>* &components
     value_const = NULL;
   }
 
-}
-
-//*******************************************************************|************************************************************//
-// empty the data structures in the spudsolver bucket
-//*******************************************************************|************************************************************//
-void SpudSolverBucket::empty_()
-{
-  form_optionpaths_.clear();
-  SolverBucket::empty_();
 }
 

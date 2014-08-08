@@ -393,12 +393,6 @@ namespace buckettools
 
     virtual void checkpoint_options_();                              // checkpoint the options system for the functionbucket
 
-    //***************************************************************|***********************************************************//
-    // Emptying data
-    //***************************************************************|***********************************************************//
-
-    void empty_();                                                   // empty the data structures of this function bucket
-
   };
 
   typedef std::shared_ptr< FunctionBucket > FunctionBucket_ptr;    // define a (boost shared) pointer to the function bucket class type

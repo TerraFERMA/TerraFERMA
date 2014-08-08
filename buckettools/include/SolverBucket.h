@@ -172,9 +172,9 @@ namespace buckettools
 
     bool solverident_zeros(const std::string &name);                 // ident zero the named solver matrix
 
-    IS_ptr fetch_solverindexset(const std::string &name);            // fetch the named ident zeros
+    IS fetch_solverindexset(const std::string &name);                // fetch the named ident zeros
 
-    Mat_ptr fetch_solversubmatrix(const std::string &name);          // fetch the named solver submatrix
+    Mat fetch_solversubmatrix(const std::string &name);              // fetch the named solver submatrix
 
     //***************************************************************|***********************************************************//
     // Output functions
@@ -210,9 +210,9 @@ namespace buckettools
 
     std::map< std::string, PETScMatrix_ptr > solvermatrices_;        // dolfin petsc matrices for solver matrices
 
-    std::map< std::string, IS_ptr > solverindexsets_;                // (boost shared) pointers to the indexsets defining the solver submatrices
+    std::map< std::string, IS > solverindexsets_;                    // (boost shared) pointers to the indexsets defining the solver submatrices
 
-    std::map< std::string, Mat_ptr > solversubmatrices_;             // (boost shared) pointers to the sub petsc matrices
+    std::map< std::string, Mat > solversubmatrices_;                 // (boost shared) pointers to the sub petsc matrices
 
     PETScVector_ptr rhs_, rhsbc_, res_, work_;                       // dolfin petsc vector types
 
@@ -240,8 +240,6 @@ namespace buckettools
 
     KSPConvergenceFile_ptr kspconvfile_;                             // diagnostic convergence file
 
-    bool copy_;                                                      // flag if this is a diagnostic copy or not
-
     bool monitornorms_;                                              // monitor the norms in nonlinear iterations
 
     //***************************************************************|***********************************************************//
@@ -254,12 +252,6 @@ namespace buckettools
                                                                      // after assembly
 
     MatNullSpace sp_;                                                // PETSc matnullspace object
-
-    //***************************************************************|***********************************************************//
-    // Emptying data
-    //***************************************************************|***********************************************************//
-
-    void empty_();                                                   // empty the class data structures
 
   //*****************************************************************|***********************************************************//
   // Private functions
