@@ -53,7 +53,9 @@ namespace buckettools
     // Constructors and destructors
     //***************************************************************|***********************************************************//
 
-    DiagnosticsFile(const std::string &name, const MPI_Comm &comm);  // specific constructor
+    DiagnosticsFile(const std::string &name, 
+                    const MPI_Comm &comm, 
+                    const Bucket *bucket);  // specific constructor
     
     virtual ~DiagnosticsFile();                                      // default destructor
     
@@ -77,9 +79,9 @@ namespace buckettools
 
     std::string name_;                                               // file name
 
-    Bucket_ptr bucket_;                                              // a pointer to the bucket
+    const Bucket *bucket_;                                           // a pointer to the bucket
 
-    MPI_Comm mpicomm_;                                               // mpi comm
+    const MPI_Comm mpicomm_;                                         // mpi comm
 
     uint ncolumns_;                                                  // total number of columns
 
@@ -87,10 +89,7 @@ namespace buckettools
     // Header writing functions
     //***************************************************************|***********************************************************//
 
-    void header_constants_()
-    { header_constants_(false); }
-
-    void header_constants_(const bool &binary);                      // write the header entries for constant values that do not 
+    void header_constants_(const bool &binary=false);                // write the header entries for constant values that do not 
                                                                      // appear later again in the file
     
     void header_open_();                                             // open the header section

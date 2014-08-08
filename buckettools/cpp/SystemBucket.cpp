@@ -227,67 +227,6 @@ void SystemBucket::postprocess_values()
 }
 
 //*******************************************************************|************************************************************//
-// make a partial copy of the provided system bucket with the data necessary for writing the diagnostics file(s)
-//*******************************************************************|************************************************************//
-void SystemBucket::copy_diagnostics(SystemBucket_ptr &system, Bucket_ptr &bucket) const
-{
-
-  if(!system)
-  {
-    system.reset( new SystemBucket(&(*bucket)) );
-  }
-
-  (*system).name_ = name_;
-
-  (*system).mesh_ = mesh_;
-
-  (*system).functionspace_ = functionspace_;
-
-  (*system).function_ = function_;
-  (*system).iteratedfunction_ = iteratedfunction_;
-  (*system).oldfunction_ = oldfunction_;
-
-  (*system).changefunction_ = changefunction_;
-  (*system).change_calculated_ = change_calculated_;
-
-  (*system).residualfunction_ = residualfunction_;
-  (*system).snesupdatefunction_ = snesupdatefunction_;
-
-  (*system).solved_ = solved_;
-
-  for (FunctionBucket_const_it func_it = fields_begin();             // loop over the fields
-                           func_it != fields_end(); func_it++)
-  {                                                                  
-    FunctionBucket_ptr field;                                        // create a new field
-    
-    (*(*func_it).second).copy_diagnostics(field, system);
-
-    (*system).register_field(field, (*field).name());                // put the field in the bucket
-  }                                                                  
-
-  for (FunctionBucket_const_it func_it = coeffs_begin();             // loop over the fields
-                           func_it != coeffs_end(); func_it++)
-  {                                                                  
-    FunctionBucket_ptr coeff;                                        // create a new coeff
-
-    (*(*func_it).second).copy_diagnostics(coeff, system);
-
-    (*system).register_coeff(coeff, (*coeff).name());                // put the coefficient in the bucket
-  }                                                                  
-
-  for (SolverBucket_const_it solver_it = solvers_begin();            // loop over the solvers
-                      solver_it != solvers_end(); solver_it++)
-  {                                                                  
-    SolverBucket_ptr solver;                                         // create a new solver
-  
-    (*(*solver_it).second).copy_diagnostics(solver, system);
-
-    (*system).register_solver(solver, (*solver).name());             // put the coefficient in the bucket
-  }                                                                  
-
-}
-
-//*******************************************************************|************************************************************//
 // initialize any diagnostic output in this system
 //*******************************************************************|************************************************************//
 void SystemBucket::initialize_diagnostics() const                    // doesn't allocate anything so can be const

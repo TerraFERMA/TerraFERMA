@@ -169,25 +169,6 @@ void SpudBucket::fill()
 }
 
 //*******************************************************************|************************************************************//
-// make a partial copy of the provided bucket with the data necessary for writing the diagnostics file(s)
-//*******************************************************************|************************************************************//
-void SpudBucket::copy_diagnostics(Bucket_ptr &bucket) const
-{
-
-  if(!bucket)
-  {
-    bucket.reset( new SpudBucket );
-  }
-
-  Bucket::copy_diagnostics(bucket);
-
-  (*std::dynamic_pointer_cast< SpudBucket >(bucket)).optionpath_ = optionpath_;
-  (*std::dynamic_pointer_cast< SpudBucket >(bucket)).mesh_optionpaths_ = mesh_optionpaths_;
-  (*std::dynamic_pointer_cast< SpudBucket >(bucket)).detector_optionpaths_ = detector_optionpaths_;
-
-}
-
-//*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a dolfin mesh in the bucket (and spudbucket) data maps with a spud optionpath
 //*******************************************************************|************************************************************//
 void SpudBucket::register_mesh(Mesh_ptr mesh, 
@@ -1052,8 +1033,9 @@ void SpudBucket::fill_diagnostics_()
   std::stringstream buffer;                                          // optionpath buffer
 
   statfile_.reset( new StatisticsFile(output_basename()+".stat", 
-                           (*(*meshes_begin()).second).mpi_comm()) );
-  (*statfile_).write_header(*this);
+                           (*(*meshes_begin()).second).mpi_comm(),
+                           this) );
+  (*statfile_).write_header();
 
   int npdets = Spud::option_count("/io/detectors/point");            // number of point detectors
   int nadets = Spud::option_count("/io/detectors/array");            // number of array detectors
@@ -1065,16 +1047,18 @@ void SpudBucket::fill_diagnostics_()
     }
 
     detfile_.reset( new DetectorsFile(output_basename()+".det", 
-                           (*(*meshes_begin()).second).mpi_comm()) );
-    (*detfile_).write_header(*this);
+                           (*(*meshes_begin()).second).mpi_comm(),
+                           this) );
+    (*detfile_).write_header();
   }
 
   if ((Spud::option_count("/system/field/diagnostics/include_in_statistics/functional/include_in_steady_state")+
        Spud::option_count("/system/field/diagnostics/include_in_steady_state"))>0)
   {
     steadyfile_.reset( new SteadyStateFile(output_basename()+".steady",
-                           (*(*meshes_begin()).second).mpi_comm()) );
-    (*steadyfile_).write_header(*this);
+                           (*(*meshes_begin()).second).mpi_comm(),
+                           this) );
+    (*steadyfile_).write_header();
   }
 
   for (SystemBucket_const_it s_it = systems_begin(); s_it != systems_end(); s_it++)

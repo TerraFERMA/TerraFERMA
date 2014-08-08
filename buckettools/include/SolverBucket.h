@@ -76,9 +76,6 @@ namespace buckettools
 
     void attach_form_coeffs();                                       // attach coefficients to the forms in this solver
 
-    virtual void copy_diagnostics(SolverBucket_ptr &solver, 
-                                  SystemBucket_ptr &system) const;   // copy the data necessary for the diagnostics data file(s)
-
     void initialize_diagnostics() const;                             // initialize any diagnostic output in the solver
 
     void create_nullspace();                                         // take any stored nullspace vectors and convert them into a

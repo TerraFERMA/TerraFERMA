@@ -77,9 +77,6 @@ namespace buckettools
 
     void initialize_coeff_function();                                // initialize the expressions associated with a field
 
-    void copy_diagnostics(FunctionBucket_ptr &function, 
-                                  SystemBucket_ptr &system) const;   // copy the data necessary for the diagnostics data file(s)
-
     //***************************************************************|***********************************************************//
     // Functional data access
     //***************************************************************|***********************************************************//

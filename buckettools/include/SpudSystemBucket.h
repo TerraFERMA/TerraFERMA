@@ -70,9 +70,6 @@ namespace buckettools
     void initialize_solvers();                                       // initialize the matrices related to forms as well as the
                                                                      // petsc objects
 
-    void copy_diagnostics(SystemBucket_ptr &system, 
-                            Bucket_ptr &bucket) const;               // copy the data necessary for the diagnostics data file(s)
-
     //***************************************************************|***********************************************************//
     // Base data access
     //***************************************************************|***********************************************************//

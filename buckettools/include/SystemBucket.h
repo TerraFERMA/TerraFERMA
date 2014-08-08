@@ -90,9 +90,6 @@ namespace buckettools
     // Filling data
     //***************************************************************|***********************************************************//
 
-    virtual void copy_diagnostics(SystemBucket_ptr &system, 
-                            Bucket_ptr &bucket) const;               // copy the data necessary for the diagnostics data file(s)
-
     void initialize_diagnostics() const;                             // initialize any diagnostic output from this system
 
     //***************************************************************|***********************************************************//

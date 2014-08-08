@@ -156,21 +156,6 @@ void SpudSystemBucket::initialize_solvers()
 }
 
 //*******************************************************************|************************************************************//
-// make a partial copy of the provided system bucket with the data necessary for writing the diagnostics file(s)
-//*******************************************************************|************************************************************//
-void SpudSystemBucket::copy_diagnostics(SystemBucket_ptr &system, Bucket_ptr &bucket) const
-{
-
-  if(!system)
-  {
-    system.reset( new SpudSystemBucket(optionpath_, &(*bucket)) );
-  }
-
-  SystemBucket::copy_diagnostics(system, bucket);
-
-}
-
-//*******************************************************************|************************************************************//
 // return a string describing the contents of the spud system
 //*******************************************************************|************************************************************//
 const std::string SpudSystemBucket::str(int indent) const

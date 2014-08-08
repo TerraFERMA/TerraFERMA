@@ -32,7 +32,9 @@ using namespace buckettools;
 //*******************************************************************|************************************************************//
 // specific constructor
 //*******************************************************************|************************************************************//
-DetectorsFile::DetectorsFile(const std::string name, const MPI_Comm &comm) : DiagnosticsFile(name, comm)
+DetectorsFile::DetectorsFile(const std::string name, 
+                             const MPI_Comm &comm, 
+                             const Bucket *bucket) : DiagnosticsFile(name, comm, bucket)
 {
   if (dolfin::MPI::size(mpicomm_)>1)
   {
@@ -82,10 +84,8 @@ DetectorsFile::~DetectorsFile()
 //*******************************************************************|************************************************************//
 // write header for the model described in the given bucket
 //*******************************************************************|************************************************************//
-void DetectorsFile::write_header(const Bucket &bucket)
+void DetectorsFile::write_header()
 {
-  bucket.copy_diagnostics(bucket_);
-
   header_open_();
   header_constants_(dolfin::MPI::size(mpicomm_)>1);
   header_timestep_();
@@ -196,23 +196,33 @@ void DetectorsFile::data_timestep_()
 //*******************************************************************|************************************************************//
 void DetectorsFile::header_bucket_()
 {
-  std::stringstream buffer;
-
-  header_detector_((*bucket_).detectors_begin(), 
-                   (*bucket_).detectors_end());
+  for ( GenericDetectors_const_it d_it = (*bucket_).detectors_begin(); 
+                                  d_it != (*bucket_).detectors_end(); 
+                                  d_it++ )                           // loop over the detectors
+  {
+    header_detector_((*d_it).second);
+  }
 
   for (SystemBucket_const_it sys_it = (*bucket_).systems_begin();    // loop over the systems
-                          sys_it != (*bucket_).systems_end(); sys_it++)
+                             sys_it != (*bucket_).systems_end(); 
+                             sys_it++)
   {
-    header_func_((*(*sys_it).second).fields_begin(),                 // write the header for the fields in the system
-                 (*(*sys_it).second).fields_end(), 
-                 (*bucket_).detectors_begin(), 
-                 (*bucket_).detectors_end());
 
-    header_func_((*(*sys_it).second).coeffs_begin(),                 // write the header for the coefficients in the system
-                 (*(*sys_it).second).coeffs_end(), 
-                 (*bucket_).detectors_begin(),
-                 (*bucket_).detectors_end());
+    for ( FunctionBucket_const_it f_it = (*(*sys_it).second).fields_begin();// loop over the fields
+                                  f_it != (*(*sys_it).second).fields_end(); 
+                                  f_it++)
+    {
+      header_func_((*f_it).second);                                  // write the header for the fields in the system
+    }
+
+
+    for ( FunctionBucket_const_it f_it = (*(*sys_it).second).coeffs_begin();// loop over the fields
+                                  f_it != (*(*sys_it).second).coeffs_end(); 
+                                  f_it++)
+    {
+      header_func_((*f_it).second);                                  // write the header for the fields in the system
+    }
+
   }
   
 }
@@ -220,21 +230,18 @@ void DetectorsFile::header_bucket_()
 //*******************************************************************|************************************************************//
 // write header for the detectors
 //*******************************************************************|************************************************************//
-void DetectorsFile::header_detector_(GenericDetectors_const_it d_begin, 
-                                     GenericDetectors_const_it d_end)
+void DetectorsFile::header_detector_(const GenericDetectors_ptr d_ptr)
 {
   std::stringstream buffer;
 
-  for ( GenericDetectors_const_it d_it = d_begin; d_it != d_end; 
-                                                            d_it++ ) // loop over the detectors
+  detectors_.push_back(d_ptr);
+
+  for (uint dim = 0; dim<(*d_ptr).dim(); dim++)
   {
-    for (uint dim = 0; dim<(*(*d_it).second).dim(); dim++)
-    {
-      buffer.str("");
-      buffer << "position_" << dim;                                  // describe the detector positions
-      tag_((*(*d_it).second).name(), buffer.str(), 
-                                      "", (*(*d_it).second).size());
-    }
+    buffer.str("");
+    buffer << "position_" << dim;                                  // describe the detector positions
+    tag_((*d_ptr).name(), buffer.str(), 
+                                    "", (*d_ptr).size());
   }
   
 }
@@ -242,54 +249,51 @@ void DetectorsFile::header_detector_(GenericDetectors_const_it d_begin,
 //*******************************************************************|************************************************************//
 // write header for the interaction between the detectors and the given functions
 //*******************************************************************|************************************************************//
-void DetectorsFile::header_func_(FunctionBucket_const_it f_begin, 
-                                 FunctionBucket_const_it f_end, 
-                                 GenericDetectors_const_it d_begin,
-                                 GenericDetectors_const_it d_end)
+void DetectorsFile::header_func_(const FunctionBucket_ptr f_ptr)
 {
   std::stringstream buffer;
 
-  for ( FunctionBucket_const_it f_it = f_begin;                      // loop over the functions
-                                              f_it != f_end; f_it++)
+  if ((*f_ptr).include_in_detectors())
   {
-    
-    if ((*(*f_it).second).include_in_detectors())
+
+    functions_.push_back(f_ptr);
+
+    for (std::vector<GenericDetectors_ptr>::const_iterator 
+                                 d_it = detectors_.begin(); 
+                                 d_it != detectors_.end(); 
+                                 d_it++)
     {
-      for ( GenericDetectors_const_it d_it = d_begin; 
-                                    d_it != d_end; d_it++)
+      if ((*f_ptr).rank()==0)
       {
-        if ((*(*(*f_it).second).function()).value_rank()==0)
+        tag_((*f_ptr).name(), (*(*d_it)).name(), 
+              (*(*f_ptr).system()).name(), (*(*d_it)).size());
+      }
+      else if ((*f_ptr).rank()==1)
+      {
+        for (uint dim = 0; dim<(*f_ptr).size(); dim++)
         {
-          tag_((*(*f_it).second).name(), (*(*d_it).second).name(), 
-                (*(*(*f_it).second).system()).name(), (*(*d_it).second).size());
+          buffer.str("");
+          buffer << (*f_ptr).name() << "_" << dim;
+          tag_(buffer.str(), (*(*d_it)).name(), 
+                (*(*f_ptr).system()).name(), (*(*d_it)).size());
         }
-        else if ((*(*(*f_it).second).function()).value_rank()==1)
+      }
+      else if ((*f_ptr).rank()==2)
+      {
+        for (uint dim0 = 0; dim0<(*f_ptr).dimension(0); dim0++)
         {
-          for (uint dim = 0; dim<(*(*(*f_it).second).function()).value_size(); dim++)
+          for (uint dim1 = 0; dim1<(*f_ptr).dimension(1); dim1++)
           {
             buffer.str("");
-            buffer << (*(*f_it).second).name() << "_" << dim;
-            tag_(buffer.str(), (*(*d_it).second).name(), 
-                  (*(*(*f_it).second).system()).name(), (*(*d_it).second).size());
+            buffer << (*f_ptr).name() << "_" << dim0 << "_" << dim1;
+            tag_(buffer.str(), (*(*d_it)).name(), 
+                 (*(*f_ptr).system()).name(), (*(*d_it)).size());
           }
         }
-        else if ((*(*(*f_it).second).function()).value_rank()==2)
-        {
-          for (uint dim0 = 0; dim0<(*(*(*f_it).second).function()).value_dimension(0); dim0++)
-          {
-            for (uint dim1 = 0; dim1<(*(*(*f_it).second).function()).value_dimension(1); dim1++)
-            {
-              buffer.str("");
-              buffer << (*(*f_it).second).name() << "_" << dim0 << "_" << dim1;
-              tag_(buffer.str(), (*(*d_it).second).name(), 
-                   (*(*(*f_it).second).system()).name(), (*(*d_it).second).size());
-            }
-          }
-        }
-        else
-        {
-          dolfin::error("In DetectorsFile::header_detectors_, unknown function rank.");
-        }
+      }
+      else
+      {
+        dolfin::error("In DetectorsFile::header_detectors_, unknown function rank.");
       }
     }
   }
@@ -302,23 +306,20 @@ void DetectorsFile::header_func_(FunctionBucket_const_it f_begin,
 void DetectorsFile::data_bucket_()
 {
   
-  data_detector_((*bucket_).detectors_begin(), 
-                 (*bucket_).detectors_end());
-
-  for (SystemBucket_const_it sys_it = (*bucket_).systems_begin();    // loop over the systems
-                          sys_it != (*bucket_).systems_end(); sys_it++)
+  for (std::vector<GenericDetectors_ptr>::const_iterator
+                              d_it = detectors_.begin();
+                              d_it != detectors_.end();
+                              d_it++)
   {
-    data_func_((*(*sys_it).second).fields_begin(),                   // write the data for the fields in the system
-               (*(*sys_it).second).fields_end(), 
-               (*bucket_).detectors_begin(), 
-               (*bucket_).detectors_end(),
-               (*(*sys_it).second).mesh());
+    data_detector_(*d_it);
+  }
 
-    data_func_((*(*sys_it).second).coeffs_begin(),                   // write the data for the coefficients in the system
-               (*(*sys_it).second).coeffs_end(), 
-               (*bucket_).detectors_begin(),
-               (*bucket_).detectors_end(),
-               (*(*sys_it).second).mesh());
+  for (std::vector<FunctionBucket_ptr>::const_iterator
+                              f_it = functions_.begin();
+                              f_it != functions_.end();
+                              f_it++)
+  {
+    data_func_(*f_it);
   }
 
 }
@@ -326,8 +327,7 @@ void DetectorsFile::data_bucket_()
 //*******************************************************************|************************************************************//
 // write data for the detectors
 //*******************************************************************|************************************************************//
-void DetectorsFile::data_detector_(GenericDetectors_const_it d_begin,
-                                   GenericDetectors_const_it d_end)
+void DetectorsFile::data_detector_(const GenericDetectors_ptr d_ptr)
 {
 
   const bool parallel = dolfin::MPI::size(mpicomm_)>1;
@@ -340,33 +340,29 @@ void DetectorsFile::data_detector_(GenericDetectors_const_it d_begin,
   mpi_err(mpierr);
 #endif
 
-  for ( GenericDetectors_const_it d_it = d_begin; 
-                                           d_it != d_end; d_it++)
+  for (uint dim = 0; dim<(*d_ptr).dim(); dim++)
   {
-    for (uint dim = 0; dim<(*(*d_it).second).dim(); dim++)
-    {
-      for (std::vector< Array_double_ptr >::const_iterator pos = 
-                                      (*(*d_it).second).begin(); 
-                            pos < (*(*d_it).second).end(); pos++)
-      {   
-        if (parallel)
-        {
+    for (std::vector< Array_double_ptr >::const_iterator pos = 
+                                    (*d_ptr).begin(); 
+                          pos < (*d_ptr).end(); pos++)
+    {   
+      if (parallel)
+      {
 #ifdef HAS_MPI
-          if(rank0)
-          {
-            mpierr = MPI_File_write_at(mpifile_, mpiwritelocation_, 
-                                       &(**pos)[dim], 1, 
-                                       MPI_DOUBLE_PRECISION, 
-                                       MPI_STATUS_IGNORE);
-            mpi_err(mpierr);
-          }
-          mpiwritelocation_ += doublesize;
-#endif
-        }
-        else
+        if(rank0)
         {
-          data_((**pos)[dim]);
+          mpierr = MPI_File_write_at(mpifile_, mpiwritelocation_, 
+                                     &(**pos)[dim], 1, 
+                                     MPI_DOUBLE_PRECISION, 
+                                     MPI_STATUS_IGNORE);
+          mpi_err(mpierr);
         }
+        mpiwritelocation_ += doublesize;
+#endif
+      }
+      else
+      {
+        data_((**pos)[dim]);
       }
     }
   }
@@ -376,11 +372,7 @@ void DetectorsFile::data_detector_(GenericDetectors_const_it d_begin,
 //*******************************************************************|************************************************************//
 // write data for the interaction between the detectors and the functions
 //*******************************************************************|************************************************************//
-void DetectorsFile::data_func_(FunctionBucket_const_it f_begin, 
-                               FunctionBucket_const_it f_end, 
-                               GenericDetectors_const_it d_begin,
-                               GenericDetectors_const_it d_end,
-                               Mesh_ptr mesh)
+void DetectorsFile::data_func_(const FunctionBucket_ptr f_ptr)
 {
   
   const bool parallel = dolfin::MPI::size(mpicomm_)>1;
@@ -392,55 +384,50 @@ void DetectorsFile::data_func_(FunctionBucket_const_it f_begin,
   mpi_err(mpierr);
 #endif
 
-  for ( FunctionBucket_const_it f_it = f_begin; f_it != f_end; f_it++)
+  for ( std::vector<GenericDetectors_ptr>::const_iterator
+                                         d_it = detectors_.begin();
+                                         d_it != detectors_.end(); 
+                                         d_it++)
   {
+    std::vector< Array_double_ptr > values;
     
-    if ((*(*f_it).second).include_in_detectors())
+    GenericFunction_ptr func = (*f_ptr).iteratedfunction();
+
+    (*(*d_it)).eval(values, *func, (*(*f_ptr).system()).mesh());
+    std::vector< int > ids = (*(*d_it)).detector_ids((*(*f_ptr).system()).mesh());
+    assert(values.size()==ids.size());
+    
+    for (uint dim = 0; dim < (*func).value_size(); dim++)
     {
-      for ( GenericDetectors_const_it d_it = d_begin; 
-                                             d_it != d_end; d_it++)
+      for(uint i=0; i < values.size(); i++)
       {
-        std::vector< Array_double_ptr > values;
-        
-        GenericFunction_ptr func = (*(*f_it).second).function();
-
-        (*(*d_it).second).eval(values, *func, mesh);
-        std::vector< int > ids = (*(*d_it).second).detector_ids(mesh);
-        assert(values.size()==ids.size());
-        
-        for (uint dim = 0; dim < (*func).value_size(); dim++)
-        {
-          for(uint i=0; i < values.size(); i++)
-          {
-            if (parallel)
-            {
-#ifdef HAS_MPI
-              MPI_Offset location = mpiwritelocation_ 
-                                  + (dim*((*(*d_it).second).size()) 
-                                     + ids[i])*doublesize;
-              mpierr = MPI_File_write_at(mpifile_, location, 
-                                         &(*values[i])[dim], 1, 
-                                         MPI_DOUBLE_PRECISION, 
-                                         MPI_STATUS_IGNORE);
-              mpi_err(mpierr);
-#endif
-            }
-            else
-            {
-              data_((*values[i])[dim]);
-            }
-          }
-        }
-
         if (parallel)
         {
 #ifdef HAS_MPI
-          mpiwritelocation_ += (*func).value_size()*(*(*d_it).second).size()*doublesize;
+          MPI_Offset location = mpiwritelocation_ 
+                              + (dim*((*(*d_it)).size()) 
+                                 + ids[i])*doublesize;
+          mpierr = MPI_File_write_at(mpifile_, location, 
+                                     &(*values[i])[dim], 1, 
+                                     MPI_DOUBLE_PRECISION, 
+                                     MPI_STATUS_IGNORE);
+          mpi_err(mpierr);
 #endif
         }
-
+        else
+        {
+          data_((*values[i])[dim]);
+        }
       }
     }
+
+    if (parallel)
+    {
+#ifdef HAS_MPI
+      mpiwritelocation_ += (*func).value_size()*(*(*d_it)).size()*doublesize;
+#endif
+    }
+
   }
   
 }

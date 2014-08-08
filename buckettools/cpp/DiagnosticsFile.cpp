@@ -36,8 +36,9 @@ using namespace buckettools;
 // specific constructor
 //*******************************************************************|************************************************************//
 DiagnosticsFile::DiagnosticsFile(const std::string &name, 
-                                 const MPI_Comm &comm) : 
-                                 name_(name), mpicomm_(comm), ncolumns_(0)
+                                 const MPI_Comm &comm,
+                                 const Bucket *bucket) : 
+                                 name_(name), mpicomm_(comm), bucket_(bucket), ncolumns_(0)
 {
   if (dolfin::MPI::rank(mpicomm_)==0)
   {

@@ -303,7 +303,7 @@ void SpudSolverBucket::initialize()
                                << name() << "_snes.conv";
         convfile_.reset( new ConvergenceFile(buffer.str(),
                                       (*(*system_).mesh()).mpi_comm(),// allocate the file but don't write the header yet as the
-                                      (*system()).name(), name()) ); // bucket isn't complete
+                                      &(*(*system()).bucket()), (*system()).name(), name()) ); // bucket isn't complete
       }
       perr = SNESMonitorSet(snes_, SNESCustomMonitor,                // set a custom snes monitor
                                             &snesmctx_, PETSC_NULL); 
@@ -342,7 +342,7 @@ void SpudSolverBucket::initialize()
                              << name() << "_picard.conv";
       convfile_.reset( new ConvergenceFile(buffer.str(), 
                                     (*(*system_).mesh()).mpi_comm(), // allocate the file but don't write the header yet as the
-                                    (*system()).name(), name()) );   // bucket isn't complete
+                                    &(*(*system()).bucket()), (*system()).name(), name()) );   // bucket isn't complete
     }
 
     if (bilinearpc_)
@@ -379,23 +379,6 @@ void SpudSolverBucket::initialize()
 
   create_nullspace();                                                // this should be safe to call now as null spaces will
                                                                      // have been initialized from all the solvers
-
-}
-
-//*******************************************************************|************************************************************//
-// make a partial copy of the provided solver bucket with the data necessary for writing the diagnostics file(s)
-//*******************************************************************|************************************************************//
-void SpudSolverBucket::copy_diagnostics(SolverBucket_ptr &solver, SystemBucket_ptr &system) const
-{
-
-  if(!solver)
-  {
-    solver.reset( new SpudSolverBucket(optionpath_, &(*system)) );
-  }
-
-  SolverBucket::copy_diagnostics(solver, system);
-
-  (*std::dynamic_pointer_cast< SpudSolverBucket >(solver)).form_optionpaths_ = form_optionpaths_;
 
 }
 
@@ -920,7 +903,7 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
                              << name() << "_ksp.conv";
       kspconvfile_.reset( new KSPConvergenceFile(buffer.str(), 
                                     (*(*system_).mesh()).mpi_comm(), // allocate the file but don't write the header yet as the
-                                    (*system()).name(), name()) );   // bucket isn't complete
+                                    &(*(*system()).bucket()), (*system()).name(), name()) );   // bucket isn't complete
       perr = KSPMonitorSet(ksp, KSPCustomMonitor, 
                                              &kspmctx_, PETSC_NULL); 
       CHKERRV(perr);

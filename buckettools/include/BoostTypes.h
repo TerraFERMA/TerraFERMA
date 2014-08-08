@@ -175,6 +175,11 @@ namespace buckettools {
   typedef boost::multi_index::index<ordered_map<const std::string,ReferencePoints_ptr>,om_key_seq>::type::iterator        ReferencePoints_it;
   typedef boost::multi_index::index<ordered_map<const std::string,ReferencePoints_ptr>,om_key_seq>::type::const_iterator  ReferencePoints_const_it;
 
+  typedef boost::multi_index::index<ordered_map<const std::string,std::vector<std::string>>,om_key_hash>::type::iterator       vector_string_hash_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,std::vector<std::string>>,om_key_hash>::type::const_iterator vector_string_const_hash_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,std::vector<std::string>>,om_key_seq>::type::iterator        vector_string_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,std::vector<std::string>>,om_key_seq>::type::const_iterator  vector_string_const_it;
+
 }
 
 #endif

@@ -1,27 +1,15 @@
 <?xml version='1.0' encoding='utf-8'?>
 <harness_options>
   <length>
-    <string_value>special</string_value>
+    <string_value>medium</string_value>
   </length>
   <owner>cwilson</owner>
-  <tags>not:branch:dolfin-master</tags>
   <description>Blankenbach convection benchmark 1a.</description>
   <simulations>
     <simulation name="RBConvection">
       <input_file>
         <string_value lines="1" type="filename">rbconvection.tfml</string_value>
       </input_file>
-      <valgrind_options>--tool=callgrind</valgrind_options>
-      <parameter_sweep>
-        <parameter name="ncells">
-          <values>4 8 16 32 64 128</values>
-          <update>
-            <string_value type="code" lines="20" language="python">import libspud
-libspud.set_option("/geometry/mesh::Mesh/source::Rectangle/number_cells", [int(ncells), int(ncells)])</string_value>
-            <single_build/>
-          </update>
-        </parameter>
-      </parameter_sweep>
       <variables>
         <variable name="ntimesteps">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -71,7 +59,7 @@ extremumval = (det["Stokes"]["Temperature"]["Array"][0:129/2,-1]).min()</string_
 
 steady = parser("rbconvection.steady")
 
-steadystate = max(steady["Stokes"]["Velocity"]["change(linf)"][-1], \
+steadystate = max(steady["Stokes"]["Velocity"]["change(linf)"][:,-1].max(), \
             steady["Stokes"]["Pressure"]["change(linf)"][-1], \
             steady["Stokes"]["Temperature"]["change(linf)"][-1])</string_value>
         </variable>
@@ -89,7 +77,7 @@ div = max(numpy.abs(stat["Divergence"]["Divergence"]["max"]).max(), \
   </simulations>
   <tests>
     <test name="ntimesteps">
-      <string_value lines="20" type="code" language="python">assert abs(ntimesteps - 30) &lt; 1</string_value>
+      <string_value lines="20" type="code" language="python">assert abs(ntimesteps - 33) &lt; 1</string_value>
     </test>
     <test name="elapsedtime">
       <string_value lines="20" type="code" language="python">assert abs(elapsedtime - 1640.9259654)</string_value>

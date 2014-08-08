@@ -411,7 +411,6 @@ class Run:
             env["PYTHONPATH"] = dirname
 
           for command in commands:
-            print command
             p = subprocess.Popen(command, cwd=dirname, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
             retcode = p.wait()
             if retcode!=0:

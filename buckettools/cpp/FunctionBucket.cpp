@@ -242,7 +242,7 @@ IS FunctionBucket::components_is(const std::vector<int>* components) const
 //*******************************************************************|************************************************************//
 // return the maximum of the function bucket
 //*******************************************************************|************************************************************//
-const double FunctionBucket::max(const std::string &function_type, const uint component) const
+double FunctionBucket::max(const std::string &function_type, const uint component) const
 {
   std::vector<int> components(1, component);
   return max(function_type, &components);
@@ -251,7 +251,7 @@ const double FunctionBucket::max(const std::string &function_type, const uint co
 //*******************************************************************|************************************************************//
 // return the maximum of the function bucket
 //*******************************************************************|************************************************************//
-const double FunctionBucket::max(const std::string &function_type, const std::vector<int>* components) const
+double FunctionBucket::max(const std::string &function_type, const std::vector<int>* components) const
 {
   dolfin::PETScVector pvector = vector(function_type, components);
   return pvector.max();
@@ -260,7 +260,7 @@ const double FunctionBucket::max(const std::string &function_type, const std::ve
 //*******************************************************************|************************************************************//
 // return the minimum of the function bucket
 //*******************************************************************|************************************************************//
-const double FunctionBucket::min(const std::string &function_type, const uint component) const
+double FunctionBucket::min(const std::string &function_type, const uint component) const
 {
   std::vector<int> components(1, component);
   return min(function_type, &components);
@@ -269,7 +269,7 @@ const double FunctionBucket::min(const std::string &function_type, const uint co
 //*******************************************************************|************************************************************//
 // return the minimum of the function bucket
 //*******************************************************************|************************************************************//
-const double FunctionBucket::min(const std::string &function_type, const std::vector<int>* components) const
+double FunctionBucket::min(const std::string &function_type, const std::vector<int>* components) const
 {
   dolfin::PETScVector pvector = vector(function_type, components);
   return pvector.min();
@@ -278,7 +278,7 @@ const double FunctionBucket::min(const std::string &function_type, const std::ve
 //*******************************************************************|************************************************************//
 // return the norm of the function bucket
 //*******************************************************************|************************************************************//
-const double FunctionBucket::norm(const std::string &function_type, const std::string &norm_type, const uint component) const
+double FunctionBucket::norm(const std::string &function_type, const std::string &norm_type, const uint component) const
 {
   std::vector<int> components(1, component);
   return norm(function_type, norm_type, &components);
@@ -287,10 +287,45 @@ const double FunctionBucket::norm(const std::string &function_type, const std::s
 //*******************************************************************|************************************************************//
 // return the norm of the function bucket
 //*******************************************************************|************************************************************//
-const double FunctionBucket::norm(const std::string &function_type, const std::string &norm_type, const std::vector<int>* components) const
+double FunctionBucket::norm(const std::string &function_type, const std::string &norm_type, const std::vector<int>* components) const
 {
   dolfin::PETScVector pvector = vector(function_type, components);
   return pvector.norm(norm_type);
+}
+
+//*******************************************************************|************************************************************//
+// return the change in a component of the function bucket
+//*******************************************************************|************************************************************//
+double FunctionBucket::change(const uint component)
+{
+  std::vector<int> components(1, component);
+  return change(&components);
+}
+
+//*******************************************************************|************************************************************//
+// return the change in this function over a timestep (only valid for fields and only valid after system changefunction has been
+// updated)
+//*******************************************************************|************************************************************//
+double FunctionBucket::change(const std::vector<int>* components)
+{
+  if(change_calculated_)                                             // just testing pointer is associated
+  {
+    assert(change_);
+    if(!*change_calculated_)
+    {
+      assert(changefunction_);
+
+      *change_ = norm("change", change_normtype_, components)/
+                 norm("iterated", change_normtype_, components);
+
+      *change_calculated_=true;
+    }
+    return *change_;
+  }
+  else
+  {
+    return 0.0;
+  }
 }
 
 //*******************************************************************|************************************************************//
@@ -333,44 +368,18 @@ const bool FunctionBucket::symmetric() const
 }
 
 //*******************************************************************|************************************************************//
-// return the change in this function over a timestep (only valid for fields and only valid after system changefunction has been
-// updated)
-//*******************************************************************|************************************************************//
-const double FunctionBucket::change()
-{
-  if(change_calculated_)                                             // just testing pointer is associated
-  {
-    assert(change_);
-    if(!*change_calculated_)
-    {
-      assert(changefunction_);
-
-      *change_ = norm("change", change_normtype_)/
-                 norm("iterated", change_normtype_);
-
-      *change_calculated_=true;
-    }
-    return *change_;
-  }
-  else
-  {
-    return 0.0;
-  }
-}
-
-//*******************************************************************|************************************************************//
 // return the change in the value of the given functional over a timestep
 //*******************************************************************|************************************************************//
-const double FunctionBucket::functionalchange(Form_const_it f_it)
+double FunctionBucket::functionalchange(Form_const_it f_it)
 {
-  const double fvalue = functionalvalue(f_it);
+  double fvalue = functionalvalue(f_it);
   return std::abs(fvalue-oldfunctionalvalue(f_it))/std::max(std::abs(fvalue), DOLFIN_EPS);
 }
 
 //*******************************************************************|************************************************************//
 // return the value of the given functional (calculating it if necessary)
 //*******************************************************************|************************************************************//
-const double FunctionBucket::functionalvalue(Form_const_it f_it)
+double FunctionBucket::functionalvalue(Form_const_it f_it)
 {
   bool_ptr calculated = functional_calculated_[(*f_it).first];
   if(*calculated)
@@ -390,7 +399,7 @@ const double FunctionBucket::functionalvalue(Form_const_it f_it)
 //*******************************************************************|************************************************************//
 // return the old stored value of the given functional
 //*******************************************************************|************************************************************//
-const double FunctionBucket::oldfunctionalvalue(Form_const_it f_it)
+double FunctionBucket::oldfunctionalvalue(Form_const_it f_it)
 {
   return *oldfunctional_values_[(*f_it).first];
 }
@@ -595,46 +604,6 @@ void FunctionBucket::attach_functional_coeffs()
     (*(*system_).bucket()).attach_coeffs(functionals_begin(),
                                                   functionals_end());
   }
-}
-
-//*******************************************************************|************************************************************//
-// make a partial copy of the provided function bucket with the data necessary for writing the diagnostics file(s)
-//*******************************************************************|************************************************************//
-void FunctionBucket::copy_diagnostics(FunctionBucket_ptr &function, SystemBucket_ptr &system) const
-{
-
-  if(!function)
-  {
-    function.reset( new FunctionBucket(&(*system)) );
-  }
-
-  (*function).name_ = name_;
-  (*function).index_ = index_;
-  (*function).shape_ = shape_;
-
-  (*function).functionspace_ = functionspace_;
-
-  (*function).function_ = function_;
-  (*function).iteratedfunction_ = iteratedfunction_;
-  (*function).oldfunction_ = oldfunction_;
-
-  (*function).changefunction_ = changefunction_;
-  (*function).change_ = change_;
-  (*function).change_calculated_ = change_calculated_;
-  (*function).change_normtype_ = change_normtype_;
-
-  (*function).residualfunction_ = residualfunction_;
-  (*function).snesupdatefunction_ = snesupdatefunction_;
-
-  (*function).functionals_ = functionals_;
-  (*function).functional_values_ = functional_values_;
-  (*function).oldfunctional_values_ = oldfunctional_values_;
-  (*function).functional_calculated_ = functional_calculated_;
-
-  (*function).bcexpressions_ = bcexpressions_;
-  (*function).referencepoints_ = referencepoints_;
-  (*function).component_is_ = component_is_;
-
 }
 
 //*******************************************************************|************************************************************//

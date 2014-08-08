@@ -61,9 +61,6 @@ namespace buckettools
 
     void initialize();                                               // initialize the solvers and tensors
 
-    void copy_diagnostics(SolverBucket_ptr &solver, 
-                                  SystemBucket_ptr &system) const;   // copy the data necessary for the diagnostics data file(s)
-
     //***************************************************************|***********************************************************//
     // Base data access
     //***************************************************************|***********************************************************//

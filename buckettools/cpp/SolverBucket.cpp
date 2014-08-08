@@ -406,36 +406,17 @@ void SolverBucket::attach_form_coeffs()
 }
 
 //*******************************************************************|************************************************************//
-// make a partial copy of the provided solver bucket with the data necessary for writing the diagnostics file(s)
-//*******************************************************************|************************************************************//
-void SolverBucket::copy_diagnostics(SolverBucket_ptr &solver, SystemBucket_ptr &system) const
-{
-
-  if(!solver)
-  {
-    solver.reset( new SolverBucket(&(*system)) );
-  }
-
-  (*solver).iteration_count_ = iteration_count_;
-  (*solver).name_ = name_;
-  (*solver).type_ = type_;   
-  (*solver).copy_ = true;                                            // this is done to ensure that the petsc destroy routines
-                                                                     // are not called by the destructor
-
-}
-
-//*******************************************************************|************************************************************//
 // initialize any diagnostic output from the solver
 //*******************************************************************|************************************************************//
 void SolverBucket::initialize_diagnostics() const                    // doesn't allocate anything so can be const
 {
   if (convfile_)
   {
-    (*convfile_).write_header((*(*system()).bucket()));
+    (*convfile_).write_header();
   }
   if (kspconvfile_)
   {
-    (*kspconvfile_).write_header((*(*system()).bucket()));
+    (*kspconvfile_).write_header();
   }
 }
 

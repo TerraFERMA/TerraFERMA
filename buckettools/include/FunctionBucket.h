@@ -86,25 +86,29 @@ namespace buckettools
 
     IS components_is(const std::vector<int>* components=NULL) const;
 
-    const double max(const std::string &function_type, 
+    double max(const std::string &function_type, 
                      const uint component) const;
 
-    const double max(const std::string &function_type, 
+    double max(const std::string &function_type, 
                      const std::vector<int>* components=NULL) const;
 
-    const double min(const std::string &function_type, 
+    double min(const std::string &function_type, 
                      const uint component) const;
 
-    const double min(const std::string &function_type, 
+    double min(const std::string &function_type, 
                      const std::vector<int>* components=NULL) const;
 
-    const double norm(const std::string &function_type, 
+    double norm(const std::string &function_type, 
                       const std::string &norm_type, 
                       const uint component) const;
 
-    const double norm(const std::string &function_type, 
+    double norm(const std::string &function_type, 
                       const std::string &norm_type, 
                       const std::vector<int>* components=NULL) const;
+
+    double change(const uint component);
+
+    double change(const std::vector<int>* components=NULL);          // return the change (in the selected norm) in a field over a timestep
 
     const std::string name() const                                   // return a constant string giving the function name
     { return name_; }
@@ -194,13 +198,11 @@ namespace buckettools
     // Functions used to run the model
     //***************************************************************|***********************************************************//
 
-    const double change();                                           // return the change (in the selected norm) in a field over a timestep
+    double functionalchange(Form_const_it f_it);                     // return the change in the value of the given functional
 
-    const double functionalchange(Form_const_it f_it);               // return the change in the value of the given functional
+    double oldfunctionalvalue(Form_const_it f_it);                   // return the old value of the given functional
 
-    const double oldfunctionalvalue(Form_const_it f_it);             // return the old value of the given functional
-
-    const double functionalvalue(Form_const_it f_it);                // return the value of the given functional
+    double functionalvalue(Form_const_it f_it);                      // return the value of the given functional
 
     void resetcalculated();                                          // reset the calculated booleans
 
@@ -220,9 +222,6 @@ namespace buckettools
     //***************************************************************|***********************************************************//
 
     void attach_functional_coeffs();                                 // attach the coefficients to the functionals of this function
-
-    virtual void copy_diagnostics(FunctionBucket_ptr &function, 
-                                  SystemBucket_ptr &system) const;   // copy the data necessary for the diagnostics data file(s)
 
     //***************************************************************|***********************************************************//
     // Functional data access

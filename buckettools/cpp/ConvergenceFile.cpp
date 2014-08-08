@@ -36,9 +36,10 @@ using namespace buckettools;
 //*******************************************************************|************************************************************//
 ConvergenceFile::ConvergenceFile(const std::string &name, 
                                  const MPI_Comm &comm,
+                                 const Bucket *bucket,
                                  const std::string &systemname, 
                                  const std::string &solvername) :
-                                      DiagnosticsFile(name, comm),
+                                      DiagnosticsFile(name, comm, bucket),
                                       systemname_(systemname),
                                       solvername_(solvername)
 {
@@ -56,10 +57,8 @@ ConvergenceFile::~ConvergenceFile()
 //*******************************************************************|************************************************************//
 // write a header for the model described in the given bucket
 //*******************************************************************|************************************************************//
-void ConvergenceFile::write_header(const Bucket &bucket)
+void ConvergenceFile::write_header()
 {
-  bucket.copy_diagnostics(bucket_);
-
   header_open_();
   header_constants_();                                               // write constant tags
   header_timestep_();                                                // write tags for the timesteps
@@ -99,21 +98,25 @@ void ConvergenceFile::header_iteration_()
 void ConvergenceFile::header_bucket_()
 {
   SystemBucket_ptr sys_ptr = (*bucket_).fetch_system(systemname_);
+  SolverBucket_ptr sol_ptr = (*sys_ptr).fetch_solver(solvername_);
 
-  header_system_(sys_ptr);                                           // write the header for the system itself
+  header_system_(sys_ptr, sol_ptr);                                  // write the header for the system itself
 
-  header_func_((*sys_ptr).fields_begin(),                            // write the header for the fields in the system
-                        (*sys_ptr).fields_end());
+  for (FunctionBucket_const_it f_it = (*sys_ptr).fields_begin(); 
+                               f_it != (*sys_ptr).fields_end();        // loop over the given functions
+                               f_it++)
+  {
+    header_func_((*f_it).second, sol_ptr);
+  }
 
 }
 
 //*******************************************************************|************************************************************//
 // write a header for the model systems in the given bucket
 //*******************************************************************|************************************************************//
-void ConvergenceFile::header_system_(const SystemBucket_ptr sys_ptr)
+void ConvergenceFile::header_system_(const SystemBucket_ptr sys_ptr, 
+                                     const SolverBucket_ptr sol_ptr)
 {
-  SolverBucket_ptr sol_ptr = (*sys_ptr).fetch_solver(solvername_);
-
   tag_((*sys_ptr).name(), "max");
   tag_((*sys_ptr).name(), "min");
   tag_((*sys_ptr).name(), "res_max");
@@ -130,65 +133,61 @@ void ConvergenceFile::header_system_(const SystemBucket_ptr sys_ptr)
 //*******************************************************************|************************************************************//
 // write a header for a set of model fields
 //*******************************************************************|************************************************************//
-void ConvergenceFile::header_func_(FunctionBucket_const_it f_begin, 
-                                  FunctionBucket_const_it f_end)
+void ConvergenceFile::header_func_(const FunctionBucket_ptr f_ptr, 
+                                   const SolverBucket_ptr sol_ptr)
 {
-  SolverBucket_ptr sol_ptr = (*(*(*f_begin).second).system()).fetch_solver(solvername_);
+  fields_.push_back(f_ptr);
 
-  for (FunctionBucket_const_it f_it = f_begin; f_it != f_end;        // loop over the given functions
-                                                      f_it++)
+  if ((*f_ptr).rank()==0)             // scalar (no components)
   {
-    if ((*(*(*f_it).second).function()).value_rank()==0)             // scalar (no components)
+    tag_((*f_ptr).name(), "max", 
+                          (*(*f_ptr).system()).name());
+    tag_((*f_ptr).name(), "min", 
+                          (*(*f_ptr).system()).name());
+    tag_((*f_ptr).name(), "res_max", 
+                          (*(*f_ptr).system()).name());
+    tag_((*f_ptr).name(), "res_min", 
+                          (*(*f_ptr).system()).name());
+    tag_((*f_ptr).name(), "res_norm(l2)", 
+                          (*(*f_ptr).system()).name());
+    tag_((*f_ptr).name(), "res_norm(linf)", 
+                          (*(*f_ptr).system()).name());
+    if ((*sol_ptr).type()=="SNES")
     {
-      tag_((*(*f_it).second).name(), "max", 
-                            (*(*(*f_it).second).system()).name());
-      tag_((*(*f_it).second).name(), "min", 
-                            (*(*(*f_it).second).system()).name());
-      tag_((*(*f_it).second).name(), "res_max", 
-                            (*(*(*f_it).second).system()).name());
-      tag_((*(*f_it).second).name(), "res_min", 
-                            (*(*(*f_it).second).system()).name());
-      tag_((*(*f_it).second).name(), "res_norm(l2)", 
-                            (*(*(*f_it).second).system()).name());
-      tag_((*(*f_it).second).name(), "res_norm(linf)", 
-                            (*(*(*f_it).second).system()).name());
-      if ((*sol_ptr).type()=="SNES")
-      {
-        tag_((*(*f_it).second).name(), "update_max", 
-                              (*(*(*f_it).second).system()).name());
-        tag_((*(*f_it).second).name(), "update_min", 
-                              (*(*(*f_it).second).system()).name());
-      }
+      tag_((*f_ptr).name(), "update_max", 
+                            (*(*f_ptr).system()).name());
+      tag_((*f_ptr).name(), "update_min", 
+                            (*(*f_ptr).system()).name());
     }
-    else
+  }
+  else
+  {
+    tag_((*f_ptr).name(), "max", 
+              (*(*f_ptr).system()).name(), 
+              (*f_ptr).size());
+    tag_((*f_ptr).name(), "min", 
+              (*(*f_ptr).system()).name(), 
+              (*f_ptr).size());
+    tag_((*f_ptr).name(), "res_max", 
+              (*(*f_ptr).system()).name(), 
+              (*f_ptr).size());
+    tag_((*f_ptr).name(), "res_min", 
+              (*(*f_ptr).system()).name(), 
+              (*f_ptr).size());
+    tag_((*f_ptr).name(), "res_norm(l2)", 
+              (*(*f_ptr).system()).name(), 
+              (*f_ptr).size());
+    tag_((*f_ptr).name(), "res_norm(linf)", 
+              (*(*f_ptr).system()).name(), 
+              (*f_ptr).size());
+    if ((*sol_ptr).type()=="SNES")
     {
-      tag_((*(*f_it).second).name(), "max", 
-                (*(*(*f_it).second).system()).name(), 
-                (*(*f_it).second).size());
-      tag_((*(*f_it).second).name(), "min", 
-                (*(*(*f_it).second).system()).name(), 
-                (*(*f_it).second).size());
-      tag_((*(*f_it).second).name(), "res_max", 
-                (*(*(*f_it).second).system()).name(), 
-                (*(*f_it).second).size());
-      tag_((*(*f_it).second).name(), "res_min", 
-                (*(*(*f_it).second).system()).name(), 
-                (*(*f_it).second).size());
-      tag_((*(*f_it).second).name(), "res_norm(l2)", 
-                (*(*(*f_it).second).system()).name(), 
-                (*(*f_it).second).size());
-      tag_((*(*f_it).second).name(), "res_norm(linf)", 
-                (*(*(*f_it).second).system()).name(), 
-                (*(*f_it).second).size());
-      if ((*sol_ptr).type()=="SNES")
-      {
-        tag_((*(*f_it).second).name(), "update_max", 
-                  (*(*(*f_it).second).system()).name(), 
-                  (*(*f_it).second).size());
-        tag_((*(*f_it).second).name(), "update_min", 
-                  (*(*(*f_it).second).system()).name(), 
-                  (*(*f_it).second).size());
-      }
+      tag_((*f_ptr).name(), "update_max", 
+                (*(*f_ptr).system()).name(), 
+                (*f_ptr).size());
+      tag_((*f_ptr).name(), "update_min", 
+                (*(*f_ptr).system()).name(), 
+                (*f_ptr).size());
     }
   }
 }
@@ -210,19 +209,23 @@ void ConvergenceFile::data_iteration_()
 void ConvergenceFile::data_bucket_()
 {
   SystemBucket_ptr sys_ptr = (*bucket_).fetch_system(systemname_);
+  SolverBucket_ptr sol_ptr = (*sys_ptr).fetch_solver(solvername_);
   
-  data_system_(sys_ptr);
-  data_field_((*sys_ptr).fields_begin(), (*sys_ptr).fields_end());
+  data_system_(sys_ptr, sol_ptr);
+
+  for (std::vector<FunctionBucket_ptr>::const_iterator f_it = fields_.begin(); f_it != fields_.end(); f_it++)
+  {
+    data_field_(*f_it, sol_ptr);
+  }
 
 }
 
 //*******************************************************************|************************************************************//
 // write data for a system
 //*******************************************************************|************************************************************//
-void ConvergenceFile::data_system_(const SystemBucket_ptr sys_ptr)
+void ConvergenceFile::data_system_(const SystemBucket_ptr sys_ptr, 
+                                   const SolverBucket_ptr sol_ptr)
 {
-  SolverBucket_ptr sol_ptr = (*sys_ptr).fetch_solver(solvername_);
-
   std::vector<double> values;
 
   values.push_back((*(*(*sys_ptr).iteratedfunction()).vector()).max());
@@ -244,51 +247,42 @@ void ConvergenceFile::data_system_(const SystemBucket_ptr sys_ptr)
 //*******************************************************************|************************************************************//
 // write data for a set of fields
 //*******************************************************************|************************************************************//
-void ConvergenceFile::data_field_(FunctionBucket_const_it f_begin, 
-                                  FunctionBucket_const_it f_end)
+void ConvergenceFile::data_field_(const FunctionBucket_ptr f_ptr, const SolverBucket_ptr sol_ptr) 
 {
-  SolverBucket_ptr sol_ptr = (*(*(*f_begin).second).system()).fetch_solver(solvername_);
+  const std::size_t lsize = (*f_ptr).size();
+  std::vector<double> max(lsize), min(lsize), 
+                      l2norm(lsize), linfnorm(lsize);
 
-  for (FunctionBucket_const_it f_it = f_begin; f_it != f_end;        // loop over the given fields
-                                                            f_it++)
+  for (uint i = 0; i<lsize; i++)
+  {
+    max[i] = (*f_ptr).max("iterated", i);
+    min[i] = (*f_ptr).min("iterated", i);
+  }
+  data_(max);
+  data_(min);
+
+  for (uint i = 0; i<lsize; i++)
+  {
+    max[i] = (*f_ptr).max("residual", i);
+    min[i] = (*f_ptr).min("residual", i);
+    l2norm[i]   = (*f_ptr).norm("residual", "l2",   i);
+    linfnorm[i] = (*f_ptr).norm("residual", "linf", i);
+  }
+  data_(max);
+  data_(min);
+  data_(l2norm);
+  data_(linfnorm);
+
+  if ((*sol_ptr).type()=="SNES")
   {
     
-    
-    const std::size_t lsize = (*(*f_it).second).size();
-    std::vector<double> max(lsize), min(lsize), 
-                        l2norm(lsize), linfnorm(lsize);
-
     for (uint i = 0; i<lsize; i++)
     {
-      max[i] = (*(*f_it).second).max("iterated", i);
-      min[i] = (*(*f_it).second).min("iterated", i);
+      max[i] = (*f_ptr).max("snesupdate", i);
+      min[i] = (*f_ptr).min("snesupdate", i);
     }
     data_(max);
     data_(min);
-
-    for (uint i = 0; i<lsize; i++)
-    {
-      max[i] = (*(*f_it).second).max("residual", i);
-      min[i] = (*(*f_it).second).min("residual", i);
-      l2norm[i]   = (*(*f_it).second).norm("residual", "l2",   i);
-      linfnorm[i] = (*(*f_it).second).norm("residual", "linf", i);
-    }
-    data_(max);
-    data_(min);
-    data_(l2norm);
-    data_(linfnorm);
-
-    if ((*sol_ptr).type()=="SNES")
-    {
-      
-      for (uint i = 0; i<lsize; i++)
-      {
-        max[i] = (*(*f_it).second).max("snesupdate", i);
-        min[i] = (*(*f_it).second).min("snesupdate", i);
-      }
-      data_(max);
-      data_(min);
-    }
   }
 }
 

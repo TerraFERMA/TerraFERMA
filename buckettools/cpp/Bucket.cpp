@@ -321,48 +321,6 @@ void Bucket::attach_coeffs(Form_ptr form)
 }
 
 //*******************************************************************|************************************************************//
-// make a partial copy of the provided bucket with the data necessary for writing the diagnostics file(s)
-//*******************************************************************|************************************************************//
-void Bucket::copy_diagnostics(Bucket_ptr &bucket) const
-{
-
-  if(!bucket)
-  {
-    bucket.reset( new Bucket );
-  }
-
-  (*bucket).name_ = name_;
-
-  (*bucket).start_time_ = start_time_;
-  (*bucket).old_time_ = old_time_;
-  (*bucket).current_time_ = current_time_;
-  (*bucket).finish_time_ = finish_time_;
-  (*bucket).number_timesteps_ = number_timesteps_;
-  (*bucket).timestep_count_ = timestep_count_;
-  (*bucket).timestep_ = timestep_;
-  (*bucket).nonlinear_iterations_ = nonlinear_iterations_;
-  (*bucket).iteration_count_ = iteration_count_;
-  (*bucket).checkpoint_count_ = checkpoint_count_;
-
-  (*bucket).meshes_ = meshes_;
-
-  for (SystemBucket_const_it sys_it = systems_begin();               // loop over the systems
-                                 sys_it != systems_end(); sys_it++)
-  {                                                                  
-    SystemBucket_ptr system;                                         // create a new system
-    
-    (*(*sys_it).second).copy_diagnostics(system, bucket);
-
-    (*bucket).register_system(system, (*system).name());             // put the system in the bucket
-  }                                                                  
-
-  (*bucket).detectors_ = detectors_;
-
-  (*bucket).steadystate_tol_ = steadystate_tol_;
-
-}
-
-//*******************************************************************|************************************************************//
 // return the timestep count
 //*******************************************************************|************************************************************//
 const int Bucket::timestep_count() const
