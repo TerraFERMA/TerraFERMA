@@ -1093,11 +1093,14 @@ void SpudBucket::checkpoint_options_()
     spud_err(buffer.str(), serr);
   }
 
-  namebuffer.str(""); namebuffer << output_basename() 
-                                 << "_checkpoint_" 
-                                 << checkpoint_count() 
-                                 << ".tfml";
-  Spud::write_options(namebuffer.str());
+  if (dolfin::MPI::rank((*(*meshes_begin()).second).mpi_comm())==0)
+  {
+    namebuffer.str(""); namebuffer << output_basename() 
+                                   << "_checkpoint_" 
+                                   << checkpoint_count() 
+                                   << ".tfml";
+    Spud::write_options(namebuffer.str());
+  }
   
   buffer.str(""); buffer << "/io/output_base_name";
   serr = Spud::set_option(buffer.str(), output_basename());
