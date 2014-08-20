@@ -378,13 +378,18 @@ PetscErrorCode buckettools::KSPNullSpaceMonitor(KSP ksp, int it,
   PetscFunctionReturn(0);
 }
 
-
+//*******************************************************************|************************************************************//
+// a dummy routine to keep snes vi happy
+//*******************************************************************|************************************************************//
 PetscErrorCode buckettools::SNESVIDummyComputeVariableBounds(SNES snes, Vec xl, Vec xu)
 {
                                                                      // do nothing
   PetscFunctionReturn(0);
 }
 
+//*******************************************************************|************************************************************//
+// check if petsc has failed and throw a sigint if it has
+//*******************************************************************|************************************************************//
 void buckettools::petsc_failure(PetscErrorCode perr,
                                 const std::string &filename,
                                 const int &line,
@@ -396,11 +401,14 @@ void buckettools::petsc_failure(PetscErrorCode perr,
     PetscErrorCode perr2 = PetscError(PETSC_COMM_SELF,line,petsc_function.c_str(),filename.c_str(),dirname.c_str(),perr,PETSC_ERROR_REPEAT," ");
 
     failure(filename, line, 
-            "Call to PETSc function '" + petsc_function + "' failed.",
-            "PETSc error code is: %d.", perr);
+            "Call to PETSc function returned an error.",
+            "PETSc error code: %d.", perr);
   }
 }
 
+//*******************************************************************|************************************************************//
+// check if petsc has an error and terminate if it has
+//*******************************************************************|************************************************************//
 void buckettools::petsc_error(PetscErrorCode perr,
                               const std::string &filename,
                               const int &line,
@@ -412,8 +420,8 @@ void buckettools::petsc_error(PetscErrorCode perr,
     PetscErrorCode perr2 = PetscError(PETSC_COMM_SELF,line,petsc_function.c_str(),filename.c_str(),dirname.c_str(),perr,PETSC_ERROR_REPEAT," ");
 
     error(filename, line,
-          "Call to PETSc function '" + petsc_function + "' returned an error.",
-          "PETSc error code is: %d.", perr);
+          "Call to PETSc function returned an error.",
+          "PETSc error code: %d.", perr);
   }
 }
 
