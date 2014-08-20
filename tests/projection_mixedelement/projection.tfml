@@ -7,7 +7,7 @@
     <mesh name="Frank">
       <source name="UnitSquare">
         <number_cells>
-          <integer_value shape="2" dim1="2" rank="1">1 1</integer_value>
+          <integer_value shape="2" dim1="2" rank="1">2 2</integer_value>
         </number_cells>
         <diagonal>
           <string_value>crossed</string_value>
