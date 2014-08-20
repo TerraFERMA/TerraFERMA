@@ -20,6 +20,7 @@
 
 
 #include "ReferencePoints.h"
+#include "Logger.h"
 #include <dolfin.h>
 #include <string>
 #include <limits>
@@ -121,7 +122,7 @@ void ReferencePoints::apply(dolfin::GenericMatrix* A,
     (*x).get_local(&values[0], dof_.size(), &dof_[0]);
   }
 
-  dolfin::log(dolfin::PROGRESS, "Applying reference points to linear system.");
+  log(INFO, "Applying reference points to linear system.");
 
   if (b)
   {
@@ -167,38 +168,44 @@ void ReferencePoints::check_arguments_(dolfin::GenericMatrix* A, dolfin::Generic
                                                                      // Check matrix and vector dimensions
   if (A && x && (*A).size(0) != (*x).size())
   {
-    dolfin::error("Matrix dimension (%d rows) does not match vector dimension (%d) for application of reference points",
+    tf_err("Matrix and vector supplied to ReferencePoints incompatible.",
+           "Matrix dimension (%d rows) does not match vector dimension (%d) for application of reference points",
                  (*A).size(0), (*x).size());
   }
 
   if (A && b && (*A).size(0) != (*b).size())
   {
-    dolfin::error("Matrix dimension (%d rows) does not match vector dimension (%d) for application of reference points",
+    tf_err("Matrix and vector supplied to ReferencePoints incompatible.",
+           "Matrix dimension (%d rows) does not match vector dimension (%d) for application of reference points",
                  (*A).size(0), (*b).size());
   }
 
   if (x && b && (*x).size() != (*b).size())
   {
-    dolfin::error("Vector dimension (%d rows) does not match vector dimension (%d) for application of reference points",
+    tf_err("Vectors supplied to ReferencePoints incompatible.",
+           "Vector dimension (%d rows) does not match vector dimension (%d) for application of reference points",
                  (*x).size(), (*b).size());
   }
 
                                                                      // Check dimension of function space
   if (A && (*A).size(0) < (*functionspace_).dim())
   {
-    dolfin::error("Dimension of function space (%d) too large for application of reference points to linear system (%d rows)",
+    tf_err("Functionspace and matrix supplied to ReferencePoints incompatible.",
+           "Dimension of function space (%d) too large for application of reference points to linear system (%d rows)",
                  (*functionspace_).dim(), (*A).size(0));
   }
 
   if (x && (*x).size() < (*functionspace_).dim())
   {
-    dolfin::error("Dimension of function space (%d) too large for application of reference points linear system (%d rows)",
+    tf_err("Functionspace and vector supplied to ReferencePoints incompatible.",
+           "Dimension of function space (%d) too large for application of reference points to linear system (%d rows)",
                  (*functionspace_).dim(), (*x).size());
   }
 
   if (b && (*b).size() < (*functionspace_).dim())
   {
-    dolfin::error("Dimension of function space (%d) too large for application of reference points linear system (%d rows)",
+    tf_err("Functionspace and vector supplied to ReferencePoints incompatible.",
+           "Dimension of function space (%d) too large for application of reference points to linear system (%d rows)",
                  (*functionspace_).dim(), (*b).size());
   }
 
@@ -211,7 +218,7 @@ void ReferencePoints::init_(const Array_double_ptr coord)
 {
   if(position_)
   {
-    dolfin::error("In ReferencePoints::init_ intializing already initialized reference point.");
+    tf_err("Intializing already initialized reference point.", "position_ associated.");
   }
   
   position_ = coord;

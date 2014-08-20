@@ -23,7 +23,7 @@
 #include "SolverBucket.h"
 #include "SystemBucket.h"
 #include "Bucket.h"
-#include "SignalHandler.h"
+#include "Logger.h"
 #include <dolfin.h>
 #include <string>
 #include <signal.h>
@@ -56,27 +56,27 @@ SolverBucket::~SolverBucket()
   if(type()=="SNES")
   {
     #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
-    perr = SNESDestroy(&snes_); CHKERRV(perr);                       // destroy the snes object
+    perr = SNESDestroy(&snes_); petsc_err(perr);                       // destroy the snes object
     #else
-    perr = SNESDestroy(snes_); CHKERRV(perr);                        // destroy the snes object
+    perr = SNESDestroy(snes_); petsc_err(perr);                        // destroy the snes object
     #endif
   }
 
   if(type()=="Picard")
   {
     #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
-    perr = KSPDestroy(&ksp_); CHKERRV(perr);                         // destroy the ksp object
+    perr = KSPDestroy(&ksp_); petsc_err(perr);                         // destroy the ksp object
     #else
-    perr = KSPDestroy(ksp_); CHKERRV(perr);                          // destroy the ksp object
+    perr = KSPDestroy(ksp_); petsc_err(perr);                          // destroy the ksp object
     #endif
   }
 
   if(sp_)
   {
     #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
-    perr = MatNullSpaceDestroy(&sp_); CHKERRV(perr);                 // destroy the null space object
+    perr = MatNullSpaceDestroy(&sp_); petsc_err(perr);                 // destroy the null space object
     #else
-    perr = MatNullSpaceDestroy(sp_); CHKERRV(perr);                  // destroy the null space object
+    perr = MatNullSpaceDestroy(sp_); petsc_err(perr);                  // destroy the null space object
     #endif
   }
 
@@ -85,9 +85,9 @@ SolverBucket::~SolverBucket()
                                            is_it++)
   {
     #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
-    perr = ISDestroy(&(*is_it).second); CHKERRV(perr);                  // destroy the IS, necessary?
+    perr = ISDestroy(&(*is_it).second); petsc_err(perr);                  // destroy the IS, necessary?
     #else
-    perr = ISDestroy((*is_it).second); CHKERRV(perr);                   // destroy the IS, necessary?
+    perr = ISDestroy((*is_it).second); petsc_err(perr);                   // destroy the IS, necessary?
     #endif
   }
 
@@ -96,9 +96,9 @@ SolverBucket::~SolverBucket()
                                             mat_it++)
   {
     #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
-    perr = MatDestroy(&(*mat_it).second); CHKERRV(perr);                  // destroy the IS, necessary?
+    perr = MatDestroy(&(*mat_it).second); petsc_err(perr);                  // destroy the IS, necessary?
     #else
-    perr = MatDestroy((*mat_it).second); CHKERRV(perr);                   // destroy the IS, necessary?
+    perr = MatDestroy((*mat_it).second); petsc_err(perr);                   // destroy the IS, necessary?
     #endif
   }
 
@@ -113,10 +113,11 @@ void SolverBucket::solve()
 
   if ((*system_).solve_location()==SOLVE_NEVER)
   {
-    dolfin::error("Unable to solve as solve_location set to never.");
+    tf_err("Unable to solve as solve_location is set to never.", "SolverBucket name: %s, SystemBucket name: %s",
+           name_.c_str(), (*system_).name().c_str());
   }
 
-  dolfin::log(dolfin::INFO, "Solving for %s::%s using %s", 
+  log(INFO, "Solving for %s::%s using %s", 
                           (*system_).name().c_str(), name().c_str(), 
                           type().c_str());
 
@@ -131,12 +132,7 @@ void SolverBucket::solve()
     }
     *work_ = (*(*(*system_).function()).vector());                   // set the work vector to the function vector
     perr = SNESSolve(snes_, PETSC_NULL, (*work_).vec());            // call petsc to perform a snes solve
-    if (perr>0)
-    {
-      dolfin::log(dolfin::ERROR, "ERROR: SNESSolve returned error code %d.", perr);
-      (*SignalHandler::instance()).dispatcher(SIGINT);
-    }
-    CHKERRV(perr);
+    petsc_fail(perr);
     snes_check_convergence_();
     (*(*(*system_).function()).vector()) = *work_;                   // update the function
   }
@@ -179,7 +175,7 @@ void SolverBucket::solve()
       rerror = aerror/aerror0;                                       // relative error, starts out as 1.
     }
 
-    dolfin::info("  %u Picard Residual Norm (absolute, relative) = %g, %g\n", 
+    log(INFO, "  %u Picard Residual Norm (absolute, relative) = %g, %g\n", 
                                     iteration_count(), aerror, rerror);
 
     if(convfile_)
@@ -239,14 +235,14 @@ void SolverBucket::solve()
         perr = KSPSetOperators(ksp_, (*matrix_).mat(),              // set the ksp operators with two matrices
                                      (*matrixpc_).mat(), 
                                      SAME_NONZERO_PATTERN); 
-        CHKERRV(perr);
+        petsc_err(perr);
       }
       else
       {
         perr = KSPSetOperators(ksp_, (*matrix_).mat(),              // set the ksp operators with the same matrices
                                       (*matrix_).mat(), 
                                         SAME_NONZERO_PATTERN); 
-        CHKERRV(perr);
+        petsc_err(perr);
       }
 
       for (Form_const_it f_it = solverforms_begin(); 
@@ -272,7 +268,7 @@ void SolverBucket::solve()
         IS is = solverindexsets_[(*f_it).first];
         Mat submatrix = solversubmatrices_[(*f_it).first];
         perr = MatGetSubMatrix((*solvermatrix).mat(), is, is, MAT_REUSE_MATRIX, &submatrix);
-        CHKERRV(perr);
+        petsc_err(perr);
 
       }
 
@@ -280,37 +276,37 @@ void SolverBucket::solve()
       {
         PetscReal norm;
 
-        perr = VecNorm((*rhs_).vec(),NORM_2,&norm); CHKERRV(perr);
-        dolfin::log(dolfin::get_log_level(), "Picard: 2-norm rhs = %f", norm);
+        perr = VecNorm((*rhs_).vec(),NORM_2,&norm); petsc_err(perr);
+        log(dolfin::get_log_level(), "Picard: 2-norm rhs = %f", norm);
 
-        perr = VecNorm((*rhs_).vec(),NORM_INFINITY,&norm); CHKERRV(perr);
-        dolfin::log(dolfin::get_log_level(), "Picard: inf-norm rhs = %f", norm);
+        perr = VecNorm((*rhs_).vec(),NORM_INFINITY,&norm); petsc_err(perr);
+        log(dolfin::get_log_level(), "Picard: inf-norm rhs = %f", norm);
 
-        perr = VecNorm((*work_).vec(),NORM_2,&norm); CHKERRV(perr);
-        dolfin::log(dolfin::get_log_level(), "Picard: 2-norm work = %f", norm);
+        perr = VecNorm((*work_).vec(),NORM_2,&norm); petsc_err(perr);
+        log(dolfin::get_log_level(), "Picard: 2-norm work = %f", norm);
 
-        perr = VecNorm((*work_).vec(),NORM_INFINITY,&norm); CHKERRV(perr);
-        dolfin::log(dolfin::get_log_level(), "Picard: inf-norm work = %f", norm);
+        perr = VecNorm((*work_).vec(),NORM_INFINITY,&norm); petsc_err(perr);
+        log(dolfin::get_log_level(), "Picard: inf-norm work = %f", norm);
 
-        perr = MatNorm((*matrix_).mat(),NORM_FROBENIUS,&norm); CHKERRV(perr);
-        dolfin::log(dolfin::get_log_level(), "Picard: Frobenius norm matrix = %f", norm);
+        perr = MatNorm((*matrix_).mat(),NORM_FROBENIUS,&norm); petsc_err(perr);
+        log(dolfin::get_log_level(), "Picard: Frobenius norm matrix = %f", norm);
 
-        perr = MatNorm((*matrix_).mat(),NORM_INFINITY,&norm); CHKERRV(perr);
-        dolfin::log(dolfin::get_log_level(), "Picard: inf-norm matrix = %f", norm);
+        perr = MatNorm((*matrix_).mat(),NORM_INFINITY,&norm); petsc_err(perr);
+        log(dolfin::get_log_level(), "Picard: inf-norm matrix = %f", norm);
 
         if (bilinearpc_)
         {
-          perr = MatNorm((*matrixpc_).mat(),NORM_FROBENIUS,&norm); CHKERRV(perr);
-          dolfin::log(dolfin::get_log_level(), "Picard: Frobenius norm matrix pc = %f", norm);
+          perr = MatNorm((*matrixpc_).mat(),NORM_FROBENIUS,&norm); petsc_err(perr);
+          log(dolfin::get_log_level(), "Picard: Frobenius norm matrix pc = %f", norm);
 
-          perr = MatNorm((*matrixpc_).mat(),NORM_INFINITY,&norm); CHKERRV(perr);
-          dolfin::log(dolfin::get_log_level(), "Picard: inf-norm matrix pc = %f", norm);
+          perr = MatNorm((*matrixpc_).mat(),NORM_INFINITY,&norm); petsc_err(perr);
+          log(dolfin::get_log_level(), "Picard: inf-norm matrix pc = %f", norm);
         }
       }
 
       *work_ = (*(*(*system_).iteratedfunction()).vector());         // set the work vector to the iterated function
       perr = KSPSolve(ksp_, (*rhs_).vec(), (*work_).vec());        // perform a linear solve
-      CHKERRV(perr);
+      petsc_fail(perr);
       ksp_check_convergence_(ksp_);
       (*(*(*system_).iteratedfunction()).vector()) = *work_;         // update the iterated function with the work vector
 
@@ -331,7 +327,7 @@ void SolverBucket::solve()
 
       aerror = (*res_).norm("l2");                                   // work out absolute error
       rerror = aerror/aerror0;                                       // and relative error
-      dolfin::info("  %u Picard Residual Norm (absolute, relative) = %g, %g\n", 
+      log(INFO, "  %u Picard Residual Norm (absolute, relative) = %g, %g\n", 
                           iteration_count(), aerror, rerror);
                                                                      // and decide to loop or not...
 
@@ -348,17 +344,16 @@ void SolverBucket::solve()
 
     if (iteration_count() == maxits_ && rerror > rtol_ && aerror > atol_)
     {
-      dolfin::log(dolfin::WARNING, "it = %d, maxits_ = %d", iteration_count(), maxits_);
-      dolfin::log(dolfin::WARNING, "rerror = %f, rtol_ = %f", rerror, rtol_);
-      dolfin::log(dolfin::WARNING, "aerror = %f, atol_ = %f", aerror, atol_);
+      log(WARNING, "it = %d, maxits_ = %d", iteration_count(), maxits_);
+      log(WARNING, "rerror = %f, rtol_ = %f", rerror, rtol_);
+      log(WARNING, "aerror = %f, atol_ = %f", aerror, atol_);
       if (ignore_failures_)
       {
-        dolfin::log(dolfin::WARNING, "Picard iterations failed to converge, ignoring.");
+        log(WARNING, "Ignoring: Picard failure. Solver: %s::%s.", (*system_).name().c_str(), name().c_str());
       }
       else
       {
-        dolfin::log(dolfin::ERROR, "Picard iterations failed to converge, sending sig int.");
-        (*SignalHandler::instance()).dispatcher(SIGINT);
+        tf_fail("Picard iterations failed to converge.", "Iteration count, relative error or absolute error too high.");
       }
     }
 
@@ -368,7 +363,7 @@ void SolverBucket::solve()
   }
   else                                                               // don't know what solver type this is
   {
-    dolfin::error("Unknown solver type.");
+    tf_err("Unknown solver type.", "Type: %s", type_.c_str());
   }
 
 }
@@ -456,7 +451,7 @@ void SolverBucket::create_nullspace()
     }
     perr = MatNullSpaceCreate((*(nullspacevectors_[0])).mpi_comm(), 
                               PETSC_FALSE, nnulls, vecs, &sp_); 
-    CHKERRV(perr);
+    petsc_err(perr);
   }
   else
   {
@@ -504,8 +499,8 @@ void SolverBucket::register_form(Form_ptr form, const std::string &name)
   Form_hash_it f_it = forms_.get<om_key_hash>().find(name);                                  // check if this name already exists
   if (f_it != forms_.get<om_key_hash>().end())
   {
-    dolfin::error("Form named \"%s\" already exists in solver.",     // if it does, issue an error
-                                                  name.c_str());
+    tf_err("Form already exists in solver.", "Form name: %s, SolverBucket name: %s, SystemBucket name: %s",
+           name.c_str(), name_.c_str(), (*system_).name().c_str());
   }
   else
   {
@@ -530,8 +525,8 @@ Form_ptr SolverBucket::fetch_form(const std::string &name)
   Form_hash_it f_it = forms_.get<om_key_hash>().find(name);                                  // check if this name already exists
   if (f_it == forms_.get<om_key_hash>().end())
   {
-    dolfin::error("Form named \"%s\" does not exist in solver.",     // if it doesn't, issue an error
-                                                    name.c_str());
+    tf_err("Form does not exist in solver.", "Form name: %s, SolverBucket name: %s, SystemBucket name: %s",
+           name.c_str(), name_.c_str(), (*system_).name().c_str());
   }
   else
   {
@@ -579,8 +574,8 @@ void SolverBucket::register_solverform(Form_ptr form, const std::string &name)
   Form_hash_it f_it = solverforms_.get<om_key_hash>().find(name);                            // check if this name already exists
   if (f_it != solverforms_.get<om_key_hash>().end())
   {
-    dolfin::error("Solver form named \"%s\" already exists in solver.",     // if it does, issue an error
-                                                  name.c_str());
+    tf_err("Solver form already exists in solver.", "Solver form name: %s, SolverBucket name: %s, SystemBucket name: %s",
+           name.c_str(), name_.c_str(), (*system_).name().c_str());
   }
   else
   {
@@ -629,8 +624,8 @@ PETScMatrix_ptr SolverBucket::fetch_solvermatrix(const std::string &name)
                                           solvermatrices_.find(name);// check if this name already exists
   if (s_it == solvermatrices_.end())
   {
-    dolfin::error("Solver matrix named \"%s\" does not exist in solver.",     // if it doesn't, issue an error
-                                                    name.c_str());
+    tf_err("Solver matrix does not exist in solver.", "Solver matrix name: %s, SolverBucket name: %s, SystemBucket name: %s",
+           name.c_str(), name_.c_str(), (*system_).name().c_str());
   }
   else
   {
@@ -647,8 +642,8 @@ IS SolverBucket::fetch_solverindexset(const std::string &name)
                                          solverindexsets_.find(name);// check if this name already exists
   if (s_it == solverindexsets_.end())
   {
-    dolfin::error("Solver index set named \"%s\" does not exist in solver.",     // if it doesn't, issue an error
-                                                    name.c_str());
+    tf_err("Solver index set does not exist in solver.", "Solver index set name: %s, SolverBucket name: %s, SystemBucket name: %s",
+           name.c_str(), name_.c_str(), (*system_).name().c_str());
   }
   else
   {
@@ -665,8 +660,8 @@ bool SolverBucket::solverident_zeros(const std::string &name)
                                        solverident_zeros_.find(name);// check if this name already exists
   if (s_it == solverident_zeros_.end())
   {
-    dolfin::error("Solver ident zeros named \"%s\" does not exist in solver.",     // if it doesn't, issue an error
-                                                    name.c_str());
+    tf_err("Solver ident zeros does not exist in solver.", "Solver ident zeros name: %s, SolverBucket name: %s, SystemBucket name: %s",
+           name.c_str(), name_.c_str(), (*system_).name().c_str());
   }
   else
   {
@@ -683,8 +678,8 @@ Mat SolverBucket::fetch_solversubmatrix(const std::string &name)
                                           solversubmatrices_.find(name);// check if this name already exists
   if (s_it == solversubmatrices_.end())
   {
-    dolfin::error("Solver sub matrix named \"%s\" does not exist in solver.",     // if it doesn't, issue an error
-                                                    name.c_str());
+    tf_err("Solver sub matrix does not exist in solver.", "Solver sub matrix name: %s, SolverBucket name: %s, SystemBucket name: %s",
+           name.c_str(), name_.c_str(), (*system_).name().c_str());
   }
   else
   {
@@ -728,32 +723,31 @@ void SolverBucket::snes_check_convergence_()
 
   assert(type()=="SNES");
 
-  dolfin::log(dolfin::INFO, "Convergence for %s::%s", 
+  log(INFO, "Convergence for %s::%s", 
                           (*system_).name().c_str(), name().c_str());
 
   SNESConvergedReason snesreason;                                    // check what the convergence reason was
   PetscInt snesiterations;
   PetscInt sneslsiterations;
 //  const char **snesprefix;
-//  perr = SNESGetOptionsPrefix(snes_, snesprefix); CHKERRV(perr);   // FIXME: segfaults!
-  perr = SNESGetConvergedReason(snes_, &snesreason); CHKERRV(perr);     
-  perr = SNESGetIterationNumber(snes_, &snesiterations); CHKERRV(perr);
-  perr = SNESGetLinearSolveIterations(snes_, &sneslsiterations);  CHKERRV(perr);
-  dolfin::log(dolfin::INFO, "SNESConvergedReason %d", snesreason);
-  dolfin::log(dolfin::INFO, "SNES n/o iterations %d", 
+//  perr = SNESGetOptionsPrefix(snes_, snesprefix); petsc_err(perr);   // FIXME: segfaults!
+  perr = SNESGetConvergedReason(snes_, &snesreason); petsc_err(perr);     
+  perr = SNESGetIterationNumber(snes_, &snesiterations); petsc_err(perr);
+  perr = SNESGetLinearSolveIterations(snes_, &sneslsiterations);  petsc_err(perr);
+  log(INFO, "SNESConvergedReason %d", snesreason);
+  log(INFO, "SNES n/o iterations %d", 
                               snesiterations);
-  dolfin::log(dolfin::INFO, "SNES n/o linear solver iterations %d", 
+  log(INFO, "SNES n/o linear solver iterations %d", 
                               sneslsiterations);
   if (snesreason<0)
   {
     if (ignore_failures_)
     {
-      dolfin::log(dolfin::WARNING, "SNESConvergedReason <= 0, ignoring.");
+      log(WARNING, "Ignoring: SNES failure. Solver: %s::%s, SNESConvergedReason %d.", (*system_).name().c_str(), name().c_str(), snesreason);
     }
     else
     {
-      dolfin::log(dolfin::ERROR, "SNESConvergedReason <= 0, sending sig int.");
-      (*SignalHandler::instance()).dispatcher(SIGINT);
+      tf_fail("SNES failed to converge.", "Solver: %s::%s, SNESConvergedReason: %d.", (*system_).name().c_str(), name().c_str(), snesreason);
     }
   }
 
@@ -771,30 +765,29 @@ void SolverBucket::ksp_check_convergence_(KSP &ksp, int indent)
 
   if (indent==0)
   {
-    dolfin::log(dolfin::INFO, "Convergence for %s::%s", 
+    log(INFO, "Convergence for %s::%s", 
                           (*system_).name().c_str(), name().c_str());
   }
 
   KSPConvergedReason kspreason;                                      // check what the convergence reason was
   PetscInt kspiterations;
   //const char **kspprefix;
-  //perr = KSPGetOptionsPrefix(ksp, kspprefix); CHKERRV(perr);       // FIXME: segfaults!
-  perr = KSPGetConvergedReason(ksp, &kspreason); CHKERRV(perr);     
-  perr = KSPGetIterationNumber(ksp, &kspiterations); CHKERRV(perr);     
-  dolfin::log(dolfin::INFO, "%sKSPConvergedReason %d", 
+  //perr = KSPGetOptionsPrefix(ksp, kspprefix); petsc_err(perr);       // FIXME: segfaults!
+  perr = KSPGetConvergedReason(ksp, &kspreason); petsc_err(perr);     
+  perr = KSPGetIterationNumber(ksp, &kspiterations); petsc_err(perr);     
+  log(INFO, "%sKSPConvergedReason %d", 
                               indentation.c_str(), kspreason);
-  dolfin::log(dolfin::INFO, "%sKSP n/o iterations %d", 
+  log(INFO, "%sKSP n/o iterations %d", 
                               indentation.c_str(), kspiterations);
   if (indent==0 && kspreason<0)
   {
     if (ignore_failures_)
     {
-      dolfin::log(dolfin::WARNING, "KSPConvergedReason <= 0, ignoring.");
+      log(WARNING, "Ignoring: KSP failure. Solver: %s::%s, KSPConvergedReason %d.", (*system_).name().c_str(), name().c_str(), kspreason);
     }
     else
     {
-      dolfin::log(dolfin::ERROR, "KSPConvergedReason <= 0, sending sig int.");
-      (*SignalHandler::instance()).dispatcher(SIGINT);
+      tf_fail("KSP failed to converge.", "Solver: %s::%s, KSPConvergedReason: %d.", (*system_).name().c_str(), name().c_str(), kspreason);
     }
   }
 
@@ -802,18 +795,18 @@ void SolverBucket::ksp_check_convergence_(KSP &ksp, int indent)
   indent++;
 
   PC pc;
-  perr = KSPGetPC(ksp, &pc); CHKERRV(perr);
+  perr = KSPGetPC(ksp, &pc); petsc_err(perr);
   #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 3
   PCType pctype;
   #else
   const PCType pctype;
   #endif
-  perr = PCGetType(pc, &pctype); CHKERRV(perr);
+  perr = PCGetType(pc, &pctype); petsc_err(perr);
 
   if ((std::string)pctype=="ksp")
   {
     KSP subksp;                                                      // get the subksp from this pc
-    perr = PCKSPGetKSP(pc, &subksp); CHKERRV(perr);
+    perr = PCKSPGetKSP(pc, &subksp); petsc_err(perr);
     ksp_check_convergence_(subksp, indent);
   }
   else if ((std::string)pctype=="fieldsplit")
@@ -821,7 +814,7 @@ void SolverBucket::ksp_check_convergence_(KSP &ksp, int indent)
     KSP *subksps;                                                    // get the fieldsplit subksps
     PetscInt nsubksps;
     perr = PCFieldSplitGetSubKSP(pc, &nsubksps, &subksps); 
-    CHKERRV(perr); 
+    petsc_err(perr); 
     for (PetscInt i = 0; i < nsubksps; i++)
     {
       ksp_check_convergence_(subksps[i], indent);

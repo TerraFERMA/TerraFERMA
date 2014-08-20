@@ -24,6 +24,7 @@
 #include "SystemBucket.h"
 #include "FunctionBucket.h"
 #include "SolverBucket.h"
+#include "Logger.h"
 #include <dolfin.h>
 #include <string>
 
@@ -57,7 +58,7 @@ SystemBucket::~SystemBucket()
 //*******************************************************************|************************************************************//
 void SystemBucket::evaluate_initial_fields()
 {
-  dolfin::info("Evaluating initial fields for system %s", name().c_str());
+  log(INFO, "Evaluating initial fields for system %s", name().c_str());
 
   if (fields_size()>0)
   {
@@ -162,7 +163,7 @@ const double SystemBucket::maxchange()
     if ((*(*f_it).second).include_in_steadystate())
     {
       double fieldchange = (*(*f_it).second).change();
-      dolfin::log(dolfin::DBG, "    steady state fieldchange = %f", fieldchange);
+      log(DBG, "    steady state fieldchange = %f", fieldchange);
       maxchange = std::max( fieldchange, maxchange );
     }
 
@@ -172,7 +173,7 @@ const double SystemBucket::maxchange()
       if ((*(*f_it).second).include_functional_in_steadystate((*form_it).first))
       {
         double functionalchange = (*(*f_it).second).functionalchange(form_it);
-        dolfin::log(dolfin::DBG, "      steady state functionalchange = %f", functionalchange);
+        log(DBG, "      steady state functionalchange = %f", functionalchange);
         maxchange = std::max( functionalchange, maxchange );
       }
     }
@@ -251,7 +252,7 @@ const Function_ptr SystemBucket::function_ptr(const double_ptr time) const
   }
   else
   {
-    dolfin::error("Unknown time pointer when returning function in genericfunction(time).");
+    tf_err("Unknown time pointer when returning function in function_ptr.", "SystemBucket: %s", name_.c_str());
   }
 }
 
@@ -263,8 +264,7 @@ void SystemBucket::register_field(FunctionBucket_ptr field, const std::string &n
   FunctionBucket_hash_it f_it = fields_.get<om_key_hash>().find(name);                       // check if name already exists
   if (f_it != fields_.get<om_key_hash>().end())
   {
-    dolfin::error("Field named \"%s\" already exists in system.",    // if it does, issue an error
-                                                name.c_str());
+    tf_err("Field already exists in system.", "Field name: %s, System name: %s", name.c_str(), name_.c_str());
   }
   else
   {
@@ -280,8 +280,7 @@ FunctionBucket_ptr SystemBucket::fetch_field(const std::string &name)
   FunctionBucket_hash_it f_it = fields_.get<om_key_hash>().find(name);                       // check if name already exists
   if (f_it == fields_.get<om_key_hash>().end())
   {
-    dolfin::error("Field named \"%s\" does not exist in system.",    // if it doesn't, issue an error
-                                                    name.c_str());
+    tf_err("Field does not exist in system.", "Field name: %s, System name: %s", name.c_str(), name_.c_str());
   }
   else
   {
@@ -297,8 +296,7 @@ const FunctionBucket_ptr SystemBucket::fetch_field(const std::string &name) cons
   FunctionBucket_hash_it f_it = fields_.get<om_key_hash>().find(name);                       // check if name already exists
   if (f_it == fields_.get<om_key_hash>().end())
   {
-    dolfin::error("Field named \"%s\" does not exist in system.",    // if it doesn't, issue an error
-                                                    name.c_str());
+    tf_err("Field does not exist in system.", "Field name: %s, System name: %s", name.c_str(), name_.c_str());
   }
   else
   {
@@ -355,9 +353,7 @@ void SystemBucket::register_coeff(FunctionBucket_ptr coeff, const std::string &n
   FunctionBucket_hash_it f_it = coeffs_.get<om_key_hash>().find(name);                       // check if name already exists
   if (f_it != coeffs_.get<om_key_hash>().end())
   {
-    dolfin::error(                                                   // if it does, issue an error
-              "Coefficient named \"%s\" already exists in system.", 
-                                                    name.c_str());
+    tf_err("Coefficient already exists in system.", "Coefficient name: %s, System name: %s", name.c_str(), name_.c_str());
   }
   else
   {
@@ -373,9 +369,7 @@ FunctionBucket_ptr SystemBucket::fetch_coeff(const std::string &name)
   FunctionBucket_hash_it f_it = coeffs_.get<om_key_hash>().find(name);                       // check if the name already exists
   if (f_it == coeffs_.get<om_key_hash>().end())
   {
-    dolfin::error(                                                   // if it doesn't, issue an error
-            "Coefficient named \"%s\" does not exist in system.", 
-                                                    name.c_str());
+    tf_err("Coefficient does not exist in system.", "Coefficient name: %s, System name: %s", name.c_str(), name_.c_str());
   }
   else
   {
@@ -391,9 +385,7 @@ const FunctionBucket_ptr SystemBucket::fetch_coeff(const std::string &name) cons
   FunctionBucket_const_hash_it f_it = coeffs_.get<om_key_hash>().find(name);                 // check if the name already exists
   if (f_it == coeffs_.get<om_key_hash>().end())
   {
-    dolfin::error(                                                   // if it doesn't, issue an error
-            "Coefficient named \"%s\" does not exist in system.", 
-                                                    name.c_str());
+    tf_err("Coefficient does not exist in system.", "Coefficient name: %s, System name: %s", name.c_str(), name_.c_str());
   }
   else
   {
@@ -442,9 +434,7 @@ void SystemBucket::register_solver(SolverBucket_ptr solver, const std::string &n
   SolverBucket_hash_it s_it = solvers_.get<om_key_hash>().find(name);     // check if a solver with this name already exists
   if (s_it != solvers_.get<om_key_hash>().end())
   {
-    dolfin::error(                                                   // if it does, issue an error
-              "SolverBucket named \"%s\" already exists in system.", 
-                                                      name.c_str());
+    tf_err("SolverBucket already exists in system.", "SolverBucket name: %s, System name: %s", name.c_str(), name_.c_str());
   }
   else
   {
@@ -460,8 +450,7 @@ SolverBucket_ptr SystemBucket::fetch_solver(const std::string &name)
   SolverBucket_hash_it s_it = solvers_.get<om_key_hash>().find(name);     // check if a solver with this name already exists
   if (s_it == solvers_.get<om_key_hash>().end())
   {
-    dolfin::error("SolverBucket named \"%s\" does not exist in system.",// if it doesn't, issue an error
-                                                    name.c_str());
+    tf_err("SolverBucket does not exist in system.", "SolverBucket name: %s, System name: %s", name.c_str(), name_.c_str());
   }
   else
   {
@@ -477,8 +466,7 @@ const SolverBucket_ptr SystemBucket::fetch_solver(const std::string &name) const
   SolverBucket_hash_it s_it = solvers_.get<om_key_hash>().find(name);     // check if a solver with this name already exists
   if (s_it == solvers_.get<om_key_hash>().end())
   {
-    dolfin::error("SolverBucket named \"%s\" does not exist in system.",// if it doesn't, issue an error
-                                                    name.c_str());
+    tf_err("SolverBucket does not exist in system.", "SolverBucket name: %s, System name: %s", name.c_str(), name_.c_str());
   }
   else
   {
@@ -782,7 +770,7 @@ void SystemBucket::collect_ics_(const uint &components, const std::map< std::siz
     }
     else
     {
-      dolfin::error("Unknown rank in collect_ics_");
+      tf_err("Unknown rank in collect_ics_.", "Rank: %d", rank);
     }
   }
   else                                                               // vectors are the general case for a mixed function
@@ -806,7 +794,7 @@ void SystemBucket::apply_ic_()
   }
   else
   {
-    dolfin::error("Unknown way of applying initial condition.");
+    tf_err("Unknown way of applying initial condition.", "No suitable expression or checkpoint file found.");
   }
   (*(*iteratedfunction_).vector()) = (*(*oldfunction_).vector());    // set the iterated function vector to the old function vector
   (*(*function_).vector()) = (*(*oldfunction_).vector());            // set the function vector to the old function vector
@@ -891,7 +879,7 @@ void SystemBucket::attach_solver_coeffs_(SolverBucket_it s_begin,
 //*******************************************************************|************************************************************//
 void SystemBucket::checkpoint_options_()
 {
-  dolfin::error("Failed to find virtual function checkpoint_options_.");
+  tf_err("Failed to find virtual function checkpoint_options_.", "Need to implement a checkpointing method.");
 }
 
 

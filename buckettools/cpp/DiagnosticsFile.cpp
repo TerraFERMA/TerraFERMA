@@ -22,7 +22,7 @@
 #include "DiagnosticsFile.h"
 #include "Bucket.h"
 #include "MPIBase.h"
-#include "builddefs.h"
+#include "Usage.h"
 #include <cstdio>
 #include <stdlib.h>
 #include <string>
@@ -87,7 +87,7 @@ void DiagnosticsFile::header_constants_(const bool &binary)
   char cbuffer[maxlencbuffer];
   int cerr;
 
-  constant_tag_("GitHash", "string", __GIT_SHA__);                 // the git sha
+  constant_tag_("GitHash", "string", githash());                 // the git sha
   
   buffer.str("");
   buffer << __DATE__;

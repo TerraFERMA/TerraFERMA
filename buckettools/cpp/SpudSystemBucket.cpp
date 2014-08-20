@@ -25,6 +25,7 @@
 #include "SpudBase.h"
 #include "SpudFunctionBucket.h"
 #include "SpudSolverBucket.h"
+#include "Logger.h"
 #include <dolfin.h>
 #include <string>
 #include <spud>
@@ -94,7 +95,7 @@ void SpudSystemBucket::allocate_coeff_function()
 //*******************************************************************|************************************************************//
 void SpudSystemBucket::initialize_forms()
 {
-  dolfin::info("Attaching coeffs for system %s", name().c_str());
+  log(INFO, "Attaching coeffs for system %s", name().c_str());
   attach_all_coeffs_();                                              // attach the coefficients to form and functionals
                                                                      // this happens here as some coefficients depend on functionals
                                                                      // to be evaluated
@@ -105,7 +106,7 @@ void SpudSystemBucket::initialize_forms()
 //*******************************************************************|************************************************************//
 void SpudSystemBucket::initialize_fields_and_coefficient_expressions()
 {
-  dolfin::info("Initializing fields and coefficient expressions for system %s", name().c_str());
+  log(INFO, "Initializing fields and coefficient expressions for system %s", name().c_str());
 
   for (FunctionBucket_it f_it = fields_begin(); f_it != fields_end();
                                                               f_it++)
@@ -126,7 +127,7 @@ void SpudSystemBucket::initialize_fields_and_coefficient_expressions()
 //*******************************************************************|************************************************************//
 void SpudSystemBucket::initialize_coefficient_functions()
 {
-  dolfin::info("Initializing coefficient functions for system %s", name().c_str());
+  log(INFO, "Initializing coefficient functions for system %s", name().c_str());
 
   for (FunctionBucket_it f_it = coeffs_begin(); f_it != coeffs_end();
                                                               f_it++)
@@ -143,7 +144,7 @@ void SpudSystemBucket::initialize_solvers()
 {
   if (solve_location()!=SOLVE_NEVER)
   {
-    dolfin::info("Initializing matrices for system %s", name().c_str());
+    log(INFO, "Initializing matrices for system %s", name().c_str());
 
     for (SolverBucket_it s_it = solvers_begin(); s_it != solvers_end();// loop over the solver buckets
                                                                 s_it++)
@@ -235,7 +236,7 @@ void SpudSystemBucket::fill_base_()
   }
   else
   {
-    dolfin::error("Unknown solve location for system %s.", name().c_str());
+    tf_err("Unknown solve location.", "System name: %s", name_.c_str());
   }
 
   change_calculated_.reset( new bool(false) );                       // assume the change hasn't been calculated yet
@@ -322,9 +323,7 @@ void SpudSystemBucket::fill_fields_()
       size_t_Expression_it e_it = icexpressions.find(component);       // check if this component already exists
       if (e_it != icexpressions.end())
       {
-        dolfin::error(                                               // if it does, issue an error
-        "IC Expression with component number %d already exists in icexpressions map.", 
-                                                          component);
+        tf_err("IC expression with given component number already exists in inexpressions map.", "Component: %d", component);
       }
       else
       {

@@ -22,6 +22,7 @@
 #include "PythonExpression.h"
 #include "BoostTypes.h"
 #include "SpudFunctionBucket.h"
+#include "Logger.h"
 #include <dolfin.h>
 #include <string>
 #include <spud>
@@ -125,9 +126,9 @@ void SpudFunctionBucket::allocate_coeff_function()
   {
     if(!(*(*system_).bucket()).contains_coefficientspace(uflsymbol()))// check we have a coefficient space for this function's ufl
     {                                                                // symbol
-      dolfin::log(dolfin::ERROR, "Coefficient %s declared as type::Function but its ufl_symbol was not found in any forms or functionals.", 
-                                 name().c_str());
-      dolfin::error("Unable to allocate coefficient as no matching functionspace found.");
+      tf_err("Unable to allocate coefficient as no matching functionspace found.",
+             "Coefficient %s declared as type::Function but its ufl_symbol was not found in any forms or functionals.",
+             name().c_str());
     }
 
     functionspace_ =                                                 // grab the functionspace for this coefficient from the bucket
@@ -246,9 +247,7 @@ void SpudFunctionBucket::register_functional(Form_ptr functional,
   Form_hash_it f_it = functionals_.get<om_key_hash>().find(name);                            // check if name already exists
   if (f_it != functionals_.get<om_key_hash>().end())
   {
-    dolfin::error(                                                   // if it does, issue an error
-            "Functional named \"%s\" already exists in function.", 
-                                                    name.c_str());
+    tf_err("Functional already exists in function.", "Functional name: %s", name.c_str());
   }
   else
   {
@@ -274,9 +273,7 @@ const std::string SpudFunctionBucket::fetch_functional_optionpath(const std::str
                                                                      // check if the name already exists
   if (s_it == functional_optionpaths_.get<om_key_hash>().end())
   {
-    dolfin::error(                                                   // if it doesn't, issue an error
-            "Functional named \"%s\" does not exist in function.", 
-                                                      name.c_str());
+    tf_err("Functional does not exist in function.", "Functional name: %s", name.c_str());
   }
   else
   {
@@ -780,7 +777,7 @@ void SpudFunctionBucket::fill_bc_component_(const std::string &optionpath,
   }
   else
   {
-    dolfin::error("Unknown bc type.");
+    tf_err("Unknown bc type.", "bctype = ", bctype.c_str());
   }
 
 }
@@ -871,7 +868,7 @@ void SpudFunctionBucket::fill_zero_point_(const std::string &optionpath)
   {
     if (zeropoints_[*subcompid])
     {
-      dolfin::log(dolfin::INFO, "WARNING: Multiple zero points applied to %s::%s (component %d).  Taking latest.",
+      log(INFO, "WARNING: Multiple zero points applied to %s::%s (component %d).  Taking latest.",
                                 (*system_).name().c_str(), name().c_str(), *subcompid);
     }
     zeropoints_[*subcompid] = zeropoint;
@@ -928,7 +925,7 @@ void SpudFunctionBucket::fill_cap_(const std::string &optionpath)
     {
       if (upper_cap_[*subcompid])
       {
-        dolfin::log(dolfin::INFO, "WARNING: Multiple upper caps applied to %s::%s (component %d).  Taking minimum.",
+        log(INFO, "WARNING: Multiple upper caps applied to %s::%s (component %d).  Taking minimum.",
                                   (*system_).name().c_str(), name().c_str(), *subcompid);
         *upper_cap_[*subcompid] = std::min(*upper_cap_[*subcompid], *upper_cap);
       }
@@ -942,7 +939,7 @@ void SpudFunctionBucket::fill_cap_(const std::string &optionpath)
     {
       if (lower_cap_[*subcompid])
       {
-        dolfin::log(dolfin::INFO, "WARNING: Multiple lower caps applied to %s::%s (component %d).  Taking maximum.",
+        log(INFO, "WARNING: Multiple lower caps applied to %s::%s (component %d).  Taking maximum.",
                                   (*system_).name().c_str(), name().c_str(), *subcompid);
         *lower_cap_[*subcompid] = std::max(*lower_cap_[*subcompid], *lower_cap);
       }
@@ -1011,7 +1008,7 @@ void SpudFunctionBucket::initialize_bc_component_(const std::string &optionpath,
   }
   else
   {
-    dolfin::error("Unknown bc type.");
+    tf_err("Unknown bc type.", "bctype = ", bctype.c_str());
   }
        
 }
@@ -1246,9 +1243,8 @@ Expression_ptr SpudFunctionBucket::allocate_expression_over_regions_(
         size_t_Expression_it e_it = expressions.find((std::size_t)*id);              // check if this component already exists
         if (e_it != expressions.end())
         {
-          dolfin::error(                                             // if it does, issue an error
-          "Expression for region id %d defined multiple times in expression for %s.", 
-                                                      *id, name().c_str());
+          tf_err("Expression for region id defined multiple times in expression.", "Region id: %d, expression: %s.", 
+                 *id, name().c_str());
         }
         else
         {
@@ -1360,7 +1356,7 @@ Expression_ptr SpudFunctionBucket::allocate_expression_(
     }
     else
     {
-      dolfin::error("Unknown rank for constant in init_exp_");
+      tf_err("Unknown rank for constant in init_exp_.", "Rank: %d", rank);
     }
 
     if (time_dependent)                                              // if we've asked if this expression is time dependent
@@ -1399,7 +1395,7 @@ Expression_ptr SpudFunctionBucket::allocate_expression_(
     }
     else
     {
-      dolfin::error("Unknown rank for python expression in init_exp_");
+      tf_err("Unknown rank for python expression in init_exp_.", "Rank: %d", rank);
     }
 
     if (time_dependent)                                              // if we've asked if this expression is time dependent
@@ -1570,7 +1566,7 @@ Expression_ptr SpudFunctionBucket::allocate_expression_(
       }
       else
       {
-        dolfin::error("Unknown rank for python expression in init_exp_");
+        tf_err("Unknown rank for semi lagrangian expression in init_exp_.", "Rank: %d", rank);
       }
 
       if (time_dependent)                                            // if we've asked if this expression is time dependent
@@ -1581,13 +1577,13 @@ Expression_ptr SpudFunctionBucket::allocate_expression_(
     }
     else
     {
-      dolfin::error("Unknown algorithm name in allocate_expression_.");
+      tf_err("Unknown algorithm name in allocate_expression_.", "Algorithm: %s", algoname.c_str());
     }
 
   }
   else                                                               // unknown expression type
   {
-    dolfin::error("Unknown way of specifying expression.");
+    tf_err("Unknown way of specifiying expression.", "Unknown expression type.");
   }
   
   return expression;                                                 // return the allocated expression
@@ -1624,7 +1620,7 @@ void SpudFunctionBucket::initialize_expression_over_regions_(
       size_t_Expression_const_it e_it = expressions.find(regionids[0]);
       if (e_it == expressions.end())
       {
-        dolfin::error("Unknown region id %d in RegionsExpression map", regionids[0]);
+        tf_err("Unknown region id in RegionsExpression map.", "Region id: %d", regionids[0]);
       }
       else
       {
@@ -1715,7 +1711,7 @@ void SpudFunctionBucket::initialize_expression_(
     }
     else
     {
-      dolfin::error("Unknown algorithm name in initialize_expression_.");
+      tf_err("Unknown algorithm name in initialize_expression_.", "Algorithm: %s", algoname.c_str());
     }
 
   }
@@ -1747,12 +1743,12 @@ void SpudFunctionBucket::checkpoint_options_()
   buffer.str(""); buffer << optionpath() 
                                   << "/type[0]/rank[0]/initial_condition::WholeMesh/file";
   serr = Spud::set_option(buffer.str(), namebuffer.str());
-  spud_err(buffer.str(), serr, Spud::SPUD_NEW_KEY_WARNING);
+  spud_err_accept(buffer.str(), serr, Spud::SPUD_NEW_KEY_WARNING);
 
   buffer.str(""); buffer << optionpath() 
                                   << "/type[0]/rank[0]/initial_condition::WholeMesh/type";
   serr = Spud::set_option_attribute(buffer.str(), "initial_condition");
-  spud_err(buffer.str(), serr, Spud::SPUD_NEW_KEY_WARNING);
+  spud_err_accept(buffer.str(), serr, Spud::SPUD_NEW_KEY_WARNING);
 
 }
 

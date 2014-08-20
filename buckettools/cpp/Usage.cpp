@@ -29,6 +29,8 @@
 #include "SigIntEventHandler.h"
 #include <signal.h>
 #include <cstdio>
+#include "Logger.h"
+#include "BucketPETScBase.h"
 
 using namespace buckettools;
 
@@ -46,37 +48,42 @@ void buckettools::init(int argc, char** argv)
 }
 
 //*******************************************************************|************************************************************//
-// print the recommended usage to std::err
+// print the recommended usage
 //*******************************************************************|************************************************************//
 void buckettools::usage(char *cmd)
 {
-  print_version(std::cerr);
-  std::cerr << std::endl << std::endl << "Usage: " << cmd << " [options ...] [simulation-file]" << std::endl
+  print_version();
+  std::stringstream s; s.str("");
+  s << std::endl << "Usage: " << cmd << " [options ...] <simulation-file>" << std::endl
       << std::endl << "Options:" << std::endl
-      <<" -h, --help" << std::endl << "\tHelp! Prints this message."  << std::endl
-      <<" -l, --log" << std::endl << "\tCreate log (redirects stdout) and error (redirects stderr) file for each process." << std::endl
-      <<" -p, --petsc-info" << std::endl << "\tPETSc verbose output to stdout." << std::endl
-      <<" -v <level>, --verbose" << std::endl << "\tVerbose output to stdout, default level dolfin::WARNING (30)." << std::endl
-      <<" -V, --version" << std::endl << "\tVersion information ." << std::endl;
+      <<" -v <level>, --verbose <level>" << std::endl << "\tVerbose output, defaults to WARNING (30) if unset. " << std::endl
+      <<"\tAvailable options: ERROR (40), WARNING (30), INFO (20), DEBUG (10), DBG (10) or any integer." << std::endl
+      <<" -d <level>, --dolfin-verbose <level>" << std::endl << "\tVerbose DOLFIN output, defaults to match -v if unset." << std::endl
+      <<"\tAvailable options: CRITICAL (50), ERROR (40), WARNING (30), INFO (20), PROGRESS (16), TRACE (13), DEBUG (10), DBG (10) or any integer." << std::endl
+      <<" -p, --petsc-info" << std::endl << "\tVerbose PETSc output." << std::endl
+      <<" -l, --log" << std::endl << "\tCreate log (redirects stdout) and error (redirects stderr) files for each process." << std::endl
+      <<" -V, --version" << std::endl << "\tPrints version information then exits." << std::endl
+      <<" -h, --help" << std::endl << "\tHelp! Prints this message then exits.";
+  log(ERROR, s.str());
   return;
 }
 
 //*******************************************************************|************************************************************//
-// print the version number to an std::ostream
+// print the version number
 //*******************************************************************|************************************************************//
-void buckettools::print_version(std::ostream& stream)
+void buckettools::print_version()
 {
-  stream << "GitHash: " <<__GIT_SHA__ << std::endl
-      <<"CompileTime: "<<__DATE__<<" "<<__TIME__<<std::endl
-      ;
-  stream.flush();
+  std::stringstream s; s.str("");
+  s << "GitHash: " << githash() << std::endl
+      <<"CompileTime: "<< compiletime();
+  log(ERROR, s.str());
   return;
 }
 
 //*******************************************************************|************************************************************//
 // print relevant environment variables to an std::ostream
 //*******************************************************************|************************************************************//
-void buckettools::print_environment(std::ostream& stream)
+void buckettools::print_environment()
 {
 
   const char *relevant_variables[]={"PETSC_OPTIONS"};
@@ -84,27 +91,60 @@ void buckettools::print_environment(std::ostream& stream)
   int no_relevant_variables=1;
   int variables_found=0;
 
-  stream<<"Relevant environment variables:" << std::endl;
+  std::stringstream s; s.str("");
+  s << "Relevant environment variables:" << std::endl;
   for(int i=0; i<no_relevant_variables; i++) {
     char *env=getenv(relevant_variables[i]);
     if(env!=NULL) {
-      stream << relevant_variables[i]<<" = " << env <<std::endl;
+      s << "  " << relevant_variables[i]<<" = " << env <<std::endl;
       variables_found++;
     }
   };
   if (!variables_found)
   {
-    stream<<" none" << std::endl;
+    s << "  none" << std::endl;
   }
-  stream.flush();
+  log(INFO, s.str());
   return;
 }
-
 
 //*******************************************************************|************************************************************//
 // parse the command line argument for verbosity to an integer
 //*******************************************************************|************************************************************//
 int buckettools::parse_verbosity(const std::string &verbosity)
+{
+  int v;
+  if (verbosity=="ERROR")
+  {
+    v = ERROR;
+  }
+  else if (verbosity=="WARNING")
+  {
+    v = WARNING;
+  }
+  else if (verbosity=="INFO")
+  {
+    v = INFO;
+  }
+  else if (verbosity=="DEBUG")
+  {
+    v = DBG;
+  }
+  else if (verbosity=="DBG")
+  {
+    v = DBG;
+  }
+  else
+  {
+    v = atoi(verbosity.c_str());
+  }
+  return v;
+}
+
+//*******************************************************************|************************************************************//
+// parse the command line argument for dolfin verbosity to an integer
+//*******************************************************************|************************************************************//
+int buckettools::parse_dolfin_verbosity(const std::string &verbosity)
 {
   int v;
   if (verbosity=="CRITICAL")
@@ -152,15 +192,16 @@ int buckettools::parse_verbosity(const std::string &verbosity)
 void buckettools::parse_arguments(int argc, char** argv)
 {
   struct option long_options[] = {                                   // a structure linking long option names with their short equivalents
-    {"help",       no_argument,       0, 'h'},
-    {"log",        no_argument,       0, 'l'},
-    {"petsc-info", no_argument,       0, 'p'},
-    {"verbose",    optional_argument, 0, 'v'},
-    {"version",    no_argument,       0, 'V'},
-    {0,            0,                 0, 0}                          // terminated with an array of zeros
+    {"help",           no_argument,       0, 'h'},
+    {"log",            no_argument,       0, 'l'},
+    {"petsc-info",     no_argument,       0, 'p'},
+    {"verbose",        required_argument, 0, 'v'},
+    {"dolfin-verbose", required_argument, 0, 'd'},
+    {"version",        no_argument,       0, 'V'},
+    {0,                0,                 0, 0}                      // terminated with an array of zeros
   };
   int option_index = 0;
-  int verbosity;
+  int verbosity, dolfinverbosity;
   int c;
   std::map< std::string, std::string > command_line_options;
 
@@ -173,31 +214,69 @@ void buckettools::parse_arguments(int argc, char** argv)
 
   dolfin::init(petscargc, petscargv);
 
-  while ((c = getopt_long(argc, argv, "hlpv::V", long_options, &option_index))!=-1){
-    switch (c){
-    case 'h':
-      command_line_options["help"] = "";
-      break;
+  while ((c = getopt_long(argc, argv, "hlpv:d:V", long_options, &option_index))!=-1)
+  {
+    switch (c)
+    {
+      case 'h':
+        command_line_options["help"] = "";
+        break;
 
-    case 'l':
-      command_line_options["log"] = "";
-      break;
+      case 'l':
+        command_line_options["log"] = "";
+        break;
 
-    case 'p':
-      command_line_options["petsc-info"] = "";
-      break;
+      case 'p':
+        command_line_options["petsc-info"] = "";
+        break;
 
-    case 'v':
-      command_line_options["verbose"] = (optarg == NULL) ? "WARNING" : optarg;
-      break;
+      case 'v':
+        command_line_options["verbose"] = optarg;
+        break;
 
-    case 'V':
-      command_line_options["version"] = "";
-      break;
+      case 'd':
+        command_line_options["dolfin-verbose"] = optarg;
+        break;
 
-    default:
-      dolfin::error("getopt returned unrecognized character code.");
+      case 'V':
+        command_line_options["version"] = "";
+        break;
 
+      default:
+        log(ERROR, "ERROR: Unrecognized option.");
+        usage(argv[0]);
+        std::exit(-1);
+    }
+  }
+
+  if(command_line_options.count("verbose") == 0)                     // verbose
+  {
+    verbosity = WARNING;
+  }
+  else
+  {
+    verbosity = parse_verbosity(command_line_options["verbose"]);
+  }
+
+  set_log_level(verbosity);
+
+  if(command_line_options.count("log"))                              // redirect std::err/std::out
+  {                                                                  // FIXME: should be done by passing an ofstream to Logger
+    std::ostringstream debug_file, err_file;                         // but this wouldn't redirect SPuD which automatically uses
+    debug_file << "terraferma.log";                                  // std::cout
+    err_file << "terraferma.err";
+    int proc = dolfin::MPI::rank(MPI_COMM_WORLD);
+    debug_file << "-" << proc;
+    err_file << "-" << proc;
+
+    if(std::freopen(debug_file.str().c_str(), "w", stdout) == NULL)
+    {
+      tf_err("Failed to redirect stdio for debugging.", "std::freopen failed.");
+    }
+
+    if(std::freopen(err_file.str().c_str(), "w", stderr) == NULL)
+    {
+      tf_err("Failed to redirect stderr for debugging.", "std::freopen failed.");
     }
   }
 
@@ -209,46 +288,27 @@ void buckettools::parse_arguments(int argc, char** argv)
 
   if(command_line_options.count("version"))                          // version
   {
-    print_version(std::cerr);
+    print_version();
     std::exit(-1);
   }
 
-  if(command_line_options.count("verbose") == 0)                     // verbose
+  if(command_line_options.count("dolfin-verbose") == 0)              // dolfin-verbose
   {
-    verbosity = dolfin::WARNING;
+    dolfinverbosity = verbosity;
   }
   else
   {
-    verbosity = parse_verbosity(command_line_options["verbose"]);
+    dolfinverbosity = parse_dolfin_verbosity(command_line_options["verbose"]);
   }
 
   dolfin::set_log_active(true);
-  dolfin::set_log_level(verbosity);
+  dolfin::set_log_level(dolfinverbosity);
 
   if(command_line_options.count("petsc-info"))                       // petsc-info
   {
     PetscErrorCode perr;                                             // petsc error code
-    perr = PetscInfoAllow(PETSC_TRUE, PETSC_NULL); CHKERRV(perr);
-  }
-
-  if(command_line_options.count("log"))                              // std::err/std::out
-  {
-    std::ostringstream debug_file, err_file;
-    debug_file << "terraferma.log";
-    err_file << "terraferma.err";
-    int proc = dolfin::MPI::rank(MPI_COMM_WORLD);
-    debug_file << "-" << proc;
-    err_file << "-" << proc;
-
-    if(std::freopen(debug_file.str().c_str(), "w", stdout) == NULL)
-    {
-      dolfin::error("Failed to redirect stdio for debugging");
-    }
-
-    if(std::freopen(err_file.str().c_str(), "w", stderr) == NULL)
-    {
-      dolfin::error("Failed to redirect stderr for debugging");
-    }
+    perr = PetscInfoAllow(PETSC_TRUE, PETSC_NULL);
+    petsc_err(perr);
   }
 
   if(argc > optind + 1)                                              // find the options file name
@@ -263,23 +323,42 @@ void buckettools::parse_arguments(int argc, char** argv)
   Spud::load_options(command_line_options["tfml"]);                  // and load it
   if(!Spud::have_option("/io/output_base_name"))                     // check its been loaded
   {
-    dolfin::error("Failed to find output_base_name after loading options file.");
+    tf_err("The input options file appears invalid.", "Failed to find required option /io/output_base_name in %s.", command_line_options["tfml"].c_str());
   }
 
-  if(verbosity <= dolfin::INFO)
+  if(verbosity <= INFO)
   {
-    std::cout << "Command line:" << std::endl;                       // print the command line
+    std::stringstream s; s.str("");
+    s << "Command line:" << std::endl;                       // print the command line
     for(int i=0;i<argc; i++)
     {
-      std::cout<<argv[i]<<" ";
+      s << argv[i] << " ";
     }
-    std::cout << std::endl;
-    print_environment(std::cout);                                    // print the environment variables
+    s << std::endl;
+    log(INFO, s.str());
+    print_environment();                                             // print the environment variables
 
-    Spud::print_options();                                           // print the options tree to std::cout
+    Spud::print_options();                                           // print the options tree
   }
 
   return;
 }
 
+//*******************************************************************|************************************************************//
+// return the git sha
+//*******************************************************************|************************************************************//
+std::string buckettools::githash()
+{
+  return std::string(__GIT_SHA__);
+}
+
+//*******************************************************************|************************************************************//
+// return the compile time
+//*******************************************************************|************************************************************//
+std::string buckettools::compiletime()
+{
+  std::stringstream s; s.str("");
+  s << __DATE__<<" "<<__TIME__;
+  return s.str();
+}
 

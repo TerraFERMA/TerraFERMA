@@ -121,7 +121,7 @@ class FunctionBucket:
     cpp.append("        }\n")
     cpp.append("        else\n")
     cpp.append("        {\n")
-    cpp.append("          dolfin::error(\"Unknown expressiontype in cpp_fetch_expression.\");\n")
+    cpp.append("          tf_err(\"Unknown expressiontype in cpp_fetch_expression.\", \"Expression type: %s\", expressiontype.c_str());\n")
     cpp.append("        }\n")
     cpp.append("      }\n")
     return cpp
@@ -136,11 +136,11 @@ class FunctionBucket:
         cpp += self.cpp[e].cppexpression_cpp(index=expressions_found)
         expressions_found += 1
     if expressions_found==0:
-      cpp.append("          dolfin::error(\"Unknown expressionname in cpp_fetch_expression.\");\n")
+      cpp.append("          tf_err(\"Unknown expressionname in cpp_fetch_expression.\", \"Expression name: %s\", functionname.c_str());\n")
     else:
       cpp.append("          else\n")
       cpp.append("          {\n")
-      cpp.append("            dolfin::error(\"Unknown expressionname in cpp_fetch_expression.\");\n")
+      cpp.append("            tf_err(\"Unknown expressionname in cpp_fetch_expression.\", \"Expression name: %s\", functionname.c_str());\n")
       cpp.append("          }\n")
 
     return cpp
@@ -167,7 +167,7 @@ class FunctionBucket:
     cpp.append("        }\n")
     cpp.append("        else\n")
     cpp.append("        {\n")
-    cpp.append("          dolfin::error(\"Unknown expressiontype in cpp_init_expression.\");\n")
+    cpp.append("          tf_err(\"Unknown expressiontype in cpp_init_expression.\", \"Expression type: %s\", expressiontype.c_str());\n")
     cpp.append("        }\n")
     cpp.append("      }\n")
     return cpp
@@ -182,11 +182,11 @@ class FunctionBucket:
         cpp += self.cpp[e].cppexpression_init(index=expressions_found)
         expressions_found += 1
     if expressions_found==0:
-      cpp.append("          dolfin::error(\"Unknown expressionname in cpp_fetch_expression.\");\n")
+      cpp.append("          tf_err(\"Unknown expressionname in cpp_fetch_expression.\", \"Expression name: %s\", functionname.c_str());\n")
     else:
       cpp.append("          else\n")
       cpp.append("          {\n")
-      cpp.append("            dolfin::error(\"Unknown expressionname in cpp_fetch_expression.\");\n")
+      cpp.append("            tf_err(\"Unknown expressionname in cpp_fetch_expression.\", \"Expression name: %s\", functionname.c_str());\n")
       cpp.append("          }\n")
 
     return cpp

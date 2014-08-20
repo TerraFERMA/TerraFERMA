@@ -25,6 +25,8 @@
 #include "Bucket.h"
 #include "BucketDolfinBase.h"
 #include "DolfinPETScBase.h"
+#include "BucketPETScBase.h"
+#include "Logger.h"
 #include <dolfin.h>
 #include <string>
 
@@ -57,9 +59,9 @@ FunctionBucket::~FunctionBucket()
                                  is != component_is_.end(); is++)
   {
     #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
-    perr = ISDestroy(&(*is)); CHKERRV(perr);                            // destroy the IS, necessary?
+    perr = ISDestroy(&(*is)); petsc_err(perr);                            // destroy the IS, necessary?
     #else
-    perr = ISDestroy(*is); CHKERRV(perr);                             // destroy the IS, necessary?
+    perr = ISDestroy(*is); petsc_err(perr);                             // destroy the IS, necessary?
     #endif
   }
 }
@@ -96,7 +98,8 @@ const GenericFunction_ptr FunctionBucket::genericfunction_ptr(const double_ptr t
   }
   else
   {
-    dolfin::error("Unknown time pointer when returning function in genericfunction_ptr(time).");
+    tf_err("Unknown time pointer when returning function in genericfunction_ptr(time).", "FunctionBucket: %s, SystemBucket: %s", 
+           name_.c_str(), (*system_).name().c_str());
   }
 }
 
@@ -132,7 +135,9 @@ const GenericFunction_ptr FunctionBucket::genericfunction_ptr(const std::string 
   }
   else
   {
-    dolfin::error("Unknown function type when returning function in genercfunction_ptr(function_type).");
+    tf_err("Unknown function type when returning function in genericfunction_ptr(function_type).", 
+           "function_type: %s, FunctionBucket name: %s, SystemBucket name: %s", 
+           function_type.c_str(), name_.c_str(), (*system_).name().c_str());
   }
 }
 
@@ -358,8 +363,8 @@ const std::size_t FunctionBucket::dimension(const std::size_t &i) const
 {
   if (i >= shape_.size())
   {
-    dolfin::error("Illegal axis %d for dimension for value of rank %d",
-                 i, shape_.size());
+    tf_err("Illegal dimension axis requested.", "Axis: %d, Rank: %d, FunctionBucket name: %s, SystemBucket name: %s",
+           i, shape_.size(), name_.c_str(), (*system_).name().c_str());
   }
   return shape_[i];
 }
@@ -457,7 +462,7 @@ void FunctionBucket::refresh(const bool force)
   }
   else
   {
-    dolfin::error("Unknown FunctionBucket type.");
+    tf_err("Unknown FunctionBucket type.", "functiontype_ = %d", functiontype_);
   }
 }
 
@@ -562,9 +567,9 @@ void FunctionBucket::postprocess_values()
     PetscInt np;
     const PetscInt *pindices;
     perr = ISGetLocalSize(component_is_[i], &np);
-    CHKERRV(perr);
+    petsc_err(perr);
     perr = ISGetIndices(component_is_[i], &pindices);
-    CHKERRV(perr);
+    petsc_err(perr);
 
     for (uint j = 0; j < np; j++)
     {
@@ -591,7 +596,7 @@ void FunctionBucket::postprocess_values()
     }
 
     perr = ISRestoreIndices(component_is_[i], &pindices);
-    CHKERRV(perr);
+    petsc_err(perr);
 
   }
 
@@ -624,9 +629,8 @@ void FunctionBucket::register_functional(Form_ptr functional, const std::string 
   Form_hash_it f_it = functionals_.get<om_key_hash>().find(name);                            // check if the name already exists
   if (f_it != functionals_.get<om_key_hash>().end())
   {
-    dolfin::error(                                                   // if it does, issue an error
-            "Functional named \"%s\" already exists in function.", 
-                                                      name.c_str());
+    tf_err("Functional already exists in function.", "Functional name: %s, Function name: %s, System name: %s", 
+           name.c_str(), name_.c_str(), (*system_).name().c_str());
   }
   else
   {
@@ -650,9 +654,8 @@ Form_ptr FunctionBucket::fetch_functional(const std::string &name)
   Form_hash_it f_it = functionals_.get<om_key_hash>().find(name);                            // check if the name already exists
   if (f_it == functionals_.get<om_key_hash>().end())
   {
-    dolfin::error(                                                   // if it doesn't, issue an error
-            "Functional named \"%s\" does not exist in function.", 
-                                                      name.c_str());
+    tf_err("Functional does not exist in function.", "Functional name: %s, Function name: %s, System name: %s", 
+           name.c_str(), name_.c_str(), (*system_).name().c_str());
   }
   else
   {
@@ -700,9 +703,8 @@ void FunctionBucket::register_bcexpression(Expression_ptr bcexpression, const st
   Expression_it e_it = bcexpressions_.find(name);                    // check if the name already exists
   if (e_it != bcexpressions_.end())
   {
-    dolfin::error(                                                   // if it does, issue an error
-            "BCExpression named \"%s\" already exists in function.", 
-                                                      name.c_str());
+    tf_err("BCExpression already exists in function.", "BCExpression name: %s, Function name: %s, System name: %s", 
+           name.c_str(), name_.c_str(), (*system_).name().c_str());
   }
   else
   {
@@ -718,9 +720,8 @@ Expression_ptr FunctionBucket::fetch_bcexpression(const std::string &name)
   Expression_it e_it = bcexpressions_.find(name);                    // check if the name already exists
   if (e_it == bcexpressions_.end())
   {
-    dolfin::error(                                                   // if it doesn't, issue an error
-            "BCExpression named \"%s\" does not exist in function.", 
-                                                      name.c_str());
+    tf_err("BCExpression does not exist in function.", "BCExpression name: %s, Function name: %s, System name: %s", 
+           name.c_str(), name_.c_str(), (*system_).name().c_str());
   }
   else
   {
@@ -736,9 +737,8 @@ void FunctionBucket::register_dirichletbc(DirichletBC_ptr bc, const std::string 
   DirichletBC_hash_it bc_it = dirichletbcs_.get<om_key_hash>().find(name);                                  // check if the name already exists
   if (bc_it != dirichletbcs_.get<om_key_hash>().end())
   {
-    dolfin::error(                                                   // if it does, issue an error
-        "Dirichlet BoundaryCondition named \"%s\" already exists in function.", 
-                                                    name.c_str());
+    tf_err("DirichletBC already exists in function.", "DirichletBC name: %s, Function name: %s, System name: %s", 
+           name.c_str(), name_.c_str(), (*system_).name().c_str());
   }
   else
   {
@@ -786,9 +786,8 @@ void FunctionBucket::register_referencepoint(ReferencePoints_ptr point, const st
   ReferencePoints_hash_it p_it = referencepoints_.get<om_key_hash>().find(name);             // check if the name already exists
   if (p_it != referencepoints_.get<om_key_hash>().end())
   {
-    dolfin::error(                                                   // if it does, issue an error
-        "ReferencePoints named \"%s\" already exists in function.", 
-                                                    name.c_str());
+    tf_err("ReferencePoint already exists in function.", "ReferencePoint name: %s, Function name: %s, System name: %s", 
+           name.c_str(), name_.c_str(), (*system_).name().c_str());
   }
   else
   {
@@ -854,7 +853,7 @@ void FunctionBucket::output(const bool &write_vis)
 //*******************************************************************|************************************************************//
 const bool FunctionBucket::include_in_visualization() const
 {
-  dolfin::error("Failed to find virtual function include_in_visualization.");
+  tf_err("Failed to find virtual function.", "Need a virtual include_in_visualization.");
   return false;
 }
 
@@ -864,7 +863,7 @@ const bool FunctionBucket::include_in_visualization() const
 //*******************************************************************|************************************************************//
 const bool FunctionBucket::include_residual_in_visualization() const
 {
-  dolfin::error("Failed to find virtual function include_residual_in_visualization.");
+  tf_err("Failed to find virtual function.", "Need a virtual include_residual_in_visualization.");
   return false;
 }
 
@@ -874,7 +873,7 @@ const bool FunctionBucket::include_residual_in_visualization() const
 //*******************************************************************|************************************************************//
 const bool FunctionBucket::include_in_statistics() const
 {
-  dolfin::error("Failed to find virtual function include_in_statistics.");
+  tf_err("Failed to find virtual function.", "Need a virtual include_in_statistics.");
   return false;
 }
 
@@ -884,7 +883,7 @@ const bool FunctionBucket::include_in_statistics() const
 //*******************************************************************|************************************************************//
 const bool FunctionBucket::include_in_steadystate() const
 {
-  dolfin::error("Failed to find virtual function include_in_steadystate.");
+  tf_err("Failed to find virtual function.", "Need a virtual include_in_steadystate.");
   return false;
 }
 
@@ -894,7 +893,7 @@ const bool FunctionBucket::include_in_steadystate() const
 //*******************************************************************|************************************************************//
 const bool FunctionBucket::include_functional_in_steadystate(const std::string &name) const
 {
-  dolfin::error("Failed to find virtual function include_functional_in_steadystate.");
+  tf_err("Failed to find virtual function.", "Need a virtual include_functional_in_steadystate.");
   return false;
 }
 
@@ -904,7 +903,7 @@ const bool FunctionBucket::include_functional_in_steadystate(const std::string &
 //*******************************************************************|************************************************************//
 const bool FunctionBucket::include_in_detectors() const
 {
-  dolfin::error("Failed to find virtual function include_in_steadystate.");
+  tf_err("Failed to find virtual function.", "Need a virtual include_in_detectors.");
   return false;
 }
 
@@ -990,7 +989,7 @@ void FunctionBucket::fill_is_()
     }
     else
     {
-      dolfin::error("Unknonwn rank in fill_is_.");
+      tf_err("Unknown rank in fill_is_.", "Rank: %d", lrank);
     }
   }
   else                                                               // only expression coefficients and constants
@@ -1026,6 +1025,6 @@ void FunctionBucket::checkpoint()
 //*******************************************************************|************************************************************//
 void FunctionBucket::checkpoint_options_()
 {
-  dolfin::error("Failed to find virtual function checkpoint_options_.");
+  tf_err("Failed to find virtual function checkpoint_options_.", "Need to implement a checkpointing method.");
 }
 

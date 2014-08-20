@@ -73,7 +73,7 @@ include_directories("${PROJECT_SOURCE_DIR}/../include" ${PROJECT_BINARY_DIR})
 include_directories(${PYTHON_INCLUDE_PATH})
 # generate a library - really the main point of this whole process
 add_library(buckettools_cpp SHARED
-                            Usage.cpp SignalHandler.cpp SigIntEventHandler.cpp
+                            Usage.cpp SignalHandler.cpp SigIntEventHandler.cpp Logger.cpp
                             Bucket.cpp SpudBucket.cpp SystemBucket.cpp SpudSystemBucket.cpp
                             FunctionBucket.cpp SpudFunctionBucket.cpp
                             SolverBucket.cpp SpudSolverBucket.cpp 

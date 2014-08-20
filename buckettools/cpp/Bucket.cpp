@@ -25,6 +25,7 @@
 #include "SignalHandler.h"
 #include "EventHandler.h"
 #include "StatisticsFile.h"
+#include "Logger.h"
 #include <signal.h>
 #include <time.h>
 
@@ -81,7 +82,7 @@ void Bucket::run()
 
   solve_at_start_();
 
-  dolfin::log(dolfin::INFO, "Entering timeloop.");
+  log(INFO, "Entering timeloop.");
   bool continue_timestepping = !complete_timestepping();
   while (continue_timestepping) 
   {                                                                  // loop over time
@@ -95,9 +96,9 @@ void Bucket::run()
                                                                      // is at the previous time level throughout the whole timestep)
     (*timestep_count_)++;                                            // increment the number of timesteps taken
 
-    dolfin::log(dolfin::INFO, "Timestep numbers: %d -> %d", timestep_count()-1, timestep_count());
-    dolfin::log(dolfin::INFO, "Times: %f -> %f", old_time(), current_time());
-    dolfin::log(dolfin::INFO, "Timestep: %f", timestep());
+    log(INFO, "Timestep numbers: %d -> %d", timestep_count()-1, timestep_count());
+    log(INFO, "Times: %f -> %f", old_time(), current_time());
+    log(INFO, "Timestep: %f", timestep());
 
     update_timedependent();                                          // now we know the new time, update functions that are
                                                                      // potentially time dependent
@@ -125,7 +126,7 @@ void Bucket::run()
     update();                                                        // update all functions in the bucket
 
   }                                                                  // syntax ensures at least one solve
-  dolfin::log(dolfin::INFO, "Finished timeloop.");
+  log(INFO, "Finished timeloop.");
 
 }
 
@@ -193,12 +194,12 @@ void Bucket::update_timestep()
   }
 
   double new_dt = HUGE_VAL;
-  dolfin::log(dolfin::INFO, "In update_timestep()");
+  log(INFO, "In update_timestep()");
 
   if (zero_init_dt)                                                  // the timestep is zero initially so we'll get a 0.0 Courant
   {                                                                  // like number... so set a dummy timestep of 1.0 for this
     *(timestep_.second) = 1.0;                                       // calculation
-    dolfin::log(dolfin::INFO, "Forcing a timestep adapt as initial timestep is 0.0.");
+    log(INFO, "Forcing a timestep adapt as initial timestep is 0.0.");
   }
 
   std::vector< std::pair< FunctionBucket_ptr, double > >::const_iterator c_it;
@@ -260,18 +261,26 @@ void Bucket::update_nonlinear()
 //*******************************************************************|************************************************************//
 bool Bucket::complete()
 {
-  bool completed = complete_timestepping();
-
-  if (steadystate_())
-  {
-    dolfin::log(dolfin::WARNING, "Steady state attained, terminating timeloop.");
-    completed = true;
-  }
+  bool completed = false;
 
   if ((*(*SignalHandler::instance()).return_handler(SIGINT)).received())
   {
-    dolfin::log(dolfin::ERROR, "SigInt received, terminating timeloop.");
+    log(ERROR, "SIGINT received, terminating timeloop.");
     completed = true;
+  }
+
+  if (!completed)                                                    // don't bother checking for completion if we failed
+  {
+    completed = complete_timestepping();
+  }
+
+  if (!completed)                                                    // don't bother checking for steady state if we're already finished
+  {
+    if (steadystate_())
+    {
+      log(INFO, "Steady state attained, terminating timeloop.");
+      completed = true;
+    }
   }
 
   return completed;
@@ -288,7 +297,7 @@ bool Bucket::complete_timestepping()
   {
     if (current_time() >= finish_time())
     {
-      dolfin::log(dolfin::WARNING, "Finish time reached, terminating timeloop.");
+      log(INFO, "Finish time reached, terminating timeloop.");
       completed = true;
     }
   }
@@ -296,7 +305,7 @@ bool Bucket::complete_timestepping()
   {
     if (timestep_count() >= number_timesteps())
     {
-      dolfin::log(dolfin::WARNING, "Number timesteps reached, terminating timeloop.");
+      log(INFO, "Number timesteps reached, terminating timeloop.");
       completed = true;
     }
   }
@@ -430,8 +439,7 @@ void Bucket::register_mesh(Mesh_ptr mesh, const std::string &name,
   Mesh_hash_it m_it = meshes_.get<om_key_hash>().find(name);                                 // check if a mesh with this name already exists
   if (m_it != meshes_.get<om_key_hash>().end())
   {
-    dolfin::error("Mesh named \"%s\" already exists in bucket.",     // if it does, issue an error
-                                                    name.c_str());
+    tf_err("Mesh already exists in bucket.", "Mesh name: %s", name.c_str());
   }
   else
   {
@@ -449,8 +457,7 @@ Mesh_ptr Bucket::fetch_mesh(const std::string &name)
   Mesh_hash_it m_it = meshes_.get<om_key_hash>().find(name);                                 // check if this mesh exists in the meshes_ map
   if (m_it == meshes_.get<om_key_hash>().end())
   {
-    dolfin::error("Mesh named \"%s\" does not exist in bucket.",     // if it doesn't, issue an error
-                                                    name.c_str());
+    tf_err("Mesh does note exist in bucket.", "Mesh name: %s", name.c_str());
   }
   else
   {
@@ -466,8 +473,7 @@ MeshFunction_size_t_ptr Bucket::fetch_celldomains(const std::string &name)
   MeshFunction_size_t_hash_it m_it = celldomains_.get<om_key_hash>().find(name);             // check if this mesh function exists in the celldomains_ map
   if (m_it == celldomains_.get<om_key_hash>().end())
   {
-    dolfin::error("MeshFunction celldomain named \"%s\" does not exist in bucket.",// if it doesn't, issue an error
-                                                    name.c_str());
+    tf_err("Celldomain MeshFunction does not exist in bucket.", "MeshFunction name: %s", name.c_str());
   }
   else
   {
@@ -483,8 +489,7 @@ MeshFunction_size_t_ptr Bucket::fetch_facetdomains(const std::string &name)
   MeshFunction_size_t_hash_it m_it = facetdomains_.get<om_key_hash>().find(name);            // check if this mesh function exists in the facetdomains_ map
   if (m_it == facetdomains_.get<om_key_hash>().end())
   {
-    dolfin::error("MeshFunction facetdomain named \"%s\" does not exist in bucket.",// if it doesn't, issue an error
-                                                    name.c_str());
+    tf_err("Facetdomain MeshFunction does not exist in bucket.", "MeshFunction name: %s", name.c_str());
   }
   else
   {
@@ -597,9 +602,7 @@ void Bucket::register_system(SystemBucket_ptr system,
   SystemBucket_hash_it s_it = systems_.get<om_key_hash>().find(name);     // check if a system with this name already exists
   if (s_it != systems_.get<om_key_hash>().end())
   {
-    dolfin::error(
-            "SystemBucket named \"%s\" already exists in bucket",    // if it does, issue an error
-                                  name.c_str());
+    tf_err("SystemBucket already exists in bucket.", "SystemBucket name: %s", name.c_str());
   }
   else
   {
@@ -615,9 +618,7 @@ SystemBucket_ptr Bucket::fetch_system(const std::string &name)
   SystemBucket_hash_it s_it = systems_.get<om_key_hash>().find(name);     // check if a system with this name already exists
   if (s_it == systems_.get<om_key_hash>().end())
   {
-    dolfin::error(                                                   // if it doesn't, issue an error
-            "SystemBucket named \"%s\" does not exist in bucket.", 
-                                name.c_str());
+    tf_err("SystemBucket does not exist in bucket.", "SystemBucket name: %s", name.c_str());
   }
   else
   {
@@ -634,9 +635,7 @@ const SystemBucket_ptr Bucket::fetch_system(const std::string &name)
   SystemBucket_const_hash_it s_it = systems_.get<om_key_hash>().find(name);     // check if a system with this name already exists
   if (s_it == systems_.get<om_key_hash>().end())
   {
-    dolfin::error(
-              "SystemBucket named \"%s\" does not exist in bucket.", // if it doesn't, throw an error
-                                                      name.c_str());
+    tf_err("SystemBucket does not exist in bucket.", "SystemBucket name: %s", name.c_str());
   }
   else
   {
@@ -685,9 +684,7 @@ void Bucket::register_baseuflsymbol(const std::string &baseuflsymbol,
   std::map<std::string,std::string>::iterator s_it = baseuflsymbols_.find(uflsymbol);                  // check if this ufl symbol already exists
   if (s_it != baseuflsymbols_.end())
   {
-    dolfin::error(                                                   // if it does, issue an error
-            "Name with ufl symbol \"%s\" already exists in the bucket.", 
-                                              uflsymbol.c_str());
+    tf_err("Name with supplied ufl symbol already exists in bucket.", "ufl symbol: %s", uflsymbol.c_str());
   }
   else
   {
@@ -704,9 +701,7 @@ const std::string Bucket::fetch_baseuflsymbol(
   std::map<std::string,std::string>::const_iterator s_it = baseuflsymbols_.find(uflsymbol);            // check if this ufl symbol exists
   if (s_it == baseuflsymbols_.end())
   {
-    dolfin::error(                                                   // if it doesn't, issue an error
-            "Name with uflsymbol \"%s\" does not exist in the bucket.", 
-                                                uflsymbol.c_str());
+    tf_err("Name with supplied ufl symbol does not exist in bucket.", "ufl symbol: %s", uflsymbol.c_str());
   }
   else
   {
@@ -741,9 +736,7 @@ void Bucket::register_uflsymbol(GenericFunction_ptr function,
   GenericFunction_it g_it = uflsymbols_.find(uflsymbol);             // check if the ufl symbol already exists
   if (g_it != uflsymbols_.end())
   {
-    dolfin::error(                                                   // if it does, issue an error
-    "GenericFunction with ufl symbol \"%s\" already exists in the bucket.", 
-                                  uflsymbol.c_str());
+    tf_err("GenericFunction with supplied ufl symbol already exists in bucket.", "ufl symbol: %s", uflsymbol.c_str());
   }
   else
   {
@@ -760,9 +753,7 @@ GenericFunction_ptr Bucket::fetch_uflsymbol(
   GenericFunction_const_it g_it = uflsymbols_.find(uflsymbol);       // check if the ufl symbol exists
   if (g_it == uflsymbols_.end())
   {
-    dolfin::error(                                                   // if it doesn't, issue an error
-    "GenericFunction with uflsymbol \"%s\" does not exist in the bucket.", 
-                                          uflsymbol.c_str());
+    tf_err("GenericFunction with supplied ufl symbol does not exist in bucket.", "ufl symbol: %s", uflsymbol.c_str());
   }
   else
   {
@@ -780,9 +771,7 @@ void Bucket::register_coefficientspace(
   FunctionSpace_it f_it = coefficientspaces_.find(uflsymbol);        // check if this ufl symbol already exists
   if (f_it != coefficientspaces_.end())
   {
-    dolfin::error(                                                   // if it does, issue an error
-    "FunctionSpace with uflsymbol \"%s\" already exists in the bucket coefficientspaces.", 
-                                              uflsymbol.c_str());
+    tf_err("FunctionSpace with supplied ufl symbol already exists in the bucket coefficientspaces.", "ufl symbol: %s", uflsymbol.c_str());
   }
   else
   {
@@ -809,10 +798,8 @@ FunctionSpace_ptr Bucket::fetch_coefficientspace(
   FunctionSpace_const_it f_it = coefficientspaces_.find(uflsymbol);  // check if a functionspace with this uflsymbol already exists
   if (f_it == coefficientspaces_.end())
   {
-    dolfin::log(dolfin::ERROR, coefficientspaces_str());             // if it doesn't, output which coefficientspaces are available
-    dolfin::error(                                                   // and issue an error
-    "FunctionSpace with uflsymbol \"%s\" doesn't exist in the bucket coefficientspaces.", 
-                                    uflsymbol.c_str());
+    log(ERROR, coefficientspaces_str());                             // if it doesn't, output which coefficientspaces are available
+    tf_err("FunctionSpace with supplied ufl symbol doesn't exist in the bucket coefficientspaces.", "ufl symbol: %s", uflsymbol.c_str());
   }
   else
   {
@@ -829,9 +816,7 @@ void Bucket::register_detector(GenericDetectors_ptr detector,
   GenericDetectors_hash_it d_it = detectors_.get<om_key_hash>().find(name);                  // check if a mesh with this name already exists
   if (d_it != detectors_.get<om_key_hash>().end())
   {
-    dolfin::error(
-          "Detector set named \"%s\" already exists in bucket.",     // if it does, issue an error
-                                                    name.c_str());
+    tf_err("Detector set already exists in bucket.", "Detector set name: %s", name.c_str());
   }
   else
   {
@@ -847,9 +832,7 @@ GenericDetectors_ptr Bucket::fetch_detector(const std::string &name)
   GenericDetectors_hash_it d_it = detectors_.get<om_key_hash>().find(name);                  // check if this detector exists in the detectors_ map
   if (d_it == detectors_.get<om_key_hash>().end())
   {
-    dolfin::error(
-          "Detector set named \"%s\" does not exist in bucket.",     // if it doesn't, issue an error
-                                                    name.c_str());
+    tf_err("Detector set does not exist in bucket.", "Detector set name: %s", name.c_str());
   }
   else
   {
@@ -990,7 +973,7 @@ void Bucket::checkpoint(const int &location)
     return;
   }  
 
-  dolfin::log(dolfin::INFO, "Checkpointing simulation.");
+  log(INFO, "Checkpointing simulation.");
 
  
   for (SystemBucket_it s_it = systems_begin(); 
@@ -1156,10 +1139,10 @@ bool Bucket::steadystate_()
                          s_it != systems_end(); s_it++)
     {
       double systemchange = (*(*s_it).second).maxchange();
-      dolfin::log(dolfin::DBG, "  steady state systemchange = %e", systemchange);
+      log(DBG, "  steady state systemchange = %e", systemchange);
       maxchange = std::max(systemchange, maxchange);
     }
-    dolfin::log(dolfin::INFO, "steady state maxchange = %e", maxchange);
+    log(INFO, "steady state maxchange = %e", maxchange);
     steady = (maxchange < *steadystate_tol_);
   }
 
@@ -1239,6 +1222,6 @@ void Bucket::solve_in_timeloop_()
 //*******************************************************************|************************************************************//
 void Bucket::checkpoint_options_()
 {
-  dolfin::error("Failed to find virtual function checkpoint_options_.");
+  tf_err("Failed to find virtual function checkpoint_options_.", "Need to implement a checkpointing method.");
 }
 

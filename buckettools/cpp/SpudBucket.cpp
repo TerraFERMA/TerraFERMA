@@ -27,6 +27,7 @@
 #include "BucketDolfinBase.h"
 #include "PointDetectors.h"
 #include "StatisticsFile.h"
+#include "Logger.h"
 #include <dolfin.h>
 #include <string>
 #include <spud>
@@ -163,7 +164,7 @@ void SpudBucket::fill()
   fill_diagnostics_();                                               // this should be called last because it initializes the
                                                                      // diagnostic files, which must use a complete bucket
 
-  dolfin::log(dolfin::INFO, str().c_str());
+  log(INFO, str().c_str());
 
 }
 
@@ -179,8 +180,7 @@ void SpudBucket::register_mesh(Mesh_ptr mesh,
   Mesh_hash_it m_it = meshes_.get<om_key_hash>().find(name);                                 // check if a mesh with this name already exists
   if (m_it != meshes_.get<om_key_hash>().end())
   {
-    dolfin::error("Mesh named \"%s\" already exists in spudbucket.", // if it does, issue an error
-                                                      name.c_str());
+    tf_err("Mesh already exists in spudbucket.", "Mesh name: %s", name.c_str());
   }
   else
   {
@@ -199,8 +199,7 @@ std::string SpudBucket::fetch_mesh_optionpath(const std::string &name)
   string_hash_it s_it = mesh_optionpaths_.get<om_key_hash>().find(name);                     // check if a mesh with this name exists
   if (s_it == mesh_optionpaths_.get<om_key_hash>().end())
   {
-    dolfin::error("Mesh named \"%s\" does not exist in spudbucket.", // if it doesn't, issue an error
-                                                      name.c_str());
+    tf_err("Mesh does not exist in spudbucket.", "Mesh name: %s", name.c_str());
   }
   else
   {
@@ -250,9 +249,7 @@ void SpudBucket::register_detector(GenericDetectors_ptr detector,
   GenericDetectors_hash_it d_it = detectors_.get<om_key_hash>().find(name);                  // check if a detector set with this name already exists
   if (d_it != detectors_.get<om_key_hash>().end())
   {
-    dolfin::error(
-              "Detector named \"%s\" already exists in spudbucket.", // if it does, issue an error
-                                                      name.c_str());
+    tf_err("Detector set already exists in spudbucket.", "Detector set name: %s", name.c_str());
   }
   else
   {
@@ -269,9 +266,7 @@ std::string SpudBucket::fetch_detector_optionpath(const std::string &name)
   string_hash_it s_it = detector_optionpaths_.get<om_key_hash>().find(name);                 // check if a mesh with this name exists
   if (s_it == detector_optionpaths_.get<om_key_hash>().end())
   {
-    dolfin::error(
-              "Detector named \"%s\" does not exist in spudbucket.",
-                                                      name.c_str()); // if it doesn't, issue an error
+    tf_err("Detector set does not exist in spudbucket.", "Detector set name: %s", name.c_str());
   }
   else
   {
@@ -395,7 +390,8 @@ void SpudBucket::fill_timestepping_()
       if ((Spud::option_count("/system/field/diagnostics/include_in_statistics/functional/include_in_steady_state")+
            Spud::option_count("/system/field/diagnostics/include_in_steady_state"))==0)
       {
-        dolfin::error("Requested a steady state check but selected no field or functionals to include.");
+        tf_err("Reqested a steady state check but selected no fields or functionals to include.", 
+               "No fields or functionals in steady state check.");
       }
 
       steadystate_tol_.reset( new double );                          // get the steady state tolerance
@@ -678,7 +674,8 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
       }
       else
       {
-        dolfin::error("Could not find %s.xml or %s.xml.gz.", basename.c_str(), basename.c_str());
+        tf_err("Could not find requested mesh.", 
+               "%s.xml or %s.xml.gz not found.", basename.c_str(), basename.c_str());
       }
     }
     (*mesh).init();                                                  // initialize the mesh (maps between dimensions etc.)
@@ -919,7 +916,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
   }
   else                                                               // source is unrecognised
   {
-    dolfin::error("Unknown mesh source.");
+    tf_err("Unknown mesh source.", "Don't understand mesh description.");
   }
 
   register_mesh(mesh, meshname, optionpath,
@@ -1042,7 +1039,8 @@ void SpudBucket::fill_diagnostics_()
   {
     if (Spud::option_count("/system/field/diagnostics/include_in_detectors")==0)
     {
-      dolfin::error("Requested detectors but selected no field to include.");
+      tf_err("Reqested detectors but selected no fields or functionals to include.", 
+             "No fields included in detectors.");
     }
 
     detfile_.reset( new DetectorsFile(output_basename()+".det", 

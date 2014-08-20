@@ -29,8 +29,14 @@
 namespace buckettools
 {
 
-  void mpi_err(const int &error,                                     // translate mpi error codes into dolfin errors
-                const int accept=MPI_SUCCESS);
+  void mpi_error(const int &mpierror,                                // translate mpi error codes into TF errors
+                 const std::string &filename, 
+                 const int &line,
+                 const int &accept=MPI_SUCCESS);
+
+  #define mpi_err(mpierr) do {mpi_error(mpierr, __FILE__, __LINE__);} while(0)
+
+  #define mpi_err_accept(mpierr, accept) do {mpi_error(mpierr, __FILE__, __LINE__, accept);} while(0)
 
 }
 #endif

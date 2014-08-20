@@ -23,6 +23,7 @@
 #include "petscsnes.h"
 #include "BucketPETScBase.h"
 #include "SolverBucket.h"
+#include "Logger.h"
 
 using namespace buckettools;
 
@@ -32,7 +33,7 @@ using namespace buckettools;
 PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f, 
                                                           void* ctx)
 {
-  dolfin::log(dolfin::INFO, "In FormFunction");
+  log(INFO, "In FormFunction");
 
   SNESCtx *snesctx = (SNESCtx *)ctx;                                 // cast the snes context
 
@@ -46,16 +47,16 @@ PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f,
     PetscReal norm;
 
     perr = VecNorm(x,NORM_2,&norm); CHKERRQ(perr);
-    dolfin::log(dolfin::get_log_level(), "FormFunction(1): 2-norm x = %f", norm);
+    log(dolfin::get_log_level(), "FormFunction(1): 2-norm x = %f", norm);
 
     perr = VecNorm(x,NORM_INFINITY,&norm); CHKERRQ(perr);
-    dolfin::log(dolfin::get_log_level(), "FormFunction(1): inf-norm x = %f", norm);
+    log(dolfin::get_log_level(), "FormFunction(1): inf-norm x = %f", norm);
 
     perr = VecNorm(f,NORM_2,&norm); CHKERRQ(perr);
-    dolfin::log(dolfin::get_log_level(), "FormFunction(1): 2-norm f = %f", norm);
+    log(dolfin::get_log_level(), "FormFunction(1): 2-norm f = %f", norm);
 
     perr = VecNorm(f,NORM_INFINITY,&norm); CHKERRQ(perr);
-    dolfin::log(dolfin::get_log_level(), "FormFunction(1): inf-norm f = %f", norm);
+    log(dolfin::get_log_level(), "FormFunction(1): inf-norm f = %f", norm);
   }
 
   Function_ptr iteratedfunction = (*system).iteratedfunction();      // collect the iterated system bucket function
@@ -92,16 +93,16 @@ PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f,
     PetscReal norm;
 
     perr = VecNorm(x,NORM_2,&norm); CHKERRQ(perr);
-    dolfin::log(dolfin::get_log_level(), "FormFunction(2): 2-norm x = %f", norm);
+    log(dolfin::get_log_level(), "FormFunction(2): 2-norm x = %f", norm);
 
     perr = VecNorm(x,NORM_INFINITY,&norm); CHKERRQ(perr);
-    dolfin::log(dolfin::get_log_level(), "FormFunction(2): inf-norm x = %f", norm);
+    log(dolfin::get_log_level(), "FormFunction(2): inf-norm x = %f", norm);
 
     perr = VecNorm(f,NORM_2,&norm); CHKERRQ(perr);
-    dolfin::log(dolfin::get_log_level(), "FormFunction(2): 2-norm f = %f", norm);
+    log(dolfin::get_log_level(), "FormFunction(2): 2-norm f = %f", norm);
 
     perr = VecNorm(f,NORM_INFINITY,&norm); CHKERRQ(perr);
-    dolfin::log(dolfin::get_log_level(), "FormFunction(2): inf-norm f = %f", norm);
+    log(dolfin::get_log_level(), "FormFunction(2): inf-norm f = %f", norm);
   }
 
   PetscFunctionReturn(0);
@@ -114,7 +115,7 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
                                          Mat *B, MatStructure* flag, 
                                          void* ctx)
 {
-  dolfin::log(dolfin::INFO, "In FormJacobian");
+  log(INFO, "In FormJacobian");
 
   PetscErrorCode perr;                                               // petsc error code
 
@@ -129,22 +130,22 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
     PetscReal norm;
 
     perr = VecNorm(x,NORM_2,&norm); CHKERRQ(perr);
-    dolfin::log(dolfin::get_log_level(), "FormJacobian(1): 2-norm x = %f", norm);
+    log(dolfin::get_log_level(), "FormJacobian(1): 2-norm x = %f", norm);
 
     perr = VecNorm(x,NORM_INFINITY,&norm); CHKERRQ(perr);
-    dolfin::log(dolfin::get_log_level(), "FormJacobian(1): inf-norm x = %f", norm);
+    log(dolfin::get_log_level(), "FormJacobian(1): inf-norm x = %f", norm);
 
     perr = MatNorm(*A,NORM_FROBENIUS,&norm); CHKERRQ(perr);
-    dolfin::log(dolfin::get_log_level(), "FormJacobian(1): Frobenius norm A = %f", norm);
+    log(dolfin::get_log_level(), "FormJacobian(1): Frobenius norm A = %f", norm);
 
     perr = MatNorm(*A,NORM_INFINITY,&norm); CHKERRQ(perr);
-    dolfin::log(dolfin::get_log_level(), "FormJacobian(1): inf-norm A = %f", norm);
+    log(dolfin::get_log_level(), "FormJacobian(1): inf-norm A = %f", norm);
 
     perr = MatNorm(*B,NORM_FROBENIUS,&norm); CHKERRQ(perr);
-    dolfin::log(dolfin::get_log_level(), "FormJacobian(1): Frobenius norm B = %f", norm);
+    log(dolfin::get_log_level(), "FormJacobian(1): Frobenius norm B = %f", norm);
 
     perr = MatNorm(*B,NORM_INFINITY,&norm); CHKERRQ(perr);
-    dolfin::log(dolfin::get_log_level(), "FormJacobian(1): inf-norm B = %f", norm);
+    log(dolfin::get_log_level(), "FormJacobian(1): inf-norm B = %f", norm);
   }
 
   Function_ptr iteratedfunction = (*system).iteratedfunction();      // collect the iterated system bucket function
@@ -215,22 +216,22 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
     PetscReal norm;
 
     perr = VecNorm(x,NORM_2,&norm); CHKERRQ(perr);
-    dolfin::log(dolfin::get_log_level(), "FormJacobian(2): 2-norm x = %f", norm);
+    log(dolfin::get_log_level(), "FormJacobian(2): 2-norm x = %f", norm);
 
     perr = VecNorm(x,NORM_INFINITY,&norm); CHKERRQ(perr);
-    dolfin::log(dolfin::get_log_level(), "FormJacobian(2): inf-norm x = %f", norm);
+    log(dolfin::get_log_level(), "FormJacobian(2): inf-norm x = %f", norm);
 
     perr = MatNorm(*A,NORM_FROBENIUS,&norm); CHKERRQ(perr);
-    dolfin::log(dolfin::get_log_level(), "FormJacobian(2): Frobenius norm A = %f", norm);
+    log(dolfin::get_log_level(), "FormJacobian(2): Frobenius norm A = %f", norm);
 
     perr = MatNorm(*A,NORM_INFINITY,&norm); CHKERRQ(perr);
-    dolfin::log(dolfin::get_log_level(), "FormJacobian(2): inf-norm A = %f", norm);
+    log(dolfin::get_log_level(), "FormJacobian(2): inf-norm A = %f", norm);
 
     perr = MatNorm(*B,NORM_FROBENIUS,&norm); CHKERRQ(perr);
-    dolfin::log(dolfin::get_log_level(), "FormJacobian(2): Frobenius norm B = %f", norm);
+    log(dolfin::get_log_level(), "FormJacobian(2): Frobenius norm B = %f", norm);
 
     perr = MatNorm(*B,NORM_INFINITY,&norm); CHKERRQ(perr);
-    dolfin::log(dolfin::get_log_level(), "FormJacobian(2): inf-norm B = %f", norm);
+    log(dolfin::get_log_level(), "FormJacobian(2): inf-norm B = %f", norm);
   }
 
   PetscFunctionReturn(0);
@@ -242,7 +243,7 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
 PetscErrorCode buckettools::SNESCustomMonitor(SNES snes, PetscInt its,
                                       PetscReal norm, void* mctx)
 {
-  dolfin::log(dolfin::INFO, "In SNESCustomMonitor");
+  log(INFO, "In SNESCustomMonitor");
 
   std::stringstream buffer;                                          // string buffer
   PetscErrorCode perr;                                               // petsc error code
@@ -291,7 +292,7 @@ PetscErrorCode buckettools::SNESCustomMonitor(SNES snes, PetscInt its,
 PetscErrorCode buckettools::KSPCustomMonitor(KSP ksp, int it,
                                       PetscReal rnorm, void* mctx)
 {
-  dolfin::log(dolfin::INFO, "In KSPCustomMonitor");
+  log(INFO, "In KSPCustomMonitor");
 
   std::stringstream buffer;                                          // string buffer
   PetscErrorCode perr;                                               // petsc error code
@@ -339,7 +340,7 @@ PetscErrorCode buckettools::KSPNullSpaceMonitor(KSP ksp, int it,
 {
   if (it==0)
   {
-    dolfin::log(dolfin::INFO, "In KSPNullSpaceMonitor");
+    log(INFO, "In KSPNullSpaceMonitor");
 
     PetscErrorCode perr;                                             // petsc error code
 
@@ -364,11 +365,11 @@ PetscErrorCode buckettools::KSPNullSpaceMonitor(KSP ksp, int it,
 
       if (!isNull)
       {
-        dolfin::error("MatNullSpaceTest does not believe provided null space is a null space of the matrix.");
+        log(WARNING, "MatNullSpaceTest does not believe provided null space is a null space of the matrix.");
       }
       else
       {
-        dolfin::log(dolfin::INFO, "MatNullSpaceTest thinks provided null space is a null space of the matrix.");
+        log(INFO, "MatNullSpaceTest thinks provided null space is a null space of the matrix.");
       }
     }
 
@@ -383,4 +384,37 @@ PetscErrorCode buckettools::SNESVIDummyComputeVariableBounds(SNES snes, Vec xl, 
                                                                      // do nothing
   PetscFunctionReturn(0);
 }
+
+void buckettools::petsc_failure(PetscErrorCode perr,
+                                const std::string &filename,
+                                const int &line,
+                                const std::string &dirname,
+                                const std::string &petsc_function)
+{
+  if (PetscUnlikely(perr))
+  {
+    PetscErrorCode perr2 = PetscError(PETSC_COMM_SELF,line,petsc_function.c_str(),filename.c_str(),dirname.c_str(),perr,PETSC_ERROR_REPEAT," ");
+
+    failure(filename, line, 
+            "Call to PETSc function '" + petsc_function + "' failed.",
+            "PETSc error code is: %d.", perr);
+  }
+}
+
+void buckettools::petsc_error(PetscErrorCode perr,
+                              const std::string &filename,
+                              const int &line,
+                              const std::string &dirname,
+                              const std::string &petsc_function)
+{
+  if (PetscUnlikely(perr))
+  {
+    PetscErrorCode perr2 = PetscError(PETSC_COMM_SELF,line,petsc_function.c_str(),filename.c_str(),dirname.c_str(),perr,PETSC_ERROR_REPEAT," ");
+
+    error(filename, line,
+          "Call to PETSc function '" + petsc_function + "' returned an error.",
+          "PETSc error code is: %d.", perr);
+  }
+}
+
 

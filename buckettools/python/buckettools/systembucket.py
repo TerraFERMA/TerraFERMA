@@ -263,7 +263,7 @@ class SystemBucket:
     cpp.append("    {\n")
     cpp.append("      // All solvers within a system should return the same functionspace so just take the first one\n")
     if len(self.solvers)==0:
-      cpp.append("      dolfin::error(\"Unknown system functionspace in ufc_fetch_functionspace\");\n")
+      cpp.append("      tf_err(\"Unknown system functionspace in ufc_fetch_functionspace\", \"System name: %s\", systemname.c_str());\n")
     else:
       cpp.append(self.solvers[0].functionspace_cpp_no_if())
     cpp.append("    }\n")
@@ -281,11 +281,11 @@ class SystemBucket:
     for s in range(len(self.solvers)):
       cpp += self.solvers[s].functionspace_cpp(index=s)
     if len(self.solvers)==0:
-      cpp.append("      dolfin::error(\"No solvers in system in ufc_fetch_functionspace\");\n")
+      cpp.append("      tf_err(\"No solvers in system in ufc_fetch_functionspace\", \"Solver name: %s\", solvername.c_str());\n")
     else:
       cpp.append("      else\n")
       cpp.append("      {\n")
-      cpp.append("        dolfin::error(\"Unknown solvername in ufc_fetch_functionspace\");\n")
+      cpp.append("        tf_err(\"Unknown solvername in ufc_fetch_functionspace\", \"Solver name: %s\", solvername.c_str());\n")
       cpp.append("      }\n")
     cpp.append("    }\n")
     return cpp
@@ -305,7 +305,7 @@ class SystemBucket:
         cpp.append("      else if (functionname ==  \""+self.fields[c].name+"\")\n")
       cpp.append("      {\n")
       if len(self.fields[c].functionals)==0:
-        cpp.append("        dolfin::error(\"Unknown functionalname in ufc_fetch_coefficientspace_from_functional\");\n")
+        cpp.append("        tf_err(\"No functionals in ufc_fetch_coefficientspace_from_functional\", \"Functional name: %s\", functionalname.c_str());\n")
         cpp.append("      }\n")
       else:
         for f in range(len(self.fields[c].functionals)):
@@ -323,17 +323,17 @@ class SystemBucket:
                 symbols_found =+ 1
                 break
           if symbols_found == 0:
-            cpp.append("          dolfin::error(\"Unknown uflsymbol in ufc_fetch_coefficientspace_from_functional\");\n")
+            cpp.append("          tf_err(\"Unknown uflsymbol in ufc_fetch_coefficientspace_from_functional\", \"UFL symbol: %s\", uflsymbol.c_str());\n")
             cpp.append("        }\n")
           else:
             cpp.append("          else\n")
             cpp.append("          {\n")
-            cpp.append("            dolfin::error(\"Unknown uflsymbol in ufc_fetch_coefficientspace_from_functional\");\n")
+            cpp.append("            tf_err(\"Unknown uflsymbol in ufc_fetch_coefficientspace_from_functional\", \"UFL symbol: %s\", uflsymbol.c_str());\n")
             cpp.append("          }\n")
             cpp.append("        }\n")
         cpp.append("        else\n")
         cpp.append("        {\n")
-        cpp.append("          dolfin::error(\"Unknown functionalname in ufc_fetch_coefficientspace_from_functional\");\n")
+        cpp.append("          tf_err(\"Unknown functionalname in ufc_fetch_coefficientspace_from_functional\", \"Functional name: %s\", functionalname.c_str());\n")
         cpp.append("        }\n")
         cpp.append("      }\n")
     for c in range(len(self.coeffs)):
@@ -343,7 +343,7 @@ class SystemBucket:
         cpp.append("      else if (functionname ==  \""+self.coeffs[c].name+"\")\n")
       cpp.append("      {\n")
       if len(self.coeffs[c].functionals)==0:
-        cpp.append("        dolfin::error(\"Unknown functionalname in ufc_fetch_coefficientspace_from_functional\");\n")
+        cpp.append("        tf_err(\"Unknown functionalname in ufc_fetch_coefficientspace_from_functional\", \"Functional name: %s\", functionalname.c_str());\n")
         cpp.append("      }\n")
       else:
         for f in range(len(self.coeffs[c].functionals)):
@@ -361,22 +361,22 @@ class SystemBucket:
                 symbols_found =+ 1
                 break
           if symbols_found == 0:
-            cpp.append("          dolfin::error(\"Unknown uflsymbol in ufc_fetch_coefficientspace_from_functional\");\n")
+            cpp.append("          tf_err(\"Unknown uflsymbol in ufc_fetch_coefficientspace_from_functional\", \"UFL symbol: %s\", uflsymbol.c_str());\n")
             cpp.append("        }\n")
           else:
             cpp.append("          else\n")
             cpp.append("          {\n")
-            cpp.append("            dolfin::error(\"Unknown uflsymbol in ufc_fetch_coefficientspace_from_functional\");\n")
+            cpp.append("            tf_err(\"Unknown uflsymbol in ufc_fetch_coefficientspace_from_functional\", \"UFL symbol: %s\", uflsymbol.c_str());\n")
             cpp.append("          }\n")
             cpp.append("        }\n")
         cpp.append("        else\n")
         cpp.append("        {\n")
-        cpp.append("          dolfin::error(\"Unknown functionalname in ufc_fetch_coefficientspace_from_functional\");\n")
+        cpp.append("          tf_err(\"Unknown functionalname in ufc_fetch_coefficientspace_from_functional\", \"Functional name: %s\", functionalname.c_str());\n")
         cpp.append("        }\n")
         cpp.append("      }\n")
     cpp.append("      else\n")
     cpp.append("      {\n")
-    cpp.append("        dolfin::error(\"Unknown functionname in ufc_fetch_coefficientspace_from_functional\");\n")
+    cpp.append("        tf_err(\"Unknown functionname in ufc_fetch_coefficientspace_from_functional\", \"Function name: %s\", functionname.c_str());\n")
     cpp.append("      }\n")
     cpp.append("    }\n")
     return cpp
@@ -390,7 +390,7 @@ class SystemBucket:
       cpp.append("    else if (systemname ==  \""+self.name+"\")\n")
     cpp.append("    {\n")
     if (len(self.coeffs)==0):
-      cpp.append("      dolfin::error(\"Unknown coefficentname in ufc_fetch_coefficientspace_from_functional\");\n")
+      cpp.append("      tf_err(\"No coefficients in ufc_fetch_coefficientspace_from_functional\", \"Coefficient name: %s\", coefficientname.c_str());\n")
       cpp.append("    }\n")
     else:
       for c in range(len(self.coeffs)):
@@ -409,20 +409,20 @@ class SystemBucket:
                 symbols_found =+ 1
                 break
           if symbols_found == 0:
-            cpp.append("        dolfin::error(\"Unknown uflsymbol in ufc_fetch_coefficientspace_from_functional\");\n")
+            cpp.append("        tf_err(\"Unknown uflsymbol in ufc_fetch_coefficientspace_from_functional\", \"UFL symbol: %s\", uflsymbol.c_str());\n")
             cpp.append("      }\n")
           else:
             cpp.append("          else\n")
             cpp.append("          {\n")
-            cpp.append("            dolfin::error(\"Unknown uflsymbol in ufc_fetch_coefficientspace_from_functional\");\n")
+            cpp.append("            tf_err(\"Unknown uflsymbol in ufc_fetch_coefficientspace_from_functional\", \"UFL symbol: %s\", uflsymbol.c_str());\n")
             cpp.append("          }\n")
             cpp.append("        }\n")
         else:
-          cpp.append("        dolfin::error(\"Unknown functional in ufc_fetch_coefficientspace_from_functional\");\n")
+          cpp.append("        tf_err(\"No functionals for coefficient in ufc_fetch_coefficientspace_from_functional\", \"Coefficient name: %s\", coefficientname.c_str());\n")
           cpp.append("      }\n")
       cpp.append("      else\n")
       cpp.append("      {\n")
-      cpp.append("        dolfin::error(\"Unknown coefficientname in ufc_fetch_coefficientspace_from_functional\");\n")
+      cpp.append("        tf_err(\"Unknown coefficientname in ufc_fetch_coefficientspace_from_functional\", \"Coefficient name: %s\", coefficientname.c_str());\n")
       cpp.append("      }\n")
       cpp.append("    }\n")
     return cpp
@@ -442,7 +442,7 @@ class SystemBucket:
         cpp.append("      else if (solvername ==  \""+self.solvers[s].name+"\")\n")
       cpp.append("      {\n")
       if len(self.coeffs)==0:
-        cpp.append("        dolfin::error(\"Unknown uflsymbol in ufc_fetch_coefficientspace_from_solver\");\n")
+        cpp.append("        tf_err(\"Unknown uflsymbol in ufc_fetch_coefficientspace_from_solver\", \"UFL symbol: %s\", uflsymbol.c_str());\n")
         cpp.append("      }\n")
       else:
         symbols_in_forms = forms_symbols(self.solvers[s].forms)
@@ -455,20 +455,20 @@ class SystemBucket:
               symbols_found =+ 1
               break
         if symbols_found == 0:
-          cpp.append("        dolfin::error(\"Unknown uflsymbol in ufc_fetch_coefficientspace_from_solver\");\n")
+          cpp.append("        tf_err(\"Unknown uflsymbol in ufc_fetch_coefficientspace_from_solver\", \"UFL symbol: %s\", uflsymbol.c_str());\n")
           cpp.append("      }\n")
         else:
           cpp.append("        else\n")
           cpp.append("        {\n")
-          cpp.append("          dolfin::error(\"Unknown uflsymbol in ufc_fetch_coefficientspace_from_solver\");\n")
+          cpp.append("          tf_err(\"Unknown uflsymbol in ufc_fetch_coefficientspace_from_solver\", \"UFL symbol: %s\", uflsymbol.c_str());\n")
           cpp.append("        }\n")
           cpp.append("      }\n")
     if len(self.solvers)==0:
-      cpp.append("      dolfin::error(\"No solver in system in ufc_fetch_coefficientspace_from_solver\");\n")
+      cpp.append("      tf_err(\"No solver in system in ufc_fetch_coefficientspace_from_solver\", \"Solver name: %s\", solvername.c_str());\n")
     else:
       cpp.append("      else\n")
       cpp.append("      {\n")
-      cpp.append("        dolfin::error(\"Unknown solvername in ufc_fetch_coefficientspace_from_solver\");\n")
+      cpp.append("        tf_err(\"Unknown solvername in ufc_fetch_coefficientspace_from_solver\", \"Solver name: %s\", solvername.c_str());\n")
       cpp.append("      }\n")
     cpp.append("    }\n")
     return cpp
@@ -492,20 +492,20 @@ class SystemBucket:
       cpp += self.solvers[s].form_cpp()
       cpp.append("          else\n")
       cpp.append("          {\n")
-      cpp.append("            dolfin::error(\"Unknown formname in ufc_fetch_form\");\n")
+      cpp.append("            tf_err(\"Unknown formname in ufc_fetch_form\", \"Form name: %s\", formname.c_str());\n")
       cpp.append("          }\n")
       cpp.append("        }\n")
       cpp.append("        else\n")
       cpp.append("        {\n")
-      cpp.append("          dolfin::error(\"Unknown solvertype in ufc_fetch_form\");\n")
+      cpp.append("          tf_err(\"Unknown solvertype in ufc_fetch_form\", \"Form name: %s\", formname.c_str());\n")
       cpp.append("        }\n")
       cpp.append("      }\n")
     if len(self.solvers)==0:
-      cpp.append("      dolfin::error(\"No solver in system in ufc_fetch_form\");\n")
+      cpp.append("      tf_err(\"No solver in system in ufc_fetch_form\", \"Solver name: %s\", solvername.c_str());\n")
     else:
       cpp.append("      else\n")
       cpp.append("      {\n")
-      cpp.append("        dolfin::error(\"Unknown systemname in ufc_fetch_form\");\n")
+      cpp.append("        tf_err(\"Unknown systemname in ufc_fetch_form\", \"System name: %s\", systemname.c_str());\n")
       cpp.append("      }\n")
     cpp.append("    }\n")
     return cpp
@@ -527,12 +527,12 @@ class SystemBucket:
       for a in range(len(self.fields[f].functionals)):
         cpp += self.fields[f].functionals[a].cpp(index=a)
       if len(self.fields[f].functionals)==0:
-        cpp.append("        dolfin::error(\"Unknown functionalname in ufc_fetch_functional\");\n")
+        cpp.append("        tf_err(\"No functionals in ufc_fetch_functional\", \"Functional name: %s\", functionalname.c_str());\n")
         cpp.append("      }\n")
       else:
         cpp.append("        else\n")
         cpp.append("        {\n")
-        cpp.append("          dolfin::error(\"Unknown functionalname in ufc_fetch_functional\");\n")
+        cpp.append("          tf_err(\"Unknown functionalname in ufc_fetch_functional\", \"Functional name: %s\", functionalname.c_str());\n")
         cpp.append("        }\n")
         cpp.append("      }\n")
     for c in range(len(self.coeffs)):
@@ -544,17 +544,17 @@ class SystemBucket:
       for a in range(len(self.coeffs[c].functionals)):
         cpp += self.coeffs[c].functionals[a].cpp(index=a)
       if len(self.coeffs[c].functionals)==0:
-        cpp.append("        dolfin::error(\"Unknown functionalname in ufc_fetch_functional\");\n")
+        cpp.append("        tf_err(\"No functionals in ufc_fetch_functional\", \"Functional name: %s\", functionalname.c_str());\n")
         cpp.append("      }\n")
       else:
         cpp.append("        else\n")
         cpp.append("        {\n")
-        cpp.append("          dolfin::error(\"Unknown functionalname in ufc_fetch_functional\");\n")
+        cpp.append("          tf_err(\"Unknown functionalname in ufc_fetch_functional\", \"Functional name: %s\", functionalname.c_str());\n")
         cpp.append("        }\n")
         cpp.append("      }\n")
     cpp.append("      else\n")
     cpp.append("      {\n")
-    cpp.append("        dolfin::error(\"Unknown functionname in ufc_fetch_functional\");\n")
+    cpp.append("        tf_err(\"Unknown functionname in ufc_fetch_functional\", \"Function name: %s\", functionname.c_str());\n")
     cpp.append("      }\n")
     cpp.append("    }\n")
     return cpp
@@ -579,12 +579,12 @@ class SystemBucket:
         cpp.append("        functional.reset(new "+self.coeffs[c].functional.namespace()+"::Form_"+self.coeffs[c].functional.symbol+"(mesh));\n")
         cpp.append("      }\n")
     if functionals_found==0:
-      cpp.append("      dolfin::error(\"Unknown coefficientname in ufc_fetch_functional\");\n")
+      cpp.append("      tf_err(\"Unknown coefficientname in ufc_fetch_functional\", \"Coefficient name: %s\", coefficientname.c_str());\n")
       cpp.append("    }\n")
     else:
       cpp.append("      else\n")
       cpp.append("      {\n")
-      cpp.append("        dolfin::error(\"Unknown coefficientname in ufc_fetch_functional\");\n")
+      cpp.append("        tf_err(\"Unknown coefficientname in ufc_fetch_functional\", \"Coefficient name: %s\", coefficientname.c_str());\n")
       cpp.append("      }\n")
       cpp.append("    }\n")
     return cpp
@@ -604,12 +604,12 @@ class SystemBucket:
     for c in range(len(self.coeffs)):
       cpp += self.coeffs[c].cppexpression_cpp(index=c+len(self.fields))
     if (len(self.fields)+len(self.coeffs))==0:
-      cpp.append("      dolfin::error(\"Unknown functionname in cpp_fetch_expression.\");\n")
+      cpp.append("      tf_err(\"Unknown functionname in cpp_fetch_expression.\", \"Function name: %s\", functionname.c_str());\n")
       cpp.append("    }\n")
     else:
       cpp.append("      else\n")
       cpp.append("      {\n")
-      cpp.append("        dolfin::error(\"Unknown functionname in cpp_fetch_expression.\");\n")
+      cpp.append("        tf_err(\"Unknown functionname in cpp_fetch_expression.\", \"Function name: %s\", functionname.c_str());\n")
       cpp.append("      }\n")
       cpp.append("    }\n")
     
@@ -630,12 +630,12 @@ class SystemBucket:
     for c in range(len(self.coeffs)):
       cpp += self.coeffs[c].cppexpression_init(index=c+len(self.fields))
     if (len(self.fields)+len(self.coeffs))==0:
-      cpp.append("      dolfin::error(\"Unknown functionname in cpp_init_expression.\");\n")
+      cpp.append("      tf_err(\"Unknown functionname in cpp_init_expression.\", \"Function name: %s\", functionname.c_str());\n")
       cpp.append("    }\n")
     else:
       cpp.append("      else\n")
       cpp.append("      {\n")
-      cpp.append("        dolfin::error(\"Unknown functionname in cpp_init_expression.\");\n")
+      cpp.append("        tf_err(\"Unknown functionname in cpp_init_expression.\", \"Function name: %s\", functionname.c_str());\n")
       cpp.append("      }\n")
       cpp.append("    }\n")
     

@@ -20,6 +20,7 @@
 
 
 #include "GenericDetectors.h"
+#include "Logger.h"
 #include <dolfin.h>
 #include <string>
 
@@ -103,11 +104,9 @@ void GenericDetectors::eval_ownership(Mesh_ptr mesh)
 
     std::vector< int > cellids, detectorids;
     std::vector<unsigned int> ids;
-    std::shared_ptr<const dolfin::MeshPointIntersection> mpinter;
     double* pos;
     uint dim;
     bool id_not_found = false;
-    const dolfin::Mesh &dmesh = *mesh;
 
     for (uint i = 0; i<positions_.size(); i++)                         // loop over the detector positions
     {
@@ -132,18 +131,21 @@ void GenericDetectors::eval_ownership(Mesh_ptr mesh)
       std::size_t global_number_detectors = dolfin::MPI::sum((*mesh).mpi_comm(), found_detectors);
       if (global_number_detectors < number_detectors_)
       {
-        dolfin::error("Unable to find cell in mesh.");
+        tf_err("Unable to find a cell for (a) detector(s) in the mesh.", "Detectors name: %s. Found %d out of %d detectors.", 
+               name().c_str(), global_number_detectors, number_detectors_);
       }
       if (global_number_detectors > number_detectors_)
       {
-        dolfin::log(dolfin::INFO, "WARNING: More than one process found the same detector.");
+        tf_warn("More than one process found the same detector.  Detectors name %s. Found %d out of %d detectors.", 
+                name().c_str(), global_number_detectors, number_detectors_);
       }
     }
     else
     {
       if (id_not_found)
       {
-        dolfin::error("Unable to find cell in mesh.");
+        tf_err("Unable to find a cell for (a) detector(s) in the mesh.", "Detectors name: %s. Found %d out of %d detectors.", 
+               name().c_str(), detectorids.size(), number_detectors_);
       }
     }
 

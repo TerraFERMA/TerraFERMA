@@ -20,7 +20,9 @@
 
 
 #include <dolfin.h>
+#include "Logger.h"
 #include "DolfinPETScBase.h"
+#include "BucketPETScBase.h"
 
 using namespace buckettools;
 
@@ -395,7 +397,7 @@ void buckettools::restrict_indices(std::vector<uint> &indices,
 
     if(overlap)
     {                                                                // sibling indices were ignored... give a warning
-      dolfin::log(dolfin::WARNING, 
+      log(WARNING, 
                   "WARNING: IS indices overlap with sibling fieldsplit, ignoring overlapping indices.");
     }
     indices.clear();
@@ -444,7 +446,7 @@ void buckettools::restrict_indices(std::vector<uint> &indices,
 
     if(extra)
     {                                                                // indices were ignored... give a warning
-      dolfin::log(dolfin::WARNING, 
+      log(WARNING, 
                   "WARNING: IS indices not a subset of parent fieldsplit, ignoring extra indices.");
     }
     indices.clear();
@@ -469,22 +471,22 @@ void buckettools::restrict_values(PETScVector_ptr values,
   perr = VecScatterCreate((*tmp_values).vec(), is, 
                           (*values).vec(), is, 
                           &scatter);
-  CHKERRV(perr);
+  petsc_err(perr);
   perr = VecScatterBegin(scatter, 
                          (*tmp_values).vec(), (*values).vec(), 
                          INSERT_VALUES, SCATTER_FORWARD);
-  CHKERRV(perr);
+  petsc_err(perr);
   perr = VecScatterEnd(scatter,
                        (*tmp_values).vec(), (*values).vec(),
                        INSERT_VALUES, SCATTER_FORWARD);
-  CHKERRV(perr);
+  petsc_err(perr);
 
   #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1            // necessary or taken care of when object leaves scope?
-  perr = VecScatterDestroy(&scatter); CHKERRV(perr);      
-  perr = ISDestroy(&is); CHKERRV(perr);
+  perr = VecScatterDestroy(&scatter); petsc_err(perr);      
+  perr = ISDestroy(&is); petsc_err(perr);
   #else
-  perr = VecScatterDestroy(scatter); CHKERRV(perr);
-  perr = ISDestroy(is); CHKERRV(perr);
+  perr = VecScatterDestroy(scatter); petsc_err(perr);
+  perr = ISDestroy(is); petsc_err(perr);
   #endif
 
 }
@@ -530,7 +532,7 @@ IS buckettools::convert_vector_to_is(const MPI_Comm &comm,
         p_ind++;
         if (p_ind == p_size)                                         // or we reach the end of the parent_indices...
         {                                                            // and throw an error
-          dolfin::error("IS indices are not a subset of a parent fieldsplit, shouldn't happen here.");
+          tf_err("IS indicies are not a subset of a parent fieldsplit.", "p_ind = %d, p_size = %d", p_ind, p_size);
         }
       }
       pindices[ind] = p_ind + parent_offset;                         // found the child index in the parent_indices so copy it into

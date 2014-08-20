@@ -33,6 +33,7 @@
 #include "ConvergenceFile.h"
 #include "KSPConvergenceFile.h"
 #include "DolfinPETScBase.h"
+#include "Logger.h"
 #include <boost/algorithm/string/predicate.hpp>
 
 using namespace buckettools;
@@ -85,29 +86,29 @@ void SpudSolverBucket::initialize()
   {
 
     perr = SNESCreate((*(*system_).mesh()).mpi_comm(), &snes_); 
-    CHKERRV(perr);                                                   // create the petsc snes object
+    petsc_err(perr);                                                   // create the petsc snes object
 
     perr = SNESSetOptionsPrefix(snes_, prefix.str().c_str());        // set its petsc options name prefix to SystemName_SolverName
-    CHKERRV(perr);
+    petsc_err(perr);
 
     ctx_.solver = this;                                              // the snes context just needs this class... neat, huh?
 
     perr = SNESSetFunction(snes_, (*res_).vec(),                    // set the snes function to use the newly allocated residual vector
                                     FormFunction, (void *) &ctx_); 
-    CHKERRV(perr);
+    petsc_err(perr);
 
     if (bilinearpc_)                                                 // if we have a pc form
     {
       assert(matrixpc_);
       perr = SNESSetJacobian(snes_, (*matrix_).mat(),               // set the snes jacobian to have two matrices
                   (*matrixpc_).mat(), FormJacobian, (void *) &ctx_); 
-      CHKERRV(perr);
+      petsc_err(perr);
     }
     else                                                             // otherwise
     {
       perr = SNESSetJacobian(snes_, (*matrix_).mat(),               // set the snes jacobian to have the same matrix twice
                     (*matrix_).mat(), FormJacobian, (void *) &ctx_); 
-      CHKERRV(perr);
+      petsc_err(perr);
     }
 
     std::string snestype;
@@ -119,29 +120,29 @@ void SpudSolverBucket::initialize()
     {
       #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
       #if PETSC_VERSION_MINOR > 3
-      perr = SNESSetType(snes_, SNESVINEWTONRSLS); CHKERRV(perr); 
+      perr = SNESSetType(snes_, SNESVINEWTONRSLS); petsc_err(perr); 
       #elif PETSC_VERSION_MINOR == 3
-      perr = SNESSetType(snes_, SNESVIRS); CHKERRV(perr); 
+      perr = SNESSetType(snes_, SNESVIRS); petsc_err(perr); 
       #else
-      perr = SNESSetType(snes_, snestype.c_str()); CHKERRV(perr); 
+      perr = SNESSetType(snes_, snestype.c_str()); petsc_err(perr); 
       #endif
-      perr = SNESSetFromOptions(snes_); CHKERRV(perr);               // set-up snes from options (we do this first to ensure that
+      perr = SNESSetFromOptions(snes_); petsc_err(perr);               // set-up snes from options (we do this first to ensure that
                                                                      // any duplicated options from the options file overwrite the
                                                                      // command line)
 
       fill_constraints_();
       #else
-      dolfin::error("Cannot set snes vi with PETSc < 3.2.");
+      tf_err("Cannot set snes vi with PETSc < 3.2.", "PETSc version: %d.%d", PETSC_VERSION_MAJOR, PETSC_VERSION_MINOR);
       #endif
     }
     else if(snestype=="ls")
     {
       #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 3
-      perr = SNESSetType(snes_, SNESNEWTONLS); CHKERRV(perr);
+      perr = SNESSetType(snes_, SNESNEWTONLS); petsc_err(perr);
       #else
-      perr = SNESSetType(snes_, snestype.c_str()); CHKERRV(perr);
+      perr = SNESSetType(snes_, snestype.c_str()); petsc_err(perr);
       #endif 
-      perr = SNESSetFromOptions(snes_); CHKERRV(perr);               // set-up snes from options (we do this first to ensure that
+      perr = SNESSetFromOptions(snes_); petsc_err(perr);               // set-up snes from options (we do this first to ensure that
                                                                      // any duplicated options from the options file overwrite the
                                                                      // command line)
 
@@ -156,14 +157,14 @@ void SpudSolverBucket::initialize()
         #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 2
         SNESLineSearch linesearch;
         #if PETSC_VERSION_MINOR > 3
-        perr = SNESGetLineSearch(snes_, &linesearch); CHKERRV(perr);
+        perr = SNESGetLineSearch(snes_, &linesearch); petsc_err(perr);
         #else
-        perr = SNESGetSNESLineSearch(snes_, &linesearch); CHKERRV(perr);
+        perr = SNESGetSNESLineSearch(snes_, &linesearch); petsc_err(perr);
         #endif
-        perr = SNESLineSearchSetType(linesearch, "bt"); CHKERRV(perr);
-        perr = SNESLineSearchSetOrder(linesearch, 3); CHKERRV(perr);
+        perr = SNESLineSearchSetType(linesearch, "bt"); petsc_err(perr);
+        perr = SNESLineSearchSetOrder(linesearch, 3); petsc_err(perr);
         #else
-        perr = SNESLineSearchSet(snes_, SNESLineSearchCubic, PETSC_NULL); CHKERRV(perr); 
+        perr = SNESLineSearchSet(snes_, SNESLineSearchCubic, PETSC_NULL); petsc_err(perr); 
         #endif
       }
       else if (lstype=="quadratic")
@@ -171,14 +172,14 @@ void SpudSolverBucket::initialize()
         #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 2
         SNESLineSearch linesearch;
         #if PETSC_VERSION_MINOR > 3
-        perr = SNESGetLineSearch(snes_, &linesearch); CHKERRV(perr);
+        perr = SNESGetLineSearch(snes_, &linesearch); petsc_err(perr);
         #else
-        perr = SNESGetSNESLineSearch(snes_, &linesearch); CHKERRV(perr);
+        perr = SNESGetSNESLineSearch(snes_, &linesearch); petsc_err(perr);
         #endif
-        perr = SNESLineSearchSetType(linesearch, "bt"); CHKERRV(perr);
-        perr = SNESLineSearchSetOrder(linesearch, 2); CHKERRV(perr);
+        perr = SNESLineSearchSetType(linesearch, "bt"); petsc_err(perr);
+        perr = SNESLineSearchSetOrder(linesearch, 2); petsc_err(perr);
         #else
-        perr = SNESLineSearchSet(snes_, SNESLineSearchQuadratic, PETSC_NULL); CHKERRV(perr); 
+        perr = SNESLineSearchSet(snes_, SNESLineSearchQuadratic, PETSC_NULL); petsc_err(perr); 
         #endif
       }
       else if (lstype=="basic")
@@ -186,26 +187,27 @@ void SpudSolverBucket::initialize()
         #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 2
         SNESLineSearch linesearch;
         #if PETSC_VERSION_MINOR > 3
-        perr = SNESGetLineSearch(snes_, &linesearch); CHKERRV(perr);
+        perr = SNESGetLineSearch(snes_, &linesearch); petsc_err(perr);
         #else
-        perr = SNESGetSNESLineSearch(snes_, &linesearch); CHKERRV(perr);
+        perr = SNESGetSNESLineSearch(snes_, &linesearch); petsc_err(perr);
         #endif
-        perr = SNESLineSearchSetType(linesearch, "basic"); CHKERRV(perr);
+        perr = SNESLineSearchSetType(linesearch, "basic"); petsc_err(perr);
         #else
-        perr = SNESLineSearchSet(snes_, SNESLineSearchNo, PETSC_NULL); CHKERRV(perr); 
+        perr = SNESLineSearchSet(snes_, SNESLineSearchNo, PETSC_NULL); petsc_err(perr); 
         #endif
       }
       else if (lstype=="basicnonorms")
       {
         #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 2
-        dolfin::error("No equivalent snes ls type to basicnonorms in petsc>3.2.");
+        tf_err("No equivalent snes ls type to basicnonorms in petsc>3.2.", "PETSc version: %d.%d", 
+               PETSC_VERSION_MAJOR, PETSC_VERSION_MINOR);
         #else
-        perr = SNESLineSearchSet(snes_, SNESLineSearchNoNorms, PETSC_NULL); CHKERRV(perr); 
+        perr = SNESLineSearchSet(snes_, SNESLineSearchNoNorms, PETSC_NULL); petsc_err(perr); 
         #endif
       }
       else
       {
-        dolfin::error("Unknown snes ls type.");
+        tf_err("Unknown snes ls type.", "Requested ls type: %s", lstype.c_str());
       }
 
                                                                      // FIXME: realign with available PETSc options once petsc-dev
@@ -223,11 +225,9 @@ void SpudSolverBucket::initialize()
       buffer.str(""); buffer << optionpath() << "/type/snes_type::ls/min_lambda";
       if (Spud::have_option(buffer.str()))
       {
-        #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 2
-        dolfin::error("Cannot set snes ls min_lambda with PETSc > 3.2 - options not aligned.");
-        #endif
-        #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 2
-        dolfin::error("Cannot set snes ls min_lambda with PETSc < 3.2.");
+        #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR != 2
+        tf_err("Cannot set snes ls min_lambda with PETSc != 3.2.", "PETSc version: %d.%d",
+               PETSC_VERSION_MAJOR, PETSC_VERSION_MINOR);
         #endif
       }
       double minlambda;
@@ -238,26 +238,26 @@ void SpudSolverBucket::initialize()
       #if PETSC_VERSION_MINOR > 2
       SNESLineSearch linesearch;
       #if PETSC_VERSION_MINOR > 3
-      perr = SNESGetLineSearch(snes_, &linesearch); CHKERRV(perr);
+      perr = SNESGetLineSearch(snes_, &linesearch); petsc_err(perr);
       #else
-      perr = SNESGetSNESLineSearch(snes_, &linesearch); CHKERRV(perr);
+      perr = SNESGetSNESLineSearch(snes_, &linesearch); petsc_err(perr);
       #endif
-      perr = SNESLineSearchBTSetAlpha(linesearch, alpha); CHKERRV(perr);// FIXME: assumes using bt
+      perr = SNESLineSearchBTSetAlpha(linesearch, alpha); petsc_err(perr);// FIXME: assumes using bt
       perr = SNESLineSearchSetTolerances(linesearch, PETSC_DEFAULT, maxstep, PETSC_DEFAULT,
                                         PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT);
-      CHKERRV(perr);
+      petsc_err(perr);
       #else
-      perr = SNESLineSearchSetParams(snes_, alpha, maxstep, minlambda); CHKERRV(perr);
+      perr = SNESLineSearchSetParams(snes_, alpha, maxstep, minlambda); petsc_err(perr);
       #endif
       #else
-      perr = SNESLineSearchSetParams(snes_, alpha, maxstep); CHKERRV(perr);
+      perr = SNESLineSearchSetParams(snes_, alpha, maxstep); petsc_err(perr);
       #endif
        
     }
     else
     {
-      perr = SNESSetType(snes_, snestype.c_str()); CHKERRV(perr); 
-      perr = SNESSetFromOptions(snes_); CHKERRV(perr);               // set-up snes from options (we do this first to ensure that
+      perr = SNESSetType(snes_, snestype.c_str()); petsc_err(perr); 
+      perr = SNESSetFromOptions(snes_); petsc_err(perr);               // set-up snes from options (we do this first to ensure that
                                                                      // any duplicated options from the options file overwrite the
                                                                      // command line)
     }
@@ -280,7 +280,7 @@ void SpudSolverBucket::initialize()
     {
       perr = SNESMonitorSet(snes_, SNESMonitorDefault,               // set a snes residual monitor
                                             PETSC_NULL, PETSC_NULL); 
-      CHKERRV(perr);
+      petsc_err(perr);
     }
 
     buffer.str(""); buffer << optionpath() 
@@ -289,7 +289,7 @@ void SpudSolverBucket::initialize()
     {
       perr = SNESMonitorSet(snes_, SNESMonitorSolution,              // set a snes solution monitor (graph)
                                             PETSC_NULL, PETSC_NULL); 
-      CHKERRV(perr);
+      petsc_err(perr);
     }
 
     if (Spud::have_option(optionpath()+"/type/monitors/convergence_file"))
@@ -306,14 +306,14 @@ void SpudSolverBucket::initialize()
       }
       perr = SNESMonitorSet(snes_, SNESCustomMonitor,                // set a custom snes monitor
                                             &snesmctx_, PETSC_NULL); 
-      CHKERRV(perr);
+      petsc_err(perr);
     }
 
     perr = SNESSetTolerances(snes_, atol_, rtol_, stol_, maxits_,    // from the data we collected in the base data fill set-up the
                                                             maxfes_);// snes tolerances
-    CHKERRV(perr);
+    petsc_err(perr);
 
-    perr = SNESGetKSP(snes_, &ksp_); CHKERRV(perr);                  // we always have at least one ksp so use the solverbucket ksp
+    perr = SNESGetKSP(snes_, &ksp_); petsc_err(perr);                  // we always have at least one ksp so use the solverbucket ksp
                                                                      // to start setting up the ksp inside the snes
     
     buffer.str(""); buffer << optionpath() << "/type/linear_solver"; // the ksp solver path
@@ -324,7 +324,7 @@ void SpudSolverBucket::initialize()
     {
       perr = SNESView(snes_, 
              PETSC_VIEWER_STDOUT_((*(*system_).mesh()).mpi_comm())); 
-      CHKERRV(perr);                                                 // turn on snesview so we get some debugging info
+      petsc_err(perr);                                                 // turn on snesview so we get some debugging info
     }
 
   }
@@ -332,7 +332,7 @@ void SpudSolverBucket::initialize()
   {
 
     perr = KSPCreate((*(*system_).mesh()).mpi_comm(), &ksp_); 
-    CHKERRV(perr);                                                   // create a ksp object from the variable in the solverbucket
+    petsc_err(perr);                                                   // create a ksp object from the variable in the solverbucket
 
     if (Spud::have_option(optionpath()+"/type/monitors/convergence_file"))
     {
@@ -349,14 +349,14 @@ void SpudSolverBucket::initialize()
       perr = KSPSetOperators(ksp_, (*matrix_).mat(),                // set the ksp operators with two matrices
                                    (*matrixpc_).mat(), 
                                    SAME_NONZERO_PATTERN); 
-      CHKERRV(perr);
+      petsc_err(perr);
     }
     else
     {
       perr = KSPSetOperators(ksp_, (*matrix_).mat(),                // set the ksp operators with the same matrices
                                    (*matrix_).mat(), 
                                    SAME_NONZERO_PATTERN); 
-      CHKERRV(perr);
+      petsc_err(perr);
     }
 
     buffer.str(""); buffer << optionpath() << "/type/linear_solver"; // figure out the linear solver optionspath
@@ -367,13 +367,13 @@ void SpudSolverBucket::initialize()
     {
       perr = KSPView(ksp_, 
              PETSC_VIEWER_STDOUT_((*(*system_).mesh()).mpi_comm())); 
-      CHKERRV(perr);                                                 // turn on kspview so we get some debugging info
+      petsc_err(perr);                                                 // turn on kspview so we get some debugging info
     }
 
   }
   else                                                               // don't know how we got here
   {
-    dolfin::error("Unknown solver type.");
+    tf_err("Unknown solver type.", "Solver type: %s", type().c_str());
   }
 
   create_nullspace();                                                // this should be safe to call now as null spaces will
@@ -391,8 +391,7 @@ void SpudSolverBucket::register_form(Form_ptr form,
   Form_hash_it f_it = forms_.get<om_key_hash>().find(name);                                  // check if name exists
   if (f_it != forms_.get<om_key_hash>().end())
   {
-    dolfin::error("Form named \"%s\" already exists in function.",   // if it does, issue an error
-                                                    name.c_str());
+    tf_err("Form already exists in solver.", "Form name: %s. Solver name: %s.", name.c_str(), name_.c_str());
   }
   else
   {
@@ -410,9 +409,7 @@ const std::string SpudSolverBucket::fetch_form_optionpath(const std::string &nam
                                                                      // check if the name already exists
   if (s_it == form_optionpaths_.get<om_key_hash>().end())
   {
-    dolfin::error(                                                   // if it doesn't, issue an error
-            "Form named \"%s\" does not exist in solver.", 
-                                                      name.c_str());
+    tf_err("Form does not exist in solver.", "Form name: %s. Solver name: %s.", name.c_str(), name_.c_str());
   }
   else
   {
@@ -594,7 +591,7 @@ void SpudSolverBucket::fill_forms_()
   }
   else                                                               // unknown solver type
   {
-    dolfin::error("Unknown solver type.");
+    tf_err("Unknown solver type.", "Solver type: %s", type().c_str());
   }
 
   for (Form_const_it f_it = forms_begin(); f_it != forms_end(); f_it++)
@@ -784,20 +781,20 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
   PetscErrorCode perr;                                               // petsc error code
 
   perr = KSPSetOptionsPrefix(ksp, prefix.c_str());                   // set the ksp options prefix
-  CHKERRV(perr);
+  petsc_err(perr);
 
   std::string iterative_method;
   buffer.str(""); buffer << optionpath << "/iterative_method/name";  // iterative method (gmres, fgmres, cg etc.)
   serr = Spud::get_option(buffer.str(), iterative_method); 
   spud_err(buffer.str(), serr);
 
-  perr = KSPSetType(ksp, iterative_method.c_str()); CHKERRV(perr);   // set the ksp type to the iterative method
+  perr = KSPSetType(ksp, iterative_method.c_str()); petsc_err(perr);   // set the ksp type to the iterative method
 
   perr = KSPSetFromOptions(ksp);                                     // do this now so that options will be overwritten by options
                                                                      // file
 
   PC pc;
-  perr = KSPGetPC(ksp, &pc); CHKERRV(perr);                          // get the pc from the ksp
+  perr = KSPGetPC(ksp, &pc); petsc_err(perr);                          // get the pc from the ksp
 
   uint parent_offset = 0;
   if (parent_indices)
@@ -841,12 +838,12 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
     if (Spud::have_option(buffer.str()))
     {
       perr = KSPSetInitialGuessNonzero(ksp, PETSC_FALSE); 
-      CHKERRV(perr);
+      petsc_err(perr);
     }
     else
     {
       perr = KSPSetInitialGuessNonzero(ksp, PETSC_TRUE); 
-      CHKERRV(perr);
+      petsc_err(perr);
     }
 
     buffer.str(""); buffer << optionpath << 
@@ -857,7 +854,7 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
       serr = Spud::get_option(buffer.str(), restart);
       spud_err(buffer.str(), serr);
       perr = KSPGMRESSetRestart(ksp, restart);
-      CHKERRV(perr);
+      petsc_err(perr);
     }
 
     buffer.str(""); buffer << optionpath << 
@@ -866,7 +863,7 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
     {
       perr = KSPMonitorSet(ksp, KSPMonitorDefault, 
                                             PETSC_NULL, PETSC_NULL); 
-      CHKERRV(perr);
+      petsc_err(perr);
     }
 
     buffer.str(""); buffer << optionpath << 
@@ -875,7 +872,7 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
     {
       perr = KSPMonitorSet(ksp, KSPMonitorTrueResidualNorm, 
                                             PETSC_NULL, PETSC_NULL); 
-      CHKERRV(perr);
+      petsc_err(perr);
     }
 
     buffer.str(""); buffer << optionpath << 
@@ -889,7 +886,7 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
       perr = KSPMonitorSet(ksp, KSPMonitorLG, 
                                              PETSC_NULL, PETSC_NULL); 
       #endif
-      CHKERRV(perr);
+      petsc_err(perr);
     }
 
     if (Spud::have_option(optionpath+"/iterative_method/monitors/convergence_file"))
@@ -903,7 +900,7 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
                                     &(*(*system()).bucket()), (*system()).name(), name()) );   // bucket isn't complete
       perr = KSPMonitorSet(ksp, KSPCustomMonitor, 
                                              &kspmctx_, PETSC_NULL); 
-      CHKERRV(perr);
+      petsc_err(perr);
     }
 
     if (Spud::have_option(optionpath+"/iterative_method/monitors/test_null_space"))
@@ -911,7 +908,7 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
       kspmctx_.solver = this;
       perr = KSPMonitorSet(ksp, KSPNullSpaceMonitor, 
                                              &kspmctx_, PETSC_NULL); 
-      CHKERRV(perr);
+      petsc_err(perr);
     }
 
     perr = KSPSetTolerances(ksp, rtol, atol, dtol, maxits);
@@ -923,11 +920,11 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
     MatNullSpace SP;                                                 // create a set of nullspaces in a null space object
     fill_nullspace_(buffer.str(), SP, parent_offset, parent_indices);
 
-    perr = KSPSetNullSpace(ksp, SP); CHKERRV(perr);                  // attach it to the ksp
+    perr = KSPSetNullSpace(ksp, SP); petsc_err(perr);                  // attach it to the ksp
     #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
-    perr = MatNullSpaceDestroy(&SP); CHKERRV(perr);                  // destroy the null space object, necessary?
+    perr = MatNullSpaceDestroy(&SP); petsc_err(perr);                  // destroy the null space object, necessary?
     #else
-    perr = MatNullSpaceDestroy(SP); CHKERRV(perr);                   // destroy the null space object, necessary?
+    perr = MatNullSpaceDestroy(SP); petsc_err(perr);                   // destroy the null space object, necessary?
     #endif
   }
 
@@ -946,28 +943,28 @@ void SpudSolverBucket::fill_pc_(const std::string &optionpath, PC &pc,
   PetscErrorCode perr;                                               // petsc error code
 
   perr = PCSetOptionsPrefix(pc, prefix.c_str());                     // set the pc options prefix
-  CHKERRV(perr);
+  petsc_err(perr);
 
   std::string preconditioner;
   buffer.str(""); buffer << optionpath << "/preconditioner/name";    // preconditioner type
   serr = Spud::get_option(buffer.str(), preconditioner);
   spud_err(buffer.str(), serr);
 
-  perr = PCSetType(pc, preconditioner.c_str()); CHKERRV(perr);       // set its type (read from options earlier)
+  perr = PCSetType(pc, preconditioner.c_str()); petsc_err(perr);       // set its type (read from options earlier)
 
-  perr = PCSetFromOptions(pc); CHKERRV(perr);                        // do this now so they can be overwritten
+  perr = PCSetFromOptions(pc); petsc_err(perr);                        // do this now so they can be overwritten
 
   if (preconditioner=="ksp")                                         // if the pc is itself a ksp
   {
     buffer.str(""); buffer << optionpath << 
                                     "/preconditioner/linear_solver";
     KSP subksp;                                                      // create a subksp from this pc
-    perr = PCKSPGetKSP(pc, &subksp); CHKERRV(perr);
+    perr = PCKSPGetKSP(pc, &subksp); petsc_err(perr);
     fill_ksp_(buffer.str(), subksp, prefix, parent_indices);         // recursively fill the ksp data (i.e. go back to this routine)
   }
   else if (preconditioner=="lsc")                                    // would be nice to put subksp options for lsc here
   {
-    perr = PCSetUp(pc); CHKERRV(perr);                               // this is just necessary in case we view it later
+    perr = PCSetUp(pc); petsc_err(perr);                               // this is just necessary in case we view it later
   }
   else if (preconditioner=="fieldsplit")                             // if the pc is a fieldsplit
   {
@@ -986,7 +983,7 @@ void SpudSolverBucket::fill_pc_(const std::string &optionpath, PC &pc,
 
     perr = PCFactorSetMatSolverPackage(pc, 
                                       factorization_package.c_str()); 
-    CHKERRV(perr);
+    petsc_err(perr);
 
   }
   else if (preconditioner=="hypre")
@@ -998,33 +995,33 @@ void SpudSolverBucket::fill_pc_(const std::string &optionpath, PC &pc,
     spud_err(buffer.str(), serr);
 
 #ifdef PETSC_HAVE_HYPRE
-    perr = PCHYPRESetType(pc, hypre_type.c_str()); CHKERRV(perr);
+    perr = PCHYPRESetType(pc, hypre_type.c_str()); petsc_err(perr);
 #else
-    dolfin::error("Must compile petsc with hypre to use it.");
+    tf_err("Hypre not available", "PETSc not compiled with hypre.");
 #endif
   }
   else if ((preconditioner=="bjacobi")||(preconditioner=="asm"))
   {
-    perr = PCSetUp(pc); CHKERRV(perr);                               // call this before subpc can be retrieved
+    perr = PCSetUp(pc); petsc_err(perr);                               // call this before subpc can be retrieved
 
     KSP *subksp;
     if(preconditioner=="bjacobi")
     {
       perr = PCBJacobiGetSubKSP(pc, PETSC_NULL, PETSC_NULL, &subksp);
-      CHKERRV(perr);
+      petsc_err(perr);
     }
     else if (preconditioner=="asm")
     {
       perr = PCASMGetSubKSP(pc, PETSC_NULL, PETSC_NULL, &subksp);
-      CHKERRV(perr);
+      petsc_err(perr);
     }
     else
     {
-      dolfin::error("Unknown preconditioner.");
+      tf_err("Unknown preconditioner.", "Preconditioner: %s", preconditioner.c_str());
     }
 
     PC subpc;
-    perr = KSPGetPC(*subksp, &subpc); CHKERRV(perr);                  // get the sub pc from the sub ksp
+    perr = KSPGetPC(*subksp, &subpc); petsc_err(perr);                  // get the sub pc from the sub ksp
     fill_pc_(optionpath+"/preconditioner", subpc,
              prefix, 
              parent_offset, parent_indices);
@@ -1038,22 +1035,22 @@ void SpudSolverBucket::fill_pc_(const std::string &optionpath, PC &pc,
     #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 2
     Mat pmat;
     perr = PCGetOperators(pc, PETSC_NULL, &pmat, PETSC_NULL);
-    CHKERRV(perr);
+    petsc_err(perr);
 
     MatNullSpace SP;                                                 // create a set of nullspaces in a null space object
     fill_nullspace_(buffer.str(), SP, parent_offset, parent_indices);
 
-    perr = MatSetNearNullSpace(pmat, SP); CHKERRV(perr);
+    perr = MatSetNearNullSpace(pmat, SP); petsc_err(perr);
 
-    perr = MatNullSpaceDestroy(&SP); CHKERRV(perr);                  // destroy the null space object, necessary?
+    perr = MatNullSpaceDestroy(&SP); petsc_err(perr);                  // destroy the null space object, necessary?
     #else
-    dolfin::error("Can only set near null spaces with petsc > 3.2.");
+    tf_err("Can only set near null spaces with petsc > 3.2.", "PETSc version: %d.%d", PETSC_VERSION_MAJOR, PETSC_VERSION_MINOR);
     #endif
   }
 
   if ((preconditioner=="ml")||(preconditioner=="gamg"))
   {
-    perr = PCSetUp(pc); CHKERRV(perr);                               // need to call this to prevent seg fault on kspview
+    perr = PCSetUp(pc); petsc_err(perr);                               // need to call this to prevent seg fault on kspview
   }                                                                  // BUT it has to happen after the near null space is set
 
 }
@@ -1122,22 +1119,22 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
     {
       if (dolfin::MPI::rank((*(*system_).mesh()).mpi_comm())==0)
       {
-        dolfin::log(dolfin::INFO, "ISView: %s (%s)", 
+        log(INFO, "ISView: %s (%s)", 
                                     fsname.c_str(), optionpath.c_str());
       }
       perr = ISView(is, 
                 PETSC_VIEWER_STDOUT_((*(*system_).mesh()).mpi_comm()));
-      CHKERRV(perr);                                                   // isview?
+      petsc_err(perr);                                                   // isview?
     }
 
     #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
     buffer.str(""); buffer << prefix << fsname;
     perr = PCFieldSplitSetIS(pc, buffer.str().c_str(), is);          // set the fs using that IS
-    CHKERRV(perr);
-    perr = ISDestroy(&is); CHKERRV(perr);                            // destroy the IS, necessary?
+    petsc_err(perr);
+    perr = ISDestroy(&is); petsc_err(perr);                            // destroy the IS, necessary?
     #else
-    perr = PCFieldSplitSetIS(pc, is); CHKERRV(perr);                 // set the fs using that IS
-    perr = ISDestroy(is); CHKERRV(perr);                             // destroy the IS, necessary?
+    perr = PCFieldSplitSetIS(pc, is); petsc_err(perr);                 // set the fs using that IS
+    perr = ISDestroy(is); petsc_err(perr);                             // destroy the IS, necessary?
     #endif
 
     child_indices.push_back(indices);                                // record the indices of the global vector that made it into
@@ -1151,29 +1148,29 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
   if (ctype == "additive")                                           // additive fieldsplit
   {
     perr = PCFieldSplitSetType(pc, PC_COMPOSITE_ADDITIVE); 
-    CHKERRV(perr);
+    petsc_err(perr);
   }
   else if (ctype == "multiplicative")                                // multiplicative fieldsplit
   {
     perr = PCFieldSplitSetType(pc, PC_COMPOSITE_MULTIPLICATIVE); 
-    CHKERRV(perr);
+    petsc_err(perr);
   }
   else if (ctype == "symmetric_multiplicative")                      // symmetric multiplicative fieldsplit
   {
     perr = PCFieldSplitSetType(pc, 
                           PC_COMPOSITE_SYMMETRIC_MULTIPLICATIVE); 
-    CHKERRV(perr);
+    petsc_err(perr);
   }
   else if (ctype == "special")                                       // special fieldsplit (whatever that means!)
   {
     perr = PCFieldSplitSetType(pc, PC_COMPOSITE_SPECIAL); 
-    CHKERRV(perr);
+    petsc_err(perr);
   }
   else if (ctype == "schur")                                         // schur fieldsplit
   {
     #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
     perr = PCFieldSplitSetType(pc, PC_COMPOSITE_SCHUR); 
-    CHKERRV(perr);
+    petsc_err(perr);
     
     std::string ftype;
     buffer.str(""); buffer << optionpath << 
@@ -1184,7 +1181,7 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
     {
       #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 2
       perr = PCFieldSplitSetSchurFactType(pc, PC_FIELDSPLIT_SCHUR_FACT_FULL); 
-      CHKERRV(perr);
+      petsc_err(perr);
       #endif
     }
     else
@@ -1193,24 +1190,25 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
       if (ftype == "upper")
       {
         perr = PCFieldSplitSetSchurFactType(pc, PC_FIELDSPLIT_SCHUR_FACT_UPPER); 
-        CHKERRV(perr);
+        petsc_err(perr);
       }
       else if (ftype == "lower")
       {
         perr = PCFieldSplitSetSchurFactType(pc, PC_FIELDSPLIT_SCHUR_FACT_LOWER); 
-        CHKERRV(perr);
+        petsc_err(perr);
       }
       else if (ftype == "diag")
       {
         perr = PCFieldSplitSetSchurFactType(pc, PC_FIELDSPLIT_SCHUR_FACT_DIAG); 
-        CHKERRV(perr);
+        petsc_err(perr);
       }
       else
       {
-        dolfin::error("Unknown PCFieldSplitSchurFactType.");
+        tf_err("Unknown PCFieldSplitSchurFactType.", "PCFieldSplitSchutFactType: %s", ftype.c_str());
       }
       #else
-      dolfin::error("Can only set schur factorization_type to anything other than full with petsc > 3.2.");
+      tf_err("Can only set schur factorization_type to anything other than full with petsc > 3.2.", 
+             "PETSc version: %d.%d", PETSC_VERSION_MAJOR, PETSC_VERSION_MINOR);
       #endif
     }
     
@@ -1226,12 +1224,12 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
       #else
       perr = PCFieldSplitSchurPrecondition(pc, PC_FIELDSPLIT_SCHUR_PRE_DIAG, PETSC_NULL);
       #endif
-      CHKERRV(perr);
+      petsc_err(perr);
     }
     else if (ptype == "self")
     {
       perr = PCFieldSplitSchurPrecondition(pc, PC_FIELDSPLIT_SCHUR_PRE_SELF, PETSC_NULL);
-      CHKERRV(perr);
+      petsc_err(perr);
     }
     else if (ptype == "user")
     {
@@ -1258,7 +1256,7 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
       perr = ISCreateGeneral((*(*system_).mesh()).mpi_comm(), n, 
                                                petscindices, &is);// create the general index set based on the indices
       #endif
-      CHKERRV(perr);
+      petsc_err(perr);
       
       buffer.str(""); buffer << optionpath << 
                  "/composite_type::schur/schur_preconditioner::user";
@@ -1267,12 +1265,12 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
         if (dolfin::MPI::rank((*(*system_).mesh()).mpi_comm())==0)
         {
           std::string isname = prefix+"SchurPC";
-          dolfin::log(dolfin::INFO, "ISView: %s (%s)", 
+          log(INFO, "ISView: %s (%s)", 
                                isname.c_str(), buffer.str().c_str());
         }
         perr = ISView(is, 
               PETSC_VIEWER_STDOUT_((*(*system_).mesh()).mpi_comm())); 
-        CHKERRV(perr);                                               // isview?
+        petsc_err(perr);                                               // isview?
       }
 
       #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
@@ -1284,27 +1282,30 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
 
       Mat submatrix;
       perr = MatGetSubMatrix((*solvermatrices_[prefix+"SchurPC"]).mat(), is, is, MAT_INITIAL_MATRIX, &submatrix);
-      CHKERRV(perr);
+      petsc_err(perr);
 
       solversubmatrices_[prefix+"SchurPC"] = submatrix;
       
       perr = PCFieldSplitSchurPrecondition(pc, PC_FIELDSPLIT_SCHUR_PRE_USER, submatrix);
-      CHKERRV(perr);
+      petsc_err(perr);
     }
     else
     {
-      dolfin::error("Unknown PCFieldSplitSchurPreconditionType.");
+      tf_err("Unknown PCFieldSplitSchurPreconditionType.", 
+             "PCFieldSplitSchurPreconditionType: %s", ptype.c_str());
     }
     #else
-    dolfin::error("schur fieldsplits only support with petsc > 3.1");
+    tf_err("Schur fieldsplits only supprted with petsc > 3.1.", 
+           "PETSc version: %d.%d", PETSC_VERSION_MAJOR, PETSC_VERSION_MINOR);
     #endif
   }
   else                                                               // unknown (to buckettools) fieldsplit composite type
   {
-    dolfin::error("Unknown PCCompositeType.");
+    tf_err("Unknown PCCompositeType.", 
+           "PCCompositeType: %s", ctype.c_str());
   }
   #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
-  perr = PCSetUp(pc); CHKERRV(perr);                                 // call this before subksp can be retrieved
+  perr = PCSetUp(pc); petsc_err(perr);                                 // call this before subksp can be retrieved
                                                                      // this is only necessary for schur fieldsplits and
                                                                      // as we're not supporting these with petsc 3.1 we don't
                                                                      // bother otherwise
@@ -1313,7 +1314,7 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
   KSP *subksps;                                                      // setup the fieldsplit subksps
   PetscInt nsubksps;
   perr = PCFieldSplitGetSubKSP(pc, &nsubksps, &subksps); 
-  CHKERRV(perr); 
+  petsc_err(perr); 
 
   assert(nsubksps==nsplits);
 
@@ -1321,9 +1322,9 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
   {
     #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
     perr = KSPSetNormType(subksps[i], KSP_NORM_DEFAULT);             // these two calls are necessary because the normtype
-    CHKERRV(perr);                                                   // and pc_side will have been set inappropriately in the 
+    petsc_err(perr);                                                   // and pc_side will have been set inappropriately in the 
     perr = KSPSetPCSide(subksps[i], PC_SIDE_DEFAULT);                // above call to PCSetUp.  now we undo this damage by resetting
-    CHKERRV(perr);                                                   // them to default (since the schema doesn't allow them to be
+    petsc_err(perr);                                                   // them to default (since the schema doesn't allow them to be
                                                                      // set by the user anyway) so that they can once again be reset
                                                                      // by KSP/PCSetUp later (probably from KSPSolve) once the ksp
                                                                      // type is set properly.
@@ -1483,7 +1484,7 @@ void SpudSolverBucket::fill_nullspace_(const std::string &optionpath, MatNullSpa
     fill_indices_values_by_field_(buffer.str(), indices, nullvec,    // create a vector describing the nullspace based on this optionpath 
                                   parent_indices);                   // (no siblings as null spaces can overlap)
 
-    perr = VecNormalize((*nullvec).vec(), PETSC_NULL); CHKERRV(perr);// normalize the null space vector
+    perr = VecNormalize((*nullvec).vec(), PETSC_NULL); petsc_err(perr);// normalize the null space vector
 
     buffer.str(""); buffer << optionpath << "/null_space[" 
                                  << i << "]/remove_from_rhs";
@@ -1512,69 +1513,69 @@ void SpudSolverBucket::fill_nullspace_(const std::string &optionpath, MatNullSpa
 
       if (dolfin::MPI::rank((*(*system_).mesh()).mpi_comm())==0)
       {
-        dolfin::log(dolfin::INFO, "ISView: nullspace (system) %s (%s)", 
+        log(INFO, "ISView: nullspace (system) %s (%s)", 
                                     nsname.c_str(), optionpath.c_str());
       }
       perr = ISView(sis, 
                 PETSC_VIEWER_STDOUT_((*(*system_).mesh()).mpi_comm()));
-      CHKERRV(perr);                                                 // isview?
+      petsc_err(perr);                                                 // isview?
 
       if (dolfin::MPI::rank((*(*system_).mesh()).mpi_comm())==0)
       {
-        dolfin::log(dolfin::INFO, "ISView: nullspace (subsystem) %s (%s)", 
+        log(INFO, "ISView: nullspace (subsystem) %s (%s)", 
                                     nsname.c_str(), optionpath.c_str());
       }
       perr = ISView(pis, 
                 PETSC_VIEWER_STDOUT_((*(*system_).mesh()).mpi_comm()));
-      CHKERRV(perr);                                                 // isview?
+      petsc_err(perr);                                                 // isview?
     }
 
     perr = VecCreate((*(*system_).mesh()).mpi_comm(), &vecs[i]);
-    CHKERRV(perr);
+    petsc_err(perr);
     if (parent_indices)
     {
       perr = VecSetSizes(vecs[i], (*parent_indices).size(), 
                                              PETSC_DECIDE);
-      CHKERRV(perr);
+      petsc_err(perr);
     }
     else
     {
       perr = VecSetSizes(vecs[i], (*nullvec).local_size(), 
                                              PETSC_DECIDE);
-      CHKERRV(perr);
+      petsc_err(perr);
     }
     perr = VecSetUp(vecs[i]);
-    perr = VecSet(vecs[i], (double) 0.0); CHKERRV(perr);
+    perr = VecSet(vecs[i], (double) 0.0); petsc_err(perr);
 
     VecScatter scatter;
     perr = VecScatterCreate((*nullvec).vec(), sis, 
                             vecs[i], pis, 
                             &scatter);
-    CHKERRV(perr);
+    petsc_err(perr);
     perr = VecScatterBegin(scatter, 
                            (*nullvec).vec(), vecs[i], 
                            INSERT_VALUES, SCATTER_FORWARD);
-    CHKERRV(perr);
+    petsc_err(perr);
     perr = VecScatterEnd(scatter,
                          (*nullvec).vec(), vecs[i],
                          INSERT_VALUES, SCATTER_FORWARD);
-    CHKERRV(perr);
+    petsc_err(perr);
 
     #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1          // necessary or taken care of when object leaves scope?
-    perr = VecScatterDestroy(&scatter); CHKERRV(perr);      
-    perr = ISDestroy(&sis); CHKERRV(perr);
-    perr = ISDestroy(&pis); CHKERRV(perr);
+    perr = VecScatterDestroy(&scatter); petsc_err(perr);      
+    perr = ISDestroy(&sis); petsc_err(perr);
+    perr = ISDestroy(&pis); petsc_err(perr);
     #else
-    perr = VecScatterDestroy(scatter); CHKERRV(perr);
-    perr = ISDestroy(sis); CHKERRV(perr);
-    perr = ISDestroy(pis); CHKERRV(perr);
+    perr = VecScatterDestroy(scatter); petsc_err(perr);
+    perr = ISDestroy(sis); petsc_err(perr);
+    perr = ISDestroy(pis); petsc_err(perr);
     #endif
 
   }
 
   perr = MatNullSpaceCreate((*(*system_).mesh()).mpi_comm(), 
                             PETSC_FALSE, nnulls, vecs, &SP); 
-  CHKERRV(perr);
+  petsc_err(perr);
 
   buffer.str(""); buffer << optionpath << 
                     "/monitors/view_null_space";                     // view the null space for debugging
@@ -1583,9 +1584,9 @@ void SpudSolverBucket::fill_nullspace_(const std::string &optionpath, MatNullSpa
     #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
     perr = MatNullSpaceView(SP, 
            PETSC_VIEWER_STDOUT_((*(*system_).mesh()).mpi_comm())); 
-    CHKERRV(perr);
+    petsc_err(perr);
     #else
-    dolfin::log(dolfin::WARNING, "Cannot set view_null_space monitor with PETSc < 3.2.");
+    log(WARNING, "Cannot set view_null_space monitor with PETSc < 3.2.");
     #endif
   }
 }
@@ -1608,14 +1609,15 @@ void SpudSolverBucket::fill_constraints_()
   fill_bound_(buffer.str(), lb, SNES_VI_NINF);
 
   perr = SNESVISetVariableBounds(snes_, (*lb).vec(), (*ub).vec());
-  CHKERRV(perr);
+  petsc_err(perr);
                                                                      // FIXME: UGLY HACK: our constant bounds will be overwritten by the dm
                                                                      // in SNESSetUp so let's stop it from doing that by attaching a
                                                                      // dummy variable bounds computation - does nothing!
   perr = SNESVISetComputeVariableBounds(snes_, SNESVIDummyComputeVariableBounds);
-  CHKERRV(perr);
+  petsc_err(perr);
   #else
-  dolfin::error("SNES VI only available with petsc > 3.1");
+  tf_err("SNES VI only available with petsc > 3.1.", 
+         "PETSc version: %d.%d", PETSC_VERSION_MAJOR, PETSC_VERSION_MINOR);
   #endif
 
 }
@@ -1667,7 +1669,7 @@ void SpudSolverBucket::field_restrictions_(const std::string &optionpath,
 
     if(fieldshape.size()==0)
     {
-      dolfin::error("Requested components of a scalar field.");
+      tf_err("Requested components of a scalar field.", "Optionpath: %s", buffer.str().c_str());
     }
     else if(fieldshape.size()==1)
     {
@@ -1695,7 +1697,7 @@ void SpudSolverBucket::field_restrictions_(const std::string &optionpath,
     }
     else
     {
-      dolfin::error("Unknown rank.");
+      tf_err("Unknown rank.", "fieldshape.size() = %d", fieldshape.size());
     }
   }
 
@@ -1748,7 +1750,7 @@ void SpudSolverBucket::field_restrictions_(const std::string &optionpath,
     }
     else
     {
-      dolfin::error("Unknown rank.");
+      tf_err("Unknown rank.", "fieldshape.size() = %d", fieldshape.size());
     }
   }
 

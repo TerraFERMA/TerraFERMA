@@ -22,6 +22,7 @@
 #include "DetectorsFile.h"
 #include "Bucket.h"
 #include "MPIBase.h"
+#include "Logger.h"
 #include <cstdio>
 #include <string>
 #include <fstream>
@@ -52,7 +53,7 @@ DetectorsFile::DetectorsFile(const std::string name,
                            MPI_INFO_NULL, &mpifile_);
     if (mpierr!=MPI_SUCCESS)
     {
-      dolfin::error("MPI Error %d while trying to open MPI_File.", mpierr);
+      tf_err("MPI error opening MPI_File.", "MPI error: %d", mpierr);
     }
 #endif
   }
@@ -75,7 +76,7 @@ DetectorsFile::~DetectorsFile()
     int mpierr = MPI_File_close(&mpifile_);
     if (mpierr!=MPI_SUCCESS)
     {
-      dolfin::error("MPI error %d while trying to close MPI_file.", mpierr);
+      tf_err("MPI error closing MPI_File.", "MPI error: %d", mpierr);
     }
 #endif
   }
@@ -293,7 +294,7 @@ void DetectorsFile::header_func_(const FunctionBucket_ptr f_ptr)
       }
       else
       {
-        dolfin::error("In DetectorsFile::header_detectors_, unknown function rank.");
+        tf_err("Unknown function rank.", "Rank: %d", (*f_ptr).rank());
       }
     }
   }

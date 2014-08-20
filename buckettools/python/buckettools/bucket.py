@@ -75,6 +75,7 @@ class Bucket:
     cpp.append("\n")
     cpp.append("#include \"SystemFunctionalsWrapper.h\"\n")
     cpp.append("#include \"BoostTypes.h\"\n")
+    cpp.append("#include \"Logger.h\"\n")
     cpp.append("#include <dolfin.h>\n")
 
     include_cpp = []
@@ -114,28 +115,28 @@ class Bucket:
 
     functionalcoefficientspace_cpp.append("    else\n")
     functionalcoefficientspace_cpp.append("    {\n")
-    functionalcoefficientspace_cpp.append("      dolfin::error(\"Unknown systemname in ufc_fetch_coefficientspace_from_functional\");\n")
+    functionalcoefficientspace_cpp.append("      tf_err(\"Unknown systemname in ufc_fetch_coefficientspace_from_functional\", \"System name: %s\", systemname.c_str());\n")
     functionalcoefficientspace_cpp.append("    }\n")
     functionalcoefficientspace_cpp.append("    return coefficientspace;\n")
     functionalcoefficientspace_cpp.append("  }\n")
 
     constantfunctionalcoefficientspace_cpp.append("    else\n")
     constantfunctionalcoefficientspace_cpp.append("    {\n")
-    constantfunctionalcoefficientspace_cpp.append("      dolfin::error(\"Unknown systemname in ufc_fetch_coefficientspace_from_functional\");\n")
+    constantfunctionalcoefficientspace_cpp.append("      tf_err(\"Unknown systemname in ufc_fetch_coefficientspace_from_functional\", \"System name: %s\", systemname.c_str());\n")
     constantfunctionalcoefficientspace_cpp.append("    }\n")
     constantfunctionalcoefficientspace_cpp.append("    return coefficientspace;\n")
     constantfunctionalcoefficientspace_cpp.append("  }\n")
 
     functional_cpp.append("    else\n")
     functional_cpp.append("    {\n")
-    functional_cpp.append("      dolfin::error(\"Unknown systemname in ufc_fetch_functional\");\n")
+    functional_cpp.append("      tf_err(\"Unknown systemname in ufc_fetch_functional\", \"System name: %s\", systemname.c_str());\n")
     functional_cpp.append("    }\n")
     functional_cpp.append("    return functional;\n")
     functional_cpp.append("  }\n")
 
     constantfunctional_cpp.append("    else\n")
     constantfunctional_cpp.append("    {\n")
-    constantfunctional_cpp.append("      dolfin::error(\"Unknown systemname in ufc_fetch_functional\");\n")
+    constantfunctional_cpp.append("      tf_err(\"Unknown systemname in ufc_fetch_functional\", \"System name: %s\", systemname.c_str());\n")
     constantfunctional_cpp.append("    }\n")
     constantfunctional_cpp.append("    return functional;\n")
     constantfunctional_cpp.append("  }\n")
@@ -176,6 +177,7 @@ class Bucket:
     cpp.append("\n")
     cpp.append("#include \"SystemSolversWrapper.h\"\n")
     cpp.append("#include \"BoostTypes.h\"\n")
+    cpp.append("#include \"Logger.h\"\n")
     cpp.append("#include <dolfin.h>\n")
 
     include_cpp = []
@@ -215,28 +217,28 @@ class Bucket:
 
     functionspace_cpp.append("    else\n")
     functionspace_cpp.append("    {\n")
-    functionspace_cpp.append("      dolfin::error(\"Unknown systemname in ufc_fetch_functionspace\");\n")
+    functionspace_cpp.append("      tf_err(\"Unknown systemname in ufc_fetch_functionspace\", \"System name: %s\", systemname.c_str());\n")
     functionspace_cpp.append("    }\n")
     functionspace_cpp.append("    return functionspace;\n")
     functionspace_cpp.append("  }\n")
 
     solverfunctionspace_cpp.append("    else\n")
     solverfunctionspace_cpp.append("    {\n")
-    solverfunctionspace_cpp.append("      dolfin::error(\"Unknown systemname in ufc_fetch_functionspace\");\n")
+    solverfunctionspace_cpp.append("      tf_err(\"Unknown systemname in ufc_fetch_functionspace\", \"System name: %s\", systemname.c_str());\n")
     solverfunctionspace_cpp.append("    }\n")
     solverfunctionspace_cpp.append("    return functionspace;\n")
     solverfunctionspace_cpp.append("  }\n")
 
     solvercoefficientspace_cpp.append("    else\n")
     solvercoefficientspace_cpp.append("    {\n")
-    solvercoefficientspace_cpp.append("      dolfin::error(\"Unknown systemname in ufc_fetch_coefficientspace_from_solver\");\n")
+    solvercoefficientspace_cpp.append("      tf_err(\"Unknown systemname in ufc_fetch_coefficientspace_from_solver\", \"System name: %s\", systemname.c_str());\n")
     solvercoefficientspace_cpp.append("    }\n")
     solvercoefficientspace_cpp.append("    return coefficientspace;\n")
     solvercoefficientspace_cpp.append("  }\n")
 
     form_cpp.append("    else\n")
     form_cpp.append("    {\n")
-    form_cpp.append("      dolfin::error(\"Unknown systemname in ufc_fetch_form\");\n")
+    form_cpp.append("      tf_err(\"Unknown systemname in ufc_fetch_form\", \"System name: %s\", systemname.c_str());\n")
     form_cpp.append("    }\n")
     form_cpp.append("    return form;\n")
     form_cpp.append("  }\n")
@@ -277,6 +279,7 @@ class Bucket:
     cpp.append("\n")
     cpp.append("#include \"SystemExpressionsWrapper.h\"\n")
     cpp.append("#include \"BoostTypes.h\"\n")
+    cpp.append("#include \"Logger.h\"\n")
     cpp.append("#include <dolfin.h>\n")
 
     include_cpp = []
@@ -301,14 +304,14 @@ class Bucket:
 
     cppexpression_cpp.append("    else\n")
     cppexpression_cpp.append("    {\n")
-    cppexpression_cpp.append("      dolfin::error(\"Unknown systemname in cpp_fetch_expression\");\n")
+    cppexpression_cpp.append("      tf_err(\"Unknown systemname in cpp_fetch_expression\", \"System name: %s\", systemname.c_str());\n")
     cppexpression_cpp.append("    }\n")
     cppexpression_cpp.append("    return expression;\n")
     cppexpression_cpp.append("  }\n")
 
     cppexpression_init.append("    else\n")
     cppexpression_init.append("    {\n")
-    cppexpression_init.append("      dolfin::error(\"Unknown systemname in cpp_init_expression\");\n")
+    cppexpression_init.append("      tf_err(\"Unknown systemname in cpp_init_expression\", \"System name: %s\", systemname.c_str());\n")
     cppexpression_init.append("    }\n")
     cppexpression_init.append("  }\n")
 

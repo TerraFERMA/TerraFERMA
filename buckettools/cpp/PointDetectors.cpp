@@ -21,6 +21,7 @@
 
 #include "PointDetectors.h"
 #include "GenericDetectors.h"
+#include "Logger.h"
 #include <dolfin.h>
 #include <string>
 
@@ -69,7 +70,7 @@ void PointDetectors::init_(const Array_double_ptr point)
 {
   if(!positions_.empty())
   {
-    dolfin::error("In PointDetectors::init_ intializing already initialized detectors.");
+    tf_err("Intializing already initialized detectors.", "positions_.empty() not empty.");
   }
   
   positions_.push_back(point);
