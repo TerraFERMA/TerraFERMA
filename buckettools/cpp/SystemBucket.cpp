@@ -63,8 +63,7 @@ void SystemBucket::evaluate_initial_fields()
   if (fields_size()>0)
   {
     apply_ic_();                                                     // apply the initial condition to the system function
-    apply_dirichletbc_();                                            // apply the Dirichlet boundary conditions we just collected
-    apply_referencepoints_();                                        // apply the reference points we just collected
+    apply_bcs_();                                                    // apply the boundary conditions we just collected
   }
 
 }
@@ -507,35 +506,35 @@ SolverBucket_const_it SystemBucket::solvers_end() const
 }
 
 //*******************************************************************|************************************************************//
-// return an iterator to the beginning of the dirichletbcs_ vector
+// return an iterator to the beginning of the bcs_ vector
 //*******************************************************************|************************************************************//
-std::vector< const dolfin::DirichletBC* >::iterator SystemBucket::dirichletbcs_begin()
+std::vector< const dolfin::DirichletBC* >::iterator SystemBucket::bcs_begin()
 {
-  return dirichletbcs_.begin();
+  return bcs_.begin();
 }
 
 //*******************************************************************|************************************************************//
-// return a constant iterator to the beginning of the dirichletbcs_ vector
+// return a constant iterator to the beginning of the bcs_ vector
 //*******************************************************************|************************************************************//
-std::vector< const dolfin::DirichletBC* >::const_iterator SystemBucket::dirichletbcs_begin() const
+std::vector< const dolfin::DirichletBC* >::const_iterator SystemBucket::bcs_begin() const
 {
-  return dirichletbcs_.begin();
+  return bcs_.begin();
 }
 
 //*******************************************************************|************************************************************//
-// return an iterator to the end of the dirichletbcs_ vector
+// return an iterator to the end of the bcs_ vector
 //*******************************************************************|************************************************************//
-std::vector< const dolfin::DirichletBC* >::iterator SystemBucket::dirichletbcs_end()
+std::vector< const dolfin::DirichletBC* >::iterator SystemBucket::bcs_end()
 {
-  return dirichletbcs_.end();
+  return bcs_.end();
 }
 
 //*******************************************************************|************************************************************//
-// return a constant iterator to the end of the dirichletbcs_ vector
+// return a constant iterator to the end of the bcs_ vector
 //*******************************************************************|************************************************************//
-std::vector< const dolfin::DirichletBC* >::const_iterator SystemBucket::dirichletbcs_end() const
+std::vector< const dolfin::DirichletBC* >::const_iterator SystemBucket::bcs_end() const
 {
-  return dirichletbcs_.end();
+  return bcs_.end();
 }
 
 //*******************************************************************|************************************************************//
@@ -548,38 +547,6 @@ void SystemBucket::output(const bool &write_vis)
   {
     (*(*f_it).second).output(write_vis);
   }
-}
-
-//*******************************************************************|************************************************************//
-// return an iterator to the beginning of the referencepoints_ vector
-//*******************************************************************|************************************************************//
-std::vector<ReferencePoints_ptr>::iterator SystemBucket::referencepoints_begin()
-{
-  return referencepoints_.begin();
-}
-
-//*******************************************************************|************************************************************//
-// return a constant iterator to the beginning of the referencepoints_ vector
-//*******************************************************************|************************************************************//
-std::vector<ReferencePoints_ptr>::const_iterator SystemBucket::referencepoints_begin() const
-{
-  return referencepoints_.begin();
-}
-
-//*******************************************************************|************************************************************//
-// return an iterator to the end of the referencepoints_ vector
-//*******************************************************************|************************************************************//
-std::vector<ReferencePoints_ptr>::iterator SystemBucket::referencepoints_end()
-{
-  return referencepoints_.end();
-}
-
-//*******************************************************************|************************************************************//
-// return a constant iterator to the end of the referencepoints_ vector
-//*******************************************************************|************************************************************//
-std::vector<ReferencePoints_ptr>::const_iterator SystemBucket::referencepoints_end() const
-{
-  return referencepoints_.end();
 }
 
 //*******************************************************************|************************************************************//
@@ -803,38 +770,14 @@ void SystemBucket::apply_ic_()
 //*******************************************************************|************************************************************//
 // apply the vector of system boundary conditions to the system function vectors to ensure consisten initial and boundary conditions
 //*******************************************************************|************************************************************//
-void SystemBucket::apply_dirichletbc_()
+void SystemBucket::apply_bcs_()
 {
-  for (FunctionBucket_const_it f_it = fields_begin();     // loop over all the fields
-                                f_it != fields_end(); f_it++)
+  for (std::vector< const dolfin::DirichletBC* >::const_iterator     // loop over all the bcs
+       b_it = bcs_begin(); b_it != bcs_end(); b_it++)
   {
-    for (DirichletBC_const_it                                    // loop over all the bcs
-         b_it = (*(*f_it).second).dirichletbcs_begin(); 
-         b_it != (*(*f_it).second).dirichletbcs_end(); b_it++)
-    {
-      (*(*b_it).second).apply((*(*oldfunction_).vector()));
-      (*(*b_it).second).apply((*(*iteratedfunction_).vector()));
-      (*(*b_it).second).apply((*(*function_).vector()));
-    }
-  }
-}
-
-//*******************************************************************|************************************************************//
-// apply the vector of system reference points to the system function vectors to ensure consistent initial and boundary conditions
-//*******************************************************************|************************************************************//
-void SystemBucket::apply_referencepoints_()
-{
-  for (FunctionBucket_const_it f_it = fields_begin();     // loop over all the fields
-                                f_it != fields_end(); f_it++)
-  {
-    for (ReferencePoints_const_it                                    // loop over all the points
-         p_it = (*(*f_it).second).referencepoints_begin(); 
-         p_it != (*(*f_it).second).referencepoints_end(); p_it++)
-    {
-      (*(*p_it).second).apply((*(*oldfunction_).vector()));
-      (*(*p_it).second).apply((*(*iteratedfunction_).vector()));
-      (*(*p_it).second).apply((*(*function_).vector()));
-    }
+    (**b_it).apply((*(*oldfunction_).vector()));
+    (**b_it).apply((*(*iteratedfunction_).vector()));
+    (**b_it).apply((*(*function_).vector()));
   }
 }
 

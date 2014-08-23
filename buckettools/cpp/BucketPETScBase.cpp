@@ -61,8 +61,7 @@ PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f,
 
   Function_ptr iteratedfunction = (*system).iteratedfunction();      // collect the iterated system bucket function
   const std::vector< const dolfin::DirichletBC* >& bcs = 
-                                         (*system).dirichletbcs();   // get the vector of bcs
-  const std::vector<ReferencePoints_ptr>& points = (*system).referencepoints();// get the vector of reference points
+                                         (*system).bcs();   // get the vector of bcs
   dolfin::PETScVector rhs(f), iteratedvec(x);
 
   (*(*iteratedfunction).vector()) = iteratedvec;                     // update the iterated system bucket function
@@ -76,11 +75,6 @@ PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f,
     (*bcs[i]).apply(rhs, (*(*iteratedfunction).vector()));
   }
   
-  for(uint i = 0; i < points.size(); ++i)                            // loop over the reference points
-  {
-    (*points[i]).apply(rhs, (*(*iteratedfunction).vector()));
-  }
-
   MatNullSpace sp = (*solver).nullspace();
   if (sp)
   {
@@ -150,8 +144,7 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
 
   Function_ptr iteratedfunction = (*system).iteratedfunction();      // collect the iterated system bucket function
   const std::vector< const dolfin::DirichletBC* >& bcs = 
-                                         (*system).dirichletbcs();   // get the vector of bcs
-  const std::vector<ReferencePoints_ptr>& points = (*system).referencepoints();// get the vector of reference points
+                                         (*system).bcs();   // get the vector of bcs
   dolfin::PETScVector iteratedvec(x);
   dolfin::PETScMatrix matrix(*A), matrixpc(*B);
 
@@ -162,10 +155,6 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
   dolfin::SystemAssembler assembler((*solver).bilinear_form(), (*solver).linear_form(),
                                     bcs);
   assembler.assemble(matrix);                                        // assemble the matrix from the context bilinear form
-  for(uint i = 0; i < points.size(); ++i)                            // loop over the reference points
-  {
-    (*points[i]).apply(matrix);
-  }
   if ((*solver).ident_zeros())
   {
     matrix.ident_zeros();
@@ -176,10 +165,6 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
     dolfin::SystemAssembler assemblerpc((*solver).bilinearpc_form(), (*solver).linear_form(),
                                       bcs);
     assemblerpc.assemble(matrixpc);
-    for(uint i = 0; i < points.size(); ++i)                          // loop over the points
-    {
-      (*points[i]).apply(matrixpc);
-    }
     if ((*solver).ident_zeros_pc())
     {
       matrixpc.ident_zeros();
@@ -193,10 +178,6 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
     dolfin::SystemAssembler assemblerform((*f_it).second, (*solver).linear_form(),
                                       bcs);
     assemblerform.assemble(*solvermatrix);
-    for(uint i = 0; i < points.size(); ++i)                          // loop over the points
-    {
-      (*points[i]).apply(*solvermatrix);
-    }
     if((*solver).solverident_zeros((*f_it).first))
     {
       (*solvermatrix).ident_zeros();

@@ -24,6 +24,7 @@
 
 #include "BoostTypes.h"
 #include "PointDetectors.h"
+#include "ReferencePoint.h"
 #include <dolfin.h>
 
 namespace buckettools
@@ -264,16 +265,16 @@ namespace buckettools
     // Reference point data access
     //***************************************************************|***********************************************************//
 
-    void register_referencepoint(ReferencePoints_ptr point, 
+    void register_referencepoint(ReferencePoint_ptr point, 
                                         const std::string &name);    // register a point in this function
 
-    ReferencePoints_it referencepoints_begin();                      // return an iterator to the beginning of the points of this function
+    ReferencePoint_it referencepoints_begin();                       // return an iterator to the beginning of the points of this function
 
-    ReferencePoints_const_it referencepoints_begin() const;          // return a constant iterator to the beginning of the points of this function
+    ReferencePoint_const_it referencepoints_begin() const;           // return a constant iterator to the beginning of the points of this function
 
-    ReferencePoints_it referencepoints_end();                        // return an iterator to the end of the points of this function
+    ReferencePoint_it referencepoints_end();                         // return an iterator to the end of the points of this function
 
-    ReferencePoints_const_it referencepoints_end() const;            // return a constant iterator to the end of the points of this function
+    ReferencePoint_const_it referencepoints_end() const;             // return a constant iterator to the end of the points of this function
 
     //***************************************************************|***********************************************************//
     // Output functions
@@ -375,9 +376,9 @@ namespace buckettools
 
     std::map< std::string, Expression_ptr > bcexpressions_;          // map from bc names to bc expression (boost shared) pointers
     
-    ordered_map<const std::string, DirichletBC_ptr> dirichletbcs_;   // map from bc::id names to (boost shared) pointers to dirichlet bcs
+    ordered_map<const std::string, DirichletBC_ptr> dirichletbcs_;   // map from bc names to (boost shared) pointers to dirichlet bcs
 
-    ordered_map<const std::string, ReferencePoints_ptr> referencepoints_;   // map from bc::id names to (boost shared) pointers to bcs
+    ordered_map<const std::string, ReferencePoint_ptr> referencepoints_;   // map from bc::id names to (boost shared) pointers to bcs
 
     std::vector< PointDetectors_ptr > zeropoints_;                   // a list of zero points
     

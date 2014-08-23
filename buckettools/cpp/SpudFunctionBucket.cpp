@@ -636,7 +636,7 @@ void SpudFunctionBucket::allocate_field_()
     {
       buffer.str(""); buffer << optionpath() 
                     << "/type/rank/zero_point[" << i << "]";
-      fill_zero_point_(buffer.str());                                // and fill in details about the reference point
+      fill_zero_point_(buffer.str());                                // and fill in details about the zero point
     }
   }
     
@@ -789,6 +789,7 @@ void SpudFunctionBucket::fill_reference_point_(const std::string &optionpath)
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
+  std::stringstream namebuffer;                                      // a buffer to assemble this point's component name
   
   std::string pointname;                                             // point name
   buffer.str(""); buffer << optionpath << "/name";
@@ -800,14 +801,25 @@ void SpudFunctionBucket::fill_reference_point_(const std::string &optionpath)
   serr = Spud::get_option(buffer.str(), coord);
   spud_err(buffer.str(), serr);
   
-  buffer.str(""); buffer << optionpath 
-                         << "/sub_components/components";            // how many subcomponents exist?
-  if (Spud::have_option(buffer.str()))
+  Constant_ptr value( new dolfin::Constant(0.0) );                    // works because we should always be scalar below
+
+  const uint num_sub_elements = (*(*functionspace()).element()).num_sub_elements();
+  if (num_sub_elements>0)
   {
     std::vector<int> subcompids;
-    serr = Spud::get_option(buffer.str(), subcompids);               // get a list of the subcomponents 
-    spud_err(buffer.str(), serr);
-    
+    buffer.str(""); buffer << optionpath 
+                           << "/sub_components/components";            // do subcomponents exist?
+    if (Spud::have_option(buffer.str()))
+    {
+      serr = Spud::get_option(buffer.str(), subcompids);               // get a list of the subcomponents 
+      spud_err(buffer.str(), serr);
+    }
+    else
+    {
+      subcompids.resize(size());                                       // we do this to ensure we're applying
+      std::iota(subcompids.begin(), subcompids.end(), 0);              // ref point to scalar functionspace
+    }
+      
     for (std::vector<int>::const_iterator subcompid =                // loop over those subcomponents
                                           subcompids.begin(); 
                       subcompid < subcompids.end(); subcompid++)
@@ -816,14 +828,16 @@ void SpudFunctionBucket::fill_reference_point_(const std::string &optionpath)
       FunctionSpace_ptr subfunctionspace =                           // grab the subspace from the field functionspace
                                     (*functionspace())[*subcompid];  // happily dolfin caches this for us
        
-      ReferencePoints_ptr point(new ReferencePoints(coord, subfunctionspace, pointname));
-      register_referencepoint(point, pointname);                     // register the point in the function bucket
+      ReferencePoint_ptr point(new ReferencePoint(coord, subfunctionspace, value));
+      namebuffer.str(""); namebuffer << pointname << "::" 
+                                 << *subcompid;                      // assemble a name incorporating the subcompid
+      register_referencepoint(point, namebuffer.str());              // register the point in the function bucket
        
     }
   }
   else                                                               // no components (scalar or using all components)
-  {
-    ReferencePoints_ptr point(new ReferencePoints(coord, functionspace(), pointname));
+  {                                                                  // this case is included because you can't index a scalar fs
+    ReferencePoint_ptr point(new ReferencePoint(coord, functionspace(), value));
     register_referencepoint(point, pointname);                       // register the point in the function bucket
   }
 }

@@ -24,7 +24,6 @@
 
 #include "BoostTypes.h"
 #include "FunctionBucket.h"
-#include "ReferencePoints.h"
 #include <dolfin.h>
 
 namespace buckettools
@@ -226,36 +225,18 @@ namespace buckettools
     // BC data access
     //***************************************************************|***********************************************************//
 
-    std::vector< const dolfin::DirichletBC* >::iterator dirichletbcs_begin();// return an iterator to the beginning of the system bcs
+    std::vector< const dolfin::DirichletBC* >::iterator bcs_begin();// return an iterator to the beginning of the system bcs
 
-    std::vector< const dolfin::DirichletBC* >::const_iterator dirichletbcs_begin()// return a constant iterator to the beginning of the system
+    std::vector< const dolfin::DirichletBC* >::const_iterator bcs_begin()// return a constant iterator to the beginning of the system
                                                           const;     // bcs
 
-    std::vector< const dolfin::DirichletBC* >::iterator dirichletbcs_end();  // return an iterator to the end of the system bcs
+    std::vector< const dolfin::DirichletBC* >::iterator bcs_end();  // return an iterator to the end of the system bcs
 
-    std::vector< const dolfin::DirichletBC* >::const_iterator dirichletbcs_end()// return a constant iterator to the end of the system bcs
+    std::vector< const dolfin::DirichletBC* >::const_iterator bcs_end()// return a constant iterator to the end of the system bcs
                                                           const;
 
-    const std::vector< const dolfin::DirichletBC* > dirichletbcs() const     // return a constant vector of system bcs
-    { return dirichletbcs_; }
-    
-    //***************************************************************|***********************************************************//
-    // Reference point data access
-    //***************************************************************|***********************************************************//
-
-    std::vector<ReferencePoints_ptr>::iterator referencepoints_begin();// return an iterator to the beginning of the system reference
-                                                                     // points
-
-    std::vector<ReferencePoints_ptr>::const_iterator referencepoints_begin()// return a constant iterator to the beginning of the system
-                                                          const;     // reference points
-
-    std::vector<ReferencePoints_ptr>::iterator referencepoints_end();// return an iterator to the end of the system reference points
-
-    std::vector<ReferencePoints_ptr>::const_iterator referencepoints_end()// return a constant iterator to the end of the system
-                                                          const;     // reference points
-
-    const std::vector< ReferencePoints_ptr > referencepoints() const // return a constant vector of system reference points
-    { return referencepoints_; }
+    const std::vector< const dolfin::DirichletBC* > bcs() const     // return a constant vector of system bcs
+    { return bcs_; }
     
     //***************************************************************|***********************************************************//
     // Output functions
@@ -313,9 +294,7 @@ namespace buckettools
 
     void apply_ic_();                                                // apply the initial conditions to the system function
 
-    void apply_dirichletbc_();                                       // apply the Dirichlet bcs to the system function
-
-    void apply_referencepoints_();                                   // apply the reference points to the system function
+    void apply_bcs_();                                               // apply the Dirichlet bcs to the system function
 
     //***************************************************************|***********************************************************//
     // Base data
@@ -364,9 +343,7 @@ namespace buckettools
     ordered_map<const std::string, SolverBucket_ptr> solvers_;             // a map from solver bucket names to (boost shared) pointers to
                                                                      // solver buckets
 
-    std::vector< const dolfin::DirichletBC* > dirichletbcs_;         // a vector of (boost shared) poitners to the dirichlet bcs
-
-    std::vector< ReferencePoints_ptr > referencepoints_;             // a vector of (boost shared) poitners to reference points
+    std::vector< const dolfin::DirichletBC* > bcs_;                  // a vector of (boost shared) poitners to the dirichlet bcs
 
     //***************************************************************|***********************************************************//
     // Output functions (continued)

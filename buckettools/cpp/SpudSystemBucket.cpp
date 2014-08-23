@@ -65,8 +65,6 @@ void SpudSystemBucket::fill()
 
   fill_bcs_();                                                       // fill in data about the bcs relative to the system (includes
                                                                      // periodic)
-  fill_referencepoints_();                                           // initialize the reference point array of this system
- 
   fill_coeffs_();                                                    // initialize the coefficient expressions (and constants)
                                                                      // (can't do coefficient functions now because it's unlikely we 
                                                                      // have all the coefficient functionspaces)
@@ -353,31 +351,20 @@ void SpudSystemBucket::fill_bcs_()
   for (FunctionBucket_const_it f_it = fields_begin();     // loop over all the fields
                                 f_it != fields_end(); f_it++)
   {
-    for (DirichletBC_const_it                                    // loop over the dirichlet bcs
+    for (DirichletBC_const_it                                    // loop over the bcs
           b_it = (*(*f_it).second).dirichletbcs_begin(); 
           b_it != (*(*f_it).second).dirichletbcs_end(); b_it++)
     {
-      dirichletbcs_.push_back(&(*std::dynamic_pointer_cast<dolfin::DirichletBC>((*b_it).second)));                       // add the bcs to a std vector
+      bcs_.push_back(&(*(*b_it).second));                   // add the bcs to a std vector
     }
-  }
-
-}
-
-//*******************************************************************|************************************************************//
-// fill in the data about the system points (just grabs them from the fields)
-//*******************************************************************|************************************************************//
-void SpudSystemBucket::fill_referencepoints_()
-{
-  for (FunctionBucket_const_it f_it = fields_begin();     // loop over all the fields
-                                f_it != fields_end(); f_it++)
-  {
-    for (ReferencePoints_const_it                                    // loop over all the points
+    for (ReferencePoint_const_it                                    // loop over all the points
           p_it = (*(*f_it).second).referencepoints_begin(); 
           p_it != (*(*f_it).second).referencepoints_end(); p_it++)
     {
-      referencepoints_.push_back((*p_it).second);                    // add the point to a std vector
+      bcs_.push_back(&(*(*p_it).second));                    // add the point to a std vector
     }
   }
+
 }
 
 //*******************************************************************|************************************************************//

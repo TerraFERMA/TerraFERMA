@@ -781,9 +781,9 @@ DirichletBC_const_it FunctionBucket::dirichletbcs_end() const
 //*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a reference point in the function bucket data maps
 //*******************************************************************|************************************************************//
-void FunctionBucket::register_referencepoint(ReferencePoints_ptr point, const std::string &name)
+void FunctionBucket::register_referencepoint(ReferencePoint_ptr point, const std::string &name)
 {
-  ReferencePoints_hash_it p_it = referencepoints_.get<om_key_hash>().find(name);             // check if the name already exists
+  ReferencePoint_hash_it p_it = referencepoints_.get<om_key_hash>().find(name);             // check if the name already exists
   if (p_it != referencepoints_.get<om_key_hash>().end())
   {
     tf_err("ReferencePoint already exists in function.", "ReferencePoint name: %s, Function name: %s, System name: %s", 
@@ -791,14 +791,14 @@ void FunctionBucket::register_referencepoint(ReferencePoints_ptr point, const st
   }
   else
   {
-    referencepoints_.insert(om_item<const std::string,ReferencePoints_ptr>(name, point));             // if not, register the bc
+    referencepoints_.insert(om_item<const std::string,ReferencePoint_ptr>(name, point));             // if not, register the bc
   }
 }
 
 //*******************************************************************|************************************************************//
 // return an iterator to the beginning of the referencepoints_ map
 //*******************************************************************|************************************************************//
-ReferencePoints_it FunctionBucket::referencepoints_begin()
+ReferencePoint_it FunctionBucket::referencepoints_begin()
 {
   return referencepoints_.get<om_key_seq>().begin();
 }
@@ -806,7 +806,7 @@ ReferencePoints_it FunctionBucket::referencepoints_begin()
 //*******************************************************************|************************************************************//
 // return a constant iterator to the beginning of the referencepoints_ map
 //*******************************************************************|************************************************************//
-ReferencePoints_const_it FunctionBucket::referencepoints_begin() const
+ReferencePoint_const_it FunctionBucket::referencepoints_begin() const
 {
   return referencepoints_.get<om_key_seq>().begin();
 }
@@ -814,7 +814,7 @@ ReferencePoints_const_it FunctionBucket::referencepoints_begin() const
 //*******************************************************************|************************************************************//
 // return an iterator to the end of the referencepoints_ map
 //*******************************************************************|************************************************************//
-ReferencePoints_it FunctionBucket::referencepoints_end()
+ReferencePoint_it FunctionBucket::referencepoints_end()
 {
   return referencepoints_.get<om_key_seq>().end();
 }
@@ -822,7 +822,7 @@ ReferencePoints_it FunctionBucket::referencepoints_end()
 //*******************************************************************|************************************************************//
 // return a constant iterator to the end of the referencepoints_ map
 //*******************************************************************|************************************************************//
-ReferencePoints_const_it FunctionBucket::referencepoints_end() const
+ReferencePoint_const_it FunctionBucket::referencepoints_end() const
 {
   return referencepoints_.get<om_key_seq>().end();
 }

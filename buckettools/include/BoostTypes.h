@@ -58,8 +58,8 @@ namespace buckettools {
   typedef std::shared_ptr< SolverBucket >     SolverBucket_ptr;
   class GenericDetectors;                                            // predeclaration
   typedef std::shared_ptr< GenericDetectors > GenericDetectors_ptr;
-  class ReferencePoints;                                             // predeclaration
-  typedef std::shared_ptr< ReferencePoints >  ReferencePoints_ptr;
+  class ReferencePoint;                                              // predeclaration
+  typedef std::shared_ptr< ReferencePoint >  ReferencePoint_ptr;
 
   //*****************************************************************|************************************************************//
   // std shared pointers to dolfin objects
@@ -82,6 +82,7 @@ namespace buckettools {
   typedef std::shared_ptr< dolfin::GenericVector >                GenericVector_ptr;
   typedef std::shared_ptr< dolfin::File >                         File_ptr;
   typedef std::shared_ptr< dolfin::Array<double> >                Array_double_ptr;
+  typedef std::shared_ptr< dolfin::SubDomain >                    SubDomain_ptr;
 
   //*****************************************************************|************************************************************//
   // iterators to std shared pointers in map pointer structures
@@ -163,10 +164,10 @@ namespace buckettools {
   typedef boost::multi_index::index<ordered_map<const std::string,DirichletBC_ptr>,om_key_seq>::type::iterator        DirichletBC_it;
   typedef boost::multi_index::index<ordered_map<const std::string,DirichletBC_ptr>,om_key_seq>::type::const_iterator  DirichletBC_const_it;
 
-  typedef boost::multi_index::index<ordered_map<const std::string,ReferencePoints_ptr>,om_key_hash>::type::iterator       ReferencePoints_hash_it;
-  typedef boost::multi_index::index<ordered_map<const std::string,ReferencePoints_ptr>,om_key_hash>::type::const_iterator ReferencePoints_const_hash_it;
-  typedef boost::multi_index::index<ordered_map<const std::string,ReferencePoints_ptr>,om_key_seq>::type::iterator        ReferencePoints_it;
-  typedef boost::multi_index::index<ordered_map<const std::string,ReferencePoints_ptr>,om_key_seq>::type::const_iterator  ReferencePoints_const_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,ReferencePoint_ptr>,om_key_hash>::type::iterator       ReferencePoint_hash_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,ReferencePoint_ptr>,om_key_hash>::type::const_iterator ReferencePoint_const_hash_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,ReferencePoint_ptr>,om_key_seq>::type::iterator        ReferencePoint_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,ReferencePoint_ptr>,om_key_seq>::type::const_iterator  ReferencePoint_const_it;
 
   typedef boost::multi_index::index<ordered_map<const std::string,std::vector<std::string>>,om_key_hash>::type::iterator       vector_string_hash_it;
   typedef boost::multi_index::index<ordered_map<const std::string,std::vector<std::string>>,om_key_hash>::type::const_iterator vector_string_const_hash_it;

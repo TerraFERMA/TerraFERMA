@@ -104,6 +104,55 @@ for field in fields:
         </variable>
       </variables>
     </simulation>
+    <simulation name="RP">
+      <input_file>
+        <string_value lines="1" type="filename">poisson_rp.tfml</string_value>
+      </input_file>
+      <parameter_sweep>
+        <parameter name="nprocs">
+          <values>1 2 3</values>
+          <process_scale>
+            <integer_value shape="3" rank="1">1 2 3</integer_value>
+          </process_scale>
+        </parameter>
+        <parameter name="ncells">
+          <values>5 10 20</values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+libspud.set_option("/geometry/mesh::Mesh/source::UnitSquare/number_cells", [int(ncells), int(ncells)])</string_value>
+            <single_build/>
+          </update>
+        </parameter>
+      </parameter_sweep>
+      <variables>
+        <variable name="error_l2_rp">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+from math import sqrt
+fields = ["AbsoluteDifference1", "AbsoluteDifference2", "AbsoluteDifference30", "AbsoluteDifference31"]
+stat = parser("poisson.stat")
+error_l2_rp = []
+for field in fields:
+  error_l2_rp.append(sqrt(stat["Poisson"][field]["L2NormSquared"][-1]))</string_value>
+        </variable>
+        <variable name="error_linf_rp">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+from math import sqrt
+fields = ["AbsoluteDifference1", "AbsoluteDifference2", "AbsoluteDifference30", "AbsoluteDifference31"]
+stat = parser("poisson.stat")
+error_linf_rp = []
+for field in fields:
+  error_linf_rp.append(stat["Poisson"][field]["max"][-1])</string_value>
+        </variable>
+        <variable name="bottomleft_rp">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+det = parser("poisson.det")
+fields = ["Field1", "Field2", "Field3_0", "Field3_1"]
+bottomleft_rp = []
+for field in fields:
+  bottomleft_rp.append(det["Poisson"][field]["BottomLeft"][-1][-1])</string_value>
+        </variable>
+      </variables>
+    </simulation>
   </simulations>
   <tests>
     <test name="error_l2_p1">
@@ -126,11 +175,10 @@ for np in error_l2.parameters["nprocs"]:
   conv_linf.append(numpy.log2(error_linf_a[:-1]/error_linf_a[1:]))
 conv_linf = numpy.array(conv_linf)
 print conv_linf
-assert(numpy.all(conv_linf &gt; 1.25))
-</string_value>
+assert(numpy.all(conv_linf &gt; 1.25))</string_value>
     </test>
     <test name="bottomleft">
-      <string_value type="code" lines="20" language="python">import numpy
+      <string_value lines="20" type="code" language="python">import numpy
 print bottomleft
 assert numpy.all(abs(numpy.array(bottomleft)) &lt; 1.e-10)</string_value>
     </test>
@@ -160,6 +208,33 @@ assert(numpy.all(conv_linf &gt; 1.25))</string_value>
       <string_value lines="20" type="code" language="python">import numpy
 print bottomleft_m
 assert numpy.all(abs(numpy.array(bottomleft_m)) &lt; 1.e-10)</string_value>
+    </test>
+    <test name="error_l2_p1_rp">
+      <string_value lines="20" type="code" language="python">import numpy
+print error_l2_rp[{'degree':['1']}]
+conv_l2 = []
+for np in error_l2_rp.parameters["nprocs"]:
+  error_l2_a = numpy.array(error_l2_rp[{'degree':['1'], 'nprocs':[np]}])
+  conv_l2.append(numpy.log2(error_l2_a[:-1]/error_l2_a[1:]))
+conv_l2 = numpy.array(conv_l2)
+print conv_l2
+assert(numpy.all(conv_l2 &gt; 1.5))</string_value>
+    </test>
+    <test name="error_linf_p1_rp">
+      <string_value lines="20" type="code" language="python">import numpy
+print error_linf_rp[{'degree':['1']}]
+conv_linf = []
+for np in error_l2_rp.parameters["nprocs"]:
+  error_linf_a = numpy.array(error_linf_rp[{'degree':['1'], 'nprocs':[np]}])
+  conv_linf.append(numpy.log2(error_linf_a[:-1]/error_linf_a[1:]))
+conv_linf = numpy.array(conv_linf)
+print conv_linf
+assert(numpy.all(conv_linf &gt; 1.25))</string_value>
+    </test>
+    <test name="bottomleft_rp">
+      <string_value lines="20" type="code" language="python">import numpy
+print bottomleft_rp
+assert numpy.all(abs(numpy.array(bottomleft_rp)) &lt; 1.e-10)</string_value>
     </test>
   </tests>
 </harness_options>
