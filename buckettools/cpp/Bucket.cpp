@@ -67,6 +67,11 @@ Bucket::~Bucket()
   {  
     (*steadyfile_).close();
   }
+  if(rtol_)
+  {
+    delete rtol_;
+    rtol_ = NULL;
+  }
 }
 
 //*******************************************************************|************************************************************//
@@ -1207,14 +1212,79 @@ void Bucket::solve_at_start_()
 //*******************************************************************|************************************************************//
 void Bucket::solve_in_timeloop_()
 {
-  for (*iteration_count_ = 0; \
-       *iteration_count_ < nonlinear_iterations(); 
-       (*iteration_count_)++)                                        // loop over the nonlinear iterations
+  bool continue_iterating = true;
+  while (continue_iterating)
   {
     solve(SOLVE_TIMELOOP);                                           // solve all systems in the bucket
 
     //update_nonlinear();
+
+    continue_iterating = !complete_iterating_();
+
   }
+}
+
+//*******************************************************************|************************************************************//
+// return a boolean indicating if the timestep has finished iterating or not
+//*******************************************************************|************************************************************//
+bool Bucket::complete_iterating_()
+{
+  bool completed = true;
+  
+  if (rtol_)
+  {
+    
+  }
+
+
+  while (iteration_count() < minits_ ||                            // loop for the minimum number of iterations or
+        (iteration_count() < maxits_ &&                            // up to the maximum number of iterations 
+                         rerror > rtol_ && aerror > atol_))        // until the max is reached or a tolerance criterion is
+  
+  if (iteration_count() >= minits_ &&
+      (iteration_count() >= maxits_ || rerror <= rtol_ || aerror <= atol_))
+
+  if (rtol_||atol_)
+  {
+    // work out rerror here...?
+    if (rtol_)
+    if (rerror <= *rtol_)
+    {
+      log(INFO, "Finish time reached, terminating timeloop.");
+      completed = true;
+    }
+  }
+  if (atol_)
+  {
+    
+  }
+
+
+  else
+  {
+    if (timestep_count() >= number_timesteps())
+    {
+      log(INFO, "Number timesteps reached, terminating timeloop.");
+      completed = true;
+    }
+  }
+
+    if (iteration_count() == maxits_ && rerror > rtol_ && aerror > atol_)
+    {
+      log(WARNING, "it = %d, maxits_ = %d", iteration_count(), maxits_);
+      log(WARNING, "rerror = %f, rtol_ = %f", rerror, rtol_);
+      log(WARNING, "aerror = %f, atol_ = %f", aerror, atol_);
+      if (ignore_failures_)
+      {
+        log(WARNING, "Ignoring: Picard failure. Solver: %s::%s.", (*system_).name().c_str(), name().c_str());
+      }
+      else
+      {
+        tf_fail("Picard iterations failed to converge.", "Iteration count, relative error or absolute error too high.");
+      }
+    }
+
+  return completed;
 }
 
 //*******************************************************************|************************************************************//

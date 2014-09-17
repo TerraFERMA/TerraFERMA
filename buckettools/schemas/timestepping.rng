@@ -168,10 +168,49 @@ to the most recent compared to the given tolerance in the given norm</a:document
   </define>
   <define name="nonlinear">
     <element name="nonlinear_systems">
-      <a:documentation>Options to perform multiple iterations per timestep (i.e. to solve the systems repeatedly)</a:documentation>
-      <element name="nonlinear_iterations">
-        <a:documentation>The number of nonlinear iterations</a:documentation>
+      <a:documentation>Options to perform multiple iterations per timestep (i.e. to solve the systems repeatedly).
+
+If selected those systems marked to be solved in the timestep loop will be solved repeatedly, updating 
+interdependent coefficients at each system assembly and solve, until the requested convergence criteria
+are satisfied.
+
+Diagnostic systems will only be solved if convergence monitoring is requested.</a:documentation>
+      <element name="relative_error">
+        <a:documentation>The relative error allowed to remain in the vector l2 norm of the combined systems residual upon termination
+of the iteration loop.
+
+If a system contains multiple solvers, the residual defined in the last solver is taken as that system's
+residual.</a:documentation>
+        <ref name="real"/>
+      </element>
+      <optional>
+        <element name="absolute_error">
+          <a:documentation>The absolute error allowed to remain in the vector l2 norm of the combined systems residual upon termination
+of the iteration loop.
+
+Defaults to 1.e-50.</a:documentation>
+          <ref name="real"/>
+        </element>
+      </optional>
+      <element name="max_iterations">
+        <a:documentation>The maximum number of iterations to take in this nonlinear system loop.</a:documentation>
         <ref name="integer"/>
+      </element>
+      <optional>
+        <element name="min_iterations">
+          <a:documentation>The minimum number of iterations to take in this nonlinear system loop.</a:documentation>
+          <ref name="integer"/>
+        </element>
+      </optional>
+      <element name="monitors">
+        <a:documentation>Options to give extra information for each iteration of the
+timestep. Some of those may really slow down your computation!</a:documentation>
+        <optional>
+          <element name="convergence_file">
+            <a:documentation>Output a diagnostic file detailing the convergence of the nonlinear system iterations.</a:documentation>
+            <empty/>
+          </element>
+        </optional>
       </element>
     </element>
   </define>

@@ -369,6 +369,30 @@ void SpudBucket::fill_timestepping_()
   serr = Spud::get_option(buffer.str(), *nonlinear_iterations_, 1); 
   spud_err(buffer.str(), serr);
 
+  if (Spud::have_option("/nonlinear_systems"))
+  {
+    rtol_ = new double;
+    buffer.str(""); buffer << "/nonlinear_systems/relative_error";
+    serr = Spud::get_option(buffer.str(), *rtol_); 
+    spud_err(buffer.str(), serr);
+
+    buffer.str(""); buffer << "/nonlinear_systems/absolute_error";
+    serr = Spud::get_option(buffer.str(), atol_, 1.e-50); 
+    spud_err(buffer.str(), serr);
+
+    buffer.str(""); buffer << "/nonlinear_systems/max_iterations";
+    serr = Spud::get_option(buffer.str(), maxits_); 
+    spud_err(buffer.str(), serr);
+
+    buffer.str(""); buffer << "/nonlinear_systems/min_iterations";
+    serr = Spud::get_option(buffer.str(), minits_, 0);
+    spud_err(buffer.str(), serr);
+  }
+  else
+  {
+    rtol_ = NULL;
+  }
+
   buffer.str(""); buffer << "/timestepping";
   if (Spud::have_option(buffer.str()))
   {

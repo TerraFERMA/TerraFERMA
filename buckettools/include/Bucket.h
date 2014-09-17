@@ -305,8 +305,11 @@ namespace buckettools
     std::vector< std::pair< FunctionBucket_ptr, double > >           // constraints on the timestep in < FunctionBucket_ptr, max value > pairs
                                               timestep_constraints_;
 
-    int_ptr nonlinear_iterations_, iteration_count_;                 // the number of iterations requested and the number of nonlinear 
+    int_ptr iteration_count_;                                        // the number of iterations requested and the number of nonlinear 
                                                                      // iterations taken
+    int minits_, maxits_;                                            // nonlinear system iteration counts
+
+    double *rtol_, atol_;                                            // nonlinear system tolerances
     
     double_ptr steadystate_tol_;                                     // the steady state tolerance
 

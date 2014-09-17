@@ -116,7 +116,7 @@ picard =
       integer
     }?,
     ## Options to give extra information for each iteration of the
-    ## the Picard solve. Some of those may really slow down your computation!
+    ## Picard solve. Some of those may really slow down your computation!
     element monitors {
        ## Output a diagnostic file detailing the convergence of this solver.
        element convergence_file { 

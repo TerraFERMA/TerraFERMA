@@ -144,11 +144,45 @@ constant_timestep =
 
 nonlinear =
    (
-      ## Options to perform multiple iterations per timestep (i.e. to solve the systems repeatedly)
+      ## Options to perform multiple iterations per timestep (i.e. to solve the systems repeatedly).
+      ##
+      ## If selected those systems marked to be solved in the timestep loop will be solved repeatedly, updating 
+      ## interdependent coefficients at each system assembly and solve, until the requested convergence criteria
+      ## are satisfied.
+      ##
+      ## Diagnostic systems will only be solved if convergence monitoring is requested.
       element nonlinear_systems {
-        ## The number of nonlinear iterations
-        element nonlinear_iterations {
+        ## The relative error allowed to remain in the vector l2 norm of the combined systems residual upon termination
+        ## of the iteration loop.
+        ##
+        ## If a system contains multiple solvers, the residual defined in the last solver is taken as that system's
+        ## residual.
+        element relative_error {
+          real
+        },
+        ## The absolute error allowed to remain in the vector l2 norm of the combined systems residual upon termination
+        ## of the iteration loop.
+        ##
+        ## Defaults to 1.e-50.
+        element absolute_error {
+          real
+        }?,
+        ## The maximum number of iterations to take in this nonlinear system loop.
+        element max_iterations {
           integer
+        },
+        ## The minimum number of iterations to take in this nonlinear system loop.
+        element min_iterations {
+          integer
+        }?,
+        ## Options to give extra information for each iteration of the
+        ## timestep. Some of those may really slow down your computation!
+        element monitors {
+          ## Output a diagnostic file detailing the convergence of the nonlinear system iterations.
+          element convergence_file { 
+            empty
+          }?
         }
       }
    )
+
