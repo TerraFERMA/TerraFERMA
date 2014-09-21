@@ -461,15 +461,15 @@ the SNES solve. Some of those may really slow down your computation!</a:document
 
 Functions may only depend on space and should be of the form:
 
- def val(x):
-    # Function code
-    return # Return value
+    def val(x):
+       # Function code
+       return # Return value
 
 or:
 
- def val(x):
-    # Function code
-    return [..., ...] # Return value array
+    def val(x):
+       # Function code
+       return [..., ...] # Return value array
 
 The return value must have the same length as the number of components described above for this field.
 
@@ -498,15 +498,15 @@ Note if this part of the constraint has multiple components then all will be set
 
 Functions may only depend on space and should be of the form:
 
- def val(x):
-    # Function code
-    return # Return value
+    def val(x):
+       # Function code
+       return # Return value
 
 or:
 
- def val(x):
-    # Function code
-    return [..., ...] # Return value array
+    def val(x):
+       # Function code
+       return [..., ...] # Return value array
 
 The return value must have the same length as the number of components described above for this field.</a:documentation>
           <ref name="python_code"/>
@@ -542,6 +542,7 @@ If left unspecified, defaults to the whole boundary of the above region(s) (if s
   </define>
   <define name="is_monitor">
     <element name="monitors">
+      <a:documentation>Parent option for index set monitors.</a:documentation>
       <optional>
         <element name="view_index_set">
           <a:documentation>Prints PETSc information about the index set describing this index set.</a:documentation>
@@ -685,9 +686,18 @@ by the PETSc library. Many more methods are provided.</a:documentation>
   <define name="solver_failures">
     <choice>
       <element name="never_ignore_solver_failures">
+        <a:documentation>Never ignore solver failures (the highly recommended default).
+
+This option tests the convergence of the nonlinear solver and terminates the simulations at the end of the next timestep 
+if it has failed to converge.  Note that linear solves within the nonlinear solver may still allowed to fail.</a:documentation>
         <empty/>
       </element>
       <element name="ignore_all_solver_failures">
+        <a:documentation>Ignore solver failures.  Intended for debugging purposes only!
+
+**Do not use this option in any scientific simulation.**
+
+This option allows the simulation to continue even if this nonlinear solver fails to meet the convergence criteria.</a:documentation>
         <empty/>
       </element>
     </choice>
@@ -1120,6 +1130,7 @@ nullspaces python functions must be attached underneath the description of the f
         </element>
       </oneOrMore>
       <element name="monitors">
+        <a:documentation>Parent option for near-null-space monitors.</a:documentation>
         <optional>
           <element name="view_null_space">
             <a:documentation>Prints PETSc information about this null space</a:documentation>
@@ -1677,6 +1688,7 @@ nullspaces python functions must be attached underneath the description of the f
           </element>
         </oneOrMore>
         <element name="monitors">
+          <a:documentation>Parent option for null-space monitors.</a:documentation>
           <optional>
             <element name="view_null_space">
               <a:documentation>Prints PETSc information about this null space</a:documentation>

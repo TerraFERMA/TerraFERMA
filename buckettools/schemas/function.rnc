@@ -484,7 +484,9 @@ boundary_condition_tensor =
 
 reference_point_scalar = 
   (
-    ## Options for the description of a reference point at which field values are zeroed.
+    ## Options for the description of a reference point at which field values are zeroed during each solve 
+    ## by the imposition of an internal pointwise Dirichlet boundary condition at the nearest node to the
+    ## coordinates specified below.
     element reference_point {
       attribute name { "Point" },
       ## The coordinates of the reference point.  The node nearest these coordinates will be used.
@@ -496,7 +498,12 @@ reference_point_scalar =
 
 reference_point_tensor = 
   (
-    ## Options for the description of a reference point at which field values are zeroed.
+    ## Options for the description of a reference point at which field values are zeroed during each solve 
+    ## by the imposition of an internal pointwise Dirichlet boundary condition at the nearest node to the
+    ## coordinates specified below.
+    ##
+    ## This version defaults to the name Point.  If specifying more than one reference point (perhaps on different components) the name of each 
+    ## one must be unique so multiple instances of this default name are not allowed.
     element reference_point {
       attribute name { "Point" },
       ## The coordinates of the reference point.  The node nearest these coordinates will be used.
@@ -519,6 +526,11 @@ reference_point_tensor =
         }
       )
     }|
+    ## Options for the description of a reference point at which field values are zeroed during each solve 
+    ## by the imposition of an internal pointwise Dirichlet boundary condition at the nearest node to the
+    ## coordinates specified below.
+    ##
+    ## Names of each reference point (perhaps on different components) must be unique within this field specification.
     element reference_point {
       attribute name {xsd:string },
       ## The coordinates of the reference point.  The node nearest these coordinates will be used.
@@ -545,7 +557,10 @@ reference_point_tensor =
 
 zero_point_scalar = 
   (
-    ## Options for the description of a reference point at which field values are zeroed.
+    ## Options for the description of a zero point at which field values are zeroed after each nonlinear solve.
+    ##
+    ## Unlike reference points, a zero point is a post-processing calculation and so should be used in conjunction 
+    ## with a Lagrange multiplier or the removal of the null space if the solution would be ill conditioned otherwise.
     element zero_point {
       attribute name { "Point" },
       ## The coordinates of the reference point.  The node nearest these coordinates will be used.
@@ -557,7 +572,13 @@ zero_point_scalar =
 
 zero_point_tensor = 
   (
-    ## Options for the description of a zero point at which field values are zeroed.
+    ## Options for the description of a zero point at which field values are zeroed after each nonlinear solve.
+    ##
+    ## Unlike reference points, a zero point is a post-processing calculation and so should be used in conjunction 
+    ## with a Lagrange multiplier or the removal of the null space if the solution would be ill conditioned otherwise.
+    ##
+    ## This version defaults to the name Point.  If specifying more than one reference point the name of each 
+    ## one must be unique so multiple instances of this default name are not allowed.
     element zero_point {
       attribute name { "Point" },
       ## The coordinates of the zero point.
@@ -580,6 +601,12 @@ zero_point_tensor =
         }
       )
     }|
+    ## Options for the description of a zero point at which field values are zeroed after each nonlinear solve.
+    ##
+    ## Unlike reference points, a zero point is a post-processing calculation and so should be used in conjunction 
+    ## with a Lagrange multiplier or the removal of the null space if the solution would be ill conditioned otherwise.
+    ##
+    ## If specifying multiple zero points (perhaps on different components) their names must be unique within this field specification.
     element zero_point {
       attribute name {xsd:string },
       ## The coordinates of the zero point.
@@ -606,7 +633,11 @@ zero_point_tensor =
 
 value_cap_scalar = 
   (
-    ## Cap the values of the field after every solve
+    ## Cap the values of the field after every nonlinear solve.
+    ##
+    ## This is a postprocessing modification of the vector values and so will affect the value of the non-linear residual.  
+    ## In a coupled problem this will likely have implications on the other fields that this simple hack will not consider.  
+    ## Perhaps consider using SNES VI instead.
     element value_cap {
       attribute name { "Cap" },
       ## Do not let the maximum value exceed this cap
@@ -622,7 +653,14 @@ value_cap_scalar =
 
 value_cap_tensor = 
   (
-    ## Cap the values of the field after every solve
+    ## Cap the values of the field after every nonlinear solve.
+    ##
+    ## This is a postprocessing modification of the vector values and so will affect the value of the non-linear residual.  
+    ## In a coupled problem this will likely have implications on the other fields that this simple hack will not consider.  
+    ## Perhaps consider using SNES VI instead.
+    ##
+    ## This version defaults to the name Cap.  If specifying more than one value cap (perhaps on different components) the name of each 
+    ## one must be unique so multiple instances of this default name are not allowed.
     element value_cap {
       attribute name { "Cap" },
       ## Do not let the maximum value exceed this cap
@@ -649,6 +687,13 @@ value_cap_tensor =
         }
       )
     }|
+    ## Cap the values of the field after every nonlinear solve.
+    ##
+    ## This is a postprocessing modification of the vector values and so will affect the value of the non-linear residual.  
+    ## In a coupled problem this will likely have implications on the other fields that this simple hack will not consider.  
+    ## Perhaps consider using SNES VI instead.
+    ##
+    ## If specifying multiple value caps (perhaps on different components) their names must be unique within this field specification.
     element value_cap {
       attribute name {xsd:string },
       ## Do not let the maximum value exceed this cap
@@ -890,15 +935,15 @@ prescribed_scalar_python =
     ##
     ## Functions should be of the form:
     ##
-    ##  def val(x):
-    ##     # Function code
-    ##     return ... # Return value
+    ##     def val(x):
+    ##       # Function code
+    ##       return ... # Return value
     ##
     ##  for steady (time independent) expressions or:
     ##
-    ##  def val(x,t):
-    ##     # Function code
-    ##     return ... # Return value
+    ##     def val(x,t):
+    ##       # Function code
+    ##       return ... # Return value
     ##
     ##  for time dependent expressions.
     ##
@@ -916,15 +961,15 @@ prescribed_vector_python =
     ##
     ## Functions should be of the form:
     ##
-    ##  def val(x):
-    ##     # Function code
-    ##     return [..., ...] # Return value
+    ##     def val(x):
+    ##       # Function code
+    ##       return [..., ...] # Return value
     ##
     ##  for steady (time independent) expressions or:
     ##
-    ##  def val(x,t):
-    ##     # Function code
-    ##     return [..., ...] # Return value
+    ##     def val(x,t):
+    ##       # Function code
+    ##       return [..., ...] # Return value
     ##
     ##  for time dependent expressions.
     ##
@@ -941,15 +986,15 @@ prescribed_tensor_python =
     ##
     ## Functions should be of the form:
     ##
-    ##  def val(x):
-    ##     # Function code
-    ##     return [[..., ...],[..., ...],...] # Return value
+    ##     def val(x):
+    ##       # Function code
+    ##       return [[..., ...],[..., ...],...] # Return value
     ##
     ##  for steady (time independent) expressions or:
     ##
-    ##  def val(x,t):
-    ##     # Function code
-    ##     return [[..., ...],[..., ...],...] # Return value
+    ##     def val(x,t):
+    ##       # Function code
+    ##       return [[..., ...],[..., ...],...] # Return value
     ##
     ##  for time dependent expressions.
     ##
@@ -965,21 +1010,17 @@ prescribed_cpp =
   (
     ## Additional headers that are required for this expression.
     ##
-    ##
     ## These should be listed including an include statement, e.g.:
-    ## #include <string>
-    ## #include "example.h"
-    ##
+    ## 
+    ##     #include <string>
+    ##     #include "example.h"
     ##
     ## The expression will automatically include:
     ##
-    ## #include "BoostTypes.h"
-    ##
-    ## #include "Bucket.h"
-    ##
-    ## #include "SystemBucket.h"
-    ##
-    ## #include <dolfin.h>
+    ##     #include "BoostTypes.h"
+    ##     #include "Bucket.h"
+    ##     #include "SystemBucket.h"
+    ##     #include <dolfin.h>
     element include {
       cpp_code
     }?,
@@ -996,13 +1037,11 @@ prescribed_cpp =
     },
     ## Initialization routine for the private members declared above.
     ##
-    ##
     ## This initialization has full access to publicly accessible members of the bucket through
     ## the automatically provided bucket() function, which returns a pointer to the bucket class.  
     ## A shortcut to the members of this system is provided through the system() function, which 
     ## returns a pointer to this system class.  Finally, a boost shared pointer to the time is
     ## provided through the time() function.
-    ##
     ##
     ## The recommended way of accessing functions is through the function_ptr(time()) interface for
     ## systems and the genericfunction_ptr(time()) interface for fields and coefficients.  These return
@@ -1011,42 +1050,37 @@ prescribed_cpp =
     ## dependent function or generic function is also used. *time() may also be used to make the expression
     ## dependent on time.
     ##
-    ##
     ## For example, to extract a boost shared pointer to a generic function for a coefficient called 
     ## "ExampleCoefficient", we should have declared in the members section above:
     ##
-    ## std::shared_pointer< dolfin::GenericFunction > examplecoeff;
+    ##     std::shared_pointer< dolfin::GenericFunction > examplecoeff;
     ##
     ## or (utilizing the typedefs available to us through BoostTypes.h:
     ##
-    ## GenericFunction_ptr examplecoeff;
-    ##
+    ##     GenericFunction_ptr examplecoeff;
     ##
     ## Then, in this initialization function, we could extract the appropriate time level of that 
     ## coefficient from the "ExampleSystem" system using:
     ##
-    ## examplecoeff = bucket()->fetch_system("ExampleSystem")->fetch_coeff("ExampleCoefficient")->genericfunction_ptr(time())
+    ##     examplecoeff = bucket()->fetch_system("ExampleSystem")->fetch_coeff("ExampleCoefficient")->genericfunction_ptr(time())
     ##
     ## or, if "ExampleSystem" is the current system, using the shortcut:
     ##
-    ## examplecoeff = system()->fetch_coeff("ExampleCoefficient")->genericfunction_ptr(time())
-    ##
+    ##     examplecoeff = system()->fetch_coeff("ExampleCoefficient")->genericfunction_ptr(time())
     element initialization {
       cpp_code
     },
     ## Overload the eval subroutine for this expression.  This has the standard interface for DOLFIN 
     ## expressions, i.e.:
     ##
-    ## void eval(dolfin::Array<double>& values, const dolfin::Array<double>& x, const ufc::cell &cell) const
-    ##
+    ##     void eval(dolfin::Array<double>& values, const dolfin::Array<double>& x, const ufc::cell &cell) const
     ##
     ## To automatically evaluate and return the values of the "ExampleCoefficient" in the example in the 
     ## initialization section, all that would be required to write here is:
     ##
-    ## examplecoeff.eval(values, x, cell);
+    ##     examplecoeff.eval(values, x, cell);
     ##
     ## (assuming examplecoeff and this expression are of appropriately matched rank, shape and size).
-    ##
     element eval {
       cpp_code
     }

@@ -39,9 +39,7 @@ start =
    (
       ## The root node of the options dictionary for TerraFERMA.
       ##
-      ## Options which are shaded blue are incomplete and require input.
-      ## Greyed out options are optional.
-      ## Black options are active.
+      ## When viewed in diamond, options which are shaded blue are incomplete and require input.  Greyed out options are optional.  Black options are active.
       element terraferma_options {
          # in geometry.rnc
          geometry,

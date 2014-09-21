@@ -430,6 +430,14 @@ Dependency parameters do NOT list values as these are taken from the parent simu
           </attribute>
           <optional>
             <element name="update">
+              <a:documentation>Python code specifying how the input file should be modified to update this parameter.
+
+If no code is provided the parameter will not be modified at this level 
+(but may be modified at other dependency levels).
+
+The values of all the parameters for this simulation will be available to this code using 
+the names given to the parameters above.  They will be formatted as strings and should be converted 
+appropriately within the code.</a:documentation>
               <ref name="python_code"/>
               <optional>
                 <element name="single_build">

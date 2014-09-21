@@ -28,13 +28,13 @@ system_ufl_symbol =
     ## written in this file.
     ##
     ## Several additional symbols will be automatically derived from this base symbol:
-    ##   - trial (ansatz) function = symbol_a
+    ## - trial (ansatz) function = symbol_a
     ##     (the trial basis function, to be used in linear and bilinear forms)
-    ##   - test function           = symbol_t
+    ## - test function           = symbol_t
     ##     (the test basis function, to be used in bilinear forms)
-    ##   - iterated function       = symbol_i
+    ## - iterated function       = symbol_i
     ##     (the iterated function coefficient, containing the most up to date values for the system function)
-    ##   - old function            = symbol_n
+    ## - old function            = symbol_n
     ##     (the old function coefficient, containing the values from the previous timestep for the system function)
     ##
     element ufl_symbol {
@@ -50,13 +50,13 @@ field_ufl_symbol =
     ## written in this file.
     ##
     ## Several additional symbols will be automatically derived from this base symbol:
-    ##   - trial (ansatz) function = symbol_a
+    ## - trial (ansatz) function = symbol_a
     ##     (the trial basis function, to be used in linear and bilinear forms)
-    ##   - test function           = symbol_t
+    ## - test function           = symbol_t
     ##     (the test basis function, to be used in bilinear forms)
-    ##   - iterated function       = symbol_i
+    ## - iterated function       = symbol_i
     ##     (the iterated function coefficient, containing the most up to date values for the system function)
-    ##   - old function            = symbol_n
+    ## - old function            = symbol_n
     ##     (the old function coefficient, containing the values from the previous timestep for the system function)
     ##
     element ufl_symbol {
@@ -71,9 +71,9 @@ coeff_ufl_symbol =
     ## written in this file.
     ##
     ## Several additional symbols will be automatically derived from this base symbol:
-    ##   - iterated function       = symbol_i
+    ## - iterated function       = symbol_i
     ##     (the iterated function coefficient, containing the most up to date values for the system function)
-    ##   - old function            = symbol_n
+    ## - old function            = symbol_n
     ##     (the old function coefficient, containing the values from the previous timestep for the system function)
     ##
     element ufl_symbol {

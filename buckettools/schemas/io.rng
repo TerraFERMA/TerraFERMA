@@ -59,9 +59,9 @@
 
 Functions should be of the form:
 
- def val():
-    # Function code
-    return # Return value
+    def val():
+       # Function code
+       return # Return value
 
 The return value must have length &gt; 0 and each entry must be of the same dimension as the mesh.</a:documentation>
               <ref name="python_code"/>

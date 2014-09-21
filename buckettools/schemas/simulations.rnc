@@ -375,6 +375,14 @@ simulation_dependency_parameters =
          ## Dependency parameters do NOT list values as these are taken from the parent simulation.
          element parameter { 
             attribute name { xsd:string },
+            ## Python code specifying how the input file should be modified to update this parameter.
+            ##
+            ## If no code is provided the parameter will not be modified at this level 
+            ## (but may be modified at other dependency levels).
+            ## 
+            ## The values of all the parameters for this simulation will be available to this code using 
+            ## the names given to the parameters above.  They will be formatted as strings and should be converted 
+            ## appropriately within the code.
             element update {
                python_code,
                ## Turn this option on if updating this parameter does not require a rebuild.  

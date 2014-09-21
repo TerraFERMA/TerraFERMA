@@ -366,15 +366,15 @@ is_field_null =
         ##
         ## Functions may only depend on space and should be of the form:
         ##
-        ##  def val(x):
-        ##     # Function code
-        ##     return # Return value
+        ##     def val(x):
+        ##        # Function code
+        ##        return # Return value
         ##
         ## or:
         ##
-        ##  def val(x):
-        ##     # Function code
-        ##     return [..., ...] # Return value array
+        ##     def val(x):
+        ##        # Function code
+        ##        return [..., ...] # Return value array
         ##
         ## The return value must have the same length as the number of components described above for this field.
         ## 
@@ -403,15 +403,15 @@ is_field_constraints =
         ##
         ## Functions may only depend on space and should be of the form:
         ##
-        ##  def val(x):
-        ##     # Function code
-        ##     return # Return value
+        ##     def val(x):
+        ##        # Function code
+        ##        return # Return value
         ##
         ## or:
         ##
-        ##  def val(x):
-        ##     # Function code
-        ##     return [..., ...] # Return value array
+        ##     def val(x):
+        ##        # Function code
+        ##        return [..., ...] # Return value array
         ##
         ## The return value must have the same length as the number of components described above for this field.
         element python {
@@ -445,6 +445,7 @@ is_field_components =
 
 is_monitor =
   (
+    ## Parent option for index set monitors.
     element monitors {
       ## Prints PETSc information about the index set describing this index set.
       element view_index_set {
@@ -599,9 +600,18 @@ linear_solver_options_snes =
 solver_failures =
   (
     (
+      ## Never ignore solver failures (the highly recommended default).
+      ##
+      ## This option tests the convergence of the nonlinear solver and terminates the simulations at the end of the next timestep 
+      ## if it has failed to converge.  Note that linear solves within the nonlinear solver may still allowed to fail.
       element never_ignore_solver_failures {
         empty
       }|
+      ## Ignore solver failures.  Intended for debugging purposes only!
+      ##
+      ## **Do not use this option in any scientific simulation.**
+      ##
+      ## This option allows the simulation to continue even if this nonlinear solver fails to meet the convergence criteria.
       element ignore_all_solver_failures {
         empty
       }
@@ -1018,6 +1028,7 @@ near_null_space =
           attribute name { xsd:string },
           is_near_null_space
         }+,
+        ## Parent option for near-null-space monitors.
         element monitors {
           ## Prints PETSc information about this null space
           element view_null_space {
@@ -1510,6 +1521,7 @@ generic_solver_options =
            attribute name { xsd:string },
            is_null_space
          }+,
+         ## Parent option for null-space monitors.
          element monitors {
            ## Prints PETSc information about this null space
            element view_null_space {
