@@ -3,8 +3,12 @@
   <length>
     <string_value>short</string_value>
   </length>
-  <owner>cwilson</owner>
-  <description>Projection using a mixed element.</description>
+  <owner>
+    <string_value lines="1">cwilson</string_value>
+  </owner>
+  <description>
+    <string_value lines="1">Projection using a mixed element.</string_value>
+  </description>
   <simulations>
     <simulation name="Projection">
       <input_file>
@@ -12,7 +16,9 @@
       </input_file>
       <parameter_sweep>
         <parameter name="nproc">
-          <values>1 2 3</values>
+          <values>
+            <string_value lines="1">1 2 3</string_value>
+          </values>
           <process_scale>
             <integer_value shape="3" rank="1">1 2 3</integer_value>
           </process_scale>

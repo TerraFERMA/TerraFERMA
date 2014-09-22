@@ -3,8 +3,12 @@
   <length>
     <string_value>short</string_value>
   </length>
-  <owner>cwilson</owner>
-  <description>Tests Rayleigh-Barnard convection using a Schur complement solver.  Jumps to steady state.</description>
+  <owner>
+    <string_value lines="1">cwilson</string_value>
+  </owner>
+  <description>
+    <string_value lines="1">Tests Rayleigh-Barnard convection using a Schur complement solver.  Jumps to steady state.</string_value>
+  </description>
   <simulations>
     <simulation name="RBConvection">
       <input_file>

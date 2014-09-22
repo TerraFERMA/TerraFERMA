@@ -132,7 +132,7 @@ quadrature_rule =
       ## onto simplices.
       element quadrature_rule {
         attribute name { "default" },
-        empty
+        comment
       }|
       ## The quadrature rule that will be used when integrating the forms.
       ##
@@ -143,7 +143,7 @@ quadrature_rule =
       ## precision less than or equal to six.  Above this 'canonical' will automatically be used.
       element quadrature_rule {
         attribute name { "canonical" },
-        empty
+        comment
       }
     )
   )

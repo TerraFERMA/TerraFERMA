@@ -49,10 +49,12 @@ field_options =
               attribute name { "Tensor" },
               tensor_field_function_options
             }
-          )
+          ),
+          comment
         }
       ),
-      field_diagnostics_options
+      field_diagnostics_options,
+      comment
     }
   )
 
@@ -84,7 +86,8 @@ coefficient_options =
               attribute name { "Tensor" },
               tensor_coefficient_expression_options
             }
-          )
+          ),
+          comment
         }|
         ## The type of coefficient.
         ##
@@ -107,7 +110,8 @@ coefficient_options =
               attribute name { "Tensor" },
               tensor_coefficient_constant_options
             }
-          )
+          ),
+          comment
         }|
         ## The type of coefficient.
         ##
@@ -130,10 +134,12 @@ coefficient_options =
               attribute name { "Tensor" },
               tensor_coefficient_function_options
             }
-          )
+          ),
+          comment
         }
       ),
-      coeff_diagnostics_options
+      coeff_diagnostics_options,
+      comment
     }
   )
 
@@ -145,7 +151,8 @@ scalar_field_function_options =
     boundary_condition_scalar*,
     reference_point_scalar?,
     zero_point_scalar?,
-    value_cap_scalar?
+    value_cap_scalar?,
+    comment
   )
 
 vector_field_function_options =
@@ -156,7 +163,8 @@ vector_field_function_options =
     boundary_condition_vector*,
     reference_point_tensor*,
     zero_point_tensor*,
-    value_cap_tensor*
+    value_cap_tensor*,
+    comment
   )
 
 tensor_field_function_options =
@@ -167,7 +175,8 @@ tensor_field_function_options =
     boundary_condition_tensor*,
     reference_point_tensor*,
     zero_point_tensor*,
-    value_cap_tensor*
+    value_cap_tensor*,
+    comment
   )
 
 field_manipulation_options = 
@@ -189,60 +198,69 @@ scalar_coefficient_expression_options =
   (
     attribute rank { "0" },
     element_options_scalar,
-    prescribed_expression_scalar+
+    prescribed_expression_scalar+,
+    comment
   )
 
 vector_coefficient_expression_options =
   (
     attribute rank { "1" },
     element_options_vector,
-    prescribed_expression_vector+
+    prescribed_expression_vector+,
+    comment
   )
 
 tensor_coefficient_expression_options =
   (
     attribute rank { "2" },
     element_options_tensor,
-    prescribed_expression_tensor+
+    prescribed_expression_tensor+,
+    comment
   )
 
 scalar_coefficient_function_options =
   (
     attribute rank { "0" },
     element_options_scalar,
-    prescribed_function_scalar+
+    prescribed_function_scalar+,
+    comment
   )
 
 vector_coefficient_function_options =
   (
     attribute rank { "1" },
     element_options_vector,
-    prescribed_function_vector+
+    prescribed_function_vector+,
+    comment
   )
 
 tensor_coefficient_function_options =
   (
     attribute rank { "2" },
     element_options_tensor,
-    prescribed_function_tensor+
+    prescribed_function_tensor+,
+    comment
   )
 
 scalar_coefficient_constant_options =
   (
     attribute rank { "0" },
-    prescribed_constant_scalar
+    prescribed_constant_scalar,
+    comment
   )
 
 vector_coefficient_constant_options =
   (
     attribute rank { "1" },
-    prescribed_constant_vector
+    prescribed_constant_vector,
+    comment
   )
 
 tensor_coefficient_constant_options =
   (
     attribute rank { "2" },
-    prescribed_constant_tensor
+    prescribed_constant_tensor,
+    comment
   )
 
 field_header_options =
@@ -263,12 +281,13 @@ field_diagnostics_options =
     element diagnostics {
       ## Include this field in the visualization output file.
       element include_in_visualization {
-        empty
+        comment
       }?,
       ## Include this field in the statistics output file.
       ## The minimum and maximum of functions is included.
       element include_in_statistics {
-        functional_options*
+        functional_options*,
+        comment
       }?,
       ## Include this field in the steady state check and output file.
       element include_in_steady_state {
@@ -277,17 +296,20 @@ field_diagnostics_options =
           # a hard coded string_value
           element string_value {
             ( "linf" | "l2" | "l1" )
-          }
-        }
+          },
+          comment
+        },
+        comment
       }?,
       ## Include this field in the detectors output file.
       element include_in_detectors {
-        empty
+        comment
       }?,
       ## Include the residual of this field in a visualization output file.
       element include_residual_in_visualization {
-        empty
-      }?
+        comment
+      }?,
+      comment
     }
   )
 
@@ -299,12 +321,14 @@ coeff_diagnostics_options =
       ## The minimum and maximum (evaluated at the vertices of the mesh) 
       ## of functions is included.
       element include_in_statistics {
-        functional_options*
+        functional_options*,
+        comment
       }?,
       ## Include this coefficient in the detectors output file.
       element include_in_detectors {
-        empty
-      }?
+        comment
+      }?,
+      comment
     }
   )
 
@@ -319,7 +343,7 @@ functional_options =
       quadrature_rule,
       ## Include this functional in the steady state check and output file.
       element include_in_steady_state {
-        empty
+        comment
       }?
     }
   )
@@ -330,7 +354,8 @@ initial_condition_scalar =
     element initial_condition {
       attribute name {"WholeMesh"},
       attribute type {"initial_condition"},
-      prescribed_scalar_w_file
+      prescribed_scalar_w_file,
+      comment
     }|
     ## Options for the description of the initial condition over a subset of the whole domain
     element initial_condition {
@@ -340,7 +365,8 @@ initial_condition_scalar =
       element region_ids {
         integer_vector
       },
-      prescribed_scalar
+      prescribed_scalar,
+      comment
     }
   )
 
@@ -350,7 +376,8 @@ initial_condition_vector =
     element initial_condition {
       attribute name {"WholeMesh"},
       attribute type {"initial_condition"},
-      prescribed_vector_w_file
+      prescribed_vector_w_file,
+      comment
     }|
     ## Options for the description of the initial condition over a subset of the whole domain
     element initial_condition {
@@ -360,7 +387,8 @@ initial_condition_vector =
       element region_ids {
         integer_vector
       },
-      prescribed_vector
+      prescribed_vector,
+      comment
     }
   )
 
@@ -370,7 +398,8 @@ initial_condition_tensor =
     element initial_condition {
       attribute name {"WholeMesh"},
       attribute type {"initial_condition"},
-      prescribed_tensor_w_file
+      prescribed_tensor_w_file,
+      comment
     }|
     ## Options for the description of the initial condition over a subset of the whole domain
     element initial_condition {
@@ -380,7 +409,8 @@ initial_condition_tensor =
       element region_ids {
         integer_vector
       },
-      prescribed_tensor
+      prescribed_tensor,
+      comment
     }
   )
 
@@ -400,9 +430,12 @@ boundary_condition_scalar =
         element type {
           attribute name {"Dirichlet"},
           attribute type {"boundary_condition"},
-          prescribed_scalar
-        }
-      }
+          prescribed_scalar,
+          comment
+        },
+        comment
+      },
+      comment
     }
   )
 
@@ -423,8 +456,10 @@ boundary_condition_vector =
           element type {
             attribute name {"Dirichlet"},
             attribute type {"boundary_condition"},
-            prescribed_vector
-          }
+            prescribed_vector,
+            comment
+          },
+          comment
         }|
         ## Apply this boundary condition to a subset of the vector components on this boundary_id
         element sub_components {
@@ -437,10 +472,13 @@ boundary_condition_vector =
           element type {
             attribute name {"Dirichlet"},
             attribute type {"boundary_condition"},
-            prescribed_scalar
-          }
+            prescribed_scalar,
+            comment
+          },
+          comment
         }
-      )+
+      )+,
+      comment
     }
   )
 
@@ -461,8 +499,10 @@ boundary_condition_tensor =
           element type {
             attribute name {"Dirichlet"},
             attribute type {"boundary_condition"},
-            prescribed_tensor
-          }
+            prescribed_tensor,
+            comment
+          },
+          comment
         }|
         ## Apply this boundary condition to a subset of the tensor components on this boundary_id
         element sub_components {
@@ -475,10 +515,13 @@ boundary_condition_tensor =
           element type {
             attribute name {"Dirichlet"},
             attribute type {"boundary_condition"},
-            prescribed_scalar
-          }
+            prescribed_scalar,
+            comment
+          },
+          comment
         }
-      )+
+      )+,
+      comment
     }
   )
 
@@ -492,7 +535,8 @@ reference_point_scalar =
       ## The coordinates of the reference point.  The node nearest these coordinates will be used.
       element coordinates {
         real_dim_vector
-      }
+      },
+      comment
     }
   )
 
@@ -514,7 +558,7 @@ reference_point_tensor =
         ## Zero all the vector/tensor components at this reference point.
         element sub_components {
           attribute name {"All"},
-          empty
+          comment
         }|
         ## Zero a subset of the vector/tensor components at this reference point.
         element sub_components {
@@ -522,9 +566,11 @@ reference_point_tensor =
           ## A list of the vector/tensor components to which this reference point applies (indexes from 0 by row first for tensors).
           element components {
             integer_vector
-          }
+          },
+          comment
         }
-      )
+      ),
+      comment
     }|
     ## Options for the description of a reference point at which field values are zeroed during each solve 
     ## by the imposition of an internal pointwise Dirichlet boundary condition at the nearest node to the
@@ -544,14 +590,16 @@ reference_point_tensor =
           ## A list of the vector/tensor components to which this reference point applies (indexes from 0 by row first for tensors).
           element components {
             integer_vector
-          }
+          },
+          comment
         }|
         ## Zero all the vector/tensor components at this reference point.
         element sub_components {
           attribute name {"All"},
-          empty
+          comment
         }
-      )
+      ),
+      comment
     }
   )
 
@@ -566,7 +614,8 @@ zero_point_scalar =
       ## The coordinates of the reference point.  The node nearest these coordinates will be used.
       element coordinates {
         real_dim_vector
-      }
+      },
+      comment
     }
   )
 
@@ -589,7 +638,7 @@ zero_point_tensor =
         ## Zero all the vector/tensor components at this zero point.
         element sub_components {
           attribute name {"All"},
-          empty
+          comment
         }|
         ## Zero a subset of the vector/tensor components at this zero point.
         element sub_components {
@@ -597,9 +646,11 @@ zero_point_tensor =
           ## A list of the vector/tensor components to which this zero point applies (indexes from 0 by row first for tensors).
           element components {
             integer_vector
-          }
+          },
+          comment
         }
-      )
+      ),
+      comment
     }|
     ## Options for the description of a zero point at which field values are zeroed after each nonlinear solve.
     ##
@@ -620,14 +671,16 @@ zero_point_tensor =
           ## A list of the vector/tensor components to which this reference point applies (indexes from 0 by row first for tensors).
           element components {
             integer_vector
-          }
+          },
+          comment
         }|
         ## Zero all the vector/tensor components at this reference point.
         element sub_components {
           attribute name {"All"},
-          empty
+          comment
         }
-      )
+      ),
+      comment
     }
   )
 
@@ -647,7 +700,8 @@ value_cap_scalar =
       ## Do not let the minimum value fall below this cap
       element lower_cap {
         real
-      }?
+      }?,
+      comment
     }
   )
 
@@ -675,7 +729,7 @@ value_cap_tensor =
         ## Cap all the vector/tensor components.
         element sub_components {
           attribute name {"All"},
-          empty
+          comment
         }|
         ## Cap a subset of the vector/tensor components.
         element sub_components {
@@ -683,9 +737,11 @@ value_cap_tensor =
           ## A list of the vector/tensor components to which this reference point applies (indexes from 0 by row first for tensors).
           element components {
             integer_vector
-          }
+          },
+          comment
         }
-      )
+      ),
+      comment
     }|
     ## Cap the values of the field after every nonlinear solve.
     ##
@@ -708,7 +764,7 @@ value_cap_tensor =
         ## Cap all the vector/tensor components.
         element sub_components {
           attribute name {"All"},
-          empty
+          comment
         }|
         ## Cap a subset of the vector/tensor components.
         element sub_components {
@@ -716,9 +772,11 @@ value_cap_tensor =
           ## A list of the vector/tensor components to which this reference point applies (indexes from 0 by row first for tensors).
           element components {
             integer_vector
-          }
+          },
+          comment
         }
-      )
+      ),
+      comment
     }
   )
 
@@ -729,7 +787,8 @@ prescribed_constant_scalar =
     element value {
       attribute name {"WholeMesh"},
       attribute type {"value"},
-      prescribed_scalar_constant_w_functional
+      prescribed_scalar_constant_w_functional,
+      comment
     }
   )
 
@@ -739,7 +798,8 @@ prescribed_constant_vector =
     element value {
       attribute name {"WholeMesh"},
       attribute type {"value"},
-      prescribed_vector_constant
+      prescribed_vector_constant,
+      comment
     }
   )
 
@@ -749,7 +809,8 @@ prescribed_constant_tensor =
     element value {
       attribute name {"WholeMesh"},
       attribute type {"value"},
-      prescribed_tensor_constant
+      prescribed_tensor_constant,
+      comment
     }
   )
 
@@ -759,7 +820,8 @@ prescribed_expression_scalar =
     element value {
       attribute name {"WholeMesh"},
       attribute type {"value"},
-      prescribed_scalar_w_internal
+      prescribed_scalar_w_internal,
+      comment
     }|
     ## Options for the description of an expression over regions
     element value {
@@ -769,7 +831,8 @@ prescribed_expression_scalar =
       element region_ids {
         integer_vector
       },
-      prescribed_scalar_w_internal
+      prescribed_scalar_w_internal,
+      comment
     }
   )
 
@@ -779,7 +842,8 @@ prescribed_expression_vector =
     element value {
       attribute name {"WholeMesh"},
       attribute type {"value"},
-      prescribed_vector_w_internal
+      prescribed_vector_w_internal,
+      comment
     }|
     ## Options for the description of an expression over regions
     element value {
@@ -789,7 +853,8 @@ prescribed_expression_vector =
       element region_ids {
         integer_vector
       },
-      prescribed_vector_w_internal
+      prescribed_vector_w_internal,
+      comment
     }
   )
 
@@ -799,7 +864,8 @@ prescribed_expression_tensor =
     element value {
       attribute name {"WholeMesh"},
       attribute type {"value"},
-      prescribed_tensor_w_internal
+      prescribed_tensor_w_internal,
+      comment
     }|
     ## Options for the description of an expression over regions
     element value {
@@ -809,7 +875,8 @@ prescribed_expression_tensor =
       element region_ids {
         integer_vector
       },
-      prescribed_tensor_w_internal
+      prescribed_tensor_w_internal,
+      comment
     }
   )
 
@@ -819,7 +886,8 @@ prescribed_function_scalar =
     element value {
       attribute name {"WholeMesh"},
       attribute type {"value"},
-      prescribed_scalar_time_w_internal
+      prescribed_scalar_time_w_internal,
+      comment
     }|
     ## Options for the description of an expression over regions
     element value {
@@ -829,7 +897,8 @@ prescribed_function_scalar =
       element region_ids {
         integer_vector
       },
-      prescribed_scalar_time_w_internal
+      prescribed_scalar_time_w_internal,
+      comment
     }
   )
 
@@ -839,7 +908,8 @@ prescribed_function_vector =
     element value {
       attribute name {"WholeMesh"},
       attribute type {"value"},
-      prescribed_vector_time_w_internal
+      prescribed_vector_time_w_internal,
+      comment
     }|
     ## Options for the description of an expression over regions
     element value {
@@ -849,7 +919,8 @@ prescribed_function_vector =
       element region_ids {
         integer_vector
       },
-      prescribed_vector_time_w_internal
+      prescribed_vector_time_w_internal,
+      comment
     }
   )
 
@@ -859,7 +930,8 @@ prescribed_function_tensor =
     element value {
       attribute name {"WholeMesh"},
       attribute type {"value"},
-      prescribed_tensor_time_w_internal
+      prescribed_tensor_time_w_internal,
+      comment
     }|
     ## Options for the description of an expression over regions
     element value {
@@ -869,7 +941,8 @@ prescribed_function_tensor =
       element region_ids {
         integer_vector
       },
-      prescribed_tensor_time_w_internal
+      prescribed_tensor_time_w_internal,
+      comment
     }
   )
 
@@ -1083,7 +1156,8 @@ prescribed_cpp =
     ## (assuming examplecoeff and this expression are of appropriately matched rank, shape and size).
     element eval {
       cpp_code
-    }
+    },
+    comment
   )
 
 time_independent_cpp = 
@@ -1093,7 +1167,7 @@ time_independent_cpp =
     ## Turning on this option means they only get evaluated once (at
     ## the start of the simtulation).
     element time_independent {
-      empty
+      comment
     }?
   )
 
@@ -1168,20 +1242,21 @@ prescribed_internal =
           ## Assumed to be the current system if left unspecified.
           element system {
             attribute name { xsd:string },
-            empty
+            comment
           }?,
           (
             ## The field name.
             element field {
               attribute name { xsd:string },
-              empty
+              comment
             }|
             ## The coefficient name.
             element coefficient {
               attribute name { xsd:string },
-              empty
+              comment
             }
-          )
+          ),
+          comment
         },
         ## The velocity that will be used to lookup the value.
         ##
@@ -1191,20 +1266,21 @@ prescribed_internal =
           ## Assumed to be the current system if left unspecified.
           element system {
             attribute name { xsd:string },
-            empty
+            comment
           }?,
           (
             ## The field name.
             element field {
               attribute name { xsd:string },
-              empty
+              comment
             }|
             ## The coefficient name.
             element coefficient {
               attribute name { xsd:string },
-              empty
+              comment
             }
-          )
+          ),
+          comment
         },
         ## The value that will be used when the lookup point falls outside the mesh.
         ##
@@ -1214,21 +1290,23 @@ prescribed_internal =
           ## Assumed to be the current system if left unspecified.
           element system {
             attribute name { xsd:string },
-            empty
+            comment
           }?,
           (
             ## The coefficient name.
             element coefficient {
               attribute name { xsd:string },
-              empty
+              comment
             }|
             ## The field name.
             element field {
               attribute name { xsd:string },
-              empty
+              comment
             }
-          )
-        }
+          ),
+          comment
+        },
+        comment
       }
     )
   )
@@ -1238,7 +1316,8 @@ prescribed_scalar_internal =
     ## A scalar described by an internal derived dolfin expression.
     element internal {
       attribute rank { "0" },
-      prescribed_internal
+      prescribed_internal,
+      comment
     }
   )
 
@@ -1247,7 +1326,8 @@ prescribed_vector_internal =
     ## A vector described by an internal derived dolfin expression.
     element internal {
       attribute rank { "1" },
-      prescribed_internal
+      prescribed_internal,
+      comment
     }
   )
 
@@ -1256,7 +1336,8 @@ prescribed_tensor_internal =
     ## A tensor described by an internal derived dolfin expression.
     element internal {
       attribute rank { "2" },
-      prescribed_internal
+      prescribed_internal,
+      comment
     }
   )
 

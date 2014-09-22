@@ -123,7 +123,7 @@ onto simplices.</a:documentation>
         <attribute name="name">
           <value>default</value>
         </attribute>
-        <empty/>
+        <ref name="comment"/>
       </element>
       <element name="quadrature_rule">
         <a:documentation>The quadrature rule that will be used when integrating the forms.
@@ -136,7 +136,7 @@ precision less than or equal to six.  Above this 'canonical' will automatically 
         <attribute name="name">
           <value>canonical</value>
         </attribute>
-        <empty/>
+        <ref name="comment"/>
       </element>
     </choice>
   </define>

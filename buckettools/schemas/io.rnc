@@ -27,7 +27,8 @@ io =
       output_file_options,
       diagnostic_output_options,
       detectors_options,
-      checkpointing_options
+      checkpointing_options,
+      comment
     }
   )
 
@@ -63,9 +64,11 @@ detectors_options =
           ## The return value must have length > 0 and each entry must be of the same dimension as the mesh.
           element python {
             python_code
-          }
+          },
+          comment
         }
-      )*
+      )*,
+      comment
     }
   )
 
@@ -133,7 +136,8 @@ diagnostic_output_options =
         element detectors_period_in_timesteps {
           integer
         }
-      )?
+      )?,
+      comment
     }
   )
 
@@ -150,7 +154,8 @@ checkpointing_options =
         element checkpoint_period_in_timesteps {
           integer
         }
-      )
+      ),
+      comment
     }?
   )
 

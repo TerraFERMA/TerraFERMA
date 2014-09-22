@@ -51,7 +51,8 @@ start =
          nonlinear?,
          global_parameters,
          # in system.rnc
-         system+
+         system+,
+         comment
       }
    )
 
@@ -63,6 +64,7 @@ global_parameters =
        ## Any system, field or coefficient ufl symbols defined in this options file may be used in this ufl.
        element ufl {
          python_code 
-       }?
+       }?,
+       comment
      }
    )

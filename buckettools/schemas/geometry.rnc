@@ -34,20 +34,24 @@ geometry =
             element integer_value {
                attribute rank {"0"},
                ( "1" | "2" | "3" )
-            }
+            },
+            comment
          },
          (
            ## Options for describing the mesh with a user-specified name.  This name must be unique.
            element mesh {
              attribute name { xsd:string },
-             mesh_options
+             mesh_options,
+             comment
            }|
            ## Options for describing the mesh, automatically called "Mesh".  This name must be unique.
            element mesh {
              attribute name { "Mesh" },
-             mesh_options
+             mesh_options,
+             comment
            }
-         )+
+         )+,
+         comment
       }
    )
 
@@ -72,8 +76,10 @@ mesh_options =
            # a hard coded string_value
            element string_value {
              ( "interval" | "triangle" | "tetrahedron" )
-           }
-         }
+           },
+           comment
+         },
+         comment
        }|
        ## Choose the source of this mesh as an internally generated 1d interval of length 1.
        ##
@@ -93,8 +99,10 @@ mesh_options =
          element cell {
            element string_value {
              "interval"
-           }
-         }
+           },
+           comment
+         },
+         comment
        }|
        ## Choose the source of this mesh as an internally generated 1d interval.
        ##
@@ -122,8 +130,10 @@ mesh_options =
          element cell {
            element string_value {
              "interval"
-           }
-         }
+           },
+           comment
+         },
+         comment
        }|
        ## Choose the source of this mesh as an internally generated 2d square of width and height 1.
        ##
@@ -147,14 +157,17 @@ mesh_options =
            # a hard coded string_value
            element string_value {
              ( "left" | "right" | "right/left" | "left/right" | "crossed" )
-           }
+           },
+           comment
          },
          ## The ufl cell type (no option allowed).
          element cell {
            element string_value {
              "triangle"
-           }
-         }
+           },
+           comment
+         },
+         comment
        }|
        ## Choose the source of this mesh as an internally generated 2d rectangle.
        ##
@@ -196,14 +209,17 @@ mesh_options =
            # a hard coded string_value
            element string_value {
              ( "left" | "right" | "right/left" | "left/right" | "crossed" )
-           }
+           },
+           comment
          },
          ## The ufl cell type (no option allowed).
          element cell {
            element string_value {
              "triangle"
-           }
-         }
+           },
+           comment
+         },
+         comment
        }|
        ## Choose the source of this mesh as an internally generated 2d circle of radius 1.
        ##
@@ -219,21 +235,25 @@ mesh_options =
            # a hard coded string_value
            element string_value {
              ( "left" | "right" | "crossed" )
-           }
+           },
+           comment
          },
          ## Specify the transformation to the unit circle.
          element transformation {
            # a hard coded string_value
            element string_value {
              ( "maxn" | "sumn" | "rotsumn" )
-           }
+           },
+           comment
          },
          ## The ufl cell type (no option allowed).
          element cell {
            element string_value {
              "triangle"
-           }
-         }
+           },
+           comment
+         },
+         comment
        }|
        ## Choose the source of this mesh as an internally generated 3d cube of width, depth and height 1.
        ##
@@ -256,8 +276,10 @@ mesh_options =
          element cell {
            element string_value {
              "tetrahedron"
-           }
-         }
+           },
+           comment
+         },
+         comment
        }|
        ## Choose the source of this mesh as an internally generated 3d box.
        ##
@@ -302,8 +324,10 @@ mesh_options =
          element cell {
            element string_value {
              "tetrahedron"
-           }
-         }
+           },
+           comment
+         },
+         comment
        }
      )
   )

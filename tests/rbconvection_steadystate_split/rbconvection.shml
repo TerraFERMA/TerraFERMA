@@ -3,8 +3,12 @@
   <length>
     <string_value>short</string_value>
   </length>
-  <owner>cwilson</owner>
-  <description>Steady state convection test case using a split solver.</description>
+  <owner>
+    <string_value lines="1">cwilson</string_value>
+  </owner>
+  <description>
+    <string_value lines="1">Steady state convection test case using a split solver.</string_value>
+  </description>
   <simulations>
     <simulation name="RBConvection">
       <input_file>

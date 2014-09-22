@@ -3,8 +3,12 @@
   <length>
     <string_value>short</string_value>
   </length>
-  <owner>cwilson</owner>
-  <description>Steady state convection test.</description>
+  <owner>
+    <string_value lines="1">cwilson</string_value>
+  </owner>
+  <description>
+    <string_value lines="1">Steady state convection test.</string_value>
+  </description>
   <simulations>
     <simulation name="RBConvection">
       <input_file>
