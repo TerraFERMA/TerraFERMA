@@ -3,9 +3,15 @@
   <length>
     <string_value>short</string_value>
   </length>
-  <owner>cwilson</owner>
-  <tags>not:branch:dolfin-master</tags>
-  <description>A test of simple, Courant number based, adaptive timestepping.</description>
+  <owner>
+    <string_value lines="1">cwilson</string_value>
+  </owner>
+  <tags>
+    <string_value lines="1">not:branch:dolfin-master</string_value>
+  </tags>
+  <description>
+    <string_value lines="1">A test of simple, Courant number based, adaptive timestepping.</string_value>
+  </description>
   <simulations>
     <simulation name="AdaptDT">
       <input_file>

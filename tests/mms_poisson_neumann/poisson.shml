@@ -3,8 +3,12 @@
   <length>
     <string_value>short</string_value>
   </length>
-  <owner>cwilson</owner>
-  <description>A manufactured solution convergence test.</description>
+  <owner>
+    <string_value lines="1">cwilson</string_value>
+  </owner>
+  <description>
+    <string_value lines="1">A manufactured solution convergence test.</string_value>
+  </description>
   <simulations>
     <simulation name="NS">
       <input_file>
@@ -12,13 +16,17 @@
       </input_file>
       <parameter_sweep>
         <parameter name="nprocs">
-          <values>1 2 3</values>
+          <values>
+            <string_value lines="1">1 2 3</string_value>
+          </values>
           <process_scale>
             <integer_value shape="3" rank="1">1 2 3</integer_value>
           </process_scale>
         </parameter>
         <parameter name="ncells">
-          <values>5 10 20</values>
+          <values>
+            <string_value lines="1">5 10 20</string_value>
+          </values>
           <update>
             <string_value lines="20" type="code" language="python">import libspud
 libspud.set_option("/geometry/mesh::Mesh/source::UnitSquare/number_cells", [int(ncells), int(ncells)])</string_value>
@@ -61,13 +69,17 @@ for field in fields:
       </input_file>
       <parameter_sweep>
         <parameter name="nprocs">
-          <values>1 2 3</values>
+          <values>
+            <string_value lines="1">1 2 3</string_value>
+          </values>
           <process_scale>
             <integer_value shape="3" rank="1">1 2 3</integer_value>
           </process_scale>
         </parameter>
         <parameter name="ncells">
-          <values>5 10 20</values>
+          <values>
+            <string_value lines="1">5 10 20</string_value>
+          </values>
           <update>
             <string_value lines="20" type="code" language="python">import libspud
 libspud.set_option("/geometry/mesh::Mesh/source::UnitSquare/number_cells", [int(ncells), int(ncells)])</string_value>
@@ -110,13 +122,17 @@ for field in fields:
       </input_file>
       <parameter_sweep>
         <parameter name="nprocs">
-          <values>1 2 3</values>
+          <values>
+            <string_value lines="1">1 2 3</string_value>
+          </values>
           <process_scale>
             <integer_value shape="3" rank="1">1 2 3</integer_value>
           </process_scale>
         </parameter>
         <parameter name="ncells">
-          <values>5 10 20</values>
+          <values>
+            <string_value lines="1">5 10 20</string_value>
+          </values>
           <update>
             <string_value lines="20" type="code" language="python">import libspud
 libspud.set_option("/geometry/mesh::Mesh/source::UnitSquare/number_cells", [int(ncells), int(ncells)])</string_value>

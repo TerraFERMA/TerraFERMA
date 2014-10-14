@@ -41,9 +41,7 @@
     <element name="terraferma_options">
       <a:documentation>The root node of the options dictionary for TerraFERMA.
 
-Options which are shaded blue are incomplete and require input.
-Greyed out options are optional.
-Black options are active.</a:documentation>
+When viewed in diamond, options which are shaded blue are incomplete and require input.  Greyed out options are optional.  Black options are active.</a:documentation>
       <!-- in geometry.rnc -->
       <ref name="geometry"/>
       <!-- in io.rnc -->
@@ -61,6 +59,7 @@ Black options are active.</a:documentation>
         <!-- in system.rnc -->
         <ref name="system"/>
       </oneOrMore>
+      <ref name="comment"/>
     </element>
   </start>
   <define name="global_parameters">
@@ -73,6 +72,7 @@ Any system, field or coefficient ufl symbols defined in this options file may be
           <ref name="python_code"/>
         </element>
       </optional>
+      <ref name="comment"/>
     </element>
   </define>
 </grammar>
