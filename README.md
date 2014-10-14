@@ -1,23 +1,19 @@
 # *TerraFERMA*
 
-TerraFERMA (TFERMA) is the *Transparent Finite Element Rapid Model Assembler*
+TerraFERMA is the *Transparent Finite Element Rapid Model Assembler*, a software system for the  rapid and reproducible construction and exploration of  coupled  multi-physics models.  
 
-TerraFERMA is a finite element model builder that uses three principal open-source libraries:
+TerraFERMA leverages three advanced open-source libraries for scientific computation that provide high level problem description
+([FEniCS][fenics]), composable solvers for coupled multi-physics problems ([PETSc][petsc])
+and a science neutral options handling system ([SPuD][spud]) that allows the hierarchical management of all model options.  
+  
+TerraFERMA inherits most of its functionality from the underlying libraries but adds a layer of control and guidance for building
+reusable and reproducible applications.
 
-* [FEniCS](http://fenicsproject.org) (DOLFIN, ffc, ufc, ufl, instant, fiat)
-* [PETSc](https://www.mcs.anl.gov/petsc)
-* [SPuD](http://www3.imperial.ac.uk/earthscienceandengineering/research/amcg/spud)
-
-A preprint describing the design and basic functionality of TerraFERMA can be found
-[here](https://bitbucket.org/tferma/tferma/wiki/TFpaperGcubed.pdf).
+Further discussion, installation instructions and documentation can be found on the [wiki](https://bitbucket.org/tferma/tferma/wiki/).
 
 ## License
-TerraFERMA is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.  
+TerraFERMA is free software: you can redistribute it and/or modify it under the terms of the as
+published by the [Free Software Foundation](http://www.fsf.org), either version 3 of the License, or (at your option) any later version.
 
-TerraFERMA is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details. You should have received a copy of the GNU Lesser General Public License along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
-
-## Installation
-
-Installation instructions using Dorsal are on the [wiki](https://bitbucket.org/tferma/tferma/wiki/).
-
+TerraFERMA is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the [GNU Lesser General Public License](http://www.gnu.org/licenses/) for more details.
 
