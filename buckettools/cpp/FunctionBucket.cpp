@@ -142,25 +142,37 @@ const GenericFunction_ptr FunctionBucket::genericfunction_ptr(const std::string 
 }
 
 //*******************************************************************|************************************************************//
-// return a vector of values describing the function for the given function_type
+// cached the values vector (primarily for diagnostic purposes)
 //*******************************************************************|************************************************************//
-dolfin::PETScVector FunctionBucket::vector(const std::string &function_type, const int &component) const
+void FunctionBucket::cachevector(const std::string &function_type)
 {
-  std::vector<int> components(1, component);
-  return vector(function_type, &components);
+  if (!cachedvector_ || cachedvectortype_!=function_type)
+  {
+    clearcachedvector();
+    cachedvector_ = basevector(function_type);
+    cachedvectortype_ = function_type;
+  }
 }
 
 //*******************************************************************|************************************************************//
-// return a vector of values describing the function for the given function_type
+// destroy the cached vector
 //*******************************************************************|************************************************************//
-dolfin::PETScVector FunctionBucket::vector(const std::string &function_type, const std::vector<int>* components) const
+void FunctionBucket::clearcachedvector()
 {
-  PetscErrorCode perr;                                               // petsc error code
+  cachedvector_ = NULL;
+  cachedvectortype_ = "no_cached_vector";
+}
+
+//*******************************************************************|************************************************************//
+// return the base vector (could be the system vector for example) of values describing the function for the given function_type
+//*******************************************************************|************************************************************//
+const_PETScVector_ptr FunctionBucket::basevector(const std::string &function_type) const
+{
   GenericFunction_ptr u = genericfunction_ptr(function_type);
   Mesh_ptr mesh = (*system_).mesh();
+  const_PETScVector_ptr fv;
 
   const_Function_ptr uf = std::dynamic_pointer_cast<const dolfin::Function>(u);
-  const_PETScVector_ptr fv;
   if (uf)
   {
     fv = std::dynamic_pointer_cast<const dolfin::PETScVector>((*uf).vector());
@@ -179,6 +191,35 @@ dolfin::PETScVector FunctionBucket::vector(const std::string &function_type, con
     (*tv).init((*mesh).mpi_comm(), std::make_pair(offset, offset+values.size()));
     (*tv).set_local(values);
     fv = std::const_pointer_cast<const dolfin::PETScVector>(tv);
+  }
+  return fv;
+}
+
+//*******************************************************************|************************************************************//
+// return a vector of values describing the function for the given function_type
+//*******************************************************************|************************************************************//
+dolfin::PETScVector FunctionBucket::vector(const std::string &function_type, const int &component) const
+{
+  std::vector<int> components(1, component);
+  return vector(function_type, &components);
+}
+
+//*******************************************************************|************************************************************//
+// return a vector of values describing the function for the given function_type
+//*******************************************************************|************************************************************//
+dolfin::PETScVector FunctionBucket::vector(const std::string &function_type, const std::vector<int>* components) const
+{
+  PetscErrorCode perr;                                               // petsc error code
+  Mesh_ptr mesh = (*system_).mesh();
+
+  const_PETScVector_ptr fv;
+  if (cachedvector_ && cachedvectortype_==function_type)
+  {
+    fv = cachedvector_;
+  }
+  else
+  {
+    fv = basevector(function_type);
   }
 
   IS is = components_is(components);

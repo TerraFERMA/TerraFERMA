@@ -77,6 +77,12 @@ namespace buckettools
                                  const std::string &function_type) const; // except here the function_type is more general and described
                                                                      // by a string
 
+    void cachevector(const std::string &function_type);
+
+    void clearcachedvector();
+
+    const_PETScVector_ptr basevector(const std::string &function_type) const; // return a pointer to the base (potentially system) vector
+
     dolfin::PETScVector vector(const std::string &function_type,     // return a vector of values for this function bucket and
                                         const int &component) const; // the specified function_type
 
@@ -381,6 +387,10 @@ namespace buckettools
     ordered_map<const std::string, ReferencePoint_ptr> referencepoints_;   // map from bc::id names to (boost shared) pointers to bcs
 
     std::vector< PointDetectors_ptr > zeropoints_;                   // a list of zero points
+
+    const_PETScVector_ptr cachedvector_;                             // cache the values of the vector temporarily
+
+    std::string cachedvectortype_;                                   // the cached vector type (if it exists)
     
     //***************************************************************|***********************************************************//
     // Filling data
