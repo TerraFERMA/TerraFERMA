@@ -3,8 +3,12 @@
   <length>
     <string_value>short</string_value>
   </length>
-  <owner>cwilson</owner>
-  <description>van Keken subduction benchmark 1c</description>
+  <owner>
+    <string_value lines="1">cwilson</string_value>
+  </owner>
+  <description>
+    <string_value lines="1">van Keken subduction benchmark 1c</string_value>
+  </description>
   <simulations>
     <simulation name="Subduction">
       <input_file>
@@ -13,7 +17,7 @@
       <dependencies>
         <run name="SplitMesh">
           <input_file>
-            <string_value type="filename" lines="1">sepran_converted_mesh.xml</string_value>
+            <string_value lines="1" type="filename">sepran_converted_mesh.xml</string_value>
           </input_file>
           <required_input>
             <filenames name="meshfiles">
@@ -23,7 +27,7 @@
             </filenames>
             <filenames name="centroid">
               <string>
-                <string_value type="filename" lines="1">centroid_split.py</string_value>
+                <string_value lines="1" type="filename">centroid_split.py</string_value>
               </string>
             </filenames>
           </required_input>
@@ -35,7 +39,9 @@
             </filenames>
           </required_output>
           <commands>
-            <command name="split_mesh">split_mesh -s 7 -p 8 -n 77 -c centroid_split.py sepran_converted_mesh.xml</command>
+            <command name="split_mesh">
+              <string_value lines="1">split_mesh -s 7 -p 8 -n 77 -c centroid_split.py sepran_converted_mesh.xml</string_value>
+            </command>
           </commands>
         </run>
       </dependencies>

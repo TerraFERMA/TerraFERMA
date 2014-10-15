@@ -3,9 +3,15 @@
   <length>
     <string_value>short</string_value>
   </length>
-  <owner>cwilson</owner>
-  <tags>not:branch:dolfin-master not:branch:periodic</tags>
-  <description>A 1D test of a field base Courant number.</description>
+  <owner>
+    <string_value lines="1">cwilson</string_value>
+  </owner>
+  <tags>
+    <string_value lines="1">not:branch:dolfin-master not:branch:periodic</string_value>
+  </tags>
+  <description>
+    <string_value lines="1">A 1D test of a field base Courant number.</string_value>
+  </description>
   <simulations>
     <simulation name="Courant">
       <input_file>

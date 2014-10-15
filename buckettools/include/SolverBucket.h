@@ -76,10 +76,10 @@ namespace buckettools
 
     void attach_form_coeffs();                                       // attach coefficients to the forms in this solver
 
-    virtual void copy_diagnostics(SolverBucket_ptr &solver, 
-                                  SystemBucket_ptr &system) const;   // copy the data necessary for the diagnostics data file(s)
-
     void initialize_diagnostics() const;                             // initialize any diagnostic output in the solver
+
+    void create_nullspace();                                         // take any stored nullspace vectors and convert them into a
+                                                                     // PETSc null space object
 
     //***************************************************************|***********************************************************//
     // Base data access
@@ -132,6 +132,9 @@ namespace buckettools
     PETScVector_ptr rhsbc()
     { return rhsbc_; }
 
+    MatNullSpace nullspace()
+    { return sp_; }
+
     //***************************************************************|***********************************************************//
     // Form data access
     //***************************************************************|***********************************************************//
@@ -169,24 +172,18 @@ namespace buckettools
 
     bool solverident_zeros(const std::string &name);                 // ident zero the named solver matrix
 
-    IS_ptr fetch_solverindexset(const std::string &name);            // fetch the named ident zeros
+    IS fetch_solverindexset(const std::string &name);                // fetch the named ident zeros
 
-    Mat_ptr fetch_solversubmatrix(const std::string &name);          // fetch the named solver submatrix
+    Mat fetch_solversubmatrix(const std::string &name);              // fetch the named solver submatrix
 
     //***************************************************************|***********************************************************//
     // Output functions
     //***************************************************************|***********************************************************//
 
-    virtual const std::string str() const                            // return a string describing the contents of this solver
-    { return str(0); }
-
-    virtual const std::string str(int indent) const;                 // return an indented string describing the contents of this
+    virtual const std::string str(int indent=0) const;               // return an indented string describing the contents of this
                                                                      // solver
 
-    virtual const std::string forms_str() const                      // return a string describing the forms in this solver
-    { return forms_str(0); }
-
-    virtual const std::string forms_str(const int &indent) const;    // return an indented string describing the forms in this
+    virtual const std::string forms_str(const int &indent=0) const;  // return an indented string describing the forms in this
                                                                      // solver
 
   //*****************************************************************|***********************************************************//
@@ -207,15 +204,15 @@ namespace buckettools
 
     Form_ptr linear_, bilinear_, bilinearpc_, residual_;             // (boost shared) pointers to forms
 
-    std::map< std::string, Form_ptr > solverforms_;                  // (boost shared) pointers to forms under linear solver 
+    ordered_map<const std::string, Form_ptr> solverforms_;                  // (boost shared) pointers to forms under linear solver 
 
     PETScMatrix_ptr matrix_, matrixpc_;                              // dolfin petsc matrix types
 
     std::map< std::string, PETScMatrix_ptr > solvermatrices_;        // dolfin petsc matrices for solver matrices
 
-    std::map< std::string, IS_ptr > solverindexsets_;                // (boost shared) pointers to the indexsets defining the solver submatrices
+    std::map< std::string, IS > solverindexsets_;                    // (boost shared) pointers to the indexsets defining the solver submatrices
 
-    std::map< std::string, Mat_ptr > solversubmatrices_;             // (boost shared) pointers to the sub petsc matrices
+    std::map< std::string, Mat > solversubmatrices_;                 // (boost shared) pointers to the sub petsc matrices
 
     PETScVector_ptr rhs_, rhsbc_, res_, work_;                       // dolfin petsc vector types
 
@@ -243,21 +240,18 @@ namespace buckettools
 
     KSPConvergenceFile_ptr kspconvfile_;                             // diagnostic convergence file
 
-    bool copy_;                                                      // flag if this is a diagnostic copy or not
-
     bool monitornorms_;                                              // monitor the norms in nonlinear iterations
 
     //***************************************************************|***********************************************************//
     // Pointers data
     //***************************************************************|***********************************************************//
 
-    std::map< std::string, Form_ptr > forms_;                        // a map from the form names to the form pointers
+    ordered_map<const std::string, Form_ptr> forms_;                        // a map from the form names to the form pointers
 
-    //***************************************************************|***********************************************************//
-    // Emptying data
-    //***************************************************************|***********************************************************//
+    std::vector< PETScVector_ptr > nullspacevectors_;                // a vector of null space vectors to be removed from the rhs
+                                                                     // after assembly
 
-    void empty_();                                                   // empty the class data structures
+    MatNullSpace sp_;                                                // PETSc matnullspace object
 
   //*****************************************************************|***********************************************************//
   // Private functions

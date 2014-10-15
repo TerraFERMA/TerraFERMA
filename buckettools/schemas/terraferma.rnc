@@ -39,9 +39,7 @@ start =
    (
       ## The root node of the options dictionary for TerraFERMA.
       ##
-      ## Options which are shaded blue are incomplete and require input.
-      ## Greyed out options are optional.
-      ## Black options are active.
+      ## When viewed in diamond, options which are shaded blue are incomplete and require input.  Greyed out options are optional.  Black options are active.
       element terraferma_options {
          # in geometry.rnc
          geometry,
@@ -53,7 +51,8 @@ start =
          nonlinear?,
          global_parameters,
          # in system.rnc
-         system+
+         system+,
+         comment
       }
    )
 
@@ -65,6 +64,7 @@ global_parameters =
        ## Any system, field or coefficient ufl symbols defined in this options file may be used in this ufl.
        element ufl {
          python_code 
-       }?
+       }?,
+       comment
      }
    )

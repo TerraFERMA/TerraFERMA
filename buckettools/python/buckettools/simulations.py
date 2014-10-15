@@ -32,6 +32,8 @@ import re
 import collections
 from buckettools.threadlibspud import *
 import traceback
+from functools import reduce
+import operator
 
 ####################################################################################
 
@@ -492,9 +494,21 @@ class Run:
     # return the run directory
     return rundirectory
 
-  def getdependencyoptions(self, options):
-    suboptionsdict = collections.OrderedDict()
-    for option in options: suboptionsdict[option] = self.optionsdict["values"][option]
+  def getdependencyoptions(self, procscales):
+    suboptionsdict = {"values" : collections.OrderedDict(), "procscales" : collections.OrderedDict() }
+    for option, procscalelist in procscales.iteritems(): 
+      suboptionsdict["values"][option] = self.optionsdict["values"][option]
+
+      if procscalelist is not None:
+        if len(procscalelist) != self.optionsdict["value_lengths"][option]:
+          self.log("ERROR: number of process scales of dependency does not equal the number of values in root:")
+          self.log("parameter %(parameter_name)s"%{"parameter_name": option})
+          raise SimulationsErrorInitialization
+
+        suboptionsdict["procscales"][option] = procscalelist[self.optionsdict["value_indices"][option]]
+      else:
+        suboptionsdict["procscales"][option] = 1
+
     return suboptionsdict
 
   def getrequiredoutput(self, run):
@@ -556,7 +570,9 @@ class Simulation(Run):
     self.dependencies = []
     if "dependencies" in self.optionsdict:
        for dependencypath, depoptionsdict in self.optionsdict["dependencies"].iteritems():
-         depoptionsdict["values"] = self.getdependencyoptions(depoptionsdict["updates"].keys())
+         dependencyoptions = self.getdependencyoptions(depoptionsdict["procscales"])
+         depoptionsdict["values"] = dependencyoptions["values"]
+         depoptionsdict["procscales"] = dependencyoptions["procscales"]
          if depoptionsdict["type"] is Run:
            self.dependencies.append(Run(dependencypath, depoptionsdict, \
                                         currentdirectory, logprefix=logprefix, \
@@ -749,12 +765,31 @@ class Simulation(Run):
       self.log("  finished in directory %s"%(os.path.relpath(dirname, self.currentdirectory)))
 
   def getcheckpointcommands(self, basefile):
-    commands = [[os.path.join(self.builddirectory, "build", self.filename), "-vINFO", "-l", basefile]]
+    nprocs = self.getnprocs()
+    valgrind_opts = self.optionsdict["valgrind"]
+    commands = [[]]
+    if nprocs > 1:
+      commands[0] += ["mpiexec", "-np", `nprocs`]
+    if valgrind_opts is not None:
+      commands[0] += ["valgrind"]+valgrind_opts
+    commands[0] += [os.path.join(self.builddirectory, "build", self.filename), "-vINFO", "-l", basefile]
     return commands
 
   def getcommands(self):
-    commands = [[os.path.join(self.builddirectory, "build", self.filename), "-vINFO", "-l", self.filename+self.ext]]
+    nprocs = self.getnprocs()
+    valgrind_opts = self.optionsdict["valgrind"]
+    commands = [[]]
+    if nprocs > 1:
+      commands[0] += ["mpiexec", "-np", `nprocs`]
+    if valgrind_opts is not None:
+      commands[0] += ["valgrind"]+valgrind_opts
+    commands[0] += [os.path.join(self.builddirectory, "build", self.filename), "-vINFO", "-l", self.filename+self.ext]
     return commands
+
+  def getnprocs(self):
+    # take the base number of processes and scale it with all the values requested for the current parameters
+    nprocs = reduce(operator.mul, self.optionsdict["procscales"].values(), self.optionsdict["nprocs"])
+    return nprocs
 
   def getbuilddirectory(self):
     '''Return the path to the build directory for this simulation.'''
@@ -798,15 +833,18 @@ class SimulationBatch:
     for simulationpath, simoptionsdict in self.globaloptionsdict.iteritems():
       # set up a list to contain the options dictionaries for each parameter set
       slicedoptionslist = []
-      self.sliceoptionsdict(slicedoptionslist, simoptionsdict["values"]) # slice the global options dictionary parameter values
+      self.sliceoptionsdict(slicedoptionslist, simoptionsdict) # slice the global options dictionary parameter values
       for optionsdict in slicedoptionslist:
         # take a copy of the simulation options dictionary and set the 
         # values to the subset we've just extracted from the parameter sweep
         localsimoptionsdict = copy.deepcopy(simoptionsdict)
-        localsimoptionsdict["values"] = optionsdict
+        localsimoptionsdict["values"]        = optionsdict["values"]
+        localsimoptionsdict["procscales"]     = optionsdict["procscales"]
+        localsimoptionsdict["value_indices"] = optionsdict["value_indices"]
+        localsimoptionsdict["value_lengths"] = optionsdict["value_lengths"]
         # append the simulation to the list
         self.simulations.append(simoptionsdict["type"](simulationpath, localsimoptionsdict, currentdirectory, tfdirectory, \
-                                               logprefix=self.logprefix))
+                                                       logprefix=self.logprefix))
 
     self.runs = {}
     self.builds = {}
@@ -823,22 +861,49 @@ class SimulationBatch:
 
     # if this is the first level then set up an ordered dictionary 
     # (this gets repeatedly reused but we take deep copies into the list to ensure there's no overwriting)
-    if optionsdict is None: optionsdict = collections.OrderedDict()
+    if optionsdict is None: optionsdict = {"values"        : collections.OrderedDict(), \
+                                           "procscales"     : collections.OrderedDict(),
+                                           "value_indices" : collections.OrderedDict(),
+                                           "value_lengths" : collections.OrderedDict() }
+
+    assert len(diroptionsdict["values"]) == len(diroptionsdict["procscales"])
 
     # if we haven't reached the end yet...
-    if i < len(diroptionsdict):
-      # fetch the next sorted item
-      if isinstance(diroptionsdict, collections.OrderedDict):
-        item = diroptionsdict.items()[i]
+    if i < len(diroptionsdict["values"]):
+
+      # fetch the next sorted valitem
+      if isinstance(diroptionsdict["values"], collections.OrderedDict):
+        valitem = diroptionsdict["values"].items()[i]
       else:
-        item = sorted(diroptionsdict.items())[i]
-      # loop over the values provided in the list associated with item
-      for strvalue in item[1]:
+        valitem = sorted(diroptionsdict["values"].items())[i]
+
+      # fetch the next sorted procitem
+      if isinstance(diroptionsdict["procscales"], collections.OrderedDict):
+        procitem = diroptionsdict["procscales"].items()[i]
+      else:
+        procitem = sorted(diroptionsdict["procscales"].items())[i]
+
+      assert procitem[0] == valitem[0]    # val and procitem [0] should contain the name of the same parameter
+      # each entry of procitem[1] corresponds to the process scale for each entry of
+      # valitem[1] (the values of the parameter) hence they should have the same length
+      if len(procitem[1]) != len(valitem[1]):
+        self.log("ERROR: number of process scales does not equal the number of values:")
+        self.log("parameter %(parameter_name)s"%{"parameter_name": valitem[0]})
+        raise SimulationsErrorInitialization
+
+      optionsdict["value_lengths"][valitem[0]] = len(valitem[1])
+      # loop over the values provided in the list associated with valitem
+      for j in xrange(len(valitem[1])):
+        # remember the index
+        optionsdict["value_indices"][valitem[0]] = j
         # set the optionsdict to one of the values
-        optionsdict[item[0]] = strvalue
+        optionsdict["values"][valitem[0]] = valitem[1][j]
+        # set the optionsdict to one of the procscales
+        optionsdict["procscales"][procitem[0]] = procitem[1][j]
         # and recurse to the next level of the global options dictionary
         self.sliceoptionsdict(slicedoptionslist, diroptionsdict, optionsdict=optionsdict, i=i+1)
-    # we've reached the lowest level of the diroptionsdict
+
+    # we've reached the lowest level of the diroptionsdict["values"]
     else:
       # create a deep copy of the optionsdict and append it to the list
       slicedoptionslist.append(copy.deepcopy(optionsdict))
@@ -854,7 +919,15 @@ class SimulationBatch:
     while s < len(self.simulations):
       # if the rundirectory (which is used to identify unique simulations) is already registered then delete this simulation
       if self.simulations[s].rundirectory in self.runs:
+        # get the previous definition
+        oldsim = self.runs[self.simulations[s].rundirectory]
+        # pop the new definition
         tmpsim = self.simulations.pop(s)
+        # join the variables of the old and new simulations
+        oldsimvar = set([(var.name, var.code) for var in oldsim['simulation'].variables])
+        oldsimvar = oldsimvar.union(set([(var.name, var.code) for var in tmpsim.variables]))
+        oldsim['simulation'].variables = [Variable(var[0], var[1]) for var in oldsimvar]
+        # delete the duplicate definition
         del tmpsim
       # otherwise register the simulation in the run dictionary using its rundirectory as an identifier
       else:
@@ -892,6 +965,10 @@ class SimulationBatch:
         tmpsim = simulation.dependencies.pop(s)
         # add dependents of the new definition to the old definition
         oldsim['simulation'].dependents += tmpsim.dependents
+        # join the variables of the old and new simulations
+        oldsimvar = set([(var.name, var.code) for var in oldsim['simulation'].variables])
+        oldsimvar = oldsimvar.union(set([(var.name, var.code) for var in tmpsim.variables]))
+        oldsim['simulation'].variables = [Variable(var[0], var[1]) for var in oldsimvar]
         # delete the new (repeated definition)
         del tmpsim
         # insert the old definition into the slot previously occupied by the new one
@@ -1108,7 +1185,18 @@ class SimulationBatch:
           # otherwise if the name isn't in the varsdict then set up a nestedlist
           # and record the path in the pathdict so we can test for multiply defined variables later
           if not name in varsdict:
-            varsdict[name] = NestedList(self.globaloptionsdict[simulation.path]["values"])
+            def dependentwalk(simulation):
+              paths = []
+              for dependent in simulation.dependents:
+                paths += dependentwalk(dependent)
+              if len(simulation.dependents)==0 or simulation.path in self.globaloptionsdict: 
+                paths += [simulation.path]
+              return paths
+            paths = dependentwalk(simulation)
+            values = collections.OrderedDict()
+            for path in paths:
+              values.update(self.globaloptionsdict[path]["values"])
+            varsdict[name] = NestedList(values)
             pathdict[name] = simulation.path
           # set the values in the parameter sweep using the simulation options dictionary to index the nested list
           varsdict[name][simulation.optionsdict["values"]] = value
@@ -1227,6 +1315,16 @@ class SimulationHarnessBatch(SimulationBatch):
         else:
           simulation_path = os.path.normpath(os.path.join(dirname, simulation_input_file))
 
+        try:
+          number_processes = libspud.get_option(simulation_optionpath+"/number_processes")
+        except libspud.SpudKeyError:
+          number_processes = 1
+
+        try:
+          valgrind_options = libspud.get_option(simulation_optionpath+"/valgrind_options").split()
+        except libspud.SpudKeyError:
+          valgrind_options = None
+
         # fetch required input and output for this simulation (used to copy files into rundirectory 
         # and establish if run has successfully completed
         required_input  = self.getrequiredfiles(simulation_optionpath+"/required_input", dirname)
@@ -1234,29 +1332,36 @@ class SimulationHarnessBatch(SimulationBatch):
 
         # get the dictionary of the parameters we are sweeping over in this simulation and the number of times each run should
         # be performed (e.g. for benchmarking purposes)
-        parameter_values, parameter_updates, parameter_builds = self.getparameters(simulation_optionpath+"/parameter_sweep")
+        parameter_values, parameter_updates, \
+                          parameter_builds,  \
+                          parameter_procscales = self.getparameters(simulation_optionpath+"/parameter_sweep")
         try:
           nruns = libspud.get_option(simulation_optionpath+"/parameter_sweep/number_runs")
         except libspud.SpudKeyError:
           nruns = 1
 
         # get the parameters for any checkpoint pickups
-        checkpoint_values, checkpoint_updates, checkpoint_builds = self.getparameters(simulation_optionpath+"/checkpoint")
-        # don't do anything with checkpoint_builds
+        checkpoint_values, checkpoint_updates, \
+                           checkpoint_builds,  \
+                           checkpoint_procscales = self.getparameters(simulation_optionpath+"/checkpoint")
+        # don't do anything with checkpoint_builds or checkpoint_procscales
 
         # get the details of variables we want to examine from this simulation
         variables = self.getvariables(simulation_optionpath+"/variables")
 
         # add details of this simulation to the harness file options dictionary
         harnessfileoptionsdict[simulation_path] = {}
-        harnessfileoptionsdict[simulation_path]["name"]    = simulation_name
-        harnessfileoptionsdict[simulation_path]["type"]    = Simulation
-        harnessfileoptionsdict[simulation_path]["input"]   = required_input
-        harnessfileoptionsdict[simulation_path]["output"]  = required_output
-        harnessfileoptionsdict[simulation_path]["values"]  = parameter_values
-        harnessfileoptionsdict[simulation_path]["updates"] = parameter_updates
-        harnessfileoptionsdict[simulation_path]["builds"]  = parameter_builds
-        harnessfileoptionsdict[simulation_path]["nruns"]   = nruns
+        harnessfileoptionsdict[simulation_path]["name"]      = simulation_name
+        harnessfileoptionsdict[simulation_path]["nprocs"]    = number_processes
+        harnessfileoptionsdict[simulation_path]["valgrind"]  = valgrind_options
+        harnessfileoptionsdict[simulation_path]["type"]      = Simulation
+        harnessfileoptionsdict[simulation_path]["input"]     = required_input
+        harnessfileoptionsdict[simulation_path]["output"]    = required_output
+        harnessfileoptionsdict[simulation_path]["values"]    = parameter_values
+        harnessfileoptionsdict[simulation_path]["updates"]   = parameter_updates
+        harnessfileoptionsdict[simulation_path]["builds"]    = parameter_builds
+        harnessfileoptionsdict[simulation_path]["procscales"] = parameter_procscales
+        harnessfileoptionsdict[simulation_path]["nruns"]     = nruns
         harnessfileoptionsdict[simulation_path]["checkpoint_values"]  = checkpoint_values
         harnessfileoptionsdict[simulation_path]["checkpoint_updates"] = checkpoint_updates
         harnessfileoptionsdict[simulation_path]["variables"] = variables
@@ -1451,9 +1556,10 @@ class SimulationHarnessBatch(SimulationBatch):
      r = re.compile(r'(?:[^,; ([{]|\([^)]*\)|\[[^]]*\]|\{[^}]*\})+')
     
      # set up ordered dictionaries to remember the order in which parameters are specified
-     parameter_values  = collections.OrderedDict()
-     parameter_updates = collections.OrderedDict()
-     parameter_builds  = collections.OrderedDict()
+     parameter_values    = collections.OrderedDict()
+     parameter_updates   = collections.OrderedDict()
+     parameter_builds    = collections.OrderedDict()
+     parameter_procscales = collections.OrderedDict()
      # loop over all the parameters
      for p in xrange(libspud.option_count(optionpath+"/parameter")):
        parameter_optionpath = optionpath+"/parameter["+`p`+"]"
@@ -1471,8 +1577,18 @@ class SimulationHarnessBatch(SimulationBatch):
        # try to get a list of the parameter values (not necessarily specified for child parameters so except failure)
        try:
          parameter_values[parameter_name]  = r.findall(libspud.get_option(parameter_optionpath+"/values"))
+         # try to get a list of the process scales (not necessarily specified so except failure)
+         try:
+           parameter_procscales[parameter_name] = libspud.get_option(parameter_optionpath+"/process_scale")
+         except libspud.SpudKeyError:
+           parameter_procscales[parameter_name] = [1 for v in xrange(len(parameter_values[parameter_name]))]
        except libspud.SpudKeyError:
-         pass # insert nothing if we haven't specified any values
+         # insert nothing if we haven't specified any values
+         # try to get a list of the process scales (not necessarily specified so except failure)
+         try:
+           parameter_procscales[parameter_name] = libspud.get_option(parameter_optionpath+"/process_scale")
+         except libspud.SpudKeyError:
+           parameter_procscales[parameter_name] = None # haven't specified how we want processes scaled (defaults to 1 eventually)
 
        # try to get a list of the parameter update instructions (not necessarily specified for parent parameters so except failure)
        try:
@@ -1483,7 +1599,7 @@ class SimulationHarnessBatch(SimulationBatch):
          parameter_builds[parameter_name]  = True # not updating so we don't need multiple builds
 
      # return the OrderedDict objects for the values and updates
-     return parameter_values, parameter_updates, parameter_builds
+     return parameter_values, parameter_updates, parameter_builds, parameter_procscales
 
   def getdependencies(self, optionpath, dirname, parent_parameters):
      dependencies_options = {}
@@ -1511,8 +1627,10 @@ class SimulationHarnessBatch(SimulationBatch):
      required_input  = self.getrequiredfiles(optionpath+"/required_input", dirname)
      required_output = self.getrequiredfiles(optionpath+"/required_output")
 
-     parameter_values, parameter_updates, parameter_builds = self.getparameters(optionpath+"/parameter_sweep", \
-                                                                                parent_parameters=parent_parameters)
+     parameter_values, parameter_updates, \
+                       parameter_builds,  \
+                       parameter_procscales = self.getparameters(optionpath+"/parameter_sweep", \
+                                                                parent_parameters=parent_parameters)
      # we do nothing with parameter_values... it should be empty
      try:
        nruns = libspud.get_option(optionpath+"/parameter_sweep/number_runs")
@@ -1528,10 +1646,19 @@ class SimulationHarnessBatch(SimulationBatch):
        dependency_options[path]["spudfile"] = libspud.have_option(optionpath+"/input_file/spud_file")
      else:
        dependency_options[path]["type"]    = Simulation
+       try:
+         dependency_options[path]["nprocs"] = libspud.get_option(optionpath+"/number_processes")
+       except libspud.SpudKeyError:
+         dependency_options[path]["nprocs"] = 1
+       try:
+         dependency_options[path]["valgrind"] = libspud.get_option(optionpath+"/valgrind_options").split()
+       except libspud.SpudKeyError:
+         dependency_options[path]["valgrind"] = None
      dependency_options[path]["input"]     = required_input
      dependency_options[path]["output"]    = required_output
      dependency_options[path]["updates"]   = parameter_updates
      dependency_options[path]["builds"]    = parameter_builds
+     dependency_options[path]["procscales"]= parameter_procscales # not needed for runs but easier to keep in as dummy
      dependency_options[path]["nruns"] = nruns
      dependency_options[path]["variables"] = variables
      if libspud.have_option(optionpath+"/dependencies"):

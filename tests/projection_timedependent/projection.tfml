@@ -5,10 +5,13 @@
       <integer_value rank="0">2</integer_value>
     </dimension>
     <mesh name="Mesh">
-      <source name="File">
-        <file>
-          <string_value lines="1" type="filename">square</string_value>
-        </file>
+      <source name="UnitSquare">
+        <number_cells>
+          <integer_value shape="2" dim1="2" rank="1">4 4</integer_value>
+        </number_cells>
+        <diagonal>
+          <string_value>crossed</string_value>
+        </diagonal>
         <cell>
           <string_value>triangle</string_value>
         </cell>
@@ -78,7 +81,7 @@
           </initial_condition>
           <boundary_condition name="All">
             <boundary_ids>
-              <integer_value shape="4" rank="1">7 8 9 10</integer_value>
+              <integer_value shape="4" rank="1">1 2 3 4</integer_value>
             </boundary_ids>
             <sub_components name="All">
               <type type="boundary_condition" name="Dirichlet">
@@ -132,7 +135,7 @@
           </initial_condition>
           <boundary_condition name="All">
             <boundary_ids>
-              <integer_value shape="4" rank="1">7 8 9 10</integer_value>
+              <integer_value shape="4" rank="1">1 2 3 4</integer_value>
             </boundary_ids>
             <sub_components name="All">
               <type type="boundary_condition" name="Dirichlet">
@@ -146,6 +149,7 @@
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics>
           <functional name="Integral0">
             <string_value lines="20" type="code" language="python">int = ss2[0]*dx</string_value>
@@ -355,7 +359,7 @@ r = r1 + r2</string_value>
           </initial_condition>
           <boundary_condition name="All">
             <boundary_ids>
-              <integer_value shape="4" rank="1">7 8 9 10</integer_value>
+              <integer_value shape="4" rank="1">1 2 3 4</integer_value>
             </boundary_ids>
             <sub_components name="All">
               <type type="boundary_condition" name="Dirichlet">
@@ -369,6 +373,7 @@ r = r1 + r2</string_value>
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics>
           <functional name="Integral">
             <string_value lines="20" type="code" language="python">int = sp1*dx</string_value>
@@ -408,7 +413,7 @@ r = r1 + r2</string_value>
           </initial_condition>
           <boundary_condition name="All">
             <boundary_ids>
-              <integer_value shape="4" rank="1">7 8 9 10</integer_value>
+              <integer_value shape="4" rank="1">1 2 3 4</integer_value>
             </boundary_ids>
             <sub_components name="All">
               <type type="boundary_condition" name="Dirichlet">
@@ -422,6 +427,7 @@ r = r1 + r2</string_value>
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics>
           <functional name="Integral0">
             <string_value lines="20" type="code" language="python">int = sp2[0]*dx</string_value>

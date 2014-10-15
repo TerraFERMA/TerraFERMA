@@ -26,6 +26,7 @@
 #include <fstream>
 #include <string>
 #include "DiagnosticsFile.h"
+#include "BoostTypes.h"
 
 namespace buckettools
 {
@@ -40,9 +41,7 @@ namespace buckettools
   typedef std::shared_ptr< FunctionBucket > FunctionBucket_ptr;
   class SolverBucket;
   typedef std::shared_ptr< SolverBucket > SolverBucket_ptr;
-  typedef std::map< std::string, FunctionBucket_ptr >::const_iterator FunctionBucket_const_it;
   typedef std::shared_ptr< dolfin::Form > Form_ptr;
-  typedef std::map< std::string, Form_ptr >::const_iterator Form_const_it;
 
   //*****************************************************************|************************************************************//
   // KSPConvergenceFile class:
@@ -64,16 +63,18 @@ namespace buckettools
     //***************************************************************|***********************************************************//
     
     KSPConvergenceFile(const std::string &name, 
-                    const std::string &systemname, 
-                    const std::string &solvername);                  // specific constructor
+                       const MPI_Comm &comm, 
+                       const Bucket *bucket,
+                       const std::string &systemname, 
+                       const std::string &solvername);               // specific constructor
  
-    ~KSPConvergenceFile();                                              // default destructor
+    ~KSPConvergenceFile();                                           // default destructor
     
     //***************************************************************|***********************************************************//
     // Header writing functions
     //***************************************************************|***********************************************************//
 
-    void write_header(const Bucket &bucket);                         // write header for the bucket
+    void write_header();                         // write header for the bucket
 
     //***************************************************************|***********************************************************//
     // Data writing functions
@@ -95,21 +96,20 @@ namespace buckettools
 
     std::string solvername_;                                         // solver name
 
+    std::vector< FunctionBucket_ptr > fields_;
+
     //***************************************************************|***********************************************************//
     // Header writing functions (continued)
     //***************************************************************|***********************************************************//
 
-    void header_iteration_(uint &column);                            // write the header for iterations 
+    void header_iteration_();                                        // write the header for iterations 
     
-    void header_bucket_(uint &column);                               // write the header for the bucket (non-constant and 
+    void header_bucket_();                                           // write the header for the bucket (non-constant and 
                                                                      // timestepping entries)
 
-    void header_system_(const SystemBucket_ptr sys_ptr,              // write the header for a system
-                        uint &column);
+    void header_system_(const SystemBucket_ptr sys_ptr);             // write the header for a system
 
-    void header_func_(FunctionBucket_const_it f_begin,               // write the header for a set of functions
-                      FunctionBucket_const_it f_end, 
-                      uint &column);
+    void header_func_(const FunctionBucket_ptr f_ptr);               // write the header for a set of functions
 
     //***************************************************************|***********************************************************//
     // Data writing functions (continued)
@@ -121,8 +121,7 @@ namespace buckettools
 
     void data_system_(const SystemBucket_ptr sys_ptr);               // write the data for a system
 
-    void data_field_(FunctionBucket_const_it f_begin,                // write the data for a set of fields
-                     FunctionBucket_const_it f_end);
+    void data_field_(const FunctionBucket_ptr f_ptr);                // write the data for a set of fields
 
   };
   

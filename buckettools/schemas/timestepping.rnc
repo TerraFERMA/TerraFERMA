@@ -52,9 +52,12 @@ timestepping =
               ## The rank of the coefficient (scalar, rank 0).
               element rank {
                 attribute name { "Scalar" },
-                timestep_constant_options
-              }
-            }
+                timestep_constant_options,
+                comment
+              },
+              comment
+            },
+            comment
           },
           ## Options to adapt the timestep based on a field in a system
           element adaptive {
@@ -70,7 +73,7 @@ timestepping =
               ## The system name
               element system {
                 attribute name { xsd:string },
-                empty
+                comment
               },
               (
                 ## The field name
@@ -78,20 +81,21 @@ timestepping =
                 ## Field is assumed to be Scalar.
                 element field {
                   attribute name { xsd:string },
-                  empty
+                  comment
                 }|
                 ## The coefficient name
                 ##
                 ## Coefficient is assumed to be Scalar.
                 element coefficient {
                   attribute name { xsd:string },
-                  empty
+                  comment
                 }
               ),
               ## The target maximum value requested for the above field
               element requested_maximum_value {
                 real
-              }
+              },
+              comment
             }+,
             (
               ## The period in simulation time at which the timestep is recalculated.
@@ -113,8 +117,10 @@ timestepping =
             ## at most 10%.
             element increase_tolerance {
               real
-            }?
-          }?
+            }?,
+            comment
+          }?,
+          comment
         },
         ## Check for a steady state by comparing the previous timestep's values
         ## to the most recent compared to the given tolerance in the given norm
@@ -122,8 +128,10 @@ timestepping =
           ## Tolerance in which to test for a steady state
           element tolerance {
             real
-          }
-        }?
+          },
+          comment
+        }?,
+        comment
       }
    )
 
@@ -138,7 +146,8 @@ constant_timestep =
     ## Options for the description of an expression over the domain
     element value {
       attribute name {"WholeMesh"},
-      prescribed_scalar_constant
+      prescribed_scalar_constant,
+      comment
     }
   )
 
@@ -149,6 +158,7 @@ nonlinear =
         ## The number of nonlinear iterations
         element nonlinear_iterations {
           integer
-        }
+        },
+        comment
       }
    )

@@ -42,6 +42,7 @@
           <value>Quadrature</value>
         </choice>
       </element>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="cg_element_family">
@@ -53,6 +54,7 @@
       <element name="string_value">
         <value>CG</value>
       </element>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="dg_element_family">
@@ -64,6 +66,7 @@
       <element name="string_value">
         <value>DG</value>
       </element>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="r_element_family">
@@ -75,6 +78,7 @@
       <element name="string_value">
         <value>R</value>
       </element>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="q_element_family">
@@ -86,6 +90,7 @@
       <element name="string_value">
         <value>Quadrature</value>
       </element>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="generic_element_degree">
@@ -114,6 +119,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <value>0</value>
       </element>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="p1_element_degree">
@@ -125,6 +131,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <value>1</value>
       </element>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="p2_element_degree">
@@ -136,6 +143,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <value>2</value>
       </element>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="generic_element">
@@ -188,7 +196,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
     <optional>
       <element name="symmetric">
         <a:documentation>Tensor symmetry.</a:documentation>
-        <empty/>
+        <ref name="comment"/>
       </element>
     </optional>
   </define>
@@ -208,6 +216,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         <value>UserDefined</value>
       </attribute>
       <ref name="generic_element"/>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="element_options_scalar_lagrange">
@@ -218,6 +227,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
           <value>P1</value>
         </attribute>
         <ref name="p1_element"/>
+        <ref name="comment"/>
       </element>
       <element name="element">
         <a:documentation>Options describing piecewise quadratic continuous Lagrange finite element.</a:documentation>
@@ -225,6 +235,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
           <value>P2</value>
         </attribute>
         <ref name="p2_element"/>
+        <ref name="comment"/>
       </element>
       <element name="element">
         <a:documentation>Options describing piecewise linear discontinuous Lagrange finite element.</a:documentation>
@@ -232,6 +243,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
           <value>P1DG</value>
         </attribute>
         <ref name="p1dg_element"/>
+        <ref name="comment"/>
       </element>
       <element name="element">
         <a:documentation>Options describing piecewise quadratic discontinuous Lagrange finite element.</a:documentation>
@@ -239,6 +251,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
           <value>P2DG</value>
         </attribute>
         <ref name="p2dg_element"/>
+        <ref name="comment"/>
       </element>
     </choice>
   </define>
@@ -250,6 +263,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
           <value>P0</value>
         </attribute>
         <ref name="p0_element"/>
+        <ref name="comment"/>
       </element>
       <element name="element">
         <a:documentation>Options describing piecewise constant continuous real, e.g. for a global Lagrange multiplier.</a:documentation>
@@ -257,6 +271,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
           <value>P0R</value>
         </attribute>
         <ref name="p0r_element"/>
+        <ref name="comment"/>
       </element>
       <element name="element">
         <a:documentation>Options describing a piecewise constant quadrature element.</a:documentation>
@@ -264,6 +279,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
           <value>Quadrature</value>
         </attribute>
         <ref name="quadrature_element"/>
+        <ref name="comment"/>
       </element>
     </choice>
   </define>
@@ -276,6 +292,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="generic_element"/>
         <ref name="vector_element_options"/>
+        <ref name="comment"/>
       </element>
       <element name="element">
         <a:documentation>Options describing piecewise linear continuous Lagrange finite element for a vector.</a:documentation>
@@ -284,6 +301,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p1_element"/>
         <ref name="vector_element_options"/>
+        <ref name="comment"/>
       </element>
       <element name="element">
         <a:documentation>Options describing piecewise quadratic continuous Lagrange finite element for a vector.</a:documentation>
@@ -292,6 +310,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p2_element"/>
         <ref name="vector_element_options"/>
+        <ref name="comment"/>
       </element>
       <element name="element">
         <a:documentation>Options describing piecewise linear discontinuous Lagrange finite element for a vector.</a:documentation>
@@ -300,6 +319,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p1dg_element"/>
         <ref name="vector_element_options"/>
+        <ref name="comment"/>
       </element>
       <element name="element">
         <a:documentation>Options describing piecewise quadratic discontinuous Lagrange finite element for a vector.</a:documentation>
@@ -308,6 +328,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p2dg_element"/>
         <ref name="vector_element_options"/>
+        <ref name="comment"/>
       </element>
       <element name="element">
         <a:documentation>Options describing piecewise constant discontinuous Lagrange finite element for a vector.</a:documentation>
@@ -316,6 +337,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p0_element"/>
         <ref name="vector_element_options"/>
+        <ref name="comment"/>
       </element>
       <element name="element">
         <a:documentation>Options describing piecewise constant continuous real for a vector, e.g. for a global Lagrange multiplier.</a:documentation>
@@ -324,6 +346,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p0r_element"/>
         <ref name="vector_element_options"/>
+        <ref name="comment"/>
       </element>
       <element name="element">
         <a:documentation>Options describing a piecewise constant quadrature element for a vector.</a:documentation>
@@ -332,6 +355,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="quadrature_element"/>
         <ref name="vector_element_options"/>
+        <ref name="comment"/>
       </element>
     </choice>
   </define>
@@ -344,6 +368,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="generic_element"/>
         <ref name="tensor_element_options"/>
+        <ref name="comment"/>
       </element>
       <element name="element">
         <a:documentation>Options describing piecewise linear continuous Lagrange finite element for a tensor.</a:documentation>
@@ -352,6 +377,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p1_element"/>
         <ref name="tensor_element_options"/>
+        <ref name="comment"/>
       </element>
       <element name="element">
         <a:documentation>Options describing piecewise quadratic continuous Lagrange finite element for a tensor.</a:documentation>
@@ -360,6 +386,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p2_element"/>
         <ref name="tensor_element_options"/>
+        <ref name="comment"/>
       </element>
       <element name="element">
         <a:documentation>Options describing piecewise linear discontinuous Lagrange finite element for a tensor.</a:documentation>
@@ -368,6 +395,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p1dg_element"/>
         <ref name="tensor_element_options"/>
+        <ref name="comment"/>
       </element>
       <element name="element">
         <a:documentation>Options describing piecewise quadratic discontinuous Lagrange finite element for a tensor.</a:documentation>
@@ -376,6 +404,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p2dg_element"/>
         <ref name="tensor_element_options"/>
+        <ref name="comment"/>
       </element>
       <element name="element">
         <a:documentation>Options describing piecewise constant discontinuous Lagrange finite element for a tensor.</a:documentation>
@@ -384,6 +413,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p0_element"/>
         <ref name="tensor_element_options"/>
+        <ref name="comment"/>
       </element>
       <element name="element">
         <a:documentation>Options describing piecewise constant continuous real for a tensor, e.g. for a global Lagrange multiplier.</a:documentation>
@@ -392,6 +422,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p0r_element"/>
         <ref name="tensor_element_options"/>
+        <ref name="comment"/>
       </element>
       <element name="element">
         <a:documentation>Options describing a piecewise constant quadrature element for a tensor.</a:documentation>
@@ -400,6 +431,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="quadrature_element"/>
         <ref name="tensor_element_options"/>
+        <ref name="comment"/>
       </element>
     </choice>
   </define>

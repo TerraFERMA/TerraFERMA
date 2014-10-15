@@ -61,9 +61,6 @@ namespace buckettools
 
     void initialize();                                               // initialize the solvers and tensors
 
-    void copy_diagnostics(SolverBucket_ptr &solver, 
-                                  SystemBucket_ptr &system) const;   // copy the data necessary for the diagnostics data file(s)
-
     //***************************************************************|***********************************************************//
     // Base data access
     //***************************************************************|***********************************************************//
@@ -76,21 +73,25 @@ namespace buckettools
     //***************************************************************|***********************************************************//
 
     void register_form(Form_ptr form, const std::string &name,       // register a form with the given name and optionpath in the solver
-                                   const std::string &optionpath);   // bucket
+                                   std::string optionpath);   // bucket
+
+    const std::string fetch_form_optionpath(const std::string &name) const;// return the optionpath of the named form
+
+    string_it form_optionpaths_begin();                          
+
+    string_const_it form_optionpaths_begin() const;   
+
+    string_it form_optionpaths_end();              
+
+    string_const_it form_optionpaths_end() const;   
 
     //***************************************************************|***********************************************************//
     // Output functions
     //***************************************************************|***********************************************************//
 
-    const std::string str() const                                    // return a string describing the contents of the solver bucket
-    { return str(0); }
+    const std::string str(int indent=0) const;                       // return an indented string describing the contents of the solver bucket
 
-    const std::string str(int indent) const;                         // return an indented string describing the contents of the solver bucket
-
-    const std::string forms_str() const                              // return a string describing the forms in the solver bucket
-    { return forms_str(0); }
-
-    const std::string forms_str(const int &indent) const;            // return an indented string describing the forms in the solver bucket
+    const std::string forms_str(const int &indent=0) const;           // return an indented string describing the forms in the solver bucket
 
   //*****************************************************************|***********************************************************//
   // Private functions
@@ -108,7 +109,7 @@ namespace buckettools
     // Pointers data
     //***************************************************************|***********************************************************//
 
-    std::map< std::string, std::string > form_optionpaths_;          // a map from form names to form optionpaths
+    ordered_map< const std::string, std::string > form_optionpaths_;          // a map from form names to form optionpaths
     
     //***************************************************************|***********************************************************//
     // Filling data (continued)
@@ -124,45 +125,29 @@ namespace buckettools
     void fill_solverforms_(const std::string &optionpath, 
                            const std::string &prefix="");            // fill the form data of a linear solver
 
-    void fill_ksp_(const std::string &optionpath, KSP &ksp, 
-                                  const std::string prefix)          // fill the information about a parent ksp
-    { fill_ksp_(optionpath, ksp, prefix, NULL); }
-
     void fill_ksp_(const std::string &optionpath, KSP &ksp,          // fill the information about a child ksp
-                         const std::string prefix, 
-                         const std::vector<uint>* parent_indices);
+                   const std::string prefix, 
+                   const std::vector<uint>* parent_indices=NULL);
 
     void fill_pc_(const std::string &optionpath, PC &pc,             // fill the information about a pc
-                         const std::string prefix, 
-                         const std::vector<uint>* parent_indices);
+                  const std::string prefix, 
+                  const uint &parent_offset, 
+                  const std::vector<uint>* parent_indices);
+
+    void fill_indices_values_by_field_(const std::string &optionpath,
+                                       std::vector<uint> &child_indices,
+                                       PETScVector_ptr values=NULL,
+                                       const std::vector<uint>* parent_indices=NULL,
+                                       const std::vector<uint>* sibling_indices=NULL);
 
     void fill_pc_fieldsplit_(const std::string &optionpath, PC &pc,  // fill the information about a fieldsplit pc
-                         const std::string prefix, 
-                         const std::vector<uint>* parent_indices);
-
-    void fill_is_by_field_(const std::string &optionpath, IS &is,    // set up a petsc index set
-                           std::vector<uint> &child_indices,
-                           const std::vector<uint>* parent_indices,
-                           const std::vector<uint>* sibling_indices);
-
-    boost::unordered_set<uint> field_dof_set_(const std::string &optionpath,
-                                              const FunctionSpace_ptr functionspace,
-                                              const std::vector<int>* components,
-                                              const std::vector<int>* region_ids,
-                                              const std::vector<int>* boundary_ids,
-                                              const uint parent_component=0,
-                                              uint rank=0);          // set up a dof set based on a field
-
-    boost::unordered_set<uint> cell_dof_set_(const std::shared_ptr<const dolfin::GenericDofMap> dofmap,
-                                             const std::vector<int>* region_ids);
-                                                                     // set up a dof set over cells
-
-    boost::unordered_set<uint> facet_dof_set_(const std::shared_ptr<const dolfin::GenericDofMap> dofmap,
-                                              const std::vector<int>* boundary_ids);
-                                                                     // set up a dof set over facets
+                             const std::string prefix, 
+                             const uint &parent_offset, 
+                             const std::vector<uint>* parent_indices);
 
     void fill_nullspace_(const std::string &optionpath, 
                          MatNullSpace &SP,
+                         const uint &parent_offset, 
                          const std::vector<uint>* parent_indices);   // fill a petsc null space object
 
     void fill_constraints_();                                        // fill constraints on snes vi
@@ -170,54 +155,22 @@ namespace buckettools
     void fill_bound_(const std::string &optionpath, 
                          PETScVector_ptr &bound, const double &background_value);   // fill petsc vectors containing the bounds for snes vi
 
-    void fill_values_by_field_(const std::string &optionpath,    // fill a vector describing e.g. a null space
-                                   PETScVector_ptr values,
-                                   const double &value,
-                                   const std::vector<uint>* parent_indices,
-                                   const std::vector<uint>* sibling_indices);
+    void field_restrictions_(const std::string &optionpath,
+                             std::vector<int>* &components,
+                             std::vector<int>* &region_ids,
+                             std::vector<int>* &boundary_ids,
+                             dolfin::Expression* &value_exp,
+                             double* &value_const,
+                             const std::vector<std::size_t> &fieldshape,
+                             const bool &fieldsymmetric);            // set up the restrictions on an IS by field
 
-    boost::unordered_map<uint, double> field_value_map_(const std::string &optionpath,
-                                                     const FunctionSpace_ptr functionspace,
-                                                     const std::vector<int>* components,
-                                                     const std::vector<int>* region_ids,
-                                                     const std::vector<int>* boundary_ids,
-                                                     Expression_ptr value_exp, const double *value_const,
-                                                     const uint parent_component=0,
-                                                     uint rank=0,    // set up a map describing e.g. the null space values for a field
-                                                     uint exp_index=0);
-
-    boost::unordered_map<uint, double> cell_value_map_(const std::shared_ptr<const dolfin::GenericDofMap> dofmap,
-                                                    const std::vector<int>* region_ids,
-                                                    Expression_ptr value_exp, const double *value_const,
-                                                    const uint &exp_index);// set up a map describing e.g. the null space values over cells
-
-    boost::unordered_map<uint, double> facet_value_map_(const std::shared_ptr<const dolfin::GenericDofMap> dofmap,
-                                                     const std::vector<int>* boundary_ids,
-                                                     Expression_ptr value_exp, const double *value_const,
-                                                     const uint &exp_index);// set up a map describing e.g. the  null space values over a boundary
-
-    void is_by_field_restrictions_(const std::string &optionpath,
-                                   std::vector<int>* &components,
-                                   std::vector<int>* &region_ids,
-                                   std::vector<int>* &boundary_ids,
-                                   const std::string &fieldrank,
-                                   const int &fieldsize);            // set up the restrictions on an IS by field
-
-    void destroy_is_field_restrictions_(std::vector<int>* &components,// destroy the objects describing any restrictions on an IS by field
-                                        std::vector<int>* &region_ids,
-                                        std::vector<int>* &boundary_ids);
-
-    void restrict_is_indices_(std::vector<uint> &indices,            // restrict the indices describing an IS based on the parent,
-                              const std::vector<uint>* parent_indices,// sibling and parallel ownership
-                              const std::vector<uint>* sibling_indices);
+    void destroy_field_restrictions_(std::vector<int>* &components,  // destroy the objects describing any restrictions on an IS by field
+                                     std::vector<int>* &region_ids,
+                                     std::vector<int>* &boundary_ids,
+                                     dolfin::Expression* &value_exp,
+                                     double* &value_const);
 
     void initialize_tensors_();                                      // fill the tensor data structures of the solver bucket
-
-    //***************************************************************|***********************************************************//
-    // Emptying data
-    //***************************************************************|***********************************************************//
-
-    void empty_();                                           // empty the derived and base class data structures
 
     
   };

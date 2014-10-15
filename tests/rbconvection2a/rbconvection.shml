@@ -3,8 +3,12 @@
   <length>
     <string_value>medium</string_value>
   </length>
-  <owner>cwilson</owner>
-  <description>Blankenbach 2a</description>
+  <owner>
+    <string_value lines="1">cwilson</string_value>
+  </owner>
+  <description>
+    <string_value lines="1">Blankenbach 2a.</string_value>
+  </description>
   <simulations>
     <simulation name="RBConvection">
       <input_file>

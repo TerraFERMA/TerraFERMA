@@ -3,8 +3,12 @@
   <length>
     <string_value>short</string_value>
   </length>
-  <owner>cwilson</owner>
-  <description>A very simple simulation of periodic Poisson.  Testing nothing except that it builds and runs.</description>
+  <owner>
+    <string_value lines="1">cwilson</string_value>
+  </owner>
+  <description>
+    <string_value lines="1">A very simple simulation of periodic Poisson.  Testing nothing except that it builds and runs.</string_value>
+  </description>
   <simulations>
     <simulation name="Periodic">
       <input_file>

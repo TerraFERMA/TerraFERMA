@@ -51,6 +51,7 @@ class CppExpressionBucket:
     cpp.append("#include \"Bucket.h\"\n")
     cpp.append("#include \"SystemBucket.h\"\n")
     cpp.append("#include \"BoostTypes.h\"\n")
+    cpp.append("#include \"Logger.h\"\n")
     cpp.append("#include <dolfin.h>\n")
     if self.include:
       for line in self.include.split("\n"):
@@ -91,7 +92,7 @@ class CppExpressionBucket:
     cpp.append("    void eval(dolfin::Array<double>& values, const dolfin::Array<double>& x) const\n")
     cpp.append("    {\n")
     cpp.append("      \n")
-    cpp.append("      dolfin::error(\"Buckettools C++ expressions must be called using the eval(values, x, cell) interface.\");\n")
+    cpp.append("      tf_err(\"Buckettools C++ expressions must be called using the eval(values, x, cell) interface.\", \"Cannot use eval(values, x) interface.\");\n")
     cpp.append("      \n")
     cpp.append("    }\n")
     cpp.append("    \n")

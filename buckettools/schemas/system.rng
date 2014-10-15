@@ -52,6 +52,7 @@ The system name must be unique amongst any other systems.</a:documentation>
         <ref name="nonlinear_solver_options"/>
       </zeroOrMore>
       <ref name="solve_location"/>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="mesh_choice">
@@ -62,7 +63,7 @@ The actual mesh must be described above in /geometry/mesh.</a:documentation>
         <attribute name="name">
           <data type="string"/>
         </attribute>
-        <empty/>
+        <ref name="comment"/>
       </element>
       <element name="mesh">
         <a:documentation>The name of the mesh that the system functionspace and any coefficient functions are defined on. 
@@ -72,7 +73,7 @@ Use the automatically available name "Mesh."</a:documentation>
         <attribute name="name">
           <value>Mesh</value>
         </attribute>
-        <empty/>
+        <ref name="comment"/>
       </element>
     </choice>
   </define>
@@ -133,28 +134,37 @@ The return value must have the same size as the geometric dimension.</a:document
   <define name="solve_location">
     <choice>
       <element name="solve">
+        <a:documentation>Solve the equations listed in the nonlinear solvers of this system every timestep.</a:documentation>
         <attribute name="name">
           <value>in_timeloop</value>
         </attribute>
-        <empty/>
+        <ref name="comment"/>
       </element>
       <element name="solve">
+        <a:documentation>Only solve the equations listed in the nonlinear solvers of this system at the start of the simulation.</a:documentation>
         <attribute name="name">
           <value>at_start</value>
         </attribute>
-        <empty/>
+        <ref name="comment"/>
       </element>
       <element name="solve">
+        <a:documentation>Only solve the equations listed in the nonlinear solvers of this system when diagnostic output is performed.
+
+This means that this system will be updated at an interval dependant on how the diagnostic dump periods are set in /io.</a:documentation>
         <attribute name="name">
           <value>with_diagnostics</value>
         </attribute>
-        <empty/>
+        <ref name="comment"/>
       </element>
       <element name="solve">
+        <a:documentation>Never solve the equations listed in the nonlinear solvers of this system.
+
+This is primarily intended to be used in checkpoint files when systems set to solve 'at_start' are never solved for in the 
+checkpointed simulation.</a:documentation>
         <attribute name="name">
           <value>never</value>
         </attribute>
-        <empty/>
+        <ref name="comment"/>
       </element>
     </choice>
   </define>

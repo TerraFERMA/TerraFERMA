@@ -293,7 +293,7 @@ const bool SemiLagrangianExpression::checkpoint_(const int &index,
 
     if (update)
     {
-      cell_indices = (*(*mesh_).bounding_box_tree()).compute_collisions(p);
+      cell_indices = (*(*mesh_).bounding_box_tree()).compute_entity_collisions(p);
       if (cell_indices.size()==0)
       {
         cell_index = -1;
@@ -307,7 +307,7 @@ const bool SemiLagrangianExpression::checkpoint_(const int &index,
   }
   else
   {
-    cell_indices = (*(*mesh_).bounding_box_tree()).compute_collisions(p);
+    cell_indices = (*(*mesh_).bounding_box_tree()).compute_entity_collisions(p);
     if (cell_indices.size()==0)
     {
       cell_index = -1;
