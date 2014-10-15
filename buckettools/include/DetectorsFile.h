@@ -27,6 +27,7 @@
 #include <string>
 #include <dolfin.h>
 #include "DiagnosticsFile.h"
+#include "BoostTypes.h"
 
 namespace buckettools
 {
@@ -39,11 +40,8 @@ namespace buckettools
   typedef std::shared_ptr< SystemBucket > SystemBucket_ptr;
   class FunctionBucket;
   typedef std::shared_ptr< FunctionBucket > FunctionBucket_ptr;
-  typedef std::map< std::string, FunctionBucket_ptr >::const_iterator FunctionBucket_const_it;
   class GenericDetectors;
   typedef std::shared_ptr< GenericDetectors > GenericDetectors_ptr;
-  typedef std::map< std::string, GenericDetectors_ptr >::const_iterator GenericDetectors_const_it;
-  typedef std::shared_ptr< dolfin::Mesh > Mesh_ptr;
 
   //*****************************************************************|************************************************************//
   // DetectorsFile class:
@@ -63,7 +61,9 @@ namespace buckettools
     // Constructors and destructors
     //***************************************************************|***********************************************************//
     
-    DetectorsFile(const std::string name, const MPI_Comm &comm);     // specific constructor
+    DetectorsFile(const std::string name, 
+                  const MPI_Comm &comm, 
+                  const Bucket *bucket);     // specific constructor
     
     ~DetectorsFile();                                                // default destructor
     
@@ -71,7 +71,7 @@ namespace buckettools
     // Header writing functions
     //***************************************************************|***********************************************************//
 
-    void write_header(const Bucket &bucket);
+    void write_header();
     
     //***************************************************************|***********************************************************//
     // Data writing functions
@@ -86,18 +86,22 @@ namespace buckettools
   private:
     
     //***************************************************************|***********************************************************//
+    // Base data
+    //***************************************************************|***********************************************************//
+
+    std::vector< GenericDetectors_ptr > detectors_;
+
+    std::vector< FunctionBucket_ptr >   functions_;
+
+    //***************************************************************|***********************************************************//
     // Header writing functions (continued)
     //***************************************************************|***********************************************************//
 
     void header_bucket_();
     
-    void header_detector_(GenericDetectors_const_it d_begin,
-                          GenericDetectors_const_it d_end);
+    void header_detector_(const GenericDetectors_ptr d_ptr);
     
-    void header_func_(FunctionBucket_const_it f_begin,
-                      FunctionBucket_const_it f_end,
-                      GenericDetectors_const_it d_begin,
-                      GenericDetectors_const_it d_end);
+    void header_func_(const FunctionBucket_ptr f_ptr);
     
     //***************************************************************|***********************************************************//
     // Data writing functions (continued)
@@ -107,15 +111,9 @@ namespace buckettools
 
     void data_bucket_();
     
-    void data_detector_(GenericDetectors_const_it d_begin,
-                        GenericDetectors_const_it d_end);
+    void data_detector_(const GenericDetectors_ptr d_ptr);
     
-    void data_func_(FunctionBucket_const_it f_begin,
-                    FunctionBucket_const_it f_end,
-                    GenericDetectors_const_it d_begin,
-                    GenericDetectors_const_it d_end,
-                    Mesh_ptr mesh);
-    
+    void data_func_(const FunctionBucket_ptr f_ptr);
 
     //***************************************************************|***********************************************************//
     // Private members

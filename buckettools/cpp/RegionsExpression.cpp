@@ -21,6 +21,7 @@
 
 #include "RegionsExpression.h"
 #include "BoostTypes.h"
+#include "Logger.h"
 #include <dolfin.h>
 #include <string>
 
@@ -102,7 +103,7 @@ void RegionsExpression::eval(dolfin::Array<double>& values,
   size_t_Expression_const_it e_it = expressions_.find(id);
   if (e_it == expressions_.end())
   {
-    dolfin::error("Unknown region id %d in RegionsExpression eval", id);
+    tf_err("Unknown region id in RegionsExpression eval.", "Region id: %d", id);
   }
   else
   {

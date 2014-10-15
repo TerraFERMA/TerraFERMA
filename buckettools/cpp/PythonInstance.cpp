@@ -21,6 +21,7 @@
 
 #include "Python.h"
 #include "PythonInstance.h"
+#include "Logger.h"
 #include <string>
 #include <dolfin.h>
 
@@ -70,7 +71,7 @@ void PythonInstance::init_()
   
   if (PyErr_Occurred()){                                             // check for errors in getting the function
     PyErr_Print();
-    dolfin::error("In PythonInstance::init_");
+    tf_err("In PythonInstance::init_ evaluating pCode_.", "Python error occurred.");
   }
 
   pFunc_ = PyDict_GetItemString(pLocals_, "val");                    // get the val function from the function string
@@ -86,7 +87,7 @@ void PythonInstance::init_()
   
   if (PyErr_Occurred()){                                             // check for errors in getting the function
     PyErr_Print();
-    dolfin::error("In PythonInstance::init_");
+    tf_err("In PythonInstance::init_ evaluating nargs_.", "Python error occurred.");
   }
   
 }

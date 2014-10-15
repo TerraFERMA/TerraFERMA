@@ -59,6 +59,22 @@ namespace buckettools
 
   PetscErrorCode SNESVIDummyComputeVariableBounds(SNES snes, Vec xl, Vec xu);
 
+  void petsc_failure(PetscErrorCode perr,
+                     const std::string &filename,
+                     const int &line,
+                     const std::string &dirname,
+                     const std::string &petsc_function);
+
+  #define petsc_fail(perr) do {petsc_failure(perr, __FILE__, __LINE__, __SDIR__, PETSC_FUNCTION_NAME);} while(0)
+
+  void petsc_error(PetscErrorCode perr,
+                   const std::string &filename,
+                   const int &line,
+                   const std::string &dirname,
+                   const std::string &petsc_function);
+
+  #define petsc_err(perr)  do {petsc_error(perr, __FILE__, __LINE__, __SDIR__, PETSC_FUNCTION_NAME);} while(0)
+
 }
 
 #endif

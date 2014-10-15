@@ -3,8 +3,12 @@
   <length>
     <string_value>short</string_value>
   </length>
-  <owner>cwilson</owner>
-  <description>A test of snes vi with dg advection.</description>
+  <owner>
+    <string_value lines="1">cwilson</string_value>
+  </owner>
+  <description>
+    <string_value lines="1">A test of snes vi with dg advection.</string_value>
+  </description>
   <simulations>
     <simulation name="Advection">
       <input_file>
@@ -18,13 +22,17 @@
           <required_output>
             <filenames name="meshfiles">
               <string>
-                <string_value type="filename" lines="1">interval.xml</string_value>
+                <string_value lines="1" type="filename">interval.xml</string_value>
               </string>
             </filenames>
           </required_output>
           <commands>
-            <command name="GMsh">gmsh -1 interval.geo</command>
-            <command name="Convert">dolfin-convert interval.msh interval.xml</command>
+            <command name="GMsh">
+              <string_value lines="1">gmsh -1 interval.geo</string_value>
+            </command>
+            <command name="Convert">
+              <string_value lines="1">dolfin-convert interval.msh interval.xml</string_value>
+            </command>
           </commands>
         </run>
       </dependencies>

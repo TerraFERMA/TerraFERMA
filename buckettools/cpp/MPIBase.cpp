@@ -19,6 +19,7 @@
 // along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
 #include "MPIBase.h"
+#include "Logger.h"
 #include <dolfin.h>
 #include <string>
 #ifdef HAS_MPI
@@ -28,12 +29,14 @@ using namespace buckettools;
 //*******************************************************************|************************************************************//
 // return dolfin errors after failures in mpi
 //*******************************************************************|************************************************************//
-void buckettools::mpi_err(const int &error,
-                          const int accept)
+void buckettools::mpi_error(const int &mpierr,
+                            const std::string &filename,
+                            const int &line,
+                            const int &accept)
 {
-  if (error!=accept)
+  if (mpierr!=accept)
   {
-    dolfin::error("MPI returned error code: %d", error);
+    error(filename, line, "Call to MPI returned an error.", "MPI error code: %d", mpierr);
   }
 }
 

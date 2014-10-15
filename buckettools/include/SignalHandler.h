@@ -51,7 +51,7 @@ namespace buckettools
 
     EventHandler_ptr return_handler(int signum);                     // return a pointer to the handler associated with signum
 
-    static void dispatcher(int signum);                              // entry point adapter installled into sigaction
+    static void dispatcher(int signum);                              // entry point adapter installed into sigaction
 
   //*****************************************************************|***********************************************************//
   // Private functions

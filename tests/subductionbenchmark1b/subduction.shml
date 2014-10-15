@@ -3,8 +3,12 @@
   <length>
     <string_value>short</string_value>
   </length>
-  <owner>cwilson</owner>
-  <description>van Keken subduction benchmark 1b</description>
+  <owner>
+    <string_value lines="1">cwilson</string_value>
+  </owner>
+  <description>
+    <string_value lines="1">van Keken subduction benchmark 1b</string_value>
+  </description>
   <simulations>
     <simulation name="Subduction">
       <input_file>

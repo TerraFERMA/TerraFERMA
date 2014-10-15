@@ -642,19 +642,139 @@ r = r1 + r2 + r3</string_value>
           <residual/>
         </monitors>
         <linear_solver>
-          <iterative_method name="cg">
-            <relative_error>
-              <real_value rank="0">1.e-12</real_value>
-            </relative_error>
-            <max_iterations>
-              <integer_value rank="0">100</integer_value>
-            </max_iterations>
-            <zero_initial_guess/>
-            <monitors>
-              <preconditioned_residual/>
-            </monitors>
-          </iterative_method>
-          <preconditioner name="sor"/>
+          <iterative_method name="preonly"/>
+          <preconditioner name="fieldsplit">
+            <composite_type name="additive"/>
+            <fieldsplit name="Field1">
+              <field name="Field1"/>
+              <monitors>
+                <view_index_set/>
+              </monitors>
+              <linear_solver>
+                <iterative_method name="preonly"/>
+                <preconditioner name="lu">
+                  <factorization_package name="mumps"/>
+                </preconditioner>
+              </linear_solver>
+            </fieldsplit>
+            <fieldsplit name="Fields2And3">
+              <field name="Field2"/>
+              <field name="Field3"/>
+              <monitors>
+                <view_index_set/>
+              </monitors>
+              <linear_solver>
+                <iterative_method name="preonly"/>
+                <preconditioner name="fieldsplit">
+                  <composite_type name="additive"/>
+                  <fieldsplit name="Field2">
+                    <field name="Field2"/>
+                    <monitors>
+                      <view_index_set/>
+                    </monitors>
+                    <linear_solver>
+                      <iterative_method name="preonly"/>
+                      <preconditioner name="fieldsplit">
+                        <composite_type name="additive"/>
+                        <fieldsplit name="Component1">
+                          <field name="Field2">
+                            <components>
+                              <integer_value shape="1" rank="1">0</integer_value>
+                            </components>
+                          </field>
+                          <monitors>
+                            <view_index_set/>
+                          </monitors>
+                          <linear_solver>
+                            <iterative_method name="preonly"/>
+                            <preconditioner name="lu">
+                              <factorization_package name="mumps"/>
+                            </preconditioner>
+                          </linear_solver>
+                        </fieldsplit>
+                        <fieldsplit name="Component2">
+                          <field name="Field2">
+                            <components>
+                              <integer_value shape="1" rank="1">1</integer_value>
+                            </components>
+                          </field>
+                          <monitors>
+                            <view_index_set/>
+                          </monitors>
+                          <linear_solver>
+                            <iterative_method name="preonly"/>
+                            <preconditioner name="lu">
+                              <factorization_package name="mumps"/>
+                            </preconditioner>
+                          </linear_solver>
+                        </fieldsplit>
+                      </preconditioner>
+                    </linear_solver>
+                  </fieldsplit>
+                  <fieldsplit name="Field3">
+                    <field name="Field3"/>
+                    <monitors>
+                      <view_index_set/>
+                    </monitors>
+                    <linear_solver>
+                      <iterative_method name="preonly"/>
+                      <preconditioner name="fieldsplit">
+                        <composite_type name="additive"/>
+                        <fieldsplit name="Component1">
+                          <field name="Field3">
+                            <components>
+                              <integer_value shape="1" rank="1">0</integer_value>
+                            </components>
+                          </field>
+                          <monitors>
+                            <view_index_set/>
+                          </monitors>
+                          <linear_solver>
+                            <iterative_method name="preonly"/>
+                            <preconditioner name="lu">
+                              <factorization_package name="mumps"/>
+                            </preconditioner>
+                          </linear_solver>
+                        </fieldsplit>
+                        <fieldsplit name="Component2">
+                          <field name="Field3">
+                            <components>
+                              <integer_value shape="1" rank="1">1</integer_value>
+                            </components>
+                          </field>
+                          <monitors>
+                            <view_index_set/>
+                          </monitors>
+                          <linear_solver>
+                            <iterative_method name="preonly"/>
+                            <preconditioner name="lu">
+                              <factorization_package name="mumps"/>
+                            </preconditioner>
+                          </linear_solver>
+                        </fieldsplit>
+                        <fieldsplit name="Component3">
+                          <field name="Field3">
+                            <components>
+                              <integer_value shape="1" rank="1">2</integer_value>
+                            </components>
+                          </field>
+                          <monitors>
+                            <view_index_set/>
+                          </monitors>
+                          <linear_solver>
+                            <iterative_method name="preonly"/>
+                            <preconditioner name="lu">
+                              <factorization_package name="mumps"/>
+                            </preconditioner>
+                          </linear_solver>
+                        </fieldsplit>
+                      </preconditioner>
+                    </linear_solver>
+                  </fieldsplit>
+                </preconditioner>
+              </linear_solver>
+            </fieldsplit>
+          </preconditioner>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>

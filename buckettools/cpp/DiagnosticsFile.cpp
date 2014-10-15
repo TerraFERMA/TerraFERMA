@@ -22,7 +22,7 @@
 #include "DiagnosticsFile.h"
 #include "Bucket.h"
 #include "MPIBase.h"
-#include "builddefs.h"
+#include "Usage.h"
 #include <cstdio>
 #include <stdlib.h>
 #include <string>
@@ -36,8 +36,9 @@ using namespace buckettools;
 // specific constructor
 //*******************************************************************|************************************************************//
 DiagnosticsFile::DiagnosticsFile(const std::string &name, 
-                                 const MPI_Comm &comm) : 
-                                 name_(name), mpicomm_(comm), ncolumns_(0)
+                                 const MPI_Comm &comm,
+                                 const Bucket *bucket) : 
+                                 name_(name), mpicomm_(comm), bucket_(bucket), ncolumns_(0)
 {
   if (dolfin::MPI::rank(mpicomm_)==0)
   {
@@ -54,6 +55,28 @@ DiagnosticsFile::~DiagnosticsFile()
 }
 
 //*******************************************************************|************************************************************//
+// write opening lines of the xml header
+//*******************************************************************|************************************************************//
+void DiagnosticsFile::header_open_()
+{
+  if (dolfin::MPI::rank(mpicomm_)==0)
+  {
+    file_ << "<header>" << std::endl;                                // initialize header xml
+  }
+}
+
+//*******************************************************************|************************************************************//
+// write closing lines of the xml header
+//*******************************************************************|************************************************************//
+void DiagnosticsFile::header_close_()
+{
+  if (dolfin::MPI::rank(mpicomm_)==0)
+  {
+    file_ << "</header>" << std::endl << std::flush;                 // finalize header xml
+  }
+}
+
+//*******************************************************************|************************************************************//
 // write lines of the xml header for constants that do not vary throughout a simulation
 //*******************************************************************|************************************************************//
 void DiagnosticsFile::header_constants_(const bool &binary)
@@ -64,7 +87,7 @@ void DiagnosticsFile::header_constants_(const bool &binary)
   char cbuffer[maxlencbuffer];
   int cerr;
 
-  constant_tag_("GitHash", "string", __GIT_SHA__);                 // the git sha
+  constant_tag_("GitHash", "string", githash());                 // the git sha
   
   buffer.str("");
   buffer << __DATE__;
@@ -190,6 +213,17 @@ void DiagnosticsFile::tag_(const std::string &name,
 }
 
 //*******************************************************************|************************************************************//
+// end the line and flush
+//*******************************************************************|************************************************************//
+void DiagnosticsFile::data_endlineflush_()
+{
+  if (dolfin::MPI::rank(mpicomm_)==0)
+  {
+    file_ << std::endl << std::flush;                               // flush the buffer
+  }
+}
+
+//*******************************************************************|************************************************************//
 // write data to the file for values relating to timestepping
 //*******************************************************************|************************************************************//
 void DiagnosticsFile::data_timestep_()
@@ -211,145 +245,45 @@ void DiagnosticsFile::data_timestep_()
 }
 
 //*******************************************************************|************************************************************//
-// write generic data for a function (field or coefficient function)
+// write generic data to file
 //*******************************************************************|************************************************************//
-void DiagnosticsFile::data_function_(dolfin::Function &func, 
-                                     const bool &include_norms)
+void DiagnosticsFile::data_(const int &value)
 {
-  if (func.value_rank()==0)                                          // scalars (no components)
+  if (dolfin::MPI::rank(mpicomm_)==0)
   {
-    double max, min;
-    double norml2, normlinf;
-
-    max = (*func.vector()).max();
-    min = (*func.vector()).min();
-    if (include_norms)
-    {
-      norml2   = (*func.vector()).norm("l2");
-      normlinf = (*func.vector()).norm("linf");
-    }
-
-    if (dolfin::MPI::rank(mpicomm_)==0)
-    {
-      file_ << max << " ";
-      file_ << min << " ";
-
-      if (include_norms)
-      {
-        file_ << norml2 << " ";
-        file_ << normlinf << " ";
-      }
-    }
+    file_ << value << " ";
   }
-  else if (func.value_rank()==1)                                     // vectors (multiple components)
+}
+
+//*******************************************************************|************************************************************//
+// write generic data to file
+//*******************************************************************|************************************************************//
+void DiagnosticsFile::data_(const double &value)
+{
+  if (dolfin::MPI::rank(mpicomm_)==0)
   {
-    int components = func.value_size();
-
-    std::vector<double> max(components, 0.0), min(components, 0.0);
-    std::vector<double> norml2(components, 0.0), normlinf(components, 0.0);
-
-    for (uint i = 0; i < components; i++)
-    {
-      dolfin::Function funccomp = func[i];                           // take a deep copy of the component of the subfunction
-      max[i] = (*funccomp.vector()).max();
-      min[i] = (*funccomp.vector()).min();
-      if (include_norms)
-      {
-        norml2[i]   = (*funccomp.vector()).norm("l2");
-        normlinf[i] = (*funccomp.vector()).norm("linf");
-      }
-    }
-
-    if (dolfin::MPI::rank(mpicomm_)==0)
-    {
-      for (uint i = 0; i < components; i++)
-      {
-        file_ << max[i] << " ";                                      // maximum for all components
-      }
-      for (uint i = 0; i < components; i++)
-      {
-        file_ << min[i] << " ";                                      // minimum for all components
-      }
-      if (include_norms)
-      {
-        for (uint i = 0; i < components; i++)
-        {
-          file_ << norml2[i] << " ";
-        }
-        for (uint i = 0; i < components; i++)
-        {
-          file_ << normlinf[i] << " ";
-        }
-      }
-    }
-
+    file_.setf(std::ios::scientific);
+    file_.precision(10);
+    file_ << value << " ";
+    file_.unsetf(std::ios::scientific);
   }
-  else if (func.value_rank()==2)                                     // tensor (multiple components)
+}
+
+//*******************************************************************|************************************************************//
+// write generic data to file
+//*******************************************************************|************************************************************//
+void DiagnosticsFile::data_(const std::vector<double> &values)
+{
+  if (dolfin::MPI::rank(mpicomm_)==0)
   {
-    const bool symmetric = ((*(*func.function_space()).element()).num_sub_elements() != func.value_size());
-    int dim0 = func.value_dimension(0);
-    int dim1 = func.value_dimension(1);
-    std::vector<double> max(dim0*dim1, 0.0), min(dim0*dim1, 0.0);
-    std::vector<double> norml2(dim0*dim1, 0.0), normlinf(dim0*dim1, 0.0);
-    for (uint i = 0; i < dim0; i++)
+    file_.setf(std::ios::scientific);
+    file_.precision(10);
+    for (uint i = 0; i < values.size(); i++)
     {
-      for (uint j = 0; j < dim1; j++)
-      {
-        std::size_t k; 
-        if (symmetric) 
-        {
-          if (j >= i) 
-          {
-            k = i*dim1 + j - (i*(i+1))/2; 
-          }
-          else
-          { 
-            k = j*dim1 + i - (j*(j+1))/2; 
-          }
-        }
-        else
-        {
-          k = i*dim1 + j;
-        }
-        dolfin::Function funccomp = func[k];                         // take a deep copy of the ijth component of the subfunction
-        max[i*dim1 + j] = (*funccomp.vector()).max();
-        min[i*dim1 + j] = (*funccomp.vector()).min();
-        if (include_norms)
-        {
-          norml2[i*dim1 + j]   = (*funccomp.vector()).norm("l2");
-          normlinf[i*dim1 + j] = (*funccomp.vector()).norm("linf");
-        }
-      }
+      file_ << values[i] << " ";
     }
-        
-    if (dolfin::MPI::rank(mpicomm_)==0)
-    {
-      for (uint i = 0; i < dim0*dim1; i++)
-      {
-        file_ << max[i] << " ";                                      // maximum for all components
-      }
-      for (uint i = 0; i < dim0*dim1; i++)
-      {
-        file_ << min[i] << " ";                                      // minimum for all components
-      }
-      if (include_norms)
-      {
-        for (uint i = 0; i < dim0*dim1; i++)
-        {
-          file_ << norml2[i] << " ";
-        }
-        for (uint i = 0; i < dim0*dim1; i++)
-        {
-          file_ << normlinf[i] << " ";
-        }
-      }
-    }
+    file_.unsetf(std::ios::scientific);
   }
-  else                                                               // unknown rank
-  {
-    dolfin::error("In StatisticsFile::data_function_, unknown function rank.");
-  }
-
 }
 
 //*******************************************************************|************************************************************//

@@ -34,9 +34,7 @@ This allows TerraFERMA simulations and their dependencies to be run in an
 automated way through tfsimulationharness.  Parameter
 sweeps may be performed for benchmarking and testing purposes.
 
-Options which are shaded blue are incomplete and require input.
-Greyed out options are optional.
-Black options are active.</a:documentation>
+When viewed in diamond, options which are shaded blue are incomplete and require input.  Greyed out options are optional.  Black options are active.</a:documentation>
       <element name="length">
         <a:documentation>The length category of this simulations suite.
 
@@ -58,22 +56,19 @@ simulation harness files and decide which simulations to run.</a:documentation>
 
 Useful for identifying the expert on this suite.  
 tfsimulationharness can also filter based on the owner.</a:documentation>
-        <data type="string" datatypeLibrary=""/>
-        <ref name="comment"/>
+        <ref name="anystring"/>
       </element>
       <optional>
         <element name="tags">
           <a:documentation>Additional, arbitrary tags to include or exclude this 
 simulations suite from tfsimulationharness using the -t (include
 tags) and -e (exclude tags) flags.</a:documentation>
-          <data type="string" datatypeLibrary=""/>
-          <ref name="comment"/>
+          <ref name="anystring"/>
         </element>
       </optional>
       <element name="description">
         <a:documentation>A description of what this simulation suite is intended to run.</a:documentation>
-        <data type="string" datatypeLibrary=""/>
-        <ref name="comment"/>
+        <ref name="anystring"/>
       </element>
       <optional>
         <element name="simulations">
@@ -81,6 +76,7 @@ tags) and -e (exclude tags) flags.</a:documentation>
           <oneOrMore>
             <ref name="simulation"/>
           </oneOrMore>
+          <ref name="comment"/>
         </element>
       </optional>
       <optional>
@@ -101,6 +97,7 @@ The test should end with an assert statement which will determine if the test pa
               <ref name="python_code"/>
             </element>
           </oneOrMore>
+          <ref name="comment"/>
         </element>
       </optional>
       <ref name="comment"/>
@@ -117,6 +114,19 @@ The input_file does not have to exist but if it doesn't it must be listed
 in the required_output of one of the dependencies of this simulation.</a:documentation>
       <ref name="filename"/>
     </element>
+  </define>
+  <define name="simulation_valgrind_options">
+    <optional>
+      <element name="valgrind_options">
+        <a:documentation>Turning this option on runs the simulation through valgrind with whatever
+options are specified here.  e.g.:
+
+--tool=callgrind
+
+--tool=memcheck</a:documentation>
+        <ref name="anystring"/>
+      </element>
+    </optional>
   </define>
   <define name="simulation_number_processes">
     <optional>
@@ -145,7 +155,7 @@ the option spud_file below.</a:documentation>
       <optional>
         <element name="spud_file">
           <a:documentation>When reading in this file treat it as a spud compatible file.</a:documentation>
-          <empty/>
+          <ref name="comment"/>
         </element>
       </optional>
     </element>
@@ -171,6 +181,7 @@ the filenames parent element above. </a:documentation>
           <ref name="python_code"/>
         </element>
       </choice>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="required_input">
@@ -182,6 +193,7 @@ assumed to be required as input so need not be entered here.</a:documentation>
       <oneOrMore>
         <ref name="required_file"/>
       </oneOrMore>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="required_output">
@@ -195,6 +207,7 @@ required input to the parent simulation.</a:documentation>
       <oneOrMore>
         <ref name="required_file"/>
       </oneOrMore>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="parameters">
@@ -216,8 +229,7 @@ python code describing how the parameter should be updated.</a:documentation>
 
 The values are input as a string to allow them to be used to uniquely create a folder structure.
 The update python code before should convert them to appropriate types within the input file.</a:documentation>
-            <data type="string" datatypeLibrary=""/>
-            <ref name="comment"/>
+            <ref name="anystring"/>
           </element>
           <optional>
             <element name="update">
@@ -235,7 +247,6 @@ appropriately within the code.</a:documentation>
                   <a:documentation>Turn this option on if updating this parameter does not require a rebuild.  
 
 If you are unsure about this it is best to leave this option turned off.</a:documentation>
-                  <empty/>
                   <ref name="comment"/>
                 </element>
               </optional>
@@ -249,6 +260,7 @@ There should be the same number of integer scales as there are parameter values.
               <ref name="integer_vector"/>
             </element>
           </optional>
+          <ref name="comment"/>
         </element>
       </zeroOrMore>
       <optional>
@@ -259,6 +271,7 @@ Defaults to 1 if not specified.</a:documentation>
           <ref name="integer"/>
         </element>
       </optional>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="dependencies">
@@ -270,6 +283,7 @@ Defaults to 1 if not specified.</a:documentation>
       <zeroOrMore>
         <ref name="dependency_run"/>
       </zeroOrMore>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="checkpoint">
@@ -292,8 +306,7 @@ For example, you may wish to update the finish time of the simulation when picki
 
 The value is input as a string.
 The update python code before should convert them to appropriate types within the input file.</a:documentation>
-            <data type="string" datatypeLibrary=""/>
-            <ref name="comment"/>
+            <ref name="anystring"/>
           </element>
           <element name="update">
             <a:documentation>Python code specifying how the input file should be modified to update this parameter.
@@ -306,8 +319,10 @@ the names given to the parameters above.  They will be formatted as strings and 
 appropriately within the code.</a:documentation>
             <ref name="python_code"/>
           </element>
+          <ref name="comment"/>
         </element>
       </oneOrMore>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="variables">
@@ -324,6 +339,7 @@ THE VARIABLE NAME MUST BE UNIQUE ACROSS THE ENTIRE OPTIONS FILE and the python c
           <ref name="python_code"/>
         </element>
       </oneOrMore>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="simulation">
@@ -334,6 +350,7 @@ THE VARIABLE NAME MUST BE UNIQUE ACROSS THE ENTIRE OPTIONS FILE and the python c
       </attribute>
       <ref name="simulation_input_file"/>
       <ref name="simulation_number_processes"/>
+      <ref name="simulation_valgrind_options"/>
       <optional>
         <ref name="parameters"/>
       </optional>
@@ -385,6 +402,7 @@ appropriately within the code.</a:documentation>
               <ref name="python_code"/>
             </element>
           </optional>
+          <ref name="comment"/>
         </element>
       </zeroOrMore>
       <optional>
@@ -395,6 +413,7 @@ Defaults to 1 if not specified.</a:documentation>
           <ref name="integer"/>
         </element>
       </optional>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="simulation_dependency_parameters">
@@ -416,13 +435,20 @@ Dependency parameters do NOT list values as these are taken from the parent simu
           </attribute>
           <optional>
             <element name="update">
+              <a:documentation>Python code specifying how the input file should be modified to update this parameter.
+
+If no code is provided the parameter will not be modified at this level 
+(but may be modified at other dependency levels).
+
+The values of all the parameters for this simulation will be available to this code using 
+the names given to the parameters above.  They will be formatted as strings and should be converted 
+appropriately within the code.</a:documentation>
               <ref name="python_code"/>
               <optional>
                 <element name="single_build">
                   <a:documentation>Turn this option on if updating this parameter does not require a rebuild.  
 
 If you are unsure about this it is best to leave this option turned off.</a:documentation>
-                  <empty/>
                   <ref name="comment"/>
                 </element>
               </optional>
@@ -436,6 +462,7 @@ There should be the same number of integer scales as there are parameter values.
               <ref name="integer_vector"/>
             </element>
           </optional>
+          <ref name="comment"/>
         </element>
       </oneOrMore>
       <optional>
@@ -446,6 +473,7 @@ Defaults to 1 if not specified.</a:documentation>
           <ref name="integer"/>
         </element>
       </optional>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="commands">
@@ -457,9 +485,10 @@ Defaults to 1 if not specified.</a:documentation>
           <attribute name="name">
             <data type="string"/>
           </attribute>
-          <data type="string" datatypeLibrary=""/>
+          <ref name="anystring"/>
         </element>
       </oneOrMore>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="dependency_run">
@@ -497,6 +526,7 @@ e.g. perhaps a gmsh run</a:documentation>
       </attribute>
       <ref name="simulation_input_file"/>
       <ref name="simulation_number_processes"/>
+      <ref name="simulation_valgrind_options"/>
       <optional>
         <ref name="simulation_dependency_parameters"/>
       </optional>

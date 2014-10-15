@@ -53,7 +53,9 @@ namespace buckettools
     // Constructors and destructors
     //***************************************************************|***********************************************************//
 
-    DiagnosticsFile(const std::string &name, const MPI_Comm &comm);  // specific constructor
+    DiagnosticsFile(const std::string &name, 
+                    const MPI_Comm &comm, 
+                    const Bucket *bucket);  // specific constructor
     
     virtual ~DiagnosticsFile();                                      // default destructor
     
@@ -77,9 +79,9 @@ namespace buckettools
 
     std::string name_;                                               // file name
 
-    Bucket_ptr bucket_;                                              // a partial copy of the bucket
+    const Bucket *bucket_;                                           // a pointer to the bucket
 
-    MPI_Comm mpicomm_;                                               // mpi comm
+    const MPI_Comm mpicomm_;                                         // mpi comm
 
     uint ncolumns_;                                                  // total number of columns
 
@@ -87,12 +89,13 @@ namespace buckettools
     // Header writing functions
     //***************************************************************|***********************************************************//
 
-    void header_constants_()
-    { header_constants_(false); }
-
-    void header_constants_(const bool &binary);                      // write the header entries for constant values that do not 
+    void header_constants_(const bool &binary=false);                // write the header entries for constant values that do not 
                                                                      // appear later again in the file
     
+    void header_open_();                                             // open the header section
+
+    void header_close_();                                            // close the header section
+
     void header_timestep_();                                         // write the header for a dynamic simulation
                                                                      // (the elapsed time, timestep etc.)
     
@@ -100,31 +103,24 @@ namespace buckettools
                        const std::string &type, 
                        const std::string &value);
     
-    void tag_(const std::string &name,                               // write a header tag for a temporal value that does not belong
-              const std::string &statistic)                          // to a system or have components
-    { tag_(name, statistic, "", 0); }
-
-    void tag_(const std::string &name,                               // write a header tag for a temporal value that does not have
-              const std::string &statistic,                          // components
-              const std::string &system)
-    { tag_(name, statistic, system, 0); }
-    
-    void tag_(const std::string &name,                               // write a header tag for a temporal value (most generic)
+    void tag_(const std::string &name,                               // write a header tag for a temporal value
               const std::string &statistic,
-              const std::string &system,
-              const uint &components);
+              const std::string &system="",
+              const uint &components=0);
 
     //***************************************************************|***********************************************************//
     // Data writing functions
     //***************************************************************|***********************************************************//
 
+    void data_endlineflush_();
+
     void data_timestep_();                                           // write the data for timestepping for a dynamic simulation
 
-    void data_function_(dolfin::Function &func)                      // write generic data for a function (field or coefficient function)
-    { data_function_(func, false); }
+    void data_(const int &value);                                    // write generic data to the file
 
-    void data_function_(dolfin::Function &func, 
-                        const bool &include_norms);
+    void data_(const double &value);                                 // write generic data to the file
+
+    void data_(const std::vector<double> &values);                   // write generic data to the file
     
   };
   

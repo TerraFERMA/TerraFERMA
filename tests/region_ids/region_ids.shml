@@ -3,8 +3,12 @@
   <length>
     <string_value>short</string_value>
   </length>
-  <owner>cwilson</owner>
-  <description>A test that checks if region id projection works.</description>
+  <owner>
+    <string_value lines="1">cwilson</string_value>
+  </owner>
+  <description>
+    <string_value lines="1">A test that region ids are working correctly.</string_value>
+  </description>
   <simulations>
     <simulation name="RegionIDs">
       <input_file>
@@ -12,7 +16,9 @@
       </input_file>
       <parameter_sweep>
         <parameter name="nprocs">
-          <values>1 2 3</values>
+          <values>
+            <string_value lines="1">1 2 3</string_value>
+          </values>
           <process_scale>
             <integer_value shape="3" rank="1">1 2 3</integer_value>
           </process_scale>
@@ -31,8 +37,12 @@
             </filenames>
           </required_output>
           <commands>
-            <command name="GMsh">gmsh -2 region_id.geo -o region_id.msh</command>
-            <command name="Convert">dolfin-convert region_id.msh region_id.xml</command>
+            <command name="GMsh">
+              <string_value lines="1">gmsh -2 region_id.geo -o region_id.msh</string_value>
+            </command>
+            <command name="Convert">
+              <string_value lines="1">dolfin-convert region_id.msh region_id.xml</string_value>
+            </command>
           </commands>
         </run>
       </dependencies>

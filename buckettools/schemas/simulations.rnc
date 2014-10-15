@@ -30,9 +30,7 @@ start =
       ## automated way through tfsimulationharness.  Parameter
       ## sweeps may be performed for benchmarking and testing purposes.
       ##
-      ## Options which are shaded blue are incomplete and require input.
-      ## Greyed out options are optional.
-      ## Black options are active.
+      ## When viewed in diamond, options which are shaded blue are incomplete and require input.  Greyed out options are optional.  Black options are active.
       element harness_options {
          ## The length category of this simulations suite.
          ##
@@ -50,24 +48,22 @@ start =
          ## Useful for identifying the expert on this suite.  
          ## tfsimulationharness can also filter based on the owner.
          element owner {
-            string,
-            comment
+            anystring
          },
          ## Additional, arbitrary tags to include or exclude this 
          ## simulations suite from tfsimulationharness using the -t (include
          ## tags) and -e (exclude tags) flags.
          element tags {
-            string,
-            comment
+            anystring
          }?,
          ## A description of what this simulation suite is intended to run.
          element description {
-            string,
-            comment
+            anystring
          },
          ## A list of the simulations to run.  Each simulation name should be unique.
          element simulations {
-            simulation+
+            simulation+,
+            comment
          }?,
          ## A list of tests to run.  Each test name should be unique.
          element tests {
@@ -81,7 +77,8 @@ start =
             element test {
                attribute name { xsd:string },
                python_code
-            }+
+            }+,
+            comment
          }?,
          comment
       }
@@ -99,6 +96,19 @@ simulation_input_file =
       element input_file {
          filename
       }
+   )
+
+simulation_valgrind_options =
+   (
+      ## Turning this option on runs the simulation through valgrind with whatever
+      ## options are specified here.  e.g.:
+      ##
+      ## --tool=callgrind
+      ##
+      ## --tool=memcheck
+      element valgrind_options {
+        anystring
+      }?
    )
 
 simulation_number_processes = 
@@ -128,7 +138,7 @@ run_input_file =
          filename,
          ## When reading in this file treat it as a spud compatible file.
          element spud_file {
-           empty
+           comment
          }?
       }
    )
@@ -152,7 +162,8 @@ required_file =
            element python {
               python_code
            }
-         )
+         ),
+         comment
       }
    )
 
@@ -163,7 +174,8 @@ required_input =
       ## All required_output from dependency simulations/runs are automatically 
       ## assumed to be required as input so need not be entered here.
       element required_input {
-         required_file+
+         required_file+,
+         comment
       }
    )
 
@@ -176,7 +188,8 @@ required_output =
       ## If this is a dependency of another simulation, this list will also be used as
       ## required input to the parent simulation.
       element required_output {
-         required_file+
+         required_file+,
+         comment
       }
    )
 
@@ -197,8 +210,7 @@ parameters =
             ## The values are input as a string to allow them to be used to uniquely create a folder structure.
             ## The update python code before should convert them to appropriate types within the input file.
             element values {
-               string,
-               comment
+               anystring
             },
             ## Python code specifying how the input file should be modified to update this parameter.
             ##
@@ -214,7 +226,6 @@ parameters =
                ## 
                ## If you are unsure about this it is best to leave this option turned off.
                element single_build {
-                  empty,
                   comment
                }?
             }?,
@@ -223,14 +234,16 @@ parameters =
             ## There should be the same number of integer scales as there are parameter values.
             element process_scale {
               integer_vector 
-            }?
+            }?,
+            comment
          }*,
          ## The number of times the simulation should be rerun.
          ##
          ## Defaults to 1 if not specified.
          element number_runs {
             integer
-         }?
+         }?,
+         comment
       }
    )
 
@@ -239,7 +252,8 @@ dependencies =
       ## A list of the dependencies of this simulation.
       element dependencies {
          dependency_simulation*,
-         dependency_run*
+         dependency_run*,
+         comment
       }
    )
 
@@ -261,8 +275,7 @@ checkpoint =
             ## The value is input as a string.
             ## The update python code before should convert them to appropriate types within the input file.
             element values {
-               string,
-               comment
+               anystring
             },
             ## Python code specifying how the input file should be modified to update this parameter.
             ##
@@ -274,8 +287,10 @@ checkpoint =
             ## appropriately within the code.
             element update {
                python_code
-            }
-         }+
+            },
+            comment
+         }+,
+         comment
       }
    )
 
@@ -289,7 +304,8 @@ variables =
          element variable {
             attribute name { xsd:string },
             python_code
-         }+
+         }+,
+         comment
       }
    )
 
@@ -300,6 +316,7 @@ simulation =
          attribute name { xsd:string },
          simulation_input_file,
          simulation_number_processes,
+         simulation_valgrind_options,
          parameters?,
          required_input?,
          required_output?,
@@ -335,14 +352,16 @@ run_dependency_parameters =
             ## appropriately within the code.
             element update {
                python_code
-            }?
+            }?,
+            comment
          }*,
          ## The number of times the simulation should be rerun.
          ##
          ## Defaults to 1 if not specified.
          element number_runs {
             integer
-         }?
+         }?,
+         comment
       }
    )
 
@@ -361,13 +380,20 @@ simulation_dependency_parameters =
          ## Dependency parameters do NOT list values as these are taken from the parent simulation.
          element parameter { 
             attribute name { xsd:string },
+            ## Python code specifying how the input file should be modified to update this parameter.
+            ##
+            ## If no code is provided the parameter will not be modified at this level 
+            ## (but may be modified at other dependency levels).
+            ## 
+            ## The values of all the parameters for this simulation will be available to this code using 
+            ## the names given to the parameters above.  They will be formatted as strings and should be converted 
+            ## appropriately within the code.
             element update {
                python_code,
                ## Turn this option on if updating this parameter does not require a rebuild.  
                ## 
                ## If you are unsure about this it is best to leave this option turned off.
                element single_build {
-                  empty,
                   comment
                }?
             }?,
@@ -376,14 +402,16 @@ simulation_dependency_parameters =
             ## There should be the same number of integer scales as there are parameter values.
             element process_scale {
               integer_vector 
-            }?
+            }?,
+            comment
          }+,
          ## The number of times the simulation should be rerun.
          ##
          ## Defaults to 1 if not specified.
          element number_runs {
             integer
-         }?
+         }?,
+         comment
       }
    )
 
@@ -394,8 +422,9 @@ commands =
          ## A single shell command.
          element command {
             attribute name { xsd:string },
-            string
-         }+
+            anystring
+         }+,
+         comment
       }
    )
 
@@ -423,6 +452,7 @@ dependency_simulation =
          attribute name { xsd:string },
          simulation_input_file,
          simulation_number_processes,
+         simulation_valgrind_options,
          simulation_dependency_parameters?,
          required_input?,
          required_output?,

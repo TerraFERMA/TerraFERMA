@@ -36,9 +36,10 @@ using namespace buckettools;
 //*******************************************************************|************************************************************//
 ConvergenceFile::ConvergenceFile(const std::string &name, 
                                  const MPI_Comm &comm,
+                                 const Bucket *bucket,
                                  const std::string &systemname, 
                                  const std::string &solvername) :
-                                      DiagnosticsFile(name, comm),
+                                      DiagnosticsFile(name, comm, bucket),
                                       systemname_(systemname),
                                       solvername_(solvername)
 {
@@ -56,22 +57,14 @@ ConvergenceFile::~ConvergenceFile()
 //*******************************************************************|************************************************************//
 // write a header for the model described in the given bucket
 //*******************************************************************|************************************************************//
-void ConvergenceFile::write_header(const Bucket &bucket)
+void ConvergenceFile::write_header()
 {
-  bucket.copy_diagnostics(bucket_);
-
-  if (dolfin::MPI::rank(mpicomm_)==0)
-  {
-    file_ << "<header>" << std::endl;                                // initialize header xml
-  }
+  header_open_();
   header_constants_();                                               // write constant tags
   header_timestep_();                                                // write tags for the timesteps
   header_iteration_();                                               // write tags for the iterations
   header_bucket_();                                                  // write tags for the actual bucket variables - fields etc.
-  if (dolfin::MPI::rank(mpicomm_)==0)
-  {
-    file_ << "</header>" << std::endl << std::flush;                 // finalize header xml
-  }
+  header_close_();
 }
 
 //*******************************************************************|************************************************************//
@@ -84,10 +77,7 @@ void ConvergenceFile::write_data()
   data_iteration_();                                                 // write the iteration information
   data_bucket_();                                                    // write the bucket data
   
-  if (dolfin::MPI::rank(mpicomm_)==0)
-  {
-    file_ << std::endl << std::flush;                                // flush the buffer
-  }
+  data_endlineflush_();
   
 }
 
@@ -108,21 +98,25 @@ void ConvergenceFile::header_iteration_()
 void ConvergenceFile::header_bucket_()
 {
   SystemBucket_ptr sys_ptr = (*bucket_).fetch_system(systemname_);
+  SolverBucket_ptr sol_ptr = (*sys_ptr).fetch_solver(solvername_);
 
-  header_system_(sys_ptr);                                           // write the header for the system itself
+  header_system_(sys_ptr, sol_ptr);                                  // write the header for the system itself
 
-  header_func_((*sys_ptr).fields_begin(),                            // write the header for the fields in the system
-                        (*sys_ptr).fields_end());
+  for (FunctionBucket_const_it f_it = (*sys_ptr).fields_begin(); 
+                               f_it != (*sys_ptr).fields_end();        // loop over the given functions
+                               f_it++)
+  {
+    header_func_((*f_it).second, sol_ptr);
+  }
 
 }
 
 //*******************************************************************|************************************************************//
 // write a header for the model systems in the given bucket
 //*******************************************************************|************************************************************//
-void ConvergenceFile::header_system_(const SystemBucket_ptr sys_ptr)
+void ConvergenceFile::header_system_(const SystemBucket_ptr sys_ptr, 
+                                     const SolverBucket_ptr sol_ptr)
 {
-  SolverBucket_ptr sol_ptr = (*sys_ptr).fetch_solver(solvername_);
-
   tag_((*sys_ptr).name(), "max");
   tag_((*sys_ptr).name(), "min");
   tag_((*sys_ptr).name(), "res_max");
@@ -139,88 +133,62 @@ void ConvergenceFile::header_system_(const SystemBucket_ptr sys_ptr)
 //*******************************************************************|************************************************************//
 // write a header for a set of model fields
 //*******************************************************************|************************************************************//
-void ConvergenceFile::header_func_(FunctionBucket_const_it f_begin, 
-                                  FunctionBucket_const_it f_end)
+void ConvergenceFile::header_func_(const FunctionBucket_ptr f_ptr, 
+                                   const SolverBucket_ptr sol_ptr)
 {
-  SolverBucket_ptr sol_ptr = (*(*(*f_begin).second).system()).fetch_solver(solvername_);
+  fields_.push_back(f_ptr);
 
-  for (FunctionBucket_const_it f_it = f_begin; f_it != f_end;        // loop over the given functions
-                                                      f_it++)
+  if ((*f_ptr).rank()==0)             // scalar (no components)
   {
-    if ((*(*(*f_it).second).function()).value_rank()==0)             // scalar (no components)
+    tag_((*f_ptr).name(), "max", 
+                          (*(*f_ptr).system()).name());
+    tag_((*f_ptr).name(), "min", 
+                          (*(*f_ptr).system()).name());
+    tag_((*f_ptr).name(), "res_max", 
+                          (*(*f_ptr).system()).name());
+    tag_((*f_ptr).name(), "res_min", 
+                          (*(*f_ptr).system()).name());
+    tag_((*f_ptr).name(), "res_norm(l2)", 
+                          (*(*f_ptr).system()).name());
+    tag_((*f_ptr).name(), "res_norm(linf)", 
+                          (*(*f_ptr).system()).name());
+    if ((*sol_ptr).type()=="SNES")
     {
-      tag_((*(*f_it).second).name(), "max", 
-                            (*(*(*f_it).second).system()).name());
-      tag_((*(*f_it).second).name(), "min", 
-                            (*(*(*f_it).second).system()).name());
-      tag_((*(*f_it).second).name(), "res_max", 
-                            (*(*(*f_it).second).system()).name());
-      tag_((*(*f_it).second).name(), "res_min", 
-                            (*(*(*f_it).second).system()).name());
-      tag_((*(*f_it).second).name(), "res_norm(l2)", 
-                            (*(*(*f_it).second).system()).name());
-      tag_((*(*f_it).second).name(), "res_norm(linf)", 
-                            (*(*(*f_it).second).system()).name());
-      if ((*sol_ptr).type()=="SNES")
-      {
-        tag_((*(*f_it).second).name(), "update_max", 
-                              (*(*(*f_it).second).system()).name());
-        tag_((*(*f_it).second).name(), "update_min", 
-                              (*(*(*f_it).second).system()).name());
-      }
+      tag_((*f_ptr).name(), "update_max", 
+                            (*(*f_ptr).system()).name());
+      tag_((*f_ptr).name(), "update_min", 
+                            (*(*f_ptr).system()).name());
     }
-    else if ((*(*(*f_it).second).function()).value_rank()==1)        // vector (value_size components)
+  }
+  else
+  {
+    tag_((*f_ptr).name(), "max", 
+              (*(*f_ptr).system()).name(), 
+              (*f_ptr).size());
+    tag_((*f_ptr).name(), "min", 
+              (*(*f_ptr).system()).name(), 
+              (*f_ptr).size());
+    tag_((*f_ptr).name(), "res_max", 
+              (*(*f_ptr).system()).name(), 
+              (*f_ptr).size());
+    tag_((*f_ptr).name(), "res_min", 
+              (*(*f_ptr).system()).name(), 
+              (*f_ptr).size());
+    tag_((*f_ptr).name(), "res_norm(l2)", 
+              (*(*f_ptr).system()).name(), 
+              (*f_ptr).size());
+    tag_((*f_ptr).name(), "res_norm(linf)", 
+              (*(*f_ptr).system()).name(), 
+              (*f_ptr).size());
+    if ((*sol_ptr).type()=="SNES")
     {
-      int components = (*(*(*f_it).second).function()).value_size();
-      tag_((*(*f_it).second).name(), "max", 
-                (*(*(*f_it).second).system()).name(), components);
-      tag_((*(*f_it).second).name(), "min", 
-                (*(*(*f_it).second).system()).name(), components);
-      tag_((*(*f_it).second).name(), "res_max", 
-                (*(*(*f_it).second).system()).name(), components);
-      tag_((*(*f_it).second).name(), "res_min", 
-                (*(*(*f_it).second).system()).name(), components);
-      tag_((*(*f_it).second).name(), "res_norm(l2)", 
-                (*(*(*f_it).second).system()).name(), components);
-      tag_((*(*f_it).second).name(), "res_norm(linf)", 
-                (*(*(*f_it).second).system()).name(), components);
-      if ((*sol_ptr).type()=="SNES")
-      {
-        tag_((*(*f_it).second).name(), "update_max", 
-                  (*(*(*f_it).second).system()).name(), components);
-        tag_((*(*f_it).second).name(), "update_min", 
-                  (*(*(*f_it).second).system()).name(), components);
-      }
+      tag_((*f_ptr).name(), "update_max", 
+                (*(*f_ptr).system()).name(), 
+                (*f_ptr).size());
+      tag_((*f_ptr).name(), "update_min", 
+                (*(*f_ptr).system()).name(), 
+                (*f_ptr).size());
     }
-    else if ((*(*(*f_it).second).function()).value_rank()==2)        // tensor (value_dimension product components)
-    {
-      int components = 
-        (*(*(*f_it).second).function()).value_dimension(0)*(*(*(*f_it).second).function()).value_dimension(1);
-      tag_((*(*f_it).second).name(), "max", 
-                (*(*(*f_it).second).system()).name(), components);
-      tag_((*(*f_it).second).name(), "min", 
-                (*(*(*f_it).second).system()).name(), components);
-      tag_((*(*f_it).second).name(), "res_max", 
-                (*(*(*f_it).second).system()).name(), components);
-      tag_((*(*f_it).second).name(), "res_min", 
-                (*(*(*f_it).second).system()).name(), components);
-      tag_((*(*f_it).second).name(), "res_norm(l2)", 
-                (*(*(*f_it).second).system()).name(), components);
-      tag_((*(*f_it).second).name(), "res_norm(linf)", 
-                (*(*(*f_it).second).system()).name(), components);
-      if ((*sol_ptr).type()=="SNES")
-      {
-        tag_((*(*f_it).second).name(), "update_max", 
-                  (*(*(*f_it).second).system()).name(), components);
-        tag_((*(*f_it).second).name(), "update_min", 
-                  (*(*(*f_it).second).system()).name(), components);
-      }
-    }
-    else                                                             // unknown rank
-    {
-      dolfin::error("In ConvergenceFile::header_bucket_, unknown function rank.");
-    }
-
   }
 }
 
@@ -231,11 +199,8 @@ void ConvergenceFile::data_iteration_()
 {
   SolverBucket_ptr sol_ptr = (*(*bucket_).fetch_system(systemname_)).fetch_solver(solvername_);
   
-  if (dolfin::MPI::rank(mpicomm_)==0)
-  {
-    file_ << (*bucket_).iteration_count() << " ";  
-    file_ << (*sol_ptr).iteration_count() << " ";
-  }
+  data_((*bucket_).iteration_count());
+  data_((*sol_ptr).iteration_count());
 }
 
 //*******************************************************************|************************************************************//
@@ -244,31 +209,23 @@ void ConvergenceFile::data_iteration_()
 void ConvergenceFile::data_bucket_()
 {
   SystemBucket_ptr sys_ptr = (*bucket_).fetch_system(systemname_);
+  SolverBucket_ptr sol_ptr = (*sys_ptr).fetch_solver(solvername_);
   
-  if (dolfin::MPI::rank(mpicomm_)==0)
-  {
-    file_.setf(std::ios::scientific);
-    file_.precision(10);
-  }
-  
-  data_system_(sys_ptr);
+  data_system_(sys_ptr, sol_ptr);
 
-  data_field_((*sys_ptr).fields_begin(), (*sys_ptr).fields_end());
-
-  if (dolfin::MPI::rank(mpicomm_)==0)
+  for (std::vector<FunctionBucket_ptr>::const_iterator f_it = fields_.begin(); f_it != fields_.end(); f_it++)
   {
-    file_.unsetf(std::ios::scientific);
+    data_field_(*f_it, sol_ptr);
   }
-  
+
 }
 
 //*******************************************************************|************************************************************//
 // write data for a system
 //*******************************************************************|************************************************************//
-void ConvergenceFile::data_system_(const SystemBucket_ptr sys_ptr)
+void ConvergenceFile::data_system_(const SystemBucket_ptr sys_ptr, 
+                                   const SolverBucket_ptr sol_ptr)
 {
-  SolverBucket_ptr sol_ptr = (*sys_ptr).fetch_solver(solvername_);
-
   std::vector<double> values;
 
   values.push_back((*(*(*sys_ptr).iteratedfunction()).vector()).max());
@@ -283,45 +240,49 @@ void ConvergenceFile::data_system_(const SystemBucket_ptr sys_ptr)
     values.push_back((*(*(*sys_ptr).snesupdatefunction()).vector()).min());
   }
 
-  if (dolfin::MPI::rank(mpicomm_)==0)
-  {
-    for (std::vector<double>::const_iterator v = values.begin(); 
-                                                  v < values.end(); v++)
-    {
-      file_ << *v << " ";
-    }
-  }
+  data_(values);
 
 }
 
 //*******************************************************************|************************************************************//
 // write data for a set of fields
 //*******************************************************************|************************************************************//
-void ConvergenceFile::data_field_(FunctionBucket_const_it f_begin, 
-                                  FunctionBucket_const_it f_end)
+void ConvergenceFile::data_field_(const FunctionBucket_ptr f_ptr, const SolverBucket_ptr sol_ptr) 
 {
-  SolverBucket_ptr sol_ptr = (*(*(*f_begin).second).system()).fetch_solver(solvername_);
+  const std::size_t lsize = (*f_ptr).size();
+  std::vector<double> max(lsize), min(lsize), 
+                      l2norm(lsize), linfnorm(lsize);
 
-  for (FunctionBucket_const_it f_it = f_begin; f_it != f_end;        // loop over the given fields
-                                                            f_it++)
+  for (uint i = 0; i<lsize; i++)
   {
-    dolfin::Function func =                                          // take a deep copy of the subfunction so the vector is accessible
-      *std::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).iteratedfunction());
+    max[i] = (*f_ptr).max("iterated", i);
+    min[i] = (*f_ptr).min("iterated", i);
+  }
+  data_(max);
+  data_(min);
 
-    data_function_(func);
+  for (uint i = 0; i<lsize; i++)
+  {
+    max[i] = (*f_ptr).max("residual", i);
+    min[i] = (*f_ptr).min("residual", i);
+    l2norm[i]   = (*f_ptr).norm("residual", "l2",   i);
+    linfnorm[i] = (*f_ptr).norm("residual", "linf", i);
+  }
+  data_(max);
+  data_(min);
+  data_(l2norm);
+  data_(linfnorm);
 
-    dolfin::Function resfunc =                                       // take a deep copy of the subfunction so the vector is accessible
-      *std::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).residualfunction());
-
-    data_function_(resfunc, true);
-
-    if ((*sol_ptr).type()=="SNES")
+  if ((*sol_ptr).type()=="SNES")
+  {
+    
+    for (uint i = 0; i<lsize; i++)
     {
-      dolfin::Function upfunc =                                      // take a deep copy of the subfunction so the vector is accessible
-        *std::dynamic_pointer_cast< const dolfin::Function >((*(*f_it).second).snesupdatefunction());
-
-      data_function_(upfunc);
+      max[i] = (*f_ptr).max("snesupdate", i);
+      min[i] = (*f_ptr).min("snesupdate", i);
     }
+    data_(max);
+    data_(min);
   }
 }
 

@@ -26,6 +26,7 @@
 #include <fstream>
 #include <string>
 #include "DiagnosticsFile.h"
+#include "BoostTypes.h"
 
 namespace buckettools
 {
@@ -38,9 +39,7 @@ namespace buckettools
   typedef std::shared_ptr< SystemBucket > SystemBucket_ptr;
   class FunctionBucket;
   typedef std::shared_ptr< FunctionBucket > FunctionBucket_ptr;
-  typedef std::map< std::string, FunctionBucket_ptr >::const_iterator FunctionBucket_const_it;
   typedef std::shared_ptr< dolfin::Form > Form_ptr;
-  typedef std::map< std::string, Form_ptr >::const_iterator Form_const_it;
 
   //*****************************************************************|************************************************************//
   // StatisticsFile class:
@@ -61,7 +60,9 @@ namespace buckettools
     // Constructors and destructors
     //***************************************************************|***********************************************************//
     
-    StatisticsFile(const std::string &name, const MPI_Comm &comm);   // specific constructor
+    StatisticsFile(const std::string &name, 
+                   const MPI_Comm &comm, 
+                   const Bucket *bucket);   // specific constructor
  
     ~StatisticsFile();                                               // default destructor
     
@@ -69,7 +70,7 @@ namespace buckettools
     // Header writing functions
     //***************************************************************|***********************************************************//
 
-    void write_header(const Bucket &bucket);                         // write header for the bucket
+    void write_header();                         // write header for the bucket
 
     //***************************************************************|***********************************************************//
     // Data writing functions
@@ -84,20 +85,21 @@ namespace buckettools
   private:                                                           // only available to this class
 
     //***************************************************************|***********************************************************//
+    // Base data
+    //***************************************************************|***********************************************************//
+
+    std::vector< std::pair< FunctionBucket_ptr, std::vector<Form_const_it> > > functions_;
+
+    //***************************************************************|***********************************************************//
     // Header writing functions (continued)
     //***************************************************************|***********************************************************//
 
     void header_bucket_();                                           // write the header for the bucket (non-constant and 
                                                                      // timestepping entries)
 
-    void header_system_(const SystemBucket_ptr sys_ptr);             // write the header for a system
+    void header_func_(const FunctionBucket_ptr f_ptr);               // write the header for a set of functions
 
-    void header_func_(FunctionBucket_const_it f_begin,               // write the header for a set of functions
-                      FunctionBucket_const_it f_end); 
-
-    void header_functional_(const FunctionBucket_ptr f_ptr,          // write the header for a set of functionals of a function
-                            Form_const_it f_begin,
-                            Form_const_it f_end);
+    void header_functional_(const FunctionBucket_ptr f_ptr);         // write the header for a set of functionals of a function
 
     //***************************************************************|***********************************************************//
     // Data writing functions (continued)
@@ -105,17 +107,11 @@ namespace buckettools
 
     void data_bucket_();                                             // write the data for a steady state simulation
 
-    void data_system_(const SystemBucket_ptr sys_ptr);               // write the data for a system
-
-    void data_field_(FunctionBucket_const_it f_begin,                // write the data for a set of fields
-                     FunctionBucket_const_it f_end);
-
-    void data_coeff_(FunctionBucket_const_it f_begin,                // write the data for a set of coefficients
-                     FunctionBucket_const_it f_end);
+    void data_func_(FunctionBucket_ptr f_ptr, 
+                    std::vector<Form_const_it> &functionals);        // write the data for a set of functions
 
     void data_functional_(FunctionBucket_ptr f_ptr,
-                          Form_const_it s_begin,                     // write the data for a set of functionals
-                          Form_const_it s_end);
+                          std::vector<Form_const_it> &functionals);  // write the data for a set of functionals
 
   };
   

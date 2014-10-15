@@ -20,7 +20,7 @@
 
 
 #include "SigIntEventHandler.h"
-#include <dolfin.h>
+#include "Logger.h"
 #include <string>
 #include <signal.h>
 
@@ -48,7 +48,7 @@ SigIntEventHandler::~SigIntEventHandler()
 int SigIntEventHandler::handle_signal(int signum)
 {
   assert (signum == SIGINT);
-  dolfin::log(dolfin::WARNING, "SigInt received.");
+  log(ERROR, "SIGINT received.");
   received_ = 1;
 }
 
