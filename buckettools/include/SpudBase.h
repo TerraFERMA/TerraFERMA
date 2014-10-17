@@ -33,9 +33,15 @@ namespace buckettools
   // objects in the bucketools library
   //*****************************************************************|************************************************************//
 
-  void spud_err(const std::string &optionpath,                       // translate the spud error codes into dolfin errors
-                const Spud::OptionError &error,
-                const Spud::OptionError accept=Spud::SPUD_NO_ERROR);
+  void spud_error(const std::string &optionpath,                     // translate the spud error codes into TF errors
+                  const Spud::OptionError &serr,
+                  const std::string &filename, 
+                  const int &line,
+                  const Spud::OptionError &accept=Spud::SPUD_NO_ERROR);
+
+  #define spud_err(optionpath, serr) do {spud_error(optionpath, serr, __FILE__, __LINE__);} while(0)
+
+  #define spud_err_accept(optionpath, error, accept) do {spud_error(optionpath, serr, __FILE__, __LINE__, accept);} while(0)
 
 }
 

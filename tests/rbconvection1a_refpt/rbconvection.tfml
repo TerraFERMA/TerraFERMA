@@ -229,7 +229,6 @@
             <coordinates>
               <real_value shape="2" dim1="dim" rank="1">0.5 0.5</real_value>
             </coordinates>
-            <sub_components name="All"/>
           </reference_point>
         </rank>
       </type>
@@ -400,6 +399,7 @@ r = rv + rp + rT</string_value>
         <quadrature_rule name="default"/>
         <snes_type name="ls">
           <ls_type name="cubic"/>
+          <convergence_test name="default"/>
         </snes_type>
         <relative_error>
           <real_value rank="0">1.e-7</real_value>

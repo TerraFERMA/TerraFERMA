@@ -115,7 +115,7 @@ file(
 "set( LIST_COMMAND tfsimulationharness --list-input -r -- *.shml )
 
 execute_process(
-     COMMAND echo "Running:" \${LIST_COMMAND}
+     COMMAND echo Running: \${LIST_COMMAND}
      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
      )
 
@@ -161,7 +161,7 @@ endif()
 set( CLEAN_COMMAND tfsimulationharness --clean -n \$ENV{THREADS} -r -- *.shml )
 
 execute_process(
-     COMMAND echo "Running:" \${CLEAN_COMMAND}
+     COMMAND echo Running: \${CLEAN_COMMAND}
      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
      )
 
@@ -192,7 +192,7 @@ endif()
 set( BUILD_COMMAND tfsimulationharness --build -l short medium long -n \$ENV{THREADS} -e ${EXCLUDE_TAGS} -r -- *.shml )
 
 execute_process(
-     COMMAND echo "Running:" \${BUILD_COMMAND}
+     COMMAND echo Running: \${BUILD_COMMAND}
      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
      )
 
@@ -224,7 +224,7 @@ endif()
 set( TEST_COMMAND tfsimulationharness --test -l short -n \$ENV{THREADS} -e ${EXCLUDE_TAGS} -r -- *.shml )
 
 execute_process(
-     COMMAND echo "Running:" \${TEST_COMMAND}
+     COMMAND echo Running: \${TEST_COMMAND}
      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
      )
 
@@ -256,7 +256,7 @@ endif()
 set( TEST_COMMAND tfsimulationharness --test -l medium -n \$ENV{THREADS} -e ${EXCLUDE_TAGS} -r -- *.shml )
 
 execute_process(
-     COMMAND echo "Running:" \${TEST_COMMAND}
+     COMMAND echo Running: \${TEST_COMMAND}
      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
      )
 
@@ -288,7 +288,7 @@ endif()
 set( TEST_COMMAND tfsimulationharness --test -l long -n \$ENV{THREADS} -e ${EXCLUDE_TAGS} -r -- *.shml )
 
 execute_process(
-     COMMAND echo "Running:" \${TEST_COMMAND}
+     COMMAND echo Running: ${TEST_COMMAND}
      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
      )
 

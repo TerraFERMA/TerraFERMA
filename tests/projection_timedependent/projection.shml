@@ -3,18 +3,39 @@
   <length>
     <string_value>short</string_value>
   </length>
-  <owner>cwilson</owner>
-  <description>Time dependent projection test.</description>
+  <owner>
+    <string_value lines="1">cwilson</string_value>
+  </owner>
+  <description>
+    <string_value lines="1">Time dependent projection test.</string_value>
+  </description>
   <simulations>
     <simulation name="Projection">
       <input_file>
         <string_value lines="1" type="filename">projection_checkpoint_0.tfml</string_value>
       </input_file>
+      <parameter_sweep>
+        <parameter name="nprocs">
+          <values>
+            <string_value lines="1">1-&gt;1 1-&gt;2 2-&gt;1 2-&gt;2</string_value>
+          </values>
+          <process_scale>
+            <integer_value shape="4" rank="1">1 2 1 2</integer_value>
+          </process_scale>
+        </parameter>
+      </parameter_sweep>
       <dependencies>
         <simulation name="Projection">
           <input_file>
             <string_value lines="1" type="filename">projection.tfml</string_value>
           </input_file>
+          <parameter_sweep>
+            <parameter name="nprocs">
+              <process_scale>
+                <integer_value shape="4" rank="1">1 1 2 2</integer_value>
+              </process_scale>
+            </parameter>
+          </parameter_sweep>
           <required_output>
             <filenames name="xmls">
               <string>
@@ -23,29 +44,10 @@
             </filenames>
             <filenames name="tfml">
               <string>
-                <string_value type="filename" lines="1">projection_checkpoint_0.tfml</string_value>
+                <string_value lines="1" type="filename">projection_checkpoint_0.tfml</string_value>
               </string>
             </filenames>
           </required_output>
-          <dependencies>
-            <run name="Mesh">
-              <input_file>
-                <string_value lines="1" type="filename">square.geo</string_value>
-              </input_file>
-              <required_output>
-                <filenames name="meshfiles">
-                  <python>
-                    <string_value lines="20" type="code" language="python">meshfiles = ["square"+ext for ext in [".xml", "_facet_region.xml"]]</string_value>
-                  </python>
-                </filenames>
-              </required_output>
-              <commands>
-                <command name="GMsh">gmsh -2 square.geo -o square.msh</command>
-                <command name="Convert">dolfin-convert square.msh square.xml</command>
-                <command name="Remove">rm square_physical_region.xml</command>
-              </commands>
-            </run>
-          </dependencies>
           <variables>
             <variable name="snes_source2_int_0">
               <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -741,300 +743,738 @@ checkpoint_picard_field1_int = stat["PicardProjection"]["Field1"]["Integral"]</s
   <tests>
     <test name="snes_source2_int_0">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(snes_source2_int_0 == [0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0])</string_value>
+test = [0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
+values = snes_source2_int_0
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_source2_int_1">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(snes_source2_int_1 == [0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0])</string_value>
+test = [0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
+values = snes_source2_int_1
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_source2_int_0">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(picard_source2_int_0 == [0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0])</string_value>
+test = [0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
+values = picard_source2_int_0
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_source2_int_1">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(picard_source2_int_1 == [0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0])</string_value>
+test = [0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
+values = picard_source2_int_1
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_field2_int_0">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(snes_field2_int_0 == [0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0])</string_value>
+test = [0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
+values = snes_field2_int_0
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_field2_int_1">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(snes_field2_int_1 == [0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0])</string_value>
+test = [0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
+values = snes_field2_int_1
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_source2_oldint_0">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(picard_source2_oldint_0 == [0.0, 0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0])</string_value>
+test = [0.0, 0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0]
+values = picard_source2_oldint_0
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_source2_oldint_1">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(picard_source2_oldint_1 == [0.0, 0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0])</string_value>
+test = [0.0, 0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0]
+values = picard_source2_oldint_1
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_field2_min_0">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(picard_field2_min_0 == [0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0])</string_value>
+test = [0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
+values = picard_field2_min_0
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_source1_int">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(picard_source1_int == [0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0])</string_value>
+test = [0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
+values = picard_source1_int
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_field2_int_0">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(picard_field2_int_0 == [0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0])</string_value>
+test = [0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
+values = picard_field2_int_0
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_field2_int_1">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(picard_field2_int_1 == [0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0])</string_value>
+test = [0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
+values = picard_field2_int_1
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_0">
-      <string_value lines="20" type="code" language="python">assert checkpoint_0==5.0</string_value>
+      <string_value lines="20" type="code" language="python">import numpy
+assert numpy.all(numpy.array(checkpoint_0)==5.0)</string_value>
     </test>
     <test name="snes_field1_min">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(snes_field1_min == [0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0])</string_value>
+test = [0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
+values = snes_field1_min
+print values
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+print maxerr
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_field1_int">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(snes_field1_int == [0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0])</string_value>
+test = [0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
+values = snes_field1_int
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_1">
-      <string_value lines="20" type="code" language="python">assert checkpoint_1==10.0</string_value>
+      <string_value lines="20" type="code" language="python">import numpy
+assert numpy.all(numpy.array(checkpoint_1)==10.0)</string_value>
     </test>
     <test name="snes_field1_max">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(snes_field1_max == [0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0])</string_value>
+test = [0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
+values = snes_field1_max
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_field2_min_1">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(snes_field2_min_1 == [0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0])</string_value>
+test = [0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
+values = snes_field2_min_1
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_field2_min_0">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(snes_field2_min_0 == [0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0])</string_value>
+test = [0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
+values = snes_field2_min_0
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_field2_oldint_0">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(picard_field2_oldint_0 == [0.0, 0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0])</string_value>
+test = [0.0, 0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0]
+values = picard_field2_oldint_0
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_field2_oldint_1">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(picard_field2_oldint_1 == [0.0, 0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0])</string_value>
+test = [0.0, 0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0]
+values = picard_field2_oldint_1
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_source1_oldint">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(snes_source1_oldint == [0.0, 0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0])</string_value>
+test = [0.0, 0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0]
+values = snes_source1_oldint
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_field1_max">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(picard_field1_max == [0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0])</string_value>
+test = [0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
+values = picard_field1_max
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_field2_min_1">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(picard_field2_min_1 == [0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0])</string_value>
+test = [0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
+values = picard_field2_min_1
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_field1_min">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(picard_field1_min == [0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0])</string_value>
+test = [0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
+values = picard_field1_min
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+print maxerr
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_field1_oldint">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(picard_field1_oldint == [0.0, 0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0])</string_value>
+test = [0.0, 0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0]
+values = picard_field1_oldint
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_field2_max_1">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(snes_field2_max_1 == [0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0])</string_value>
+test = [0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
+values = snes_field2_max_1
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_field2_max_0">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(snes_field2_max_0 == [0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0])</string_value>
+test = [0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
+values = snes_field2_max_0
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_field2_max_1">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(picard_field2_max_1 == [0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0])</string_value>
+test = [0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
+values = picard_field2_max_1
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_field2_max_0">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(picard_field2_max_0 == [0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0])</string_value>
+test = [0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
+values = picard_field2_max_0
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_field1_oldint">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(snes_field1_oldint == [0.0, 0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0])</string_value>
+test = [0.0, 0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0]
+values = snes_field1_oldint
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_source2_oldint_0">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(snes_source2_oldint_0 == [0.0, 0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0])</string_value>
+test = [0.0, 0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0]
+values = snes_source2_oldint_0
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_source2_oldint_1">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(snes_source2_oldint_1 == [0.0, 0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0])</string_value>
+test = [0.0, 0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0]
+values = snes_source2_oldint_1
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_field2_oldint_0">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(snes_field2_oldint_0 == [0.0, 0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0])</string_value>
+test = [0.0, 0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0]
+values = snes_field2_oldint_0
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_source1_int">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(snes_source1_int == [0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0])</string_value>
+test = [0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
+values = snes_source1_int
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_field2_oldint_1">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(snes_field2_oldint_1 == [0.0, 0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0])</string_value>
+test = [0.0, 0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0]
+values = snes_field2_oldint_1
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_source1_oldint">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(picard_source1_oldint == [0.0, 0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0])</string_value>
+test = [0.0, 0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0]
+values = picard_source1_oldint
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_field1_int">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(picard_field1_int == [0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0])</string_value>
+test = [0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
+values = picard_field1_int
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_source2_int_0">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_snes_source2_int_0 == [1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0])</string_value>
+test = [1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
+values = checkpoint_snes_source2_int_0
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_source2_int_1">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_snes_source2_int_1 == [1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0])</string_value>
+test = [1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
+values = checkpoint_snes_source2_int_1
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_source2_int_0">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_picard_source2_int_0 == [1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0])</string_value>
+test = [1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
+values = checkpoint_picard_source2_int_0
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_source2_int_1">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_picard_source2_int_1 == [1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0])</string_value>
+test = [1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
+values = checkpoint_picard_source2_int_1
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_field2_int_0">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_snes_field2_int_0 == [1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0])</string_value>
+test = [1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
+values = checkpoint_snes_field2_int_0
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_field2_int_1">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_snes_field2_int_1 == [1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0])</string_value>
+test = [1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
+values = checkpoint_snes_field2_int_1
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_source2_oldint_0">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_picard_source2_oldint_0 == [1000.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0])</string_value>
+test = [1000.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0]
+values = checkpoint_picard_source2_oldint_0
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_source2_oldint_1">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_picard_source2_oldint_1 == [1500.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0])</string_value>
+test = [1500.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0]
+values = checkpoint_picard_source2_oldint_1
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_field2_min_0">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_picard_field2_min_0 == [1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0])</string_value>
+test = [1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
+values = checkpoint_picard_field2_min_0
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_source1_int">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_picard_source1_int == [500.0, 600.0, 700.0, 800.0, 900.0, 1000.0])</string_value>
+test = [500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
+values = checkpoint_picard_source1_int
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_field2_int_0">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_picard_field2_int_0 == [1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0])</string_value>
+test = [1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
+values = checkpoint_picard_field2_int_0
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_field2_int_1">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_picard_field2_int_1 == [1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0])</string_value>
+test = [1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
+values = checkpoint_picard_field2_int_1
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_checkpoint_0">
-      <string_value lines="20" type="code" language="python">assert checkpoint_checkpoint_0==10.0</string_value>
+      <string_value lines="20" type="code" language="python">import numpy
+assert numpy.all(numpy.array(checkpoint_checkpoint_0)==10.0)</string_value>
     </test>
     <test name="checkpoint_snes_field1_min">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_snes_field1_min == [500.0, 600.0, 700.0, 800.0, 900.0, 1000.0])</string_value>
+test = [500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
+values = checkpoint_snes_field1_min
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_field1_int">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_snes_field1_int == [500.0, 600.0, 700.0, 800.0, 900.0, 1000.0])</string_value>
+test = [500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
+values = checkpoint_snes_field1_int
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_field1_max">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_snes_field1_max == [500.0, 600.0, 700.0, 800.0, 900.0, 1000.0])</string_value>
+test = [500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
+values = checkpoint_snes_field1_max
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_field2_min_1">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_snes_field2_min_1 == [1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0])</string_value>
+test = [1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
+values = checkpoint_snes_field2_min_1
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_field2_min_0">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_snes_field2_min_0 == [1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0])</string_value>
+test = [1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
+values = checkpoint_snes_field2_min_0
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_field2_oldint_0">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_picard_field2_oldint_0 == [1000.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0])</string_value>
+test = [1000.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0]
+values = checkpoint_picard_field2_oldint_0
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_field2_oldint_1">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_picard_field2_oldint_1 == [1500.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0])</string_value>
+test = [1500.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0]
+values = checkpoint_picard_field2_oldint_1
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_source1_oldint">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_snes_source1_oldint == [500.0, 500.0, 600.0, 700.0, 800.0, 900.0])</string_value>
+test = [500.0, 500.0, 600.0, 700.0, 800.0, 900.0]
+values = checkpoint_snes_source1_oldint
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_field1_max">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_picard_field1_max == [500.0, 600.0, 700.0, 800.0, 900.0, 1000.0])</string_value>
+test = [500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
+values = checkpoint_picard_field1_max
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_field2_min_1">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_picard_field2_min_1 == [1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0])</string_value>
+test = [1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
+values = checkpoint_picard_field2_min_1
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_field1_min">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_picard_field1_min == [500.0, 600.0, 700.0, 800.0, 900.0, 1000.0])</string_value>
+test = [500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
+values = checkpoint_picard_field1_min
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_field1_oldint">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_picard_field1_oldint == [500.0, 500.0, 600.0, 700.0, 800.0, 900.0])</string_value>
+test = [500.0, 500.0, 600.0, 700.0, 800.0, 900.0]
+values = checkpoint_picard_field1_oldint
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_field2_max_1">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_snes_field2_max_1 == [1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0])</string_value>
+test = [1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
+values = checkpoint_snes_field2_max_1
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_field2_max_0">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_snes_field2_max_0 == [1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0])</string_value>
+test = [1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
+values = checkpoint_snes_field2_max_0
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_field2_max_1">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_picard_field2_max_1 == [1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0])</string_value>
+test = [1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
+values = checkpoint_picard_field2_max_1
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_field2_max_0">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_picard_field2_max_0 == [1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0])</string_value>
+test = [1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
+values = checkpoint_picard_field2_max_0
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_field1_oldint">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_snes_field1_oldint == [500.0, 500.0, 600.0, 700.0, 800.0, 900.0])</string_value>
+test = [500.0, 500.0, 600.0, 700.0, 800.0, 900.0]
+values = checkpoint_snes_field1_oldint
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_source2_oldint_0">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_snes_source2_oldint_0 == [1000.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0])</string_value>
+test = [1000.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0]
+values = checkpoint_snes_source2_oldint_0
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_source2_oldint_1">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_snes_source2_oldint_1 == [1500.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0])</string_value>
+test = [1500.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0]
+values = checkpoint_snes_source2_oldint_1
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_field2_oldint_0">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_snes_field2_oldint_0 == [1000.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0])</string_value>
+test = [1000.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0]
+values = checkpoint_snes_field2_oldint_0
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_source1_int">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_snes_source1_int == [500.0, 600.0, 700.0, 800.0, 900.0, 1000.0])</string_value>
+test = [500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
+values = checkpoint_snes_source1_int
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_field2_oldint_1">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_snes_field2_oldint_1 == [1500.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0])</string_value>
+test = [1500.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0]
+values = checkpoint_snes_field2_oldint_1
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_source1_oldint">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_picard_source1_oldint == [500.0, 500.0, 600.0, 700.0, 800.0, 900.0])</string_value>
+test = [500.0, 500.0, 600.0, 700.0, 800.0, 900.0]
+values = checkpoint_picard_source1_oldint
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_field1_int">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(checkpoint_picard_field1_int == [500.0, 600.0, 700.0, 800.0, 900.0, 1000.0])</string_value>
+test = [500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
+values = checkpoint_picard_field1_int
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
   </tests>
 </harness_options>

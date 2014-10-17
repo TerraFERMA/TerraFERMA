@@ -25,6 +25,7 @@
 #include "SpudBase.h"
 #include "SpudFunctionBucket.h"
 #include "SpudSolverBucket.h"
+#include "Logger.h"
 #include <dolfin.h>
 #include <string>
 #include <spud>
@@ -64,8 +65,6 @@ void SpudSystemBucket::fill()
 
   fill_bcs_();                                                       // fill in data about the bcs relative to the system (includes
                                                                      // periodic)
-  fill_points_();                                                    // initialize the reference point array of this system
- 
   fill_coeffs_();                                                    // initialize the coefficient expressions (and constants)
                                                                      // (can't do coefficient functions now because it's unlikely we 
                                                                      // have all the coefficient functionspaces)
@@ -94,7 +93,7 @@ void SpudSystemBucket::allocate_coeff_function()
 //*******************************************************************|************************************************************//
 void SpudSystemBucket::initialize_forms()
 {
-  dolfin::info("Attaching coeffs for system %s", name().c_str());
+  log(INFO, "Attaching coeffs for system %s", name().c_str());
   attach_all_coeffs_();                                              // attach the coefficients to form and functionals
                                                                      // this happens here as some coefficients depend on functionals
                                                                      // to be evaluated
@@ -103,9 +102,9 @@ void SpudSystemBucket::initialize_forms()
 //*******************************************************************|************************************************************//
 // attach coefficients to forms and functionals
 //*******************************************************************|************************************************************//
-void SpudSystemBucket::initialize_fields_and_coefficients()
+void SpudSystemBucket::initialize_fields_and_coefficient_expressions()
 {
-  dolfin::info("Initializing fields and coefficients for system %s", name().c_str());
+  log(INFO, "Initializing fields and coefficient expressions for system %s", name().c_str());
 
   for (FunctionBucket_it f_it = fields_begin(); f_it != fields_end();
                                                               f_it++)
@@ -119,27 +118,20 @@ void SpudSystemBucket::initialize_fields_and_coefficients()
     (*(std::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).initialize_coeff_expression();
   } 
 
-                                                                     // after this point, we are allowed to start calling evals on
-                                                                     // some of the expressions that have just been initialized
-                                                                     // (this wasn't allowed up until now as all cpp expressions
-                                                                     // potentially need initializing before eval will return the
-                                                                     // right answer)
-                                                                     // NOTE: even now there are potential inter dependencies! We
-                                                                     // just deal with them by evaluating things in the order the
-                                                                     // user specified.
+}
+
+//*******************************************************************|************************************************************//
+// attach coefficients to forms and functionals
+//*******************************************************************|************************************************************//
+void SpudSystemBucket::initialize_coefficient_functions()
+{
+  log(INFO, "Initializing coefficient functions for system %s", name().c_str());
 
   for (FunctionBucket_it f_it = coeffs_begin(); f_it != coeffs_end();
                                                               f_it++)
   {
     (*(std::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).initialize_coeff_function();
   } 
-
-  if (fields_size()>0)
-  {
-    apply_ic_();                                                     // apply the initial condition to the system function
-    apply_dirichletbc_();                                            // apply the Dirichlet boundary conditions we just collected
-    apply_referencepoints_();                                        // apply the reference points we just collected
-  }
 
 }
 
@@ -150,7 +142,7 @@ void SpudSystemBucket::initialize_solvers()
 {
   if (solve_location()!=SOLVE_NEVER)
   {
-    dolfin::info("Initializing matrices for system %s", name().c_str());
+    log(INFO, "Initializing matrices for system %s", name().c_str());
 
     for (SolverBucket_it s_it = solvers_begin(); s_it != solvers_end();// loop over the solver buckets
                                                                 s_it++)
@@ -160,21 +152,6 @@ void SpudSystemBucket::initialize_solvers()
                                                                        // sparsities etc. and set up petsc objects
     }
   }
-}
-
-//*******************************************************************|************************************************************//
-// make a partial copy of the provided system bucket with the data necessary for writing the diagnostics file(s)
-//*******************************************************************|************************************************************//
-void SpudSystemBucket::copy_diagnostics(SystemBucket_ptr &system, Bucket_ptr &bucket) const
-{
-
-  if(!system)
-  {
-    system.reset( new SpudSystemBucket(optionpath_, &(*bucket)) );
-  }
-
-  SystemBucket::copy_diagnostics(system, bucket);
-
 }
 
 //*******************************************************************|************************************************************//
@@ -288,7 +265,7 @@ void SpudSystemBucket::fill_base_()
   }
   else
   {
-    dolfin::error("Unknown solve location for system %s.", name().c_str());
+    tf_err("Unknown solve location.", "System name: %s", name_.c_str());
   }
 
   change_calculated_.reset( new bool(false) );                       // assume the change hasn't been calculated yet
@@ -376,9 +353,7 @@ void SpudSystemBucket::fill_fields_()
       size_t_Expression_it e_it = icexpressions.find(component);       // check if this component already exists
       if (e_it != icexpressions.end())
       {
-        dolfin::error(                                               // if it does, issue an error
-        "IC Expression with component number %d already exists in icexpressions map.", 
-                                                          component);
+        tf_err("IC expression with given component number already exists in inexpressions map.", "Component: %d", component);
       }
       else
       {
@@ -405,34 +380,23 @@ void SpudSystemBucket::fill_bcs_()
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
 
-  for (int_FunctionBucket_const_it f_it = orderedfields_begin();     // loop over all the fields
-                                f_it != orderedfields_end(); f_it++)
+  for (FunctionBucket_const_it f_it = fields_begin();     // loop over all the fields
+                                f_it != fields_end(); f_it++)
   {
-    for (int_DirichletBC_const_it                                    // loop over the dirichlet bcs
-          b_it = (*(*f_it).second).ordereddirichletbcs_begin(); 
-          b_it != (*(*f_it).second).ordereddirichletbcs_end(); b_it++)
+    for (DirichletBC_const_it                                    // loop over the bcs
+          b_it = (*(*f_it).second).dirichletbcs_begin(); 
+          b_it != (*(*f_it).second).dirichletbcs_end(); b_it++)
     {
-      dirichletbcs_.push_back(&(*std::dynamic_pointer_cast<dolfin::DirichletBC>((*b_it).second)));                       // add the bcs to a std vector
+      bcs_.push_back(&(*(*b_it).second));                   // add the bcs to a std vector
+    }
+    for (ReferencePoint_const_it                                    // loop over all the points
+          p_it = (*(*f_it).second).referencepoints_begin(); 
+          p_it != (*(*f_it).second).referencepoints_end(); p_it++)
+    {
+      bcs_.push_back(&(*(*p_it).second));                    // add the point to a std vector
     }
   }
 
-}
-
-//*******************************************************************|************************************************************//
-// fill in the data about the system points (just grabs them from the fields)
-//*******************************************************************|************************************************************//
-void SpudSystemBucket::fill_points_()
-{
-  for (int_FunctionBucket_const_it f_it = orderedfields_begin();     // loop over all the fields
-                                f_it != orderedfields_end(); f_it++)
-  {
-    for (ReferencePoints_const_it                                     // loop over all the points
-          p_it = (*(*f_it).second).points_begin(); 
-          p_it != (*(*f_it).second).points_end(); p_it++)
-    {
-      points_.push_back((*p_it).second);                             // add the point to a std vector
-    }
-  }
 }
 
 //*******************************************************************|************************************************************//

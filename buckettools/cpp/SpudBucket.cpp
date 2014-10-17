@@ -28,6 +28,7 @@
 #include "PointDetectors.h"
 #include "StatisticsFile.h"
 #include "VisualizationWrapper.h"
+#include "Logger.h"
 #include <dolfin.h>
 #include <string>
 #include <spud>
@@ -64,7 +65,6 @@ SpudBucket::SpudBucket(const std::string &name, const std::string &optionpath) :
 //*******************************************************************|************************************************************//
 SpudBucket::~SpudBucket()
 {
-  empty_();                                                          // empty the data structures
 }
 
 //*******************************************************************|************************************************************//
@@ -130,10 +130,31 @@ void SpudBucket::fill()
   for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *fifth* time, initializing
                                   sys_it != systems_end(); sys_it++) // the values of any expressions, functionals or functions
   {                                                                  // used by fields or coefficients
-    (*std::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).initialize_fields_and_coefficients();
+    (*std::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).initialize_fields_and_coefficient_expressions();
   }
   
-  for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *sixth* time, preassembling
+                                                                     // after this point, we are allowed to start calling evals on
+                                                                     // some of the expressions that have just been initialized
+                                                                     // (this wasn't allowed up until now as all cpp expressions
+                                                                     // potentially need initializing before eval will return the
+                                                                     // right answer)
+                                                                     // NOTE: even now there are potential inter dependencies! We
+                                                                     // just deal with them by evaluating coefficient functions 
+                                                                     // in the order the user specified followed by fields last.
+
+  for (SystemBucket_it sys_it = systems_begin();          // loop over the systems for a *sixth* time, initializing
+                       sys_it != systems_end(); sys_it++) // the values of any coefficient functions
+  {                                                                  
+    (*std::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).initialize_coefficient_functions();
+  }
+  
+  for (SystemBucket_it sys_it = systems_begin();          // loop over the systems for a *seventh* time, initializing
+                       sys_it != systems_end(); sys_it++) // the values of the fields
+  {
+    (*(*sys_it).second).evaluate_initial_fields();
+  }
+  
+  for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *eighth* time, preassembling
                                   sys_it != systems_end(); sys_it++) // the matrices
   {
     (*std::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).initialize_solvers();
@@ -144,26 +165,7 @@ void SpudBucket::fill()
   fill_diagnostics_();                                               // this should be called last because it initializes the
                                                                      // diagnostic files, which must use a complete bucket
 
-  dolfin::log(dolfin::DBG, str().c_str());
-
-}
-
-//*******************************************************************|************************************************************//
-// make a partial copy of the provided bucket with the data necessary for writing the diagnostics file(s)
-//*******************************************************************|************************************************************//
-void SpudBucket::copy_diagnostics(Bucket_ptr &bucket) const
-{
-
-  if(!bucket)
-  {
-    bucket.reset( new SpudBucket );
-  }
-
-  Bucket::copy_diagnostics(bucket);
-
-  (*std::dynamic_pointer_cast< SpudBucket >(bucket)).optionpath_ = optionpath_;
-  (*std::dynamic_pointer_cast< SpudBucket >(bucket)).mesh_optionpaths_ = mesh_optionpaths_;
-  (*std::dynamic_pointer_cast< SpudBucket >(bucket)).detector_optionpaths_ = detector_optionpaths_;
+  log(INFO, str().c_str());
 
 }
 
@@ -172,22 +174,21 @@ void SpudBucket::copy_diagnostics(Bucket_ptr &bucket) const
 //*******************************************************************|************************************************************//
 void SpudBucket::register_mesh(Mesh_ptr mesh, 
                                const std::string &name, 
-                               const std::string &optionpath,
+                               std::string optionpath,
                                MeshFunction_size_t_ptr celldomains, 
                                MeshFunction_size_t_ptr facetdomains)
 {
-  Mesh_it m_it = meshes_.find(name);                                 // check if a mesh with this name already exists
-  if (m_it != meshes_end())
+  Mesh_hash_it m_it = meshes_.get<om_key_hash>().find(name);                                 // check if a mesh with this name already exists
+  if (m_it != meshes_.get<om_key_hash>().end())
   {
-    dolfin::error("Mesh named \"%s\" already exists in spudbucket.", // if it does, issue an error
-                                                      name.c_str());
+    tf_err("Mesh already exists in spudbucket.", "Mesh name: %s", name.c_str());
   }
   else
   {
-    meshes_[name]           = mesh;                                  // if not register it in the map
-    mesh_optionpaths_[name] = optionpath;                            // also register its optionpath
-    celldomains_[name] = celldomains;
-    facetdomains_[name] = facetdomains;
+    meshes_.insert(om_item<const std::string,Mesh_ptr>(name,mesh));                                  // if not register it in the map
+    mesh_optionpaths_.insert(om_item<const std::string,std::string>(name,optionpath));                            // also register its optionpath
+    celldomains_.insert(om_item<const std::string,MeshFunction_size_t_ptr>(name,celldomains));
+    facetdomains_.insert(om_item<const std::string,MeshFunction_size_t_ptr>(name,facetdomains));
   }
 }
 
@@ -196,11 +197,10 @@ void SpudBucket::register_mesh(Mesh_ptr mesh,
 //*******************************************************************|************************************************************//
 std::string SpudBucket::fetch_mesh_optionpath(const std::string &name)
 {
-  string_it s_it = mesh_optionpaths_.find(name);                     // check if a mesh with this name exists
-  if (s_it == mesh_optionpaths_end())
+  string_hash_it s_it = mesh_optionpaths_.get<om_key_hash>().find(name);                     // check if a mesh with this name exists
+  if (s_it == mesh_optionpaths_.get<om_key_hash>().end())
   {
-    dolfin::error("Mesh named \"%s\" does not exist in spudbucket.", // if it doesn't, issue an error
-                                                      name.c_str());
+    tf_err("Mesh does not exist in spudbucket.", "Mesh name: %s", name.c_str());
   }
   else
   {
@@ -213,7 +213,7 @@ std::string SpudBucket::fetch_mesh_optionpath(const std::string &name)
 //*******************************************************************|************************************************************//
 string_it SpudBucket::mesh_optionpaths_begin()
 {
-  return mesh_optionpaths_.begin();
+  return mesh_optionpaths_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -221,7 +221,7 @@ string_it SpudBucket::mesh_optionpaths_begin()
 //*******************************************************************|************************************************************//
 string_const_it SpudBucket::mesh_optionpaths_begin() const
 {
-  return mesh_optionpaths_.begin();
+  return mesh_optionpaths_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -229,7 +229,7 @@ string_const_it SpudBucket::mesh_optionpaths_begin() const
 //*******************************************************************|************************************************************//
 string_it SpudBucket::mesh_optionpaths_end()
 {
-  return mesh_optionpaths_.end();
+  return mesh_optionpaths_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -237,7 +237,7 @@ string_it SpudBucket::mesh_optionpaths_end()
 //*******************************************************************|************************************************************//
 string_const_it SpudBucket::mesh_optionpaths_end() const
 {
-  return mesh_optionpaths_.end();
+  return mesh_optionpaths_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -245,19 +245,17 @@ string_const_it SpudBucket::mesh_optionpaths_end() const
 //*******************************************************************|************************************************************//
 void SpudBucket::register_detector(GenericDetectors_ptr detector, 
                                const std::string &name, 
-                               const std::string &optionpath)
+                               std::string optionpath)
 {
-  GenericDetectors_it d_it = detectors_.find(name);                  // check if a detector set with this name already exists
-  if (d_it != detectors_end())
+  GenericDetectors_hash_it d_it = detectors_.get<om_key_hash>().find(name);                  // check if a detector set with this name already exists
+  if (d_it != detectors_.get<om_key_hash>().end())
   {
-    dolfin::error(
-              "Detector named \"%s\" already exists in spudbucket.", // if it does, issue an error
-                                                      name.c_str());
+    tf_err("Detector set already exists in spudbucket.", "Detector set name: %s", name.c_str());
   }
   else
   {
-    detectors_[name]            = detector;                          // if not register it in the map
-    detector_optionpaths_[name] = optionpath;                        // also register its optionpath
+    detectors_.insert(om_item<const std::string, GenericDetectors_ptr>(name, detector));                          // if not register it in the map
+    detector_optionpaths_.insert(om_item<const std::string, std::string>(name,optionpath));                        // also register its optionpath
   }
 }
 
@@ -266,12 +264,10 @@ void SpudBucket::register_detector(GenericDetectors_ptr detector,
 //*******************************************************************|************************************************************//
 std::string SpudBucket::fetch_detector_optionpath(const std::string &name)
 {
-  string_it s_it = detector_optionpaths_.find(name);                 // check if a mesh with this name exists
-  if (s_it == detector_optionpaths_end())
+  string_hash_it s_it = detector_optionpaths_.get<om_key_hash>().find(name);                 // check if a mesh with this name exists
+  if (s_it == detector_optionpaths_.get<om_key_hash>().end())
   {
-    dolfin::error(
-              "Detector named \"%s\" does not exist in spudbucket.",
-                                                      name.c_str()); // if it doesn't, issue an error
+    tf_err("Detector set does not exist in spudbucket.", "Detector set name: %s", name.c_str());
   }
   else
   {
@@ -284,7 +280,7 @@ std::string SpudBucket::fetch_detector_optionpath(const std::string &name)
 //*******************************************************************|************************************************************//
 string_it SpudBucket::detector_optionpaths_begin()
 {
-  return detector_optionpaths_.begin();
+  return detector_optionpaths_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -292,7 +288,7 @@ string_it SpudBucket::detector_optionpaths_begin()
 //*******************************************************************|************************************************************//
 string_const_it SpudBucket::detector_optionpaths_begin() const
 {
-  return detector_optionpaths_.begin();
+  return detector_optionpaths_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -300,7 +296,7 @@ string_const_it SpudBucket::detector_optionpaths_begin() const
 //*******************************************************************|************************************************************//
 string_it SpudBucket::detector_optionpaths_end()
 {
-  return detector_optionpaths_.end();
+  return detector_optionpaths_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -308,7 +304,7 @@ string_it SpudBucket::detector_optionpaths_end()
 //*******************************************************************|************************************************************//
 string_const_it SpudBucket::detector_optionpaths_end() const
 {
-  return detector_optionpaths_.end();
+  return detector_optionpaths_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -395,7 +391,8 @@ void SpudBucket::fill_timestepping_()
       if ((Spud::option_count("/system/field/diagnostics/include_in_statistics/functional/include_in_steady_state")+
            Spud::option_count("/system/field/diagnostics/include_in_steady_state"))==0)
       {
-        dolfin::error("Requested a steady state check but selected no field or functionals to include.");
+        tf_err("Reqested a steady state check but selected no fields or functionals to include.", 
+               "No fields or functionals in steady state check.");
       }
 
       steadystate_tol_.reset( new double );                          // get the steady state tolerance
@@ -678,7 +675,8 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
       }
       else
       {
-        dolfin::error("Could not find %s.xml or %s.xml.gz.", basename.c_str(), basename.c_str());
+        tf_err("Could not find requested mesh.", 
+               "%s.xml or %s.xml.gz not found.", basename.c_str(), basename.c_str());
       }
     }
     (*mesh).init();                                                  // initialize the mesh (maps between dimensions etc.)
@@ -919,7 +917,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
   }
   else                                                               // source is unrecognised
   {
-    dolfin::error("Unknown mesh source.");
+    tf_err("Unknown mesh source.", "Don't understand mesh description.");
   }
 
   register_mesh(mesh, meshname, optionpath,
@@ -1038,8 +1036,10 @@ void SpudBucket::fill_diagnostics_()
 {
   std::stringstream buffer;                                          // optionpath buffer
 
-  statfile_.reset( new StatisticsFile(output_basename()+".stat") );
-  (*statfile_).write_header(*this);
+  statfile_.reset( new StatisticsFile(output_basename()+".stat", 
+                           (*(*meshes_begin()).second).mpi_comm(),
+                           this) );
+  (*statfile_).write_header();
 
   int npdets = Spud::option_count("/io/detectors/point");            // number of point detectors
   int nadets = Spud::option_count("/io/detectors/array");            // number of array detectors
@@ -1047,18 +1047,23 @@ void SpudBucket::fill_diagnostics_()
   {
     if (Spud::option_count("/system/field/diagnostics/include_in_detectors")==0)
     {
-      dolfin::error("Requested detectors but selected no field to include.");
+      tf_err("Reqested detectors but selected no fields or functionals to include.", 
+             "No fields included in detectors.");
     }
 
-    detfile_.reset( new DetectorsFile(output_basename()+".det") );
-    (*detfile_).write_header(*this);
+    detfile_.reset( new DetectorsFile(output_basename()+".det", 
+                           (*(*meshes_begin()).second).mpi_comm(),
+                           this) );
+    (*detfile_).write_header();
   }
 
   if ((Spud::option_count("/system/field/diagnostics/include_in_statistics/functional/include_in_steady_state")+
        Spud::option_count("/system/field/diagnostics/include_in_steady_state"))>0)
   {
-    steadyfile_.reset( new SteadyStateFile(output_basename()+".steady") );
-    (*steadyfile_).write_header(*this);
+    steadyfile_.reset( new SteadyStateFile(output_basename()+".steady",
+                           (*(*meshes_begin()).second).mpi_comm(),
+                           this) );
+    (*steadyfile_).write_header();
   }
 
   for (SystemBucket_const_it s_it = systems_begin(); s_it != systems_end(); s_it++)
@@ -1139,11 +1144,14 @@ void SpudBucket::checkpoint_options_()
     spud_err(buffer.str(), serr);
   }
 
-  namebuffer.str(""); namebuffer << output_basename() 
-                                 << "_checkpoint_" 
-                                 << checkpoint_count() 
-                                 << ".tfml";
-  Spud::write_options(namebuffer.str());
+  if (dolfin::MPI::rank((*(*meshes_begin()).second).mpi_comm())==0)
+  {
+    namebuffer.str(""); namebuffer << output_basename() 
+                                   << "_checkpoint_" 
+                                   << checkpoint_count() 
+                                   << ".tfml";
+    Spud::write_options(namebuffer.str());
+  }
   
   buffer.str(""); buffer << "/io/output_base_name";
   serr = Spud::set_option(buffer.str(), output_basename());
@@ -1151,12 +1159,4 @@ void SpudBucket::checkpoint_options_()
 
 }
 
-//*******************************************************************|************************************************************//
-// empty the data structures in the spudbucket
-//*******************************************************************|************************************************************//
-void SpudBucket::empty_()
-{
-  mesh_optionpaths_.clear();
-  Bucket::empty_();
-}
 

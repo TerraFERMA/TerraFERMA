@@ -77,18 +77,23 @@ namespace buckettools
 
     void initialize_coeff_function();                                // initialize the expressions associated with a field
 
-    void copy_diagnostics(FunctionBucket_ptr &function, 
-                                  SystemBucket_ptr &system) const;   // copy the data necessary for the diagnostics data file(s)
-
     //***************************************************************|***********************************************************//
     // Functional data access
     //***************************************************************|***********************************************************//
 
     void register_functional(Form_ptr functional, 
                                     const std::string &name,         // register a functional with the given name and optionpath
-                                    const std::string &optionpath);
+                                    std::string optionpath);
 
     const std::string fetch_functional_optionpath(const std::string &name) const;// return the optionpath of the named functional
+
+    string_it functional_optionpaths_begin();                          
+
+    string_const_it functional_optionpaths_begin() const;   
+
+    string_it functional_optionpaths_end();              
+
+    string_const_it functional_optionpaths_end() const;   
 
     //***************************************************************|***********************************************************//
     // Output functions
@@ -112,15 +117,9 @@ namespace buckettools
     const bool include_in_detectors() const;                         // return a boolean indicating if this function is to 
                                                                      // be included in steadystate output
     
-    const std::string str() const                                    // return a string describing the contents of this function
-    { return str(0); }
+    const std::string str(int indent=0) const;                       // return an indented string describing the contents of this function
 
-    const std::string str(int indent) const;                         // return an indented string describing the contents of this function
-
-    const std::string functionals_str() const                        // return a string describing the functionals of this function
-    { return str(0); }
-
-    const std::string functionals_str(const int &indent) const;      // return an indented string describing the functionals of this function
+    const std::string functionals_str(const int &indent=0) const;    // return an indented string describing the functionals of this function
 
   //*****************************************************************|***********************************************************//
   // Private functions
@@ -138,7 +137,7 @@ namespace buckettools
     // Pointers data
     //***************************************************************|***********************************************************//
 
-    std::map< std::string, std::string > functional_optionpaths_;    // a map from funcional name to functional optionpath
+    ordered_map< const std::string, std::string > functional_optionpaths_;    // a map from funcional name to functional optionpath
     
     //***************************************************************|***********************************************************//
     // Filling data
@@ -156,7 +155,11 @@ namespace buckettools
                             const std::string &bcname,
                             const std::vector<int> &bcids);
 
-    void fill_point_(const std::string &optionpath);                 // fill in the point for this function
+    void fill_reference_point_(const std::string &optionpath);       // fill in the point for this function
+
+    void fill_zero_point_(const std::string &optionpath);            // fill in the point for this function
+
+    void fill_cap_(const std::string &optionpath);                   // fill in a cap for this function
 
     void initialize_bc_(const std::string &optionpath);              // fill in the bc for this function
 
@@ -200,12 +203,6 @@ namespace buckettools
     //***************************************************************|***********************************************************//
 
     void checkpoint_options_();                                      // checkpoint the options system for the spudfunctionbucket
-
-    //***************************************************************|***********************************************************//
-    // Emptying data
-    //***************************************************************|***********************************************************//
-
-    void empty_();                                                   // empty the data structures of this function bucket
 
   };
  

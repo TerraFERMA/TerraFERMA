@@ -25,6 +25,7 @@
 #include "SignalHandler.h"
 #include "EventHandler.h"
 #include "StatisticsFile.h"
+#include "Logger.h"
 #include <signal.h>
 #include <time.h>
 
@@ -54,7 +55,18 @@ Bucket::Bucket(const std::string &name) : name_(name)
 //*******************************************************************|************************************************************//
 Bucket::~Bucket()
 {
-  empty_();                                                          // empty the data structures (unnecessary?)
+  if(statfile_)
+  {  
+    (*statfile_).close();
+  }
+  if(detfile_)
+  {  
+    (*detfile_).close();
+  }
+  if(steadyfile_)
+  {  
+    (*steadyfile_).close();
+  }
 }
 
 //*******************************************************************|************************************************************//
@@ -70,7 +82,7 @@ void Bucket::run()
 
   solve_at_start_();
 
-  dolfin::log(dolfin::INFO, "Entering timeloop.");
+  log(INFO, "Entering timeloop.");
   bool continue_timestepping = !complete_timestepping();
   while (continue_timestepping) 
   {                                                                  // loop over time
@@ -84,9 +96,9 @@ void Bucket::run()
                                                                      // is at the previous time level throughout the whole timestep)
     (*timestep_count_)++;                                            // increment the number of timesteps taken
 
-    dolfin::log(dolfin::INFO, "Timestep numbers: %d -> %d", timestep_count()-1, timestep_count());
-    dolfin::log(dolfin::INFO, "Times: %f -> %f", old_time(), current_time());
-    dolfin::log(dolfin::INFO, "Timestep: %f", timestep());
+    log(INFO, "Timestep numbers: %d -> %d", timestep_count()-1, timestep_count());
+    log(INFO, "Times: %f -> %f", old_time(), current_time());
+    log(INFO, "Timestep: %f", timestep());
 
     update_timedependent();                                          // now we know the new time, update functions that are
                                                                      // potentially time dependent
@@ -114,7 +126,7 @@ void Bucket::run()
     update();                                                        // update all functions in the bucket
 
   }                                                                  // syntax ensures at least one solve
-  dolfin::log(dolfin::INFO, "Finished timeloop.");
+  log(INFO, "Finished timeloop.");
 
 }
 
@@ -123,8 +135,8 @@ void Bucket::run()
 //*******************************************************************|************************************************************//
 void Bucket::solve(const int &location)
 {
-  for (int_SystemBucket_const_it s_it = orderedsystems_begin(); 
-                              s_it != orderedsystems_end(); s_it++)
+  for (SystemBucket_const_it s_it = systems_begin(); 
+                             s_it != systems_end(); s_it++)
   {
     if((*(*s_it).second).solve_location()==location)
     {
@@ -138,8 +150,8 @@ void Bucket::solve(const int &location)
 //*******************************************************************|************************************************************//
 void Bucket::resetcalculated()
 {
-  for (int_SystemBucket_const_it s_it = orderedsystems_begin(); 
-                                 s_it != orderedsystems_end(); s_it++)
+  for (SystemBucket_const_it s_it = systems_begin(); 
+                             s_it != systems_end(); s_it++)
   {
     (*(*s_it).second).resetcalculated();
   }
@@ -150,8 +162,8 @@ void Bucket::resetcalculated()
 //*******************************************************************|************************************************************//
 void Bucket::update()
 {
-  for (int_SystemBucket_const_it s_it = orderedsystems_begin(); 
-                                 s_it != orderedsystems_end(); s_it++)
+  for (SystemBucket_const_it s_it = systems_begin(); 
+                             s_it != systems_end(); s_it++)
   {
     (*(*s_it).second).update();
   }
@@ -182,12 +194,12 @@ void Bucket::update_timestep()
   }
 
   double new_dt = HUGE_VAL;
-  dolfin::log(dolfin::INFO, "In update_timestep()");
+  log(INFO, "In update_timestep()");
 
   if (zero_init_dt)                                                  // the timestep is zero initially so we'll get a 0.0 Courant
   {                                                                  // like number... so set a dummy timestep of 1.0 for this
     *(timestep_.second) = 1.0;                                       // calculation
-    dolfin::log(dolfin::INFO, "Forcing a timestep adapt as initial timestep is 0.0.");
+    log(INFO, "Forcing a timestep adapt as initial timestep is 0.0.");
   }
 
   std::vector< std::pair< FunctionBucket_ptr, double > >::const_iterator c_it;
@@ -198,7 +210,7 @@ void Bucket::update_timestep()
     double suggested_dt;
 
     (*(*c_it).first).refresh(zero_init_dt);
-    const double maxval = (*(*c_it).first).functioninfnorm();
+    const double maxval = (*(*c_it).first).norm("iterated", "linf");
 
     if (maxval==0.0)
     {
@@ -225,8 +237,8 @@ void Bucket::update_timestep()
 //*******************************************************************|************************************************************//
 void Bucket::update_timedependent()
 {
-  for (int_SystemBucket_const_it s_it = orderedsystems_begin(); 
-                             s_it != orderedsystems_end(); s_it++)
+  for (SystemBucket_const_it s_it = systems_begin(); 
+                             s_it != systems_end(); s_it++)
   {
     (*(*s_it).second).update_timedependent();
   }
@@ -237,8 +249,8 @@ void Bucket::update_timedependent()
 //*******************************************************************|************************************************************//
 void Bucket::update_nonlinear()
 {
-  for (int_SystemBucket_const_it s_it = orderedsystems_begin(); 
-                             s_it != orderedsystems_end(); s_it++)
+  for (SystemBucket_const_it s_it = systems_begin(); 
+                             s_it != systems_end(); s_it++)
   {
     (*(*s_it).second).update_nonlinear();
   }
@@ -249,18 +261,26 @@ void Bucket::update_nonlinear()
 //*******************************************************************|************************************************************//
 bool Bucket::complete()
 {
-  bool completed = complete_timestepping();
-
-  if (steadystate_())
-  {
-    dolfin::log(dolfin::WARNING, "Steady state attained, terminating timeloop.");
-    completed = true;
-  }
+  bool completed = false;
 
   if ((*(*SignalHandler::instance()).return_handler(SIGINT)).received())
   {
-    dolfin::log(dolfin::ERROR, "SigInt received, terminating timeloop.");
+    log(ERROR, "SIGINT received, terminating timeloop.");
     completed = true;
+  }
+
+  if (!completed)                                                    // don't bother checking for completion if we failed
+  {
+    completed = complete_timestepping();
+  }
+
+  if (!completed)                                                    // don't bother checking for steady state if we're already finished
+  {
+    if (steadystate_())
+    {
+      log(INFO, "Steady state attained, terminating timeloop.");
+      completed = true;
+    }
   }
 
   return completed;
@@ -277,7 +297,7 @@ bool Bucket::complete_timestepping()
   {
     if (current_time() >= finish_time())
     {
-      dolfin::log(dolfin::WARNING, "Finish time reached, terminating timeloop.");
+      log(INFO, "Finish time reached, terminating timeloop.");
       completed = true;
     }
   }
@@ -285,7 +305,7 @@ bool Bucket::complete_timestepping()
   {
     if (timestep_count() >= number_timesteps())
     {
-      dolfin::log(dolfin::WARNING, "Number timesteps reached, terminating timeloop.");
+      log(INFO, "Number timesteps reached, terminating timeloop.");
       completed = true;
     }
   }
@@ -318,48 +338,6 @@ void Bucket::attach_coeffs(Form_ptr form)
 
     (*form).set_coefficient(uflsymbol, function);                    // attach that function as a coefficient
   }
-}
-
-//*******************************************************************|************************************************************//
-// make a partial copy of the provided bucket with the data necessary for writing the diagnostics file(s)
-//*******************************************************************|************************************************************//
-void Bucket::copy_diagnostics(Bucket_ptr &bucket) const
-{
-
-  if(!bucket)
-  {
-    bucket.reset( new Bucket );
-  }
-
-  (*bucket).name_ = name_;
-
-  (*bucket).start_time_ = start_time_;
-  (*bucket).old_time_ = old_time_;
-  (*bucket).current_time_ = current_time_;
-  (*bucket).finish_time_ = finish_time_;
-  (*bucket).number_timesteps_ = number_timesteps_;
-  (*bucket).timestep_count_ = timestep_count_;
-  (*bucket).timestep_ = timestep_;
-  (*bucket).nonlinear_iterations_ = nonlinear_iterations_;
-  (*bucket).iteration_count_ = iteration_count_;
-  (*bucket).checkpoint_count_ = checkpoint_count_;
-
-  (*bucket).meshes_ = meshes_;
-
-  for (SystemBucket_const_it sys_it = systems_begin();               // loop over the systems
-                           sys_it != systems_end(); sys_it++)
-  {                                                                  
-    SystemBucket_ptr system;                                         // create a new system
-    
-    (*(*sys_it).second).copy_diagnostics(system, bucket);
-
-    (*bucket).register_system(system, (*system).name());             // put the system in the bucket
-  }                                                                  
-
-  (*bucket).detectors_ = detectors_;
-
-  (*bucket).steadystate_tol_ = steadystate_tol_;
-
 }
 
 //*******************************************************************|************************************************************//
@@ -458,17 +436,16 @@ void Bucket::register_mesh(Mesh_ptr mesh, const std::string &name,
                            MeshFunction_size_t_ptr celldomains, 
                            MeshFunction_size_t_ptr facetdomains)
 {
-  Mesh_it m_it = meshes_.find(name);                                 // check if a mesh with this name already exists
-  if (m_it != meshes_end())
+  Mesh_hash_it m_it = meshes_.get<om_key_hash>().find(name);                                 // check if a mesh with this name already exists
+  if (m_it != meshes_.get<om_key_hash>().end())
   {
-    dolfin::error("Mesh named \"%s\" already exists in bucket.",     // if it does, issue an error
-                                                    name.c_str());
+    tf_err("Mesh already exists in bucket.", "Mesh name: %s", name.c_str());
   }
   else
   {
-    meshes_[name] = mesh;                                            // if not, insert it into the meshes_ map
-    celldomains_[name] = celldomains;
-    facetdomains_[name] = facetdomains;
+    meshes_.insert(om_item<const std::string, Mesh_ptr>(name,mesh));      // if not, add it to the meshes_ map
+    celldomains_.insert(om_item<const std::string, MeshFunction_size_t_ptr>(name,celldomains));
+    facetdomains_.insert(om_item<const std::string, MeshFunction_size_t_ptr>(name,facetdomains));
   }
 }
 
@@ -477,11 +454,10 @@ void Bucket::register_mesh(Mesh_ptr mesh, const std::string &name,
 //*******************************************************************|************************************************************//
 Mesh_ptr Bucket::fetch_mesh(const std::string &name)
 {
-  Mesh_it m_it = meshes_.find(name);                                 // check if this mesh exists in the meshes_ map
-  if (m_it == meshes_end())
+  Mesh_hash_it m_it = meshes_.get<om_key_hash>().find(name);                                 // check if this mesh exists in the meshes_ map
+  if (m_it == meshes_.get<om_key_hash>().end())
   {
-    dolfin::error("Mesh named \"%s\" does not exist in bucket.",     // if it doesn't, issue an error
-                                                    name.c_str());
+    tf_err("Mesh does note exist in bucket.", "Mesh name: %s", name.c_str());
   }
   else
   {
@@ -494,11 +470,10 @@ Mesh_ptr Bucket::fetch_mesh(const std::string &name)
 //*******************************************************************|************************************************************//
 MeshFunction_size_t_ptr Bucket::fetch_celldomains(const std::string &name)
 {
-  MeshFunction_size_t_it m_it = celldomains_.find(name);             // check if this mesh function exists in the celldomains_ map
-  if (m_it == celldomains_end())
+  MeshFunction_size_t_hash_it m_it = celldomains_.get<om_key_hash>().find(name);             // check if this mesh function exists in the celldomains_ map
+  if (m_it == celldomains_.get<om_key_hash>().end())
   {
-    dolfin::error("MeshFunction celldomain named \"%s\" does not exist in bucket.",// if it doesn't, issue an error
-                                                    name.c_str());
+    tf_err("Celldomain MeshFunction does not exist in bucket.", "MeshFunction name: %s", name.c_str());
   }
   else
   {
@@ -511,11 +486,10 @@ MeshFunction_size_t_ptr Bucket::fetch_celldomains(const std::string &name)
 //*******************************************************************|************************************************************//
 MeshFunction_size_t_ptr Bucket::fetch_facetdomains(const std::string &name)
 {
-  MeshFunction_size_t_it m_it = facetdomains_.find(name);            // check if this mesh function exists in the facetdomains_ map
-  if (m_it == facetdomains_end())
+  MeshFunction_size_t_hash_it m_it = facetdomains_.get<om_key_hash>().find(name);            // check if this mesh function exists in the facetdomains_ map
+  if (m_it == facetdomains_.get<om_key_hash>().end())
   {
-    dolfin::error("MeshFunction facetdomain named \"%s\" does not exist in bucket.",// if it doesn't, issue an error
-                                                    name.c_str());
+    tf_err("Facetdomain MeshFunction does not exist in bucket.", "MeshFunction name: %s", name.c_str());
   }
   else
   {
@@ -528,7 +502,7 @@ MeshFunction_size_t_ptr Bucket::fetch_facetdomains(const std::string &name)
 //*******************************************************************|************************************************************//
 Mesh_it Bucket::meshes_begin()
 {
-  return meshes_.begin();
+  return meshes_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -536,7 +510,7 @@ Mesh_it Bucket::meshes_begin()
 //*******************************************************************|************************************************************//
 Mesh_const_it Bucket::meshes_begin() const
 {
-  return meshes_.begin();
+  return meshes_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -544,7 +518,7 @@ Mesh_const_it Bucket::meshes_begin() const
 //*******************************************************************|************************************************************//
 Mesh_it Bucket::meshes_end()
 {
-  return meshes_.end();
+  return meshes_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -552,7 +526,7 @@ Mesh_it Bucket::meshes_end()
 //*******************************************************************|************************************************************//
 Mesh_const_it Bucket::meshes_end() const
 {
-  return meshes_.end();
+  return meshes_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -560,7 +534,7 @@ Mesh_const_it Bucket::meshes_end() const
 //*******************************************************************|************************************************************//
 MeshFunction_size_t_it Bucket::celldomains_begin()
 {
-  return celldomains_.begin();
+  return celldomains_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -568,7 +542,7 @@ MeshFunction_size_t_it Bucket::celldomains_begin()
 //*******************************************************************|************************************************************//
 MeshFunction_size_t_const_it Bucket::celldomains_begin() const
 {
-  return celldomains_.begin();
+  return celldomains_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -576,7 +550,7 @@ MeshFunction_size_t_const_it Bucket::celldomains_begin() const
 //*******************************************************************|************************************************************//
 MeshFunction_size_t_it Bucket::celldomains_end()
 {
-  return celldomains_.end();
+  return celldomains_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -584,7 +558,7 @@ MeshFunction_size_t_it Bucket::celldomains_end()
 //*******************************************************************|************************************************************//
 MeshFunction_size_t_const_it Bucket::celldomains_end() const
 {
-  return celldomains_.end();
+  return celldomains_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -592,7 +566,7 @@ MeshFunction_size_t_const_it Bucket::celldomains_end() const
 //*******************************************************************|************************************************************//
 MeshFunction_size_t_it Bucket::facetdomains_begin()
 {
-  return facetdomains_.begin();
+  return facetdomains_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -600,7 +574,7 @@ MeshFunction_size_t_it Bucket::facetdomains_begin()
 //*******************************************************************|************************************************************//
 MeshFunction_size_t_const_it Bucket::facetdomains_begin() const
 {
-  return facetdomains_.begin();
+  return facetdomains_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -608,7 +582,7 @@ MeshFunction_size_t_const_it Bucket::facetdomains_begin() const
 //*******************************************************************|************************************************************//
 MeshFunction_size_t_it Bucket::facetdomains_end()
 {
-  return facetdomains_.end();
+  return facetdomains_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -616,7 +590,7 @@ MeshFunction_size_t_it Bucket::facetdomains_end()
 //*******************************************************************|************************************************************//
 MeshFunction_size_t_const_it Bucket::facetdomains_end() const
 {
-  return facetdomains_.end();
+  return facetdomains_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -689,18 +663,14 @@ Mesh_FunctionSpace_const_it Bucket::visfunctionspaces_end() const
 void Bucket::register_system(SystemBucket_ptr system, 
                                          const std::string &name)
 {
-  SystemBucket_it s_it = systems_.find(name);                        // check if a system with this name already exists
-  if (s_it != systems_end())
+  SystemBucket_hash_it s_it = systems_.get<om_key_hash>().find(name);     // check if a system with this name already exists
+  if (s_it != systems_.get<om_key_hash>().end())
   {
-    dolfin::error(
-            "SystemBucket named \"%s\" already exists in bucket",    // if it does, issue an error
-                                  name.c_str());
+    tf_err("SystemBucket already exists in bucket.", "SystemBucket name: %s", name.c_str());
   }
   else
   {
-    systems_[name] = system;                                         // if not insert it into the systems_ map
-    orderedsystems_[(int) systems_.size()] = system;                 // also insert it in the order it was registered in the 
-                                                                     // orderedsystems_ map
+    systems_.insert(om_item<const std::string,SystemBucket_ptr>(name, system));// if not insert it into the systems_ map
   }
 }
 
@@ -709,12 +679,10 @@ void Bucket::register_system(SystemBucket_ptr system,
 //*******************************************************************|************************************************************//
 SystemBucket_ptr Bucket::fetch_system(const std::string &name)
 {
-  SystemBucket_it s_it = systems_.find(name);                        // check if a system with this name exists in the bucket
-  if (s_it == systems_end())
+  SystemBucket_hash_it s_it = systems_.get<om_key_hash>().find(name);     // check if a system with this name already exists
+  if (s_it == systems_.get<om_key_hash>().end())
   {
-    dolfin::error(                                                   // if it doesn't, issue an error
-            "SystemBucket named \"%s\" does not exist in bucket.", 
-                                name.c_str());
+    tf_err("SystemBucket does not exist in bucket.", "SystemBucket name: %s", name.c_str());
   }
   else
   {
@@ -728,12 +696,10 @@ SystemBucket_ptr Bucket::fetch_system(const std::string &name)
 const SystemBucket_ptr Bucket::fetch_system(const std::string &name) 
                                                               const
 {
-  SystemBucket_const_it s_it = systems_.find(name);                  // check if a system with this name exists in the bucket
-  if (s_it == systems_end())
+  SystemBucket_const_hash_it s_it = systems_.get<om_key_hash>().find(name);     // check if a system with this name already exists
+  if (s_it == systems_.get<om_key_hash>().end())
   {
-    dolfin::error(
-              "SystemBucket named \"%s\" does not exist in bucket.", // if it doesn't, throw an error
-                                                      name.c_str());
+    tf_err("SystemBucket does not exist in bucket.", "SystemBucket name: %s", name.c_str());
   }
   else
   {
@@ -746,7 +712,7 @@ const SystemBucket_ptr Bucket::fetch_system(const std::string &name)
 //*******************************************************************|************************************************************//
 SystemBucket_it Bucket::systems_begin()
 {
-  return systems_.begin();
+  return systems_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -754,7 +720,7 @@ SystemBucket_it Bucket::systems_begin()
 //*******************************************************************|************************************************************//
 SystemBucket_const_it Bucket::systems_begin() const
 {
-  return systems_.begin();
+  return systems_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -762,7 +728,7 @@ SystemBucket_const_it Bucket::systems_begin() const
 //*******************************************************************|************************************************************//
 SystemBucket_it Bucket::systems_end()
 {
-  return systems_.end();
+  return systems_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -770,39 +736,7 @@ SystemBucket_it Bucket::systems_end()
 //*******************************************************************|************************************************************//
 SystemBucket_const_it Bucket::systems_end() const
 {
-  return systems_.end();
-}
-
-//*******************************************************************|************************************************************//
-// return an iterator to the beginning of the orderedsystems_ map
-//*******************************************************************|************************************************************//
-int_SystemBucket_it Bucket::orderedsystems_begin()
-{
-  return orderedsystems_.begin();
-}
-
-//*******************************************************************|************************************************************//
-// return a constant iterator to the beginning of the orderedsystems_ map
-//*******************************************************************|************************************************************//
-int_SystemBucket_const_it Bucket::orderedsystems_begin() const
-{
-  return orderedsystems_.begin();
-}
-
-//*******************************************************************|************************************************************//
-// return an iterator to the end of the orderedsystems_ map
-//*******************************************************************|************************************************************//
-int_SystemBucket_it Bucket::orderedsystems_end()
-{
-  return orderedsystems_.end();
-}
-
-//*******************************************************************|************************************************************//
-// return a constant iterator to the end of the orderedsystems_ map
-//*******************************************************************|************************************************************//
-int_SystemBucket_const_it Bucket::orderedsystems_end() const
-{
-  return orderedsystems_.end();
+  return systems_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -811,16 +745,14 @@ int_SystemBucket_const_it Bucket::orderedsystems_end() const
 void Bucket::register_baseuflsymbol(const std::string &baseuflsymbol, 
                                     const std::string &uflsymbol)
 {
-  string_it s_it = baseuflsymbols_.find(uflsymbol);                  // check if this ufl symbol already exists
+  std::map<std::string,std::string>::iterator s_it = baseuflsymbols_.find(uflsymbol);                  // check if this ufl symbol already exists
   if (s_it != baseuflsymbols_.end())
   {
-    dolfin::error(                                                   // if it does, issue an error
-            "Name with ufl symbol \"%s\" already exists in the bucket.", 
-                                              uflsymbol.c_str());
+    tf_err("Name with supplied ufl symbol already exists in bucket.", "ufl symbol: %s", uflsymbol.c_str());
   }
   else
   {
-    baseuflsymbols_[uflsymbol] = baseuflsymbol;                      // if it doesn't, assign the baseuflsymbol to the maps
+    baseuflsymbols_[uflsymbol] = baseuflsymbol;           // if it doesn't, assign the baseuflsymbol to the maps
   }
 }
 
@@ -830,12 +762,10 @@ void Bucket::register_baseuflsymbol(const std::string &baseuflsymbol,
 const std::string Bucket::fetch_baseuflsymbol(
                                 const std::string &uflsymbol) const
 {
-  string_const_it s_it = baseuflsymbols_.find(uflsymbol);            // check if this ufl symbol exists
+  std::map<std::string,std::string>::const_iterator s_it = baseuflsymbols_.find(uflsymbol);            // check if this ufl symbol exists
   if (s_it == baseuflsymbols_.end())
   {
-    dolfin::error(                                                   // if it doesn't, issue an error
-            "Name with uflsymbol \"%s\" does not exist in the bucket.", 
-                                                uflsymbol.c_str());
+    tf_err("Name with supplied ufl symbol does not exist in bucket.", "ufl symbol: %s", uflsymbol.c_str());
   }
   else
   {
@@ -849,7 +779,7 @@ const std::string Bucket::fetch_baseuflsymbol(
 const bool Bucket::contains_baseuflsymbol(
                               const std::string &uflsymbol) const
 {
-  string_const_it s_it = baseuflsymbols_.find(uflsymbol);
+  std::map<std::string,std::string>::const_iterator s_it = baseuflsymbols_.find(uflsymbol);
   return s_it != baseuflsymbols_.end();
 }
 
@@ -870,9 +800,7 @@ void Bucket::register_uflsymbol(GenericFunction_ptr function,
   GenericFunction_it g_it = uflsymbols_.find(uflsymbol);             // check if the ufl symbol already exists
   if (g_it != uflsymbols_.end())
   {
-    dolfin::error(                                                   // if it does, issue an error
-    "GenericFunction with ufl symbol \"%s\" already exists in the bucket.", 
-                                  uflsymbol.c_str());
+    tf_err("GenericFunction with supplied ufl symbol already exists in bucket.", "ufl symbol: %s", uflsymbol.c_str());
   }
   else
   {
@@ -889,9 +817,7 @@ GenericFunction_ptr Bucket::fetch_uflsymbol(
   GenericFunction_const_it g_it = uflsymbols_.find(uflsymbol);       // check if the ufl symbol exists
   if (g_it == uflsymbols_.end())
   {
-    dolfin::error(                                                   // if it doesn't, issue an error
-    "GenericFunction with uflsymbol \"%s\" does not exist in the bucket.", 
-                                          uflsymbol.c_str());
+    tf_err("GenericFunction with supplied ufl symbol does not exist in bucket.", "ufl symbol: %s", uflsymbol.c_str());
   }
   else
   {
@@ -909,9 +835,7 @@ void Bucket::register_coefficientspace(
   FunctionSpace_it f_it = coefficientspaces_.find(uflsymbol);        // check if this ufl symbol already exists
   if (f_it != coefficientspaces_.end())
   {
-    dolfin::error(                                                   // if it does, issue an error
-    "FunctionSpace with uflsymbol \"%s\" already exists in the bucket coefficientspaces.", 
-                                              uflsymbol.c_str());
+    tf_err("FunctionSpace with supplied ufl symbol already exists in the bucket coefficientspaces.", "ufl symbol: %s", uflsymbol.c_str());
   }
   else
   {
@@ -938,10 +862,8 @@ FunctionSpace_ptr Bucket::fetch_coefficientspace(
   FunctionSpace_const_it f_it = coefficientspaces_.find(uflsymbol);  // check if a functionspace with this uflsymbol already exists
   if (f_it == coefficientspaces_.end())
   {
-    dolfin::log(dolfin::ERROR, coefficientspaces_str());             // if it doesn't, output which coefficientspaces are available
-    dolfin::error(                                                   // and issue an error
-    "FunctionSpace with uflsymbol \"%s\" doesn't exist in the bucket coefficientspaces.", 
-                                    uflsymbol.c_str());
+    log(ERROR, coefficientspaces_str());                             // if it doesn't, output which coefficientspaces are available
+    tf_err("FunctionSpace with supplied ufl symbol doesn't exist in the bucket coefficientspaces.", "ufl symbol: %s", uflsymbol.c_str());
   }
   else
   {
@@ -955,16 +877,14 @@ FunctionSpace_ptr Bucket::fetch_coefficientspace(
 void Bucket::register_detector(GenericDetectors_ptr detector, 
                                             const std::string &name)
 {
-  GenericDetectors_it d_it = detectors_.find(name);                  // check if a mesh with this name already exists
-  if (d_it != detectors_end())
+  GenericDetectors_hash_it d_it = detectors_.get<om_key_hash>().find(name);                  // check if a mesh with this name already exists
+  if (d_it != detectors_.get<om_key_hash>().end())
   {
-    dolfin::error(
-          "Detector set named \"%s\" already exists in bucket.",     // if it does, issue an error
-                                                    name.c_str());
+    tf_err("Detector set already exists in bucket.", "Detector set name: %s", name.c_str());
   }
   else
   {
-    detectors_[name] = detector;                                     // if not, insert it into the detectors_ map
+    detectors_.insert(om_item<const std::string, GenericDetectors_ptr>(name,detector));                                     // if not, insert it into the detectors_ map
   }
 }
 
@@ -973,12 +893,10 @@ void Bucket::register_detector(GenericDetectors_ptr detector,
 //*******************************************************************|************************************************************//
 GenericDetectors_ptr Bucket::fetch_detector(const std::string &name)
 {
-  GenericDetectors_it d_it = detectors_.find(name);                  // check if this detector exists in the detectors_ map
-  if (d_it == detectors_end())
+  GenericDetectors_hash_it d_it = detectors_.get<om_key_hash>().find(name);                  // check if this detector exists in the detectors_ map
+  if (d_it == detectors_.get<om_key_hash>().end())
   {
-    dolfin::error(
-          "Detector set named \"%s\" does not exist in bucket.",     // if it doesn't, issue an error
-                                                    name.c_str());
+    tf_err("Detector set does not exist in bucket.", "Detector set name: %s", name.c_str());
   }
   else
   {
@@ -991,7 +909,7 @@ GenericDetectors_ptr Bucket::fetch_detector(const std::string &name)
 //*******************************************************************|************************************************************//
 GenericDetectors_it Bucket::detectors_begin()
 {
-  return detectors_.begin();
+  return detectors_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -999,7 +917,7 @@ GenericDetectors_it Bucket::detectors_begin()
 //*******************************************************************|************************************************************//
 GenericDetectors_const_it Bucket::detectors_begin() const
 {
-  return detectors_.begin();
+  return detectors_.get<om_key_seq>().begin();
 }
 
 //*******************************************************************|************************************************************//
@@ -1007,7 +925,7 @@ GenericDetectors_const_it Bucket::detectors_begin() const
 //*******************************************************************|************************************************************//
 GenericDetectors_it Bucket::detectors_end()
 {
-  return detectors_.end();
+  return detectors_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -1015,7 +933,7 @@ GenericDetectors_it Bucket::detectors_end()
 //*******************************************************************|************************************************************//
 GenericDetectors_const_it Bucket::detectors_end() const
 {
-  return detectors_.end();
+  return detectors_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -1051,8 +969,8 @@ void Bucket::output(const int &location)
 
   bool systems_solved = false;
 
-  for (int_SystemBucket_const_it s_it = orderedsystems_begin();      // loop over the systems (in order)
-                              s_it != orderedsystems_end(); s_it++)
+  for (SystemBucket_const_it s_it = systems_begin();      // loop over the systems (in order)
+                             s_it != systems_end(); s_it++)
   {
     if((*(*s_it).second).solve_location()==SOLVE_DIAGNOSTICS)        // find if any are meant to be solved before output
     {                                                                // check it has fields included in the current output
@@ -1124,11 +1042,11 @@ void Bucket::checkpoint(const int &location)
     return;
   }  
 
-  dolfin::log(dolfin::INFO, "Checkpointing simulation.");
+  log(INFO, "Checkpointing simulation.");
 
-  
+ 
   for (SystemBucket_it s_it = systems_begin(); 
-                                  s_it != systems_end(); s_it++)
+                       s_it != systems_end(); s_it++)
   {
     (*(*s_it).second).checkpoint();
   }
@@ -1177,7 +1095,7 @@ const std::string Bucket::systems_str(const int &indent) const
 {
   std::stringstream s;
   for ( SystemBucket_const_it s_it = systems_begin(); 
-                                      s_it != systems_end(); s_it++ )
+                              s_it != systems_end(); s_it++ )
   {
     s << (*(*s_it).second).str(indent);
   }
@@ -1237,7 +1155,7 @@ void Bucket::fill_uflsymbols_()
   }
 
   for (SystemBucket_const_it s_it = systems_begin();                 // loop over the systems
-                                      s_it != systems_end(); s_it++)
+                             s_it != systems_end(); s_it++)
   {
     SystemBucket_ptr system = (*s_it).second;
     register_uflsymbol((*system).function(),                         // current system function
@@ -1272,25 +1190,6 @@ void Bucket::fill_uflsymbols_()
 }
 
 //*******************************************************************|************************************************************//
-// empty the data structures in the bucket
-//*******************************************************************|************************************************************//
-void Bucket::empty_()
-{
-  meshes_.clear();
-  systems_.clear();
-  orderedsystems_.clear();
-  baseuflsymbols_.clear();
-  uflsymbols_.clear();
-  coefficientspaces_.clear();
-  detectors_.clear();
-
-  if(statfile_)
-  {  
-    (*statfile_).close();
-  }
-}
-
-//*******************************************************************|************************************************************//
 // return a boolean indicating if the simulation has reached a steady state or not
 //*******************************************************************|************************************************************//
 bool Bucket::steadystate_()
@@ -1306,13 +1205,13 @@ bool Bucket::steadystate_()
   {
     double maxchange = 0.0;
     for (SystemBucket_it s_it = systems_begin(); 
-                                    s_it != systems_end(); s_it++)
+                         s_it != systems_end(); s_it++)
     {
       double systemchange = (*(*s_it).second).maxchange();
-      dolfin::log(dolfin::DBG, "  steady state systemchange = %e", systemchange);
+      log(DBG, "  steady state systemchange = %e", systemchange);
       maxchange = std::max(systemchange, maxchange);
     }
-    dolfin::log(dolfin::INFO, "steady state maxchange = %e", maxchange);
+    log(INFO, "steady state maxchange = %e", maxchange);
     steady = (maxchange < *steadystate_tol_);
   }
 
@@ -1353,8 +1252,8 @@ void Bucket::solve_at_start_()
 {
   bool systems_solved = false;
 
-  for (int_SystemBucket_const_it s_it = orderedsystems_begin(); 
-                              s_it != orderedsystems_end(); s_it++)
+  for (SystemBucket_const_it s_it = systems_begin(); 
+                             s_it != systems_end(); s_it++)
   {
     if((*(*s_it).second).solve_location()==SOLVE_START)
     {
@@ -1392,6 +1291,6 @@ void Bucket::solve_in_timeloop_()
 //*******************************************************************|************************************************************//
 void Bucket::checkpoint_options_()
 {
-  dolfin::error("Failed to find virtual function checkpoint_options_.");
+  tf_err("Failed to find virtual function checkpoint_options_.", "Need to implement a checkpointing method.");
 }
 

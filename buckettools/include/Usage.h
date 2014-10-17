@@ -23,7 +23,6 @@
 #define __USAGE_H
 
 
-#include "Usage.h"
 #include <dolfin.h>
 #include <getopt.h>
 #include <spud>
@@ -39,13 +38,19 @@ namespace buckettools
 
   void usage(char *cmd);                                             // print usage to std::cerr
 
-  void print_version(std::ostream& stream);                          // print version
+  void print_version();                                              // print version to std::cerr
 
-  void print_environment(std::ostream& stream);                      // print relevant environment variables
+  void print_environment();                                          // print relevant environment variables
+
+  int parse_dolfin_verbosity(const std::string &verbosity);          // parse the dolfin verbosity command line argument
 
   int parse_verbosity(const std::string &verbosity);                 // parse the verbosity command line argument
 
   void parse_arguments(int argc, char** argv);                       // parse command line arguments
+
+  std::string githash();                                             // return a string describing the git hash
+
+  std::string compiletime();                                         // return a string describing the compilation time
 
 }
 

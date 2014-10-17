@@ -5,10 +5,13 @@
       <integer_value rank="0">2</integer_value>
     </dimension>
     <mesh name="Frank">
-      <source name="File">
-        <file>
-          <string_value lines="1" type="filename">square</string_value>
-        </file>
+      <source name="UnitSquare">
+        <number_cells>
+          <integer_value shape="2" dim1="2" rank="1">2 2</integer_value>
+        </number_cells>
+        <diagonal>
+          <string_value>crossed</string_value>
+        </diagonal>
         <cell>
           <string_value>triangle</string_value>
         </cell>
@@ -139,6 +142,75 @@
         <include_residual_in_visualization/>
       </diagnostics>
     </field>
+    <field name="Field3">
+      <ufl_symbol>
+        <string_value lines="1">ss3</string_value>
+      </ufl_symbol>
+      <type name="Function">
+        <rank name="Tensor" rank="2">
+          <element name="UserDefined">
+            <family>
+              <string_value>CG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">3</integer_value>
+            </degree>
+          </element>
+          <initial_condition type="initial_condition" name="WholeMesh">
+            <constant name="dim">
+              <real_value symmetric="false" dim2="dim" shape="2 2" dim1="dim" rank="2">0.0 0.0 0.0 0.0</real_value>
+            </constant>
+          </initial_condition>
+          <value_cap name="Cap">
+            <upper_cap>
+              <real_value rank="0">5000.0</real_value>
+            </upper_cap>
+            <lower_cap>
+              <real_value rank="0">4000.0</real_value>
+            </lower_cap>
+            <sub_components name="Subset">
+              <components>
+                <integer_value shape="2" rank="1">0 3</integer_value>
+              </components>
+            </sub_components>
+          </value_cap>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_visualization/>
+        <include_in_statistics>
+          <functional name="Integral00">
+            <string_value lines="20" type="code" language="python">int = ss3[0,0]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="Integral11">
+            <string_value lines="20" type="code" language="python">int = ss3[1,1]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="Integral01">
+            <string_value lines="20" type="code" language="python">int = ss3[0,1]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="Integral10">
+            <string_value lines="20" type="code" language="python">int = ss3[1,0]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+        </include_in_statistics>
+        <include_residual_in_visualization/>
+      </diagnostics>
+    </field>
     <coefficient name="Source1">
       <ufl_symbol>
         <string_value lines="1">fs1</string_value>
@@ -156,7 +228,7 @@
         <include_in_visualization/>
         <include_in_statistics>
           <functional name="Integral">
-            <string_value lines="20" type="code" language="python">int = ss1*dx</string_value>
+            <string_value lines="20" type="code" language="python">int = fs1*dx</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
@@ -182,14 +254,61 @@
         <include_in_visualization/>
         <include_in_statistics>
           <functional name="Integral0">
-            <string_value lines="20" type="code" language="python">int = ss2[0]*dx</string_value>
+            <string_value lines="20" type="code" language="python">int = fs2[0]*dx</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
             <quadrature_rule name="default"/>
           </functional>
           <functional name="Integral1">
-            <string_value lines="20" type="code" language="python">int = ss2[1]*dx</string_value>
+            <string_value lines="20" type="code" language="python">int = fs2[1]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+        </include_in_statistics>
+      </diagnostics>
+    </coefficient>
+    <coefficient name="Source3">
+      <ufl_symbol>
+        <string_value lines="1">fs3</string_value>
+      </ufl_symbol>
+      <type name="Constant">
+        <rank name="Tensor" rank="2">
+          <value type="value" name="WholeMesh">
+            <constant name="dim">
+              <real_value symmetric="false" dim2="dim" shape="2 2" dim1="dim" rank="2">3000.0 4250.0 4750.0 6000.0</real_value>
+            </constant>
+          </value>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_visualization/>
+        <include_in_statistics>
+          <functional name="Integral00">
+            <string_value lines="20" type="code" language="python">int = fs3[0,0]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="Integral11">
+            <string_value lines="20" type="code" language="python">int = fs3[1,1]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="Integral01">
+            <string_value lines="20" type="code" language="python">int = fs3[0,1]*dx</string_value>
+            <ufl_symbol>
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          </functional>
+          <functional name="Integral10">
+            <string_value lines="20" type="code" language="python">int = fs3[1,0]*dx</string_value>
             <ufl_symbol>
               <string_value lines="1">int</string_value>
             </ufl_symbol>
@@ -236,7 +355,8 @@ def val(x):
 r20 = ss2_t[0]*(ss2_i[0]-fs2[0])*dx
 r21 = ss2_t[1]*(ss2_i[1]-fs2[1])*dx
 r2 = r20 + r21
-r = r1 + r2</string_value>
+r3 = inner(ss3_t, ss3_i-fs3)*dx
+r = r1 + r2 + r3</string_value>
           <ufl_symbol>
             <string_value lines="1">r</string_value>
           </ufl_symbol>
@@ -250,6 +370,7 @@ r = r1 + r2</string_value>
         <quadrature_rule name="canonical"/>
         <snes_type name="ls">
           <ls_type name="cubic"/>
+          <convergence_test name="default"/>
         </snes_type>
         <relative_error>
           <real_value rank="0">1.e-10</real_value>
@@ -261,23 +382,160 @@ r = r1 + r2</string_value>
           <integer_value rank="0">50</integer_value>
         </max_iterations>
         <monitors>
+          <view_snes/>
           <residual/>
           <visualization/>
         </monitors>
         <linear_solver>
-          <iterative_method name="cg">
-            <relative_error>
-              <real_value rank="0">1.e-14</real_value>
-            </relative_error>
-            <max_iterations>
-              <integer_value rank="0">100</integer_value>
-            </max_iterations>
-            <zero_initial_guess/>
-            <monitors>
-              <preconditioned_residual/>
-            </monitors>
-          </iterative_method>
-          <preconditioner name="sor"/>
+          <iterative_method name="preonly"/>
+          <preconditioner name="fieldsplit">
+            <composite_type name="additive"/>
+            <fieldsplit name="Field1">
+              <field name="Field1"/>
+              <monitors>
+                <view_index_set/>
+              </monitors>
+              <linear_solver>
+                <iterative_method name="preonly"/>
+                <preconditioner name="lu">
+                  <factorization_package name="mumps"/>
+                </preconditioner>
+              </linear_solver>
+            </fieldsplit>
+            <fieldsplit name="Fields2And3">
+              <field name="Field2"/>
+              <field name="Field3"/>
+              <monitors>
+                <view_index_set/>
+              </monitors>
+              <linear_solver>
+                <iterative_method name="preonly"/>
+                <preconditioner name="fieldsplit">
+                  <composite_type name="additive"/>
+                  <fieldsplit name="Field2">
+                    <field name="Field2"/>
+                    <monitors>
+                      <view_index_set/>
+                    </monitors>
+                    <linear_solver>
+                      <iterative_method name="preonly"/>
+                      <preconditioner name="fieldsplit">
+                        <composite_type name="additive"/>
+                        <fieldsplit name="Component1">
+                          <field name="Field2">
+                            <components>
+                              <integer_value shape="1" rank="1">0</integer_value>
+                            </components>
+                          </field>
+                          <monitors>
+                            <view_index_set/>
+                          </monitors>
+                          <linear_solver>
+                            <iterative_method name="preonly"/>
+                            <preconditioner name="lu">
+                              <factorization_package name="mumps"/>
+                            </preconditioner>
+                          </linear_solver>
+                        </fieldsplit>
+                        <fieldsplit name="Component2">
+                          <field name="Field2">
+                            <components>
+                              <integer_value shape="1" rank="1">1</integer_value>
+                            </components>
+                          </field>
+                          <monitors>
+                            <view_index_set/>
+                          </monitors>
+                          <linear_solver>
+                            <iterative_method name="preonly"/>
+                            <preconditioner name="lu">
+                              <factorization_package name="mumps"/>
+                            </preconditioner>
+                          </linear_solver>
+                        </fieldsplit>
+                      </preconditioner>
+                    </linear_solver>
+                  </fieldsplit>
+                  <fieldsplit name="Field3">
+                    <field name="Field3"/>
+                    <monitors>
+                      <view_index_set/>
+                    </monitors>
+                    <linear_solver>
+                      <iterative_method name="preonly"/>
+                      <preconditioner name="fieldsplit">
+                        <composite_type name="additive"/>
+                        <fieldsplit name="Component1">
+                          <field name="Field3">
+                            <components>
+                              <integer_value shape="1" rank="1">0</integer_value>
+                            </components>
+                          </field>
+                          <monitors>
+                            <view_index_set/>
+                          </monitors>
+                          <linear_solver>
+                            <iterative_method name="preonly"/>
+                            <preconditioner name="lu">
+                              <factorization_package name="mumps"/>
+                            </preconditioner>
+                          </linear_solver>
+                        </fieldsplit>
+                        <fieldsplit name="Component2">
+                          <field name="Field3">
+                            <components>
+                              <integer_value shape="1" rank="1">1</integer_value>
+                            </components>
+                          </field>
+                          <monitors>
+                            <view_index_set/>
+                          </monitors>
+                          <linear_solver>
+                            <iterative_method name="preonly"/>
+                            <preconditioner name="lu">
+                              <factorization_package name="mumps"/>
+                            </preconditioner>
+                          </linear_solver>
+                        </fieldsplit>
+                        <fieldsplit name="Component3">
+                          <field name="Field3">
+                            <components>
+                              <integer_value shape="1" rank="1">2</integer_value>
+                            </components>
+                          </field>
+                          <monitors>
+                            <view_index_set/>
+                          </monitors>
+                          <linear_solver>
+                            <iterative_method name="preonly"/>
+                            <preconditioner name="lu">
+                              <factorization_package name="mumps"/>
+                            </preconditioner>
+                          </linear_solver>
+                        </fieldsplit>
+                        <fieldsplit name="Component4">
+                          <field name="Field3">
+                            <components>
+                              <integer_value shape="1" rank="1">3</integer_value>
+                            </components>
+                          </field>
+                          <monitors>
+                            <view_index_set/>
+                          </monitors>
+                          <linear_solver>
+                            <iterative_method name="preonly"/>
+                            <preconditioner name="lu">
+                              <factorization_package name="mumps"/>
+                            </preconditioner>
+                          </linear_solver>
+                        </fieldsplit>
+                      </preconditioner>
+                    </linear_solver>
+                  </fieldsplit>
+                </preconditioner>
+              </linear_solver>
+            </fieldsplit>
+          </preconditioner>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
@@ -492,19 +750,66 @@ F = F1 + F2</string_value>
         </max_iterations>
         <monitors/>
         <linear_solver>
-          <iterative_method name="cg">
-            <relative_error>
-              <real_value rank="0">1.e-14</real_value>
-            </relative_error>
-            <max_iterations>
-              <integer_value rank="0">20</integer_value>
-            </max_iterations>
-            <nonzero_initial_guess/>
-            <monitors>
-              <preconditioned_residual/>
-            </monitors>
-          </iterative_method>
-          <preconditioner name="sor"/>
+          <iterative_method name="preonly"/>
+          <preconditioner name="fieldsplit">
+            <composite_type name="additive"/>
+            <fieldsplit name="Field1">
+              <field name="Field1"/>
+              <monitors>
+                <view_index_set/>
+              </monitors>
+              <linear_solver>
+                <iterative_method name="preonly"/>
+                <preconditioner name="lu">
+                  <factorization_package name="mumps"/>
+                </preconditioner>
+              </linear_solver>
+            </fieldsplit>
+            <fieldsplit name="Field2">
+              <field name="Field2"/>
+              <monitors>
+                <view_index_set/>
+              </monitors>
+              <linear_solver>
+                <iterative_method name="preonly"/>
+                <preconditioner name="fieldsplit">
+                  <composite_type name="additive"/>
+                  <fieldsplit name="Component1">
+                    <field name="Field2">
+                      <components>
+                        <integer_value shape="1" rank="1">0</integer_value>
+                      </components>
+                    </field>
+                    <monitors>
+                      <view_index_set/>
+                    </monitors>
+                    <linear_solver>
+                      <iterative_method name="preonly"/>
+                      <preconditioner name="lu">
+                        <factorization_package name="mumps"/>
+                      </preconditioner>
+                    </linear_solver>
+                  </fieldsplit>
+                  <fieldsplit name="Component2">
+                    <field name="Field2">
+                      <components>
+                        <integer_value shape="1" rank="1">1</integer_value>
+                      </components>
+                    </field>
+                    <monitors>
+                      <view_index_set/>
+                    </monitors>
+                    <linear_solver>
+                      <iterative_method name="preonly"/>
+                      <preconditioner name="lu">
+                        <factorization_package name="mumps"/>
+                      </preconditioner>
+                    </linear_solver>
+                  </fieldsplit>
+                </preconditioner>
+              </linear_solver>
+            </fieldsplit>
+          </preconditioner>
           <monitors/>
         </linear_solver>
         <never_ignore_solver_failures/>

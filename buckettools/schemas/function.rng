@@ -58,8 +58,10 @@ Fields may only be prognostic functions.</a:documentation>
             <ref name="tensor_field_function_options"/>
           </element>
         </choice>
+        <ref name="comment"/>
       </element>
       <ref name="field_diagnostics_options"/>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="coefficient_options">
@@ -80,23 +82,24 @@ Expressions are not defined on functionspaces but require an element to be descr
               <attribute name="name">
                 <value>Scalar</value>
               </attribute>
-              <ref name="scalar_coefficient_function_expression_options"/>
+              <ref name="scalar_coefficient_expression_options"/>
             </element>
             <element name="rank">
               <a:documentation>The rank of the coefficient (vector, rank 1).</a:documentation>
               <attribute name="name">
                 <value>Vector</value>
               </attribute>
-              <ref name="vector_coefficient_function_expression_options"/>
+              <ref name="vector_coefficient_expression_options"/>
             </element>
             <element name="rank">
               <a:documentation>The rank of the coefficient (tensor, rank 2).</a:documentation>
               <attribute name="name">
                 <value>Tensor</value>
               </attribute>
-              <ref name="tensor_coefficient_function_expression_options"/>
+              <ref name="tensor_coefficient_expression_options"/>
             </element>
           </choice>
+          <ref name="comment"/>
         </element>
         <element name="type">
           <a:documentation>The type of coefficient.
@@ -128,6 +131,7 @@ Constants are spatially constant expressions.</a:documentation>
               <ref name="tensor_coefficient_constant_options"/>
             </element>
           </choice>
+          <ref name="comment"/>
         </element>
         <element name="type">
           <a:documentation>The type of coefficient.
@@ -142,26 +146,28 @@ Functions require a functionspace, which will be defined on the same mesh as the
               <attribute name="name">
                 <value>Scalar</value>
               </attribute>
-              <ref name="scalar_coefficient_function_expression_options"/>
+              <ref name="scalar_coefficient_function_options"/>
             </element>
             <element name="rank">
               <a:documentation>The rank of the coefficient (vector, rank 1).</a:documentation>
               <attribute name="name">
                 <value>Vector</value>
               </attribute>
-              <ref name="vector_coefficient_function_expression_options"/>
+              <ref name="vector_coefficient_function_options"/>
             </element>
             <element name="rank">
               <a:documentation>The rank of the coefficient (tensor, rank 2).</a:documentation>
               <attribute name="name">
                 <value>Tensor</value>
               </attribute>
-              <ref name="tensor_coefficient_function_expression_options"/>
+              <ref name="tensor_coefficient_function_options"/>
             </element>
           </choice>
+          <ref name="comment"/>
         </element>
       </choice>
       <ref name="coeff_diagnostics_options"/>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="scalar_field_function_options">
@@ -178,7 +184,13 @@ Functions require a functionspace, which will be defined on the same mesh as the
     <optional>
       <ref name="reference_point_scalar"/>
     </optional>
-    <ref name="field_manipulation_options"/>
+    <optional>
+      <ref name="zero_point_scalar"/>
+    </optional>
+    <optional>
+      <ref name="value_cap_scalar"/>
+    </optional>
+    <ref name="comment"/>
   </define>
   <define name="vector_field_function_options">
     <attribute name="rank">
@@ -194,7 +206,13 @@ Functions require a functionspace, which will be defined on the same mesh as the
     <zeroOrMore>
       <ref name="reference_point_tensor"/>
     </zeroOrMore>
-    <ref name="field_manipulation_options"/>
+    <zeroOrMore>
+      <ref name="zero_point_tensor"/>
+    </zeroOrMore>
+    <zeroOrMore>
+      <ref name="value_cap_tensor"/>
+    </zeroOrMore>
+    <ref name="comment"/>
   </define>
   <define name="tensor_field_function_options">
     <attribute name="rank">
@@ -210,11 +228,17 @@ Functions require a functionspace, which will be defined on the same mesh as the
     <zeroOrMore>
       <ref name="reference_point_tensor"/>
     </zeroOrMore>
-    <ref name="field_manipulation_options"/>
+    <zeroOrMore>
+      <ref name="zero_point_tensor"/>
+    </zeroOrMore>
+    <zeroOrMore>
+      <ref name="value_cap_tensor"/>
+    </zeroOrMore>
+    <ref name="comment"/>
   </define>
   <define name="field_manipulation_options">
     <optional>
-      <element name="cap_values">
+      <element name="value_cap">
         <a:documentation>Cap the values of the field after every solve</a:documentation>
         <optional>
           <element name="upper_cap">
@@ -231,7 +255,7 @@ Functions require a functionspace, which will be defined on the same mesh as the
       </element>
     </optional>
   </define>
-  <define name="scalar_coefficient_function_expression_options">
+  <define name="scalar_coefficient_expression_options">
     <attribute name="rank">
       <value>0</value>
     </attribute>
@@ -239,8 +263,9 @@ Functions require a functionspace, which will be defined on the same mesh as the
     <oneOrMore>
       <ref name="prescribed_expression_scalar"/>
     </oneOrMore>
+    <ref name="comment"/>
   </define>
-  <define name="vector_coefficient_function_expression_options">
+  <define name="vector_coefficient_expression_options">
     <attribute name="rank">
       <value>1</value>
     </attribute>
@@ -248,8 +273,9 @@ Functions require a functionspace, which will be defined on the same mesh as the
     <oneOrMore>
       <ref name="prescribed_expression_vector"/>
     </oneOrMore>
+    <ref name="comment"/>
   </define>
-  <define name="tensor_coefficient_function_expression_options">
+  <define name="tensor_coefficient_expression_options">
     <attribute name="rank">
       <value>2</value>
     </attribute>
@@ -257,24 +283,58 @@ Functions require a functionspace, which will be defined on the same mesh as the
     <oneOrMore>
       <ref name="prescribed_expression_tensor"/>
     </oneOrMore>
+    <ref name="comment"/>
+  </define>
+  <define name="scalar_coefficient_function_options">
+    <attribute name="rank">
+      <value>0</value>
+    </attribute>
+    <ref name="element_options_scalar"/>
+    <oneOrMore>
+      <ref name="prescribed_function_scalar"/>
+    </oneOrMore>
+    <ref name="comment"/>
+  </define>
+  <define name="vector_coefficient_function_options">
+    <attribute name="rank">
+      <value>1</value>
+    </attribute>
+    <ref name="element_options_vector"/>
+    <oneOrMore>
+      <ref name="prescribed_function_vector"/>
+    </oneOrMore>
+    <ref name="comment"/>
+  </define>
+  <define name="tensor_coefficient_function_options">
+    <attribute name="rank">
+      <value>2</value>
+    </attribute>
+    <ref name="element_options_tensor"/>
+    <oneOrMore>
+      <ref name="prescribed_function_tensor"/>
+    </oneOrMore>
+    <ref name="comment"/>
   </define>
   <define name="scalar_coefficient_constant_options">
     <attribute name="rank">
       <value>0</value>
     </attribute>
     <ref name="prescribed_constant_scalar"/>
+    <ref name="comment"/>
   </define>
   <define name="vector_coefficient_constant_options">
     <attribute name="rank">
       <value>1</value>
     </attribute>
     <ref name="prescribed_constant_vector"/>
+    <ref name="comment"/>
   </define>
   <define name="tensor_coefficient_constant_options">
     <attribute name="rank">
       <value>2</value>
     </attribute>
     <ref name="prescribed_constant_tensor"/>
+    <ref name="comment"/>
   </define>
   <define name="field_header_options">
     <attribute name="name">
@@ -294,7 +354,7 @@ Functions require a functionspace, which will be defined on the same mesh as the
       <optional>
         <element name="include_in_visualization">
           <a:documentation>Include this field in the visualization output file.</a:documentation>
-          <empty/>
+          <ref name="comment"/>
         </element>
       </optional>
       <optional>
@@ -304,6 +364,7 @@ The minimum and maximum of functions is included.</a:documentation>
           <zeroOrMore>
             <ref name="functional_options"/>
           </zeroOrMore>
+          <ref name="comment"/>
         </element>
       </optional>
       <optional>
@@ -319,21 +380,24 @@ The minimum and maximum of functions is included.</a:documentation>
                 <value>l1</value>
               </choice>
             </element>
+            <ref name="comment"/>
           </element>
+          <ref name="comment"/>
         </element>
       </optional>
       <optional>
         <element name="include_in_detectors">
           <a:documentation>Include this field in the detectors output file.</a:documentation>
-          <empty/>
+          <ref name="comment"/>
         </element>
       </optional>
       <optional>
         <element name="include_residual_in_visualization">
           <a:documentation>Include the residual of this field in a visualization output file.</a:documentation>
-          <empty/>
+          <ref name="comment"/>
         </element>
       </optional>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="coeff_diagnostics_options">
@@ -354,14 +418,16 @@ of functions is included.</a:documentation>
           <zeroOrMore>
             <ref name="functional_options"/>
           </zeroOrMore>
+          <ref name="comment"/>
         </element>
       </optional>
       <optional>
         <element name="include_in_detectors">
           <a:documentation>Include this coefficient in the detectors output file.</a:documentation>
-          <empty/>
+          <ref name="comment"/>
         </element>
       </optional>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="functional_options">
@@ -377,7 +443,7 @@ of functions is included.</a:documentation>
       <optional>
         <element name="include_in_steady_state">
           <a:documentation>Include this functional in the steady state check and output file.</a:documentation>
-          <empty/>
+          <ref name="comment"/>
         </element>
       </optional>
     </element>
@@ -393,6 +459,7 @@ of functions is included.</a:documentation>
           <value>initial_condition</value>
         </attribute>
         <ref name="prescribed_scalar_w_file"/>
+        <ref name="comment"/>
       </element>
       <element name="initial_condition">
         <a:documentation>Options for the description of the initial condition over a subset of the whole domain</a:documentation>
@@ -407,6 +474,7 @@ of functions is included.</a:documentation>
           <ref name="integer_vector"/>
         </element>
         <ref name="prescribed_scalar"/>
+        <ref name="comment"/>
       </element>
     </choice>
   </define>
@@ -421,6 +489,7 @@ of functions is included.</a:documentation>
           <value>initial_condition</value>
         </attribute>
         <ref name="prescribed_vector_w_file"/>
+        <ref name="comment"/>
       </element>
       <element name="initial_condition">
         <a:documentation>Options for the description of the initial condition over a subset of the whole domain</a:documentation>
@@ -435,6 +504,7 @@ of functions is included.</a:documentation>
           <ref name="integer_vector"/>
         </element>
         <ref name="prescribed_vector"/>
+        <ref name="comment"/>
       </element>
     </choice>
   </define>
@@ -449,6 +519,7 @@ of functions is included.</a:documentation>
           <value>initial_condition</value>
         </attribute>
         <ref name="prescribed_tensor_w_file"/>
+        <ref name="comment"/>
       </element>
       <element name="initial_condition">
         <a:documentation>Options for the description of the initial condition over a subset of the whole domain</a:documentation>
@@ -463,6 +534,7 @@ of functions is included.</a:documentation>
           <ref name="integer_vector"/>
         </element>
         <ref name="prescribed_tensor"/>
+        <ref name="comment"/>
       </element>
     </choice>
   </define>
@@ -490,8 +562,11 @@ of functions is included.</a:documentation>
             <value>boundary_condition</value>
           </attribute>
           <ref name="prescribed_scalar"/>
+          <ref name="comment"/>
         </element>
+        <ref name="comment"/>
       </element>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="boundary_condition_vector">
@@ -520,7 +595,9 @@ of functions is included.</a:documentation>
                 <value>boundary_condition</value>
               </attribute>
               <ref name="prescribed_vector"/>
+              <ref name="comment"/>
             </element>
+            <ref name="comment"/>
           </element>
           <element name="sub_components">
             <a:documentation>Apply this boundary condition to a subset of the vector components on this boundary_id</a:documentation>
@@ -540,10 +617,13 @@ of functions is included.</a:documentation>
                 <value>boundary_condition</value>
               </attribute>
               <ref name="prescribed_scalar"/>
+              <ref name="comment"/>
             </element>
+            <ref name="comment"/>
           </element>
         </choice>
       </oneOrMore>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="boundary_condition_tensor">
@@ -572,7 +652,9 @@ of functions is included.</a:documentation>
                 <value>boundary_condition</value>
               </attribute>
               <ref name="prescribed_tensor"/>
+              <ref name="comment"/>
             </element>
+            <ref name="comment"/>
           </element>
           <element name="sub_components">
             <a:documentation>Apply this boundary condition to a subset of the tensor components on this boundary_id</a:documentation>
@@ -592,15 +674,20 @@ of functions is included.</a:documentation>
                 <value>boundary_condition</value>
               </attribute>
               <ref name="prescribed_scalar"/>
+              <ref name="comment"/>
             </element>
+            <ref name="comment"/>
           </element>
         </choice>
       </oneOrMore>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="reference_point_scalar">
     <element name="reference_point">
-      <a:documentation>Options for the description of a reference point at which field values are zeroed.</a:documentation>
+      <a:documentation>Options for the description of a reference point at which field values are zeroed during each solve 
+by the imposition of an internal pointwise Dirichlet boundary condition at the nearest node to the
+coordinates specified below.</a:documentation>
       <attribute name="name">
         <value>Point</value>
       </attribute>
@@ -608,19 +695,18 @@ of functions is included.</a:documentation>
         <a:documentation>The coordinates of the reference point.  The node nearest these coordinates will be used.</a:documentation>
         <ref name="real_dim_vector"/>
       </element>
-      <element name="sub_components">
-        <a:documentation>There are no sub components to a scalar so this is just a dummy tree level for consistency with a vector function.</a:documentation>
-        <attribute name="name">
-          <value>All</value>
-        </attribute>
-        <empty/>
-      </element>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="reference_point_tensor">
     <choice>
       <element name="reference_point">
-        <a:documentation>Options for the description of a reference point at which field values are zeroed.</a:documentation>
+        <a:documentation>Options for the description of a reference point at which field values are zeroed during each solve 
+by the imposition of an internal pointwise Dirichlet boundary condition at the nearest node to the
+coordinates specified below.
+
+This version defaults to the name Point.  If specifying more than one reference point (perhaps on different components) the name of each 
+one must be unique so multiple instances of this default name are not allowed.</a:documentation>
         <attribute name="name">
           <value>Point</value>
         </attribute>
@@ -634,7 +720,7 @@ of functions is included.</a:documentation>
             <attribute name="name">
               <value>All</value>
             </attribute>
-            <empty/>
+            <ref name="comment"/>
           </element>
           <element name="sub_components">
             <a:documentation>Zero a subset of the vector/tensor components at this reference point.</a:documentation>
@@ -645,10 +731,17 @@ of functions is included.</a:documentation>
               <a:documentation>A list of the vector/tensor components to which this reference point applies (indexes from 0 by row first for tensors).</a:documentation>
               <ref name="integer_vector"/>
             </element>
+            <ref name="comment"/>
           </element>
         </choice>
+        <ref name="comment"/>
       </element>
       <element name="reference_point">
+        <a:documentation>Options for the description of a reference point at which field values are zeroed during each solve 
+by the imposition of an internal pointwise Dirichlet boundary condition at the nearest node to the
+coordinates specified below.
+
+Names of each reference point (perhaps on different components) must be unique within this field specification.</a:documentation>
         <attribute name="name">
           <data type="string"/>
         </attribute>
@@ -666,15 +759,230 @@ of functions is included.</a:documentation>
               <a:documentation>A list of the vector/tensor components to which this reference point applies (indexes from 0 by row first for tensors).</a:documentation>
               <ref name="integer_vector"/>
             </element>
+            <ref name="comment"/>
           </element>
           <element name="sub_components">
             <a:documentation>Zero all the vector/tensor components at this reference point.</a:documentation>
             <attribute name="name">
               <value>All</value>
             </attribute>
-            <empty/>
+            <ref name="comment"/>
           </element>
         </choice>
+        <ref name="comment"/>
+      </element>
+    </choice>
+  </define>
+  <define name="zero_point_scalar">
+    <element name="zero_point">
+      <a:documentation>Options for the description of a zero point at which field values are zeroed after each nonlinear solve.
+
+Unlike reference points, a zero point is a post-processing calculation and so should be used in conjunction 
+with a Lagrange multiplier or the removal of the null space if the solution would be ill conditioned otherwise.</a:documentation>
+      <attribute name="name">
+        <value>Point</value>
+      </attribute>
+      <element name="coordinates">
+        <a:documentation>The coordinates of the reference point.  The node nearest these coordinates will be used.</a:documentation>
+        <ref name="real_dim_vector"/>
+      </element>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="zero_point_tensor">
+    <choice>
+      <element name="zero_point">
+        <a:documentation>Options for the description of a zero point at which field values are zeroed after each nonlinear solve.
+
+Unlike reference points, a zero point is a post-processing calculation and so should be used in conjunction 
+with a Lagrange multiplier or the removal of the null space if the solution would be ill conditioned otherwise.
+
+This version defaults to the name Point.  If specifying more than one reference point the name of each 
+one must be unique so multiple instances of this default name are not allowed.</a:documentation>
+        <attribute name="name">
+          <value>Point</value>
+        </attribute>
+        <element name="coordinates">
+          <a:documentation>The coordinates of the zero point.</a:documentation>
+          <ref name="real_dim_vector"/>
+        </element>
+        <choice>
+          <element name="sub_components">
+            <a:documentation>Zero all the vector/tensor components at this zero point.</a:documentation>
+            <attribute name="name">
+              <value>All</value>
+            </attribute>
+            <ref name="comment"/>
+          </element>
+          <element name="sub_components">
+            <a:documentation>Zero a subset of the vector/tensor components at this zero point.</a:documentation>
+            <attribute name="name">
+              <value>Subset</value>
+            </attribute>
+            <element name="components">
+              <a:documentation>A list of the vector/tensor components to which this zero point applies (indexes from 0 by row first for tensors).</a:documentation>
+              <ref name="integer_vector"/>
+            </element>
+            <ref name="comment"/>
+          </element>
+        </choice>
+        <ref name="comment"/>
+      </element>
+      <element name="zero_point">
+        <a:documentation>Options for the description of a zero point at which field values are zeroed after each nonlinear solve.
+
+Unlike reference points, a zero point is a post-processing calculation and so should be used in conjunction 
+with a Lagrange multiplier or the removal of the null space if the solution would be ill conditioned otherwise.
+
+If specifying multiple zero points (perhaps on different components) their names must be unique within this field specification.</a:documentation>
+        <attribute name="name">
+          <data type="string"/>
+        </attribute>
+        <element name="coordinates">
+          <a:documentation>The coordinates of the zero point.</a:documentation>
+          <ref name="real_dim_vector"/>
+        </element>
+        <choice>
+          <element name="sub_components">
+            <a:documentation>Zero a subset of the vector/tensor components at this reference point.</a:documentation>
+            <attribute name="name">
+              <value>Subset</value>
+            </attribute>
+            <element name="components">
+              <a:documentation>A list of the vector/tensor components to which this reference point applies (indexes from 0 by row first for tensors).</a:documentation>
+              <ref name="integer_vector"/>
+            </element>
+            <ref name="comment"/>
+          </element>
+          <element name="sub_components">
+            <a:documentation>Zero all the vector/tensor components at this reference point.</a:documentation>
+            <attribute name="name">
+              <value>All</value>
+            </attribute>
+            <ref name="comment"/>
+          </element>
+        </choice>
+        <ref name="comment"/>
+      </element>
+    </choice>
+  </define>
+  <define name="value_cap_scalar">
+    <element name="value_cap">
+      <a:documentation>Cap the values of the field after every nonlinear solve.
+
+This is a postprocessing modification of the vector values and so will affect the value of the non-linear residual.  
+In a coupled problem this will likely have implications on the other fields that this simple hack will not consider.  
+Perhaps consider using SNES VI instead.</a:documentation>
+      <attribute name="name">
+        <value>Cap</value>
+      </attribute>
+      <optional>
+        <element name="upper_cap">
+          <a:documentation>Do not let the maximum value exceed this cap</a:documentation>
+          <ref name="real"/>
+        </element>
+      </optional>
+      <optional>
+        <element name="lower_cap">
+          <a:documentation>Do not let the minimum value fall below this cap</a:documentation>
+          <ref name="real"/>
+        </element>
+      </optional>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="value_cap_tensor">
+    <choice>
+      <element name="value_cap">
+        <a:documentation>Cap the values of the field after every nonlinear solve.
+
+This is a postprocessing modification of the vector values and so will affect the value of the non-linear residual.  
+In a coupled problem this will likely have implications on the other fields that this simple hack will not consider.  
+Perhaps consider using SNES VI instead.
+
+This version defaults to the name Cap.  If specifying more than one value cap (perhaps on different components) the name of each 
+one must be unique so multiple instances of this default name are not allowed.</a:documentation>
+        <attribute name="name">
+          <value>Cap</value>
+        </attribute>
+        <optional>
+          <element name="upper_cap">
+            <a:documentation>Do not let the maximum value exceed this cap</a:documentation>
+            <ref name="real"/>
+          </element>
+        </optional>
+        <optional>
+          <element name="lower_cap">
+            <a:documentation>Do not let the minimum value fall below this cap</a:documentation>
+            <ref name="real"/>
+          </element>
+        </optional>
+        <choice>
+          <element name="sub_components">
+            <a:documentation>Cap all the vector/tensor components.</a:documentation>
+            <attribute name="name">
+              <value>All</value>
+            </attribute>
+            <ref name="comment"/>
+          </element>
+          <element name="sub_components">
+            <a:documentation>Cap a subset of the vector/tensor components.</a:documentation>
+            <attribute name="name">
+              <value>Subset</value>
+            </attribute>
+            <element name="components">
+              <a:documentation>A list of the vector/tensor components to which this reference point applies (indexes from 0 by row first for tensors).</a:documentation>
+              <ref name="integer_vector"/>
+            </element>
+            <ref name="comment"/>
+          </element>
+        </choice>
+        <ref name="comment"/>
+      </element>
+      <element name="value_cap">
+        <a:documentation>Cap the values of the field after every nonlinear solve.
+
+This is a postprocessing modification of the vector values and so will affect the value of the non-linear residual.  
+In a coupled problem this will likely have implications on the other fields that this simple hack will not consider.  
+Perhaps consider using SNES VI instead.
+
+If specifying multiple value caps (perhaps on different components) their names must be unique within this field specification.</a:documentation>
+        <attribute name="name">
+          <data type="string"/>
+        </attribute>
+        <optional>
+          <element name="upper_cap">
+            <a:documentation>Do not let the maximum value exceed this cap</a:documentation>
+            <ref name="real"/>
+          </element>
+        </optional>
+        <optional>
+          <element name="lower_cap">
+            <a:documentation>Do not let the minimum value fall below this cap</a:documentation>
+            <ref name="real"/>
+          </element>
+        </optional>
+        <choice>
+          <element name="sub_components">
+            <a:documentation>Cap all the vector/tensor components.</a:documentation>
+            <attribute name="name">
+              <value>All</value>
+            </attribute>
+            <ref name="comment"/>
+          </element>
+          <element name="sub_components">
+            <a:documentation>Cap a subset of the vector/tensor components.</a:documentation>
+            <attribute name="name">
+              <value>Subset</value>
+            </attribute>
+            <element name="components">
+              <a:documentation>A list of the vector/tensor components to which this reference point applies (indexes from 0 by row first for tensors).</a:documentation>
+              <ref name="integer_vector"/>
+            </element>
+            <ref name="comment"/>
+          </element>
+        </choice>
+        <ref name="comment"/>
       </element>
     </choice>
   </define>
@@ -688,6 +996,7 @@ of functions is included.</a:documentation>
         <value>value</value>
       </attribute>
       <ref name="prescribed_scalar_constant_w_functional"/>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="prescribed_constant_vector">
@@ -700,6 +1009,7 @@ of functions is included.</a:documentation>
         <value>value</value>
       </attribute>
       <ref name="prescribed_vector_constant"/>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="prescribed_constant_tensor">
@@ -712,6 +1022,7 @@ of functions is included.</a:documentation>
         <value>value</value>
       </attribute>
       <ref name="prescribed_tensor_constant"/>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="prescribed_expression_scalar">
@@ -725,6 +1036,7 @@ of functions is included.</a:documentation>
           <value>value</value>
         </attribute>
         <ref name="prescribed_scalar_w_internal"/>
+        <ref name="comment"/>
       </element>
       <element name="value">
         <a:documentation>Options for the description of an expression over regions</a:documentation>
@@ -739,6 +1051,7 @@ of functions is included.</a:documentation>
           <ref name="integer_vector"/>
         </element>
         <ref name="prescribed_scalar_w_internal"/>
+        <ref name="comment"/>
       </element>
     </choice>
   </define>
@@ -753,6 +1066,7 @@ of functions is included.</a:documentation>
           <value>value</value>
         </attribute>
         <ref name="prescribed_vector_w_internal"/>
+        <ref name="comment"/>
       </element>
       <element name="value">
         <a:documentation>Options for the description of an expression over regions</a:documentation>
@@ -767,6 +1081,7 @@ of functions is included.</a:documentation>
           <ref name="integer_vector"/>
         </element>
         <ref name="prescribed_vector_w_internal"/>
+        <ref name="comment"/>
       </element>
     </choice>
   </define>
@@ -781,6 +1096,7 @@ of functions is included.</a:documentation>
           <value>value</value>
         </attribute>
         <ref name="prescribed_tensor_w_internal"/>
+        <ref name="comment"/>
       </element>
       <element name="value">
         <a:documentation>Options for the description of an expression over regions</a:documentation>
@@ -795,6 +1111,97 @@ of functions is included.</a:documentation>
           <ref name="integer_vector"/>
         </element>
         <ref name="prescribed_tensor_w_internal"/>
+        <ref name="comment"/>
+      </element>
+    </choice>
+  </define>
+  <define name="prescribed_function_scalar">
+    <choice>
+      <element name="value">
+        <a:documentation>Options for the description of an expression over the domain</a:documentation>
+        <attribute name="name">
+          <value>WholeMesh</value>
+        </attribute>
+        <attribute name="type">
+          <value>value</value>
+        </attribute>
+        <ref name="prescribed_scalar_time_w_internal"/>
+        <ref name="comment"/>
+      </element>
+      <element name="value">
+        <a:documentation>Options for the description of an expression over regions</a:documentation>
+        <attribute name="name">
+          <data type="string"/>
+        </attribute>
+        <attribute name="type">
+          <value>value</value>
+        </attribute>
+        <element name="region_ids">
+          <a:documentation>A list of the region ids (physical ids in gmsh) that this expression applies to</a:documentation>
+          <ref name="integer_vector"/>
+        </element>
+        <ref name="prescribed_scalar_time_w_internal"/>
+        <ref name="comment"/>
+      </element>
+    </choice>
+  </define>
+  <define name="prescribed_function_vector">
+    <choice>
+      <element name="value">
+        <a:documentation>Options for the description of an expression over the domain</a:documentation>
+        <attribute name="name">
+          <value>WholeMesh</value>
+        </attribute>
+        <attribute name="type">
+          <value>value</value>
+        </attribute>
+        <ref name="prescribed_vector_time_w_internal"/>
+        <ref name="comment"/>
+      </element>
+      <element name="value">
+        <a:documentation>Options for the description of an expression over regions</a:documentation>
+        <attribute name="name">
+          <data type="string"/>
+        </attribute>
+        <attribute name="type">
+          <value>value</value>
+        </attribute>
+        <element name="region_ids">
+          <a:documentation>A list of the region ids (physical ids in gmsh) that this expression applies to</a:documentation>
+          <ref name="integer_vector"/>
+        </element>
+        <ref name="prescribed_vector_time_w_internal"/>
+        <ref name="comment"/>
+      </element>
+    </choice>
+  </define>
+  <define name="prescribed_function_tensor">
+    <choice>
+      <element name="value">
+        <a:documentation>Options for the description of an expression over the domain</a:documentation>
+        <attribute name="name">
+          <value>WholeMesh</value>
+        </attribute>
+        <attribute name="type">
+          <value>value</value>
+        </attribute>
+        <ref name="prescribed_tensor_time_w_internal"/>
+        <ref name="comment"/>
+      </element>
+      <element name="value">
+        <a:documentation>Options for the description of an expression over regions</a:documentation>
+        <attribute name="name">
+          <data type="string"/>
+        </attribute>
+        <attribute name="type">
+          <value>value</value>
+        </attribute>
+        <element name="region_ids">
+          <a:documentation>A list of the region ids (physical ids in gmsh) that this expression applies to</a:documentation>
+          <ref name="integer_vector"/>
+        </element>
+        <ref name="prescribed_tensor_time_w_internal"/>
+        <ref name="comment"/>
       </element>
     </choice>
   </define>
@@ -865,15 +1272,15 @@ Values should be entered by row first.</a:documentation>
 
 Functions should be of the form:
 
- def val(x):
-    # Function code
-    return ... # Return value
+    def val(x):
+      # Function code
+      return ... # Return value
 
  for steady (time independent) expressions or:
 
- def val(x,t):
-    # Function code
-    return ... # Return value
+    def val(x,t):
+      # Function code
+      return ... # Return value
 
  for time dependent expressions.
 
@@ -890,15 +1297,15 @@ The return value should be scalar.</a:documentation>
 
 Functions should be of the form:
 
- def val(x):
-    # Function code
-    return [..., ...] # Return value
+    def val(x):
+      # Function code
+      return [..., ...] # Return value
 
  for steady (time independent) expressions or:
 
- def val(x,t):
-    # Function code
-    return [..., ...] # Return value
+    def val(x,t):
+      # Function code
+      return [..., ...] # Return value
 
  for time dependent expressions.
 
@@ -915,15 +1322,15 @@ The return value must have the same size as the vector element.</a:documentation
 
 Functions should be of the form:
 
- def val(x):
-    # Function code
-    return [[..., ...],[..., ...],...] # Return value
+    def val(x):
+      # Function code
+      return [[..., ...],[..., ...],...] # Return value
 
  for steady (time independent) expressions or:
 
- def val(x,t):
-    # Function code
-    return [[..., ...],[..., ...],...] # Return value
+    def val(x,t):
+      # Function code
+      return [[..., ...],[..., ...],...] # Return value
 
  for time dependent expressions.
 
@@ -939,21 +1346,17 @@ The return value must have the same shape as the tensor element.</a:documentatio
       <element name="include">
         <a:documentation>Additional headers that are required for this expression.
 
-
 These should be listed including an include statement, e.g.:
-#include &lt;string&gt;
-#include "example.h"
 
+    #include &lt;string&gt;
+    #include "example.h"
 
 The expression will automatically include:
 
-#include "BoostTypes.h"
-
-#include "Bucket.h"
-
-#include "SystemBucket.h"
-
-#include &lt;dolfin.h&gt;</a:documentation>
+    #include "BoostTypes.h"
+    #include "Bucket.h"
+    #include "SystemBucket.h"
+    #include &lt;dolfin.h&gt;</a:documentation>
         <ref name="cpp_code"/>
       </element>
     </optional>
@@ -971,13 +1374,11 @@ variables named values, x and cell, so these should not be used to avoid confusi
     <element name="initialization">
       <a:documentation>Initialization routine for the private members declared above.
 
-
 This initialization has full access to publicly accessible members of the bucket through
 the automatically provided bucket() function, which returns a pointer to the bucket class.  
 A shortcut to the members of this system is provided through the system() function, which 
 returns a pointer to this system class.  Finally, a boost shared pointer to the time is
 provided through the time() function.
-
 
 The recommended way of accessing functions is through the function_ptr(time()) interface for
 systems and the genericfunction_ptr(time()) interface for fields and coefficients.  These return
@@ -986,44 +1387,57 @@ the time() argument will ensure that when this expression is evaluated the appro
 dependent function or generic function is also used. *time() may also be used to make the expression
 dependent on time.
 
-
 For example, to extract a boost shared pointer to a generic function for a coefficient called 
 "ExampleCoefficient", we should have declared in the members section above:
 
-std::shared_pointer&lt; dolfin::GenericFunction &gt; examplecoeff;
+    std::shared_pointer&lt; dolfin::GenericFunction &gt; examplecoeff;
 
 or (utilizing the typedefs available to us through BoostTypes.h:
 
-GenericFunction_ptr examplecoeff;
-
+    GenericFunction_ptr examplecoeff;
 
 Then, in this initialization function, we could extract the appropriate time level of that 
 coefficient from the "ExampleSystem" system using:
 
-examplecoeff = bucket()-&gt;fetch_system("ExampleSystem")-&gt;fetch_coeff("ExampleCoefficient")-&gt;genericfunction_ptr(time())
+    examplecoeff = bucket()-&gt;fetch_system("ExampleSystem")-&gt;fetch_coeff("ExampleCoefficient")-&gt;genericfunction_ptr(time())
 
 or, if "ExampleSystem" is the current system, using the shortcut:
 
-examplecoeff = system()-&gt;fetch_coeff("ExampleCoefficient")-&gt;genericfunction_ptr(time())
-</a:documentation>
+    examplecoeff = system()-&gt;fetch_coeff("ExampleCoefficient")-&gt;genericfunction_ptr(time())</a:documentation>
       <ref name="cpp_code"/>
     </element>
     <element name="eval">
       <a:documentation>Overload the eval subroutine for this expression.  This has the standard interface for DOLFIN 
 expressions, i.e.:
 
-void eval(dolfin::Array&lt;double&gt;&amp; values, const dolfin::Array&lt;double&gt;&amp; x, const ufc::cell &amp;cell) const
-
+    void eval(dolfin::Array&lt;double&gt;&amp; values, const dolfin::Array&lt;double&gt;&amp; x, const ufc::cell &amp;cell) const
 
 To automatically evaluate and return the values of the "ExampleCoefficient" in the example in the 
 initialization section, all that would be required to write here is:
 
-examplecoeff.eval(values, x, cell);
+    examplecoeff.eval(values, x, cell);
 
-(assuming examplecoeff and this expression are of appropriately matched rank, shape and size).
-</a:documentation>
+(assuming examplecoeff and this expression are of appropriately matched rank, shape and size).</a:documentation>
       <ref name="cpp_code"/>
     </element>
+    <ref name="comment"/>
+  </define>
+  <define name="time_independent_cpp">
+    <optional>
+      <element name="time_independent">
+        <a:documentation>cpp functions are automatically assumed to be time varying.  
+
+Turning on this option means they only get evaluated once (at
+the start of the simtulation).</a:documentation>
+        <ref name="comment"/>
+      </element>
+    </optional>
+  </define>
+  <define name="prescribed_cpp_time">
+    <ref name="prescribed_cpp"/>
+  </define>
+  <define name="prescribed_cpp_time" combine="interleave">
+    <ref name="time_independent_cpp"/>
   </define>
   <define name="prescribed_scalar_cpp">
     <element name="cpp">
@@ -1052,6 +1466,33 @@ examplecoeff.eval(values, x, cell);
       <ref name="prescribed_cpp"/>
     </element>
   </define>
+  <define name="prescribed_scalar_cpp_time">
+    <element name="cpp">
+      <a:documentation>A scalar described by a derived dolfin expression using c++ code.</a:documentation>
+      <attribute name="rank">
+        <value>0</value>
+      </attribute>
+      <ref name="prescribed_cpp_time"/>
+    </element>
+  </define>
+  <define name="prescribed_vector_cpp_time">
+    <element name="cpp">
+      <a:documentation>A vector described by a derived dolfin expression using c++ code.</a:documentation>
+      <attribute name="rank">
+        <value>1</value>
+      </attribute>
+      <ref name="prescribed_cpp_time"/>
+    </element>
+  </define>
+  <define name="prescribed_tensor_cpp_time">
+    <element name="cpp">
+      <a:documentation>A tensor described by a derived dolfin expression using c++ code.</a:documentation>
+      <attribute name="rank">
+        <value>2</value>
+      </attribute>
+      <ref name="prescribed_cpp_time"/>
+    </element>
+  </define>
   <define name="prescribed_internal">
     <element name="algorithm">
       <a:documentation>A semilagrangian lookup algorithm</a:documentation>
@@ -1069,7 +1510,7 @@ Assumed to be the current system if left unspecified.</a:documentation>
             <attribute name="name">
               <data type="string"/>
             </attribute>
-            <empty/>
+            <ref name="comment"/>
           </element>
         </optional>
         <choice>
@@ -1078,16 +1519,17 @@ Assumed to be the current system if left unspecified.</a:documentation>
             <attribute name="name">
               <data type="string"/>
             </attribute>
-            <empty/>
+            <ref name="comment"/>
           </element>
           <element name="coefficient">
             <a:documentation>The coefficient name.</a:documentation>
             <attribute name="name">
               <data type="string"/>
             </attribute>
-            <empty/>
+            <ref name="comment"/>
           </element>
         </choice>
+        <ref name="comment"/>
       </element>
       <element name="velocity">
         <a:documentation>The velocity that will be used to lookup the value.
@@ -1100,7 +1542,7 @@ Assumed to be the current system if left unspecified.</a:documentation>
             <attribute name="name">
               <data type="string"/>
             </attribute>
-            <empty/>
+            <ref name="comment"/>
           </element>
         </optional>
         <choice>
@@ -1109,16 +1551,17 @@ Assumed to be the current system if left unspecified.</a:documentation>
             <attribute name="name">
               <data type="string"/>
             </attribute>
-            <empty/>
+            <ref name="comment"/>
           </element>
           <element name="coefficient">
             <a:documentation>The coefficient name.</a:documentation>
             <attribute name="name">
               <data type="string"/>
             </attribute>
-            <empty/>
+            <ref name="comment"/>
           </element>
         </choice>
+        <ref name="comment"/>
       </element>
       <element name="outside_value">
         <a:documentation>The value that will be used when the lookup point falls outside the mesh.
@@ -1131,7 +1574,7 @@ Assumed to be the current system if left unspecified.</a:documentation>
             <attribute name="name">
               <data type="string"/>
             </attribute>
-            <empty/>
+            <ref name="comment"/>
           </element>
         </optional>
         <choice>
@@ -1140,17 +1583,19 @@ Assumed to be the current system if left unspecified.</a:documentation>
             <attribute name="name">
               <data type="string"/>
             </attribute>
-            <empty/>
+            <ref name="comment"/>
           </element>
           <element name="field">
             <a:documentation>The field name.</a:documentation>
             <attribute name="name">
               <data type="string"/>
             </attribute>
-            <empty/>
+            <ref name="comment"/>
           </element>
         </choice>
+        <ref name="comment"/>
       </element>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="prescribed_scalar_internal">
@@ -1160,6 +1605,7 @@ Assumed to be the current system if left unspecified.</a:documentation>
         <value>0</value>
       </attribute>
       <ref name="prescribed_internal"/>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="prescribed_vector_internal">
@@ -1169,6 +1615,7 @@ Assumed to be the current system if left unspecified.</a:documentation>
         <value>1</value>
       </attribute>
       <ref name="prescribed_internal"/>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="prescribed_tensor_internal">
@@ -1178,6 +1625,7 @@ Assumed to be the current system if left unspecified.</a:documentation>
         <value>2</value>
       </attribute>
       <ref name="prescribed_internal"/>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="prescribed_file">
@@ -1208,6 +1656,21 @@ and the functionspace must be identical to the original system's functionspace.<
   <define name="prescribed_scalar_w_file" combine="choice">
     <ref name="prescribed_scalar"/>
   </define>
+  <define name="prescribed_scalar_time">
+    <ref name="prescribed_scalar_cpp_time"/>
+  </define>
+  <define name="prescribed_scalar_time" combine="choice">
+    <ref name="prescribed_scalar_python"/>
+  </define>
+  <define name="prescribed_scalar_time" combine="choice">
+    <ref name="prescribed_scalar_constant"/>
+  </define>
+  <define name="prescribed_scalar_time_w_internal">
+    <ref name="prescribed_scalar_internal"/>
+  </define>
+  <define name="prescribed_scalar_time_w_internal" combine="choice">
+    <ref name="prescribed_scalar_time"/>
+  </define>
   <define name="prescribed_vector">
     <ref name="prescribed_vector_cpp"/>
   </define>
@@ -1229,6 +1692,21 @@ and the functionspace must be identical to the original system's functionspace.<
   <define name="prescribed_vector_w_file" combine="choice">
     <ref name="prescribed_vector"/>
   </define>
+  <define name="prescribed_vector_time">
+    <ref name="prescribed_vector_cpp_time"/>
+  </define>
+  <define name="prescribed_vector_time" combine="choice">
+    <ref name="prescribed_vector_python"/>
+  </define>
+  <define name="prescribed_vector_time" combine="choice">
+    <ref name="prescribed_vector_constant"/>
+  </define>
+  <define name="prescribed_vector_time_w_internal">
+    <ref name="prescribed_vector_internal"/>
+  </define>
+  <define name="prescribed_vector_time_w_internal" combine="choice">
+    <ref name="prescribed_vector_time"/>
+  </define>
   <define name="prescribed_tensor">
     <ref name="prescribed_tensor_cpp"/>
   </define>
@@ -1249,5 +1727,20 @@ and the functionspace must be identical to the original system's functionspace.<
   </define>
   <define name="prescribed_tensor_w_file" combine="choice">
     <ref name="prescribed_tensor"/>
+  </define>
+  <define name="prescribed_tensor_time">
+    <ref name="prescribed_tensor_cpp_time"/>
+  </define>
+  <define name="prescribed_tensor_time" combine="choice">
+    <ref name="prescribed_tensor_python"/>
+  </define>
+  <define name="prescribed_tensor_time" combine="choice">
+    <ref name="prescribed_tensor_constant"/>
+  </define>
+  <define name="prescribed_tensor_time_w_internal">
+    <ref name="prescribed_tensor_internal"/>
+  </define>
+  <define name="prescribed_tensor_time_w_internal" combine="choice">
+    <ref name="prescribed_tensor_time"/>
   </define>
 </grammar>

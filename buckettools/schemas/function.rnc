@@ -49,10 +49,12 @@ field_options =
               attribute name { "Tensor" },
               tensor_field_function_options
             }
-          )
+          ),
+          comment
         }
       ),
-      field_diagnostics_options
+      field_diagnostics_options,
+      comment
     }
   )
 
@@ -72,19 +74,20 @@ coefficient_options =
             ## The rank of the coefficient (scalar, rank 0).
             element rank {
               attribute name { "Scalar" },
-              scalar_coefficient_function_expression_options
+              scalar_coefficient_expression_options
             }|
             ## The rank of the coefficient (vector, rank 1).
             element rank {
               attribute name { "Vector" },
-              vector_coefficient_function_expression_options
+              vector_coefficient_expression_options
             }|
             ## The rank of the coefficient (tensor, rank 2).
             element rank {
               attribute name { "Tensor" },
-              tensor_coefficient_function_expression_options
+              tensor_coefficient_expression_options
             }
-          )
+          ),
+          comment
         }|
         ## The type of coefficient.
         ##
@@ -107,7 +110,8 @@ coefficient_options =
               attribute name { "Tensor" },
               tensor_coefficient_constant_options
             }
-          )
+          ),
+          comment
         }|
         ## The type of coefficient.
         ##
@@ -118,22 +122,24 @@ coefficient_options =
             ## The rank of the coefficient (scalar, rank 0).
             element rank {
               attribute name { "Scalar" },
-              scalar_coefficient_function_expression_options
+              scalar_coefficient_function_options
             }|
             ## The rank of the coefficient (vector, rank 1).
             element rank {
               attribute name { "Vector" },
-              vector_coefficient_function_expression_options
+              vector_coefficient_function_options
             }|
             ## The rank of the coefficient (tensor, rank 2).
             element rank {
               attribute name { "Tensor" },
-              tensor_coefficient_function_expression_options
+              tensor_coefficient_function_options
             }
-          )
+          ),
+          comment
         }
       ),
-      coeff_diagnostics_options
+      coeff_diagnostics_options,
+      comment
     }
   )
 
@@ -144,7 +150,9 @@ scalar_field_function_options =
     initial_condition_scalar+,
     boundary_condition_scalar*,
     reference_point_scalar?,
-    field_manipulation_options
+    zero_point_scalar?,
+    value_cap_scalar?,
+    comment
   )
 
 vector_field_function_options =
@@ -154,7 +162,9 @@ vector_field_function_options =
     initial_condition_vector+,
     boundary_condition_vector*,
     reference_point_tensor*,
-    field_manipulation_options
+    zero_point_tensor*,
+    value_cap_tensor*,
+    comment
   )
 
 tensor_field_function_options =
@@ -164,13 +174,15 @@ tensor_field_function_options =
     initial_condition_tensor+,
     boundary_condition_tensor*,
     reference_point_tensor*,
-    field_manipulation_options
+    zero_point_tensor*,
+    value_cap_tensor*,
+    comment
   )
 
 field_manipulation_options = 
   (
     ## Cap the values of the field after every solve
-    element cap_values {
+    element value_cap {
       ## Do not let the maximum value exceed this cap
       element upper_cap {
         real
@@ -182,43 +194,73 @@ field_manipulation_options =
     }?
   )
 
-scalar_coefficient_function_expression_options =
+scalar_coefficient_expression_options =
   (
     attribute rank { "0" },
     element_options_scalar,
-    prescribed_expression_scalar+
+    prescribed_expression_scalar+,
+    comment
   )
 
-vector_coefficient_function_expression_options =
+vector_coefficient_expression_options =
   (
     attribute rank { "1" },
     element_options_vector,
-    prescribed_expression_vector+
+    prescribed_expression_vector+,
+    comment
   )
 
-tensor_coefficient_function_expression_options =
+tensor_coefficient_expression_options =
   (
     attribute rank { "2" },
     element_options_tensor,
-    prescribed_expression_tensor+
+    prescribed_expression_tensor+,
+    comment
+  )
+
+scalar_coefficient_function_options =
+  (
+    attribute rank { "0" },
+    element_options_scalar,
+    prescribed_function_scalar+,
+    comment
+  )
+
+vector_coefficient_function_options =
+  (
+    attribute rank { "1" },
+    element_options_vector,
+    prescribed_function_vector+,
+    comment
+  )
+
+tensor_coefficient_function_options =
+  (
+    attribute rank { "2" },
+    element_options_tensor,
+    prescribed_function_tensor+,
+    comment
   )
 
 scalar_coefficient_constant_options =
   (
     attribute rank { "0" },
-    prescribed_constant_scalar
+    prescribed_constant_scalar,
+    comment
   )
 
 vector_coefficient_constant_options =
   (
     attribute rank { "1" },
-    prescribed_constant_vector
+    prescribed_constant_vector,
+    comment
   )
 
 tensor_coefficient_constant_options =
   (
     attribute rank { "2" },
-    prescribed_constant_tensor
+    prescribed_constant_tensor,
+    comment
   )
 
 field_header_options =
@@ -239,12 +281,13 @@ field_diagnostics_options =
     element diagnostics {
       ## Include this field in the visualization output file.
       element include_in_visualization {
-        empty
+        comment
       }?,
       ## Include this field in the statistics output file.
       ## The minimum and maximum of functions is included.
       element include_in_statistics {
-        functional_options*
+        functional_options*,
+        comment
       }?,
       ## Include this field in the steady state check and output file.
       element include_in_steady_state {
@@ -253,17 +296,20 @@ field_diagnostics_options =
           # a hard coded string_value
           element string_value {
             ( "linf" | "l2" | "l1" )
-          }
-        }
+          },
+          comment
+        },
+        comment
       }?,
       ## Include this field in the detectors output file.
       element include_in_detectors {
-        empty
+        comment
       }?,
       ## Include the residual of this field in a visualization output file.
       element include_residual_in_visualization {
-        empty
-      }?
+        comment
+      }?,
+      comment
     }
   )
 
@@ -280,12 +326,14 @@ coeff_diagnostics_options =
       ## The minimum and maximum (evaluated at the vertices of the mesh) 
       ## of functions is included.
       element include_in_statistics {
-        functional_options*
+        functional_options*,
+        comment
       }?,
       ## Include this coefficient in the detectors output file.
       element include_in_detectors {
-        empty
-      }?
+        comment
+      }?,
+      comment
     }
   )
 
@@ -300,7 +348,7 @@ functional_options =
       quadrature_rule,
       ## Include this functional in the steady state check and output file.
       element include_in_steady_state {
-        empty
+        comment
       }?
     }
   )
@@ -311,7 +359,8 @@ initial_condition_scalar =
     element initial_condition {
       attribute name {"WholeMesh"},
       attribute type {"initial_condition"},
-      prescribed_scalar_w_file
+      prescribed_scalar_w_file,
+      comment
     }|
     ## Options for the description of the initial condition over a subset of the whole domain
     element initial_condition {
@@ -321,7 +370,8 @@ initial_condition_scalar =
       element region_ids {
         integer_vector
       },
-      prescribed_scalar
+      prescribed_scalar,
+      comment
     }
   )
 
@@ -331,7 +381,8 @@ initial_condition_vector =
     element initial_condition {
       attribute name {"WholeMesh"},
       attribute type {"initial_condition"},
-      prescribed_vector_w_file
+      prescribed_vector_w_file,
+      comment
     }|
     ## Options for the description of the initial condition over a subset of the whole domain
     element initial_condition {
@@ -341,7 +392,8 @@ initial_condition_vector =
       element region_ids {
         integer_vector
       },
-      prescribed_vector
+      prescribed_vector,
+      comment
     }
   )
 
@@ -351,7 +403,8 @@ initial_condition_tensor =
     element initial_condition {
       attribute name {"WholeMesh"},
       attribute type {"initial_condition"},
-      prescribed_tensor_w_file
+      prescribed_tensor_w_file,
+      comment
     }|
     ## Options for the description of the initial condition over a subset of the whole domain
     element initial_condition {
@@ -361,7 +414,8 @@ initial_condition_tensor =
       element region_ids {
         integer_vector
       },
-      prescribed_tensor
+      prescribed_tensor,
+      comment
     }
   )
 
@@ -381,9 +435,12 @@ boundary_condition_scalar =
         element type {
           attribute name {"Dirichlet"},
           attribute type {"boundary_condition"},
-          prescribed_scalar
-        }
-      }
+          prescribed_scalar,
+          comment
+        },
+        comment
+      },
+      comment
     }
   )
 
@@ -404,8 +461,10 @@ boundary_condition_vector =
           element type {
             attribute name {"Dirichlet"},
             attribute type {"boundary_condition"},
-            prescribed_vector
-          }
+            prescribed_vector,
+            comment
+          },
+          comment
         }|
         ## Apply this boundary condition to a subset of the vector components on this boundary_id
         element sub_components {
@@ -418,10 +477,13 @@ boundary_condition_vector =
           element type {
             attribute name {"Dirichlet"},
             attribute type {"boundary_condition"},
-            prescribed_scalar
-          }
+            prescribed_scalar,
+            comment
+          },
+          comment
         }
-      )+
+      )+,
+      comment
     }
   )
 
@@ -442,8 +504,10 @@ boundary_condition_tensor =
           element type {
             attribute name {"Dirichlet"},
             attribute type {"boundary_condition"},
-            prescribed_tensor
-          }
+            prescribed_tensor,
+            comment
+          },
+          comment
         }|
         ## Apply this boundary condition to a subset of the tensor components on this boundary_id
         element sub_components {
@@ -456,33 +520,39 @@ boundary_condition_tensor =
           element type {
             attribute name {"Dirichlet"},
             attribute type {"boundary_condition"},
-            prescribed_scalar
-          }
+            prescribed_scalar,
+            comment
+          },
+          comment
         }
-      )+
+      )+,
+      comment
     }
   )
 
 reference_point_scalar = 
   (
-    ## Options for the description of a reference point at which field values are zeroed.
+    ## Options for the description of a reference point at which field values are zeroed during each solve 
+    ## by the imposition of an internal pointwise Dirichlet boundary condition at the nearest node to the
+    ## coordinates specified below.
     element reference_point {
       attribute name { "Point" },
       ## The coordinates of the reference point.  The node nearest these coordinates will be used.
       element coordinates {
         real_dim_vector
       },
-      ## There are no sub components to a scalar so this is just a dummy tree level for consistency with a vector function.
-      element sub_components {
-        attribute name {"All"},
-        empty
-      }
+      comment
     }
   )
 
 reference_point_tensor = 
   (
-    ## Options for the description of a reference point at which field values are zeroed.
+    ## Options for the description of a reference point at which field values are zeroed during each solve 
+    ## by the imposition of an internal pointwise Dirichlet boundary condition at the nearest node to the
+    ## coordinates specified below.
+    ##
+    ## This version defaults to the name Point.  If specifying more than one reference point (perhaps on different components) the name of each 
+    ## one must be unique so multiple instances of this default name are not allowed.
     element reference_point {
       attribute name { "Point" },
       ## The coordinates of the reference point.  The node nearest these coordinates will be used.
@@ -493,7 +563,7 @@ reference_point_tensor =
         ## Zero all the vector/tensor components at this reference point.
         element sub_components {
           attribute name {"All"},
-          empty
+          comment
         }|
         ## Zero a subset of the vector/tensor components at this reference point.
         element sub_components {
@@ -501,10 +571,17 @@ reference_point_tensor =
           ## A list of the vector/tensor components to which this reference point applies (indexes from 0 by row first for tensors).
           element components {
             integer_vector
-          }
+          },
+          comment
         }
-      )
+      ),
+      comment
     }|
+    ## Options for the description of a reference point at which field values are zeroed during each solve 
+    ## by the imposition of an internal pointwise Dirichlet boundary condition at the nearest node to the
+    ## coordinates specified below.
+    ##
+    ## Names of each reference point (perhaps on different components) must be unique within this field specification.
     element reference_point {
       attribute name {xsd:string },
       ## The coordinates of the reference point.  The node nearest these coordinates will be used.
@@ -518,16 +595,196 @@ reference_point_tensor =
           ## A list of the vector/tensor components to which this reference point applies (indexes from 0 by row first for tensors).
           element components {
             integer_vector
-          }
+          },
+          comment
         }|
         ## Zero all the vector/tensor components at this reference point.
         element sub_components {
           attribute name {"All"},
-          empty
+          comment
         }
-      )
+      ),
+      comment
     }
   )
+
+zero_point_scalar = 
+  (
+    ## Options for the description of a zero point at which field values are zeroed after each nonlinear solve.
+    ##
+    ## Unlike reference points, a zero point is a post-processing calculation and so should be used in conjunction 
+    ## with a Lagrange multiplier or the removal of the null space if the solution would be ill conditioned otherwise.
+    element zero_point {
+      attribute name { "Point" },
+      ## The coordinates of the reference point.  The node nearest these coordinates will be used.
+      element coordinates {
+        real_dim_vector
+      },
+      comment
+    }
+  )
+
+zero_point_tensor = 
+  (
+    ## Options for the description of a zero point at which field values are zeroed after each nonlinear solve.
+    ##
+    ## Unlike reference points, a zero point is a post-processing calculation and so should be used in conjunction 
+    ## with a Lagrange multiplier or the removal of the null space if the solution would be ill conditioned otherwise.
+    ##
+    ## This version defaults to the name Point.  If specifying more than one reference point the name of each 
+    ## one must be unique so multiple instances of this default name are not allowed.
+    element zero_point {
+      attribute name { "Point" },
+      ## The coordinates of the zero point.
+      element coordinates {
+        real_dim_vector
+      },
+      (
+        ## Zero all the vector/tensor components at this zero point.
+        element sub_components {
+          attribute name {"All"},
+          comment
+        }|
+        ## Zero a subset of the vector/tensor components at this zero point.
+        element sub_components {
+          attribute name { "Subset" },
+          ## A list of the vector/tensor components to which this zero point applies (indexes from 0 by row first for tensors).
+          element components {
+            integer_vector
+          },
+          comment
+        }
+      ),
+      comment
+    }|
+    ## Options for the description of a zero point at which field values are zeroed after each nonlinear solve.
+    ##
+    ## Unlike reference points, a zero point is a post-processing calculation and so should be used in conjunction 
+    ## with a Lagrange multiplier or the removal of the null space if the solution would be ill conditioned otherwise.
+    ##
+    ## If specifying multiple zero points (perhaps on different components) their names must be unique within this field specification.
+    element zero_point {
+      attribute name {xsd:string },
+      ## The coordinates of the zero point.
+      element coordinates {
+        real_dim_vector
+      },
+      (
+        ## Zero a subset of the vector/tensor components at this reference point.
+        element sub_components {
+          attribute name { "Subset" },
+          ## A list of the vector/tensor components to which this reference point applies (indexes from 0 by row first for tensors).
+          element components {
+            integer_vector
+          },
+          comment
+        }|
+        ## Zero all the vector/tensor components at this reference point.
+        element sub_components {
+          attribute name {"All"},
+          comment
+        }
+      ),
+      comment
+    }
+  )
+
+value_cap_scalar = 
+  (
+    ## Cap the values of the field after every nonlinear solve.
+    ##
+    ## This is a postprocessing modification of the vector values and so will affect the value of the non-linear residual.  
+    ## In a coupled problem this will likely have implications on the other fields that this simple hack will not consider.  
+    ## Perhaps consider using SNES VI instead.
+    element value_cap {
+      attribute name { "Cap" },
+      ## Do not let the maximum value exceed this cap
+      element upper_cap {
+        real
+      }?,
+      ## Do not let the minimum value fall below this cap
+      element lower_cap {
+        real
+      }?,
+      comment
+    }
+  )
+
+value_cap_tensor = 
+  (
+    ## Cap the values of the field after every nonlinear solve.
+    ##
+    ## This is a postprocessing modification of the vector values and so will affect the value of the non-linear residual.  
+    ## In a coupled problem this will likely have implications on the other fields that this simple hack will not consider.  
+    ## Perhaps consider using SNES VI instead.
+    ##
+    ## This version defaults to the name Cap.  If specifying more than one value cap (perhaps on different components) the name of each 
+    ## one must be unique so multiple instances of this default name are not allowed.
+    element value_cap {
+      attribute name { "Cap" },
+      ## Do not let the maximum value exceed this cap
+      element upper_cap {
+        real
+      }?,
+      ## Do not let the minimum value fall below this cap
+      element lower_cap {
+        real
+      }?,
+      (
+        ## Cap all the vector/tensor components.
+        element sub_components {
+          attribute name {"All"},
+          comment
+        }|
+        ## Cap a subset of the vector/tensor components.
+        element sub_components {
+          attribute name { "Subset" },
+          ## A list of the vector/tensor components to which this reference point applies (indexes from 0 by row first for tensors).
+          element components {
+            integer_vector
+          },
+          comment
+        }
+      ),
+      comment
+    }|
+    ## Cap the values of the field after every nonlinear solve.
+    ##
+    ## This is a postprocessing modification of the vector values and so will affect the value of the non-linear residual.  
+    ## In a coupled problem this will likely have implications on the other fields that this simple hack will not consider.  
+    ## Perhaps consider using SNES VI instead.
+    ##
+    ## If specifying multiple value caps (perhaps on different components) their names must be unique within this field specification.
+    element value_cap {
+      attribute name {xsd:string },
+      ## Do not let the maximum value exceed this cap
+      element upper_cap {
+        real
+      }?,
+      ## Do not let the minimum value fall below this cap
+      element lower_cap {
+        real
+      }?,
+      (
+        ## Cap all the vector/tensor components.
+        element sub_components {
+          attribute name {"All"},
+          comment
+        }|
+        ## Cap a subset of the vector/tensor components.
+        element sub_components {
+          attribute name { "Subset" },
+          ## A list of the vector/tensor components to which this reference point applies (indexes from 0 by row first for tensors).
+          element components {
+            integer_vector
+          },
+          comment
+        }
+      ),
+      comment
+    }
+  )
+
 
 prescribed_constant_scalar = 
   (
@@ -535,7 +792,8 @@ prescribed_constant_scalar =
     element value {
       attribute name {"WholeMesh"},
       attribute type {"value"},
-      prescribed_scalar_constant_w_functional
+      prescribed_scalar_constant_w_functional,
+      comment
     }
   )
 
@@ -545,7 +803,8 @@ prescribed_constant_vector =
     element value {
       attribute name {"WholeMesh"},
       attribute type {"value"},
-      prescribed_vector_constant
+      prescribed_vector_constant,
+      comment
     }
   )
 
@@ -555,7 +814,8 @@ prescribed_constant_tensor =
     element value {
       attribute name {"WholeMesh"},
       attribute type {"value"},
-      prescribed_tensor_constant
+      prescribed_tensor_constant,
+      comment
     }
   )
 
@@ -565,7 +825,8 @@ prescribed_expression_scalar =
     element value {
       attribute name {"WholeMesh"},
       attribute type {"value"},
-      prescribed_scalar_w_internal
+      prescribed_scalar_w_internal,
+      comment
     }|
     ## Options for the description of an expression over regions
     element value {
@@ -575,7 +836,8 @@ prescribed_expression_scalar =
       element region_ids {
         integer_vector
       },
-      prescribed_scalar_w_internal
+      prescribed_scalar_w_internal,
+      comment
     }
   )
 
@@ -585,7 +847,8 @@ prescribed_expression_vector =
     element value {
       attribute name {"WholeMesh"},
       attribute type {"value"},
-      prescribed_vector_w_internal
+      prescribed_vector_w_internal,
+      comment
     }|
     ## Options for the description of an expression over regions
     element value {
@@ -595,7 +858,8 @@ prescribed_expression_vector =
       element region_ids {
         integer_vector
       },
-      prescribed_vector_w_internal
+      prescribed_vector_w_internal,
+      comment
     }
   )
 
@@ -605,7 +869,8 @@ prescribed_expression_tensor =
     element value {
       attribute name {"WholeMesh"},
       attribute type {"value"},
-      prescribed_tensor_w_internal
+      prescribed_tensor_w_internal,
+      comment
     }|
     ## Options for the description of an expression over regions
     element value {
@@ -615,7 +880,74 @@ prescribed_expression_tensor =
       element region_ids {
         integer_vector
       },
-      prescribed_tensor_w_internal
+      prescribed_tensor_w_internal,
+      comment
+    }
+  )
+
+prescribed_function_scalar = 
+  (
+    ## Options for the description of an expression over the domain
+    element value {
+      attribute name {"WholeMesh"},
+      attribute type {"value"},
+      prescribed_scalar_time_w_internal,
+      comment
+    }|
+    ## Options for the description of an expression over regions
+    element value {
+      attribute name { xsd:string },
+      attribute type {"value"},
+      ## A list of the region ids (physical ids in gmsh) that this expression applies to
+      element region_ids {
+        integer_vector
+      },
+      prescribed_scalar_time_w_internal,
+      comment
+    }
+  )
+
+prescribed_function_vector = 
+  (
+    ## Options for the description of an expression over the domain
+    element value {
+      attribute name {"WholeMesh"},
+      attribute type {"value"},
+      prescribed_vector_time_w_internal,
+      comment
+    }|
+    ## Options for the description of an expression over regions
+    element value {
+      attribute name { xsd:string },
+      attribute type {"value"},
+      ## A list of the region ids (physical ids in gmsh) that this expression applies to
+      element region_ids {
+        integer_vector
+      },
+      prescribed_vector_time_w_internal,
+      comment
+    }
+  )
+
+prescribed_function_tensor = 
+  (
+    ## Options for the description of an expression over the domain
+    element value {
+      attribute name {"WholeMesh"},
+      attribute type {"value"},
+      prescribed_tensor_time_w_internal,
+      comment
+    }|
+    ## Options for the description of an expression over regions
+    element value {
+      attribute name { xsd:string },
+      attribute type {"value"},
+      ## A list of the region ids (physical ids in gmsh) that this expression applies to
+      element region_ids {
+        integer_vector
+      },
+      prescribed_tensor_time_w_internal,
+      comment
     }
   )
 
@@ -681,15 +1013,15 @@ prescribed_scalar_python =
     ##
     ## Functions should be of the form:
     ##
-    ##  def val(x):
-    ##     # Function code
-    ##     return ... # Return value
+    ##     def val(x):
+    ##       # Function code
+    ##       return ... # Return value
     ##
     ##  for steady (time independent) expressions or:
     ##
-    ##  def val(x,t):
-    ##     # Function code
-    ##     return ... # Return value
+    ##     def val(x,t):
+    ##       # Function code
+    ##       return ... # Return value
     ##
     ##  for time dependent expressions.
     ##
@@ -707,15 +1039,15 @@ prescribed_vector_python =
     ##
     ## Functions should be of the form:
     ##
-    ##  def val(x):
-    ##     # Function code
-    ##     return [..., ...] # Return value
+    ##     def val(x):
+    ##       # Function code
+    ##       return [..., ...] # Return value
     ##
     ##  for steady (time independent) expressions or:
     ##
-    ##  def val(x,t):
-    ##     # Function code
-    ##     return [..., ...] # Return value
+    ##     def val(x,t):
+    ##       # Function code
+    ##       return [..., ...] # Return value
     ##
     ##  for time dependent expressions.
     ##
@@ -732,15 +1064,15 @@ prescribed_tensor_python =
     ##
     ## Functions should be of the form:
     ##
-    ##  def val(x):
-    ##     # Function code
-    ##     return [[..., ...],[..., ...],...] # Return value
+    ##     def val(x):
+    ##       # Function code
+    ##       return [[..., ...],[..., ...],...] # Return value
     ##
     ##  for steady (time independent) expressions or:
     ##
-    ##  def val(x,t):
-    ##     # Function code
-    ##     return [[..., ...],[..., ...],...] # Return value
+    ##     def val(x,t):
+    ##       # Function code
+    ##       return [[..., ...],[..., ...],...] # Return value
     ##
     ##  for time dependent expressions.
     ##
@@ -756,21 +1088,17 @@ prescribed_cpp =
   (
     ## Additional headers that are required for this expression.
     ##
-    ##
     ## These should be listed including an include statement, e.g.:
-    ## #include <string>
-    ## #include "example.h"
-    ##
+    ## 
+    ##     #include <string>
+    ##     #include "example.h"
     ##
     ## The expression will automatically include:
     ##
-    ## #include "BoostTypes.h"
-    ##
-    ## #include "Bucket.h"
-    ##
-    ## #include "SystemBucket.h"
-    ##
-    ## #include <dolfin.h>
+    ##     #include "BoostTypes.h"
+    ##     #include "Bucket.h"
+    ##     #include "SystemBucket.h"
+    ##     #include <dolfin.h>
     element include {
       cpp_code
     }?,
@@ -787,13 +1115,11 @@ prescribed_cpp =
     },
     ## Initialization routine for the private members declared above.
     ##
-    ##
     ## This initialization has full access to publicly accessible members of the bucket through
     ## the automatically provided bucket() function, which returns a pointer to the bucket class.  
     ## A shortcut to the members of this system is provided through the system() function, which 
     ## returns a pointer to this system class.  Finally, a boost shared pointer to the time is
     ## provided through the time() function.
-    ##
     ##
     ## The recommended way of accessing functions is through the function_ptr(time()) interface for
     ## systems and the genericfunction_ptr(time()) interface for fields and coefficients.  These return
@@ -802,46 +1128,56 @@ prescribed_cpp =
     ## dependent function or generic function is also used. *time() may also be used to make the expression
     ## dependent on time.
     ##
-    ##
     ## For example, to extract a boost shared pointer to a generic function for a coefficient called 
     ## "ExampleCoefficient", we should have declared in the members section above:
     ##
-    ## std::shared_pointer< dolfin::GenericFunction > examplecoeff;
+    ##     std::shared_pointer< dolfin::GenericFunction > examplecoeff;
     ##
     ## or (utilizing the typedefs available to us through BoostTypes.h:
     ##
-    ## GenericFunction_ptr examplecoeff;
-    ##
+    ##     GenericFunction_ptr examplecoeff;
     ##
     ## Then, in this initialization function, we could extract the appropriate time level of that 
     ## coefficient from the "ExampleSystem" system using:
     ##
-    ## examplecoeff = bucket()->fetch_system("ExampleSystem")->fetch_coeff("ExampleCoefficient")->genericfunction_ptr(time())
+    ##     examplecoeff = bucket()->fetch_system("ExampleSystem")->fetch_coeff("ExampleCoefficient")->genericfunction_ptr(time())
     ##
     ## or, if "ExampleSystem" is the current system, using the shortcut:
     ##
-    ## examplecoeff = system()->fetch_coeff("ExampleCoefficient")->genericfunction_ptr(time())
-    ##
+    ##     examplecoeff = system()->fetch_coeff("ExampleCoefficient")->genericfunction_ptr(time())
     element initialization {
       cpp_code
     },
     ## Overload the eval subroutine for this expression.  This has the standard interface for DOLFIN 
     ## expressions, i.e.:
     ##
-    ## void eval(dolfin::Array<double>& values, const dolfin::Array<double>& x, const ufc::cell &cell) const
-    ##
+    ##     void eval(dolfin::Array<double>& values, const dolfin::Array<double>& x, const ufc::cell &cell) const
     ##
     ## To automatically evaluate and return the values of the "ExampleCoefficient" in the example in the 
     ## initialization section, all that would be required to write here is:
     ##
-    ## examplecoeff.eval(values, x, cell);
+    ##     examplecoeff.eval(values, x, cell);
     ##
     ## (assuming examplecoeff and this expression are of appropriately matched rank, shape and size).
-    ##
     element eval {
       cpp_code
-    }
+    },
+    comment
   )
+
+time_independent_cpp = 
+  (
+    ## cpp functions are automatically assumed to be time varying.  
+    ##
+    ## Turning on this option means they only get evaluated once (at
+    ## the start of the simtulation).
+    element time_independent {
+      comment
+    }?
+  )
+
+prescribed_cpp_time = prescribed_cpp
+prescribed_cpp_time &= time_independent_cpp
 
 prescribed_scalar_cpp =
   (
@@ -870,6 +1206,33 @@ prescribed_tensor_cpp =
     }
   )
 
+prescribed_scalar_cpp_time =
+  (
+    ## A scalar described by a derived dolfin expression using c++ code.
+    element cpp {
+      attribute rank { "0" },
+      prescribed_cpp_time
+    }
+  )
+
+prescribed_vector_cpp_time =
+  (
+    ## A vector described by a derived dolfin expression using c++ code.
+    element cpp {
+      attribute rank { "1" },
+      prescribed_cpp_time
+    }
+  )
+
+prescribed_tensor_cpp_time =
+  (
+    ## A tensor described by a derived dolfin expression using c++ code.
+    element cpp {
+      attribute rank { "2" },
+      prescribed_cpp_time
+    }
+  )
+
 prescribed_internal = 
   (
     (
@@ -884,20 +1247,21 @@ prescribed_internal =
           ## Assumed to be the current system if left unspecified.
           element system {
             attribute name { xsd:string },
-            empty
+            comment
           }?,
           (
             ## The field name.
             element field {
               attribute name { xsd:string },
-              empty
+              comment
             }|
             ## The coefficient name.
             element coefficient {
               attribute name { xsd:string },
-              empty
+              comment
             }
-          )
+          ),
+          comment
         },
         ## The velocity that will be used to lookup the value.
         ##
@@ -907,20 +1271,21 @@ prescribed_internal =
           ## Assumed to be the current system if left unspecified.
           element system {
             attribute name { xsd:string },
-            empty
+            comment
           }?,
           (
             ## The field name.
             element field {
               attribute name { xsd:string },
-              empty
+              comment
             }|
             ## The coefficient name.
             element coefficient {
               attribute name { xsd:string },
-              empty
+              comment
             }
-          )
+          ),
+          comment
         },
         ## The value that will be used when the lookup point falls outside the mesh.
         ##
@@ -930,21 +1295,23 @@ prescribed_internal =
           ## Assumed to be the current system if left unspecified.
           element system {
             attribute name { xsd:string },
-            empty
+            comment
           }?,
           (
             ## The coefficient name.
             element coefficient {
               attribute name { xsd:string },
-              empty
+              comment
             }|
             ## The field name.
             element field {
               attribute name { xsd:string },
-              empty
+              comment
             }
-          )
-        }
+          ),
+          comment
+        },
+        comment
       }
     )
   )
@@ -954,7 +1321,8 @@ prescribed_scalar_internal =
     ## A scalar described by an internal derived dolfin expression.
     element internal {
       attribute rank { "0" },
-      prescribed_internal
+      prescribed_internal,
+      comment
     }
   )
 
@@ -963,7 +1331,8 @@ prescribed_vector_internal =
     ## A vector described by an internal derived dolfin expression.
     element internal {
       attribute rank { "1" },
-      prescribed_internal
+      prescribed_internal,
+      comment
     }
   )
 
@@ -972,7 +1341,8 @@ prescribed_tensor_internal =
     ## A tensor described by an internal derived dolfin expression.
     element internal {
       attribute rank { "2" },
-      prescribed_internal
+      prescribed_internal,
+      comment
     }
   )
 
@@ -995,6 +1365,13 @@ prescribed_scalar_w_internal |= prescribed_scalar
 prescribed_scalar_w_file = prescribed_file
 prescribed_scalar_w_file |= prescribed_scalar
 
+prescribed_scalar_time = prescribed_scalar_cpp_time
+prescribed_scalar_time |= prescribed_scalar_python
+prescribed_scalar_time |= prescribed_scalar_constant
+
+prescribed_scalar_time_w_internal = prescribed_scalar_internal
+prescribed_scalar_time_w_internal |= prescribed_scalar_time
+
 prescribed_vector = prescribed_vector_cpp
 prescribed_vector |= prescribed_vector_python
 prescribed_vector |= prescribed_vector_constant
@@ -1005,6 +1382,13 @@ prescribed_vector_w_internal |= prescribed_vector
 prescribed_vector_w_file = prescribed_file
 prescribed_vector_w_file |= prescribed_vector
 
+prescribed_vector_time = prescribed_vector_cpp_time
+prescribed_vector_time |= prescribed_vector_python
+prescribed_vector_time |= prescribed_vector_constant
+
+prescribed_vector_time_w_internal = prescribed_vector_internal
+prescribed_vector_time_w_internal |= prescribed_vector_time
+
 prescribed_tensor = prescribed_tensor_cpp
 prescribed_tensor |= prescribed_tensor_python
 prescribed_tensor |= prescribed_tensor_constant
@@ -1014,4 +1398,11 @@ prescribed_tensor_w_internal |= prescribed_tensor
 
 prescribed_tensor_w_file = prescribed_file
 prescribed_tensor_w_file |= prescribed_tensor
+
+prescribed_tensor_time = prescribed_tensor_cpp_time
+prescribed_tensor_time |= prescribed_tensor_python
+prescribed_tensor_time |= prescribed_tensor_constant
+
+prescribed_tensor_time_w_internal = prescribed_tensor_internal
+prescribed_tensor_time_w_internal |= prescribed_tensor_time
 

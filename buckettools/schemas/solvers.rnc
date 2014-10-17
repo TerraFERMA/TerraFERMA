@@ -40,7 +40,8 @@ nonlinear_solver_options =
         element type {
           picard
         }
-      )
+      ),
+      comment
     }
   )
 
@@ -126,12 +127,13 @@ picard =
        }?,
        ## Output a diagnostic file detailing the convergence of this solver.
        element convergence_file { 
-         empty
+         comment
        }?,
        ## Print norms of vectors and matrices to stdout log
        element norms {
-          empty
-       }?
+          comment
+       }?,
+       comment
     },
     ## Options describing a linear solver.
     element linear_solver {
@@ -140,11 +142,13 @@ picard =
       element monitors {
          ## Prints PETSc information about the ksp object.
          element view_ksp {
-           empty
-         }?
+           comment
+         }?,
+         comment
       }
     },
-    solver_failures
+    solver_failures,
+    comment
   )
 
 snes =
@@ -196,18 +200,18 @@ snes =
           ## Performs a cubic line search (default line search method).
           element ls_type {
             attribute name { "cubic" },
-            empty
+            comment
           }|
           ## Performs a quadratic line search.
           element ls_type {
             attribute name { "quadratic" },
-            empty
+            comment
           }|
           ## This routine is not a line search at all; it simply uses the full Newton step.  
           ## Thus, this routine is intended to serve as a template and is not recommended for general use.
           element ls_type {
             attribute name { "basic" },
-            empty
+            comment
           }|
           ## This routine is not a line search at all; it simply uses the full Newton step.  
           ## This version does not even compute the norm of the function or search direction; 
@@ -216,9 +220,10 @@ snes =
           ## fixed number of Newton steps).
           element ls_type {
             attribute name { "basicnonorms" },
-            empty
+            comment
           }
         ),
+        snes_convergence_test,
         ## The scalar such that .5*f_{n+1} . f_{n+1} <= .5*f_n . f_n - alpha |p_n . J . f_n|.
         ##
         ## We are finding the zero of f() so the one dimensional minimization problem we are 
@@ -247,7 +252,8 @@ snes =
         ## Defaults to 1.e-12 if unset.
         element min_lambda {
           real
-        }?
+        }?,
+        comment
       }|
       ## The SNES type. Variational Inequality.
       ##
@@ -258,23 +264,28 @@ snes =
         element constraints {
            ## Describe the upper bound constraint on fields.
            element upper_bound {
-             is_constraints
+             is_constraints,
+             comment
            }?,
            ## Describe the upper bound constraint on fields.
            element lower_bound {
-             is_constraints
-           }?
-        }
+             is_constraints,
+             comment
+           }?,
+           comment
+        },
+        snes_convergence_test,
+        comment
       }|
       ## The SNES type.  KSP only - treat as a linear problem.
       element snes_type {
         attribute name { "ksponly" },
-        empty
+        comment
       }|
       ## The SNES type.  Any valid PETSc SNES type may be entered.
       element snes_type {
         attribute name { xsd:string },
-        empty
+        comment
       }
     ),
     ## The relative error allowed to remain in the l2 norm of the nonlinear solver residual upon termination
@@ -308,15 +319,15 @@ snes =
     element monitors {
        ## Prints PETSc information about the snes object.
        element view_snes {
-         empty
+         comment
        }?,
        ## Output the residual at every function evaluation.
        element residual {
-         empty
+         comment
        }?,
        ## Plot a graph of the solution with each iteration.
        element solution_graph {
-         empty
+         comment
        }?,
        ## Output pvd visualization of the solution and residual at each iteration.
        ## 
@@ -326,25 +337,27 @@ snes =
        }?,
        ## Output a diagnostic file detailing the convergence of this solver.
        element convergence_file { 
-         empty
+         comment
        }?,
        ## Print norms of vectors and matrices to stdout log
        element norms {
-          empty
-       }?
+         comment
+       }?,
+       comment
     },
     ## Options describing a linear solver.
     element linear_solver {
       linear_solver_options_snes_top
     },
-    solver_failures
+    solver_failures,
+    comment
   )
 
 ident_zeros =
   (
     ## If this rank 1 form has zero rows, then place a 1. of the diagonal.
     element ident_zeros {
-      empty
+      comment
     }?
   )
 
@@ -353,7 +366,8 @@ is_field =
     ## Field to include in this index set.
     element field {
       attribute name { xsd:string },
-      is_field_components
+      is_field_components,
+      comment
     }
   )
 
@@ -370,21 +384,22 @@ is_field_null =
           element real_value{
              attribute rank { "0" },
              ( "1.0" )
-          }
+          },
+          comment
         }|
         ## Python function describing the null space for this field or component of this field.
         ##
         ## Functions may only depend on space and should be of the form:
         ##
-        ##  def val(x):
-        ##     # Function code
-        ##     return # Return value
+        ##     def val(x):
+        ##        # Function code
+        ##        return # Return value
         ##
         ## or:
         ##
-        ##  def val(x):
-        ##     # Function code
-        ##     return [..., ...] # Return value array
+        ##     def val(x):
+        ##        # Function code
+        ##        return [..., ...] # Return value array
         ##
         ## The return value must have the same length as the number of components described above for this field.
         ## 
@@ -392,7 +407,8 @@ is_field_null =
         element python {
           python_code
         }
-      )
+      ),
+      comment
     }
   )
 
@@ -413,21 +429,22 @@ is_field_constraints =
         ##
         ## Functions may only depend on space and should be of the form:
         ##
-        ##  def val(x):
-        ##     # Function code
-        ##     return # Return value
+        ##     def val(x):
+        ##        # Function code
+        ##        return # Return value
         ##
         ## or:
         ##
-        ##  def val(x):
-        ##     # Function code
-        ##     return [..., ...] # Return value array
+        ##     def val(x):
+        ##        # Function code
+        ##        return [..., ...] # Return value array
         ##
         ## The return value must have the same length as the number of components described above for this field.
         element python {
           python_code
         }
-      )
+      ),
+      comment
     }
   )
 
@@ -455,11 +472,13 @@ is_field_components =
 
 is_monitor =
   (
+    ## Parent option for index set monitors.
     element monitors {
       ## Prints PETSc information about the index set describing this index set.
       element view_index_set {
-        empty
-      }?
+        comment
+      }?,
+      comment
     }
   )
 
@@ -470,6 +489,16 @@ is_fieldsplit =
   )
 
 is_null_space =
+  (
+    is_field_null*,
+    ## Removes the null space from the rhs after assembly.
+    element remove_from_rhs {
+      comment
+    }?,
+    is_monitor
+  )
+
+is_near_null_space =
   (
     is_field_null*,
     is_monitor
@@ -599,11 +628,20 @@ linear_solver_options_snes =
 solver_failures =
   (
     (
+      ## Never ignore solver failures (the highly recommended default).
+      ##
+      ## This option tests the convergence of the nonlinear solver and terminates the simulations at the end of the next timestep 
+      ## if it has failed to converge.  Note that linear solves within the nonlinear solver may still allowed to fail.
       element never_ignore_solver_failures {
-        empty
+        comment
       }|
+      ## Ignore solver failures.  Intended for debugging purposes only!
+      ##
+      ## **Do not use this option in any scientific simulation.**
+      ##
+      ## This option allows the simulation to continue even if this nonlinear solver fails to meet the convergence criteria.
       element ignore_all_solver_failures {
-        empty
+        comment
       }
     )
   )
@@ -889,7 +927,8 @@ ksppreonly_options =
       ## This is for non-iterative methods
       ## Only makes sense in combination with preconditioners that do a complete solve, e.g. lu.
       element iterative_method {
-         attribute name { "preonly" }
+         attribute name { "preonly" },
+         comment
       }
    )
    
@@ -905,7 +944,8 @@ pcsor_options =
       ##
       ## This includes SSOR (symmetric sor)
       element preconditioner {
-         attribute name { "sor" }
+         attribute name { "sor" },
+         comment
       }
    )
    
@@ -920,7 +960,8 @@ pceisenstat_options =
       ## a different preconditioned residual the convergence in
       ## practice may be quite different though.
       element preconditioner {
-         attribute name { "eisenstat" }
+         attribute name { "eisenstat" },
+         comment
       }
    )
    
@@ -928,7 +969,8 @@ pcilu_options =
    (
       ## Incomplete LU decomposition
       element preconditioner {
-         attribute name { "ilu" }
+         attribute name { "ilu" },
+         comment
       }
    )
    
@@ -936,7 +978,8 @@ pcicc_options =
    (
       ## Incomplete Cholesky decomposition (only works for symmetric matrices)
       element preconditioner {
-         attribute name { "icc" }
+         attribute name { "icc" },
+         comment
       }
    )
    
@@ -953,26 +996,27 @@ pclu_options =
            ## Useful for systems with a near zero pivot.
            element factorization_package {
              attribute name { "umfpack" },
-             empty
+             comment
            }|
            ## Package to use for the factorization - mumps.
            ##
            ## Useful for parallel direct solves (if installed on system).
            element factorization_package {
              attribute name { "mumps" },
-             empty
+             comment
            }|
            ## Package to use for the factorization - petsc.
            element factorization_package {
              attribute name { "petsc" },
-             empty
+             comment
            }|
            ## Package to use for the factorization - any valid package.
            element factorization_package {
              attribute name { xsd:string },
-             empty
+             comment
            }
-         )
+         ),
+         comment
      }
    )
 
@@ -980,7 +1024,8 @@ pcprometheus_options =
    (
       ## Prometheus multigrid method
       element preconditioner {
-         attribute name { "prometheus" }
+         attribute name { "prometheus" },
+         comment
       }
    )
 
@@ -992,13 +1037,16 @@ pchypre_options =
          (
             ## BoomerAMG multigrid method
             element hypre_type {
-               attribute name { "boomeramg" }
+               attribute name { "boomeramg" },
+               comment
             }|
             ## Other Hypre preconditioners
             element hypre_type {
-               attribute name { xsd:string }
+               attribute name { xsd:string },
+               comment
             }
-         )
+         ),
+         comment
       }
    )
 
@@ -1016,14 +1064,18 @@ near_null_space =
         ## nullspaces python functions must be attached underneath the description of the field.
         element null_space {
           attribute name { xsd:string },
-          is_null_space
+          is_near_null_space,
+          comment
         }+,
+        ## Parent option for near-null-space monitors.
         element monitors {
           ## Prints PETSc information about this null space
           element view_null_space {
-            empty
-          }?
-        }
+            comment
+          }?,
+          comment
+        },
+        comment
      }
    )
 
@@ -1034,7 +1086,8 @@ pcgamg_options =
       ## NOTE: Only available with petsc > 3.2.
       element preconditioner {
          attribute name { "gamg" },
-         near_null_space?
+         near_null_space?,
+         comment
       }
    )
 
@@ -1045,7 +1098,8 @@ pcml_options =
       ## NOTE: Only available if petsc is configured with ml!
       element preconditioner {
          attribute name { "ml" },
-         near_null_space?
+         near_null_space?,
+         comment
       }
    )
 
@@ -1054,7 +1108,7 @@ pcjacobi_options =
       ## Jacobi
       element preconditioner {
          attribute name { "jacobi" },
-         empty
+         comment
       }
    )
 
@@ -1070,7 +1124,8 @@ pcbjacobi_options =
       ## increasing number of processors/decreasing local domain size.
       element preconditioner {
          attribute name { "bjacobi" },
-         subpc_options
+         subpc_options,
+         comment
       }
    )
 
@@ -1086,7 +1141,8 @@ pcasm_options =
       ## than with bjacobi.
       element preconditioner {
          attribute name { "asm" },
-         subpc_options
+         subpc_options,
+         comment
       }
    )
 
@@ -1094,7 +1150,8 @@ pcnone_options =
    (
       ## No preconditioner
       element preconditioner {
-         attribute name { "none" }
+         attribute name { "none" },
+         comment
       }
    )
 
@@ -1124,7 +1181,8 @@ pcother_options =
       ## http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCType.html
       ## (available preconditioners may depend on the PETSc library installed on your system)
       element preconditioner {
-         attribute name { string }
+         attribute name { xsd:string },
+         comment
       }
    )
    
@@ -1144,7 +1202,8 @@ pcksp_options_picard =
          ## Solver options for the full solve done by this preconditioner
          element linear_solver {
             linear_solver_options_picard
-         }
+         },
+         comment
       }
    )
 
@@ -1164,7 +1223,8 @@ pcksp_options_snes =
          ## Solver options for the full solve done by this preconditioner
          element linear_solver {
             linear_solver_options_snes
-         }
+         },
+         comment
       }
    )
 
@@ -1177,7 +1237,7 @@ pclsc_options =
       ## No options for the subksp are currently exposed so defaults are assumed.
       element preconditioner {
          attribute name { "lsc" },
-         empty
+         comment
       }
    )
 
@@ -1188,17 +1248,17 @@ pcfieldsplit_composite_types =
       ## Composite type of the fieldsplit preconditioner - multiplicative - update off diagonal blocks.
       element composite_type {
         attribute name { "multiplicative" },
-        empty
+        comment
       }|
       ## Composite type of the fieldsplit preconditioner - symmetric multiplicative - update off diagonal symmetric blocks.
       element composite_type {
         attribute name { "symmetric_multiplicative" },
-        empty
+        comment
       }|
       ## Composite type of the fieldsplit preconditioner - additive - do not update off diagonal blocks.
       element composite_type {
         attribute name { "additive" },
-        empty
+        comment
       }|
       ## Composite type of the fieldsplit preconditioner - schur.
       ##
@@ -1220,7 +1280,7 @@ pcfieldsplit_composite_types =
           ## this makes the preconditioner positive definite for many formulations, thus allowing the use of KSPMINRES).
           element factorization_type {
             attribute name { "full" },
-            empty
+            comment
           }|
           ## The full factorization is:
           ##
@@ -1235,7 +1295,7 @@ pcfieldsplit_composite_types =
           ## this makes the preconditioner positive definite for many formulations, thus allowing the use of KSPMINRES).
           element factorization_type {
             attribute name { "upper" },
-            empty
+            comment
           }|
           ## The full factorization is:
           ##
@@ -1250,7 +1310,7 @@ pcfieldsplit_composite_types =
           ## this makes the preconditioner positive definite for many formulations, thus allowing the use of KSPMINRES).
           element factorization_type {
             attribute name { "lower" },
-            empty
+            comment
           }|
           ## The full factorization is:
           ##
@@ -1265,7 +1325,7 @@ pcfieldsplit_composite_types =
           ## this makes the preconditioner positive definite for many formulations, thus allowing the use of KSPMINRES).
           element factorization_type {
             attribute name { "diag" },
-            empty
+            comment
           }
         ),
         (
@@ -1279,7 +1339,7 @@ pcfieldsplit_composite_types =
           ## complement.
           element schur_preconditioner {
             attribute name { "diag" },
-            empty
+            comment
           }|
           ## The preconditioner for the Schur complement is generated from the Schur complement matrix itself:
           ## The only preconditioner that currently works directly with the Schur complement matrix object is the PCLSC 
@@ -1290,7 +1350,7 @@ pcfieldsplit_composite_types =
           ## complement.
           element schur_preconditioner {
             attribute name { "self" },
-            empty
+            comment
           }|
           ## The preconditioner for the Schur complement is described by a ufl form.
           element schur_preconditioner {
@@ -1305,9 +1365,11 @@ pcfieldsplit_composite_types =
               form_ufl_symbol,
               ident_zeros
             },
-            is_monitor
+            is_monitor,
+            comment
           }
-        )
+        ),
+        comment
       }
     )
   )
@@ -1331,8 +1393,10 @@ pcfieldsplit_options_picard =
            ## Solver options for the full solve done by this preconditioner
            element linear_solver {
              linear_solver_options_picard
-           }
-         }+
+           },
+           comment
+         }+,
+         comment
       }
    )
 
@@ -1355,8 +1419,10 @@ pcfieldsplit_options_snes =
            ## Solver options for the full solve done by this preconditioner
            element linear_solver {
              linear_solver_options_snes
-           }
-         }+
+           },
+           comment
+         }+,
+         comment
       }
    )
 
@@ -1395,7 +1461,8 @@ iterative_solver_options_base =
       ## before giving up.
       element max_iterations {
          integer
-      }
+      },
+      comment
    )
 
 iterative_solver_zero_initial_guess =
@@ -1405,7 +1472,7 @@ iterative_solver_zero_initial_guess =
     ## NOTE: some solvers always start at zero in which case this switch will have no effect.  
     ## Also the value of this switch on any parent solves may effect its behaviour.
     element zero_initial_guess {
-       empty
+       comment
     }
   )
 
@@ -1416,7 +1483,7 @@ iterative_solver_nonzero_initial_guess =
     ## NOTE: some solvers always start at zero in which case this switch will have no effect.
     ## Also the value of this switch on any parent solves may effect its behaviour.
     element nonzero_initial_guess {
-      empty
+      comment
     }
   )
 
@@ -1447,23 +1514,23 @@ iterative_monitors_base =
      ## Prints the preconditioned residual for each iteration of the solve.
      ## This is the error estimation PETSc uses during the solve.
      element preconditioned_residual {
-        empty
+        comment
      }?,
      ## Prints the "true" residual for each iteration of the solve,
      ## i.e. PETSc computes the L2-norm of r=A-bx. This may mean
      ## PETSc has to do extra computations.
      element true_residual {
-        empty
+        comment
      }?,
      ## Draws a graph over the convergence of the preconditioned residual
      ## during the solve. This option only works for systems where PETSc
      ## has been linked with the X library.
      element preconditioned_residual_graph {
-        empty
+        comment
      }?,
      ## Test any attached null spaces on the first iteration of the solve.
      element test_null_space {
-       empty
+        comment
      }?
   )
 
@@ -1477,7 +1544,7 @@ iterative_monitors_vis =
     }?,
     ## Output a diagnostic file detailing the convergence of this solver.
     element convergence_file { 
-      empty
+      comment
     }?
   )
 
@@ -1486,7 +1553,8 @@ iterative_monitors =
     ## Options to give extra information for each iteration of the
     ## the solve. Some of those may really slow down your computation!
     element monitors {
-      iterative_monitors_base
+      iterative_monitors_base,
+      comment
     }
   )
 
@@ -1496,7 +1564,8 @@ iterative_monitors_top =
     ## the solve. Some of those may really slow down your computation!
     element monitors {
       iterative_monitors_base,
-      iterative_monitors_vis
+      iterative_monitors_vis,
+      comment
     }
   )
 
@@ -1514,14 +1583,33 @@ generic_solver_options =
          ## nullspaces python functions must be attached underneath the description of the field.
          element null_space {
            attribute name { xsd:string },
-           is_null_space
+           is_null_space,
+           comment
          }+,
+         ## Parent option for null-space monitors.
          element monitors {
            ## Prints PETSc information about this null space
            element view_null_space {
-             empty
-           }?
-         }
-      }?
+             comment
+           }?,
+           comment
+         },
+         comment
+      }?,
+      comment
+   )
+
+snes_convergence_test = 
+   (
+     ## Default convergence test. See SNESConvergedReason.
+     element convergence_test {
+       attribute name { "default" },
+       comment
+     }|
+     ## Skip standard convergence tests, allowing maximum iterations to be reached.
+     element convergence_test {
+       attribute name { "skip" },
+       comment
+     }
    )
 
