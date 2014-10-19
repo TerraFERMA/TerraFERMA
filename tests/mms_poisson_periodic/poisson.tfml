@@ -100,7 +100,7 @@
               <string_value lines="20" type="code" language="python">from math import sin,cos,pi
 def val(x):
   global sin,cos,pi
-  return 20.*pi**2*sin(4.*pi*x[1])*cos(2.*pi*x[0])</string_value>
+  return 20.*pi**2*sin(4.*pi*x[1])*cos(2.*pi*x[0] + 0.25*pi)</string_value>
             </python>
           </value>
         </rank>
@@ -126,7 +126,7 @@ def val(x):
               <string_value lines="20" type="code" language="python">from math import sin,cos,pi
 def val(x):
   global sin,cos,pi
-  return cos(2*pi*x[0])*sin(4*pi*x[1])</string_value>
+  return cos(2*pi*x[0] + 0.25*pi)*sin(4*pi*x[1])</string_value>
             </python>
           </value>
         </rank>
