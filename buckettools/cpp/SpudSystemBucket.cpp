@@ -414,7 +414,7 @@ void SpudSystemBucket::fill_periodicbcs_()
     buffer.str("");  buffer << (*bucket()).output_basename() << "_debugging_" << name() << "_periodic_boundaries.pvd";
     dolfin::File file(buffer.str());
     dolfin::MeshFunction<std::size_t> master_slave_entities;
-    for (uint i = 0; i <= (*mesh()).topology().dim(); i++)
+    for (uint i = 0; i <= (*mesh()).topology().dim()-1; i++)
     {
       master_slave_entities = dolfin::PeriodicBoundaryComputation::masters_slaves(mesh(),
                                                       *periodicmap(), *facetdomains(), masterids(), slaveids(), i);
