@@ -153,16 +153,21 @@ class Bucket:
     cpp.append("#include <dolfin.h>\n")
 
     include_cpp = []
+    include_cpp.append("\n")
 
     functionalcoefficientspace_cpp         = []
     functionalcoefficientspace_cpp.append("  // A function to return a functionspace (for a coefficient) from a system given a mesh, a functionname and a uflsymbol.\n")
-    functionalcoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace_from_functional(const std::string &systemname, const std::string &functionname, const std::string &functionalname, const std::string &uflsymbol, Mesh_ptr mesh)\n")
+    functionalcoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace_from_functional(const std::string &systemname, const std::string &functionname, const std::string &functionalname, const std::string &uflsymbol, \n")
+    functionalcoefficientspace_cpp.append("                                                               Mesh_ptr mesh, PythonPeriodicMap_ptr periodicmap, MeshFunction_size_t_ptr facetdomains, \n")
+    functionalcoefficientspace_cpp.append("                                                               const std::vector<std::size_t> &masterids, const std::vector<std::size_t> &slaveids)\n")
     functionalcoefficientspace_cpp.append("  {\n")
     functionalcoefficientspace_cpp.append("    FunctionSpace_ptr coefficientspace;\n")
 
     constantfunctionalcoefficientspace_cpp         = []
     constantfunctionalcoefficientspace_cpp.append("  // A function to return a functionspace (for a coefficient) from a system given a mesh, a coefficientname and a uflsymbol.\n")
-    constantfunctionalcoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace_from_functional(const std::string &systemname, const std::string &coefficientname, const std::string &uflsymbol, Mesh_ptr mesh)\n")
+    constantfunctionalcoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace_from_functional(const std::string &systemname, const std::string &coefficientname, const std::string &uflsymbol, \n")
+    constantfunctionalcoefficientspace_cpp.append("                                                               Mesh_ptr mesh, PythonPeriodicMap_ptr periodicmap, MeshFunction_size_t_ptr facetdomains, \n")
+    constantfunctionalcoefficientspace_cpp.append("                                                               const std::vector<std::size_t> &masterids, const std::vector<std::size_t> &slaveids)\n")
     constantfunctionalcoefficientspace_cpp.append("  {\n")
     constantfunctionalcoefficientspace_cpp.append("    FunctionSpace_ptr coefficientspace;\n")
 
@@ -258,19 +263,25 @@ class Bucket:
 
     functionspace_cpp         = []
     functionspace_cpp.append("  // A function to return a functionspace from a system given a mesh (defaults to first solver in system as they should all be the same).\n")
-    functionspace_cpp.append("  FunctionSpace_ptr ufc_fetch_functionspace(const std::string &systemname, Mesh_ptr mesh)\n")
+    functionspace_cpp.append("  FunctionSpace_ptr ufc_fetch_functionspace(const std::string &systemname, ")
+    functionspace_cpp.append("                                            Mesh_ptr mesh, PythonPeriodicMap_ptr periodicmap, MeshFunction_size_t_ptr facetdomains, \n")
+    functionspace_cpp.append("                                            const std::vector<std::size_t> &masterids, const std::vector<std::size_t> &slaveids)\n")
     functionspace_cpp.append("  {\n")
     functionspace_cpp.append("    FunctionSpace_ptr functionspace;\n")
 
     solverfunctionspace_cpp         = []
     solverfunctionspace_cpp.append("  // A function to return a functionspace from a system given a mesh and a solvername.\n")
-    solverfunctionspace_cpp.append("  FunctionSpace_ptr ufc_fetch_functionspace(const std::string &systemname, const std::string &solvername, Mesh_ptr mesh)\n")
+    solverfunctionspace_cpp.append("  FunctionSpace_ptr ufc_fetch_functionspace(const std::string &systemname, const std::string &solvername, \n")
+    solverfunctionspace_cpp.append("                                            Mesh_ptr mesh, PythonPeriodicMap_ptr periodicmap, MeshFunction_size_t_ptr facetdomains, \n")
+    solverfunctionspace_cpp.append("                                            const std::vector<std::size_t> &masterids, const std::vector<std::size_t> &slaveids)\n")
     solverfunctionspace_cpp.append("  {\n")
     solverfunctionspace_cpp.append("    FunctionSpace_ptr functionspace;\n")
 
     solvercoefficientspace_cpp         = []
     solvercoefficientspace_cpp.append("  // A function to return a functionspace (for a coefficient) from a system given a mesh, a solvername and a uflsymbol.\n")
-    solvercoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace_from_solver(const std::string &systemname, const std::string &solvername, const std::string &uflsymbol, Mesh_ptr mesh)\n")
+    solvercoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace_from_solver(const std::string &systemname, const std::string &solvername, const std::string &uflsymbol, \n")
+    solvercoefficientspace_cpp.append("                                                           Mesh_ptr mesh, PythonPeriodicMap_ptr periodicmap, MeshFunction_size_t_ptr facetdomains, \n")
+    solvercoefficientspace_cpp.append("                                                           const std::vector<std::size_t> &masterids, const std::vector<std::size_t> &slaveids)\n")
     solvercoefficientspace_cpp.append("  {\n")
     solvercoefficientspace_cpp.append("    FunctionSpace_ptr coefficientspace;\n")
 
@@ -418,6 +429,7 @@ class Bucket:
     cpp.append("#include <dolfin.h>\n")
 
     include_cpp = []
+    include_cpp.append("\n")
 
     cppexpression_cpp = []
     cppexpression_cpp.append("  // A function to return an expression for a coefficient from a system given a systemname and a functionname (and its size, shape and private members bucket, system and time.\n")

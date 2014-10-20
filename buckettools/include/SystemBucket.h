@@ -22,6 +22,7 @@
 #ifndef __SYSTEM_H
 #define __SYSTEM_H
 
+#include "PythonPeriodicMap.h"
 #include "BoostTypes.h"
 #include "FunctionBucket.h"
 #include <dolfin.h>
@@ -105,6 +106,15 @@ namespace buckettools
 
     const Mesh_ptr mesh() const                                      // return a (boost shared) pointer to the system mesh
     { return mesh_; }
+
+    const PythonPeriodicMap_ptr periodicmap() const                  // return a (boost shared) pointer to the system periodic map
+    { return periodicmap_; }
+
+    const std::vector<std::size_t> masterids() const
+    { return masterids_; }
+
+    const std::vector<std::size_t> slaveids() const
+    { return slaveids_; }
 
     const MeshFunction_size_t_ptr celldomains() const                // return a (boost shared) pointer to the system mesh function
     { return celldomains_; }
@@ -342,6 +352,10 @@ namespace buckettools
                                                                      // solver buckets
 
     std::vector< const dolfin::DirichletBC* > bcs_;                  // a vector of (boost shared) poitners to the dirichlet bcs
+
+    PythonPeriodicMap_ptr periodicmap_;                              // periodic map for (a single) periodic bc
+
+    std::vector<std::size_t> masterids_, slaveids_;                  // master and slave ids for periodic bc
 
     //***************************************************************|***********************************************************//
     // Output functions (continued)

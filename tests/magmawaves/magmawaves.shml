@@ -7,7 +7,7 @@
     <string_value lines="1">mspieg</string_value>
   </owner>
   <tags>
-    <string_value lines="1">not:branch:dolfin-master not:branch:vtkfile</string_value>
+    <string_value lines="1">not:branch:dolfin-master not:branch:periodic not:branch:vtkfile</string_value>
   </tags>
   <description>
     <string_value lines="1">A magma waves test.</string_value>

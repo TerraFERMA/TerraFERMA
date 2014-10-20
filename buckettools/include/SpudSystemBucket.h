@@ -22,8 +22,8 @@
 #ifndef __SPUD_SYSTEM_H
 #define __SPUD_SYSTEM_H
 
-#include "BoostTypes.h"
 #include "SystemBucket.h"
+#include "BoostTypes.h"
 #include <dolfin.h>
 
 namespace buckettools
@@ -109,6 +109,8 @@ namespace buckettools
     void fill_fields_();                                             // fill in the data about the system fields (subfunctions)
 
     void fill_bcs_();                                                // fill in the data about the system bcs
+
+    void fill_periodicbcs_();                                        // fill in the data about the system bcs
 
     void fill_coeffs_();                                             // fill in the coefficient information
 

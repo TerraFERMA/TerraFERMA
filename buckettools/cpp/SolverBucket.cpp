@@ -19,8 +19,8 @@
 // along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
 
-#include "BoostTypes.h"
 #include "SolverBucket.h"
+#include "BoostTypes.h"
 #include "SystemBucket.h"
 #include "Bucket.h"
 #include "Logger.h"

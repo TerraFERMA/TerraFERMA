@@ -22,9 +22,9 @@
 #ifndef __BUCKET_H
 #define __BUCKET_H
 
+#include "SystemBucket.h"
 #include "GenericDetectors.h"
 #include "BoostTypes.h"
-#include "SystemBucket.h"
 #include "StatisticsFile.h"
 #include "SteadyStateFile.h"
 #include "DetectorsFile.h"

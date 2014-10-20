@@ -137,7 +137,16 @@ class SolverBucket:
         sys.exit(1)
     
   def functionspace_cpp_no_if(self):
-    return "      functionspace.reset( new "+self.namespace()+"::FunctionSpace(mesh) );\n"
+    cpp = []
+    cpp.append("      if (periodicmap && facetdomains)\n")
+    cpp.append("      {\n")
+    cpp.append("        functionspace.reset( new "+self.namespace()+"::FunctionSpace(mesh, periodicmap, facetdomains, masterids, slaveids) );\n")
+    cpp.append("      }\n")
+    cpp.append("      else\n")
+    cpp.append("      {\n")
+    cpp.append("        functionspace.reset( new "+self.namespace()+"::FunctionSpace(mesh) );\n")
+    cpp.append("      }\n")
+    return cpp
 
   def functionspace_cpp(self, index=0):
     cpp = [] 
@@ -146,7 +155,14 @@ class SolverBucket:
     else:
       cpp.append("      else if (solvername ==  \""+self.name+"\")\n")
     cpp.append("      {\n")
-    cpp.append("        functionspace.reset(new "+self.namespace()+"::FunctionSpace(mesh));\n")
+    cpp.append("        if (periodicmap && facetdomains)\n")
+    cpp.append("        {\n")
+    cpp.append("          functionspace.reset(new "+self.namespace()+"::FunctionSpace(mesh, periodicmap, facetdomains, masterids, slaveids) );\n") 
+    cpp.append("        }\n")
+    cpp.append("        else\n")
+    cpp.append("        {\n")
+    cpp.append("          functionspace.reset(new "+self.namespace()+"::FunctionSpace(mesh));\n")
+    cpp.append("        }\n")
     cpp.append("      }\n")
     return cpp
 
