@@ -19,24 +19,24 @@
 // along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
 
-#ifndef __INITIAL_CONDITION_EXPRESSION_H
-#define __INITIAL_CONDITION_EXPRESSION_H
+#ifndef __PYTHON_PERIODIC_MAP_H
+#define __PYTHON_PERIODIC_MAP_H
 
-#include "Bucket.h"
+#include "Python.h"
 #include <dolfin.h>
+#include "PythonInstance.h"
 #include "BoostTypes.h"
 
 namespace buckettools
 {
 
   //*****************************************************************|************************************************************//
-  // InitalConditionExpression class:
+  // PythonPeriodicMap class:
   //
-  // This class provides a method of looping over field initial conditions (as individual expressions)
-  // and setting a mixed function space to those initial conditions.
-  // It is a derived dolfin expression and overloads much functionality in that base class
+  // The PythonPeriodicMap class describes a derived dolfin SubDomain class that overloads
+  // the map function using python
   //*****************************************************************|************************************************************//
-  class InitialConditionExpression : public dolfin::Expression
+  class PythonPeriodicMap : public dolfin::SubDomain
   {
 
   //*****************************************************************|***********************************************************//
@@ -49,26 +49,17 @@ namespace buckettools
     // Constructors and destructors
     //***************************************************************|***********************************************************//
     
-    InitialConditionExpression(                                      // specific constructor (scalar)
-                      std::map< std::size_t, Expression_ptr > expressions);
+    PythonPeriodicMap(const std::string &function);                  // specific constructor
     
-    InitialConditionExpression(const uint &dim,                      // specific constructor (vector)
-                      std::map< std::size_t, Expression_ptr > expressions);
-    
-    InitialConditionExpression(const std::vector<std::size_t> &value_shape,// specific constructor (tensor)
-                      std::map< std::size_t, Expression_ptr > expressions);
-    
-    
-    virtual ~InitialConditionExpression();                           // default destructor
+    virtual ~PythonPeriodicMap();                                    // default destructor
     
     //***************************************************************|***********************************************************//
     // Overloaded base class functions
     //***************************************************************|***********************************************************//
     
-    void eval(dolfin::Array<double>& values,                         // evaluate this expression at a point in a given cell
-              const dolfin::Array<double>& x, 
-              const ufc::cell &cell) const;
+    void map(const dolfin::Array<double>& x, dolfin::Array<double>& y) const;        // map slave position x to master position y
     
+
   //*****************************************************************|***********************************************************//
   // Private functions
   //*****************************************************************|***********************************************************//
@@ -76,12 +67,15 @@ namespace buckettools
   private:                                                           // only available to this class
     
     //***************************************************************|***********************************************************//
-    // Pointers data
+    // Base data
     //***************************************************************|***********************************************************//
+    
+    const PythonInstance pyinst_;                                    // a python instance (wrapping useful python information)
 
-    std::map< std::size_t, Expression_ptr > expressions_;                   // map from component to initial condition expression for a function
-  
   };
+
+  typedef std::shared_ptr< PythonPeriodicMap > PythonPeriodicMap_ptr;// define a (boost shared) pointer type for the python
+                                                                     // periodic map
 
 }
 #endif

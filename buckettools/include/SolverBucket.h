@@ -22,8 +22,8 @@
 #ifndef __SOLVERBUCKET_H
 #define __SOLVERBUCKET_H
 
-#include "BoostTypes.h"
 #include "BucketPETScBase.h"
+#include "BoostTypes.h"
 #include <dolfin.h>
 #include "petscsnes.h"
 

@@ -45,6 +45,9 @@ The system name must be unique amongst any other systems.</a:documentation>
       <zeroOrMore>
         <ref name="coefficient_options"/>
       </zeroOrMore>
+      <optional>
+        <ref name="boundary_condition_system"/>
+      </optional>
       <zeroOrMore>
         <ref name="nonlinear_solver_options"/>
       </zeroOrMore>
@@ -73,6 +76,60 @@ Use the automatically available name "Mesh."</a:documentation>
         <ref name="comment"/>
       </element>
     </choice>
+  </define>
+  <define name="boundary_condition_system">
+    <element name="boundary_condition">
+      <a:documentation>Options for the description of a boundary condition</a:documentation>
+      <attribute name="name">
+        <data type="string"/>
+      </attribute>
+      <element name="boundary_ids">
+        <a:documentation>A list of the boundary ids (physical ids in gmsh) that this condition applies to  </a:documentation>
+        <ref name="integer_vector"/>
+      </element>
+      <element name="sub_components">
+        <a:documentation>There are no sub components to a scalar so this is just a dummy tree level for consistency with a vector function</a:documentation>
+        <attribute name="name">
+          <value>All</value>
+        </attribute>
+        <element name="type">
+          <a:documentation>The boundary condition type.</a:documentation>
+          <attribute name="name">
+            <value>Periodic</value>
+          </attribute>
+          <attribute name="type">
+            <value>boundary_condition</value>
+          </attribute>
+          <ref name="periodic_bc"/>
+        </element>
+      </element>
+    </element>
+  </define>
+  <define name="periodic_bc">
+    <element name="slave_boundary_ids">
+      <a:documentation>A list of the slave boundary ids (physical ids in gmsh).
+
+The master boundary ids are those given for this boundary condition.</a:documentation>
+      <ref name="integer_vector"/>
+    </element>
+    <element name="coordinate_map">
+      <a:documentation>A map from the coordinates of the slave degrees of freedom
+to the master degrees of freedom.
+
+A vector described by a python function.
+
+Functions should be of the form:
+
+ def val(x):
+    # Function code
+    return [..., ...] # Return value
+
+The return value must have the same size as the geometric dimension.</a:documentation>
+      <attribute name="rank">
+        <value>1</value>
+      </attribute>
+      <ref name="python_code"/>
+    </element>
   </define>
   <define name="solve_location">
     <choice>

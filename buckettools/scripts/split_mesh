@@ -1,0 +1,114 @@
+#!/usr/bin/env python
+# PYTHON_ARGCOMPLETE_OK
+
+# Copyright (C) 2013 Columbia University in the City of New York and others.
+#
+# Please see the AUTHORS file in the main source directory for a full list
+# of contributors.
+#
+# This file is part of TerraFERMA.
+#
+# TerraFERMA is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# TerraFERMA is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
+
+
+import argparse
+try:
+  import argcomplete
+except ImportError:
+  pass
+from copy import copy
+import dolfin
+import numpy
+from buckettools.mesh import writemesh, splitmesh
+import sys
+import subprocess
+
+parser = argparse.ArgumentParser( \
+                       description="""This takes a dolfin .xml mesh file (assuming """ +\
+                       """_physical_region.xml and _facet_region.xml are also """ +\
+                       """available) and splits it along the given list of facet region """ + \
+                       """id(s).""")
+parser.add_argument('filename', metavar='filename', type=str,
+                    help='specify the name of the dolfin .xml or .xml.gz file')
+parser.add_argument('-s', '--split', action='store', metavar='split_ids', dest='split', type=int, nargs='+', required=True,
+                    help='specify the facet ids that are to be split')
+parser.add_argument('-n', '--newids', action='store', metavar='new_ids', dest='newids', type=int, nargs='+', default=None,
+                    help='specify the new facet ids for the split facets specified using -s - '+
+                         'if provided it must be the same length as the specified split ids, if left unspecified the new ids '+
+                         'will be the same as the old ids multiplied by 100')
+parser.add_argument('-c', '--centroid_function', action='store', metavar='centroid_func', dest='centroid_func', type=str, required=True,
+                    help='name of file that contains a the definition of a python centroid_func(centroid) function '+
+                         'which returns a boolean indicating if the cell with that centroid contains a split facet '+
+                         '(returns True) or the original facet (returns False)')
+parser.add_argument('-p', '--preserve', action='store', metavar='preserve_ids', dest='preserve', type=int, nargs='+', default=[],
+                    help='specify the facet ids that are to be preserved - '+
+                         'vertices connected to these facets will not be split even if they also belong to facets specified by -s')
+try:
+  argcomplete.autocomplete(parser)
+except NameError:
+  pass
+args = parser.parse_args()
+
+if args.newids is not None:
+  assert(len(args.split)==len(args.newids))
+
+# check that the filename ends with the right format
+if args.filename[-4:]!=".xml" and args.filename[-7:]!=".xml.gz":
+    sys.stderr.write("Mesh filename must end in .xml or .xml.gz.\n")
+    parser.print_help()
+    sys.exit(1)
+
+exec file(args.centroid_func)
+
+# organize the filename
+fullname = args.filename
+if fullname[-4:]==".xml":
+  basename = fullname[:-4]
+  extension = ".xml"
+else:
+  basename = fullname[:-7]
+  extension = ".xml.gz"
+
+# and the split facet ids
+split_facet_ids = args.split
+new_facet_ids = args.newids
+preserve_facet_ids = args.preserve
+
+# read in the mesh
+mesh = dolfin.Mesh(fullname)
+mesh.init()
+cellsubdomain = dolfin.MeshFunction("size_t", mesh, basename+"_physical_region"+extension)
+facetsubdomain = dolfin.MeshFunction("size_t", mesh, basename+"_facet_region"+extension)
+
+split_mesh, split_facetsubdomain = splitmesh(mesh, facetsubdomain, split_facet_ids, centroid_function, preserve_facet_ids=preserve_facet_ids, new_facet_ids=new_facet_ids)
+
+split_meshfile_out = dolfin.File(basename+"_split.xml")
+split_meshfile_out << split_mesh
+if extension[-3:]==".gz":
+  subprocess.call(['gzip', '-vf', basename+"_split_facet_region.xml"])
+
+split_facetfile_out = dolfin.File(basename+"_split_facet_region.xml")
+split_facetfile_out << split_facetsubdomain
+if extension[-3:]==".gz":
+  subprocess.call(['gzip', '-vf', basename+"_split_facet_region.xml"])
+
+split_cellfile_out = dolfin.File(basename+"_split_physical_region.xml")
+split_cellfile_out << cellsubdomain
+if extension[-3:]==".gz":
+  subprocess.call(['gzip', '-vf', basename+"_split_physical_region.xml"])
+
+
+
+ 
+
