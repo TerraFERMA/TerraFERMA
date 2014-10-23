@@ -88,25 +88,13 @@ preserve_facet_ids = args.preserve
 # read in the mesh
 mesh = dolfin.Mesh(fullname)
 mesh.init()
-cellsubdomain = dolfin.MeshFunction("size_t", mesh, basename+"_physical_region"+extension)
-facetsubdomain = dolfin.MeshFunction("size_t", mesh, basename+"_facet_region"+extension)
 
-split_mesh, split_facetsubdomain = splitmesh(mesh, facetsubdomain, split_facet_ids, centroid_function, preserve_facet_ids=preserve_facet_ids, new_facet_ids=new_facet_ids)
+split_mesh = splitmesh(mesh, split_facet_ids, centroid_function, preserve_facet_ids=preserve_facet_ids, new_facet_ids=new_facet_ids)
 
 split_meshfile_out = dolfin.File(basename+"_split.xml")
 split_meshfile_out << split_mesh
 if extension[-3:]==".gz":
-  subprocess.call(['gzip', '-vf', basename+"_split_facet_region.xml"])
-
-split_facetfile_out = dolfin.File(basename+"_split_facet_region.xml")
-split_facetfile_out << split_facetsubdomain
-if extension[-3:]==".gz":
-  subprocess.call(['gzip', '-vf', basename+"_split_facet_region.xml"])
-
-split_cellfile_out = dolfin.File(basename+"_split_physical_region.xml")
-split_cellfile_out << cellsubdomain
-if extension[-3:]==".gz":
-  subprocess.call(['gzip', '-vf', basename+"_split_physical_region.xml"])
+  subprocess.call(['gzip', '-vf', basename+"_split.xml"])
 
 
 

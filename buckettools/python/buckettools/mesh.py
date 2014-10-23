@@ -66,8 +66,9 @@ def writemesh(filename, vertex_coordinates, cells):
 
     return mesh
 
-def splitmesh(mesh, facetsubdomain, split_facet_ids, centroid_function, preserve_facet_ids=[], new_facet_ids=None):
+def splitmesh(mesh, split_facet_ids, centroid_function, preserve_facet_ids=[], new_facet_ids=None):
   # get the indices of facets (those to be split, those to be preserved and all indexed facets)
+  facetsubdomain = dolfin.MeshFunction('size_t', mesh, mesh.topology().dim()-1, mesh.domains())
   split_facet_indices = numpy.where([fid in split_facet_ids for fid in facetsubdomain.array()])[0]
   preserve_facet_indices = numpy.where([fid in preserve_facet_ids for fid in facetsubdomain.array()])[0]
   all_facet_indices = numpy.where(facetsubdomain.array()!=0)[0]
@@ -148,9 +149,16 @@ def splitmesh(mesh, facetsubdomain, split_facet_ids, centroid_function, preserve
   split_vertices2facets = split_topo(0,split_topo.dim()-1)
   split_facets2vertices = split_topo(split_topo.dim()-1,0)
 
-  # initialize the new mesh function
-  split_facetsubdomain = dolfin.MeshFunction("size_t", split_mesh, split_topo.dim()-1)
-  split_facetsubdomain.set_all(0)
+  # initialize the new mesh functions
+  split_mesh.domains().init(split_topo.dim())
+  cellmarkers = mesh.domains().markers(split_topo.dim())
+  for k,v in cellmarkers.iteritems():
+    split_mesh.domains().set_marker((k, v), split_topo.dim())
+
+  # FIXME: this could be done better by just creating a MeshValueCollection as
+  # we loop over cells in the previous iteration (wasn't available when this
+  # function was first written!
+
   # loop over all facets with non-zero ids in the original mesh
   for facet in all_facet_indices:
     vertices = facets2vertices(facet)
@@ -164,7 +172,7 @@ def splitmesh(mesh, facetsubdomain, split_facet_ids, centroid_function, preserve
           # and the neighbour is a vertex in the original facet
           if((split_neigh != vertex) and (split_neigh in vertices)):
             # then label this facet with the original facet id
-            split_facetsubdomain[int(split_facet)] = facetsubdomain[int(facet)]
+            split_mesh.domains().set_marker((int(split_facet), facetsubdomain[int(facet)]), split_topo.dim()-1)
       # if the vertex is one of the ones that was split
       if vertex in new_coords_ind:
         # find out the new vertex number
@@ -190,7 +198,7 @@ def splitmesh(mesh, facetsubdomain, split_facet_ids, centroid_function, preserve
                   else:
                     # user hasn't supplied new ids
                     newid = int(`facetsubdomain[int(facet)]`+'00')
-                  split_facetsubdomain[int(split_facet)] = newid
+                  split_mesh.domains().set_marker((int(split_facet), newid), split_topo.dim()-1)
               # the neighbour wasn't itself split
               else:
                 # so the neighbour has the same index
@@ -210,10 +218,10 @@ def splitmesh(mesh, facetsubdomain, split_facet_ids, centroid_function, preserve
                       # user hasn't supplied new ids
                       newid = int(`facetsubdomain[int(facet)]`+'00')
                     print '  providing new id', newid
-                    split_facetsubdomain[int(split_facet)] = newid
+                    split_mesh.domains().set_marker((int(split_facet), newid), split_topo.dim()-1)
                   # otherwise give it the same old facet id
                   else:
                     print '  using old id'
-                    split_facetsubdomain[int(split_facet)] = facetsubdomain[int(facet)]
+                    split_mesh.domains().set_marker((int(split_facet), facetsubdomain[int(facet)]), split_topo.dim()-1)
 
-  return split_mesh, split_facetsubdomain
+  return split_mesh 
