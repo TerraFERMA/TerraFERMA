@@ -6,9 +6,6 @@
   <owner>
     <string_value lines="1">cwilson</string_value>
   </owner>
-  <tags>
-    <string_value lines="1">not:branch:dolfin-master not:branch:periodic not:branch:vtkfile</string_value>
-  </tags>
   <description>
     <string_value lines="1">A test of simple, Courant number based, adaptive timestepping.</string_value>
   </description>
