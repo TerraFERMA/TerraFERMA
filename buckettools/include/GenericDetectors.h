@@ -61,6 +61,9 @@ namespace buckettools
               const dolfin::GenericFunction &function,               // detector positions and returns values
               Mesh_ptr mesh);                                   
 
+    void eval_ownership(Mesh_ptr mesh);                              // evaluate and store the cell and detector ownership of 
+                                                                     // detectors on a mesh
+
     //***************************************************************|***********************************************************//
     // Base data access
     //***************************************************************|***********************************************************//
@@ -73,6 +76,10 @@ namespace buckettools
 
     const uint size() const                                          // return the number of detectors in this set
     { return number_detectors_; }
+
+    const std::vector<int> cell_ids(Mesh_ptr mesh);                  // return the cell ids
+
+    const std::vector<int> detector_ids(Mesh_ptr mesh);              // return the detector ids (owned by this process)
 
     //***************************************************************|***********************************************************//
     // Data array access
@@ -103,11 +110,12 @@ namespace buckettools
     //***************************************************************|***********************************************************//
 
     std::string                     name_;                           // detectors set name
-    std::size_t                    number_detectors_,               // number of detectors
+    std::size_t                     number_detectors_,               // number of detectors
                                     meshdim_;                        // coordinate dimensions
     std::vector< Array_double_ptr > positions_;                      // vector of arrays giving locations of detectors
 
     std::map< Mesh_ptr, std::vector< int > > cell_ids_;              // the cell ids for a particular mesh - not initialized until eval is called
+    std::map< Mesh_ptr, std::vector< int > > detector_ids_;          // the detectors ids that this process owns - not initialized until eval is called
     
     //***************************************************************|***********************************************************//
     // Emptying data
@@ -117,7 +125,7 @@ namespace buckettools
     
   };
   
-  typedef std::shared_ptr< GenericDetectors > GenericDetectors_ptr;// define a (boost shared) pointer to the class type
+  typedef std::shared_ptr< GenericDetectors > GenericDetectors_ptr;  // define a (boost shared) pointer to the class type
   
 }
 

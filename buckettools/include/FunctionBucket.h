@@ -23,6 +23,8 @@
 #define __FUNCTIONBUCKET_H
 
 #include "BoostTypes.h"
+#include "PointDetectors.h"
+#include "ReferencePoint.h"
 #include <dolfin.h>
 
 namespace buckettools
@@ -71,38 +73,49 @@ namespace buckettools
                                                                      // so it will be necessary to make a deep copy to access
                                                                      // the vector
 
-    const double max(const double_ptr time, const int* index0, 
-                                            const int* index1) const;// max of the function at the given time
+    const GenericFunction_ptr genericfunction_ptr(                   // similar to the other genericfunction_ptr subroutine 
+                                 const std::string &function_type) const; // except here the function_type is more general and described
+                                                                     // by a string
 
-    const double max(const double_ptr time, const int* index0) const
-    { return max(time, index0, NULL); }
+    void cachevector(const std::string &function_type);
 
-    const double max(const double_ptr time) const
-    { return max(time, NULL, NULL); }
+    void clearcachedvector();
 
-    const double min(const double_ptr time, const int* index0, 
-                                            const int* index1) const;// min of the function at the given time
+    const_PETScVector_ptr basevector(const std::string &function_type) const; // return a pointer to the base (potentially system) vector
 
-    const double min(const double_ptr time, const int* index0) const
-    { return min(time, index0, NULL); }
+    dolfin::PETScVector vector(const std::string &function_type,     // return a vector of values for this function bucket and
+                                        const int &component) const; // the specified function_type
 
-    const double min(const double_ptr time) const
-    { return min(time, NULL, NULL); }
+    dolfin::PETScVector vector(const std::string &function_type, 
+                            const std::vector<int>* components=NULL) 
+                                                              const;
+    IS component_is(const int &component) const;
 
-    const double infnorm(const double_ptr time, const int* index0, 
-                                            const int* index1) const;// infnorm of the function at the given time
+    IS components_is(const std::vector<int>* components=NULL) const;
 
-    const double infnorm(const double_ptr time, const int* index0) const
-    { return infnorm(time, index0, NULL); }
+    double max(const std::string &function_type, 
+                     const uint component) const;
 
-    const double infnorm(const double_ptr time) const
-    { return infnorm(time, NULL, NULL); }
+    double max(const std::string &function_type, 
+                     const std::vector<int>* components=NULL) const;
 
-    const double functionmax() const;                                // max of the function
+    double min(const std::string &function_type, 
+                     const uint component) const;
 
-    const double functionmin() const;                                // min of the function
+    double min(const std::string &function_type, 
+                     const std::vector<int>* components=NULL) const;
 
-    const double functioninfnorm() const;                            // infnorm of the function
+    double norm(const std::string &function_type, 
+                      const std::string &norm_type, 
+                      const uint component) const;
+
+    double norm(const std::string &function_type, 
+                      const std::string &norm_type, 
+                      const std::vector<int>* components=NULL) const;
+
+    double change(const uint component);
+
+    double change(const std::vector<int>* components=NULL);          // return the change (in the selected norm) in a field over a timestep
 
     const std::string name() const                                   // return a constant string giving the function name
     { return name_; }
@@ -116,13 +129,17 @@ namespace buckettools
     const uint index() const                                         // return a constant unsigned integer to the index of this
     { return index_; }                                               // function in the parent system
 
-    const std::string rank() const                                   // return a string describing the rank of the function
-    { return rank_; }
+    const std::size_t rank() const                                   // return the rank of the function
+    { return shape_.size(); }
 
-    const std::size_t size() const;                                  // return the size of a vector function
+    const std::size_t size() const;                                  // return the size of the function function
 
-    const std::vector< std::size_t > shape() const                   // return the shape of a tensor function
+    const std::vector< std::size_t > shape() const                   // return the shape of the function
     { return shape_; }
+
+    const std::size_t dimension(const std::size_t &i) const;         // return the size of a given dimension
+
+    const bool symmetric() const;                                    // return if this is a symmetric tensor field (false otherwise)
 
     SystemBucket* system()                                           // return a pointer to the parent system
     { return system_; }
@@ -188,13 +205,11 @@ namespace buckettools
     // Functions used to run the model
     //***************************************************************|***********************************************************//
 
-    const double change();                                           // return the change (in the selected norm) in a field over a timestep
+    double functionalchange(Form_const_it f_it);                     // return the change in the value of the given functional
 
-    const double functionalchange(Form_const_it f_it);               // return the change in the value of the given functional
+    double oldfunctionalvalue(Form_const_it f_it);                   // return the old value of the given functional
 
-    const double oldfunctionalvalue(Form_const_it f_it);             // return the old value of the given functional
-
-    const double functionalvalue(Form_const_it f_it);                // return the value of the given functional
+    double functionalvalue(Form_const_it f_it);                      // return the value of the given functional
 
     void resetcalculated();                                          // reset the calculated booleans
 
@@ -207,16 +222,13 @@ namespace buckettools
 
     void update_timedependent();                                     // update the function if it is potentially time dependent
 
-    void cap_values();                                               // cap the values in the system vector associated with a field
+    void postprocess_values();                                       // cap the values in the system vector associated with a field
 
     //***************************************************************|***********************************************************//
     // Filling data
     //***************************************************************|***********************************************************//
 
     void attach_functional_coeffs();                                 // attach the coefficients to the functionals of this function
-
-    virtual void copy_diagnostics(FunctionBucket_ptr &function, 
-                                  SystemBucket_ptr &system) const;   // copy the data necessary for the diagnostics data file(s)
 
     //***************************************************************|***********************************************************//
     // Functional data access
@@ -244,25 +256,6 @@ namespace buckettools
 
     Expression_ptr fetch_bcexpression(const std::string &name);      // return a (boost shared) pointer to a bc expression with the given name
 
-    void register_bc(DirichletBC_ptr bc, 
-                                        const std::string &name);    // register a bc in this function
-
-    DirichletBC_it bcs_begin();                                      // return an iterator to the beginning of the bcs of this function
-
-    DirichletBC_const_it bcs_begin() const;                          // return a constant iterator to the beginning of the bcs of this function
-
-    DirichletBC_it bcs_end();                                        // return an iterator to the end of the bcs of this function
-
-    DirichletBC_const_it bcs_end() const;                            // return a constant iterator to the end of the bcs of this function
-
-    int_DirichletBC_it orderedbcs_begin();                           // return an iterator to the beginning of the ordered bcs of this function
-
-    int_DirichletBC_const_it orderedbcs_begin() const;               // return a constant iterator to the beginning of the ordered bcs of this function
-
-    int_DirichletBC_it orderedbcs_end();                             // return an iterator to the end of the ordered bcs of this function
-
-    int_DirichletBC_const_it orderedbcs_end() const;                 // return a constant iterator to the end of the ordered bcs of this function
-
     void register_dirichletbc(DirichletBC_ptr bc, 
                                         const std::string &name);    // register a Dirichlet bc in this function
 
@@ -274,28 +267,20 @@ namespace buckettools
 
     DirichletBC_const_it dirichletbcs_end() const;                   // return a constant iterator to the end of the bcs of this function
 
-    int_DirichletBC_it ordereddirichletbcs_begin();                  // return an iterator to the beginning of the ordered bcs of this function
-
-    int_DirichletBC_const_it ordereddirichletbcs_begin() const;      // return a constant iterator to the beginning of the ordered bcs of this function
-
-    int_DirichletBC_it ordereddirichletbcs_end();                    // return an iterator to the end of the ordered bcs of this function
-
-    int_DirichletBC_const_it ordereddirichletbcs_end() const;        // return a constant iterator to the end of the ordered bcs of this function
-
     //***************************************************************|***********************************************************//
     // Reference point data access
     //***************************************************************|***********************************************************//
 
-    void register_point(ReferencePoints_ptr point, 
+    void register_referencepoint(ReferencePoint_ptr point, 
                                         const std::string &name);    // register a point in this function
 
-    ReferencePoints_it points_begin();                                // return an iterator to the beginning of the points of this function
+    ReferencePoint_it referencepoints_begin();                       // return an iterator to the beginning of the points of this function
 
-    ReferencePoints_const_it points_begin() const;                    // return a constant iterator to the beginning of the points of this function
+    ReferencePoint_const_it referencepoints_begin() const;           // return a constant iterator to the beginning of the points of this function
 
-    ReferencePoints_it points_end();                                  // return an iterator to the end of the points of this function
+    ReferencePoint_it referencepoints_end();                         // return an iterator to the end of the points of this function
 
-    ReferencePoints_const_it points_end() const;                      // return a constant iterator to the end of the points of this function
+    ReferencePoint_const_it referencepoints_end() const;             // return a constant iterator to the end of the points of this function
 
     //***************************************************************|***********************************************************//
     // Output functions
@@ -319,16 +304,10 @@ namespace buckettools
     virtual const bool include_in_detectors() const;                 // return a boolean indicating if this function is included in 
                                                                      // detectors output
 
-    virtual const std::string str() const                            // return a string describing the contents of this function
-    { return str(0); }
-
-    virtual const std::string str(int indent) const;                 // return an indented string describing the contents 
+    virtual const std::string str(int indent=0) const;               // return an indented string describing the contents 
                                                                      // of this function
 
-    virtual const std::string functionals_str() const                // return a string describing the functionals of this function
-    { return functionals_str(0); }
-
-    virtual const std::string functionals_str(int indent) const;     // return an indented string describing the functionals 
+    virtual const std::string functionals_str(int indent=0) const;   // return an indented string describing the functionals 
                                                                      // of this function
 
     void checkpoint();                                               // checkpoint the functionbucket
@@ -367,8 +346,6 @@ namespace buckettools
 
     std::vector< std::size_t > shape_;                               // shape of the function
 
-    std::string rank_;                                               // a *string* describing the rank of the function
-    
     int functiontype_;                                               // a *integer* describing the type of function bucket (field or coefficient)
 
     std::string type_;                                               // a *string* describing the type of function (function, expression, constant)
@@ -383,13 +360,15 @@ namespace buckettools
 
     std::string change_normtype_;                                    // norm type to evaluate the change in
 
-    double_ptr lower_cap_, upper_cap_;                               // caps on a field
+    std::vector<double_ptr> lower_cap_, upper_cap_;                  // caps on a field
+
+    std::vector<IS> component_is_;                                   // IS for components (into system vector!)
 
     //***************************************************************|***********************************************************//
     // Pointers data
     //***************************************************************|***********************************************************//
 
-    std::map< std::string, Form_ptr > functionals_;                  // map from functional names to form (boost shared) pointers
+    ordered_map<const std::string, Form_ptr> functionals_;           // map from functional names to form (boost shared) pointers
 
     std::map< std::string, double_ptr > functional_values_,          // map from functional names to functional values
                                         oldfunctional_values_;
@@ -399,27 +378,27 @@ namespace buckettools
 
     std::map< std::string, Expression_ptr > bcexpressions_;          // map from bc names to bc expression (boost shared) pointers
     
-    std::map< std::string, DirichletBC_ptr > bcs_;                   // map from bc::id names to (boost shared) pointers to bcs
-    
-    std::map< int, DirichletBC_ptr > orderedbcs_;                    // map from int to (boost shared) pointers to bcs
+    ordered_map<const std::string, DirichletBC_ptr> dirichletbcs_;   // map from bc names to (boost shared) pointers to dirichlet bcs
 
-    std::map< std::string, DirichletBC_ptr > dirichletbcs_;          // map from bc::id names to (boost shared) pointers to dirichlet bcs
-    
-    std::map< int, DirichletBC_ptr > ordereddirichletbcs_;           // map from int to (boost shared) pointers to dirichlet bcs
+    ordered_map<const std::string, ReferencePoint_ptr> referencepoints_;   // map from bc::id names to (boost shared) pointers to bcs
 
+    std::vector< PointDetectors_ptr > zeropoints_;                   // a list of zero points
+
+    const_PETScVector_ptr cachedvector_;                             // cache the values of the vector temporarily
+
+    std::string cachedvectortype_;                                   // the cached vector type (if it exists)
+    
+    //***************************************************************|***********************************************************//
+    // Filling data
+    //***************************************************************|***********************************************************//
+
+    void fill_is_();                                                 // fill the index sets for this function's components
+ 
     //***************************************************************|***********************************************************//
     // Output functions (continued)
     //***************************************************************|***********************************************************//
 
     virtual void checkpoint_options_();                              // checkpoint the options system for the functionbucket
-
-    std::map< std::string, ReferencePoints_ptr > points_;            // map from bc::id names to (boost shared) pointers to bcs
-    
-    //***************************************************************|***********************************************************//
-    // Emptying data
-    //***************************************************************|***********************************************************//
-
-    void empty_();                                                   // empty the data structures of this function bucket
 
   };
 

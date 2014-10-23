@@ -29,7 +29,8 @@ io =
       diagnostic_output_options,
       detectors_options,
       checkpointing_options,
-      debugging_options
+      debugging_options,
+      comment
     }
   )
 
@@ -58,16 +59,18 @@ detectors_options =
           ##
           ## Functions should be of the form:
           ##
-          ##  def val():
-          ##     # Function code
-          ##     return # Return value
+          ##     def val():
+          ##        # Function code
+          ##        return # Return value
           ##
           ## The return value must have length > 0 and each entry must be of the same dimension as the mesh.
           element python {
             python_code
-          }
+          },
+          comment
         }
-      )*
+      )*,
+      comment
     }
   )
 
@@ -139,7 +142,8 @@ diagnostic_output_options =
         element detectors_period_in_timesteps {
           integer
         }
-      )?
+      )?,
+      comment
     }
   )
 
@@ -156,7 +160,8 @@ checkpointing_options =
         element checkpoint_period_in_timesteps {
           integer
         }
-      )
+      ),
+      comment
     }?
   )
 

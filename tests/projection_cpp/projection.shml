@@ -3,8 +3,12 @@
   <length>
     <string_value>short</string_value>
   </length>
-  <owner>cwilson</owner>
-  <description>Projection test using C++.</description>
+  <owner>
+    <string_value lines="1">cwilson</string_value>
+  </owner>
+  <description>
+    <string_value lines="1">Projection test using C++.</string_value>
+  </description>
   <simulations>
     <simulation name="Projection">
       <input_file>
@@ -18,13 +22,14 @@
           <required_output>
             <filenames name="meshfiles">
               <python>
-                <string_value lines="20" type="code" language="python">meshfiles = ["square"+ext for ext in [".xml", "_facet_region.xml"]]</string_value>
+                <string_value lines="20" type="code" language="python">meshfiles = ["square"+ext for ext in [".xml"]]</string_value>
               </python>
             </filenames>
           </required_output>
           <commands>
-            <command name="Convert">dolfin-convert square.msh square.xml</command>
-            <command name="Remove">rm square_physical_region.xml</command>
+            <command name="Convert">
+              <string_value lines="1">dolfin-convert square.msh square.xml</string_value>
+            </command>
           </commands>
         </run>
       </dependencies>

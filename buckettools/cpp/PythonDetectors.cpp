@@ -22,6 +22,7 @@
 #include "Python.h"
 #include "PythonDetectors.h"
 #include "GenericDetectors.h"
+#include "Logger.h"
 #include <dolfin.h>
 #include <string>
 #include "PythonInstance.h"
@@ -58,7 +59,7 @@ void PythonDetectors::init_()
 
   if(!positions_.empty())
   {
-    dolfin::error("In PythonDetectors::init_ intializing already initialized detectors.");
+    tf_err("Intializing already initialized detectors.", "positions_.empty() not empty.");
   }
                                                                      // python objects:
   PyObject         *pArgs,                                           // input arguments
@@ -73,7 +74,7 @@ void PythonDetectors::init_()
   
   if (PyErr_Occurred()){                                             // check for errors evaluating user code
     PyErr_Print();
-    dolfin::error("In PythonDetectors::init_ evaluating pResult");
+    tf_err("In PythonDetectors::init_ evaluating pResult.", "Python error occurred.");
   }
 
   number_detectors_ = PyObject_Length(pResult);                      // find out how many detectors we have
@@ -82,10 +83,10 @@ void PythonDetectors::init_()
     
   if (PyErr_Occurred()){                                             // check for errors evaluating user code
     PyErr_Print();
-    dolfin::error("In PythonDetectors::init_ evaluating pResult");
+    tf_err("In PythonDetectors::init_ evaluating length of pResult.", "Python error occurred.");
   }
     
-  for (std::size_t i = 0; i<size(); i++)                            // loop over the array of detectors
+  for (std::size_t i = 0; i<size(); i++)                             // loop over the array of detectors
   {
     pResultItem = PySequence_GetItem(pResult, i);                    // get an item out of the sequence of the results
     
@@ -93,14 +94,14 @@ void PythonDetectors::init_()
 
     assert(PyObject_Length(pResultItem)==meshdim_);                  // check this item in the list is meshdim_ long
     
-    for (std::size_t j = 0; j<meshdim_; j++)                        // loop over the coordinate dimension
+    for (std::size_t j = 0; j<meshdim_; j++)                         // loop over the coordinate dimension
     {
       px = PySequence_GetItem(pResultItem, j);                       // get an item from the coordinate array
       (*point)[j] = PyFloat_AsDouble(px);                            // convert from python to double
       
       if (PyErr_Occurred()){                                         // check for errors in conversion
         PyErr_Print();
-        dolfin::error("In PythonDetectors::init_ evaluating values");
+        tf_err("In PythonDetectors::init_ evaluating values.", "Python error occurred.");
       }
       
       Py_DECREF(px);                                                 // deallocate python object

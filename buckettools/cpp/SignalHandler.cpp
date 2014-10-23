@@ -27,7 +27,7 @@
 
 using namespace buckettools;
 
-SignalHandler *SignalHandler::instance_;                             // initialize the global static class variables
+SignalHandler *SignalHandler::instance_ = NULL;                      // initialize the global static class variables
 EventHandler_ptr SignalHandler::signal_handlers_[NSIG];
 
 //*******************************************************************|************************************************************//
@@ -86,7 +86,7 @@ SignalHandler* SignalHandler::instance()
 {
   if(!instance_)
   {
-    SignalHandler *instance_ = new SignalHandler;
+    instance_ = new SignalHandler;
   }
   return SignalHandler::instance_;
 }

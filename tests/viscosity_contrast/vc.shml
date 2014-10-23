@@ -3,8 +3,12 @@
   <length>
     <string_value>short</string_value>
   </length>
-  <owner>cwilson</owner>
-  <description>A solver convergence test with a viscosity contrast.</description>
+  <owner>
+    <string_value lines="1">cwilson</string_value>
+  </owner>
+  <description>
+    <string_value lines="1">A solver convergence test with a viscosity contrast.</string_value>
+  </description>
   <simulations>
     <simulation name="ViscosityContrast">
       <input_file>
@@ -18,12 +22,14 @@
           <required_output>
             <filenames name="xmlfiles">
               <python>
-                <string_value lines="20" type="code" language="python">xmlfiles = ["square"+ext for ext in [".xml", "_facet_region.xml", "_physical_region.xml"]]</string_value>
+                <string_value lines="20" type="code" language="python">xmlfiles = ["square"+ext for ext in [".xml"]]</string_value>
               </python>
             </filenames>
           </required_output>
           <commands>
-            <command name="Convert">dolfin-convert square.msh square.xml</command>
+            <command name="Convert">
+              <string_value lines="1">dolfin-convert square.msh square.xml</string_value>
+            </command>
           </commands>
         </run>
       </dependencies>

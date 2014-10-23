@@ -3,8 +3,12 @@
   <length>
     <string_value>short</string_value>
   </length>
-  <owner>cwilson</owner>
-  <description>A manufactured solution convergence test.</description>
+  <owner>
+    <string_value lines="1">cwilson</string_value>
+  </owner>
+  <description>
+    <string_value lines="1">A manufactured solution convergence test.</string_value>
+  </description>
   <simulations>
     <simulation name="MMS">
       <input_file>
@@ -12,10 +16,14 @@
       </input_file>
       <parameter_sweep>
         <parameter name="npoints">
-          <values>5 10 20 40 80</values>
+          <values>
+            <string_value lines="1">5 10 20 40 80</string_value>
+          </values>
         </parameter>
         <parameter name="degree">
-          <values>1 2</values>
+          <values>
+            <string_value lines="1">1 2</string_value>
+          </values>
           <update>
             <string_value lines="20" type="code" language="python">import libspud
 for s in xrange(libspud.option_count("/system")):
@@ -44,13 +52,17 @@ input_file = template(input_file).safe_substitute({"nhpoints":npoints,"nvpoints"
           <required_output>
             <filenames name="meshfiles">
               <python>
-                <string_value lines="20" type="code" language="python">meshfiles = ["mesh"+ext for ext in [".xml", "_facet_region.xml", "_physical_region.xml"]]</string_value>
+                <string_value lines="20" type="code" language="python">meshfiles = ["mesh"+ext for ext in [".xml"]]</string_value>
               </python>
             </filenames>
           </required_output>
           <commands>
-            <command name="GMsh">gmsh -2 mesh.geo -o mesh.msh</command>
-            <command name="Convert">dolfin-convert mesh.msh mesh.xml</command>
+            <command name="GMsh">
+              <string_value lines="1">gmsh -2 mesh.geo -o mesh.msh</string_value>
+            </command>
+            <command name="Convert">
+              <string_value lines="1">dolfin-convert mesh.msh mesh.xml</string_value>
+            </command>
           </commands>
         </run>
       </dependencies>

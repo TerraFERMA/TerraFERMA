@@ -44,6 +44,7 @@ A Picard iteration.</a:documentation>
           <ref name="picard"/>
         </element>
       </choice>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="picard">
@@ -157,15 +158,16 @@ WARNING: This will produce a lot of output so should only be used for debugging 
       <optional>
         <element name="convergence_file">
           <a:documentation>Output a diagnostic file detailing the convergence of this solver.</a:documentation>
-          <empty/>
+          <ref name="comment"/>
         </element>
       </optional>
       <optional>
         <element name="norms">
           <a:documentation>Print norms of vectors and matrices to stdout log</a:documentation>
-          <empty/>
+          <ref name="comment"/>
         </element>
       </optional>
+      <ref name="comment"/>
     </element>
     <element name="linear_solver">
       <a:documentation>Options describing a linear solver.</a:documentation>
@@ -175,12 +177,14 @@ WARNING: This will produce a lot of output so should only be used for debugging 
         <optional>
           <element name="view_ksp">
             <a:documentation>Prints PETSc information about the ksp object.</a:documentation>
-            <empty/>
+            <ref name="comment"/>
           </element>
         </optional>
+        <ref name="comment"/>
       </element>
     </element>
     <ref name="solver_failures"/>
+    <ref name="comment"/>
   </define>
   <define name="snes">
     <attribute name="name">
@@ -252,14 +256,14 @@ If undefined the jacobian bilinear form above will be used to precondition itsel
             <attribute name="name">
               <value>cubic</value>
             </attribute>
-            <empty/>
+            <ref name="comment"/>
           </element>
           <element name="ls_type">
             <a:documentation>Performs a quadratic line search.</a:documentation>
             <attribute name="name">
               <value>quadratic</value>
             </attribute>
-            <empty/>
+            <ref name="comment"/>
           </element>
           <element name="ls_type">
             <a:documentation>This routine is not a line search at all; it simply uses the full Newton step.  
@@ -267,7 +271,7 @@ Thus, this routine is intended to serve as a template and is not recommended for
             <attribute name="name">
               <value>basic</value>
             </attribute>
-            <empty/>
+            <ref name="comment"/>
           </element>
           <element name="ls_type">
             <a:documentation>This routine is not a line search at all; it simply uses the full Newton step.  
@@ -278,7 +282,7 @@ fixed number of Newton steps).</a:documentation>
             <attribute name="name">
               <value>basicnonorms</value>
             </attribute>
-            <empty/>
+            <ref name="comment"/>
           </element>
         </choice>
         <ref name="snes_convergence_test"/>
@@ -317,6 +321,7 @@ Defaults to 1.e-12 if unset.</a:documentation>
             <ref name="real"/>
           </element>
         </optional>
+        <ref name="comment"/>
       </element>
       <element name="snes_type">
         <a:documentation>The SNES type. Variational Inequality.
@@ -331,30 +336,34 @@ NOTE: only available with Petsc &gt;= 3.2 and with petsc &gt; 3.2 this maps to v
             <element name="upper_bound">
               <a:documentation>Describe the upper bound constraint on fields.</a:documentation>
               <ref name="is_constraints"/>
+              <ref name="comment"/>
             </element>
           </optional>
           <optional>
             <element name="lower_bound">
               <a:documentation>Describe the upper bound constraint on fields.</a:documentation>
               <ref name="is_constraints"/>
+              <ref name="comment"/>
             </element>
           </optional>
+          <ref name="comment"/>
         </element>
         <ref name="snes_convergence_test"/>
+        <ref name="comment"/>
       </element>
       <element name="snes_type">
         <a:documentation>The SNES type.  KSP only - treat as a linear problem.</a:documentation>
         <attribute name="name">
           <value>ksponly</value>
         </attribute>
-        <empty/>
+        <ref name="comment"/>
       </element>
       <element name="snes_type">
         <a:documentation>The SNES type.  Any valid PETSc SNES type may be entered.</a:documentation>
         <attribute name="name">
           <data type="string"/>
         </attribute>
-        <empty/>
+        <ref name="comment"/>
       </element>
     </choice>
     <element name="relative_error">
@@ -395,19 +404,19 @@ the SNES solve. Some of those may really slow down your computation!</a:document
       <optional>
         <element name="view_snes">
           <a:documentation>Prints PETSc information about the snes object.</a:documentation>
-          <empty/>
+          <ref name="comment"/>
         </element>
       </optional>
       <optional>
         <element name="residual">
           <a:documentation>Output the residual at every function evaluation.</a:documentation>
-          <empty/>
+          <ref name="comment"/>
         </element>
       </optional>
       <optional>
         <element name="solution_graph">
           <a:documentation>Plot a graph of the solution with each iteration.</a:documentation>
-          <empty/>
+          <ref name="comment"/>
         </element>
       </optional>
       <optional>
@@ -421,27 +430,29 @@ WARNING: This will produce a lot of output so should only be used for debugging 
       <optional>
         <element name="convergence_file">
           <a:documentation>Output a diagnostic file detailing the convergence of this solver.</a:documentation>
-          <empty/>
+          <ref name="comment"/>
         </element>
       </optional>
       <optional>
         <element name="norms">
           <a:documentation>Print norms of vectors and matrices to stdout log</a:documentation>
-          <empty/>
+          <ref name="comment"/>
         </element>
       </optional>
+      <ref name="comment"/>
     </element>
     <element name="linear_solver">
       <a:documentation>Options describing a linear solver.</a:documentation>
       <ref name="linear_solver_options_snes_top"/>
     </element>
     <ref name="solver_failures"/>
+    <ref name="comment"/>
   </define>
   <define name="ident_zeros">
     <optional>
       <element name="ident_zeros">
         <a:documentation>If this rank 1 form has zero rows, then place a 1. of the diagonal.</a:documentation>
-        <empty/>
+        <ref name="comment"/>
       </element>
     </optional>
   </define>
@@ -452,6 +463,7 @@ WARNING: This will produce a lot of output so should only be used for debugging 
         <data type="string"/>
       </attribute>
       <ref name="is_field_components"/>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="is_field_null">
@@ -471,21 +483,22 @@ WARNING: This will produce a lot of output so should only be used for debugging 
             </attribute>
             <value>1.0</value>
           </element>
+          <ref name="comment"/>
         </element>
         <element name="python">
           <a:documentation>Python function describing the null space for this field or component of this field.
 
 Functions may only depend on space and should be of the form:
 
- def val(x):
-    # Function code
-    return # Return value
+    def val(x):
+       # Function code
+       return # Return value
 
 or:
 
- def val(x):
-    # Function code
-    return [..., ...] # Return value array
+    def val(x):
+       # Function code
+       return [..., ...] # Return value array
 
 The return value must have the same length as the number of components described above for this field.
 
@@ -493,6 +506,7 @@ The resulting null space will be normalized automatically.</a:documentation>
           <ref name="python_code"/>
         </element>
       </choice>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="is_field_constraints">
@@ -514,20 +528,21 @@ Note if this part of the constraint has multiple components then all will be set
 
 Functions may only depend on space and should be of the form:
 
- def val(x):
-    # Function code
-    return # Return value
+    def val(x):
+       # Function code
+       return # Return value
 
 or:
 
- def val(x):
-    # Function code
-    return [..., ...] # Return value array
+    def val(x):
+       # Function code
+       return [..., ...] # Return value array
 
 The return value must have the same length as the number of components described above for this field.</a:documentation>
           <ref name="python_code"/>
         </element>
       </choice>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="is_field_components">
@@ -558,12 +573,14 @@ If left unspecified, defaults to the whole boundary of the above region(s) (if s
   </define>
   <define name="is_monitor">
     <element name="monitors">
+      <a:documentation>Parent option for index set monitors.</a:documentation>
       <optional>
         <element name="view_index_set">
           <a:documentation>Prints PETSc information about the index set describing this index set.</a:documentation>
-          <empty/>
+          <ref name="comment"/>
         </element>
       </optional>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="is_fieldsplit">
@@ -573,6 +590,18 @@ If left unspecified, defaults to the whole boundary of the above region(s) (if s
     <ref name="is_monitor"/>
   </define>
   <define name="is_null_space">
+    <zeroOrMore>
+      <ref name="is_field_null"/>
+    </zeroOrMore>
+    <optional>
+      <element name="remove_from_rhs">
+        <a:documentation>Removes the null space from the rhs after assembly.</a:documentation>
+        <ref name="comment"/>
+      </element>
+    </optional>
+    <ref name="is_monitor"/>
+  </define>
+  <define name="is_near_null_space">
     <zeroOrMore>
       <ref name="is_field_null"/>
     </zeroOrMore>
@@ -689,10 +718,19 @@ by the PETSc library. Many more methods are provided.</a:documentation>
   <define name="solver_failures">
     <choice>
       <element name="never_ignore_solver_failures">
-        <empty/>
+        <a:documentation>Never ignore solver failures (the highly recommended default).
+
+This option tests the convergence of the nonlinear solver and terminates the simulations at the end of the next timestep 
+if it has failed to converge.  Note that linear solves within the nonlinear solver may still allowed to fail.</a:documentation>
+        <ref name="comment"/>
       </element>
       <element name="ignore_all_solver_failures">
-        <empty/>
+        <a:documentation>Ignore solver failures.  Intended for debugging purposes only!
+
+**Do not use this option in any scientific simulation.**
+
+This option allows the simulation to continue even if this nonlinear solver fails to meet the convergence criteria.</a:documentation>
+        <ref name="comment"/>
       </element>
     </choice>
   </define>
@@ -980,6 +1018,7 @@ Only makes sense in combination with preconditioners that do a complete solve, e
       <attribute name="name">
         <value>preonly</value>
       </attribute>
+      <ref name="comment"/>
     </element>
   </define>
   <!--
@@ -997,6 +1036,7 @@ This includes SSOR (symmetric sor)</a:documentation>
       <attribute name="name">
         <value>sor</value>
       </attribute>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="pceisenstat_options">
@@ -1012,6 +1052,7 @@ practice may be quite different though.</a:documentation>
       <attribute name="name">
         <value>eisenstat</value>
       </attribute>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="pcilu_options">
@@ -1020,6 +1061,7 @@ practice may be quite different though.</a:documentation>
       <attribute name="name">
         <value>ilu</value>
       </attribute>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="pcicc_options">
@@ -1028,6 +1070,7 @@ practice may be quite different though.</a:documentation>
       <attribute name="name">
         <value>icc</value>
       </attribute>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="pclu_options">
@@ -1046,7 +1089,7 @@ Useful for systems with a near zero pivot.</a:documentation>
           <attribute name="name">
             <value>umfpack</value>
           </attribute>
-          <empty/>
+          <ref name="comment"/>
         </element>
         <element name="factorization_package">
           <a:documentation>Package to use for the factorization - mumps.
@@ -1055,23 +1098,24 @@ Useful for parallel direct solves (if installed on system).</a:documentation>
           <attribute name="name">
             <value>mumps</value>
           </attribute>
-          <empty/>
+          <ref name="comment"/>
         </element>
         <element name="factorization_package">
           <a:documentation>Package to use for the factorization - petsc.</a:documentation>
           <attribute name="name">
             <value>petsc</value>
           </attribute>
-          <empty/>
+          <ref name="comment"/>
         </element>
         <element name="factorization_package">
           <a:documentation>Package to use for the factorization - any valid package.</a:documentation>
           <attribute name="name">
             <data type="string"/>
           </attribute>
-          <empty/>
+          <ref name="comment"/>
         </element>
       </choice>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="pcprometheus_options">
@@ -1080,6 +1124,7 @@ Useful for parallel direct solves (if installed on system).</a:documentation>
       <attribute name="name">
         <value>prometheus</value>
       </attribute>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="pchypre_options">
@@ -1094,14 +1139,17 @@ Useful for parallel direct solves (if installed on system).</a:documentation>
           <attribute name="name">
             <value>boomeramg</value>
           </attribute>
+          <ref name="comment"/>
         </element>
         <element name="hypre_type">
           <a:documentation>Other Hypre preconditioners</a:documentation>
           <attribute name="name">
             <data type="string"/>
           </attribute>
+          <ref name="comment"/>
         </element>
       </choice>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="near_null_space">
@@ -1120,17 +1168,21 @@ nullspaces python functions must be attached underneath the description of the f
           <attribute name="name">
             <data type="string"/>
           </attribute>
-          <ref name="is_null_space"/>
+          <ref name="is_near_null_space"/>
+          <ref name="comment"/>
         </element>
       </oneOrMore>
       <element name="monitors">
+        <a:documentation>Parent option for near-null-space monitors.</a:documentation>
         <optional>
           <element name="view_null_space">
             <a:documentation>Prints PETSc information about this null space</a:documentation>
-            <empty/>
+            <ref name="comment"/>
           </element>
         </optional>
+        <ref name="comment"/>
       </element>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="pcgamg_options">
@@ -1144,6 +1196,7 @@ NOTE: Only available with petsc &gt; 3.2.</a:documentation>
       <optional>
         <ref name="near_null_space"/>
       </optional>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="pcml_options">
@@ -1157,6 +1210,7 @@ NOTE: Only available if petsc is configured with ml!</a:documentation>
       <optional>
         <ref name="near_null_space"/>
       </optional>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="pcjacobi_options">
@@ -1165,7 +1219,7 @@ NOTE: Only available if petsc is configured with ml!</a:documentation>
       <attribute name="name">
         <value>jacobi</value>
       </attribute>
-      <empty/>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="pcbjacobi_options">
@@ -1182,6 +1236,7 @@ increasing number of processors/decreasing local domain size.</a:documentation>
         <value>bjacobi</value>
       </attribute>
       <ref name="subpc_options"/>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="pcasm_options">
@@ -1198,6 +1253,7 @@ than with bjacobi.</a:documentation>
         <value>asm</value>
       </attribute>
       <ref name="subpc_options"/>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="pcnone_options">
@@ -1206,6 +1262,7 @@ than with bjacobi.</a:documentation>
       <attribute name="name">
         <value>none</value>
       </attribute>
+      <ref name="comment"/>
     </element>
   </define>
   <!-- sub preconditioner to choose for bjacobi or asm -->
@@ -1232,8 +1289,9 @@ Any preconditioner provided by the PETSc library
 http://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/PC/PCType.html
 (available preconditioners may depend on the PETSc library installed on your system)</a:documentation>
       <attribute name="name">
-        <data type="string" datatypeLibrary=""/>
+        <data type="string"/>
       </attribute>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="pcksp_options_picard">
@@ -1254,6 +1312,7 @@ exact matrix inversion), or use fgmres in the outer solve.</a:documentation>
         <a:documentation>Solver options for the full solve done by this preconditioner</a:documentation>
         <ref name="linear_solver_options_picard"/>
       </element>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="pcksp_options_snes">
@@ -1274,6 +1333,7 @@ exact matrix inversion), or use fgmres in the outer solve.</a:documentation>
         <a:documentation>Solver options for the full solve done by this preconditioner</a:documentation>
         <ref name="linear_solver_options_snes"/>
       </element>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="pclsc_options">
@@ -1286,7 +1346,7 @@ No options for the subksp are currently exposed so defaults are assumed.</a:docu
       <attribute name="name">
         <value>lsc</value>
       </attribute>
-      <empty/>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="pcfieldsplit_composite_types">
@@ -1296,21 +1356,21 @@ No options for the subksp are currently exposed so defaults are assumed.</a:docu
         <attribute name="name">
           <value>multiplicative</value>
         </attribute>
-        <empty/>
+        <ref name="comment"/>
       </element>
       <element name="composite_type">
         <a:documentation>Composite type of the fieldsplit preconditioner - symmetric multiplicative - update off diagonal symmetric blocks.</a:documentation>
         <attribute name="name">
           <value>symmetric_multiplicative</value>
         </attribute>
-        <empty/>
+        <ref name="comment"/>
       </element>
       <element name="composite_type">
         <a:documentation>Composite type of the fieldsplit preconditioner - additive - do not update off diagonal blocks.</a:documentation>
         <attribute name="name">
           <value>additive</value>
         </attribute>
-        <empty/>
+        <ref name="comment"/>
       </element>
       <element name="composite_type">
         <a:documentation>Composite type of the fieldsplit preconditioner - schur.
@@ -1336,7 +1396,7 @@ this makes the preconditioner positive definite for many formulations, thus allo
             <attribute name="name">
               <value>full</value>
             </attribute>
-            <empty/>
+            <ref name="comment"/>
           </element>
           <element name="factorization_type">
             <a:documentation>The full factorization is:
@@ -1353,7 +1413,7 @@ this makes the preconditioner positive definite for many formulations, thus allo
             <attribute name="name">
               <value>upper</value>
             </attribute>
-            <empty/>
+            <ref name="comment"/>
           </element>
           <element name="factorization_type">
             <a:documentation>The full factorization is:
@@ -1370,7 +1430,7 @@ this makes the preconditioner positive definite for many formulations, thus allo
             <attribute name="name">
               <value>lower</value>
             </attribute>
-            <empty/>
+            <ref name="comment"/>
           </element>
           <element name="factorization_type">
             <a:documentation>The full factorization is:
@@ -1387,7 +1447,7 @@ this makes the preconditioner positive definite for many formulations, thus allo
             <attribute name="name">
               <value>diag</value>
             </attribute>
-            <empty/>
+            <ref name="comment"/>
           </element>
         </choice>
         <choice>
@@ -1403,7 +1463,7 @@ complement.</a:documentation>
             <attribute name="name">
               <value>diag</value>
             </attribute>
-            <empty/>
+            <ref name="comment"/>
           </element>
           <element name="schur_preconditioner">
             <a:documentation>The preconditioner for the Schur complement is generated from the Schur complement matrix itself:
@@ -1416,7 +1476,7 @@ complement.</a:documentation>
             <attribute name="name">
               <value>self</value>
             </attribute>
-            <empty/>
+            <ref name="comment"/>
           </element>
           <element name="schur_preconditioner">
             <a:documentation>The preconditioner for the Schur complement is described by a ufl form.</a:documentation>
@@ -1438,8 +1498,10 @@ defined in the preamble and bilinear form from this nonlinear_solver above.</a:d
               <ref name="ident_zeros"/>
             </element>
             <ref name="is_monitor"/>
+            <ref name="comment"/>
           </element>
         </choice>
+        <ref name="comment"/>
       </element>
     </choice>
   </define>
@@ -1467,8 +1529,10 @@ even if they are described below (a warning will be given).</a:documentation>
             <a:documentation>Solver options for the full solve done by this preconditioner</a:documentation>
             <ref name="linear_solver_options_picard"/>
           </element>
+          <ref name="comment"/>
         </element>
       </oneOrMore>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="pcfieldsplit_options_snes">
@@ -1495,8 +1559,10 @@ even if they are described below (a warning will be given).</a:documentation>
             <a:documentation>Solver options for the full solve done by this preconditioner</a:documentation>
             <ref name="linear_solver_options_snes"/>
           </element>
+          <ref name="comment"/>
         </element>
       </oneOrMore>
+      <ref name="comment"/>
     </element>
   </define>
   <!--
@@ -1539,6 +1605,7 @@ Defaults to 10000.</a:documentation>
 before giving up.</a:documentation>
       <ref name="integer"/>
     </element>
+    <ref name="comment"/>
   </define>
   <define name="iterative_solver_zero_initial_guess">
     <element name="zero_initial_guess">
@@ -1546,7 +1613,7 @@ before giving up.</a:documentation>
 
 NOTE: some solvers always start at zero in which case this switch will have no effect.  
 Also the value of this switch on any parent solves may effect its behaviour.</a:documentation>
-      <empty/>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="iterative_solver_nonzero_initial_guess">
@@ -1555,7 +1622,7 @@ Also the value of this switch on any parent solves may effect its behaviour.</a:
 
 NOTE: some solvers always start at zero in which case this switch will have no effect.
 Also the value of this switch on any parent solves may effect its behaviour.</a:documentation>
-      <empty/>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="iterative_solver_initial_guess_picard">
@@ -1611,7 +1678,7 @@ Also the value of this switch on any parent solves may effect its behaviour.</a:
       <element name="preconditioned_residual">
         <a:documentation>Prints the preconditioned residual for each iteration of the solve.
 This is the error estimation PETSc uses during the solve.</a:documentation>
-        <empty/>
+        <ref name="comment"/>
       </element>
     </optional>
     <optional>
@@ -1619,7 +1686,7 @@ This is the error estimation PETSc uses during the solve.</a:documentation>
         <a:documentation>Prints the "true" residual for each iteration of the solve,
 i.e. PETSc computes the L2-norm of r=A-bx. This may mean
 PETSc has to do extra computations.</a:documentation>
-        <empty/>
+        <ref name="comment"/>
       </element>
     </optional>
     <optional>
@@ -1627,13 +1694,13 @@ PETSc has to do extra computations.</a:documentation>
         <a:documentation>Draws a graph over the convergence of the preconditioned residual
 during the solve. This option only works for systems where PETSc
 has been linked with the X library.</a:documentation>
-        <empty/>
+        <ref name="comment"/>
       </element>
     </optional>
     <optional>
       <element name="test_null_space">
         <a:documentation>Test any attached null spaces on the first iteration of the solve.</a:documentation>
-        <empty/>
+        <ref name="comment"/>
       </element>
     </optional>
   </define>
@@ -1649,7 +1716,7 @@ WARNING: This will produce a lot of output so should only be used for debugging 
     <optional>
       <element name="convergence_file">
         <a:documentation>Output a diagnostic file detailing the convergence of this solver.</a:documentation>
-        <empty/>
+        <ref name="comment"/>
       </element>
     </optional>
   </define>
@@ -1658,6 +1725,7 @@ WARNING: This will produce a lot of output so should only be used for debugging 
       <a:documentation>Options to give extra information for each iteration of the
 the solve. Some of those may really slow down your computation!</a:documentation>
       <ref name="iterative_monitors_base"/>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="iterative_monitors_top">
@@ -1666,6 +1734,7 @@ the solve. Some of those may really slow down your computation!</a:documentation
 the solve. Some of those may really slow down your computation!</a:documentation>
       <ref name="iterative_monitors_base"/>
       <ref name="iterative_monitors_vis"/>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="generic_solver_options">
@@ -1686,18 +1755,23 @@ nullspaces python functions must be attached underneath the description of the f
               <data type="string"/>
             </attribute>
             <ref name="is_null_space"/>
+            <ref name="comment"/>
           </element>
         </oneOrMore>
         <element name="monitors">
+          <a:documentation>Parent option for null-space monitors.</a:documentation>
           <optional>
             <element name="view_null_space">
               <a:documentation>Prints PETSc information about this null space</a:documentation>
-              <empty/>
+              <ref name="comment"/>
             </element>
           </optional>
+          <ref name="comment"/>
         </element>
+        <ref name="comment"/>
       </element>
     </optional>
+    <ref name="comment"/>
   </define>
   <define name="snes_convergence_test">
     <choice>
@@ -1706,14 +1780,14 @@ nullspaces python functions must be attached underneath the description of the f
         <attribute name="name">
           <value>default</value>
         </attribute>
-        <empty/>
+        <ref name="comment"/>
       </element>
       <element name="convergence_test">
         <a:documentation>Skip standard convergence tests, allowing maximum iterations to be reached.</a:documentation>
         <attribute name="name">
           <value>skip</value>
         </attribute>
-        <empty/>
+        <ref name="comment"/>
       </element>
     </choice>
   </define>

@@ -98,8 +98,6 @@ namespace buckettools
 
     void attach_coeffs(Form_ptr form);                               // attach coefficients to the selected form
 
-    virtual void copy_diagnostics(Bucket_ptr &bucket) const;         // copy the data necessary for the diagnostics data file(s)
-
     //***************************************************************|***********************************************************//
     // Base data access
     //***************************************************************|***********************************************************//
@@ -152,16 +150,9 @@ namespace buckettools
     // Mesh data access
     //***************************************************************|***********************************************************//
 
-    void register_mesh(Mesh_ptr mesh, const std::string &name,
-                       MeshFunction_size_t_ptr celldomains = MeshFunction_size_t_ptr(),
-                       MeshFunction_size_t_ptr facetdomains = MeshFunction_size_t_ptr());
-                                                                     // register a mesh with the given name in the bucket
+    void register_mesh(Mesh_ptr mesh, const std::string &name);      // register a mesh with the given name in the bucket
 
     Mesh_ptr fetch_mesh(const std::string &name);                    // return a (boost shared) pointer to a mesh with the given name
-    
-    MeshFunction_size_t_ptr fetch_celldomains(const std::string &name);// return a (boost shared) pointer to a meshfunction with the given name
-
-    MeshFunction_size_t_ptr fetch_facetdomains(const std::string &name);// return a (boost shared) pointer to a meshfunction with the given name
     
     Mesh_it meshes_begin();                                          // return an iterator to the beginning of the meshes
 
@@ -170,22 +161,6 @@ namespace buckettools
     Mesh_it meshes_end();                                            // return an iterator to the end of the meshes
 
     Mesh_const_it meshes_end() const;                                // return a constant iterator to the end of the meshes
- 
-    MeshFunction_size_t_it celldomains_begin();                      // return an iterator to the beginning of the meshfunctions
-
-    MeshFunction_size_t_const_it celldomains_begin() const;          // return a constant iterator to the beginning of the meshfunctions
-
-    MeshFunction_size_t_it celldomains_end();                        // return an iterator to the end of the meshefunctions
-
-    MeshFunction_size_t_const_it celldomains_end() const;            // return a constant iterator to the end of the meshfunctions
- 
-    MeshFunction_size_t_it facetdomains_begin();                      // return an iterator to the beginning of the meshfunctions
-
-    MeshFunction_size_t_const_it facetdomains_begin() const;          // return a constant iterator to the beginning of the meshfunctions
-
-    MeshFunction_size_t_it facetdomains_end();                        // return an iterator to the end of the meshefunctions
-
-    MeshFunction_size_t_const_it facetdomains_end() const;            // return a constant iterator to the end of the meshfunctions
  
     void register_visfunctionspace(
                FunctionSpace_ptr functionspace, Mesh_ptr mesh);      // register a visualization functionspace with a mesh
@@ -205,7 +180,7 @@ namespace buckettools
     //***************************************************************|***********************************************************//
 
     void register_system(SystemBucket_ptr system,                    // register a system with the given name in the bucket
-                                           const std::string &name);
+                                          const std::string &name);
 
     SystemBucket_ptr fetch_system(const std::string &name);          // return a (boost shared) pointer to a system with the given name
     
@@ -219,18 +194,6 @@ namespace buckettools
     SystemBucket_it systems_end();                                   // return an iterator to the end of the systems
 
     SystemBucket_const_it systems_end() const;                       // return a constant iterator to the end of the systems
-
-    int_SystemBucket_it orderedsystems_begin();                      // return an iterator to the beginning of the systems (in user
-                                                                     //                                            prescribed order)
-
-    int_SystemBucket_const_it orderedsystems_begin() const;          // return a constant iterator to the beginning of the systems (in user
-                                                                     //                                            prescribed order)
-
-    int_SystemBucket_it orderedsystems_end();                        // return an iterator to the end of the systems (in user
-                                                                     //                                            prescribed order)
-
-    int_SystemBucket_const_it orderedsystems_end() const;            // return a constant iterator to the end of the systems (in user
-                                                                     //                                            prescribed order)
 
     //***************************************************************|***********************************************************//
     // UFL symbol data access
@@ -295,26 +258,14 @@ namespace buckettools
 
     const std::string str() const;                                   // return a string describing the bucket contents
     
-    virtual const std::string meshes_str() const                     // return a string describing the meshes in the bucket
-    { return meshes_str(0); }
+    virtual const std::string meshes_str(const int &indent=0) const; // return an indented string describing the meshes in the bucket
 
-    virtual const std::string meshes_str(const int &indent) const;   // return an indented string describing the meshes in the bucket
-
-    const std::string systems_str() const                            // return a string describing the systems in the bucket
-    { return systems_str(0); }
-
-    const std::string systems_str(const int &indent) const;          // return an indented string describing the systems in the bucket
-
-    virtual const std::string coefficientspaces_str() const          // return a string describing the coefficient functionspaces
-    { return coefficientspaces_str(0); }                             // contained in the bucket
+    const std::string systems_str(const int &indent=0) const;        // return an indented string describing the systems in the bucket
 
     virtual const std::string coefficientspaces_str(const int        // return an indented string describing the coefficient functionspaces
-                                                    &indent) const;  // contained in the bucket
+                                                    &indent=0) const;// contained in the bucket
 
-    virtual const std::string uflsymbols_str() const                 // return a string describing the ufl symbols contained in the
-    { return uflsymbols_str(0); }                                    // bucket
-
-    virtual const std::string uflsymbols_str(const int &indent)      // return an indented string describing the ufl symbols contained in the
+    virtual const std::string uflsymbols_str(const int &indent=0)    // return an indented string describing the ufl symbols contained in the
                                                            const;    // bucket
 
   //*****************************************************************|***********************************************************//
@@ -372,21 +323,13 @@ namespace buckettools
     // Pointers data
     //***************************************************************|***********************************************************//
 
-    std::map< std::string, Mesh_ptr > meshes_;                       // a map from mesh names to (boost shared) pointers to meshes
-
-    std::map< std::string, MeshFunction_size_t_ptr > celldomains_;   // a map from mesh names to (boost shared) pointers to
-                                                                     // meshfunctions describing the cellids
-
-    std::map< std::string, MeshFunction_size_t_ptr > facetdomains_;  // a map from mesh names to (boost shared) pointers to
-                                                                     // meshfunctions describing the facetids
+    ordered_map<const std::string, Mesh_ptr> meshes_;                // a map from mesh names to (boost shared) pointers to meshes
 
     std::map< Mesh_ptr, FunctionSpace_ptr > visfunctionspaces_;      // pointers to visualization functionspaces
 
-    std::map< std::string, SystemBucket_ptr > systems_;              // a map from system names to (boost shared) pointers to systems
+    ordered_map<const std::string, SystemBucket_ptr > systems_;      // a map from system names to (boost shared) pointers to systems
 
-    std::map< int, SystemBucket_ptr > orderedsystems_;               // an ordered (user defined) map from system names to (boost
-                                                                     // shared) pointers to systems
-    std::map< std::string, GenericDetectors_ptr > detectors_;        // a map from detector set name to (boost shared) pointers to detectors
+    ordered_map<const std::string, GenericDetectors_ptr> detectors_;        // a map from detector set name to (boost shared) pointers to detectors
 
     //***************************************************************|***********************************************************//
     // Diagnostics data
@@ -409,12 +352,6 @@ namespace buckettools
 
     void fill_uflsymbols_();                                         // fill the ufl symbol data structures
 
-    //***************************************************************|***********************************************************//
-    // Emptying data
-    //***************************************************************|***********************************************************//
-
-    void empty_();                                                   // empty the maps contained in the bucket
-
   //*****************************************************************|***********************************************************//
   // Private functions
   //*****************************************************************|***********************************************************//
@@ -435,7 +372,7 @@ namespace buckettools
     // Pointers data (continued)
     //***************************************************************|***********************************************************//
 
-    std::map< std::string, std::string > baseuflsymbols_;            // a map from derived ufl symbols to their base symbol
+    std::map< std::string, std::string > baseuflsymbols_;   // a map from derived ufl symbols to their base symbol
     
     std::map< std::string, GenericFunction_ptr > uflsymbols_;        // a map from derived ufl symbols to field and coefficient pointers
 

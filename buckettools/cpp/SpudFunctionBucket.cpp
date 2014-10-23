@@ -22,6 +22,7 @@
 #include "PythonExpression.h"
 #include "BoostTypes.h"
 #include "SpudFunctionBucket.h"
+#include "Logger.h"
 #include <dolfin.h>
 #include <string>
 #include <spud>
@@ -32,6 +33,7 @@
 #include "SpudBucket.h"
 #include "RegionsExpression.h"
 #include "SemiLagrangianExpression.h"
+#include "PointDetectors.h"
 
 using namespace buckettools;
 
@@ -51,7 +53,6 @@ SpudFunctionBucket::SpudFunctionBucket(const std::string &optionpath,
 //*******************************************************************|************************************************************//
 SpudFunctionBucket::~SpudFunctionBucket()
 {
-  empty_();                                                  // empty the data in the derived class
 }
 
 //*******************************************************************|************************************************************//
@@ -74,6 +75,7 @@ void SpudFunctionBucket::fill_field(const uint &index)
   fill_functionals_();                                               // fill in data about the functionals (doesn't attach
                                                                      // coefficients)
 
+  fill_is_();                                                        // fill information about the component index sets
 }
 
 //*******************************************************************|************************************************************//
@@ -111,16 +113,16 @@ void SpudFunctionBucket::allocate_coeff_function()
   {
     if(!(*(*system_).bucket()).contains_coefficientspace(uflsymbol()))// check we have a coefficient space for this function's ufl
     {                                                                // symbol
-      dolfin::log(dolfin::ERROR, "Coefficient %s declared as type::Function but its ufl_symbol was not found in any forms or functionals.", 
-                                 name().c_str());
-      dolfin::error("Unable to allocate coefficient as no matching functionspace found.");
+      tf_err("Unable to allocate coefficient as no matching functionspace found.",
+             "Coefficient %s declared as type::Function but its ufl_symbol was not found in any forms or functionals.",
+             name().c_str());
     }
 
-    FunctionSpace_ptr coefficientspace =                             // grab the functionspace for this coefficient from the bucket
+    functionspace_ =                                                 // grab the functionspace for this coefficient from the bucket
           (*(*system_).bucket()).fetch_coefficientspace(uflsymbol());// data maps
 
-    function_.reset( new dolfin::Function(*coefficientspace) );      // allocate the function on this functionspace
-    oldfunction_.reset( new dolfin::Function(*coefficientspace) );   // allocate the old function on this functionspace
+    function_.reset( new dolfin::Function(*functionspace_) );        // allocate the function on this functionspace
+    oldfunction_.reset( new dolfin::Function(*functionspace_) );     // allocate the old function on this functionspace
     iteratedfunction_ = function_;                                   // just point this at the function
 
                                                                      // can't initialize this yet (it may depend on other
@@ -135,6 +137,8 @@ void SpudFunctionBucket::allocate_coeff_function()
 
     buffer.str(""); buffer << (*system_).name() << "::Old" << name();  // rename the old function as SystemName::OldCoefficientName
     (*oldfunction_).rename(buffer.str(), buffer.str());
+
+    fill_is_();                                                       // we finally have a functionspace so can set up is's
 
   }
 
@@ -221,40 +225,21 @@ void SpudFunctionBucket::initialize_coeff_function()
 }
 
 //*******************************************************************|************************************************************//
-// make a partial copy of the provided function bucket with the data necessary for writing the diagnostics file(s)
-//*******************************************************************|************************************************************//
-void SpudFunctionBucket::copy_diagnostics(FunctionBucket_ptr &function, SystemBucket_ptr &system) const
-{
-
-  if(!function)
-  {
-    function.reset( new SpudFunctionBucket(optionpath_, &(*system)) );
-  }
-
-  FunctionBucket::copy_diagnostics(function, system);
-
-  (*std::dynamic_pointer_cast< SpudFunctionBucket >(function)).functional_optionpaths_ = functional_optionpaths_;
-
-}
-
-//*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a functional form in the function bucket data maps (with an optionpath as well)
 //*******************************************************************|************************************************************//
 void SpudFunctionBucket::register_functional(Form_ptr functional, 
                                       const std::string &name, 
-                                      const std::string &optionpath)
+                                      std::string optionpath)
 {
-  Form_it f_it = functionals_.find(name);                            // check if name already exists
-  if (f_it != functionals_.end())
+  Form_hash_it f_it = functionals_.get<om_key_hash>().find(name);                            // check if name already exists
+  if (f_it != functionals_.get<om_key_hash>().end())
   {
-    dolfin::error(                                                   // if it does, issue an error
-            "Functional named \"%s\" already exists in function.", 
-                                                    name.c_str());
+    tf_err("Functional already exists in function.", "Functional name: %s", name.c_str());
   }
   else
   {
-    functionals_[name]            = functional;                      // it not, insert the form into the maps
-    functional_optionpaths_[name] = optionpath;                      // and its optionpath too
+    functionals_.insert(om_item<const std::string, Form_ptr>(name, functional));                      // it not, insert the form into the maps
+    functional_optionpaths_.insert(om_item<const std::string, std::string>(name, optionpath)); // and its optionpath too
     double_ptr value;
     value.reset( new double(0.0) );
     functional_values_[name]      = value;
@@ -271,18 +256,48 @@ void SpudFunctionBucket::register_functional(Form_ptr functional,
 //*******************************************************************|************************************************************//
 const std::string SpudFunctionBucket::fetch_functional_optionpath(const std::string &name) const
 {
-  std::map< std::string, std::string >::const_iterator s_it = functional_optionpaths_.find(name);
+  string_hash_it s_it = functional_optionpaths_.get<om_key_hash>().find(name);
                                                                      // check if the name already exists
-  if (s_it == functional_optionpaths_.end())
+  if (s_it == functional_optionpaths_.get<om_key_hash>().end())
   {
-    dolfin::error(                                                   // if it doesn't, issue an error
-            "Functional named \"%s\" does not exist in function.", 
-                                                      name.c_str());
+    tf_err("Functional does not exist in function.", "Functional name: %s", name.c_str());
   }
   else
   {
     return (*s_it).second;                                           // if it does, return it
   }
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the beginning of the functional_optionpaths_ map
+//*******************************************************************|************************************************************//
+string_it SpudFunctionBucket::functional_optionpaths_begin()
+{
+  return functional_optionpaths_.get<om_key_seq>().begin();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the beginning of the functional_optionpaths_ map
+//*******************************************************************|************************************************************//
+string_const_it SpudFunctionBucket::functional_optionpaths_begin() const
+{
+  return functional_optionpaths_.get<om_key_seq>().begin();
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the end of the functional_optionpaths_ map
+//*******************************************************************|************************************************************//
+string_it SpudFunctionBucket::functional_optionpaths_end()
+{
+  return functional_optionpaths_.get<om_key_seq>().end();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the end of the functional_optionpaths_ map
+//*******************************************************************|************************************************************//
+string_const_it SpudFunctionBucket::functional_optionpaths_end() const
+{
+  return functional_optionpaths_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -356,8 +371,8 @@ const std::string SpudFunctionBucket::functionals_str(const int &indent)
   std::stringstream s;
   std::string indentation (indent*2, ' ');
 
-  for ( string_const_it s_it = functional_optionpaths_.begin(); 
-                      s_it != functional_optionpaths_.end(); s_it++ )
+  for ( string_const_it s_it = functional_optionpaths_begin(); 
+                      s_it != functional_optionpaths_end(); s_it++ )
   {
     s << indentation << "Functional " << (*s_it).first << " (" 
                               << (*s_it).second  << ")" << std::endl;
@@ -388,13 +403,16 @@ void SpudFunctionBucket::fill_base_(const uint &index)
   serr = Spud::get_option(buffer.str(), type_);                      // (as string)
   spud_err(buffer.str(), serr);
 
+  std::string strrank;
   buffer.str(""); buffer << optionpath() << "/type/rank/name";       // field or coefficient rank (as string)
-  serr = Spud::get_option(buffer.str(), rank_); 
+  serr = Spud::get_option(buffer.str(), strrank); 
   spud_err(buffer.str(), serr);
 
-  if (rank_=="Vector")
-  {
-    int size_int;
+  shape_.resize(0);                                                  // start by assuming scalar
+
+  if (strrank=="Vector")                                             // if it's a vector we find the shape
+  {                                                                  // 2 ways depending on if it's a constant
+    int size_int;                                                    // or an expression
     if (type_=="Constant")
     {
       buffer.str(""); buffer << optionpath() 
@@ -412,20 +430,26 @@ void SpudFunctionBucket::fill_base_(const uint &index)
       spud_err(buffer.str(), serr);
 
       buffer.str(""); buffer << optionpath() 
-                                      << "/type/rank/value/constant";
-      if (Spud::have_option(buffer.str()))
+                                      << "/type/rank/value";
+      int nvalues = Spud::option_count(buffer.str());
+      for (uint i = 0; i < nvalues; i++)
       {
-        std::vector< int > constant_shape;
-        serr = Spud::get_option_shape(buffer.str(), constant_shape);
-        spud_err(buffer.str(), serr);
-        assert(size_int==constant_shape[0]);
+        buffer.str(""); buffer << optionpath() 
+                                        << "/type/rank/value[" << i << "]/constant";
+        if (Spud::have_option(buffer.str()))
+        {
+          std::vector< int > constant_shape;
+          serr = Spud::get_option_shape(buffer.str(), constant_shape);
+          spud_err(buffer.str(), serr);
+          assert(size_int==constant_shape[0]);                       // just checking!
+        }
       }
     }
     shape_.resize(1);
     shape_[0] = size_int;
   }
 
-  if (rank_=="Tensor")
+  if (strrank=="Tensor")
   {
     std::vector< int > shape_int;
     if (type_=="Constant")
@@ -444,13 +468,19 @@ void SpudFunctionBucket::fill_base_(const uint &index)
       spud_err(buffer.str(), serr);
 
       buffer.str(""); buffer << optionpath() 
-                                      << "/type/rank/value/constant";
-      if (Spud::have_option(buffer.str()))
+                                      << "/type/rank/value";
+      int nvalues = Spud::option_count(buffer.str());
+      for (uint i = 0; i < nvalues; i++)
       {
-        std::vector< int > constant_shape;
-        serr = Spud::get_option_shape(buffer.str(), constant_shape);
-        spud_err(buffer.str(), serr);
-        assert((shape_int[0]==constant_shape[0])&&(shape_int[1]==constant_shape[1]));
+        buffer.str(""); buffer << optionpath() 
+                                        << "/type/rank/value[" << i << "]/constant";
+        if (Spud::have_option(buffer.str()))
+        {
+          std::vector< int > constant_shape;
+          serr = Spud::get_option_shape(buffer.str(), constant_shape);
+          spud_err(buffer.str(), serr);
+          assert((shape_int[0]==constant_shape[0])&&(shape_int[1]==constant_shape[1]));// just checking!
+        }
       }
     }
     shape_.resize(2);
@@ -572,14 +602,28 @@ void SpudFunctionBucket::allocate_field_()
     
   buffer.str(""); buffer << optionpath()                             // find out how many reference points bcs there are
                                 << "/type/rank/reference_point";
-  int npoints = Spud::option_count(buffer.str());
-  if (npoints > 0)                                                   // if we have any...
+  int nrpoints = Spud::option_count(buffer.str());
+  if (nrpoints > 0)                                                  // if we have any...
   {
-    for (uint i = 0; i < npoints; i++)                               // loop over the points
+    for (uint i = 0; i < nrpoints; i++)                              // loop over the points
     {
       buffer.str(""); buffer << optionpath() 
                     << "/type/rank/reference_point[" << i << "]";
-      fill_point_(buffer.str());                                     // and fill in details about the reference point
+      fill_reference_point_(buffer.str());                           // and fill in details about the reference point
+    }
+  }
+    
+  zeropoints_.resize(size());
+  buffer.str(""); buffer << optionpath()                             // find out how many zero points bcs there are
+                                << "/type/rank/zero_point";
+  int nzpoints = Spud::option_count(buffer.str());
+  if (nzpoints > 0)                                                  // if we have any...
+  {
+    for (uint i = 0; i < nzpoints; i++)                              // loop over the points
+    {
+      buffer.str(""); buffer << optionpath() 
+                    << "/type/rank/zero_point[" << i << "]";
+      fill_zero_point_(buffer.str());                                // and fill in details about the zero point
     }
   }
     
@@ -604,31 +648,21 @@ void SpudFunctionBucket::allocate_field_()
                             (*(*system_).bucket()).start_time_ptr());// allocate the expression
   }
 
-  buffer.str(""); buffer << optionpath() 
-                   << "/type/rank/cap_values";
-  if(Spud::have_option(buffer.str()))
+  lower_cap_.resize(size());
+  upper_cap_.resize(size());
+  buffer.str(""); buffer << optionpath()                             // find out how many value caps there are
+                                << "/type/rank/value_cap";
+  int ncaps = Spud::option_count(buffer.str());
+  if (ncaps > 0)                                                     // if we have any...
   {
-    buffer.str(""); buffer << optionpath() 
-                     << "/type/rank/cap_values/upper_cap";
-    if(Spud::have_option(buffer.str()))
+    for (uint i = 0; i < ncaps; i++)                                 // loop over the caps
     {
-      upper_cap_.reset( new double );
-      serr = Spud::get_option(buffer.str(), *upper_cap_);
-      spud_err(buffer.str(), serr);
+      buffer.str(""); buffer << optionpath() 
+                    << "/type/rank/value_cap[" << i << "]";
+      fill_cap_(buffer.str());                                       // and fill in details about the cap
     }
-    
-    buffer.str(""); buffer << optionpath() 
-                     << "/type/rank/cap_values/lower_cap";
-    if(Spud::have_option(buffer.str()))
-    {
-      lower_cap_.reset( new double );
-      serr = Spud::get_option(buffer.str(), *lower_cap_);
-      spud_err(buffer.str(), serr);
-    }
-
   }
-  
-
+    
 }
 
 //*******************************************************************|************************************************************//
@@ -709,7 +743,7 @@ void SpudFunctionBucket::fill_bc_component_(const std::string &optionpath,
          for (std::vector<int>::const_iterator bcid = bcids.begin(); // loop over the boundary ids
                                             bcid < bcids.end(); bcid++)
          {                                                           // create a new bc on each boundary id for this subcomponent
-           DirichletBC_ptr bc(new dolfin::DirichletBC(*subfunctionspace, *bcexp, *(*system_).facetdomains(), *bcid));
+           DirichletBC_ptr bc(new dolfin::DirichletBC(*subfunctionspace, *bcexp, *bcid));
            namebuffer.str(""); namebuffer << bcname << "::" 
                                       << *subcompid << "::" << *bcid;// assemble a name incorporating the boundary id
            register_dirichletbc(bc, namebuffer.str());               // register the bc in the function bucket
@@ -722,7 +756,7 @@ void SpudFunctionBucket::fill_bc_component_(const std::string &optionpath,
       for (std::vector<int>::const_iterator bcid = bcids.begin();    // loop over the boundary ids
                                           bcid < bcids.end(); bcid++)
       {                                                              // create a bc on each boundary id for all components
-        DirichletBC_ptr bc(new dolfin::DirichletBC(*functionspace(), *bcexp, *(*system_).facetdomains(), *bcid));
+        DirichletBC_ptr bc(new dolfin::DirichletBC(*functionspace(), *bcexp, *bcid));
         namebuffer.str(""); namebuffer << bcname << "::" << *bcid;   // assemble a name for this bc incorporating the boundary id
         register_dirichletbc(bc, namebuffer.str());                  // register the bc in the function bucket
       }
@@ -730,7 +764,7 @@ void SpudFunctionBucket::fill_bc_component_(const std::string &optionpath,
   }
   else
   {
-    dolfin::error("Unknown bc type.");
+    tf_err("Unknown bc type.", "bctype = ", bctype.c_str());
   }
 
 }
@@ -738,7 +772,67 @@ void SpudFunctionBucket::fill_bc_component_(const std::string &optionpath,
 //*******************************************************************|************************************************************//
 // fill the details of a reference point assuming the buckettools schema
 //*******************************************************************|************************************************************//
-void SpudFunctionBucket::fill_point_(const std::string &optionpath)
+void SpudFunctionBucket::fill_reference_point_(const std::string &optionpath)
+{
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud error code
+  std::stringstream namebuffer;                                      // a buffer to assemble this point's component name
+  
+  std::string pointname;                                             // point name
+  buffer.str(""); buffer << optionpath << "/name";
+  serr = Spud::get_option(buffer.str(), pointname); 
+  spud_err(buffer.str(), serr);
+  
+  std::vector<double> coord;                                         // the coordinate of the reference point
+  buffer.str(""); buffer << optionpath << "/coordinates";
+  serr = Spud::get_option(buffer.str(), coord);
+  spud_err(buffer.str(), serr);
+  
+  Constant_ptr value( new dolfin::Constant(0.0) );                    // works because we should always be scalar below
+
+  const uint num_sub_elements = (*(*functionspace()).element()).num_sub_elements();
+  if (num_sub_elements>0)
+  {
+    std::vector<int> subcompids;
+    buffer.str(""); buffer << optionpath 
+                           << "/sub_components/components";            // do subcomponents exist?
+    if (Spud::have_option(buffer.str()))
+    {
+      serr = Spud::get_option(buffer.str(), subcompids);               // get a list of the subcomponents 
+      spud_err(buffer.str(), serr);
+    }
+    else
+    {
+      subcompids.resize(size());                                       // we do this to ensure we're applying
+      std::iota(subcompids.begin(), subcompids.end(), 0);              // ref point to scalar functionspace
+    }
+      
+    for (std::vector<int>::const_iterator subcompid =                // loop over those subcomponents
+                                          subcompids.begin(); 
+                      subcompid < subcompids.end(); subcompid++)
+    {
+
+      FunctionSpace_ptr subfunctionspace =                           // grab the subspace from the field functionspace
+                                    (*functionspace())[*subcompid];  // happily dolfin caches this for us
+       
+      ReferencePoint_ptr point(new ReferencePoint(coord, subfunctionspace, value));
+      namebuffer.str(""); namebuffer << pointname << "::" 
+                                 << *subcompid;                      // assemble a name incorporating the subcompid
+      register_referencepoint(point, namebuffer.str());              // register the point in the function bucket
+       
+    }
+  }
+  else                                                               // no components (scalar or using all components)
+  {                                                                  // this case is included because you can't index a scalar fs
+    ReferencePoint_ptr point(new ReferencePoint(coord, functionspace(), value));
+    register_referencepoint(point, pointname);                       // register the point in the function bucket
+  }
+}
+
+//*******************************************************************|************************************************************//
+// fill the details of a zero point assuming the buckettools schema
+//*******************************************************************|************************************************************//
+void SpudFunctionBucket::fill_zero_point_(const std::string &optionpath)
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
@@ -752,32 +846,110 @@ void SpudFunctionBucket::fill_point_(const std::string &optionpath)
   buffer.str(""); buffer << optionpath << "/coordinates";
   serr = Spud::get_option(buffer.str(), coord);
   spud_err(buffer.str(), serr);
+
+  PointDetectors_ptr zeropoint( new PointDetectors(coord, pointname) );
   
+  std::vector<int> subcompids;
   buffer.str(""); buffer << optionpath 
                          << "/sub_components/components";            // how many subcomponents exist?
   if (Spud::have_option(buffer.str()))
-  {                                                                  // FIXME: tensorial components assumed broken!
-    std::vector<int> subcompids;
+  {
     serr = Spud::get_option(buffer.str(), subcompids);               // get a list of the subcomponents 
     spud_err(buffer.str(), serr);
-    
-    for (std::vector<int>::const_iterator subcompid =                // loop over those subcomponents
-                                          subcompids.begin(); 
-                      subcompid < subcompids.end(); subcompid++)
-    {
-
-      FunctionSpace_ptr subfunctionspace =                           // grab the subspace from the field functionspace
-                                    (*functionspace())[*subcompid];  // happily dolfin caches this for us
-       
-      ReferencePoints_ptr point(new ReferencePoints(coord, subfunctionspace, pointname));
-      register_point(point, pointname);                              // register the point in the function bucket
-       
-    }
   }
-  else                                                               // no components (scalar or using all components)
+  else
   {
-    ReferencePoints_ptr point(new ReferencePoints(coord, functionspace(), pointname));
-    register_point(point, pointname);                                // register the point in the function bucket
+    subcompids.resize(size());
+    std::iota(subcompids.begin(), subcompids.end(), 0);
+  }
+    
+  for (std::vector<int>::const_iterator subcompid =                // loop over those subcomponents
+                                        subcompids.begin(); 
+                    subcompid < subcompids.end(); subcompid++)
+  {
+    if (zeropoints_[*subcompid])
+    {
+      log(INFO, "WARNING: Multiple zero points applied to %s::%s (component %d).  Taking latest.",
+                                (*system_).name().c_str(), name().c_str(), *subcompid);
+    }
+    zeropoints_[*subcompid] = zeropoint;
+  }
+}
+
+//*******************************************************************|************************************************************//
+// fill the details of a value cap assuming the buckettools schema
+//*******************************************************************|************************************************************//
+void SpudFunctionBucket::fill_cap_(const std::string &optionpath)
+{
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud error code
+
+  double_ptr upper_cap;
+  buffer.str(""); buffer << optionpath << "/upper_cap";
+  if(Spud::have_option(buffer.str()))
+  {
+    upper_cap.reset( new double );
+    serr = Spud::get_option(buffer.str(), *upper_cap);
+    spud_err(buffer.str(), serr);
+  }
+  
+  double_ptr lower_cap;
+  buffer.str(""); buffer << optionpath << "/lower_cap";
+  if(Spud::have_option(buffer.str()))
+  {
+    lower_cap.reset( new double );
+    serr = Spud::get_option(buffer.str(), *lower_cap);
+    spud_err(buffer.str(), serr);
+  }
+  
+  std::vector<int> subcompids;
+  buffer.str(""); buffer << optionpath 
+                         << "/sub_components/components";            // how many subcomponents exist?
+  if (Spud::have_option(buffer.str()))
+  {
+    serr = Spud::get_option(buffer.str(), subcompids);               // get a list of the subcomponents 
+    spud_err(buffer.str(), serr);
+  }
+  else
+  {
+    subcompids.resize(size());
+    std::iota(subcompids.begin(), subcompids.end(), 0);
+  }
+    
+  for (std::vector<int>::const_iterator subcompid =                // loop over those subcomponents
+                                        subcompids.begin(); 
+                    subcompid < subcompids.end(); subcompid++)
+  {
+    assert(*subcompid<size());
+
+    if (upper_cap)
+    {
+      if (upper_cap_[*subcompid])
+      {
+        log(INFO, "WARNING: Multiple upper caps applied to %s::%s (component %d).  Taking minimum.",
+                                  (*system_).name().c_str(), name().c_str(), *subcompid);
+        *upper_cap_[*subcompid] = std::min(*upper_cap_[*subcompid], *upper_cap);
+      }
+      else
+      {
+        upper_cap_[*subcompid] = upper_cap;
+      }
+    }
+
+    if (lower_cap)
+    {
+      if (lower_cap_[*subcompid])
+      {
+        log(INFO, "WARNING: Multiple lower caps applied to %s::%s (component %d).  Taking maximum.",
+                                  (*system_).name().c_str(), name().c_str(), *subcompid);
+        *lower_cap_[*subcompid] = std::max(*lower_cap_[*subcompid], *lower_cap);
+      }
+      else
+      {
+        lower_cap_[*subcompid] = lower_cap;
+      }
+    }
+     
   }
 }
 
@@ -837,7 +1009,7 @@ void SpudFunctionBucket::initialize_bc_component_(const std::string &optionpath,
   }
   else
   {
-    dolfin::error("Unknown bc type.");
+    tf_err("Unknown bc type.", "bctype = ", bctype.c_str());
   }
        
 }
@@ -868,6 +1040,8 @@ void SpudFunctionBucket::allocate_coeff_expression_()
     {
       fill_constantfunctional_();
     }
+
+    fill_is_();
   }
 
 }
@@ -1078,9 +1252,8 @@ Expression_ptr SpudFunctionBucket::allocate_expression_over_regions_(
         size_t_Expression_it e_it = expressions.find((std::size_t)*id);              // check if this component already exists
         if (e_it != expressions.end())
         {
-          dolfin::error(                                             // if it does, issue an error
-          "Expression for region id %d defined multiple times in expression for %s.", 
-                                                      *id, name().c_str());
+          tf_err("Expression for region id defined multiple times in expression.", "Region id: %d, expression: %s.", 
+                 *id, name().c_str());
         }
         else
         {
@@ -1192,7 +1365,7 @@ Expression_ptr SpudFunctionBucket::allocate_expression_(
     }
     else
     {
-      dolfin::error("Unknown rank for constant in init_exp_");
+      tf_err("Unknown rank for constant in init_exp_.", "Rank: %d", rank);
     }
 
     if (time_dependent)                                              // if we've asked if this expression is time dependent
@@ -1231,7 +1404,7 @@ Expression_ptr SpudFunctionBucket::allocate_expression_(
     }
     else
     {
-      dolfin::error("Unknown rank for python expression in init_exp_");
+      tf_err("Unknown rank for python expression in init_exp_.", "Rank: %d", rank);
     }
 
     if (time_dependent)                                              // if we've asked if this expression is time dependent
@@ -1402,7 +1575,7 @@ Expression_ptr SpudFunctionBucket::allocate_expression_(
       }
       else
       {
-        dolfin::error("Unknown rank for python expression in init_exp_");
+        tf_err("Unknown rank for semi lagrangian expression in init_exp_.", "Rank: %d", rank);
       }
 
       if (time_dependent)                                            // if we've asked if this expression is time dependent
@@ -1413,13 +1586,13 @@ Expression_ptr SpudFunctionBucket::allocate_expression_(
     }
     else
     {
-      dolfin::error("Unknown algorithm name in allocate_expression_.");
+      tf_err("Unknown algorithm name in allocate_expression_.", "Algorithm: %s", algoname.c_str());
     }
 
   }
   else                                                               // unknown expression type
   {
-    dolfin::error("Unknown way of specifying expression.");
+    tf_err("Unknown way of specifiying expression.", "Unknown expression type.");
   }
   
   return expression;                                                 // return the allocated expression
@@ -1456,7 +1629,7 @@ void SpudFunctionBucket::initialize_expression_over_regions_(
       size_t_Expression_const_it e_it = expressions.find(regionids[0]);
       if (e_it == expressions.end())
       {
-        dolfin::error("Unknown region id %d in RegionsExpression map", regionids[0]);
+        tf_err("Unknown region id in RegionsExpression map.", "Region id: %d", regionids[0]);
       }
       else
       {
@@ -1547,7 +1720,7 @@ void SpudFunctionBucket::initialize_expression_(
     }
     else
     {
-      dolfin::error("Unknown algorithm name in initialize_expression_.");
+      tf_err("Unknown algorithm name in initialize_expression_.", "Algorithm: %s", algoname.c_str());
     }
 
   }
@@ -1579,21 +1752,12 @@ void SpudFunctionBucket::checkpoint_options_()
   buffer.str(""); buffer << optionpath() 
                                   << "/type[0]/rank[0]/initial_condition::WholeMesh/file";
   serr = Spud::set_option(buffer.str(), namebuffer.str());
-  spud_err(buffer.str(), serr, Spud::SPUD_NEW_KEY_WARNING);
+  spud_err_accept(buffer.str(), serr, Spud::SPUD_NEW_KEY_WARNING);
 
   buffer.str(""); buffer << optionpath() 
                                   << "/type[0]/rank[0]/initial_condition::WholeMesh/type";
   serr = Spud::set_option_attribute(buffer.str(), "initial_condition");
-  spud_err(buffer.str(), serr, Spud::SPUD_NEW_KEY_WARNING);
+  spud_err_accept(buffer.str(), serr, Spud::SPUD_NEW_KEY_WARNING);
 
-}
-
-//*******************************************************************|************************************************************//
-// empty the data structures in the spudfunctionbucket
-//*******************************************************************|************************************************************//
-void SpudFunctionBucket::empty_()
-{
-  functional_optionpaths_.clear();
-  FunctionBucket::empty_();
 }
 
