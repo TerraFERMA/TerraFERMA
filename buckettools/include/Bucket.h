@@ -150,16 +150,9 @@ namespace buckettools
     // Mesh data access
     //***************************************************************|***********************************************************//
 
-    void register_mesh(Mesh_ptr mesh, const std::string &name,
-                       MeshFunction_size_t_ptr celldomains  = NULL,
-                       MeshFunction_size_t_ptr facetdomains = NULL);
-                                                                     // register a mesh with the given name in the bucket
+    void register_mesh(Mesh_ptr mesh, const std::string &name);      // register a mesh with the given name in the bucket
 
     Mesh_ptr fetch_mesh(const std::string &name);                    // return a (boost shared) pointer to a mesh with the given name
-    
-    MeshFunction_size_t_ptr fetch_celldomains(const std::string &name);     // return a (boost shared) pointer to a meshfunction with the given name
-
-    MeshFunction_size_t_ptr fetch_facetdomains(const std::string &name);    // return a (boost shared) pointer to a meshfunction with the given name
     
     Mesh_it meshes_begin();                                          // return an iterator to the beginning of the meshes
 
@@ -168,22 +161,6 @@ namespace buckettools
     Mesh_it meshes_end();                                            // return an iterator to the end of the meshes
 
     Mesh_const_it meshes_end() const;                                // return a constant iterator to the end of the meshes
- 
-    MeshFunction_size_t_it celldomains_begin();                      // return an iterator to the beginning of the meshfunctions
-
-    MeshFunction_size_t_const_it celldomains_begin() const;          // return a constant iterator to the beginning of the meshfunctions
-
-    MeshFunction_size_t_it celldomains_end();                        // return an iterator to the end of the meshefunctions
-
-    MeshFunction_size_t_const_it celldomains_end() const;            // return a constant iterator to the end of the meshfunctions
- 
-    MeshFunction_size_t_it facetdomains_begin();                      // return an iterator to the beginning of the meshfunctions
-
-    MeshFunction_size_t_const_it facetdomains_begin() const;          // return a constant iterator to the beginning of the meshfunctions
-
-    MeshFunction_size_t_it facetdomains_end();                        // return an iterator to the end of the meshefunctions
-
-    MeshFunction_size_t_const_it facetdomains_end() const;            // return a constant iterator to the end of the meshfunctions
  
     void register_visfunctionspace(
                FunctionSpace_ptr functionspace, Mesh_ptr mesh);      // register a visualization functionspace with a mesh
@@ -348,15 +325,9 @@ namespace buckettools
 
     ordered_map<const std::string, Mesh_ptr> meshes_;                // a map from mesh names to (boost shared) pointers to meshes
 
-    ordered_map<const std::string, MeshFunction_size_t_ptr> celldomains_;   // a map from mesh names to (boost shared) pointers to
-                                                                     // meshfunctions describing the cellids
-
-    ordered_map<const std::string, MeshFunction_size_t_ptr> facetdomains_;  // a map from mesh names to (boost shared) pointers to
-                                                                     // meshfunctions describing the facetids
-
     std::map< Mesh_ptr, FunctionSpace_ptr > visfunctionspaces_;      // pointers to visualization functionspaces
 
-    ordered_map<const std::string, SystemBucket_ptr> systems_;             // a map from system names to (boost shared) pointers to systems
+    ordered_map<const std::string, SystemBucket_ptr > systems_;      // a map from system names to (boost shared) pointers to systems
 
     ordered_map<const std::string, GenericDetectors_ptr> detectors_;        // a map from detector set name to (boost shared) pointers to detectors
 

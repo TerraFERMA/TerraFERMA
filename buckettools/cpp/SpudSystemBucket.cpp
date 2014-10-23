@@ -243,8 +243,12 @@ void SpudSystemBucket::fill_base_()
   serr = Spud::get_option(buffer.str(), meshname); 
   spud_err(buffer.str(), serr);
   mesh_ = (*bucket_).fetch_mesh(meshname);                           // and extract it from the bucket
-  celldomains_ = (*bucket_).fetch_celldomains(meshname);             // along with the cell domains
-  facetdomains_ = (*bucket_).fetch_facetdomains(meshname);           // and facet domains
+  celldomains_.reset(new dolfin::MeshFunction<std::size_t>(mesh_, 
+                                           (*mesh_).topology().dim(), 
+                                           (*mesh_).domains()));     // along with the cell domains
+  facetdomains_.reset(new dolfin::MeshFunction<std::size_t>(mesh_,
+                                           (*mesh_).topology().dim()-1,
+                                           (*mesh_).domains()));     // and facet domains
 
   std::string location;
   buffer.str(""); buffer << optionpath() << "/solve/name";

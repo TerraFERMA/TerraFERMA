@@ -7,7 +7,7 @@
     <mesh name="Mesh">
       <source name="File">
         <file>
-          <string_value lines="1" type="filename">sepran_converted_mesh_split</string_value>
+          <string_value lines="1" type="filename">subduction_split</string_value>
         </file>
         <cell>
           <string_value>triangle</string_value>
@@ -19,6 +19,16 @@
     <output_base_name>
       <string_value lines="1">subduction</string_value>
     </output_base_name>
+    <visualization>
+      <element name="P1">
+        <family>
+          <string_value>CG</string_value>
+        </family>
+        <degree>
+          <integer_value rank="0">1</integer_value>
+        </degree>
+      </element>
+    </visualization>
     <dump_periods/>
     <detectors>
       <point name="SlabPoint">

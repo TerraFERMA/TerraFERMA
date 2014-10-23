@@ -15,10 +15,10 @@
         <string_value lines="1" type="filename">subduction.tfml</string_value>
       </input_file>
       <required_input>
-        <filenames name="meshfiles">
-          <python>
-            <string_value lines="20" type="code" language="python">meshfiles = ["sepran_converted_mesh"+ext for ext in [".xml", "_facet_region.xml", "_physical_region.xml"]]</string_value>
-          </python>
+        <filenames name="mesh">
+          <string>
+            <string_value type="filename" lines="1">subduction.xml.gz</string_value>
+          </string>
         </filenames>
       </required_input>
       <variables>
@@ -65,7 +65,7 @@ T_slab = sqrt(sum((det["Solid"]["Temperature"]["Slab"][:,-1]-273.)**2)/36.)</str
   </simulations>
   <tests>
     <test name="T_11_11">
-      <string_value lines="20" type="code" language="python">test = 388.5
+      <string_value lines="20" type="code" language="python">test = 385.2
 assert abs(T_11_11 - test) &lt; 1.0</string_value>
     </test>
     <test name="runtime">
@@ -73,11 +73,11 @@ assert abs(T_11_11 - test) &lt; 1.0</string_value>
 assert ( runtime &lt;= test)</string_value>
     </test>
     <test name="T_wedge">
-      <string_value lines="20" type="code" language="python">test = 853.5
+      <string_value lines="20" type="code" language="python">test = 852.9
 assert abs(T_wedge - test) &lt; 1.0</string_value>
     </test>
     <test name="T_slab">
-      <string_value lines="20" type="code" language="python">test = 504.0
+      <string_value lines="20" type="code" language="python">test = 503.12
 assert abs(T_slab - test) &lt; 1.0</string_value>
     </test>
   </tests>
