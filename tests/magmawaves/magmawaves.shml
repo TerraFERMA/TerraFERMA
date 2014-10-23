@@ -1,14 +1,11 @@
 <?xml version='1.0' encoding='utf-8'?>
 <harness_options>
   <length>
-    <string_value>medium</string_value>
+    <string_value>special</string_value>
   </length>
   <owner>
     <string_value lines="1">mspieg</string_value>
   </owner>
-  <tags>
-    <string_value lines="1">not:branch:dolfin-master not:branch:periodic</string_value>
-  </tags>
   <description>
     <string_value lines="1">A magma waves test.</string_value>
   </description>
