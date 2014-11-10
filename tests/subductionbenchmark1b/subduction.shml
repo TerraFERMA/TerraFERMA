@@ -56,13 +56,16 @@ T_slab = sqrt(sum((det["Solid"]["Temperature"]["Slab"][:,-1]-273.)**2)/36.)</str
   </simulations>
   <tests>
     <test name="T_11_11">
-      <string_value lines="20" type="code" language="python">assert abs(T_11_11 - 388.5) &lt; 1.0</string_value>
+      <string_value lines="20" type="code" language="python">from numpy import array, abs
+assert abs(array(T_11_11) - 388.74) &lt; 1.0</string_value>
     </test>
     <test name="T_wedge">
-      <string_value lines="20" type="code" language="python">assert abs(T_wedge - 854.5) &lt; 1.0</string_value>
+      <string_value lines="20" type="code" language="python">from numpy import array, abs
+assert abs(array(T_wedge) - 854.76) &lt; 1.0</string_value>
     </test>
     <test name="T_slab">
-      <string_value lines="20" type="code" language="python">assert abs(T_slab - 504.0) &lt; 1.0</string_value>
+      <string_value lines="20" type="code" language="python">from numpy import array, abs
+assert abs(array(T_slab) - 504.60) &lt; 1.0</string_value>
     </test>
   </tests>
 </harness_options>
