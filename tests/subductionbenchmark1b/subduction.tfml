@@ -254,6 +254,11 @@
               <real_value rank="0">0.0</real_value>
             </constant>
           </initial_condition>
+          <reference_point name="Point">
+            <coordinates>
+              <real_value shape="2" dim1="dim" rank="1">50 -50</real_value>
+            </coordinates>
+          </reference_point>
         </rank>
       </type>
       <diagnostics>
@@ -334,7 +339,6 @@ F = FT + Fv + Fp</string_value>
           <ufl_symbol>
             <string_value lines="1">a</string_value>
           </ufl_symbol>
-          <ident_zeros/>
         </form>
         <form name="Linear" rank="0">
           <string_value lines="20" type="code" language="python">L = rhs(F)</string_value>
@@ -358,7 +362,10 @@ F = FT + Fv + Fp</string_value>
         <min_iterations>
           <integer_value rank="0">2</integer_value>
         </min_iterations>
-        <monitors/>
+        <monitors>
+          <visualization/>
+          <norms/>
+        </monitors>
         <linear_solver>
           <iterative_method name="preonly"/>
           <preconditioner name="fieldsplit">
@@ -381,24 +388,13 @@ F = FT + Fv + Fp</string_value>
                 <preconditioner name="lu">
                   <factorization_package name="umfpack"/>
                 </preconditioner>
-                <remove_null_space>
-                  <null_space name="Pressure">
-                    <field name="Pressure">
-                      <constant>
-                        <real_value rank="0">1.0</real_value>
-                      </constant>
-                    </field>
-                    <monitors/>
-                  </null_space>
-                  <monitors/>
-                </remove_null_space>
               </linear_solver>
             </fieldsplit>
             <fieldsplit name="EverythingElse">
               <monitors/>
               <linear_solver>
                 <iterative_method name="preonly"/>
-                <preconditioner name="jacobi"/>
+                <preconditioner name="none"/>
               </linear_solver>
             </fieldsplit>
           </preconditioner>
