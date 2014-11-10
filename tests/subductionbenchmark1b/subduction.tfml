@@ -363,7 +363,6 @@ F = FT + Fv + Fp</string_value>
           <integer_value rank="0">2</integer_value>
         </min_iterations>
         <monitors>
-          <visualization/>
           <norms/>
         </monitors>
         <linear_solver>
