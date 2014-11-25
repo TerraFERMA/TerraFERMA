@@ -472,7 +472,7 @@ double FunctionBucket::functionalvalue(Form_const_it f_it)
       buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
                              << (*system()).name() << "_"
                              << name() << "_" 
-                             << (*(*system()).bucket()).timestep_count()
+                             << (*(*system()).bucket()).timestep_count() << "_"
                              << (*f_it).first << "_cellfunction.xml";
       dolfin::File cellfunction_file(buffer.str());
       cellfunction_file << *cellfunction;
@@ -485,7 +485,7 @@ double FunctionBucket::functionalvalue(Form_const_it f_it)
       buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
                              << (*system()).name() << "_"
                              << name() << "_" 
-                             << (*(*system()).bucket()).timestep_count() 
+                             << (*(*system()).bucket()).timestep_count() << "_"
                              << (*f_it).first << "_facetfunction.xml";
       dolfin::File facetfunction_file(buffer.str());
       facetfunction_file << *facetfunction;
