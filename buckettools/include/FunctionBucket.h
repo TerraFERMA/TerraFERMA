@@ -303,6 +303,12 @@ namespace buckettools
     virtual const bool include_functional_in_steadystate(const std::string &name) const;// return a boolean indicating if the named functional is included in 
                                                                      // steady state output
 
+    virtual const bool output_functional_cellfunction(const std::string &name) const;// return a boolean indicating if the named functional is to 
+                                                                     // be output as a cell function
+    
+    virtual const bool output_functional_facetfunction(const std::string &name) const;// return a boolean indicating if the named functional is to 
+                                                                     // be output as a facet function
+
     virtual const bool include_in_detectors() const;                 // return a boolean indicating if this function is included in 
                                                                      // detectors output
 
