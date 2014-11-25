@@ -446,6 +446,18 @@ of functions is included.</a:documentation>
           <ref name="comment"/>
         </element>
       </optional>
+      <optional>
+        <element name="output_cell_function">
+          <a:documentation>Output the cell integrals of this functional as a mesh function.</a:documentation>
+          <ref name="comment"/>
+        </element>
+      </optional>
+      <optional>
+        <element name="output_facet_function">
+          <a:documentation>Output the facet integrals of this functional as a mesh function.</a:documentation>
+          <ref name="comment"/>
+        </element>
+      </optional>
     </element>
   </define>
   <define name="initial_condition_scalar">

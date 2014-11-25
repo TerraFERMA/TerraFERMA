@@ -341,6 +341,22 @@ const bool SpudFunctionBucket::include_functional_in_steadystate(const std::stri
 }
 
 //*******************************************************************|************************************************************//
+// return a boolean indicating if the named functional of this function bucket should have a cell function output
+//*******************************************************************|************************************************************//
+const bool SpudFunctionBucket::output_functional_cellfunction(const std::string &name) const
+{
+  return Spud::have_option(fetch_functional_optionpath(name)+"/output_cell_function");
+}
+
+//*******************************************************************|************************************************************//
+// return a boolean indicating if the named functional of this function bucket should have a facet function output
+//*******************************************************************|************************************************************//
+const bool SpudFunctionBucket::output_functional_facetfunction(const std::string &name) const
+{
+  return Spud::have_option(fetch_functional_optionpath(name)+"/output_facet_function");
+}
+
+//*******************************************************************|************************************************************//
 // return a boolean indicating if this function bucket should be included in detectors output
 //*******************************************************************|************************************************************//
 const bool SpudFunctionBucket::include_in_detectors() const
