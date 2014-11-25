@@ -444,8 +444,8 @@ double FunctionBucket::functionalvalue(Form_const_it f_it)
   }
   else
   {
-    dolfin::CellFunction<double> *cellfunction;
-    dolfin::FacetFunction<double> *facetfunction;
+    dolfin::CellFunction<double> *cellfunction=NULL;
+    dolfin::FacetFunction<double> *facetfunction=NULL;
 
     if (output_functional_cellfunction((*f_it).first))
     {
