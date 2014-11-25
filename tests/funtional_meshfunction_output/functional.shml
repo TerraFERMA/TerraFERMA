@@ -18,12 +18,12 @@
         <variable name="facets">
           <string_value type="code" lines="20" language="python">from dolfin import MeshFunction, UnitSquareMesh
 mesh = UnitSquareMesh(1,1,'crossed')
-facets = MeshFunction("double", mesh, "functional_System_Field_1_facetfunction.xml").array()</string_value>
+facets = MeshFunction("double", mesh, "functional_System_Field_int_1_facetfunction.xml").array()</string_value>
         </variable>
         <variable name="cells">
           <string_value type="code" lines="20" language="python">from dolfin import MeshFunction, UnitSquareMesh
 mesh = UnitSquareMesh(1,1,'crossed')
-cells = MeshFunction("double", mesh, "functional_System_Field_1_cellfunction.xml").array()</string_value>
+cells = MeshFunction("double", mesh, "functional_System_Field_int_1_cellfunction.xml").array()</string_value>
         </variable>
       </variables>
     </simulation>
