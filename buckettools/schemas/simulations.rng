@@ -349,6 +349,7 @@ THE VARIABLE NAME MUST BE UNIQUE ACROSS THE ENTIRE OPTIONS FILE and the python c
         <data type="string"/>
       </attribute>
       <ref name="simulation_input_file"/>
+      <ref name="run_when"/>
       <ref name="simulation_number_processes"/>
       <ref name="simulation_valgrind_options"/>
       <optional>
@@ -371,6 +372,65 @@ THE VARIABLE NAME MUST BE UNIQUE ACROSS THE ENTIRE OPTIONS FILE and the python c
       </optional>
       <ref name="comment"/>
     </element>
+  </define>
+  <define name="run_when">
+    <choice>
+      <element name="run_when">
+        <a:documentation>Select when to run.
+
+Run when the input has changed  (md5sum check) or some specified output is missing.
+Note that if no output is required then it will always run.
+
+Can be overridden with the command line force flag, which will force a run.</a:documentation>
+        <attribute name="name">
+          <value>input_changed_or_output_missing</value>
+        </attribute>
+        <ref name="comment"/>
+      </element>
+      <element name="run_when">
+        <a:documentation>Select when to run.
+
+Run when the input has changed (md5sum check).
+
+Can be overridden with the command line force flag, which will force a run.</a:documentation>
+        <attribute name="name">
+          <value>input_changed</value>
+        </attribute>
+        <ref name="comment"/>
+      </element>
+      <element name="run_when">
+        <a:documentation>Select when to run.
+
+Run when some specified output is missing.
+Note that if no output is required then it will always run.
+
+Can be overridden with the command line force flag, which will force a run.</a:documentation>
+        <attribute name="name">
+          <value>output_missing</value>
+        </attribute>
+        <ref name="comment"/>
+      </element>
+      <element name="run_when">
+        <a:documentation>Select when to run.
+
+Always run.  This is equivalent of the command line force flag.</a:documentation>
+        <attribute name="name">
+          <value>always</value>
+        </attribute>
+        <ref name="comment"/>
+      </element>
+      <element name="run_when">
+        <a:documentation>Select when to run.
+
+Never run.
+
+Can be overridden with the command line force flag, which will force a run.</a:documentation>
+        <attribute name="name">
+          <value>never</value>
+        </attribute>
+        <ref name="comment"/>
+      </element>
+    </choice>
   </define>
   <define name="run_dependency_parameters">
     <element name="parameter_sweep">
@@ -500,6 +560,7 @@ e.g. perhaps a gmsh run</a:documentation>
         <data type="string"/>
       </attribute>
       <ref name="run_input_file"/>
+      <ref name="run_when"/>
       <optional>
         <ref name="run_dependency_parameters"/>
       </optional>
@@ -525,6 +586,7 @@ e.g. perhaps a gmsh run</a:documentation>
         <data type="string"/>
       </attribute>
       <ref name="simulation_input_file"/>
+      <ref name="run_when"/>
       <ref name="simulation_number_processes"/>
       <ref name="simulation_valgrind_options"/>
       <optional>
