@@ -14,6 +14,7 @@
       <input_file>
         <string_value lines="1" type="filename">rbconvection.tfml</string_value>
       </input_file>
+      <run_when name="input_changed_or_output_missing"/>
       <variables>
         <variable name="ntimesteps">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
