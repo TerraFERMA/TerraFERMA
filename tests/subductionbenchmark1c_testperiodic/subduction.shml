@@ -14,11 +14,13 @@
       <input_file>
         <string_value lines="1" type="filename">subduction.tfml</string_value>
       </input_file>
+      <run_when name="input_changed_or_output_missing"/>
       <dependencies>
         <run name="SplitMesh">
           <input_file>
             <string_value lines="1" type="filename">subduction.xml.gz</string_value>
           </input_file>
+          <run_when name="input_changed_or_output_missing"/>
           <required_input>
             <filenames name="centroid">
               <string>
