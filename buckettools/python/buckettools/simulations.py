@@ -356,7 +356,7 @@ class Run:
     for dependency in self.dependencies: dependency.run(force=force)
 
     self.log("checking in directory %s"%(os.path.relpath(self.rundirectory, self.currentdirectory)))
-    if not self.alreadyrun:
+    if not self.alreadyrun and (not self.optionsdict["run_when"]["never"] or force):
       commands = self.getcommands()
 
       for r in xrange(self.nruns):
@@ -370,27 +370,29 @@ class Run:
           pass
 
         input_changed = False
-        for filepath in requiredinput:
-          try:
-            checksum = hashlib.md5(open(os.path.join(dirname, os.path.basename(filepath))).read()).hexdigest()
-          except:
-            checksum = None
-          try:
-            input_changed = input_changed or checksum != hashlib.md5(open(filepath).read()).hexdigest()
-          except IOError:
-            self.log("WARNING: Unable to open %s"%(filepath))
-            input_changed = True
+        if self.optionsdict["run_when"]["input_changed"]:
+          for filepath in requiredinput:
+            try:
+              checksum = hashlib.md5(open(os.path.join(dirname, os.path.basename(filepath))).read()).hexdigest()
+            except:
+              checksum = None
+            try:
+              input_changed = input_changed or checksum != hashlib.md5(open(filepath).read()).hexdigest()
+            except IOError:
+              self.log("WARNING: Unable to open %s"%(filepath))
+              input_changed = True
 
         output_missing = False
-        for filepath in requiredoutput:
-          try:
-            output_file = open(os.path.join(dirname, filepath))
-            output_file.close()
-          except IOError:
-            output_missing = True
-        if len(requiredoutput)==0: output_missing=True # don't know what output is needed so we have to force
+        if self.optionsdict["run_when"]["output_missing"]:
+          for filepath in requiredoutput:
+            try:
+              output_file = open(os.path.join(dirname, filepath))
+              output_file.close()
+            except IOError:
+              output_missing = True
+          if len(requiredoutput)==0: output_missing=True # don't know what output is needed so we have to force
           
-        if output_missing or input_changed or force:
+        if output_missing or input_changed or force or self.optionsdict["run_when"]["always"]:
           self.log("  running in directory %s"%(os.path.relpath(dirname, self.currentdirectory)))
           # file has changed or a recompilation is necessary
           for filepath in requiredoutput:
@@ -927,6 +929,12 @@ class SimulationBatch:
         oldsimvar = set([(var.name, var.code) for var in oldsim['simulation'].variables])
         oldsimvar = oldsimvar.union(set([(var.name, var.code) for var in tmpsim.variables]))
         oldsim['simulation'].variables = [Variable(var[0], var[1]) for var in oldsimvar]
+        # join the run when tests of the old and new simulations
+        for k,v in oldsim['simulation'].optionsdict['run_when'].iteritems():
+          if k in ["never"]:
+            oldsim['simulation'].optionsdict['run_when'][k] = v and tmpsim.optionsdict['run_when'][k]
+          else:
+            oldsim['simulation'].optionsdict['run_when'][k] = v or tmpsim.optionsdict['run_when'][k]
         # delete the duplicate definition
         del tmpsim
       # otherwise register the simulation in the run dictionary using its rundirectory as an identifier
@@ -969,6 +977,12 @@ class SimulationBatch:
         oldsimvar = set([(var.name, var.code) for var in oldsim['simulation'].variables])
         oldsimvar = oldsimvar.union(set([(var.name, var.code) for var in tmpsim.variables]))
         oldsim['simulation'].variables = [Variable(var[0], var[1]) for var in oldsimvar]
+        # join the run when tests of the old and new simulations
+        for k,v in oldsim['simulation'].optionsdict['run_when'].iteritems():
+          if k in ["never"]:
+            oldsim['simulation'].optionsdict['run_when'][k] = v and tmpsim.optionsdict['run_when'][k]
+          else:
+            oldsim['simulation'].optionsdict['run_when'][k] = v or tmpsim.optionsdict['run_when'][k]
         # delete the new (repeated definition)
         del tmpsim
         # insert the old definition into the slot previously occupied by the new one
@@ -1316,6 +1330,11 @@ class SimulationHarnessBatch(SimulationBatch):
           simulation_path = os.path.normpath(os.path.join(dirname, simulation_input_file))
 
         try:
+          run_when = libspud.get_option(simulation_optionpath+"/run_when/name")
+        except libspud.SpudKeyError:
+          run_when = "input_changed_or_output_missing"
+
+        try:
           number_processes = libspud.get_option(simulation_optionpath+"/number_processes")
         except libspud.SpudKeyError:
           number_processes = 1
@@ -1352,6 +1371,12 @@ class SimulationHarnessBatch(SimulationBatch):
         # add details of this simulation to the harness file options dictionary
         harnessfileoptionsdict[simulation_path] = {}
         harnessfileoptionsdict[simulation_path]["name"]      = simulation_name
+        harnessfileoptionsdict[simulation_path]["run_when"] = {                                                         \
+                                                               "input_changed"  : run_when.find("input_changed")  != -1, \
+                                                               "output_missing" : run_when.find("output_missing") != -1, \
+                                                               "always"         : run_when == "always",                  \
+                                                               "never"          : run_when == "never",                   \
+                                                              }
         harnessfileoptionsdict[simulation_path]["nprocs"]    = number_processes
         harnessfileoptionsdict[simulation_path]["valgrind"]  = valgrind_options
         harnessfileoptionsdict[simulation_path]["type"]      = Simulation
@@ -1624,6 +1649,11 @@ class SimulationHarnessBatch(SimulationBatch):
      else:
        path = os.path.normpath(os.path.join(dirname, input_file))
      
+     try:
+       run_when = libspud.get_option(optionpath+"/run_when/name")
+     except libspud.SpudKeyError:
+       run_when = "input_changed_or_output_missing"
+
      required_input  = self.getrequiredfiles(optionpath+"/required_input", dirname)
      required_output = self.getrequiredfiles(optionpath+"/required_output")
 
@@ -1654,6 +1684,12 @@ class SimulationHarnessBatch(SimulationBatch):
          dependency_options[path]["valgrind"] = libspud.get_option(optionpath+"/valgrind_options").split()
        except libspud.SpudKeyError:
          dependency_options[path]["valgrind"] = None
+     dependency_options[path]["run_when"] = {                                                         \
+                                             "input_changed"  : run_when.find("input_changed")  != -1, \
+                                             "output_missing" : run_when.find("output_missing") != -1, \
+                                             "always"         : run_when == "always",                  \
+                                             "never"          : run_when == "never",                   \
+                                            }
      dependency_options[path]["input"]     = required_input
      dependency_options[path]["output"]    = required_output
      dependency_options[path]["updates"]   = parameter_updates
