@@ -199,8 +199,14 @@ void SpudSolverBucket::initialize()
       else if (lstype=="basicnonorms")
       {
         #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 2
-        tf_err("No equivalent snes ls type to basicnonorms in petsc>3.2.", "PETSc version: %d.%d", 
-               PETSC_VERSION_MAJOR, PETSC_VERSION_MINOR);
+        SNESLineSearch linesearch;
+        #if PETSC_VERSION_MINOR > 3
+        perr = SNESGetLineSearch(snes_, &linesearch); petsc_err(perr);
+        #else
+        perr = SNESGetSNESLineSearch(snes_, &linesearch); petsc_err(perr);
+        #endif
+        perr = SNESLineSearchSetType(linesearch, "basic"); petsc_err(perr);
+        perr = SNESLineSearchSetComputeNorms(linesearch, PETSC_FALSE);
         #else
         perr = SNESLineSearchSet(snes_, SNESLineSearchNoNorms, PETSC_NULL); petsc_err(perr); 
         #endif
