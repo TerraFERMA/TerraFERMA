@@ -53,10 +53,10 @@ PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f,
     log(dolfin::get_log_level(), "FormFunction(1): inf-norm x = %f", norm);
 
     perr = VecNorm(f,NORM_2,&norm); CHKERRQ(perr);
-    log(dolfin::get_log_level(), "FormFunction(1): 2-norm f = %f", norm);
+    log(dolfin::get_log_level(), "FormFunction(1): 2-norm f = %.12e", norm);
 
     perr = VecNorm(f,NORM_INFINITY,&norm); CHKERRQ(perr);
-    log(dolfin::get_log_level(), "FormFunction(1): inf-norm f = %f", norm);
+    log(dolfin::get_log_level(), "FormFunction(1): inf-norm f = %.12e", norm);
   }
 
   Function_ptr iteratedfunction = (*system).iteratedfunction();      // collect the iterated system bucket function
@@ -93,10 +93,10 @@ PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f,
     log(dolfin::get_log_level(), "FormFunction(2): inf-norm x = %f", norm);
 
     perr = VecNorm(f,NORM_2,&norm); CHKERRQ(perr);
-    log(dolfin::get_log_level(), "FormFunction(2): 2-norm f = %f", norm);
+    log(dolfin::get_log_level(), "FormFunction(2): 2-norm f = %.12e", norm);
 
     perr = VecNorm(f,NORM_INFINITY,&norm); CHKERRQ(perr);
-    log(dolfin::get_log_level(), "FormFunction(2): inf-norm f = %f", norm);
+    log(dolfin::get_log_level(), "FormFunction(2): inf-norm f = %.12e", norm);
   }
 
   PetscFunctionReturn(0);
