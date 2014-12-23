@@ -35,7 +35,8 @@ generic_element_family =
         # a hard coded string_value
         element string_value {
           ( "CG" | "DG" | "R" | "Quadrature" )
-        }
+        },
+        comment
      }
   )
 
@@ -48,7 +49,8 @@ cg_element_family =
         # a hard coded string_value
         element string_value {
           ( "CG" )
-        }
+        },
+        comment
      }
   )
 
@@ -61,7 +63,8 @@ dg_element_family =
         # a hard coded string_value
         element string_value {
           ( "DG" )
-        }
+        },
+        comment
      }
   )
 
@@ -74,7 +77,8 @@ r_element_family =
         # a hard coded string_value
         element string_value {
           ( "R" )
-        }
+        },
+        comment
      }
   )
 
@@ -87,7 +91,8 @@ q_element_family =
         # a hard coded string_value
         element string_value {
           ( "Quadrature" )
-        }
+        },
+        comment
      }
   )
 
@@ -119,7 +124,8 @@ p0_element_degree =
        element integer_value {
           attribute rank {"0"},
           ( "0" )
-       }
+       }, 
+       comment
      }
   )
 
@@ -130,7 +136,8 @@ p1_element_degree =
        element integer_value {
           attribute rank {"0"},
           ( "1" )
-       }
+       },
+       comment
      }
   )
 
@@ -141,7 +148,8 @@ p2_element_degree =
        element integer_value {
           attribute rank {"0"},
           ( "2" )
-       }
+       }, 
+       comment
      }
   )
 
@@ -209,7 +217,7 @@ tensor_element_options =
     }?,
     ## Tensor symmetry.
     element symmetric {
-      empty
+      comment
     }?
   )
 
@@ -223,7 +231,8 @@ element_options_scalar_user =
        ## Options describing a user defined finite element.
        element element {
          attribute name { "UserDefined" },
-         generic_element
+         generic_element,
+         comment
        }
      )
   )
@@ -234,22 +243,26 @@ element_options_scalar_lagrange =
        ## Options describing piecewise linear continuous Lagrange finite element.
        element element {
          attribute name { "P1" },
-         p1_element
+         p1_element,
+         comment
        }|
        ## Options describing piecewise quadratic continuous Lagrange finite element.
        element element {
          attribute name { "P2" },
-         p2_element
+         p2_element,
+         comment
        }|
        ## Options describing piecewise linear discontinuous Lagrange finite element.
        element element {
          attribute name { "P1DG" },
-         p1dg_element
+         p1dg_element,
+         comment
        }|
        ## Options describing piecewise quadratic discontinuous Lagrange finite element.
        element element {
          attribute name { "P2DG" },
-         p2dg_element
+         p2dg_element,
+         comment
        }
      )
   )
@@ -260,17 +273,20 @@ element_options_scalar_not_lagrange =
        ## Options describing piecewise constant discontinuous Lagrange finite element.
        element element {
          attribute name { "P0" },
-         p0_element
+         p0_element,
+         comment
        }|
        ## Options describing piecewise constant continuous real, e.g. for a global Lagrange multiplier.
        element element {
          attribute name { "P0R" },
-         p0r_element
+         p0r_element,
+         comment
        }|
        ## Options describing a piecewise constant quadrature element.
        element element {
          attribute name { "Quadrature" },
-         quadrature_element
+         quadrature_element,
+         comment
        }
      )
   )
@@ -282,49 +298,57 @@ element_options_vector =
        element element {
          attribute name { "UserDefined" },
          generic_element,
-         vector_element_options
+         vector_element_options,
+         comment
        }|
        ## Options describing piecewise linear continuous Lagrange finite element for a vector.
        element element {
          attribute name { "P1" },
          p1_element,
-         vector_element_options
+         vector_element_options,
+         comment
        }|
        ## Options describing piecewise quadratic continuous Lagrange finite element for a vector.
        element element {
          attribute name { "P2" },
          p2_element,
-         vector_element_options
+         vector_element_options,
+         comment
        }|
        ## Options describing piecewise linear discontinuous Lagrange finite element for a vector.
        element element {
          attribute name { "P1DG" },
          p1dg_element,
-         vector_element_options
+         vector_element_options,
+         comment
        }|
        ## Options describing piecewise quadratic discontinuous Lagrange finite element for a vector.
        element element {
          attribute name { "P2DG" },
          p2dg_element,
-         vector_element_options
+         vector_element_options,
+         comment
        }|
        ## Options describing piecewise constant discontinuous Lagrange finite element for a vector.
        element element {
          attribute name { "P0" },
          p0_element,
-         vector_element_options
+         vector_element_options,
+         comment
        }|
        ## Options describing piecewise constant continuous real for a vector, e.g. for a global Lagrange multiplier.
        element element {
          attribute name { "P0R" },
          p0r_element,
-         vector_element_options
+         vector_element_options,
+         comment
        }|
        ## Options describing a piecewise constant quadrature element for a vector.
        element element {
          attribute name { "Quadrature" },
          quadrature_element,
-         vector_element_options
+         vector_element_options,
+         comment
        }
      )
   )
@@ -336,49 +360,57 @@ element_options_tensor =
        element element {
          attribute name { "UserDefined" },
          generic_element,
-         tensor_element_options
+         tensor_element_options,
+         comment
        }|
        ## Options describing piecewise linear continuous Lagrange finite element for a tensor.
        element element {
          attribute name { "P1" },
          p1_element,
-         tensor_element_options
+         tensor_element_options,
+         comment
        }|
        ## Options describing piecewise quadratic continuous Lagrange finite element for a tensor.
        element element {
          attribute name { "P2" },
          p2_element,
-         tensor_element_options
+         tensor_element_options,
+         comment
        }|
        ## Options describing piecewise linear discontinuous Lagrange finite element for a tensor.
        element element {
          attribute name { "P1DG" },
          p1dg_element,
-         tensor_element_options
+         tensor_element_options,
+         comment
        }|
        ## Options describing piecewise quadratic discontinuous Lagrange finite element for a tensor.
        element element {
          attribute name { "P2DG" },
          p2dg_element,
-         tensor_element_options
+         tensor_element_options,
+         comment
        }|
        ## Options describing piecewise constant discontinuous Lagrange finite element for a tensor.
        element element {
          attribute name { "P0" },
          p0_element,
-         tensor_element_options
+         tensor_element_options,
+         comment
        }|
        ## Options describing piecewise constant continuous real for a tensor, e.g. for a global Lagrange multiplier.
        element element {
          attribute name { "P0R" },
          p0r_element,
-         tensor_element_options
+         tensor_element_options,
+         comment
        }|
        ## Options describing a piecewise constant quadrature element for a tensor.
        element element {
          attribute name { "Quadrature" },
          quadrature_element,
-         tensor_element_options
+         tensor_element_options,
+         comment
        }
      )
   )

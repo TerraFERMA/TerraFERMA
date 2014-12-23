@@ -60,8 +60,11 @@ Constants are spatially constant expressions.</a:documentation>
                 <value>Scalar</value>
               </attribute>
               <ref name="timestep_constant_options"/>
+              <ref name="comment"/>
             </element>
+            <ref name="comment"/>
           </element>
+          <ref name="comment"/>
         </element>
         <optional>
           <element name="adaptive">
@@ -83,7 +86,7 @@ If multiple constraints are provided the minimum timestep is taken.</a:documenta
                   <attribute name="name">
                     <data type="string"/>
                   </attribute>
-                  <empty/>
+                  <ref name="comment"/>
                 </element>
                 <choice>
                   <element name="field">
@@ -93,7 +96,7 @@ Field is assumed to be Scalar.</a:documentation>
                     <attribute name="name">
                       <data type="string"/>
                     </attribute>
-                    <empty/>
+                    <ref name="comment"/>
                   </element>
                   <element name="coefficient">
                     <a:documentation>The coefficient name
@@ -102,13 +105,14 @@ Coefficient is assumed to be Scalar.</a:documentation>
                     <attribute name="name">
                       <data type="string"/>
                     </attribute>
-                    <empty/>
+                    <ref name="comment"/>
                   </element>
                 </choice>
                 <element name="requested_maximum_value">
                   <a:documentation>The target maximum value requested for the above field</a:documentation>
                   <ref name="real"/>
                 </element>
+                <ref name="comment"/>
               </element>
             </oneOrMore>
             <optional>
@@ -136,8 +140,10 @@ at most 10%.</a:documentation>
                 <ref name="real"/>
               </element>
             </optional>
+            <ref name="comment"/>
           </element>
         </optional>
+        <ref name="comment"/>
       </element>
       <optional>
         <element name="steady_state">
@@ -147,8 +153,10 @@ to the most recent compared to the given tolerance in the given norm</a:document
             <a:documentation>Tolerance in which to test for a steady state</a:documentation>
             <ref name="real"/>
           </element>
+          <ref name="comment"/>
         </element>
       </optional>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="timestep_constant_options">
@@ -164,6 +172,7 @@ to the most recent compared to the given tolerance in the given norm</a:document
         <value>WholeMesh</value>
       </attribute>
       <ref name="prescribed_scalar_constant"/>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="nonlinear">
@@ -208,10 +217,11 @@ timestep. Some of those may really slow down your computation!</a:documentation>
         <optional>
           <element name="convergence_file">
             <a:documentation>Output a diagnostic file detailing the convergence of the nonlinear system iterations.</a:documentation>
-            <empty/>
+            <ref name="comment"/>
           </element>
         </optional>
       </element>
+      <ref name="comment"/>
     </element>
   </define>
 </grammar>

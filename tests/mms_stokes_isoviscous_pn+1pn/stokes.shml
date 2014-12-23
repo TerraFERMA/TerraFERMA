@@ -3,16 +3,23 @@
   <length>
     <string_value>short</string_value>
   </length>
-  <owner>cwilson</owner>
-  <description>A manufactured solution convergence test.</description>
+  <owner>
+    <string_value lines="1">cwilson</string_value>
+  </owner>
+  <description>
+    <string_value lines="1">A manufactured solution convergence test.</string_value>
+  </description>
   <simulations>
     <simulation name="Stokes">
       <input_file>
         <string_value lines="1" type="filename">stokes.tfml</string_value>
       </input_file>
+      <run_when name="input_changed_or_output_missing"/>
       <parameter_sweep>
         <parameter name="ncells">
-          <values>8 16 32</values>
+          <values>
+            <string_value lines="1">8 16 32</string_value>
+          </values>
           <update>
             <string_value lines="20" type="code" language="python">import libspud
 libspud.set_option("/geometry/mesh::Mesh/source::UnitSquare/number_cells", [int(ncells), int(ncells)])</string_value>
@@ -20,7 +27,9 @@ libspud.set_option("/geometry/mesh::Mesh/source::UnitSquare/number_cells", [int(
           </update>
         </parameter>
         <parameter name="n">
-          <values>1 2</values>
+          <values>
+            <string_value lines="1">1 2</string_value>
+          </values>
           <update>
             <string_value lines="20" type="code" language="python">import libspud
 for s in xrange(libspud.option_count("/system")):
@@ -37,7 +46,9 @@ for s in xrange(libspud.option_count("/system")):
           </update>
         </parameter>
         <parameter name="np">
-          <values>1 2 3</values>
+          <values>
+            <string_value lines="1">1 2 3</string_value>
+          </values>
           <process_scale>
             <integer_value shape="3" rank="1">1 2 3</integer_value>
           </process_scale>

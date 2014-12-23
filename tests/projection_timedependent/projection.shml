@@ -3,16 +3,23 @@
   <length>
     <string_value>short</string_value>
   </length>
-  <owner>cwilson</owner>
-  <description>Time dependent projection test.</description>
+  <owner>
+    <string_value lines="1">cwilson</string_value>
+  </owner>
+  <description>
+    <string_value lines="1">Time dependent projection test.</string_value>
+  </description>
   <simulations>
     <simulation name="Projection">
       <input_file>
         <string_value lines="1" type="filename">projection_checkpoint_0.tfml</string_value>
       </input_file>
+      <run_when name="input_changed_or_output_missing"/>
       <parameter_sweep>
         <parameter name="nprocs">
-          <values>1-&gt;1 1-&gt;2 2-&gt;1 2-&gt;2</values>
+          <values>
+            <string_value lines="1">1-&gt;1 1-&gt;2 2-&gt;1 2-&gt;2</string_value>
+          </values>
           <process_scale>
             <integer_value shape="4" rank="1">1 2 1 2</integer_value>
           </process_scale>
@@ -23,6 +30,7 @@
           <input_file>
             <string_value lines="1" type="filename">projection.tfml</string_value>
           </input_file>
+          <run_when name="input_changed_or_output_missing"/>
           <parameter_sweep>
             <parameter name="nprocs">
               <process_scale>

@@ -3,13 +3,18 @@
   <length>
     <string_value>short</string_value>
   </length>
-  <owner>cwilson</owner>
-  <description>van Keken subduction benchmark 1c using split solver</description>
+  <owner>
+    <string_value lines="1">cwilson</string_value>
+  </owner>
+  <description>
+    <string_value lines="1">van Keken subduction benchmark 1c using split solver</string_value>
+  </description>
   <simulations>
     <simulation name="Subduction">
       <input_file>
         <string_value lines="1" type="filename">subduction.tfml</string_value>
       </input_file>
+      <run_when name="input_changed_or_output_missing"/>
       <required_input>
         <filenames name="meshfiles">
           <python>
@@ -25,8 +30,7 @@
 
 det = parser("subduction.det")
 
-T_11_11 = det["Temperature"]["Temperature"]["SlabPoint"][0,-1]-273.
-</string_value>
+T_11_11 = det["Temperature"]["Temperature"]["SlabPoint"][0,-1]-273.</string_value>
         </variable>
         <variable name="T_wedge">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -36,8 +40,7 @@ from math import sqrt
 
 det = parser("subduction.det")
 
-T_wedge = sqrt(sum((det["Temperature"]["Temperature"]["Wedge"][:,-1]-273.)**2)/78.)
-</string_value>
+T_wedge = sqrt(sum((det["Temperature"]["Temperature"]["Wedge"][:,-1]-273.)**2)/78.)</string_value>
         </variable>
         <variable name="T_slab">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -47,8 +50,7 @@ from math import sqrt
 
 det = parser("subduction.det")
 
-T_slab = sqrt(sum((det["Temperature"]["Temperature"]["Slab"][:,-1]-273.)**2)/36.)
-</string_value>
+T_slab = sqrt(sum((det["Temperature"]["Temperature"]["Slab"][:,-1]-273.)**2)/36.)</string_value>
         </variable>
       </variables>
     </simulation>

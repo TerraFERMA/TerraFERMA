@@ -3,13 +3,18 @@
   <length>
     <string_value>special</string_value>
   </length>
-  <owner>mspieg</owner>
-  <description>MADDs 1 test.</description>
+  <owner>
+    <string_value lines="1">mspieg</string_value>
+  </owner>
+  <description>
+    <string_value lines="1">MASSs 1 test</string_value>
+  </description>
   <simulations>
     <simulation name="MADDs1">
       <input_file>
-        <string_value type="filename" lines="1">madds1.tfml</string_value>
+        <string_value lines="1" type="filename">madds1.tfml</string_value>
       </input_file>
+      <run_when name="input_changed_or_output_missing"/>
     </simulation>
   </simulations>
 </harness_options>

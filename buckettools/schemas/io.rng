@@ -29,6 +29,7 @@
       <ref name="diagnostic_output_options"/>
       <ref name="detectors_options"/>
       <ref name="checkpointing_options"/>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="output_file_options">
@@ -59,16 +60,18 @@
 
 Functions should be of the form:
 
- def val():
-    # Function code
-    return # Return value
+    def val():
+       # Function code
+       return # Return value
 
 The return value must have length &gt; 0 and each entry must be of the same dimension as the mesh.</a:documentation>
               <ref name="python_code"/>
             </element>
+            <ref name="comment"/>
           </element>
         </choice>
       </zeroOrMore>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="diagnostic_output_options">
@@ -143,6 +146,7 @@ Defaults to every timestep if unselected.</a:documentation>
           </element>
         </choice>
       </optional>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="checkpointing_options">
@@ -159,6 +163,7 @@ Defaults to every timestep if unselected.</a:documentation>
             <ref name="integer"/>
           </element>
         </choice>
+        <ref name="comment"/>
       </element>
     </optional>
   </define>

@@ -3,18 +3,24 @@
   <length>
     <string_value>short</string_value>
   </length>
-  <owner>cwilson</owner>
-  <description>A test that checks if region id projection works.</description>
+  <owner>
+    <string_value lines="1">cwilson</string_value>
+  </owner>
+  <description>
+    <string_value lines="1">A test that region ids are working correctly.</string_value>
+  </description>
   <simulations>
     <simulation name="RegionIDs">
       <input_file>
         <string_value lines="1" type="filename">region_ids.tfml</string_value>
       </input_file>
+      <run_when name="input_changed_or_output_missing"/>
       <dependencies>
         <run name="GMsh">
           <input_file>
             <string_value lines="1" type="filename">region_id.geo</string_value>
           </input_file>
+          <run_when name="input_changed_or_output_missing"/>
           <required_output>
             <filenames name="meshfiles">
               <python>
@@ -23,8 +29,12 @@
             </filenames>
           </required_output>
           <commands>
-            <command name="GMsh">gmsh -2 region_id.geo -o region_id.msh</command>
-            <command name="Convert">dolfin-convert region_id.msh region_id.xml</command>
+            <command name="GMsh">
+              <string_value lines="1">gmsh -2 region_id.geo -o region_id.msh</string_value>
+            </command>
+            <command name="Convert">
+              <string_value lines="1">dolfin-convert region_id.msh region_id.xml</string_value>
+            </command>
           </commands>
         </run>
       </dependencies>

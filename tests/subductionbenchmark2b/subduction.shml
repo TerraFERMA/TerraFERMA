@@ -3,13 +3,18 @@
   <length>
     <string_value>short</string_value>
   </length>
-  <owner>cwilson</owner>
-  <description>Subduction</description>
+  <owner>
+    <string_value lines="1">cwilson</string_value>
+  </owner>
+  <description>
+    <string_value lines="1">Subduction</string_value>
+  </description>
   <simulations>
     <simulation name="Subduction">
       <input_file>
         <string_value lines="1" type="filename">subduction.tfml</string_value>
       </input_file>
+      <run_when name="input_changed_or_output_missing"/>
       <required_input>
         <filenames name="meshfiles">
           <python>

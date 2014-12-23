@@ -3,18 +3,24 @@
   <length>
     <string_value>short</string_value>
   </length>
-  <owner>cwilson</owner>
-  <description>A solver convergence test with a viscosity contrast.</description>
+  <owner>
+    <string_value lines="1">cwilson</string_value>
+  </owner>
+  <description>
+    <string_value lines="1">A solver convergence test with a viscosity contrast.</string_value>
+  </description>
   <simulations>
     <simulation name="ViscosityContrast">
       <input_file>
         <string_value lines="1" type="filename">vc.tfml</string_value>
       </input_file>
+      <run_when name="input_changed_or_output_missing"/>
       <dependencies>
         <run name="Mesh">
           <input_file>
             <string_value lines="1" type="filename">square.msh</string_value>
           </input_file>
+          <run_when name="input_changed_or_output_missing"/>
           <required_output>
             <filenames name="xmlfiles">
               <python>
@@ -23,7 +29,9 @@
             </filenames>
           </required_output>
           <commands>
-            <command name="Convert">dolfin-convert square.msh square.xml</command>
+            <command name="Convert">
+              <string_value lines="1">dolfin-convert square.msh square.xml</string_value>
+            </command>
           </commands>
         </run>
       </dependencies>

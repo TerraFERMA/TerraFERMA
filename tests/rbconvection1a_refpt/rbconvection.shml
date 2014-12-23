@@ -3,13 +3,18 @@
   <length>
     <string_value>medium</string_value>
   </length>
-  <owner>cwilson</owner>
-  <description>A test of the reference point in rbconvection.</description>
+  <owner>
+    <string_value lines="1">cwilson</string_value>
+  </owner>
+  <description>
+    <string_value lines="1">A test of the reference point in rbconvection.</string_value>
+  </description>
   <simulations>
     <simulation name="RBConvection">
       <input_file>
         <string_value lines="1" type="filename">rbconvection.tfml</string_value>
       </input_file>
+      <run_when name="input_changed_or_output_missing"/>
       <variables>
         <variable name="v_rms">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser

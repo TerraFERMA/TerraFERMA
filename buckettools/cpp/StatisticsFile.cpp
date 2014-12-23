@@ -186,11 +186,13 @@ void StatisticsFile::data_func_(FunctionBucket_ptr f_ptr,
   const std::size_t lsize = (*f_ptr).size();
   std::vector<double> max(lsize), min(lsize);
 
+  (*f_ptr).cachevector("iterated");
   for (uint i = 0; i<lsize; i++)
   {
     max[i] = (*f_ptr).max("iterated", i);
     min[i] = (*f_ptr).min("iterated", i);
   }
+  (*f_ptr).clearcachedvector();
   data_(max);
   data_(min);
 
