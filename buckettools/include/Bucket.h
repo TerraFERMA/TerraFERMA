@@ -28,6 +28,7 @@
 #include "StatisticsFile.h"
 #include "SteadyStateFile.h"
 #include "DetectorsFile.h"
+#include "SystemsConvergenceFile.h"
 #include <dolfin.h>
 #include <boost/timer.hpp>
 
@@ -90,6 +91,8 @@ namespace buckettools
 
     bool complete_timestepping();                                    // indicate if timestepping is complete or not
 
+    double residual_norm();                                          // return the l2 norm of the residual of the systems
+
     //***************************************************************|***********************************************************//
     // Filling data
     //***************************************************************|***********************************************************//
@@ -130,8 +133,6 @@ namespace buckettools
     const double number_timesteps() const;                           // return the number of timesteps after which the simulation will finish
 
     const double timestep() const;                                   // return the timestep (as a double)
-
-    const int nonlinear_iterations() const;                          // return the number of nonlinear iterations requested
 
     const int iteration_count() const;                               // return the number of nonlinear iterations taken
 
@@ -318,9 +319,14 @@ namespace buckettools
     std::vector< std::pair< FunctionBucket_ptr, double > >           // constraints on the timestep in < FunctionBucket_ptr, max value > pairs
                                               timestep_constraints_;
 
-    int_ptr nonlinear_iterations_, iteration_count_;                 // the number of iterations requested and the number of nonlinear 
+    int_ptr iteration_count_;                                        // the number of iterations requested and the number of nonlinear 
                                                                      // iterations taken
-    
+    int minits_, maxits_;                                            // nonlinear system iteration counts
+
+    double *rtol_, atol_;                                            // nonlinear system tolerances
+
+    bool ignore_failures_;                                           // ignore convergence failures of the nonlinear systems
+
     double_ptr steadystate_tol_;                                     // the steady state tolerance
 
     std::string output_basename_;                                    // the output base name
@@ -369,6 +375,8 @@ namespace buckettools
     DetectorsFile_ptr detfile_;                                      // pointer to a detectors file
 
     SteadyStateFile_ptr steadyfile_;                                 // pointer to a steady state file
+
+    SystemsConvergenceFile_ptr convfile_;                            // nonlinear systems convergence file
 
     std::map< File_ptr, 
               std::pair< FunctionSpace_ptr, 
@@ -424,6 +432,8 @@ namespace buckettools
 
     void solve_in_timeloop_();                                       // solve the solvers in this system (in order during the
                                                                      // timeloop of a simulation)
+
+    bool complete_iterating_(const double &aerror0);                  // indicate if nonlinear systems iterations are complete or not
 
     //***************************************************************|***********************************************************//
     // Output functions (continued)

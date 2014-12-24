@@ -47,16 +47,16 @@ PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f,
     PetscReal norm;
 
     perr = VecNorm(x,NORM_2,&norm); CHKERRQ(perr);
-    log(dolfin::get_log_level(), "FormFunction(1): 2-norm x = %f", norm);
+    log(dolfin::get_log_level(), "FormFunction(1): 2-norm x = %g", norm);
 
     perr = VecNorm(x,NORM_INFINITY,&norm); CHKERRQ(perr);
-    log(dolfin::get_log_level(), "FormFunction(1): inf-norm x = %f", norm);
+    log(dolfin::get_log_level(), "FormFunction(1): inf-norm x = %g", norm);
 
     perr = VecNorm(f,NORM_2,&norm); CHKERRQ(perr);
-    log(dolfin::get_log_level(), "FormFunction(1): 2-norm f = %f", norm);
+    log(dolfin::get_log_level(), "FormFunction(1): 2-norm f = %g", norm);
 
     perr = VecNorm(f,NORM_INFINITY,&norm); CHKERRQ(perr);
-    log(dolfin::get_log_level(), "FormFunction(1): inf-norm f = %f", norm);
+    log(dolfin::get_log_level(), "FormFunction(1): inf-norm f = %g", norm);
   }
 
   Function_ptr iteratedfunction = (*system).iteratedfunction();      // collect the iterated system bucket function
@@ -87,16 +87,16 @@ PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f,
     PetscReal norm;
 
     perr = VecNorm(x,NORM_2,&norm); CHKERRQ(perr);
-    log(dolfin::get_log_level(), "FormFunction(2): 2-norm x = %f", norm);
+    log(dolfin::get_log_level(), "FormFunction(2): 2-norm x = %g", norm);
 
     perr = VecNorm(x,NORM_INFINITY,&norm); CHKERRQ(perr);
-    log(dolfin::get_log_level(), "FormFunction(2): inf-norm x = %f", norm);
+    log(dolfin::get_log_level(), "FormFunction(2): inf-norm x = %g", norm);
 
     perr = VecNorm(f,NORM_2,&norm); CHKERRQ(perr);
-    log(dolfin::get_log_level(), "FormFunction(2): 2-norm f = %f", norm);
+    log(dolfin::get_log_level(), "FormFunction(2): 2-norm f = %g", norm);
 
     perr = VecNorm(f,NORM_INFINITY,&norm); CHKERRQ(perr);
-    log(dolfin::get_log_level(), "FormFunction(2): inf-norm f = %f", norm);
+    log(dolfin::get_log_level(), "FormFunction(2): inf-norm f = %g", norm);
   }
 
   PetscFunctionReturn(0);
@@ -124,22 +124,22 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
     PetscReal norm;
 
     perr = VecNorm(x,NORM_2,&norm); CHKERRQ(perr);
-    log(dolfin::get_log_level(), "FormJacobian(1): 2-norm x = %f", norm);
+    log(dolfin::get_log_level(), "FormJacobian(1): 2-norm x = %g", norm);
 
     perr = VecNorm(x,NORM_INFINITY,&norm); CHKERRQ(perr);
-    log(dolfin::get_log_level(), "FormJacobian(1): inf-norm x = %f", norm);
+    log(dolfin::get_log_level(), "FormJacobian(1): inf-norm x = %g", norm);
 
     perr = MatNorm(*A,NORM_FROBENIUS,&norm); CHKERRQ(perr);
-    log(dolfin::get_log_level(), "FormJacobian(1): Frobenius norm A = %f", norm);
+    log(dolfin::get_log_level(), "FormJacobian(1): Frobenius norm A = %g", norm);
 
     perr = MatNorm(*A,NORM_INFINITY,&norm); CHKERRQ(perr);
-    log(dolfin::get_log_level(), "FormJacobian(1): inf-norm A = %f", norm);
+    log(dolfin::get_log_level(), "FormJacobian(1): inf-norm A = %g", norm);
 
     perr = MatNorm(*B,NORM_FROBENIUS,&norm); CHKERRQ(perr);
-    log(dolfin::get_log_level(), "FormJacobian(1): Frobenius norm B = %f", norm);
+    log(dolfin::get_log_level(), "FormJacobian(1): Frobenius norm B = %g", norm);
 
     perr = MatNorm(*B,NORM_INFINITY,&norm); CHKERRQ(perr);
-    log(dolfin::get_log_level(), "FormJacobian(1): inf-norm B = %f", norm);
+    log(dolfin::get_log_level(), "FormJacobian(1): inf-norm B = %g", norm);
   }
 
   Function_ptr iteratedfunction = (*system).iteratedfunction();      // collect the iterated system bucket function
@@ -197,22 +197,22 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
     PetscReal norm;
 
     perr = VecNorm(x,NORM_2,&norm); CHKERRQ(perr);
-    log(dolfin::get_log_level(), "FormJacobian(2): 2-norm x = %f", norm);
+    log(dolfin::get_log_level(), "FormJacobian(2): 2-norm x = %g", norm);
 
     perr = VecNorm(x,NORM_INFINITY,&norm); CHKERRQ(perr);
-    log(dolfin::get_log_level(), "FormJacobian(2): inf-norm x = %f", norm);
+    log(dolfin::get_log_level(), "FormJacobian(2): inf-norm x = %g", norm);
 
     perr = MatNorm(*A,NORM_FROBENIUS,&norm); CHKERRQ(perr);
-    log(dolfin::get_log_level(), "FormJacobian(2): Frobenius norm A = %f", norm);
+    log(dolfin::get_log_level(), "FormJacobian(2): Frobenius norm A = %g", norm);
 
     perr = MatNorm(*A,NORM_INFINITY,&norm); CHKERRQ(perr);
-    log(dolfin::get_log_level(), "FormJacobian(2): inf-norm A = %f", norm);
+    log(dolfin::get_log_level(), "FormJacobian(2): inf-norm A = %g", norm);
 
     perr = MatNorm(*B,NORM_FROBENIUS,&norm); CHKERRQ(perr);
-    log(dolfin::get_log_level(), "FormJacobian(2): Frobenius norm B = %f", norm);
+    log(dolfin::get_log_level(), "FormJacobian(2): Frobenius norm B = %g", norm);
 
     perr = MatNorm(*B,NORM_INFINITY,&norm); CHKERRQ(perr);
-    log(dolfin::get_log_level(), "FormJacobian(2): inf-norm B = %f", norm);
+    log(dolfin::get_log_level(), "FormJacobian(2): inf-norm B = %g", norm);
   }
 
   PetscFunctionReturn(0);
