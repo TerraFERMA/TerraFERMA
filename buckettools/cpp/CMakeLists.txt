@@ -81,7 +81,7 @@ add_library(buckettools_cpp SHARED
                             InitialConditionExpression.cpp RegionsExpression.cpp SemiLagrangianExpression.cpp
                             GenericDetectors.cpp PointDetectors.cpp PythonDetectors.cpp
                             DiagnosticsFile.cpp StatisticsFile.cpp SteadyStateFile.cpp
-                            DetectorsFile.cpp ConvergenceFile.cpp KSPConvergenceFile.cpp
+                            DetectorsFile.cpp ConvergenceFile.cpp KSPConvergenceFile.cpp SystemsConvergenceFile.cpp
                             BucketPETScBase.cpp BucketDolfinBase.cpp DolfinPETScBase.cpp
                             ReferencePoint.cpp)
 # tell cmake that this file doesn't exist until build time

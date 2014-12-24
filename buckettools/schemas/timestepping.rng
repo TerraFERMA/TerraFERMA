@@ -221,6 +221,27 @@ timestep. Some of those may really slow down your computation!</a:documentation>
           </element>
         </optional>
       </element>
+      <choice>
+        <element name="never_ignore_convergence_failures">
+          <a:documentation>Never ignore solver failures (the highly recommended default).
+
+This option tests the convergence of the nonlinear systems and terminates the simulations at the end of the next timestep 
+if it has failed to converge.
+
+This option does not affect the handling of convergence failures within each system solver.</a:documentation>
+          <ref name="comment"/>
+        </element>
+        <element name="ignore_all_convergence_failures">
+          <a:documentation>Ignore solver failures.  Intended for debugging purposes only!
+
+**Do not use this option in any scientific simulation.**
+
+This option allows the simulation to continue even if the nonlinear systems fail to meet the convergence criteria.
+
+This option does not affect the handling of convergence failures within each system solver.</a:documentation>
+          <ref name="comment"/>
+        </element>
+      </choice>
       <ref name="comment"/>
     </element>
   </define>

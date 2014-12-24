@@ -85,6 +85,8 @@ namespace buckettools
 
     void postprocess_values();                                       // cap the values of the fields in this system
 
+    double residual_norm();                                          // return the norm of the residual of the last solver
+
     //***************************************************************|***********************************************************//
     // Filling data
     //***************************************************************|***********************************************************//

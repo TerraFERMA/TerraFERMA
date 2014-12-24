@@ -67,6 +67,10 @@ Bucket::~Bucket()
   {  
     (*steadyfile_).close();
   }
+  if(convfile_)
+  {
+    (*convfile_).close();
+  }
   if(rtol_)
   {
     delete rtol_;
@@ -102,8 +106,8 @@ void Bucket::run()
     (*timestep_count_)++;                                            // increment the number of timesteps taken
 
     log(INFO, "Timestep numbers: %d -> %d", timestep_count()-1, timestep_count());
-    log(INFO, "Times: %f -> %f", old_time(), current_time());
-    log(INFO, "Timestep: %f", timestep());
+    log(INFO, "Times: %g -> %g", old_time(), current_time());
+    log(INFO, "Timestep: %g", timestep());
 
     update_timedependent();                                          // now we know the new time, update functions that are
                                                                      // potentially time dependent
@@ -319,6 +323,27 @@ bool Bucket::complete_timestepping()
 }
 
 //*******************************************************************|************************************************************//
+// return the l2 norm of the residual of all the systems being solved in the timeloop
+//*******************************************************************|************************************************************//
+double Bucket::residual_norm()
+{
+  double norm = 0.0;
+
+  for (SystemBucket_it s_it = systems_begin(); 
+                       s_it != systems_end(); s_it++)
+  {
+    if((*(*s_it).second).solve_location()==SOLVE_TIMELOOP)           // only interested in in_timeloop systems
+    {
+      norm += std::pow((*(*s_it).second).residual_norm(), 2.0);
+    }
+  }
+
+  norm = std::sqrt(norm);
+
+  return norm;
+}
+
+//*******************************************************************|************************************************************//
 // loop over the selected forms and attach the coefficients they request using the bucket data maps
 //*******************************************************************|************************************************************//
 void Bucket::attach_coeffs(Form_it f_begin, Form_it f_end)
@@ -406,15 +431,6 @@ const double Bucket::timestep() const
 {
   assert(timestep_.second);
   return double(*(timestep_.second));
-}
-
-//*******************************************************************|************************************************************//
-// return the number of nonlinear iterations requested
-//*******************************************************************|************************************************************//
-const int Bucket::nonlinear_iterations() const
-{
-  assert(nonlinear_iterations_);
-  return *nonlinear_iterations_;
 }
 
 //*******************************************************************|************************************************************//
@@ -1212,77 +1228,76 @@ void Bucket::solve_at_start_()
 //*******************************************************************|************************************************************//
 void Bucket::solve_in_timeloop_()
 {
-  bool continue_iterating = true;
-  while (continue_iterating)
+  double aerror0 = 0.0;
+  if (rtol_)
   {
+    aerror0 = residual_norm();
+    log(INFO, "Entering nonlinear systems iteration.");
+  }
+  *iteration_count_ = 0;
+
+  while (!complete_iterating_(aerror0))
+  {
+    (*iteration_count_)++;                                           // increment iteration counter
+
     solve(SOLVE_TIMELOOP);                                           // solve all systems in the bucket
 
     //update_nonlinear();
-
-    continue_iterating = !complete_iterating_();
-
   }
 }
 
 //*******************************************************************|************************************************************//
 // return a boolean indicating if the timestep has finished iterating or not
 //*******************************************************************|************************************************************//
-bool Bucket::complete_iterating_()
+bool Bucket::complete_iterating_(const double &aerror0)
 {
   bool completed = true;
   
   if (rtol_)
   {
-    
-  }
-
-
-  while (iteration_count() < minits_ ||                            // loop for the minimum number of iterations or
-        (iteration_count() < maxits_ &&                            // up to the maximum number of iterations 
-                         rerror > rtol_ && aerror > atol_))        // until the max is reached or a tolerance criterion is
-  
-  if (iteration_count() >= minits_ &&
-      (iteration_count() >= maxits_ || rerror <= rtol_ || aerror <= atol_))
-
-  if (rtol_||atol_)
-  {
-    // work out rerror here...?
-    if (rtol_)
-    if (rerror <= *rtol_)
+    double aerror = residual_norm();
+    double rerror;
+    if (aerror0 == 0.0)
     {
-      log(INFO, "Finish time reached, terminating timeloop.");
-      completed = true;
+      rerror = aerror;
     }
-  }
-  if (atol_)
-  {
-    
-  }
-
-
-  else
-  {
-    if (timestep_count() >= number_timesteps())
+    else
     {
-      log(INFO, "Number timesteps reached, terminating timeloop.");
-      completed = true;
+      rerror = aerror/aerror0;
     }
-  }
 
-    if (iteration_count() == maxits_ && rerror > rtol_ && aerror > atol_)
+    log(INFO, "  %u Nonlinear Systems Residual Norm (absolute, relative) = %g, %g\n", 
+                                    iteration_count(), aerror, rerror);
+
+    if(convfile_)
+    {
+      (*convfile_).write_data(aerror);
+    }
+
+    completed = ((rerror <= *rtol_ || 
+                  aerror <= atol_ || 
+                  iteration_count() >= maxits_) 
+                 && iteration_count() >= minits_);
+
+    if (iteration_count() == maxits_ && rerror > *rtol_ && aerror > atol_)
     {
       log(WARNING, "it = %d, maxits_ = %d", iteration_count(), maxits_);
-      log(WARNING, "rerror = %f, rtol_ = %f", rerror, rtol_);
-      log(WARNING, "aerror = %f, atol_ = %f", aerror, atol_);
+      log(WARNING, "rerror = %.12e, rtol_ = %.12e", rerror, *rtol_);
+      log(WARNING, "aerror = %.12e, atol_ = %.12e", aerror, atol_);
       if (ignore_failures_)
       {
-        log(WARNING, "Ignoring: Picard failure. Solver: %s::%s.", (*system_).name().c_str(), name().c_str());
+        log(WARNING, "Ignoring: Nonlinear system failure.");
       }
       else
       {
-        tf_fail("Picard iterations failed to converge.", "Iteration count, relative error or absolute error too high.");
+        tf_fail("Nonlinear systems failed to converge.", "Iteration count, relative error or absolute error too high.");
       }
     }
+  }
+  else
+  {
+    completed = iteration_count() >= maxits_;
+  }
 
   return completed;
 }

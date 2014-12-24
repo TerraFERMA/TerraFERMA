@@ -192,6 +192,29 @@ nonlinear =
             comment
           }?
         },
+        (
+          (
+            ## Never ignore solver failures (the highly recommended default).
+            ##
+            ## This option tests the convergence of the nonlinear systems and terminates the simulations at the end of the next timestep 
+            ## if it has failed to converge.
+            ##
+            ## This option does not affect the handling of convergence failures within each system solver.
+            element never_ignore_convergence_failures {
+              comment
+            }|
+            ## Ignore solver failures.  Intended for debugging purposes only!
+            ##
+            ## **Do not use this option in any scientific simulation.**
+            ##
+            ## This option allows the simulation to continue even if the nonlinear systems fail to meet the convergence criteria.
+            ##
+            ## This option does not affect the handling of convergence failures within each system solver.
+            element ignore_all_convergence_failures {
+              comment
+            }
+          )
+        ),
         comment
       }
    )
