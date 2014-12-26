@@ -1144,6 +1144,36 @@ void SpudBucket::fill_diagnostics_()
     }
   }
   
+  if (Spud::have_option("/nonlinear_systems/monitors/visualization"))
+  {
+    for (Mesh_const_it m_it = meshes_begin(); m_it != meshes_end(); m_it++)
+    {
+      std::vector<GenericFunction_ptr> functions;
+      for (SystemBucket_it s_it = systems_begin(); s_it != systems_end(); s_it++)// loop over the systems
+      {
+        if ((*(*s_it).second).mesh() == (*m_it).second)              // check the system is on the right mesh (using pointers)
+        {
+            
+          for (FunctionBucket_const_it f_it = (*(*s_it).second).fields_begin(); 
+                                       f_it != (*(*s_it).second).fields_end();
+                                       f_it++)
+          {
+            functions.push_back( (*(*f_it).second).function() );
+            functions.push_back( (*(*f_it).second).residualfunction() );
+          }
+
+        }
+      }
+
+      if (functions.size()>0)                                        // if there were any functions to include, let's save this info
+      {
+        File_ptr pvd_file = NULL;
+        convvisfiles_[(*m_it).first] = std::make_pair(pvd_file, functions);// save to the data structure
+      }
+
+    }
+  }
+  
 }
 
 //*******************************************************************|************************************************************//

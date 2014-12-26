@@ -46,6 +46,7 @@
       <integer_value rank="0">2</integer_value>
     </min_iterations>
     <monitors>
+      <visualization/>
       <convergence_file/>
     </monitors>
     <never_ignore_convergence_failures/>
