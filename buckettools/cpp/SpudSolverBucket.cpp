@@ -248,7 +248,10 @@ void SpudSolverBucket::initialize()
       #else
       perr = SNESGetSNESLineSearch(snes_, &linesearch); petsc_err(perr);
       #endif
-      perr = SNESLineSearchBTSetAlpha(linesearch, alpha); petsc_err(perr);// FIXME: assumes using bt
+      if (lstype == "cubic" || lstype == "quadratic")
+      {
+        perr = SNESLineSearchBTSetAlpha(linesearch, alpha); petsc_err(perr);// FIXME: assumes using bt
+      }
       perr = SNESLineSearchSetTolerances(linesearch, PETSC_DEFAULT, maxstep, PETSC_DEFAULT,
                                         PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT);
       petsc_err(perr);

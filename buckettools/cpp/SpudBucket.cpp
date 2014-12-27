@@ -971,6 +971,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     tf_err("Unknown mesh source.", "Don't understand mesh description.");
   }
 
+  (*mesh).rename(meshname, meshname);
   register_mesh(mesh, meshname, optionpath);                         // put the new mesh in the bucket
 
   FunctionSpace_ptr vis_fs =                                         // retrieve the visualization functionspace for this mesh
