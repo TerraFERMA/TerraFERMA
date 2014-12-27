@@ -199,8 +199,14 @@ void SpudSolverBucket::initialize()
       else if (lstype=="basicnonorms")
       {
         #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 2
-        tf_err("No equivalent snes ls type to basicnonorms in petsc>3.2.", "PETSc version: %d.%d", 
-               PETSC_VERSION_MAJOR, PETSC_VERSION_MINOR);
+        SNESLineSearch linesearch;
+        #if PETSC_VERSION_MINOR > 3
+        perr = SNESGetLineSearch(snes_, &linesearch); petsc_err(perr);
+        #else
+        perr = SNESGetSNESLineSearch(snes_, &linesearch); petsc_err(perr);
+        #endif
+        perr = SNESLineSearchSetType(linesearch, "basic"); petsc_err(perr);
+        perr = SNESLineSearchSetComputeNorms(linesearch, PETSC_FALSE);
         #else
         perr = SNESLineSearchSet(snes_, SNESLineSearchNoNorms, PETSC_NULL); petsc_err(perr); 
         #endif
@@ -579,7 +585,7 @@ void SpudSolverBucket::fill_forms_()
       buffer.str(""); buffer << optionpath() << "/type::SNES/form::JacobianPC/ident_zeros";
       ident_zeros_pc_ = Spud::have_option(buffer.str());
     }                                                                // otherwise bilinearpc_ is null (indicates self pcing)
-    assert(!residual_);                                              // residual_ is always a null pointer for snes
+    residual_ = linear_;                                             // the linear form is the residual for SNES
 
   }
   else if (type()=="Picard")                                         // picard solver type...
@@ -729,52 +735,43 @@ void SpudSolverBucket::fill_solverforms_(const std::string &optionpath,
 //*******************************************************************|************************************************************//
 void SpudSolverBucket::initialize_tensors_()
 {
-  std::stringstream buffer;                                          // optionpath buffer
-  dolfin::AssemblerBase assembler;
-  assembler.finalize_tensor = false;
-  assembler.keep_diagonal = true;
-   
   work_.reset( new dolfin::PETScVector(*std::dynamic_pointer_cast<dolfin::PETScVector>((*(*system_).function()).vector())) ); 
   (*work_).zero();
 
+  dolfin::SystemAssembler sysassembler(bilinear_, linear_, 
+                                    (*system_).bcs());
+  sysassembler.keep_diagonal = true;
   matrix_.reset(new dolfin::PETScMatrix);                            // allocate the matrix
-  assembler.init_global_tensor(*matrix_, *bilinear_);
+  sysassembler.assemble(*matrix_);
 
   if(bilinearpc_)                                                    // do we have a pc form?
   {
+    dolfin::SystemAssembler sysassemblerpc(bilinearpc_, linear_,
+                                           (*system_).bcs());
+    sysassemblerpc.keep_diagonal = true;
     matrixpc_.reset(new dolfin::PETScMatrix);                        // allocate the matrix
-    assembler.init_global_tensor(*matrixpc_, *bilinearpc_);
-  }
-     
-  rhs_.reset(new dolfin::PETScVector);                               // allocate the rhs
-  assembler.init_global_tensor(*rhs_, *linear_);
-
-  rhsbc_.reset(new dolfin::PETScVector);                             // allocate the rhs
-  assembler.init_global_tensor(*rhsbc_, *linear_);
-
-  if(residual_)                                                      // do we have a residual_ form?
-  {                                                                  // yes...
-    res_.reset(new dolfin::PETScVector);                             // allocate the residual
-    assembler.init_global_tensor(*res_, *residual_);
-  }
-  else
-  {
-    res_.reset( new dolfin::PETScVector(*work_) );                   // but we still want to initialize the residual vector
-    (*res_).zero();
+    sysassemblerpc.assemble(*matrixpc_);
   }
 
   for (Form_const_it f_it = solverforms_begin(); 
                      f_it != solverforms_end(); f_it++)
   {
+    dolfin::SystemAssembler sysassemblerform((*f_it).second, linear_,
+                                             (*system_).bcs());
+    sysassemblerform.keep_diagonal = true;
     PETScMatrix_ptr solvermatrix;
     solvermatrix.reset(new dolfin::PETScMatrix);
-    assembler.init_global_tensor(*solvermatrix, 
-                                 *(*f_it).second);
+    sysassemblerform.assemble(*solvermatrix);
     solvermatrices_[(*f_it).first] = solvermatrix;
   }
 
-  assemble_linearforms();                                            // preassemble
-  assemble_bilinearforms();
+  dolfin::Assembler assembler;
+   
+  rhs_.reset(new dolfin::PETScVector);                               // allocate the rhs
+  assembler.assemble(*rhs_, *linear_);
+
+  res_.reset(new dolfin::PETScVector);                               // allocate the residual
+  assembler.assemble(*res_, *residual_);
 
 }
 
