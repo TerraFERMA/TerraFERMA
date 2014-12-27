@@ -66,9 +66,7 @@ namespace buckettools
 
     void solve();                                                    // run the nonlinear solver described by this class
 
-    void assemble_linearforms();                                     // assemble all linear forms in this solver
-
-    void assemble_bilinearforms();                                   // assemble all bilinear forms in this solver
+    double residual_norm();                                          // return the norm of the residual (which will be reassembled)
 
     //***************************************************************|***********************************************************//
     // Filling data
@@ -128,9 +126,6 @@ namespace buckettools
 
     const bool monitor_norms() const                                 // return true if norms should be monitored in nonlinear iterations
     { return monitornorms_; }
-
-    PETScVector_ptr rhsbc()
-    { return rhsbc_; }
 
     MatNullSpace nullspace()
     { return sp_; }
@@ -214,7 +209,7 @@ namespace buckettools
 
     std::map< std::string, Mat > solversubmatrices_;                 // (boost shared) pointers to the sub petsc matrices
 
-    PETScVector_ptr rhs_, rhsbc_, res_, work_;                       // dolfin petsc vector types
+    PETScVector_ptr rhs_, res_, work_;                               // dolfin petsc vector types
 
     double rtol_, atol_, stol_;                                      // nonlinear solver tolerances
 

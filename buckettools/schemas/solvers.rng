@@ -146,7 +146,7 @@ Defaults to 1.e-50.</a:documentation>
     </optional>
     <element name="monitors">
       <a:documentation>Options to give extra information for each iteration of the
-the Picard solve. Some of those may really slow down your computation!</a:documentation>
+Picard solve. Some of those may really slow down your computation!</a:documentation>
       <optional>
         <element name="convergence_file">
           <a:documentation>Output a diagnostic file detailing the convergence of this solver.</a:documentation>
