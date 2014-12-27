@@ -359,11 +359,33 @@ void SpudBucket::fill_timestepping_()
   current_time_.reset( new double(start_time()) );                   // initialize the current (n+1) and
   old_time_.reset( new double(start_time()) );                       // old (n) times
 
-  nonlinear_iterations_.reset( new int );
-  buffer.str(""); buffer                                             // find out if we're doing nonlinear iterations
-                    << "/nonlinear_systems/nonlinear_iterations";    // between the systems
-  serr = Spud::get_option(buffer.str(), *nonlinear_iterations_, 1); 
+  if (Spud::have_option("/nonlinear_systems"))
+  {
+    rtol_ = new double;
+    buffer.str(""); buffer << "/nonlinear_systems/relative_error";
+    serr = Spud::get_option(buffer.str(), *rtol_); 
+    spud_err(buffer.str(), serr);
+  }
+  else
+  {
+    rtol_ = NULL;
+    maxits_ = 1;
+  }
+
+  buffer.str(""); buffer << "/nonlinear_systems/max_iterations";
+  serr = Spud::get_option(buffer.str(), maxits_, 1); 
   spud_err(buffer.str(), serr);
+
+  buffer.str(""); buffer << "/nonlinear_systems/min_iterations";
+  serr = Spud::get_option(buffer.str(), minits_, 0);
+  spud_err(buffer.str(), serr);
+
+  buffer.str(""); buffer << "/nonlinear_systems/absolute_error";
+  serr = Spud::get_option(buffer.str(), atol_, 1.e-50); 
+  spud_err(buffer.str(), serr);
+
+  buffer.str(""); buffer << "/nonlinear_systems/ignore_all_convergence_failures";
+  ignore_failures_ = Spud::have_option(buffer.str());
 
   buffer.str(""); buffer << "/timestepping";
   if (Spud::have_option(buffer.str()))
@@ -1052,6 +1074,14 @@ void SpudBucket::fill_diagnostics_()
                            (*(*meshes_begin()).second).mpi_comm(),
                            this) );
     (*steadyfile_).write_header();
+  }
+
+  if (Spud::have_option("/nonlinear_systems/monitors/convergence_file"))
+  {
+    convfile_.reset( new SystemsConvergenceFile(output_basename()+"_nonlinearsystems.conv",
+                                  (*(*meshes_begin()).second).mpi_comm(),
+                                  this) );
+    (*convfile_).write_header();
   }
 
   for (SystemBucket_const_it s_it = systems_begin(); s_it != systems_end(); s_it++)
