@@ -55,6 +55,7 @@
               <input_file>
                 <string_value lines="1" type="filename">square.geo</string_value>
               </input_file>
+              <run_when name="input_changed_or_output_missing"/>
               <required_output>
                 <filenames name="meshfiles">
                   <python>
