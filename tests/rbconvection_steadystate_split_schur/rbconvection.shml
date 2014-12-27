@@ -81,10 +81,10 @@ nu = -1.0*(stat["Temperature"]["Temperature"]["TopSurfaceIntegral"][-1])</string
       <string_value lines="20" type="code" language="python">assert abs(v2_rms - 42.865) &lt; 0.01</string_value>
     </test>
     <test name="nu2">
-      <string_value lines="20" type="code" language="python">assert nu2 - 4.9 &lt; 0.05</string_value>
+      <string_value lines="20" type="code" language="python">assert abs(nu2 - 4.9) &lt; 0.05</string_value>
     </test>
     <test name="nu3">
-      <string_value lines="20" type="code" language="python">assert nu3 - 4.9 &lt; 0.05</string_value>
+      <string_value lines="20" type="code" language="python">assert abs(nu3 - 4.9) &lt; 0.05</string_value>
     </test>
     <test name="v_rms">
       <string_value lines="20" type="code" language="python">assert abs(v_rms - 42.865) &lt; 0.01</string_value>
@@ -93,7 +93,7 @@ nu = -1.0*(stat["Temperature"]["Temperature"]["TopSurfaceIntegral"][-1])</string
       <string_value lines="20" type="code" language="python">assert abs(v3_rms - 42.865) &lt; 0.01</string_value>
     </test>
     <test name="nu">
-      <string_value lines="20" type="code" language="python">assert nu - 4.9 &lt; 0.05</string_value>
+      <string_value lines="20" type="code" language="python">assert abs(nu - 4.9) &lt; 0.05</string_value>
     </test>
   </tests>
 </harness_options>
