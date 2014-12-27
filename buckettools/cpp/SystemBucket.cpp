@@ -226,6 +226,25 @@ void SystemBucket::postprocess_values()
 }
 
 //*******************************************************************|************************************************************//
+// reutrn the l2 norm of the residual of the last solver
+//*******************************************************************|************************************************************//
+double SystemBucket::residual_norm()
+{
+  double norm = 0.0;
+
+  if (!solvers_.empty())
+  {
+    SolverBucket_it s_it = solvers_end();
+    s_it--;
+    norm = (*(*s_it).second).residual_norm();
+
+    (*(*residualfunction_).vector()) = (*std::dynamic_pointer_cast< dolfin::GenericVector >((*(*s_it).second).residual_vector()));
+  }
+
+  return norm;
+}
+
+//*******************************************************************|************************************************************//
 // initialize any diagnostic output in this system
 //*******************************************************************|************************************************************//
 void SystemBucket::initialize_diagnostics() const                    // doesn't allocate anything so can be const

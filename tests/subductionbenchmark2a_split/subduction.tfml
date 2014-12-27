@@ -48,9 +48,16 @@
     </detectors>
   </io>
   <nonlinear_systems>
-    <nonlinear_iterations>
+    <relative_error>
+      <real_value rank="0">1.e-4</real_value>
+    </relative_error>
+    <max_iterations>
       <integer_value rank="0">15</integer_value>
-    </nonlinear_iterations>
+    </max_iterations>
+    <monitors>
+      <convergence_file/>
+    </monitors>
+    <never_ignore_convergence_failures/>
   </nonlinear_systems>
   <global_parameters/>
   <system name="Stokes">

@@ -315,6 +315,7 @@ simulation =
       element simulation {
          attribute name { xsd:string },
          simulation_input_file,
+         run_when,
          simulation_number_processes,
          simulation_valgrind_options,
          parameters?,
@@ -324,6 +325,57 @@ simulation =
          checkpoint?,
          variables?,
          comment
+      }
+   )
+
+run_when =
+   (
+      ## Select when to run.
+      ##
+      ## Run when the input has changed  (md5sum check) or some specified output is missing.
+      ## Note that if no output is required then it will always run.
+      ##
+      ## Can be overridden with the command line force flag, which will force a run (and possibly a build).
+      element run_when {
+        attribute name { "input_changed_or_output_missing" },
+        comment
+      }|
+      ## Select when to run.
+      ##
+      ## Run when the input has changed (md5sum check).
+      ##
+      ## Can be overridden with the command line force flag, which will force a run (and possibly a build).
+      element run_when {
+        attribute name { "input_changed" },
+        comment
+      }|
+      ## Select when to run.
+      ##
+      ## Run when some specified output is missing.
+      ## Note that if no output is required then it will always run.
+      ##
+      ## Can be overridden with the command line force flag, which will force a run (and possibly a build).
+      element run_when {
+        attribute name { "output_missing" },
+        comment
+      }|
+      ## Select when to run.
+      ##
+      ## Always run.  
+      ## 
+      ## The command line force flag will also force a build if necessary.
+      element run_when {
+        attribute name { "always" },
+        comment
+      }|
+      ## Select when to run.
+      ##
+      ## Never run.
+      ##
+      ## Can be overridden with the command line force flag, which will force a run (and possibly a build).
+      element run_when {
+        attribute name { "never" },
+        comment
       }
    )
 
@@ -436,6 +488,7 @@ dependency_run =
       element run {
          attribute name { xsd:string },
          run_input_file,
+         run_when,
          run_dependency_parameters?,
          required_input?,
          required_output?,
@@ -451,6 +504,7 @@ dependency_simulation =
       element simulation {
          attribute name { xsd:string },
          simulation_input_file,
+         run_when,
          simulation_number_processes,
          simulation_valgrind_options,
          simulation_dependency_parameters?,

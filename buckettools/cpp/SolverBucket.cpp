@@ -96,9 +96,9 @@ SolverBucket::~SolverBucket()
                                             mat_it++)
   {
     #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
-    perr = MatDestroy(&(*mat_it).second); petsc_err(perr);                  // destroy the IS, necessary?
+    perr = MatDestroy(&(*mat_it).second); petsc_err(perr);
     #else
-    perr = MatDestroy((*mat_it).second); petsc_err(perr);                   // destroy the IS, necessary?
+    perr = MatDestroy((*mat_it).second); petsc_err(perr);
     #endif
   }
 
@@ -249,30 +249,30 @@ void SolverBucket::solve()
         PetscReal norm;
 
         perr = VecNorm((*rhs_).vec(),NORM_2,&norm); petsc_err(perr);
-        log(dolfin::get_log_level(), "Picard: 2-norm rhs = %f", norm);
+        log(dolfin::get_log_level(), "Picard: 2-norm rhs = %g", norm);
 
         perr = VecNorm((*rhs_).vec(),NORM_INFINITY,&norm); petsc_err(perr);
-        log(dolfin::get_log_level(), "Picard: inf-norm rhs = %f", norm);
+        log(dolfin::get_log_level(), "Picard: inf-norm rhs = %g", norm);
 
         perr = VecNorm((*work_).vec(),NORM_2,&norm); petsc_err(perr);
-        log(dolfin::get_log_level(), "Picard: 2-norm work = %f", norm);
+        log(dolfin::get_log_level(), "Picard: 2-norm work = %g", norm);
 
         perr = VecNorm((*work_).vec(),NORM_INFINITY,&norm); petsc_err(perr);
-        log(dolfin::get_log_level(), "Picard: inf-norm work = %f", norm);
+        log(dolfin::get_log_level(), "Picard: inf-norm work = %g", norm);
 
         perr = MatNorm((*matrix_).mat(),NORM_FROBENIUS,&norm); petsc_err(perr);
-        log(dolfin::get_log_level(), "Picard: Frobenius norm matrix = %f", norm);
+        log(dolfin::get_log_level(), "Picard: Frobenius norm matrix = %g", norm);
 
         perr = MatNorm((*matrix_).mat(),NORM_INFINITY,&norm); petsc_err(perr);
-        log(dolfin::get_log_level(), "Picard: inf-norm matrix = %f", norm);
+        log(dolfin::get_log_level(), "Picard: inf-norm matrix = %g", norm);
 
         if (bilinearpc_)
         {
           perr = MatNorm((*matrixpc_).mat(),NORM_FROBENIUS,&norm); petsc_err(perr);
-          log(dolfin::get_log_level(), "Picard: Frobenius norm matrix pc = %f", norm);
+          log(dolfin::get_log_level(), "Picard: Frobenius norm matrix pc = %g", norm);
 
           perr = MatNorm((*matrixpc_).mat(),NORM_INFINITY,&norm); petsc_err(perr);
-          log(dolfin::get_log_level(), "Picard: inf-norm matrix pc = %f", norm);
+          log(dolfin::get_log_level(), "Picard: inf-norm matrix pc = %g", norm);
         }
       }
 
@@ -311,8 +311,8 @@ void SolverBucket::solve()
     if (iteration_count() == maxits_ && rerror > rtol_ && aerror > atol_)
     {
       log(WARNING, "it = %d, maxits_ = %d", iteration_count(), maxits_);
-      log(WARNING, "rerror = %f, rtol_ = %f", rerror, rtol_);
-      log(WARNING, "aerror = %f, atol_ = %f", aerror, atol_);
+      log(WARNING, "rerror = %.12e, rtol_ = %.12e", rerror, rtol_);
+      log(WARNING, "aerror = %.12e, atol_ = %.12e", aerror, atol_);
       if (ignore_failures_)
       {
         log(WARNING, "Ignoring: Picard failure. Solver: %s::%s.", (*system_).name().c_str(), name().c_str());
@@ -335,47 +335,23 @@ void SolverBucket::solve()
 }
 
 //*******************************************************************|************************************************************//
-// assemble all linear forms (this includes initializing the vectors if necessary)
+// return the l2 norm of the residual
 //*******************************************************************|************************************************************//
-void SolverBucket::assemble_linearforms()
+double SolverBucket::residual_norm()
 {
-  assert(linear_);
+  assert(residual_);
   dolfin::Assembler assembler;
 
-  assembler.assemble(*rhs_, *linear_);
-
-  if(residual_)                                                      // do we have a residual_ form?
-  {                                                                  // yes...
-    assembler.assemble(*res_, *residual_);                           // and assemble it
-  }
-}
-
-//*******************************************************************|************************************************************//
-// assemble all bilinear forms (this includes initializing the matrices if necessary)
-//*******************************************************************|************************************************************//
-void SolverBucket::assemble_bilinearforms()
-{
-  assert(bilinear_);
-  dolfin::SystemAssembler assembler(bilinear_, linear_, 
-                                    (*system_).bcs());
-  assembler.assemble(*matrix_);
-
-  if(bilinearpc_)                                                    // do we have a pc form?
-  {
-    dolfin::SystemAssembler assemblerpc(bilinearpc_, linear_,
-                                      (*system_).bcs());
-    assemblerpc.assemble(*matrixpc_);
+  assembler.assemble(*res_, *residual_);
+  for(std::vector< const dolfin::DirichletBC* >::const_iterator bc = 
+                        (*system_).bcs_begin(); 
+                        bc != (*system_).bcs_end(); bc++)
+  {                                                                  // apply bcs to residual (should we do this?!)
+    (*(*bc)).apply(*res_, (*(*(*system_).iteratedfunction()).vector()));
   }
 
-  for (Form_const_it f_it = solverforms_begin(); 
-                     f_it != solverforms_end(); f_it++)
-  {
-    PETScMatrix_ptr solvermatrix = solvermatrices_[(*f_it).first];
-    dolfin::SystemAssembler assemblerform((*f_it).second, linear_,
-                                      (*system_).bcs());
-    assemblerform.assemble(*solvermatrix);
-  }
-
+  double norm  = (*res_).norm("l2");
+  return norm;
 }
 
 //*******************************************************************|************************************************************//
