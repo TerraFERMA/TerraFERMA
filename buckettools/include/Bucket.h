@@ -383,6 +383,11 @@ namespace buckettools
                          std::vector< GenericFunction_ptr > > > 
                                                           visfiles_; // pointer to visualization file(s)
 
+    std::map< std::string,
+              std::pair< File_ptr,
+                         std::vector< GenericFunction_ptr > > >
+                                                      convvisfiles_; // pointer to nonlinear systems convergence visualization file(s)
+
     //***************************************************************|***********************************************************//
     // Filling data
     //***************************************************************|***********************************************************//
