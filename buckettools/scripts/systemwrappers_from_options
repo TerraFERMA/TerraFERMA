@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# PYTHON_ARGCOMPLETE_OK
 
 # Copyright (C) 2013 Columbia University in the City of New York and others.
 #
@@ -20,27 +21,37 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
-from optparse import OptionParser
 import sys
 import libspud
 import buckettools.spud
 
+import argparse
+try:
+  import argcomplete
+except ImportError:
+  pass
+
 # Let's start by parsing the options
-optparser=OptionParser(usage='usage: %prog <options-file>',
-                       add_help_option=True,
+parser = argparse.ArgumentParser( \
                        description="""This script takes a buckettools options file and writes """ +
                        """ufl, ufc and cpp header files based on the solver, functional and expression options.  """ +
                        """It also provides a cpp header file wrapping the namespaces of the ufc """ +
                        """corresponding to these ufl files.""" )
-
-(options, argv) = optparser.parse_args()
-
-if len(argv)<1:
-    optparser.print_help()
-    sys.exit(1)
+parser.add_argument('filename', action='store', metavar='options_filename', type=str,
+                    help='specify options filename')
+parser.add_argument('-d', '--dry-run', action='store_const', required=False, default=False, dest='dry', const=True,
+                    help='perform a dry run (use this in combination with -l/--list-cpp to see a list of files that would be generated')
+parser.add_argument('-l', '--list-cpp', metavar='filename', action='store', dest='list', nargs='?', default=None, 
+                    required=False, const='', 
+                    help='output a list of cpp files produced by ffc to the given file (if not given output to stdout)')
+try:
+  argcomplete.autocomplete(parser)
+except NameError:
+  pass
+args = parser.parse_args()
 
 # the options file name
-options_filename  = argv[0]
+options_filename  = args.filename
 
 # load the options tree
 libspud.load_options(options_filename)
@@ -49,16 +60,26 @@ bucket = buckettools.spud.SpudBucket()
 # populate the bucket based on the options file loaded above
 bucket.fill()
 
-# write out the ufl files described by the options tree
-bucket.write_ufc()
-# write a cpp header file to wrap the namespaces of the corresponding ufc
-bucket.write_systemfunctionals_cpp()
-bucket.write_systemsolvers_cpp()
+if not args.dry:
+  # write out the ufl files described by the options tree and run ffc on them to produce ufc
+  bucket.write_ufc()
+  # write a cpp header file to wrap the namespaces of the corresponding ufc
+  bucket.write_systemfunctionals_cpp()
+  bucket.write_systemsolvers_cpp()
 
-# write out the cpp expression header files described by the options tree
-bucket.write_cppexpressions()
-# write a cpp header file to wrap the namespaces of the corresponding cpp
-bucket.write_systemexpressions_cpp()
+  # write out the cpp expression header files described by the options tree
+  bucket.write_cppexpressions()
+  # write a cpp header file to wrap the namespaces of the corresponding cpp
+  bucket.write_systemexpressions_cpp()
+
+if args.list is not None:
+  namespaces = bucket.list_namespaces()
+  namespaces = [n+'.cpp' for n in namespaces]
+  namespaces.sort()
+  output = sys.stdout
+  if args.list != '': output = open(args.list, 'w')
+  for n in namespaces: output.write(n+'\n')
+  if args.list != '': output.close()
 
 # and we're done
 

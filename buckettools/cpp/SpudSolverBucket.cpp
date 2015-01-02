@@ -542,6 +542,10 @@ void SpudSolverBucket::fill_base_()
                                 "/type/monitors/norms";
   monitornorms_ = Spud::have_option(buffer.str());
 
+  sp_   = PETSC_NULL;                                                // initialize in case we don't get a chance
+  ksp_  = PETSC_NULL;                                                // to do this later
+  snes_ = PETSC_NULL;
+
 }
 
 //*******************************************************************|************************************************************//
