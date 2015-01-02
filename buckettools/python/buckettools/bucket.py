@@ -53,6 +53,24 @@ class Bucket:
       for solver in system.solvers:
         solver.write_ufc()
 
+  def list_namespaces(self):
+    """Return a list of the namespaces."""
+    namespaces = []
+    for meshname in self.meshes.iterkeys():
+      namespaces.append(self.visualization_namespace(meshname))
+    for system in self.systems:
+      for field in system.fields:
+        for functional in field.functionals:
+          namespaces.append(functional.namespace())
+      for coeff in system.coeffs:
+        if coeff.functional:
+          namespaces.append(functional.namespace())
+        for functional in coeff.functionals:
+          namespaces.append(functional.namespace())
+      for solver in system.solvers:
+        namespaces.append(solver.namespace())
+    return namespaces
+
   def write_cppexpressions(self):
     """Write all cpp expression header files described by the bucket."""
     for system in self.systems:
@@ -124,23 +142,7 @@ class Bucket:
     # loop over all the meshes we recorded information about in case they have different cells
     for meshname, meshcell in self.meshes.iteritems():
       self.write_visualization_ufl(meshname, meshcell, suffix=".temp")
-
-      filename = self.visualization_namespace(meshname)+".ufl"
-      
-      try:
-        checksum = hashlib.md5(open(filename).read()).hexdigest()
-      except:
-        checksum = None
-      
-      if ((checksum != hashlib.md5(open(filename+".temp").read()).hexdigest()) or \
-          (not os.path.isfile(self.visualization_namespace(meshname)+".h"))):
-        # files have changed or .h file was never generated previously
-        shutil.copy(filename+".temp", filename)
-        try:
-          subprocess.check_call(["ffc", "-l", "dolfin", "-O", filename])
-        except:
-          print "ERROR while calling ffc on file ", filename
-          sys.exit(1)
+      ffc(self.visualization_namespace(meshname), 'default', None)
 
   def write_systemfunctionals_cpp(self):
     """Write a cpp header file describing all the ufc namespaces in the bucket."""

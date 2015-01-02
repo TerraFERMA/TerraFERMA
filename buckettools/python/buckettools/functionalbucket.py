@@ -19,9 +19,6 @@
 # along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
 from buckettools.base import *
-import subprocess
-import hashlib
-import shutil
 import sys
 
 class FunctionalBucket:
@@ -133,58 +130,7 @@ class FunctionalBucket:
   def write_ufc(self):
     """Write the functional to a ufl file."""
     self.write_ufl(suffix=".temp")
-
-    filename = self.namespace()+".ufl"
-
-    try:
-      checksum = hashlib.md5(open(filename).read()).hexdigest()
-    except:
-      checksum = None
-
-    try:
-      headerfile = open(self.namespace()+".h")
-    except IOError:
-      headerfile = None
-
-    if headerfile:
-      rebuild = checksum != hashlib.md5(open(filename+".temp").read()).hexdigest()
-
-      headertext = headerfile.read()
-      
-      qdi  = headertext.find("quadrature_degree")
-      qdin = headertext.find("\n", qdi, -1)
-      if (qdi != -1) and (qdin != -1):
-        qd_old = headertext[qdi:qdin].split(" ")[-1]
-        qd_new = "'"+`self.quadrature_degree`+"'" if self.quadrature_degree else "'auto'"
-        rebuild = rebuild or qd_new != qd_old
-      else: # if we don't know what the old quadrature degree was we always want to (re)build
-        rebuild = True
-
-      qri  = headertext.find("quadrature_rule")
-      qrin = headertext.find("\n", qri, -1)
-      if (qri != -1) and (qrin != -1):
-        qr_old = headertext[qri:qrin].split(" ")[-1]
-        qr_new = "'"+self.quadrature_rule+"'" 
-        rebuild = rebuild or qr_new != qr_old
-      else: # if we don't know what the old quadrature rule was we always want to (re)build
-        rebuild = True
-      
-    else:   # if we don't have a header file we always want to (re)build
-      rebuild = True
-
-    if rebuild:
-      # files and/or quadrature_degree have changed
-      shutil.copy(filename+".temp", filename)
-      command = ["ffc", "-l", "dolfin", "-O", "-r", "quadrature"]
-      if self.quadrature_degree:
-        command += ["-f", "quadrature_degree="+`self.quadrature_degree`]
-      command += ["-q", self.quadrature_rule]
-      command += [filename]
-      try:
-        subprocess.check_call(command)
-      except:
-        print "ERROR while calling ffc on file ", filename
-        sys.exit(1)
+    ffc(self.namespace(), self.quadrature_rule, self.quadrature_degree)
 
   def namespace(self):
     return self.function.system.name+self.function.name+self.name

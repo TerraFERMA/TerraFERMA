@@ -248,7 +248,10 @@ void SpudSolverBucket::initialize()
       #else
       perr = SNESGetSNESLineSearch(snes_, &linesearch); petsc_err(perr);
       #endif
-      perr = SNESLineSearchBTSetAlpha(linesearch, alpha); petsc_err(perr);// FIXME: assumes using bt
+      if (lstype == "cubic" || lstype == "quadratic")
+      {
+        perr = SNESLineSearchBTSetAlpha(linesearch, alpha); petsc_err(perr);// FIXME: assumes using bt
+      }
       perr = SNESLineSearchSetTolerances(linesearch, PETSC_DEFAULT, maxstep, PETSC_DEFAULT,
                                         PETSC_DEFAULT, PETSC_DEFAULT, PETSC_DEFAULT);
       petsc_err(perr);
@@ -548,6 +551,10 @@ void SpudSolverBucket::fill_base_()
   buffer.str(""); buffer << optionpath() << 
                                 "/type/monitors/norms";
   monitornorms_ = Spud::have_option(buffer.str());
+
+  sp_   = PETSC_NULL;                                                // initialize in case we don't get a chance
+  ksp_  = PETSC_NULL;                                                // to do this later
+  snes_ = PETSC_NULL;
 
 }
 
