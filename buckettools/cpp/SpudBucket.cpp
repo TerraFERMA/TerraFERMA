@@ -941,6 +941,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     tf_err("Unknown mesh source.", "Don't understand mesh description.");
   }
 
+  (*mesh).rename(meshname, meshname);
   register_mesh(mesh, meshname, optionpath,
                 cellids, edgeids);                                   // put the new mesh in the bucket
 }

@@ -131,7 +131,7 @@ endif(NOT ${SPUD_FOUND})
 
 include_directories(${SPUD_INCLUDE_DIRS})
 
-set(OPTIONSFILE CACHE FILEPATH "Choose the input file.")
+set(OPTIONSFILE CACHE FILEPATH "Choose the input tfml file.")
 
 if(NOT IS_ABSOLUTE ${OPTIONSFILE})
   set(OPTIONSFILE ${PROJECT_BINARY_DIR}/${OPTIONSFILE})
