@@ -21,22 +21,51 @@
 # The project name for buckettools (sets up environment variables for binary and source directories)
 project(buckettools_ufc)
 
-# add a command that runs the ufc generation script if the options file
-# or the (main file of the) script has changed
-add_custom_command(
-    OUTPUT ${PROJECT_BINARY_DIR}/SystemFunctionalsWrapper.cpp ${PROJECT_BINARY_DIR}/SystemSolversWrapper.cpp ${PROJECT_BINARY_DIR}/SystemExpressionsWrapper.cpp
-    COMMAND ${BUCKETTOOLS_BIN}/systemwrappers_from_options
-    ARGS ${OPTIONSFILE}
+## write a script that runs the ufc generation script and reruns cmake if necessary
+file(
+    WRITE ${PROJECT_BINARY_DIR}/${PREFIX}genwrappers.cmake
+"execute_process(
+    COMMAND ${BUCKETTOOLS_BIN}/systemwrappers_from_options -l ${PROJECT_BINARY_DIR}/cpp_filenames.txt.temp -- ${OPTIONSFILE}
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-    DEPENDS ${OPTIONSFILE}
-    DEPENDS ${BUCKETTOOLS_BIN}/systemwrappers_from_options
     )
- 
+
+execute_process(
+    COMMAND ${CMAKE_COMMAND} -E compare_files ${PROJECT_BINARY_DIR}/cpp_filenames.txt.temp ${PROJECT_BINARY_DIR}/cpp_filenames.txt
+    RESULT_VARIABLE CPP_FILENAMES_CHANGED
+    OUTPUT_QUIET
+    ERROR_QUIET
+    )
+
+if (CPP_FILENAMES_CHANGED)
+  execute_process(
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PROJECT_BINARY_DIR}/cpp_filenames.txt.temp ${PROJECT_BINARY_DIR}/cpp_filenames.txt
+      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+      )
+
+  execute_process(
+      COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target rebuild_cache
+      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+      )
+endif (CPP_FILENAMES_CHANGED)
+"
+    )
+
 # create a custom target so we can make the project depend on this
 add_custom_target(
    ${PREFIX}genwrappers
-   DEPENDS ${PROJECT_BINARY_DIR}/SystemFunctionalsWrapper.cpp ${PROJECT_BINARY_DIR}/SystemSolversWrapper.cpp ${PROJECT_BINARY_DIR}/SystemExpressionsWrapper.cpp
+   COMMAND ${CMAKE_COMMAND} -P ${PREFIX}genwrappers.cmake
+   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
    )
+
+if(NOT EXISTS ${PROJECT_BINARY_DIR}/cpp_filenames.txt)
+  # perform a dry run of code generation so that a base cpp_filenames can be created at configuration time
+  execute_process(
+     COMMAND ${BUCKETTOOLS_BIN}/systemwrappers_from_options -d -l ${PROJECT_BINARY_DIR}/cpp_filenames.txt -- ${OPTIONSFILE}
+     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+     )
+endif()
+
+file(STRINGS ${PROJECT_BINARY_DIR}/cpp_filenames.txt CPP_FILENAMES)
 
 # include the buckettools include directory and the binary directory (for the systemswrapper)
 include_directories(${BUCKETTOOLS_INCLUDE_DIRS} ${PROJECT_BINARY_DIR})
@@ -44,11 +73,13 @@ include_directories(${BUCKETTOOLS_INCLUDE_DIRS} ${PROJECT_BINARY_DIR})
 include_directories(${PYTHON_INCLUDE_PATH})
 # generate a library - really the main point of this whole process
 add_library(${PREFIX}buckettools_ufc SHARED
-            ${PROJECT_BINARY_DIR}/SystemFunctionalsWrapper.cpp ${PROJECT_BINARY_DIR}/SystemSolversWrapper.cpp ${PROJECT_BINARY_DIR}/SystemExpressionsWrapper.cpp)
+            ${PROJECT_BINARY_DIR}/SystemFunctionalsWrapper.cpp ${PROJECT_BINARY_DIR}/SystemSolversWrapper.cpp ${PROJECT_BINARY_DIR}/SystemExpressionsWrapper.cpp
+            ${CPP_FILENAMES})
 # tell cmake that this file doesn't exist until build time
 set_source_files_properties(${PROJECT_BINARY_DIR}/SystemFunctionalsWrapper.cpp PROPERTIES GENERATED 1)
 set_source_files_properties(${PROJECT_BINARY_DIR}/SystemSolversWrapper.cpp PROPERTIES GENERATED 1)
 set_source_files_properties(${PROJECT_BINARY_DIR}/SystemExpressionsWrapper.cpp PROPERTIES GENERATED 1)
+set_source_files_properties(${CPP_FILENAMES} PROPERTIES GENERATED 1)
 # the project depends on this target
 add_dependencies(${PREFIX}buckettools_ufc ${PREFIX}genwrappers)
 # link to other libraries
