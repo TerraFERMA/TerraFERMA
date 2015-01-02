@@ -44,6 +44,22 @@ class Bucket:
       for solver in system.solvers:
         solver.write_ufc()
 
+  def list_namespaces(self):
+    """Return a list of the namespaces."""
+    namespaces = []
+    for system in self.systems:
+      for field in system.fields:
+        for functional in field.functionals:
+          namespaces.append(functional.namespace())
+      for coeff in system.coeffs:
+        if coeff.functional:
+          namespaces.append(functional.namespace())
+        for functional in coeff.functionals:
+          namespaces.append(functional.namespace())
+      for solver in system.solvers:
+        namespaces.append(solver.namespace())
+    return namespaces
+
   def write_cppexpressions(self):
     """Write all cpp expression header files described by the bucket."""
     for system in self.systems:

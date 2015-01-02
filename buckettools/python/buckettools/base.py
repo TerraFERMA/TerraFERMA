@@ -20,6 +20,9 @@
 
 import sys
 import re
+import hashlib
+import shutil
+import subprocess
 
 # Functions used to provide comments in ufls
 def comment(string):
@@ -80,4 +83,57 @@ def forms_symbols(forms):
     symbols += form_symbols(form)
   return symbols
 
+def ffc(namespace, quadrature_rule, quadrature_degree):
+  uflfilename = namespace+".ufl"
+
+  try:
+    checksum = hashlib.md5(open(uflfilename).read()).hexdigest()
+  except:
+    checksum = None
+
+  try:
+    headerfile = open(namespace+".h")
+  except IOError:
+    headerfile = None
+
+  if headerfile:
+    rebuild = checksum != hashlib.md5(open(uflfilename+".temp").read()).hexdigest()
+
+    headertext = headerfile.read()
+    
+    qdi  = headertext.find("quadrature_degree")
+    qdin = headertext.find("\n", qdi, -1)
+    if (qdi != -1) and (qdin != -1):
+      qd_old = headertext[qdi:qdin].split(" ")[-1]
+      qd_new = "'"+`quadrature_degree`+"'" if quadrature_degree is not None else "'auto'"
+      rebuild = rebuild or qd_new != qd_old
+    else: # if we don't know what the old quadrature degree was we always want to (re)build
+      rebuild = True
+
+    qri  = headertext.find("quadrature_rule")
+    qrin = headertext.find("\n", qri, -1)
+    if (qri != -1) and (qrin != -1):
+      qr_old = headertext[qri:qrin].split(" ")[-1]
+      qr_new = "'"+quadrature_rule+"'" 
+      rebuild = rebuild or qr_new != qr_old
+    else: # if we don't know what the old quadrature rule was we always want to (re)build
+      rebuild = True
+    
+  else:   # if we don't have a header file we always want to (re)build
+    rebuild = True
+
+  if rebuild:
+    # files and/or quadrature degree have changed
+    shutil.copy(uflfilename+".temp", uflfilename)
+    command = ["ffc", "-l", "dolfin", "-O", "-r", "quadrature"]
+    if quadrature_degree is not None:
+      command += ["-fquadrature_degree="+`quadrature_degree`]
+    command += ["-fsplit"]
+    command += ["-q", quadrature_rule]
+    command += [uflfilename]
+    try:
+      subprocess.check_call(command)
+    except:
+      print "ERROR while calling ffc on file ", uflfilename
+      sys.exit(1)
 
