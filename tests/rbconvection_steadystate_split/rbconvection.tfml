@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -43,11 +43,11 @@
   <global_parameters/>
   <system name="Temperature">
     <mesh name="Mesh"/>
-    <ufl_symbol>
+    <ufl_symbol name="global">
       <string_value lines="1">uT</string_value>
     </ufl_symbol>
     <field name="Temperature">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">T</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -96,7 +96,7 @@
         <include_in_statistics>
           <functional name="TopSurfaceIntegral">
             <string_value lines="20" type="code" language="python">int = grad(T)[1]*ds(4)</string_value>
-            <ufl_symbol>
+            <ufl_symbol name="functional">
               <string_value lines="1">int</string_value>
             </ufl_symbol>
             <quadrature_rule name="default"/>
@@ -105,7 +105,7 @@
       </diagnostics>
     </field>
     <coefficient name="Source">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">f</string_value>
       </ufl_symbol>
       <type name="Constant">
@@ -128,19 +128,19 @@ r = rT</string_value>
         </preamble>
         <form name="Bilinear" rank="1">
           <string_value lines="20" type="code" language="python">a = lhs(r)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
         <form name="Linear" rank="0">
           <string_value lines="20" type="code" language="python">L = rhs(r)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">L</string_value>
           </ufl_symbol>
         </form>
         <form name="Residual" rank="0">
           <string_value lines="20" type="code" language="python">res = action(a, uT_i) - L</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">res</string_value>
           </ufl_symbol>
         </form>
@@ -169,11 +169,11 @@ r = rT</string_value>
   </system>
   <system name="Stokes">
     <mesh name="Mesh"/>
-    <ufl_symbol>
+    <ufl_symbol name="global">
       <string_value lines="1">us</string_value>
     </ufl_symbol>
     <field name="Velocity">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">v</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -258,7 +258,7 @@ r = rT</string_value>
         <include_in_statistics>
           <functional name="L2Norm">
             <string_value lines="20" type="code" language="python">int = inner(v,v)*dx</string_value>
-            <ufl_symbol>
+            <ufl_symbol name="functional">
               <string_value lines="1">int</string_value>
             </ufl_symbol>
             <quadrature_rule name="default"/>
@@ -267,7 +267,7 @@ r = rT</string_value>
       </diagnostics>
     </field>
     <field name="Pressure">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">p</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -303,25 +303,25 @@ r = rv + rp</string_value>
         </preamble>
         <form name="Bilinear" rank="1">
           <string_value lines="20" type="code" language="python">a = lhs(r)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
         <form name="BilinearPC" rank="1">
           <string_value lines="20" type="code" language="python">aPC = a + p_t*p_a*dx</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">aPC</string_value>
           </ufl_symbol>
         </form>
         <form name="Linear" rank="0">
           <string_value lines="20" type="code" language="python">L = rhs(r)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">L</string_value>
           </ufl_symbol>
         </form>
         <form name="Residual" rank="0">
           <string_value lines="20" type="code" language="python">res = action(a, us_i) - L</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">res</string_value>
           </ufl_symbol>
         </form>

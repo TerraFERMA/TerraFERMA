@@ -157,3 +157,15 @@ class FunctionalBucket:
     cpp.append("          }\n")
     return cpp
 
+  def repeated_uflsymbol_check(self):
+    """Check for repeated ufl symbols."""
+    stat = 0
+    uflsymbols = self.function.system.bucket.list_globaluflsymbols()
+    if self.symbol in uflsymbols:
+      stat = 1
+      print "ERROR functional ufl_symbol %s from functional %s::%s::%s repeated in global ufl_symbols! Change one of its instances."%(self.symbol, self.function.system.name, self.function.name, self.name)
+    repeated_auto_uflsymbols = set([s for s in uflsymbols for a in uflsymbol_suffixes() if s+a == self.symbol and a != ''])
+    if len(repeated_auto_uflsymbols) > 0: stat = 1
+    for s in repeated_auto_uflsymbols: print "ERROR functional ufl_symbol %s from functional %s::%s::%s matches ufl_symbol generated from global ufl_symbol %s! Change functional ufl_symbol %s to avoid reserved endings."%(self.symbol, self.function.system.name, self.function.name, self.name, s, self.symbol)
+    return stat
+

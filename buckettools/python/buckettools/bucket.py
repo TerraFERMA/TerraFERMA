@@ -60,6 +60,46 @@ class Bucket:
         namespaces.append(solver.namespace())
     return namespaces
 
+  def list_globaluflsymbols(self):
+    """Return a list of global ufl_symbols."""
+    uflsymbols = []
+    if len(self.systems) > 0:
+      for coeff in self.systems[0].special_coeffs:
+        uflsymbols.append(coeff.symbol)
+    for system in self.systems:
+      uflsymbols.append(system.symbol)
+      for field in system.fields:
+        uflsymbols.append(field.symbol)
+      for coeff in system.coeffs:
+        uflsymbols.append(coeff.symbol)
+    return uflsymbols
+
+  def preprocess_checks(self):
+    """Run preprocessing checks."""
+    stat = self.repeated_uflsymbol_check()
+    return stat
+
+  def repeated_uflsymbol_check(self):
+    """Check for repeated ufl symbols."""
+    stat = 0
+    uflsymbols = self.list_globaluflsymbols()
+    repeated_uflsymbols = set([s for s in uflsymbols if uflsymbols.count(s) > 1])
+    if len(repeated_uflsymbols) > 0: stat = 1
+    for s in repeated_uflsymbols: print "ERROR global ufl_symbol %s repeated! Change one of its instances."%(s)
+    repeated_auto_uflsymbols = set([(s, s+a) for s in uflsymbols for a in uflsymbol_suffixes() if uflsymbols.count(s+a) >= 1 and a != ''])
+    if len(repeated_auto_uflsymbols) > 0: stat = 1
+    for s in repeated_auto_uflsymbols: print "ERROR ufl_symbol generated from global ufl_symbol %s conflicts with global ufl_symbol %s! Change global ufl_symbol %s to avoid reserved endings."%(s[0], s[1], s[1])
+    for system in self.systems:
+      for field in system.fields:
+        for functional in field.functionals:
+          stat = max(stat, functional.repeated_uflsymbol_check())
+      for coeff in system.coeffs:
+        for functional in coeff.functionals:
+          stat = max(stat, functional.repeated_uflsymbol_check())
+      for solver in system.solvers:
+        stat = max(stat, solver.repeated_uflsymbol_check())
+    return stat
+
   def write_cppexpressions(self):
     """Write all cpp expression header files described by the bucket."""
     for system in self.systems:

@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -65,7 +65,7 @@
     </finish_time>
     <timestep>
       <coefficient name="Timestep">
-        <ufl_symbol>
+        <ufl_symbol name="global">
           <string_value lines="1">dt</string_value>
         </ufl_symbol>
         <type name="Constant">
@@ -97,11 +97,11 @@
   <global_parameters/>
   <system name="Stokes">
     <mesh name="Mesh"/>
-    <ufl_symbol>
+    <ufl_symbol name="global">
       <string_value lines="1">us</string_value>
     </ufl_symbol>
     <field name="Velocity">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">v</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -186,7 +186,7 @@
         <include_in_statistics>
           <functional name="L2NormSquared">
             <string_value lines="20" type="code" language="python">int = inner(v,v)*dx</string_value>
-            <ufl_symbol>
+            <ufl_symbol name="functional">
               <string_value lines="1">int</string_value>
             </ufl_symbol>
             <quadrature_rule name="default"/>
@@ -197,7 +197,7 @@
       </diagnostics>
     </field>
     <field name="Pressure">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">p</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -227,7 +227,7 @@
         <include_in_statistics>
           <functional name="Integral">
             <string_value lines="20" type="code" language="python">int = p*dx</string_value>
-            <ufl_symbol>
+            <ufl_symbol name="functional">
               <string_value lines="1">int</string_value>
             </ufl_symbol>
             <quadrature_rule name="default"/>
@@ -238,7 +238,7 @@
       </diagnostics>
     </field>
     <field name="Temperature">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">T</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -289,7 +289,7 @@
         <include_in_statistics>
           <functional name="TopSurfaceIntegral">
             <string_value lines="20" type="code" language="python">int = T.dx(1)*ds(4)</string_value>
-            <ufl_symbol>
+            <ufl_symbol name="functional">
               <string_value lines="1">int</string_value>
             </ufl_symbol>
             <quadrature_rule name="default"/>
@@ -297,7 +297,7 @@
           </functional>
           <functional name="BottomSurfaceIntegral">
             <string_value lines="20" type="code" language="python">int = T.dx(1)*ds(3)</string_value>
-            <ufl_symbol>
+            <ufl_symbol name="functional">
               <string_value lines="1">int</string_value>
             </ufl_symbol>
             <quadrature_rule name="default"/>
@@ -308,7 +308,7 @@
       </diagnostics>
     </field>
     <coefficient name="Functional">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">func</string_value>
       </ufl_symbol>
       <type name="Constant">
@@ -316,7 +316,7 @@
           <value type="value" name="WholeMesh">
             <functional rank="0">
               <string_value lines="20" type="code" language="python">int = p_i*dx</string_value>
-              <ufl_symbol>
+              <ufl_symbol name="functional">
                 <string_value lines="1">int</string_value>
               </ufl_symbol>
               <quadrature_rule name="default"/>
@@ -329,7 +329,7 @@
       </diagnostics>
     </coefficient>
     <coefficient name="Dummy">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">dummy</string_value>
       </ufl_symbol>
       <type name="Constant">
@@ -337,7 +337,7 @@
           <value type="value" name="WholeMesh">
             <functional rank="0">
               <string_value lines="20" type="code" language="python">int = func*dx</string_value>
-              <ufl_symbol>
+              <ufl_symbol name="functional">
                 <string_value lines="1">int</string_value>
               </ufl_symbol>
               <quadrature_rule name="default"/>
@@ -349,7 +349,7 @@
         <include_in_statistics>
           <functional name="Integral">
             <string_value lines="20" type="code" language="python">int = dummy*dx</string_value>
-            <ufl_symbol>
+            <ufl_symbol name="functional">
               <string_value lines="1">int</string_value>
             </ufl_symbol>
             <quadrature_rule name="default"/>
@@ -370,19 +370,19 @@ rp = p_t*div(v_i)*dx
 rT = (T_t*((T_i - T_n) + dt*theta*inner(v_half, grad(T_i)) + dt*(1.-theta)*inner(v_half, grad(T_n))) + recRa*dt*theta*inner(grad(T_t), grad(T_i)) + recRa*dt*(1.-theta)*inner(grad(T_t), grad(T_n)))*dx
 
 r = rv + rp + rT</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">r</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
           <string_value lines="20" type="code" language="python">a = derivative(r, us_i, us_a)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
         <form name="JacobianPC" rank="1">
           <string_value lines="20" type="code" language="python">aPC = a + p_t*p_a*dx</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">aPC</string_value>
           </ufl_symbol>
         </form>
@@ -517,11 +517,11 @@ r = rv + rp + rT</string_value>
   </system>
   <system name="Divergence">
     <mesh name="Mesh"/>
-    <ufl_symbol>
+    <ufl_symbol name="global">
       <string_value lines="1">ud</string_value>
     </ufl_symbol>
     <field name="Divergence">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">d</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -553,19 +553,19 @@ r = rv + rp + rT</string_value>
         </preamble>
         <form name="Bilinear" rank="1">
           <string_value lines="20" type="code" language="python">a = lhs(r)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
         <form name="Linear" rank="0">
           <string_value lines="20" type="code" language="python">L = rhs(r)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">L</string_value>
           </ufl_symbol>
         </form>
         <form name="Residual" rank="0">
           <string_value lines="20" type="code" language="python">res = action(a, ud_i) - L</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">res</string_value>
           </ufl_symbol>
         </form>
@@ -602,11 +602,11 @@ r = rv + rp + rT</string_value>
   </system>
   <system name="CourantNumber">
     <mesh name="Mesh"/>
-    <ufl_symbol>
+    <ufl_symbol name="global">
       <string_value lines="1">uc</string_value>
     </ufl_symbol>
     <field name="CourantNumber">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">c</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -642,19 +642,19 @@ r = c_t*c_a*dx - c_t('+')*vout('+')*dt('+')*dS - c_t('-')*vout('-')*dt('-')*dS -
         </preamble>
         <form name="Bilinear" rank="1">
           <string_value lines="20" type="code" language="python">a = lhs(r)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
         <form name="Linear" rank="0">
           <string_value lines="20" type="code" language="python">L = rhs(r)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">L</string_value>
           </ufl_symbol>
         </form>
         <form name="Residual" rank="0">
           <string_value lines="20" type="code" language="python">res = action(a, uc_i) - L</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">res</string_value>
           </ufl_symbol>
         </form>

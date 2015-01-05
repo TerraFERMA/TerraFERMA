@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -38,11 +38,11 @@
   <global_parameters/>
   <system name="Regions">
     <mesh name="Mesh"/>
-    <ufl_symbol>
+    <ufl_symbol name="global">
       <string_value lines="1">ur</string_value>
     </ufl_symbol>
     <field name="Field">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">f</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -96,7 +96,7 @@
       </diagnostics>
     </field>
     <coefficient name="Coefficient">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">c</string_value>
       </ufl_symbol>
       <type name="Expression">
@@ -152,13 +152,13 @@
       <type name="SNES">
         <form name="Residual" rank="0">
           <string_value lines="20" type="code" language="python">r = f_t*(f_i-c_i)*dx(32) + f_t*(f_i-c_i)*dx(33) + f_t*(f_i-c_i)*dx(34) + f_t*(f_i-c_i)*dx(35)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">r</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
           <string_value lines="20" type="code" language="python">a = derivative(r, ur_i, ur_a)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>

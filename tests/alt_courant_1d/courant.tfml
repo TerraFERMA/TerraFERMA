@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -31,7 +31,7 @@
     </finish_time>
     <timestep>
       <coefficient name="Timestep">
-        <ufl_symbol>
+        <ufl_symbol name="global">
           <string_value lines="1">dt</string_value>
         </ufl_symbol>
         <type name="Constant">
@@ -49,11 +49,11 @@
   <global_parameters/>
   <system name="CourantNumber">
     <mesh name="Mesh"/>
-    <ufl_symbol>
+    <ufl_symbol name="global">
       <string_value lines="1">uc</string_value>
     </ufl_symbol>
     <coefficient name="Velocity">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">v</string_value>
       </ufl_symbol>
       <type name="Constant">
@@ -70,7 +70,7 @@
       </diagnostics>
     </coefficient>
     <coefficient name="AltCourantNumber">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">ac</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -108,7 +108,7 @@ values[0] = (val*bucket()-&gt;timestep())/dcell.diameter();</string_value>
         <include_in_statistics>
           <functional name="Integral">
             <string_value lines="20" type="code" language="python">int = ac*dx</string_value>
-            <ufl_symbol>
+            <ufl_symbol name="functional">
               <string_value lines="1">int</string_value>
             </ufl_symbol>
             <quadrature_rule name="default"/>
