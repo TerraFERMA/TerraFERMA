@@ -703,9 +703,11 @@ const std::string SystemBucket::solvers_str(const int &indent) const
 //*******************************************************************|************************************************************//
 // checkpoint the system
 //*******************************************************************|************************************************************//
-void SystemBucket::checkpoint()
+void SystemBucket::checkpoint(const double_ptr time)
 {
-  if (function())
+  Function_ptr function = function_ptr(time);
+
+  if (function)
   {
 
     std::stringstream buffer;
@@ -714,7 +716,7 @@ void SystemBucket::checkpoint()
                            << name() << "_" 
                            << (*bucket()).checkpoint_count() << ".xml";
     dolfin::File sysfile(buffer.str());
-    sysfile << *function();
+    sysfile << *function;
 
   }
 

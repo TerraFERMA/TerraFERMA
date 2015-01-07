@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -319,7 +319,7 @@ r = r1 + r2</string_value>
               <real_value rank="0">1.e-12</real_value>
             </relative_error>
             <max_iterations>
-              <integer_value rank="0">100</integer_value>
+              <integer_value rank="0">1</integer_value>
             </max_iterations>
             <zero_initial_guess/>
             <monitors>

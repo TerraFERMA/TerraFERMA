@@ -497,9 +497,12 @@ class Run:
     return rundirectory
 
   def getdependencyoptions(self, procscales):
-    suboptionsdict = {"values" : collections.OrderedDict(), "procscales" : collections.OrderedDict() }
+    suboptionsdict = {"values" : collections.OrderedDict(), "procscales" : collections.OrderedDict(), 
+                      "value_indices" : collections.OrderedDict(), "value_lengths" : collections.OrderedDict() }
     for option, procscalelist in procscales.iteritems(): 
       suboptionsdict["values"][option] = self.optionsdict["values"][option]
+      suboptionsdict["value_indices"][option] = self.optionsdict["value_indices"][option]
+      suboptionsdict["value_lengths"][option] = self.optionsdict["value_lengths"][option]
 
       if procscalelist is not None:
         if len(procscalelist) != self.optionsdict["value_lengths"][option]:
@@ -575,6 +578,8 @@ class Simulation(Run):
          dependencyoptions = self.getdependencyoptions(depoptionsdict["procscales"])
          depoptionsdict["values"] = dependencyoptions["values"]
          depoptionsdict["procscales"] = dependencyoptions["procscales"]
+         depoptionsdict["value_indices"] = dependencyoptions["value_indices"]
+         depoptionsdict["value_lengths"] = dependencyoptions["value_lengths"]
          if depoptionsdict["type"] is Run:
            self.dependencies.append(Run(dependencypath, depoptionsdict, \
                                         currentdirectory, logprefix=logprefix, \

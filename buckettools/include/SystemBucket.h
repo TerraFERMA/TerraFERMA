@@ -270,7 +270,7 @@ namespace buckettools
     virtual const std::string solvers_str(const int &indent=0) const;// return an indented string describing the solver buckets in
                                                                      // the system
 
-    void checkpoint();                                               // checkpoint the system
+    void checkpoint(const double_ptr time);                          // checkpoint the system
 
   //*****************************************************************|***********************************************************//
   // Protected functions

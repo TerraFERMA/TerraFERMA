@@ -1099,7 +1099,7 @@ void SpudBucket::fill_diagnostics_()
 //*******************************************************************|************************************************************//
 // checkpoint the options file
 //*******************************************************************|************************************************************//
-void SpudBucket::checkpoint_options_()
+void SpudBucket::checkpoint_options_(const double_ptr time)
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
@@ -1115,7 +1115,7 @@ void SpudBucket::checkpoint_options_()
   if (Spud::have_option(buffer.str()))
   {
     buffer.str(""); buffer << "/timestepping/current_time";          // set the current time
-    serr = Spud::set_option(buffer.str(), current_time());
+    serr = Spud::set_option(buffer.str(), *time);
     spud_err(buffer.str(), serr);
 
     buffer.str(""); 

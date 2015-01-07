@@ -971,15 +971,18 @@ void Bucket::output(const int &location)
 }
 
 //*******************************************************************|************************************************************//
-// loop over the systems in the bucket, telling each to output diagnostic data
+// decide if we're checkpointing or not (and what we're checkpointing) then output it
 //*******************************************************************|************************************************************//
 void Bucket::checkpoint(const int &location)
 {
   bool checkpoint;
+  bool checkpoint_old = false;
   if (location==CHECKPOINT_END)
   {
     checkpoint = (checkpoint_period_||checkpoint_period_timesteps_); // one of these will be associated if we've selected
                                                                      // checkpointing, if we have we force it at the end
+    checkpoint_old = checkpoint &&                                   // if we're checkpointing and we received a SIGINT
+     (*(*SignalHandler::instance()).return_handler(SIGINT)).received(); // then prepare to checkpoint the old time level too
   }
   else
   {
@@ -994,16 +997,29 @@ void Bucket::checkpoint(const int &location)
     return;
   }  
 
+  if (checkpoint_old)
+  {
+    checkpoint_(old_time_ptr());
+  }
+  checkpoint_(current_time_ptr());
+
+}
+
+//*******************************************************************|************************************************************//
+// loop over the systems in the bucket, telling each to output diagnostic data
+//*******************************************************************|************************************************************//
+void Bucket::checkpoint_(const double_ptr time)
+{
   log(INFO, "Checkpointing simulation.");
 
  
   for (SystemBucket_it s_it = systems_begin(); 
                        s_it != systems_end(); s_it++)
   {
-    (*(*s_it).second).checkpoint();
+    (*(*s_it).second).checkpoint(time);
   }
 
-  checkpoint_options_();
+  checkpoint_options_(time);
 
   (*checkpoint_count_)++;
 
@@ -1305,7 +1321,7 @@ bool Bucket::complete_iterating_(const double &aerror0)
 //*******************************************************************|************************************************************//
 // virtual checkpointing of options
 //*******************************************************************|************************************************************//
-void Bucket::checkpoint_options_()
+void Bucket::checkpoint_options_(const double_ptr time)
 {
   tf_err("Failed to find virtual function checkpoint_options_.", "Need to implement a checkpointing method.");
 }
