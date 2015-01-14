@@ -413,9 +413,8 @@ F = FT + Fv + Fp</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
-    </nonlinear_solver>
-    <solve name="at_start"/>
-  </system>
+    <solve name="at_start"/></nonlinear_solver>
+    </system>
   <system name="Divergence">
     <mesh name="Mesh"/>
     <ufl_symbol name="global">
@@ -515,9 +514,8 @@ r = d_t*d_a*dx_wedge - d_t*div(v_i)*dx_wedge</string_value>
         </linear_solver>
         <ignore_all_solver_failures/>
       </type>
-    </nonlinear_solver>
-    <solve name="with_diagnostics"/>
-  </system>
+    <solve name="with_diagnostics"/></nonlinear_solver>
+    </system>
   <system name="Viscosity">
     <mesh name="Mesh"/>
     <ufl_symbol name="global">
@@ -610,7 +608,6 @@ r = r_plate + r_wedge + r_slab</string_value>
         </linear_solver>
         <ignore_all_solver_failures/>
       </type>
-    </nonlinear_solver>
-    <solve name="with_diagnostics"/>
-  </system>
+    <solve name="with_diagnostics"/></nonlinear_solver>
+    </system>
 </terraferma_options>

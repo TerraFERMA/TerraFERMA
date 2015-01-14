@@ -172,6 +172,12 @@ namespace buckettools
 
     void initialize_tensors_();                                      // fill the tensor data structures of the solver bucket
 
+    //***************************************************************|***********************************************************//
+    // Output functions (continued)
+    //***************************************************************|***********************************************************//
+
+    void checkpoint_options_();                                      // checkpoint the options system for the spudsystembucket
+
     
   };
  

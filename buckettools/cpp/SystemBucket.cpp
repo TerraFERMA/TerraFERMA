@@ -71,23 +71,43 @@ void SystemBucket::evaluate_initial_fields()
 //*******************************************************************|************************************************************//
 // loop over the ordered solver buckets in the bucket, calling solve on each of them
 //*******************************************************************|************************************************************//
-void SystemBucket::solve()
+bool SystemBucket::solve(const int &location, const bool force)
 {
+  std::vector<int> locations(1, location);
+  return solve(locations, force);
+}
+
+//*******************************************************************|************************************************************//
+// loop over the ordered solver buckets in the bucket, calling solve on each of them
+//*******************************************************************|************************************************************//
+bool SystemBucket::solve(const std::vector<int> &locations, const bool force)
+{
+  bool solved = false;
+
   for (SolverBucket_const_it s_it = solvers_begin(); 
                              s_it != solvers_end(); s_it++)
   {
-    (*(*s_it).second).solve();
+    bool solve = true;
+    if (!locations.empty())
+    {
+      solve = std::find(locations.begin(), locations.end(), (*(*s_it).second).solve_location()) != locations.end();
+    }
+                                                                     // solve if the location meets requirements AND
+    if (solve && (!(*(*s_it).second).solved() || solved || force))   // if this solver hasn't be solved this timestep yet, a previous solver
+    {                                                                // has been solved (potentially changing the initial guess of
+      (*(*s_it).second).solve();                                     // this solver or if we are forcing (which is actually the
+                                                                     // default unless explicitly set to false)
 
-    postprocess_values();
+      postprocess_values();
 
-    (*(*residualfunction_).vector()) = (*std::dynamic_pointer_cast< dolfin::GenericVector >((*(*s_it).second).residual_vector()));
-    // update_nonlinear...
+      (*(*residualfunction_).vector()) = (*std::dynamic_pointer_cast< dolfin::GenericVector >((*(*s_it).second).residual_vector()));
+      // update_nonlinear...
+
+      solved = true;
+    }
   }
 
-  if(solved_)
-  {
-    *solved_ = true;
-  }
+  return solved;
 }
 
 //*******************************************************************|************************************************************//
@@ -117,7 +137,11 @@ void SystemBucket::update()
 
   resetcalculated();                                                 // reset the calculated booleans in the system, fields and functionals
 
-  *solved_ = false;                                                  // reset the solved_ indicator to false for the next timestep
+  for (SolverBucket_it s_it = solvers_begin();
+                         s_it != solvers_end(); s_it++)
+  {
+    (*(*s_it).second).update();                                      // reset the solved_ indicator to false for the next timestep
+  }
 
 }
 
@@ -226,22 +250,97 @@ void SystemBucket::postprocess_values()
 }
 
 //*******************************************************************|************************************************************//
-// reutrn the l2 norm of the residual of the last solver
+// return the l2 norm of the residual of the last solver that meets the location requirement
 //*******************************************************************|************************************************************//
-double SystemBucket::residual_norm()
+double SystemBucket::residual_norm(const int &location)
+{
+  std::vector<int> locations(1, location);
+  return residual_norm(locations);
+}
+
+//*******************************************************************|************************************************************//
+// return the l2 norm of the residual of the last solver that meets the location requirement
+//*******************************************************************|************************************************************//
+double SystemBucket::residual_norm(const std::vector<int> &locations)
 {
   double norm = 0.0;
 
   if (!solvers_.empty())
   {
-    SolverBucket_it s_it = solvers_end();
-    s_it--;
-    norm = (*(*s_it).second).residual_norm();
+    bool calculate_norm = true;
 
-    (*(*residualfunction_).vector()) = (*std::dynamic_pointer_cast< dolfin::GenericVector >((*(*s_it).second).residual_vector()));
+    SolverBucket_it s_it = solvers_end();
+    while (s_it != solvers_begin())
+    {
+      s_it--;
+      if (!locations.empty())
+      {
+        calculate_norm = std::find(locations.begin(), locations.end(), (*(*s_it).second).solve_location()) != locations.end();
+      }
+      if (calculate_norm)
+      {
+        break;
+      }
+    }
+
+    if (calculate_norm)
+    {
+      norm = (*(*s_it).second).residual_norm();
+
+      (*(*residualfunction_).vector()) = (*std::dynamic_pointer_cast< dolfin::GenericVector >((*(*s_it).second).residual_vector()));
+    }
   }
 
   return norm;
+}
+
+//*******************************************************************|************************************************************//
+// return a std::vector listing the solve locations of this system's solvers
+//*******************************************************************|************************************************************//
+const std::vector<int> SystemBucket::solve_locations() const
+{
+  std::vector<int> locations;
+  for (SolverBucket_it s_it = solvers_begin();
+                         s_it != solvers_end();
+                         s_it++)
+  {
+    locations.push_back((*(*s_it).second).solve_location());
+  }
+
+  return locations;
+}
+
+//*******************************************************************|************************************************************//
+// return a boolean indicating if all the relevant solvers in this system have been solved or not
+//*******************************************************************|************************************************************//
+const bool SystemBucket::solved(const int &location) const
+{
+  std::vector<int> locations(1, location);
+  return solved(locations);
+}
+
+//*******************************************************************|************************************************************//
+// return a boolean indicating if all the relevant solvers in this system have been solved or not
+//*******************************************************************|************************************************************//
+const bool SystemBucket::solved(const std::vector<int> &locations) const
+{
+  bool solved = true;
+  for (SolverBucket_it s_it = solvers_begin();
+                         s_it != solvers_end();
+                         s_it++)
+  {
+    bool test = true;
+    if (!locations.empty())
+    {
+      test = std::find(locations.begin(), locations.end(), (*(*s_it).second).solve_location()) != locations.end();
+    }
+    if (test)
+    {
+      solved = solved && (*(*s_it).second).solved();
+    }
+  }
+
+  return solved;
 }
 
 //*******************************************************************|************************************************************//
@@ -726,7 +825,11 @@ void SystemBucket::checkpoint(const double_ptr time)
     (*(*f_it).second).checkpoint();
   }
 
-  checkpoint_options_();
+  for (SolverBucket_it s_it = solvers_begin();
+                       s_it != solvers_end(); s_it++)
+  {
+    (*(*s_it).second).checkpoint();
+  }
 
 }
 
@@ -836,14 +939,6 @@ void SystemBucket::attach_solver_coeffs_(SolverBucket_it s_begin,
   {
     (*(*s_it).second).attach_form_coeffs();                          // attach coefficients to the forms of this solver bucket
   }
-}
-
-//*******************************************************************|************************************************************//
-// virtual checkpointing of options
-//*******************************************************************|************************************************************//
-void SystemBucket::checkpoint_options_()
-{
-  tf_err("Failed to find virtual function checkpoint_options_.", "Need to implement a checkpointing method.");
 }
 
 

@@ -34,8 +34,6 @@ namespace buckettools
   class SystemBucket;                                                // predeclare the class itself
   typedef std::shared_ptr< SystemBucket > SystemBucket_ptr;        // so we can predeclare a pointer to it
   
-  enum functionbucket_type { SOLVE_START, SOLVE_TIMELOOP, SOLVE_DIAGNOSTICS, SOLVE_NEVER };
-
   //*****************************************************************|************************************************************//
   // SystemBucket class:
   //
@@ -69,7 +67,10 @@ namespace buckettools
 
     void evaluate_initial_fields();                                  // evaluate the initial values of the fields
 
-    void solve();                                                    // solve the solvers in this system (in order)
+    bool solve(const int &location, const bool force=true);          // solve the solvers in this system (in order)
+
+    bool solve(const std::vector<int> &locations=std::vector<int>(), 
+                                 const bool force=true);             // solve the solvers in this system matching any locations
 
     void update();                                                   // update the functions in this system at the end of a timestep
 
@@ -85,7 +86,17 @@ namespace buckettools
 
     void postprocess_values();                                       // cap the values of the fields in this system
 
-    double residual_norm();                                          // return the norm of the residual of the last solver
+    double residual_norm(const int &location);                       // return the norm of the residual of the last solver that meets the location requirement
+
+    double residual_norm(const std::vector<int> &locations=
+                                                 std::vector<int>());// return the norm of the residual of the last solver that meets the location requirement
+
+    const std::vector<int> solve_locations() const;                  // return a std::vector indicating the solve locations of the solvers
+
+    const bool solved(const int &location) const;                    // return a boolean indicating if this system has been solved
+
+    const bool solved(const std::vector<int> &locations=
+                                          std::vector<int>()) const; // return a boolean indicating if this system has been solved
 
     //***************************************************************|***********************************************************//
     // Filling data
@@ -149,12 +160,6 @@ namespace buckettools
 
     const Bucket* bucket() const                                     // return a constant pointer to the parent bucket
     { return bucket_; }
-
-    const int solve_location() const                                 // return an integer describing where this system is solved
-    { return solve_location_; }
-
-    const bool solved() const                                        // return a boolean indicating if this system has been solved
-    { return *solved_; }                                              // for or not
 
     //***************************************************************|***********************************************************//
     // Field data access
@@ -321,13 +326,9 @@ namespace buckettools
 
     File_ptr icfile_;                                                // (boost shared) pointer to a file containing a checkpointed ic
 
-    int solve_location_;                                             // when this system will be solved
-
     Function_ptr changefunction_;                                    // (boost shared) pointer to the change between timesteps
 
     bool_ptr change_calculated_;                                     // indicate if the change has been recalculated recently
-
-    bool_ptr solved_;                                                // indicate if the system has been solved this timestep
 
     Function_ptr residualfunction_;                                  // (boost shared) pointer to the residual of the system
 
@@ -346,12 +347,6 @@ namespace buckettools
                                                                      // solver buckets
 
     std::vector< const dolfin::DirichletBC* > bcs_;                  // a vector of (boost shared) poitners to the dirichlet bcs
-
-    //***************************************************************|***********************************************************//
-    // Output functions (continued)
-    //***************************************************************|***********************************************************//
-
-    virtual void checkpoint_options_();                              // checkpoint the options system for the systembucket
 
   };
 

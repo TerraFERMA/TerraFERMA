@@ -27,6 +27,7 @@
 #include "SystemBucket.h"
 #include "StatisticsFile.h"
 #include "SteadyStateFile.h"
+#include "SolverBucket.h"
 #include "DetectorsFile.h"
 #include "SystemsConvergenceFile.h"
 #include <dolfin.h>

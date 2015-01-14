@@ -484,9 +484,12 @@ void FunctionBucket::refresh(const bool force)
 {
   if (functiontype_==FUNCTIONBUCKET_FIELD)
   {
-    if( (!(*system()).solved()) || force )                           // solve the field's system if it hasn't already
+    std::vector<int> locations;
+    locations.push_back(SOLVE_TIMELOOP);
+    locations.push_back(SOLVE_DIAGNOSTICS);
+    if( (!(*system()).solved(locations)) || force )                  // solve the field's system if it hasn't already
     {                                                                // been solved for this timestep or we're forcing it
-      (*system()).solve();
+      (*system()).solve(locations, force);
     }
   }
   else if (functiontype_==FUNCTIONBUCKET_COEFF)

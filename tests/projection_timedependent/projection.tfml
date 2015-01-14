@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -330,9 +330,8 @@ r = r1 + r2</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
-    </nonlinear_solver>
-    <solve name="in_timeloop"/>
-  </system>
+    <solve name="in_timeloop"/></nonlinear_solver>
+    </system>
   <system name="PicardProjection">
     <mesh name="Mesh"/>
     <ufl_symbol name="global">
@@ -612,7 +611,6 @@ F = F1 + F2</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
-    </nonlinear_solver>
-    <solve name="in_timeloop"/>
-  </system>
+    <solve name="in_timeloop"/></nonlinear_solver>
+    </system>
 </terraferma_options>

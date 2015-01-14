@@ -213,9 +213,8 @@ r = rv + rp</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
-    </nonlinear_solver>
-    <solve name="at_start"/>
-  </system>
+    <solve name="at_start"/></nonlinear_solver>
+    </system>
   <system name="Divergence">
     <mesh name="Mesh"/>
     <ufl_symbol name="global">
@@ -296,7 +295,6 @@ r = rv + rp</string_value>
         </linear_solver>
         <ignore_all_solver_failures/>
       </type>
-    </nonlinear_solver>
-    <solve name="with_diagnostics"/>
-  </system>
+    <solve name="with_diagnostics"/></nonlinear_solver>
+    </system>
 </terraferma_options>

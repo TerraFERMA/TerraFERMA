@@ -512,9 +512,8 @@ r = rv + rp + rT</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
-    </nonlinear_solver>
-    <solve name="in_timeloop"/>
-  </system>
+    <solve name="in_timeloop"/></nonlinear_solver>
+    </system>
   <system name="Divergence">
     <mesh name="Mesh"/>
     <ufl_symbol name="global">
@@ -597,9 +596,8 @@ r = rv + rp + rT</string_value>
         </linear_solver>
         <ignore_all_solver_failures/>
       </type>
-    </nonlinear_solver>
-    <solve name="with_diagnostics"/>
-  </system>
+    <solve name="with_diagnostics"/></nonlinear_solver>
+    </system>
   <system name="CourantNumber">
     <mesh name="Mesh"/>
     <ufl_symbol name="global">
@@ -676,7 +674,6 @@ r = c_t*c_a*dx - c_t('+')*vout('+')*dt('+')*dS - c_t('-')*vout('-')*dt('-')*dS -
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
-    </nonlinear_solver>
-    <solve name="with_diagnostics"/>
-  </system>
+    <solve name="with_diagnostics"/></nonlinear_solver>
+    </system>
 </terraferma_options>

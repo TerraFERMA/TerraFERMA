@@ -19,6 +19,7 @@
 // along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
 
+#include "Bucket.h"
 #include "BoostTypes.h"
 #include "SpudSystemBucket.h"
 #include "SystemSolversWrapper.h"
@@ -140,16 +141,16 @@ void SpudSystemBucket::initialize_coefficient_functions()
 //*******************************************************************|************************************************************//
 void SpudSystemBucket::initialize_solvers()
 {
-  if (solve_location()!=SOLVE_NEVER)
-  {
-    log(INFO, "Initializing matrices for system %s", name().c_str());
+  log(INFO, "Initializing matrices for system %s", name().c_str());
 
-    for (SolverBucket_it s_it = solvers_begin(); s_it != solvers_end();// loop over the solver buckets
-                                                                s_it++)
+  for (SolverBucket_it s_it = solvers_begin(); s_it != solvers_end();// loop over the solver buckets
+                                                              s_it++)
+  {
+    if ((*(*s_it).second).solve_location() != SOLVE_NEVER)
     {
       (*std::dynamic_pointer_cast< SpudSolverBucket >((*s_it).second)).initialize();
-                                                                       // perform a preassembly of all the matrices to set up
-                                                                       // sparsities etc. and set up petsc objects
+                                                                     // perform a preassembly of all the matrices to set up
+                                                                     // sparsities etc. and set up petsc objects
     }
   }
 }
@@ -168,24 +169,6 @@ const std::string SpudSystemBucket::str(int indent) const
   s << coeffs_str(indent);
   s << solvers_str(indent);
   return s.str();
-}
-
-//*******************************************************************|************************************************************//
-// checkpoint the options file
-//*******************************************************************|************************************************************//
-void SpudSystemBucket::checkpoint_options_()
-{
-  std::stringstream buffer;                                          // optionpath buffer
-  Spud::OptionError serr;                                            // spud error code
-
-  if (solve_location()==SOLVE_START)                                 // do not solve again if this system was only meant to be
-  {                                                                  // solved once
-    std::string location = "never";
-    buffer.str(""); buffer << optionpath() << "/solve/name";
-    serr = Spud::set_option_attribute(buffer.str(), location);
-    spud_err(buffer.str(), serr);
-  }
-
 }
 
 //*******************************************************************|************************************************************//
@@ -212,34 +195,7 @@ void SpudSystemBucket::fill_base_()
   celldomains_ = (*bucket_).fetch_celldomains(meshname);             // along with the cell domains
   facetdomains_ = (*bucket_).fetch_facetdomains(meshname);           // and facet domains
 
-  std::string location;
-  buffer.str(""); buffer << optionpath() << "/solve/name";
-  serr = Spud::get_option(buffer.str(), location);
-  spud_err(buffer.str(), serr);
-  if (location=="in_timeloop")
-  {
-    solve_location_ = SOLVE_TIMELOOP;
-  }
-  else if (location=="at_start")
-  {
-    solve_location_ = SOLVE_START;
-  }
-  else if (location=="with_diagnostics")
-  {
-    solve_location_ = SOLVE_DIAGNOSTICS;
-  }
-  else if (location=="never")
-  {
-    solve_location_ = SOLVE_NEVER;
-  }
-  else
-  {
-    tf_err("Unknown solve location.", "System name: %s", name_.c_str());
-  }
-
   change_calculated_.reset( new bool(false) );                       // assume the change hasn't been calculated yet
-
-  solved_.reset( new bool(false) );                                  // assume the system hasn't been solved yet
 
 }
 

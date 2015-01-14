@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -317,8 +317,8 @@ r = rv + rp</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
+      <solve name="at_start"/>
     </nonlinear_solver>
-    <solve name="at_start"/>
   </system>
   <system name="Divergence">
     <mesh name="Mesh"/>
@@ -402,7 +402,7 @@ r = rv + rp</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
+      <solve name="with_diagnostics"/>
     </nonlinear_solver>
-    <solve name="with_diagnostics"/>
   </system>
 </terraferma_options>

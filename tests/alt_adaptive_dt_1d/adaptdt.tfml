@@ -123,6 +123,5 @@ values[0] = (val*bucket()-&gt;timestep())/dcell.diameter();</string_value>
         <include_in_statistics/>
       </diagnostics>
     </coefficient>
-    <solve name="with_diagnostics"/>
-  </system>
+    </system>
 </terraferma_options>

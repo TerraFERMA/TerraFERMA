@@ -39,7 +39,6 @@ system =
       field_options*,
       coefficient_options*,
       nonlinear_solver_options*,
-      solve_location,
       comment
     }
   )
@@ -59,37 +58,6 @@ mesh_choice =
       ## Use the automatically available name "Mesh."
       element mesh {
         attribute name { "Mesh" },
-        comment
-      }
-    )
-  )
-
-solve_location = 
-  (
-    (
-      ## Solve the equations listed in the nonlinear solvers of this system every timestep.
-      element solve {
-        attribute name {"in_timeloop"},
-        comment
-      }|
-      ## Only solve the equations listed in the nonlinear solvers of this system at the start of the simulation.
-      element solve {
-        attribute name {"at_start"},
-        comment
-      }|
-      ## Only solve the equations listed in the nonlinear solvers of this system when diagnostic output is performed.
-      ##
-      ## This means that this system will be updated at an interval dependant on how the diagnostic dump periods are set in /io.
-      element solve {
-        attribute name {"with_diagnostics"},
-        comment
-      }|
-      ## Never solve the equations listed in the nonlinear solvers of this system.
-      ##
-      ## This is primarily intended to be used in checkpoint files when systems set to solve 'at_start' are never solved for in the 
-      ## checkpointed simulation.
-      element solve {
-        attribute name {"never"},
         comment
       }
     )

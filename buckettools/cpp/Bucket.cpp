@@ -147,10 +147,7 @@ void Bucket::solve(const int &location)
   for (SystemBucket_const_it s_it = systems_begin(); 
                              s_it != systems_end(); s_it++)
   {
-    if((*(*s_it).second).solve_location()==location)
-    {
-      (*(*s_it).second).solve();
-    }
+    bool solved = (*(*s_it).second).solve(location);
   }
 }
 
@@ -332,10 +329,7 @@ double Bucket::residual_norm()
   for (SystemBucket_it s_it = systems_begin(); 
                        s_it != systems_end(); s_it++)
   {
-    if((*(*s_it).second).solve_location()==SOLVE_TIMELOOP)           // only interested in in_timeloop systems
-    {
-      norm += std::pow((*(*s_it).second).residual_norm(), 2.0);
-    }
+    norm += std::pow((*(*s_it).second).residual_norm(SOLVE_TIMELOOP), 2.0);
   }
 
   norm = std::sqrt(norm);
@@ -913,7 +907,7 @@ void Bucket::output(const int &location)
                             steadystate_dumptime_,                   // are we writing the steady state file?
                             steadystate_period_timesteps_) ||
                       location==OUTPUT_END) &&                       // force output at end
-                      location !=OUTPUT_START);                      // prevent output at start
+                      location!=OUTPUT_START);                       // prevent output at start
 
   bool write_det = (perform_action_(detectors_period_, detectors_dumptime_, 
                          detectors_period_timesteps_) ||             // are we writing the detectors file?
@@ -929,16 +923,14 @@ void Bucket::output(const int &location)
   for (SystemBucket_const_it s_it = systems_begin();      // loop over the systems (in order)
                              s_it != systems_end(); s_it++)
   {
-    if((*(*s_it).second).solve_location()==SOLVE_DIAGNOSTICS)        // find if any are meant to be solved before output
-    {                                                                // check it has fields included in the current output
-      if( (write_vis    && (*(*s_it).second).include_in_visualization()) ||
-          (write_stat   && (*(*s_it).second).include_in_statistics())    ||
-          (write_steady && (*(*s_it).second).include_in_steadystate())   ||
-          (write_det    && (*(*s_it).second).include_in_detectors())        )
-      {
-        (*(*s_it).second).solve();                                   // solve for those fields
-        systems_solved = true;
-      }
+    if( (write_vis    && (*(*s_it).second).include_in_visualization()) ||
+        (write_stat   && (*(*s_it).second).include_in_statistics())    ||
+        (write_steady && (*(*s_it).second).include_in_steadystate())   ||
+        (write_det    && (*(*s_it).second).include_in_detectors())        )
+    {
+      bool solved = (*(*s_it).second).solve(SOLVE_DIAGNOSTICS, false);// solve for those fields (and don't force a solve if they've
+                                                                      // already been solved)
+      systems_solved = solved || systems_solved;
     }
   }
 
@@ -1223,11 +1215,8 @@ void Bucket::solve_at_start_()
   for (SystemBucket_const_it s_it = systems_begin(); 
                              s_it != systems_end(); s_it++)
   {
-    if((*(*s_it).second).solve_location()==SOLVE_START)
-    {
-      (*(*s_it).second).solve();
-      systems_solved = true;
-    }
+    bool solved = (*(*s_it).second).solve(SOLVE_START);
+    systems_solved = solved || systems_solved;
   }
 
   if(systems_solved)
