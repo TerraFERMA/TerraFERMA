@@ -69,7 +69,7 @@ for f in args.file:
         dirnames[:] = []
 
 def update_string_value(path):
-  changed = False
+  global changed
   elements = tree.findall(path)
   if len(elements) is not 0:
     for element in elements:
@@ -79,10 +79,9 @@ def update_string_value(path):
         child = etree.SubElement(element, "string_value", attrib={"lines":"1"})
         child.text = text
         changed = True
-  return changed
 
 def update_functional_names(path):
-  changed = False
+  global changed
   # grab any variables or tests that the user might have extracted data from the stat or steady state files in
   elements = tree.findall("//simulation/variables/variable/string_value")+tree.findall("/tests/test/string_value")
   # the extensions of files we're looking for and the acceptable values of their keys
@@ -128,7 +127,6 @@ def update_functional_names(path):
             if vname+'[' in line:
               sline = line[line.find(vname+'['):].split('[')
               if len(sline) > 3 and sline[3].startswith('"') and not any([sline[3].startswith('"'+s) for s in ext[1]]):
-                changed = True
                 oldfunctionalname = sline[3].strip('"]')
                 oldfunctionname = sline[2].strip('"]')
                 if sline[2].startswith('"') and sline[2].endswith('"]'):
@@ -138,19 +136,20 @@ def update_functional_names(path):
                 sline[3] = sline[3].replace(oldfunctionalname, ext[2])
                 sline[2] = sline[2].replace(oldfunctionname, newfunctionalname)
                 lines[i] = line.replace(line[line.find(vname+'['):], '['.join(sline))
+                changed = True
                 continue
     element.text = "\n".join(lines)
-  return changed
 
 for filename in filenames:
   print 'Updating: '+filename
   tree = etree.parse(filename)
+  global changed
   changed = False
-  changed = changed or update_string_value("/owner")
-  changed = changed or update_string_value("/description")
-  changed = changed or update_string_value("//parameter/values")
-  changed = changed or update_string_value("//run/commands/command")
-  changed = changed or update_functional_names(os.path.split(filename)[0])
+  update_string_value("/owner")
+  update_string_value("/description")
+  update_string_value("//parameter/values")
+  update_string_value("//run/commands/command")
+  update_functional_names(os.path.split(filename)[0])
   if changed:
     backupfilename = os.path.join(os.path.split(filename)[0], os.path.split(filename)[-1].split('.')[0]+'.shml.bak')
     shutil.copy2(filename, backupfilename)
