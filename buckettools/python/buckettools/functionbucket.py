@@ -42,7 +42,6 @@ class FunctionBucket:
     self.system = None
     self.functional = None
     self.cpp = None
-    self.functionals = None
     self.index = None
   
   def constant_ufl(self, suffix=""):

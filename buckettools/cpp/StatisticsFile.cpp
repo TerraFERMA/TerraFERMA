@@ -99,6 +99,20 @@ void StatisticsFile::header_bucket_()
 
   }
 
+  for (SystemBucket_it sys_it = (*bucket_).systems_begin();          // loop over the systems
+                       sys_it != (*bucket_).systems_end(); 
+                       sys_it++)
+  {
+
+    for (FunctionalBucket_it f_it = (*(*sys_it).second).functionals_begin();
+                             f_it != (*(*sys_it).second).functionals_end();
+                             f_it++)
+    {
+      header_functional_((*f_it).second);
+    }
+
+  }
+
 }
 
 //*******************************************************************|************************************************************//
@@ -141,7 +155,7 @@ void StatisticsFile::header_func_(FunctionBucket_ptr f_ptr)
       }
     }
 
-    header_functional_(f_ptr);
+    functions_.push_back(f_ptr);
   }
 
 }
@@ -149,18 +163,13 @@ void StatisticsFile::header_func_(FunctionBucket_ptr f_ptr)
 //*******************************************************************|************************************************************//
 // write a header for a set of model functionals
 //*******************************************************************|************************************************************//
-void StatisticsFile::header_functional_(FunctionBucket_ptr f_ptr)
+void StatisticsFile::header_functional_(FunctionalBucket_ptr f_ptr)
 {
-  std::pair<FunctionBucket_ptr, std::vector<Form_const_it> > functionals;
-  functionals.first = f_ptr;
-  for (Form_const_it s_it = (*f_ptr).functionals_begin(); 
-            s_it != (*f_ptr).functionals_end(); s_it++)              // loop over the functional forms associated with the given
-  {                                                                  // function bucket
-    functionals.second.push_back(s_it);
-    tag_((*f_ptr).name(), (*s_it).first,                             // write tags for each functional
-                                  (*(*f_ptr).system()).name());
+  if ((*f_ptr).include_in_statistics())
+  {
+    tag_((*f_ptr).name(), "functional_value", (*(*f_ptr).system()).name());
+    functionals_.push_back(f_ptr);
   }
-  functions_.push_back(functionals);
 }
 
 //*******************************************************************|************************************************************//
@@ -169,10 +178,14 @@ void StatisticsFile::header_functional_(FunctionBucket_ptr f_ptr)
 void StatisticsFile::data_bucket_()
 {
   
-  std::vector< std::pair< FunctionBucket_ptr, std::vector<Form_const_it> > >::iterator f_it;
-  for (f_it = functions_.begin(); f_it != functions_.end(); f_it++)
+  for (std::vector< FunctionBucket_ptr >::iterator f_it = functions_.begin(); f_it != functions_.end(); f_it++)
   {
-    data_func_((*f_it).first, (*f_it).second);
+    data_func_(*f_it);
+  }
+
+  for (std::vector< FunctionalBucket_ptr >::iterator f_it = functionals_.begin(); f_it != functionals_.end(); f_it++)
+  {
+    data_functional_(*f_it);
   }
 
 }
@@ -180,8 +193,7 @@ void StatisticsFile::data_bucket_()
 //*******************************************************************|************************************************************//
 // write data for a function
 //*******************************************************************|************************************************************//
-void StatisticsFile::data_func_(FunctionBucket_ptr f_ptr, 
-                                std::vector<Form_const_it> &functionals)
+void StatisticsFile::data_func_(FunctionBucket_ptr f_ptr)
 {
   const std::size_t lsize = (*f_ptr).size();
   std::vector<double> max(lsize), min(lsize);
@@ -196,7 +208,7 @@ void StatisticsFile::data_func_(FunctionBucket_ptr f_ptr,
   data_(max);
   data_(min);
 
-  if ((*f_ptr).residualfunction())                        // all fields should get in here
+  if ((*f_ptr).residualfunction())                                   // all fields should get in here
   {
     for (uint i = 0; i<lsize; i++)
     {
@@ -207,22 +219,14 @@ void StatisticsFile::data_func_(FunctionBucket_ptr f_ptr,
     data_(min);
   }
 
-  data_functional_(f_ptr, functionals);
-
 }
 
 //*******************************************************************|************************************************************//
 // write data for a set of functional forms
 //*******************************************************************|************************************************************//
-void StatisticsFile::data_functional_(FunctionBucket_ptr f_ptr, 
-                                      std::vector<Form_const_it> &functionals)
+void StatisticsFile::data_functional_(FunctionalBucket_ptr f_ptr)
 {
-  for (std::vector<Form_const_it>::const_iterator s_it = functionals.begin(); 
-                                           s_it != functionals.end(); 
-                                           s_it++)                   // loop over the given functionals
-  {
-    const double statistic = (*f_ptr).functionalvalue(*s_it);        // get the value of the functional
-    data_(statistic);
-  }
+  const double statistic = (*f_ptr).value();                        // get the value of the functional
+  data_(statistic);
 }
 

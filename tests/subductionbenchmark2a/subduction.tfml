@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -55,11 +55,11 @@
   <global_parameters/>
   <system name="Solid">
     <mesh name="Mesh"/>
-    <ufl_symbol>
+    <ufl_symbol name="global">
       <string_value lines="1">us</string_value>
     </ufl_symbol>
     <field name="Temperature">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">T</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -165,7 +165,7 @@
       </diagnostics>
     </field>
     <field name="Velocity">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">v</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -241,7 +241,7 @@
       </diagnostics>
     </field>
     <field name="Pressure">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">p</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -268,7 +268,7 @@
       </diagnostics>
     </field>
     <coefficient name="PlateVelocity">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">vp</string_value>
       </ufl_symbol>
       <type name="Expression">
@@ -293,7 +293,7 @@
       </diagnostics>
     </coefficient>
     <coefficient name="ZeroRHS">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">z</string_value>
       </ufl_symbol>
       <type name="Constant">
@@ -344,20 +344,20 @@ F = FT + Fv + Fp</string_value>
         </preamble>
         <form name="Bilinear" rank="1">
           <string_value lines="20" type="code" language="python">a = lhs(F)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
           <ident_zeros/>
         </form>
         <form name="Linear" rank="0">
           <string_value lines="20" type="code" language="python">L = rhs(F)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">L</string_value>
           </ufl_symbol>
         </form>
         <form name="Residual" rank="0">
           <string_value lines="20" type="code" language="python">res = action(a, us_i) - L</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">res</string_value>
           </ufl_symbol>
         </form>
@@ -413,16 +413,15 @@ F = FT + Fv + Fp</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
-    </nonlinear_solver>
-    <solve name="at_start"/>
-  </system>
+    <solve name="at_start"/></nonlinear_solver>
+    </system>
   <system name="Divergence">
     <mesh name="Mesh"/>
-    <ufl_symbol>
+    <ufl_symbol name="global">
       <string_value lines="1">ud</string_value>
     </ufl_symbol>
     <field name="Divergence">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">d</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -456,20 +455,20 @@ r = d_t*d_a*dx_wedge - d_t*div(v_i)*dx_wedge</string_value>
         </preamble>
         <form name="Bilinear" rank="1">
           <string_value lines="20" type="code" language="python">a = lhs(r)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
           <ident_zeros/>
         </form>
         <form name="Linear" rank="0">
           <string_value lines="20" type="code" language="python">L = rhs(r)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">L</string_value>
           </ufl_symbol>
         </form>
         <form name="Residual" rank="0">
           <string_value lines="20" type="code" language="python">res = action(a, ud_i) - L</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">res</string_value>
           </ufl_symbol>
         </form>
@@ -515,16 +514,15 @@ r = d_t*d_a*dx_wedge - d_t*div(v_i)*dx_wedge</string_value>
         </linear_solver>
         <ignore_all_solver_failures/>
       </type>
-    </nonlinear_solver>
-    <solve name="with_diagnostics"/>
-  </system>
+    <solve name="with_diagnostics"/></nonlinear_solver>
+    </system>
   <system name="Viscosity">
     <mesh name="Mesh"/>
-    <ufl_symbol>
+    <ufl_symbol name="global">
       <string_value lines="1">uvisc</string_value>
     </ufl_symbol>
     <field name="Viscosity">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">visc</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -578,20 +576,20 @@ r = r_plate + r_wedge + r_slab</string_value>
         </preamble>
         <form name="Bilinear" rank="1">
           <string_value lines="20" type="code" language="python">a = lhs(r)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
           <ident_zeros/>
         </form>
         <form name="Linear" rank="0">
           <string_value lines="20" type="code" language="python">L = rhs(r)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">L</string_value>
           </ufl_symbol>
         </form>
         <form name="Residual" rank="0">
           <string_value lines="20" type="code" language="python">res = action(a, uvisc_i) - L</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">res</string_value>
           </ufl_symbol>
         </form>
@@ -610,7 +608,6 @@ r = r_plate + r_wedge + r_slab</string_value>
         </linear_solver>
         <ignore_all_solver_failures/>
       </type>
-    </nonlinear_solver>
-    <solve name="with_diagnostics"/>
-  </system>
+    <solve name="with_diagnostics"/></nonlinear_solver>
+    </system>
 </terraferma_options>

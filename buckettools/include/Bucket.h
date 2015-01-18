@@ -27,6 +27,7 @@
 #include "SystemBucket.h"
 #include "StatisticsFile.h"
 #include "SteadyStateFile.h"
+#include "SolverBucket.h"
 #include "DetectorsFile.h"
 #include "SystemsConvergenceFile.h"
 #include <dolfin.h>
@@ -147,6 +148,8 @@ namespace buckettools
 
     const int checkpoint_count() const;                              // return the checkpoint count
 
+    const int visualization_count() const;                           // return the visualization count
+
     //***************************************************************|***********************************************************//
     // Mesh data access
     //***************************************************************|***********************************************************//
@@ -265,7 +268,7 @@ namespace buckettools
 
     void output(const int &location);                                // output diagnostics for the bucket
 
-    void checkpoint(const int &location);                            // checkpoint the bucket
+    void checkpoint(const int &location);                            // work out if we're checkpointing the bucket
 
     const std::string str() const;                                   // return a string describing the bucket contents
     
@@ -333,7 +336,7 @@ namespace buckettools
             timestepadapt_period_timesteps_,
             checkpoint_period_timesteps_;
 
-    int_ptr checkpoint_count_;                                       // the checkpoint count
+    int_ptr checkpoint_count_, visualization_count_;                 // various counters
 
     //***************************************************************|***********************************************************//
     // Pointers data
@@ -413,13 +416,15 @@ namespace buckettools
     void solve_in_timeloop_();                                       // solve the solvers in this system (in order during the
                                                                      // timeloop of a simulation)
 
-    bool complete_iterating_(const double &aerror0);                  // indicate if nonlinear systems iterations are complete or not
+    bool complete_iterating_(const double &aerror0);                 // indicate if nonlinear systems iterations are complete or not
 
     //***************************************************************|***********************************************************//
     // Output functions (continued)
     //***************************************************************|***********************************************************//
 
-    virtual void checkpoint_options_();                              // checkpoint the options system for the bucket
+    void checkpoint_(const double_ptr time);                         // checkpoint the bucket
+
+    virtual void checkpoint_options_(const double_ptr time);         // checkpoint the options system for the bucket
 
   };
 

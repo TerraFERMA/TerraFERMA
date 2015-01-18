@@ -72,9 +72,6 @@ void SpudFunctionBucket::fill_field(const uint &index)
 
   allocate_field_();                                                 // allocate as a field
 
-  fill_functionals_();                                               // fill in data about the functionals (doesn't attach
-                                                                     // coefficients)
-
   fill_is_();                                                        // fill information about the component index sets
 
   if(include_in_visualization())
@@ -109,8 +106,6 @@ void SpudFunctionBucket::fill_coeff(const uint &index)
 
   allocate_coeff_expression_();                                      // allocate as a coefficient (doesn't do much for coefficient
                                                                      // functions)
-
-  fill_functionals_();                                               // fill in data about functionals (doesn't attach coefficients)
 
 }
 
@@ -238,82 +233,6 @@ void SpudFunctionBucket::initialize_coeff_function()
 }
 
 //*******************************************************************|************************************************************//
-// register a (boost shared) pointer to a functional form in the function bucket data maps (with an optionpath as well)
-//*******************************************************************|************************************************************//
-void SpudFunctionBucket::register_functional(Form_ptr functional, 
-                                      const std::string &name, 
-                                      std::string optionpath)
-{
-  Form_hash_it f_it = functionals_.get<om_key_hash>().find(name);                            // check if name already exists
-  if (f_it != functionals_.get<om_key_hash>().end())
-  {
-    tf_err("Functional already exists in function.", "Functional name: %s", name.c_str());
-  }
-  else
-  {
-    functionals_.insert(om_item<const std::string, Form_ptr>(name, functional));                      // it not, insert the form into the maps
-    functional_optionpaths_.insert(om_item<const std::string, std::string>(name, optionpath)); // and its optionpath too
-    double_ptr value;
-    value.reset( new double(0.0) );
-    functional_values_[name]      = value;
-    value.reset( new double(0.0) );
-    oldfunctional_values_[name]   = value;
-    bool_ptr calculated;
-    calculated.reset( new bool(false) );
-    functional_calculated_[name]  = calculated;
-  }
-}
-
-//*******************************************************************|************************************************************//
-// return a string containing the named functional's optionpath
-//*******************************************************************|************************************************************//
-const std::string SpudFunctionBucket::fetch_functional_optionpath(const std::string &name) const
-{
-  string_hash_it s_it = functional_optionpaths_.get<om_key_hash>().find(name);
-                                                                     // check if the name already exists
-  if (s_it == functional_optionpaths_.get<om_key_hash>().end())
-  {
-    tf_err("Functional does not exist in function.", "Functional name: %s", name.c_str());
-  }
-  else
-  {
-    return (*s_it).second;                                           // if it does, return it
-  }
-}
-
-//*******************************************************************|************************************************************//
-// return an iterator to the beginning of the functional_optionpaths_ map
-//*******************************************************************|************************************************************//
-string_it SpudFunctionBucket::functional_optionpaths_begin()
-{
-  return functional_optionpaths_.get<om_key_seq>().begin();
-}
-
-//*******************************************************************|************************************************************//
-// return a constant iterator to the beginning of the functional_optionpaths_ map
-//*******************************************************************|************************************************************//
-string_const_it SpudFunctionBucket::functional_optionpaths_begin() const
-{
-  return functional_optionpaths_.get<om_key_seq>().begin();
-}
-
-//*******************************************************************|************************************************************//
-// return an iterator to the end of the functional_optionpaths_ map
-//*******************************************************************|************************************************************//
-string_it SpudFunctionBucket::functional_optionpaths_end()
-{
-  return functional_optionpaths_.get<om_key_seq>().end();
-}
-
-//*******************************************************************|************************************************************//
-// return a constant iterator to the end of the functional_optionpaths_ map
-//*******************************************************************|************************************************************//
-string_const_it SpudFunctionBucket::functional_optionpaths_end() const
-{
-  return functional_optionpaths_.get<om_key_seq>().end();
-}
-
-//*******************************************************************|************************************************************//
 // return a boolean indicating if this function bucket should be included in visualization output
 //*******************************************************************|************************************************************//
 const bool SpudFunctionBucket::include_in_visualization() const
@@ -346,30 +265,6 @@ const bool SpudFunctionBucket::include_in_steadystate() const
 }
 
 //*******************************************************************|************************************************************//
-// return a boolean indicating if the named functional of this function bucket should be included in steady state check and output
-//*******************************************************************|************************************************************//
-const bool SpudFunctionBucket::include_functional_in_steadystate(const std::string &name) const
-{
-  return Spud::have_option(fetch_functional_optionpath(name)+"/include_in_steady_state");
-}
-
-//*******************************************************************|************************************************************//
-// return a boolean indicating if the named functional of this function bucket should have a cell function output
-//*******************************************************************|************************************************************//
-const bool SpudFunctionBucket::output_functional_cellfunction(const std::string &name) const
-{
-  return Spud::have_option(fetch_functional_optionpath(name)+"/output_cell_function");
-}
-
-//*******************************************************************|************************************************************//
-// return a boolean indicating if the named functional of this function bucket should have a facet function output
-//*******************************************************************|************************************************************//
-const bool SpudFunctionBucket::output_functional_facetfunction(const std::string &name) const
-{
-  return Spud::have_option(fetch_functional_optionpath(name)+"/output_facet_function");
-}
-
-//*******************************************************************|************************************************************//
 // return a boolean indicating if this function bucket should be included in detectors output
 //*******************************************************************|************************************************************//
 const bool SpudFunctionBucket::include_in_detectors() const
@@ -386,27 +281,6 @@ const std::string SpudFunctionBucket::str(int indent) const
   std::string indentation (indent*2, ' ');
   s << indentation << "FunctionBucket " << name() << " (" 
                                 << optionpath() << ")" << std::endl;
-  indent++;
-  s << functionals_str(indent);
-  return s.str();
-}
-
-//*******************************************************************|************************************************************//
-// return a string describing the functionals in this function bucket
-//*******************************************************************|************************************************************//
-const std::string SpudFunctionBucket::functionals_str(const int &indent) 
-                                                              const
-{
-  std::stringstream s;
-  std::string indentation (indent*2, ' ');
-
-  for ( string_const_it s_it = functional_optionpaths_begin(); 
-                      s_it != functional_optionpaths_end(); s_it++ )
-  {
-    s << indentation << "Functional " << (*s_it).first << " (" 
-                              << (*s_it).second  << ")" << std::endl;
-  }
-
   return s.str();
 }
 
@@ -1080,7 +954,7 @@ void SpudFunctionBucket::allocate_coeff_expression_()
 //*******************************************************************|************************************************************//
 void SpudFunctionBucket::fill_constantfunctional_()
 {
-  constantfunctional_ = ufc_fetch_functional((*system_).name(),      // get a pointer to the functional form from the ufc
+  constantfunctional_ = ufc_fetch_constant_functional((*system_).name(),// get a pointer to the functional form from the ufc
                         name(), (*system_).mesh());
   (*constantfunctional_).set_cell_domains((*system_).celldomains());
   (*constantfunctional_).set_interior_facet_domains((*system_).facetdomains());
@@ -1107,7 +981,7 @@ void SpudFunctionBucket::fill_constantfunctional_()
       {                                                              // no...
         FunctionSpace_ptr coefficientspace;
         coefficientspace = 
-                         ufc_fetch_coefficientspace_from_functional( // take a pointer to the functionspace from the ufc
+                         ufc_fetch_coefficientspace_from_constant_functional( // take a pointer to the functionspace from the ufc
                                       (*system_).name(), name(), 
                                       baseuflsymbol, 
                                       (*system_).mesh());
@@ -1118,71 +992,6 @@ void SpudFunctionBucket::fill_constantfunctional_()
     }
 
   }
-}
-
-//*******************************************************************|************************************************************//
-// fill the details of any functionals associated with this field or coefficient assuming the buckettools schema
-//*******************************************************************|************************************************************//
-void SpudFunctionBucket::fill_functionals_()
-{
-  std::stringstream buffer;                                          // optionpath buffer
-  Spud::OptionError serr;                                            // spud error code
-   
-  buffer.str(""); buffer << optionpath() 
-                     << "/diagnostics/include_in_statistics/functional";
-  int nfuncs = Spud::option_count(buffer.str());                     // find out how many functionals there are
-  for (uint i = 0; i < nfuncs; i++)
-  {
-    buffer.str(""); buffer << optionpath()  
-        << "/diagnostics/include_in_statistics/functional[" << i << "]";
-    std::string functionaloptionpath = buffer.str();
-
-    std::string functionalname;                                      // the functional name
-    buffer.str(""); buffer << functionaloptionpath << "/name";
-    serr = Spud::get_option(buffer.str(), functionalname); 
-    spud_err(buffer.str(), serr);
-
-    Form_ptr functional = ufc_fetch_functional((*system_).name(),    // get a pointer to the functional form from the ufc
-                          name(), functionalname, (*system_).mesh());
-    (*functional).set_cell_domains((*system_).celldomains());
-    (*functional).set_interior_facet_domains((*system_).facetdomains());
-    (*functional).set_exterior_facet_domains((*system_).facetdomains());
-    register_functional(functional, functionalname,                  // register it in the function bucket
-                                               functionaloptionpath);
-
-                                                                     // at this stage we cannot attach any coefficients to this
-                                                                     // functional because we do not necessarily have them all
-                                                                     // initialized yet so for the time being let's just grab any
-                                                                     // functionspaces for the coefficients that we can find...
-    uint ncoeff = (*functional).num_coefficients();                  // how many coefficients does this functional require?
-    for (uint i = 0; i < ncoeff; i++)
-    {
-      std::string uflsymbol = (*functional).coefficient_name(i);     // what is the (possibly derived) ufl symbol for this
-                                                                     // coefficient
-      if ((*(*system_).bucket()).contains_baseuflsymbol(uflsymbol))  // a base ufl symbol was only inserted into the parent bucket's
-      {                                                              // if this is a coefficient function so we use this as an
-                                                                     // indicator or whether we need to grab the functionspace or
-                                                                     // not...
-        std::string baseuflsymbol =                                  // what is the base ufl symbol?
-              (*(*system_).bucket()).fetch_baseuflsymbol(uflsymbol); // have we already registered a functionspace for this base ufl
-                                                                     // symbol?
-        if (!(*(*system_).bucket()).contains_coefficientspace(baseuflsymbol))
-        {                                                            // no...
-          FunctionSpace_ptr coefficientspace;
-          coefficientspace = 
-                        ufc_fetch_coefficientspace_from_functional(  // take a pointer to the functionspace from the ufc
-                                        (*system_).name(), name(), 
-                                        functionalname, baseuflsymbol, 
-                                        (*system_).mesh());
-          (*(*system_).bucket()).register_coefficientspace(          // and register it in the parent bucket's map
-                                        coefficientspace, 
-                                        baseuflsymbol);
-        }
-      }
-
-    }
-  }
-
 }
 
 //*******************************************************************|************************************************************//

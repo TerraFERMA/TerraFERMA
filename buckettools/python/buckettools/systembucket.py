@@ -33,6 +33,7 @@ class SystemBucket:
     self.coeffs = None
     self.special_coeffs = None  # these are constants declared outside systems but still need system information
     self.solvers = None
+    self.functionals = None
     self.bucket = None
 
   def functions_ufl(self):
@@ -224,15 +225,11 @@ class SystemBucket:
   def include_systemfunctionals_cpp(self):
     """Write an array of cpp strings including the namespaces of the system ufls."""
     cpp = []
-    for field in self.fields:
-      # should not have individual functional as this is restricted to Constant coeffs
-      for functional in field.functionals:
-        cpp.append("#include \""+functional.namespace()+".h\"\n")
     for coeff in self.coeffs:
       if coeff.functional:
         cpp.append("#include \""+coeff.functional.namespace()+".h\"\n")
-      for functional in coeff.functionals:
-        cpp.append("#include \""+functional.namespace()+".h\"\n")
+    for functional in self.functionals:
+      cpp.append("#include \""+functional.namespace()+".h\"\n")
     return cpp
 
   def include_systemsolvers_cpp(self):
@@ -298,86 +295,36 @@ class SystemBucket:
     else:
       cpp.append("    else if (systemname ==  \""+self.name+"\")\n")
     cpp.append("    {\n")
-    for c in range(len(self.fields)):
-      if c == 0:
-        cpp.append("      if (functionname ==  \""+self.fields[c].name+"\")\n")
-      else:
-        cpp.append("      else if (functionname ==  \""+self.fields[c].name+"\")\n")
-      cpp.append("      {\n")
-      if len(self.fields[c].functionals)==0:
-        cpp.append("        tf_err(\"No functionals in ufc_fetch_coefficientspace_from_functional\", \"Functional name: %s\", functionalname.c_str());\n")
-        cpp.append("      }\n")
-      else:
-        for f in range(len(self.fields[c].functionals)):
-          if f == 0:
-            cpp.append("        if (functionalname ==  \""+self.fields[c].functionals[f].name+"\")\n")
-          else:
-            cpp.append("        else if (functionalname ==  \""+self.fields[c].functionals[f].name+"\")\n")
-          cpp.append("        {\n")
-          symbols_in_form = form_symbols(self.fields[c].functionals[f].form)
-          symbols_found = 0
-          for c2 in range(len(self.coeffs)):
-            for suffix in uflsymbol_suffixes():
-              if self.coeffs[c2].symbol+suffix in symbols_in_form: 
-                cpp += self.fields[c].functionals[f].coefficientspace_cpp(self.coeffs[c2], index=symbols_found, suffix=suffix)
-                symbols_found =+ 1
-                break
-          if symbols_found == 0:
-            cpp.append("          tf_err(\"Unknown uflsymbol in ufc_fetch_coefficientspace_from_functional\", \"UFL symbol: %s\", uflsymbol.c_str());\n")
-            cpp.append("        }\n")
-          else:
-            cpp.append("          else\n")
-            cpp.append("          {\n")
-            cpp.append("            tf_err(\"Unknown uflsymbol in ufc_fetch_coefficientspace_from_functional\", \"UFL symbol: %s\", uflsymbol.c_str());\n")
-            cpp.append("          }\n")
-            cpp.append("        }\n")
-        cpp.append("        else\n")
+    if len(self.functionals)==0:
+      cpp.append("        tf_err(\"No functionals in ufc_fetch_coefficientspace_from_functional\", \"Functional name: %s\", functionalname.c_str());\n")
+    else:
+      for f in range(len(self.functionals)):
+        if f == 0:
+          cpp.append("        if (functionalname ==  \""+self.functionals[f].name+"\")\n")
+        else:
+          cpp.append("        else if (functionalname ==  \""+self.functionals[f].name+"\")\n")
         cpp.append("        {\n")
-        cpp.append("          tf_err(\"Unknown functionalname in ufc_fetch_coefficientspace_from_functional\", \"Functional name: %s\", functionalname.c_str());\n")
-        cpp.append("        }\n")
-        cpp.append("      }\n")
-    for c in range(len(self.coeffs)):
-      if c+len(self.fields) == 0:
-        cpp.append("      if (functionname ==  \""+self.coeffs[c].name+"\")\n")
-      else:
-        cpp.append("      else if (functionname ==  \""+self.coeffs[c].name+"\")\n")
-      cpp.append("      {\n")
-      if len(self.coeffs[c].functionals)==0:
-        cpp.append("        tf_err(\"Unknown functionalname in ufc_fetch_coefficientspace_from_functional\", \"Functional name: %s\", functionalname.c_str());\n")
-        cpp.append("      }\n")
-      else:
-        for f in range(len(self.coeffs[c].functionals)):
-          if f == 0:
-            cpp.append("        if (functionalname ==  \""+self.coeffs[c].functionals[f].name+"\")\n")
-          else:
-            cpp.append("        else if (functionalname ==  \""+self.coeffs[c].functionals[f].name+"\")\n")
-          cpp.append("        {\n")
-          symbols_in_form = form_symbols(self.coeffs[c].functionals[f].form)
-          symbols_found = 0
-          for c2 in range(len(self.coeffs)):
-            for suffix in uflsymbol_suffixes():
-              if self.coeffs[c2].symbol+suffix in symbols_in_form: 
-                cpp += self.coeffs[c].functionals[f].coefficientspace_cpp(self.coeffs[c2], index=symbols_found, suffix=suffix)
-                symbols_found =+ 1
-                break
-          if symbols_found == 0:
-            cpp.append("          tf_err(\"Unknown uflsymbol in ufc_fetch_coefficientspace_from_functional\", \"UFL symbol: %s\", uflsymbol.c_str());\n")
-            cpp.append("        }\n")
-          else:
-            cpp.append("          else\n")
-            cpp.append("          {\n")
-            cpp.append("            tf_err(\"Unknown uflsymbol in ufc_fetch_coefficientspace_from_functional\", \"UFL symbol: %s\", uflsymbol.c_str());\n")
-            cpp.append("          }\n")
-            cpp.append("        }\n")
-        cpp.append("        else\n")
-        cpp.append("        {\n")
-        cpp.append("          tf_err(\"Unknown functionalname in ufc_fetch_coefficientspace_from_functional\", \"Functional name: %s\", functionalname.c_str());\n")
-        cpp.append("        }\n")
-        cpp.append("      }\n")
-    cpp.append("      else\n")
-    cpp.append("      {\n")
-    cpp.append("        tf_err(\"Unknown functionname in ufc_fetch_coefficientspace_from_functional\", \"Function name: %s\", functionname.c_str());\n")
-    cpp.append("      }\n")
+        symbols_in_form = form_symbols(self.functionals[f].form)
+        symbols_found = 0
+        for c2 in range(len(self.coeffs)):
+          for suffix in uflsymbol_suffixes():
+            if self.coeffs[c2].symbol+suffix in symbols_in_form: 
+              cpp += self.functionals[f].coefficientspace_cpp(self.coeffs[c2], index=symbols_found, suffix=suffix)
+              symbols_found =+ 1
+              break
+        if symbols_found == 0:
+          cpp.append("          tf_err(\"Unknown uflsymbol in ufc_fetch_coefficientspace_from_functional\", \"UFL symbol: %s\", uflsymbol.c_str());\n")
+          cpp.append("        }\n")
+        else:
+          cpp.append("          else\n")
+          cpp.append("          {\n")
+          cpp.append("            tf_err(\"Unknown uflsymbol in ufc_fetch_coefficientspace_from_functional\", \"UFL symbol: %s\", uflsymbol.c_str());\n")
+          cpp.append("          }\n")
+          cpp.append("        }\n")
+      cpp.append("        else\n")
+      cpp.append("        {\n")
+      cpp.append("          tf_err(\"Unknown functionalname in ufc_fetch_coefficientspace_from_functional\", \"Functional name: %s\", functionalname.c_str());\n")
+      cpp.append("        }\n")
     cpp.append("    }\n")
     return cpp
 
@@ -390,7 +337,7 @@ class SystemBucket:
       cpp.append("    else if (systemname ==  \""+self.name+"\")\n")
     cpp.append("    {\n")
     if (len(self.coeffs)==0):
-      cpp.append("      tf_err(\"No coefficients in ufc_fetch_coefficientspace_from_functional\", \"Coefficient name: %s\", coefficientname.c_str());\n")
+      cpp.append("      tf_err(\"No coefficients in ufc_fetch_coefficientspace_from_constant_functional\", \"Coefficient name: %s\", coefficientname.c_str());\n")
       cpp.append("    }\n")
     else:
       for c in range(len(self.coeffs)):
@@ -409,20 +356,20 @@ class SystemBucket:
                 symbols_found =+ 1
                 break
           if symbols_found == 0:
-            cpp.append("        tf_err(\"Unknown uflsymbol in ufc_fetch_coefficientspace_from_functional\", \"UFL symbol: %s\", uflsymbol.c_str());\n")
+            cpp.append("        tf_err(\"Unknown uflsymbol in ufc_fetch_coefficientspace_from_constant_functional\", \"UFL symbol: %s\", uflsymbol.c_str());\n")
             cpp.append("      }\n")
           else:
             cpp.append("          else\n")
             cpp.append("          {\n")
-            cpp.append("            tf_err(\"Unknown uflsymbol in ufc_fetch_coefficientspace_from_functional\", \"UFL symbol: %s\", uflsymbol.c_str());\n")
+            cpp.append("            tf_err(\"Unknown uflsymbol in ufc_fetch_coefficientspace_from_constant_functional\", \"UFL symbol: %s\", uflsymbol.c_str());\n")
             cpp.append("          }\n")
             cpp.append("        }\n")
         else:
-          cpp.append("        tf_err(\"No functionals for coefficient in ufc_fetch_coefficientspace_from_functional\", \"Coefficient name: %s\", coefficientname.c_str());\n")
+          cpp.append("        tf_err(\"No functionals for coefficient in ufc_fetch_coefficientspace_from_constant_functional\", \"Coefficient name: %s\", coefficientname.c_str());\n")
           cpp.append("      }\n")
       cpp.append("      else\n")
       cpp.append("      {\n")
-      cpp.append("        tf_err(\"Unknown coefficientname in ufc_fetch_coefficientspace_from_functional\", \"Coefficient name: %s\", coefficientname.c_str());\n")
+      cpp.append("        tf_err(\"Unknown coefficientname in ufc_fetch_coefficientspace_from_constant_functional\", \"Coefficient name: %s\", coefficientname.c_str());\n")
       cpp.append("      }\n")
       cpp.append("    }\n")
     return cpp
@@ -518,44 +465,15 @@ class SystemBucket:
     else:
       cpp.append("    else if (systemname ==  \""+self.name+"\")\n")
     cpp.append("    {\n")
-    for f in range(len(self.fields)):
-      if f == 0:
-        cpp.append("      if (functionname ==  \""+self.fields[f].name+"\")\n")
-      else:
-        cpp.append("      else if (functionname ==  \""+self.fields[f].name+"\")\n")
-      cpp.append("      {\n")
-      for a in range(len(self.fields[f].functionals)):
-        cpp += self.fields[f].functionals[a].cpp(index=a)
-      if len(self.fields[f].functionals)==0:
-        cpp.append("        tf_err(\"No functionals in ufc_fetch_functional\", \"Functional name: %s\", functionalname.c_str());\n")
-        cpp.append("      }\n")
-      else:
-        cpp.append("        else\n")
-        cpp.append("        {\n")
-        cpp.append("          tf_err(\"Unknown functionalname in ufc_fetch_functional\", \"Functional name: %s\", functionalname.c_str());\n")
-        cpp.append("        }\n")
-        cpp.append("      }\n")
-    for c in range(len(self.coeffs)):
-      if c+len(self.fields) == 0:
-        cpp.append("      if (functionname ==  \""+self.coeffs[c].name+"\")\n")
-      else:
-        cpp.append("      else if (functionname ==  \""+self.coeffs[c].name+"\")\n")
-      cpp.append("      {\n")
-      for a in range(len(self.coeffs[c].functionals)):
-        cpp += self.coeffs[c].functionals[a].cpp(index=a)
-      if len(self.coeffs[c].functionals)==0:
-        cpp.append("        tf_err(\"No functionals in ufc_fetch_functional\", \"Functional name: %s\", functionalname.c_str());\n")
-        cpp.append("      }\n")
-      else:
-        cpp.append("        else\n")
-        cpp.append("        {\n")
-        cpp.append("          tf_err(\"Unknown functionalname in ufc_fetch_functional\", \"Functional name: %s\", functionalname.c_str());\n")
-        cpp.append("        }\n")
-        cpp.append("      }\n")
-    cpp.append("      else\n")
-    cpp.append("      {\n")
-    cpp.append("        tf_err(\"Unknown functionname in ufc_fetch_functional\", \"Function name: %s\", functionname.c_str());\n")
-    cpp.append("      }\n")
+    for a in range(len(self.functionals)):
+      cpp += self.functionals[a].cpp(index=a)
+    if len(self.functionals)==0:
+      cpp.append("        tf_err(\"No functionals in ufc_fetch_functional\", \"Functional name: %s\", functionalname.c_str());\n")
+    else:
+      cpp.append("        else\n")
+      cpp.append("        {\n")
+      cpp.append("          tf_err(\"Unknown functionalname in ufc_fetch_functional\", \"Functional name: %s\", functionalname.c_str());\n")
+      cpp.append("        }\n")
     cpp.append("    }\n")
     return cpp
 
@@ -579,12 +497,12 @@ class SystemBucket:
         cpp.append("        functional.reset(new "+self.coeffs[c].functional.namespace()+"::Form_"+self.coeffs[c].functional.symbol+"(mesh));\n")
         cpp.append("      }\n")
     if functionals_found==0:
-      cpp.append("      tf_err(\"Unknown coefficientname in ufc_fetch_functional\", \"Coefficient name: %s\", coefficientname.c_str());\n")
+      cpp.append("      tf_err(\"Unknown coefficientname in ufc_fetch_constant_functional\", \"Coefficient name: %s\", coefficientname.c_str());\n")
       cpp.append("    }\n")
     else:
       cpp.append("      else\n")
       cpp.append("      {\n")
-      cpp.append("        tf_err(\"Unknown coefficientname in ufc_fetch_functional\", \"Coefficient name: %s\", coefficientname.c_str());\n")
+      cpp.append("        tf_err(\"Unknown coefficientname in ufc_fetch_constant_functional\", \"Coefficient name: %s\", coefficientname.c_str());\n")
       cpp.append("      }\n")
       cpp.append("    }\n")
     return cpp

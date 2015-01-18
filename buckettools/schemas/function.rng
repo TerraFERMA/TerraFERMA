@@ -361,9 +361,6 @@ Functions require a functionspace, which will be defined on the same mesh as the
         <element name="include_in_statistics">
           <a:documentation>Include this field in the statistics output file.
 The minimum and maximum of functions is included.</a:documentation>
-          <zeroOrMore>
-            <ref name="functional_options"/>
-          </zeroOrMore>
           <ref name="comment"/>
         </element>
       </optional>
@@ -408,9 +405,6 @@ The minimum and maximum of functions is included.</a:documentation>
           <a:documentation>Include this coefficient in the statistics output file.
 The minimum and maximum (evaluated at the vertices of the mesh) 
 of functions is included.</a:documentation>
-          <zeroOrMore>
-            <ref name="functional_options"/>
-          </zeroOrMore>
           <ref name="comment"/>
         </element>
       </optional>
@@ -421,36 +415,6 @@ of functions is included.</a:documentation>
         </element>
       </optional>
       <ref name="comment"/>
-    </element>
-  </define>
-  <define name="functional_options">
-    <element name="functional">
-      <a:documentation>ufl code and symbol describing a functional.  This must return a single number and have a unique name beneath this field or coefficient.</a:documentation>
-      <attribute name="name">
-        <data type="string"/>
-      </attribute>
-      <ref name="python_code"/>
-      <ref name="functional_ufl_symbol"/>
-      <ref name="quadrature_degree"/>
-      <ref name="quadrature_rule"/>
-      <optional>
-        <element name="include_in_steady_state">
-          <a:documentation>Include this functional in the steady state check and output file.</a:documentation>
-          <ref name="comment"/>
-        </element>
-      </optional>
-      <optional>
-        <element name="output_cell_function">
-          <a:documentation>Output the cell integrals of this functional as a mesh function.</a:documentation>
-          <ref name="comment"/>
-        </element>
-      </optional>
-      <optional>
-        <element name="output_facet_function">
-          <a:documentation>Output the facet integrals of this functional as a mesh function.</a:documentation>
-          <ref name="comment"/>
-        </element>
-      </optional>
     </element>
   </define>
   <define name="initial_condition_scalar">

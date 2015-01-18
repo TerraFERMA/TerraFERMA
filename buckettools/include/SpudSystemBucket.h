@@ -61,8 +61,6 @@ namespace buckettools
 
     void allocate_coeff_function();                                  // allocate the coefficient functions
 
-    void initialize_forms();                                         // initialize the forms and functionals by attaching the coeffs
-
     void initialize_fields_and_coefficient_expressions();            // initialize the expressions that fields and coefficients use
 
     void initialize_coefficient_functions();                         // initialize the coefficients functions
@@ -112,11 +110,7 @@ namespace buckettools
 
     void fill_solvers_();                                            // fill in the solver bucket information
 
-    //***************************************************************|***********************************************************//
-    // Output functions (continued)
-    //***************************************************************|***********************************************************//
-
-    void checkpoint_options_();                                      // checkpoint the options system for the spudsystembucket
+    void fill_functionals_();                                        // fill in the functional bucket information
 
   };
  
