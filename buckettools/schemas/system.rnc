@@ -39,6 +39,7 @@ system =
       field_options*,
       coefficient_options*,
       nonlinear_solver_options*,
+      functional_options*,
       comment
     }
   )
@@ -61,5 +62,31 @@ mesh_choice =
         comment
       }
     )
+  )
+
+functional_options = 
+  (
+    ## ufl code and symbol describing a functional.  This must return a single number and have a unique name beneath this field or coefficient.
+    element functional {
+      attribute name { xsd:string },
+      python_code,
+      functional_ufl_symbol,
+      quadrature_degree,
+      quadrature_rule,
+      (
+        ## Include this functional in the statistics output file (default).
+        element include_in_statistics {
+          comment
+        }|
+        ## Exclude this functional from the statistics output file.
+        element exclude_from_statistics {
+          comment
+        }
+      ),
+      ## Include this functional in the steady state check and output file.
+      element include_in_steady_state {
+        comment
+      }?
+    }
   )
 

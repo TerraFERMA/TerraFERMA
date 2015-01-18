@@ -24,6 +24,7 @@
 #include "SystemBucket.h"
 #include "FunctionBucket.h"
 #include "SolverBucket.h"
+#include "FunctionalBucket.h"
 #include "Logger.h"
 #include <dolfin.h>
 #include <string>
@@ -115,7 +116,6 @@ bool SystemBucket::solve(const std::vector<int> &locations, const bool force)
 //*******************************************************************|************************************************************//
 void SystemBucket::update()
 {
-
   if (function_)
   {
     (*(*oldfunction_).vector()) = (*(*function_).vector());          // update the oldfunction to the new function value
@@ -135,14 +135,21 @@ void SystemBucket::update()
     (*(*f_it).second).update();
   }
 
-  resetcalculated();                                                 // reset the calculated booleans in the system, fields and functionals
-
   for (SolverBucket_it s_it = solvers_begin();
                          s_it != solvers_end(); s_it++)
   {
     (*(*s_it).second).update();                                      // reset the solved_ indicator to false for the next timestep
   }
 
+  for (FunctionalBucket_it f_it = functionals_begin(); 
+                                  f_it != functionals_end(); f_it++)
+  {
+    (*(*f_it).second).update();
+  }
+
+  resetcalculated();                                                 // NOTE: this must be done LAST as some functionals may
+                                                                     // actually be calculated by this routine to ensure any steady 
+                                                                     // state check that uses them is accurate
 }
 
 //*******************************************************************|************************************************************//
@@ -179,7 +186,9 @@ void SystemBucket::update_nonlinear()
 const double SystemBucket::maxchange()
 {
   double maxchange = 0.0;
+
   updatechange();
+
   for (FunctionBucket_it f_it = fields_begin(); 
                                   f_it != fields_end(); f_it++)
   {
@@ -189,16 +198,16 @@ const double SystemBucket::maxchange()
       log(DBG, "    steady state fieldchange = %f", fieldchange);
       maxchange = std::max( fieldchange, maxchange );
     }
+  }
 
-    for (Form_const_it form_it = (*(*f_it).second).functionals_begin();
-              form_it != (*(*f_it).second).functionals_end(); form_it++)
+  for (FunctionalBucket_it f_it = functionals_begin(); 
+                                  f_it != functionals_end(); f_it++)
+  {
+    if ((*(*f_it).second).include_in_steadystate())
     {
-      if ((*(*f_it).second).include_functional_in_steadystate((*form_it).first))
-      {
-        double functionalchange = (*(*f_it).second).functionalchange(form_it);
-        log(DBG, "      steady state functionalchange = %f", functionalchange);
-        maxchange = std::max( functionalchange, maxchange );
-      }
+      double functionalchange = (*(*f_it).second).change();
+      log(DBG, "      steady state functionalchange = %f", functionalchange);
+      maxchange = std::max( functionalchange, maxchange );
     }
   }
   return maxchange;
@@ -223,18 +232,23 @@ void SystemBucket::updatechange()
 //*******************************************************************|************************************************************//
 void SystemBucket::resetcalculated()
 {
-  *change_calculated_ = false;
-  for (FunctionBucket_it f_it = fields_begin(); 
-                                  f_it != fields_end(); f_it++)
+  if (change_calculated_)
+  {
+    *change_calculated_ = false;
+  }
+
+  for (FunctionBucket_it f_it = coeffs_begin();           // also loop over coefficients again to update any coefficient
+                           f_it != coeffs_end(); f_it++)      // functions, constant functionals or statistic functionals
   {
     (*(*f_it).second).resetcalculated();
   }
 
-  for (FunctionBucket_it f_it = coeffs_begin(); 
-                                  f_it != coeffs_end(); f_it++)
+  for (FunctionalBucket_it f_it = functionals_begin(); 
+                                  f_it != functionals_end(); f_it++)
   {
     (*(*f_it).second).resetcalculated();
   }
+
 }
 
 //*******************************************************************|************************************************************//
@@ -351,6 +365,30 @@ void SystemBucket::initialize_diagnostics() const                    // doesn't 
   for (SolverBucket_const_it s_it = solvers_begin(); s_it != solvers_end(); s_it++)
   {
     (*(*s_it).second).initialize_diagnostics();
+  }
+}
+
+//*******************************************************************|************************************************************//
+// attach all coefficients to the functionals and solver forms
+//*******************************************************************|************************************************************//
+void SystemBucket::initialize_forms()
+{
+  log(INFO, "Attaching coeffs for system %s", name().c_str());
+  for (FunctionBucket_it f_it = coeffs_begin(); f_it != coeffs_end(); 
+                                                              f_it++)// attach functions to coefficients constant functionals
+  {
+    (*(*f_it).second).attach_form_coeffs();
+                                          
+  }
+  for (SolverBucket_it s_it = solvers_begin(); s_it != solvers_end(); 
+                                                              s_it++)// attach functions to the solver forms
+  {
+    (*(*s_it).second).attach_form_coeffs();
+  }
+  for (FunctionalBucket_it f_it = functionals_begin(); 
+                                   f_it != functionals_end(); f_it++)// attach functions to the functional forms
+  {
+    (*(*f_it).second).attach_form_coeffs();
   }
 }
 
@@ -624,6 +662,72 @@ SolverBucket_const_it SystemBucket::solvers_end() const
 }
 
 //*******************************************************************|************************************************************//
+// register a (boost shared) pointer to a functional form in the system bucket data maps
+//*******************************************************************|************************************************************//
+void SystemBucket::register_functional(FunctionalBucket_ptr functional, const std::string &name)
+{
+  FunctionalBucket_hash_it f_it = functionals_.get<om_key_hash>().find(name);                            // check if the name already exists
+  if (f_it != functionals_.get<om_key_hash>().end())
+  {
+    tf_err("Functional already exists in system.", "Functional name: %s, System name: %s", 
+           name.c_str(), name_.c_str());
+  }
+  else
+  {
+    functionals_.insert(om_item<const std::string, FunctionalBucket_ptr>(name, functional));                                 // if not, insert it into the functionals_ map
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return a (boost shared) pointer to a functional form from the system bucket data maps
+//*******************************************************************|************************************************************//
+FunctionalBucket_ptr SystemBucket::fetch_functional(const std::string &name)
+{
+  FunctionalBucket_hash_it f_it = functionals_.get<om_key_hash>().find(name);                            // check if the name already exists
+  if (f_it == functionals_.get<om_key_hash>().end())
+  {
+    tf_err("Functional does not exist in system.", "Functional name: %s, System name: %s", 
+           name.c_str(), name_.c_str());
+  }
+  else
+  {
+    return (*f_it).second;                                           // if it does, return it
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the beginning of the functionals_ map
+//*******************************************************************|************************************************************//
+FunctionalBucket_it SystemBucket::functionals_begin()
+{
+  return functionals_.get<om_key_seq>().begin();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the beginning of the functionals_ map
+//*******************************************************************|************************************************************//
+FunctionalBucket_const_it SystemBucket::functionals_begin() const
+{
+  return functionals_.get<om_key_seq>().begin();
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the end of the functionals_ map
+//*******************************************************************|************************************************************//
+FunctionalBucket_it SystemBucket::functionals_end()
+{
+  return functionals_.get<om_key_seq>().end();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the end of the functionals_ map
+//*******************************************************************|************************************************************//
+FunctionalBucket_const_it SystemBucket::functionals_end() const
+{
+  return functionals_.get<om_key_seq>().end();
+}
+
+//*******************************************************************|************************************************************//
 // return an iterator to the beginning of the bcs_ vector
 //*******************************************************************|************************************************************//
 std::vector< const dolfin::DirichletBC* >::iterator SystemBucket::bcs_begin()
@@ -751,6 +855,7 @@ const std::string SystemBucket::str(int indent) const
   s << fields_str(indent);
   s << coeffs_str(indent);
   s << solvers_str(indent);
+  s << functionals_str(indent);
   return s.str();
 }
 
@@ -795,6 +900,20 @@ const std::string SystemBucket::solvers_str(const int &indent) const
                                 s_it != solvers_end(); s_it++ )
   {
     s << (*(*s_it).second).str(indent);
+  }
+  return s.str();
+}
+
+//*******************************************************************|************************************************************//
+// return a string describing the functionals in the system
+//*******************************************************************|************************************************************//
+const std::string SystemBucket::functionals_str(const int &indent) const
+{
+  std::stringstream s;
+  std::string indentation (indent*2, ' ');
+  for ( FunctionalBucket_const_it f_it = functionals_begin(); f_it != functionals_end(); f_it++ )
+  {
+    s << (*(*f_it).second).str(indent);
   }
   return s.str();
 }
@@ -902,42 +1021,6 @@ void SystemBucket::apply_bcs_()
     (**b_it).apply((*(*oldfunction_).vector()));
     (**b_it).apply((*(*iteratedfunction_).vector()));
     (**b_it).apply((*(*function_).vector()));
-  }
-}
-
-//*******************************************************************|************************************************************//
-// attach all coefficients, first to the functionals then to the solver forms
-//*******************************************************************|************************************************************//
-void SystemBucket::attach_all_coeffs_()
-{
-  attach_function_coeffs_(fields_begin(), fields_end());             // attach functions to field functionals
-  attach_function_coeffs_(coeffs_begin(), coeffs_end());             // attach functions to coefficients functionals
-  attach_solver_coeffs_(solvers_begin(), solvers_end());             // attach functions to the solver forms
-}
-
-//*******************************************************************|************************************************************//
-// loop between the function bucket iterators attaching coefficients to the functionals of those function buckets
-//*******************************************************************|************************************************************//
-void SystemBucket::attach_function_coeffs_(FunctionBucket_it f_begin, 
-                                             FunctionBucket_it f_end)
-{
-  for (FunctionBucket_it f_it = f_begin; f_it != f_end; f_it++)      // loop over the function buckets
-  {
-    (*(*f_it).second).attach_functional_coeffs();                    // attach coefficients to the functionals of this function
-                                                                     // bucket
-  }
-}
-
-//*******************************************************************|************************************************************//
-// loop between the solver bucket iterators attaching coefficients to the forms of those solver buckets
-//*******************************************************************|************************************************************//
-void SystemBucket::attach_solver_coeffs_(SolverBucket_it s_begin, 
-                                              SolverBucket_it s_end)
-{
-
-  for (SolverBucket_it s_it = s_begin; s_it != s_end; s_it++)        // loop over the solver buckets
-  {
-    (*(*s_it).second).attach_form_coeffs();                          // attach coefficients to the forms of this solver bucket
   }
 }
 

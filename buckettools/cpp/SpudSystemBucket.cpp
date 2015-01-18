@@ -26,6 +26,7 @@
 #include "SpudBase.h"
 #include "SpudFunctionBucket.h"
 #include "SpudSolverBucket.h"
+#include "SpudFunctionalBucket.h"
 #include "Logger.h"
 #include <dolfin.h>
 #include <string>
@@ -72,6 +73,8 @@ void SpudSystemBucket::fill()
 
   fill_solvers_();                                                   // initialize the nonlinear solvers in this system
 
+  fill_functionals_();
+
 }
 
 //*******************************************************************|************************************************************//
@@ -87,17 +90,6 @@ void SpudSystemBucket::allocate_coeff_function()
   }                                                                  // (check that this is a coefficient function within this
                                                                      // function)
 
-}
-
-//*******************************************************************|************************************************************//
-// attach coefficients to forms and functionals
-//*******************************************************************|************************************************************//
-void SpudSystemBucket::initialize_forms()
-{
-  log(INFO, "Attaching coeffs for system %s", name().c_str());
-  attach_all_coeffs_();                                              // attach the coefficients to form and functionals
-                                                                     // this happens here as some coefficients depend on functionals
-                                                                     // to be evaluated
 }
 
 //*******************************************************************|************************************************************//
@@ -244,6 +236,26 @@ void SpudSystemBucket::fill_systemfunction_()
     (*snesupdatefunction_).rename( buffer.str(), buffer.str() );
   }
 
+}
+
+//*******************************************************************|************************************************************//
+// fill in the data about each functional of this system 
+//*******************************************************************|************************************************************//
+void SpudSystemBucket::fill_functionals_()
+{
+  std::stringstream buffer;
+
+  buffer.str(""); buffer << optionpath() << "/functional";
+  int nfunctionals = Spud::option_count(buffer.str());
+  for (uint i = 0; i < nfunctionals; i++)
+  {
+    buffer.str(""); buffer << optionpath() << "/functional[" << i << "]";
+
+    SpudFunctionalBucket_ptr functional(new SpudFunctionalBucket( buffer.str(), this ));
+    (*functional).fill();
+    register_functional(functional, (*functional).name());
+
+  }
 }
 
 //*******************************************************************|************************************************************//

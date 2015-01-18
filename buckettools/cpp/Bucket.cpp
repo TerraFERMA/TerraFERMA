@@ -84,6 +84,7 @@ Bucket::~Bucket()
 void Bucket::run()
 {
   update_timedependent();
+  update_nonlinear();
   update();
 
   output(OUTPUT_START);

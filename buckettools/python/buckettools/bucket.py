@@ -33,31 +33,25 @@ class Bucket:
   def write_ufc(self):
     """Write all ufl files described by the bucket."""
     for system in self.systems:
-      for field in system.fields:
-        for functional in field.functionals:
-          functional.write_ufc()
       for coeff in system.coeffs:
         if coeff.functional:
           coeff.functional.write_ufc()
-        for functional in coeff.functionals:
-          functional.write_ufc()
       for solver in system.solvers:
         solver.write_ufc()
+      for functional in system.functionals:
+        functional.write_ufc()
 
   def list_namespaces(self):
     """Return a list of the namespaces."""
     namespaces = []
     for system in self.systems:
-      for field in system.fields:
-        for functional in field.functionals:
-          namespaces.append(functional.namespace())
       for coeff in system.coeffs:
         if coeff.functional:
-          namespaces.append(functional.namespace())
-        for functional in coeff.functionals:
-          namespaces.append(functional.namespace())
+          namespaces.append(coeff.functional.namespace())
       for solver in system.solvers:
         namespaces.append(solver.namespace())
+      for functional in system.functionals:
+        namespaces.append(functional.namespace())
     return namespaces
 
   def list_globaluflsymbols(self):
@@ -90,14 +84,13 @@ class Bucket:
     if len(repeated_auto_uflsymbols) > 0: stat = 1
     for s in repeated_auto_uflsymbols: print "ERROR ufl_symbol generated from global ufl_symbol %s conflicts with global ufl_symbol %s! Change global ufl_symbol %s to avoid reserved endings."%(s[0], s[1], s[1])
     for system in self.systems:
-      for field in system.fields:
-        for functional in field.functionals:
-          stat = max(stat, functional.repeated_uflsymbol_check())
       for coeff in system.coeffs:
-        for functional in coeff.functionals:
-          stat = max(stat, functional.repeated_uflsymbol_check())
+        if coeff.functional:
+          stat = max(stat, coeff.functional.repeated_uflsymbol_check())
       for solver in system.solvers:
         stat = max(stat, solver.repeated_uflsymbol_check())
+      for functional in system.functionals:
+        stat = max(stat, functional.repeated_uflsymbol_check())
     return stat
 
   def write_cppexpressions(self):
@@ -113,16 +106,13 @@ class Bucket:
   def write_ufl(self):
     """Write all ufl files described by the bucket."""
     for system in self.systems:
-      for field in system.fields:
-        for functional in field.functionals:
-          functional.write_ufl()
       for coeff in system.coeffs:
         if coeff.functional:
           coeff.functional.write_ufl()
-        for functional in coeff.functionals:
-          functional.write_ufl()
       for solver in system.solvers:
         solver.write_ufl()
+      for functional in system.functionals:
+        functional.write_ufl()
 
   def write_systemfunctionals_cpp(self):
     """Write a cpp header file describing all the ufc namespaces in the bucket."""
@@ -138,25 +128,25 @@ class Bucket:
 
     functionalcoefficientspace_cpp         = []
     functionalcoefficientspace_cpp.append("  // A function to return a functionspace (for a coefficient) from a system given a mesh, a functionname and a uflsymbol.\n")
-    functionalcoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace_from_functional(const std::string &systemname, const std::string &functionname, const std::string &functionalname, const std::string &uflsymbol, Mesh_ptr mesh)\n")
+    functionalcoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace_from_functional(const std::string &systemname, const std::string &functionalname, const std::string &uflsymbol, Mesh_ptr mesh)\n")
     functionalcoefficientspace_cpp.append("  {\n")
     functionalcoefficientspace_cpp.append("    FunctionSpace_ptr coefficientspace;\n")
 
     constantfunctionalcoefficientspace_cpp         = []
     constantfunctionalcoefficientspace_cpp.append("  // A function to return a functionspace (for a coefficient) from a system given a mesh, a coefficientname and a uflsymbol.\n")
-    constantfunctionalcoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace_from_functional(const std::string &systemname, const std::string &coefficientname, const std::string &uflsymbol, Mesh_ptr mesh)\n")
+    constantfunctionalcoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace_from_constant_functional(const std::string &systemname, const std::string &coefficientname, const std::string &uflsymbol, Mesh_ptr mesh)\n")
     constantfunctionalcoefficientspace_cpp.append("  {\n")
     constantfunctionalcoefficientspace_cpp.append("    FunctionSpace_ptr coefficientspace;\n")
 
     functional_cpp            = []
     functional_cpp.append("  // A function to return a functional from a system-function set given a mesh and a functionalname.\n")
-    functional_cpp.append("  Form_ptr ufc_fetch_functional(const std::string &systemname, const std::string &functionname, const std::string &functionalname, Mesh_ptr mesh)\n")
+    functional_cpp.append("  Form_ptr ufc_fetch_functional(const std::string &systemname, const std::string &functionalname, Mesh_ptr mesh)\n")
     functional_cpp.append("  {\n")
     functional_cpp.append("    Form_ptr functional;\n")
 
     constantfunctional_cpp            = []
     constantfunctional_cpp.append("  // A function to return a functional for a constant from a system-function set given a mesh.\n")
-    constantfunctional_cpp.append("  Form_ptr ufc_fetch_functional(const std::string &systemname, const std::string &coefficientname, Mesh_ptr mesh)\n")
+    constantfunctional_cpp.append("  Form_ptr ufc_fetch_constant_functional(const std::string &systemname, const std::string &coefficientname, Mesh_ptr mesh)\n")
     constantfunctional_cpp.append("  {\n")
     constantfunctional_cpp.append("    Form_ptr functional;\n")
 
@@ -178,7 +168,7 @@ class Bucket:
 
     constantfunctionalcoefficientspace_cpp.append("    else\n")
     constantfunctionalcoefficientspace_cpp.append("    {\n")
-    constantfunctionalcoefficientspace_cpp.append("      tf_err(\"Unknown systemname in ufc_fetch_coefficientspace_from_functional\", \"System name: %s\", systemname.c_str());\n")
+    constantfunctionalcoefficientspace_cpp.append("      tf_err(\"Unknown systemname in ufc_fetch_coefficientspace_from_constant_functional\", \"System name: %s\", systemname.c_str());\n")
     constantfunctionalcoefficientspace_cpp.append("    }\n")
     constantfunctionalcoefficientspace_cpp.append("    return coefficientspace;\n")
     constantfunctionalcoefficientspace_cpp.append("  }\n")
@@ -192,7 +182,7 @@ class Bucket:
 
     constantfunctional_cpp.append("    else\n")
     constantfunctional_cpp.append("    {\n")
-    constantfunctional_cpp.append("      tf_err(\"Unknown systemname in ufc_fetch_functional\", \"System name: %s\", systemname.c_str());\n")
+    constantfunctional_cpp.append("      tf_err(\"Unknown systemname in ufc_fetch_constant_functional\", \"System name: %s\", systemname.c_str());\n")
     constantfunctional_cpp.append("    }\n")
     constantfunctional_cpp.append("    return functional;\n")
     constantfunctional_cpp.append("  }\n")

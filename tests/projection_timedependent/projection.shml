@@ -100,7 +100,7 @@ checkpoint_1 = libspud.get_option("/timestepping/current_time")
 libspud.clear_options()</string_value>
                 </variable>
                 <variable name="snes_fail">
-                  <string_value type="code" lines="20" language="python">snes_fail = 'SNES failed to converge.' in open('terraferma.err-0', 'r').read()</string_value>
+                  <string_value lines="20" type="code" language="python">snes_fail = 'SNES failed to converge.' in open('terraferma.err-0', 'r').read()</string_value>
                 </variable>
               </variables>
             </simulation>
@@ -113,7 +113,7 @@ libspud.clear_options()</string_value>
 
 stat = parser("projection_checkpoint.stat")
 
-snes_source2_int_0 = stat["SNESProjection"]["Source2"]["Integral0"]</string_value>
+snes_source2_int_0 = stat["SNESProjection"]["Source2Integral0"]["functional_value"]</string_value>
             </variable>
             <variable name="snes_source2_int_1">
               <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -122,7 +122,7 @@ snes_source2_int_0 = stat["SNESProjection"]["Source2"]["Integral0"]</string_valu
 
 stat = parser("projection_checkpoint.stat")
 
-snes_source2_int_1 = stat["SNESProjection"]["Source2"]["Integral1"]</string_value>
+snes_source2_int_1 = stat["SNESProjection"]["Source2Integral1"]["functional_value"]</string_value>
             </variable>
             <variable name="picard_source2_int_0">
               <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -131,7 +131,7 @@ snes_source2_int_1 = stat["SNESProjection"]["Source2"]["Integral1"]</string_valu
 
 stat = parser("projection_checkpoint.stat")
 
-picard_source2_int_0 = stat["PicardProjection"]["Source2"]["Integral0"]</string_value>
+picard_source2_int_0 = stat["PicardProjection"]["Source2Integral0"]["functional_value"]</string_value>
             </variable>
             <variable name="picard_source2_int_1">
               <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -140,7 +140,7 @@ picard_source2_int_0 = stat["PicardProjection"]["Source2"]["Integral0"]</string_
 
 stat = parser("projection_checkpoint.stat")
 
-picard_source2_int_1 = stat["PicardProjection"]["Source2"]["Integral1"]</string_value>
+picard_source2_int_1 = stat["PicardProjection"]["Source2Integral1"]["functional_value"]</string_value>
             </variable>
             <variable name="snes_field2_int_0">
               <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -149,7 +149,7 @@ picard_source2_int_1 = stat["PicardProjection"]["Source2"]["Integral1"]</string_
 
 stat = parser("projection_checkpoint.stat")
 
-snes_field2_int_0 = stat["SNESProjection"]["Field2"]["Integral0"]</string_value>
+snes_field2_int_0 = stat["SNESProjection"]["Field2Integral0"]["functional_value"]</string_value>
             </variable>
             <variable name="snes_field2_int_1">
               <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -158,7 +158,7 @@ snes_field2_int_0 = stat["SNESProjection"]["Field2"]["Integral0"]</string_value>
 
 stat = parser("projection_checkpoint.stat")
 
-snes_field2_int_1 = stat["SNESProjection"]["Field2"]["Integral1"]</string_value>
+snes_field2_int_1 = stat["SNESProjection"]["Field2Integral1"]["functional_value"]</string_value>
             </variable>
             <variable name="picard_source2_oldint_0">
               <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -167,7 +167,7 @@ snes_field2_int_1 = stat["SNESProjection"]["Field2"]["Integral1"]</string_value>
 
 stat = parser("projection_checkpoint.stat")
 
-picard_source2_oldint_0 = stat["PicardProjection"]["Source2"]["OldIntegral0"]</string_value>
+picard_source2_oldint_0 = stat["PicardProjection"]["Source2OldIntegral0"]["functional_value"]</string_value>
             </variable>
             <variable name="picard_source2_oldint_1">
               <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -176,7 +176,7 @@ picard_source2_oldint_0 = stat["PicardProjection"]["Source2"]["OldIntegral0"]</s
 
 stat = parser("projection_checkpoint.stat")
 
-picard_source2_oldint_1 = stat["PicardProjection"]["Source2"]["OldIntegral1"]</string_value>
+picard_source2_oldint_1 = stat["PicardProjection"]["Source2OldIntegral1"]["functional_value"]</string_value>
             </variable>
             <variable name="picard_field2_min_0">
               <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -194,7 +194,7 @@ picard_field2_min_0 = stat["PicardProjection"]["Field2"]["max"][0]</string_value
 
 stat = parser("projection_checkpoint.stat")
 
-picard_source1_int = stat["PicardProjection"]["Source1"]["Integral"]</string_value>
+picard_source1_int = stat["PicardProjection"]["Source1Integral"]["functional_value"]</string_value>
             </variable>
             <variable name="picard_field2_int_0">
               <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -203,7 +203,7 @@ picard_source1_int = stat["PicardProjection"]["Source1"]["Integral"]</string_val
 
 stat = parser("projection_checkpoint.stat")
 
-picard_field2_int_0 = stat["PicardProjection"]["Field2"]["Integral0"]</string_value>
+picard_field2_int_0 = stat["PicardProjection"]["Field2Integral0"]["functional_value"]</string_value>
             </variable>
             <variable name="picard_field2_int_1">
               <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -212,7 +212,7 @@ picard_field2_int_0 = stat["PicardProjection"]["Field2"]["Integral0"]</string_va
 
 stat = parser("projection_checkpoint.stat")
 
-picard_field2_int_1 = stat["PicardProjection"]["Field2"]["Integral1"]</string_value>
+picard_field2_int_1 = stat["PicardProjection"]["Field2Integral1"]["functional_value"]</string_value>
             </variable>
             <variable name="checkpoint_checkpoint_0">
               <string_value lines="20" type="code" language="python">import libspud
@@ -239,7 +239,7 @@ snes_field1_min = stat["SNESProjection"]["Field1"]["min"]</string_value>
 
 stat = parser("projection_checkpoint.stat")
 
-snes_field1_int = stat["SNESProjection"]["Field1"]["Integral"]</string_value>
+snes_field1_int = stat["SNESProjection"]["Field1Integral"]["functional_value"]</string_value>
             </variable>
             <variable name="checkpoint_checkpoint_1">
               <string_value lines="20" type="code" language="python">import libspud
@@ -284,7 +284,7 @@ snes_field2_min_0 = stat["SNESProjection"]["Field2"]["max"][0]</string_value>
 
 stat = parser("projection_checkpoint.stat")
 
-picard_field2_oldint_0 = stat["PicardProjection"]["Field2"]["OldIntegral0"]</string_value>
+picard_field2_oldint_0 = stat["PicardProjection"]["Field2OldIntegral0"]["functional_value"]</string_value>
             </variable>
             <variable name="picard_field2_oldint_1">
               <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -293,7 +293,7 @@ picard_field2_oldint_0 = stat["PicardProjection"]["Field2"]["OldIntegral0"]</str
 
 stat = parser("projection_checkpoint.stat")
 
-picard_field2_oldint_1 = stat["PicardProjection"]["Field2"]["OldIntegral1"]</string_value>
+picard_field2_oldint_1 = stat["PicardProjection"]["Field2OldIntegral1"]["functional_value"]</string_value>
             </variable>
             <variable name="snes_source1_oldint">
               <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -302,7 +302,7 @@ picard_field2_oldint_1 = stat["PicardProjection"]["Field2"]["OldIntegral1"]</str
 
 stat = parser("projection_checkpoint.stat")
 
-snes_source1_oldint = stat["SNESProjection"]["Source1"]["OldIntegral"]</string_value>
+snes_source1_oldint = stat["SNESProjection"]["Source1OldIntegral"]["functional_value"]</string_value>
             </variable>
             <variable name="picard_field1_max">
               <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -338,7 +338,7 @@ picard_field1_min = stat["PicardProjection"]["Field1"]["min"]</string_value>
 
 stat = parser("projection_checkpoint.stat")
 
-picard_field1_oldint = stat["PicardProjection"]["Field1"]["OldIntegral"]</string_value>
+picard_field1_oldint = stat["PicardProjection"]["Field1OldIntegral"]["functional_value"]</string_value>
             </variable>
             <variable name="snes_field2_max_1">
               <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -383,7 +383,7 @@ picard_field2_max_0 = stat["PicardProjection"]["Field2"]["min"][0]</string_value
 
 stat = parser("projection_checkpoint.stat")
 
-snes_field1_oldint = stat["SNESProjection"]["Field1"]["OldIntegral"]</string_value>
+snes_field1_oldint = stat["SNESProjection"]["Field1OldIntegral"]["functional_value"]</string_value>
             </variable>
             <variable name="snes_source2_oldint_0">
               <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -392,7 +392,7 @@ snes_field1_oldint = stat["SNESProjection"]["Field1"]["OldIntegral"]</string_val
 
 stat = parser("projection_checkpoint.stat")
 
-snes_source2_oldint_0 = stat["SNESProjection"]["Source2"]["OldIntegral0"]</string_value>
+snes_source2_oldint_0 = stat["SNESProjection"]["Source2OldIntegral0"]["functional_value"]</string_value>
             </variable>
             <variable name="snes_source2_oldint_1">
               <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -401,7 +401,7 @@ snes_source2_oldint_0 = stat["SNESProjection"]["Source2"]["OldIntegral0"]</strin
 
 stat = parser("projection_checkpoint.stat")
 
-snes_source2_oldint_1 = stat["SNESProjection"]["Source2"]["OldIntegral1"]</string_value>
+snes_source2_oldint_1 = stat["SNESProjection"]["Source2OldIntegral1"]["functional_value"]</string_value>
             </variable>
             <variable name="snes_field2_oldint_0">
               <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -410,7 +410,7 @@ snes_source2_oldint_1 = stat["SNESProjection"]["Source2"]["OldIntegral1"]</strin
 
 stat = parser("projection_checkpoint.stat")
 
-snes_field2_oldint_0 = stat["SNESProjection"]["Field2"]["OldIntegral0"]</string_value>
+snes_field2_oldint_0 = stat["SNESProjection"]["Field2OldIntegral0"]["functional_value"]</string_value>
             </variable>
             <variable name="snes_source1_int">
               <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -419,7 +419,7 @@ snes_field2_oldint_0 = stat["SNESProjection"]["Field2"]["OldIntegral0"]</string_
 
 stat = parser("projection_checkpoint.stat")
 
-snes_source1_int = stat["SNESProjection"]["Source1"]["Integral"]</string_value>
+snes_source1_int = stat["SNESProjection"]["Source1Integral"]["functional_value"]</string_value>
             </variable>
             <variable name="snes_field2_oldint_1">
               <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -428,7 +428,7 @@ snes_source1_int = stat["SNESProjection"]["Source1"]["Integral"]</string_value>
 
 stat = parser("projection_checkpoint.stat")
 
-snes_field2_oldint_1 = stat["SNESProjection"]["Field2"]["OldIntegral1"]</string_value>
+snes_field2_oldint_1 = stat["SNESProjection"]["Field2OldIntegral1"]["functional_value"]</string_value>
             </variable>
             <variable name="picard_source1_oldint">
               <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -437,7 +437,7 @@ snes_field2_oldint_1 = stat["SNESProjection"]["Field2"]["OldIntegral1"]</string_
 
 stat = parser("projection_checkpoint.stat")
 
-picard_source1_oldint = stat["PicardProjection"]["Source1"]["OldIntegral"]</string_value>
+picard_source1_oldint = stat["PicardProjection"]["Source1OldIntegral"]["functional_value"]</string_value>
             </variable>
             <variable name="picard_field1_int">
               <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -446,7 +446,25 @@ picard_source1_oldint = stat["PicardProjection"]["Source1"]["OldIntegral"]</stri
 
 stat = parser("projection_checkpoint.stat")
 
-picard_field1_int = stat["PicardProjection"]["Field1"]["Integral"]</string_value>
+picard_field1_int = stat["PicardProjection"]["Field1Integral"]["functional_value"]</string_value>
+            </variable>
+            <variable name="snes_field2_int_0_steady">
+              <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+
+
+
+steady = parser("projection_checkpoint.steady")
+
+snes_field2_int_0_steady = steady["SNESProjection"]["Field2Integral0"]["functional_change"]</string_value>
+            </variable>
+            <variable name="snes_field2_int_0_coeff">
+              <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+
+
+
+stat = parser("projection_checkpoint.stat")
+
+snes_field2_int_0_coeff = stat["SNESProjection"]["Field2Integral0"]["max"]</string_value>
             </variable>
           </variables>
         </simulation>
@@ -459,7 +477,7 @@ picard_field1_int = stat["PicardProjection"]["Field1"]["Integral"]</string_value
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_source2_int_0 = stat["SNESProjection"]["Source2"]["Integral0"]</string_value>
+checkpoint_snes_source2_int_0 = stat["SNESProjection"]["Source2Integral0"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_snes_source2_int_1">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -468,7 +486,7 @@ checkpoint_snes_source2_int_0 = stat["SNESProjection"]["Source2"]["Integral0"]</
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_source2_int_1 = stat["SNESProjection"]["Source2"]["Integral1"]</string_value>
+checkpoint_snes_source2_int_1 = stat["SNESProjection"]["Source2Integral1"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_picard_source2_int_0">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -477,7 +495,7 @@ checkpoint_snes_source2_int_1 = stat["SNESProjection"]["Source2"]["Integral1"]</
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_picard_source2_int_0 = stat["PicardProjection"]["Source2"]["Integral0"]</string_value>
+checkpoint_picard_source2_int_0 = stat["PicardProjection"]["Source2Integral0"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_picard_source2_int_1">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -486,7 +504,7 @@ checkpoint_picard_source2_int_0 = stat["PicardProjection"]["Source2"]["Integral0
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_picard_source2_int_1 = stat["PicardProjection"]["Source2"]["Integral1"]</string_value>
+checkpoint_picard_source2_int_1 = stat["PicardProjection"]["Source2Integral1"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_snes_field2_int_0">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -495,7 +513,7 @@ checkpoint_picard_source2_int_1 = stat["PicardProjection"]["Source2"]["Integral1
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_field2_int_0 = stat["SNESProjection"]["Field2"]["Integral0"]</string_value>
+checkpoint_snes_field2_int_0 = stat["SNESProjection"]["Field2Integral0"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_snes_field2_int_1">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -504,7 +522,7 @@ checkpoint_snes_field2_int_0 = stat["SNESProjection"]["Field2"]["Integral0"]</st
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_field2_int_1 = stat["SNESProjection"]["Field2"]["Integral1"]</string_value>
+checkpoint_snes_field2_int_1 = stat["SNESProjection"]["Field2Integral1"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_picard_source2_oldint_0">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -513,7 +531,7 @@ checkpoint_snes_field2_int_1 = stat["SNESProjection"]["Field2"]["Integral1"]</st
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_picard_source2_oldint_0 = stat["PicardProjection"]["Source2"]["OldIntegral0"]</string_value>
+checkpoint_picard_source2_oldint_0 = stat["PicardProjection"]["Source2OldIntegral0"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_picard_source2_oldint_1">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -522,7 +540,7 @@ checkpoint_picard_source2_oldint_0 = stat["PicardProjection"]["Source2"]["OldInt
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_picard_source2_oldint_1 = stat["PicardProjection"]["Source2"]["OldIntegral1"]</string_value>
+checkpoint_picard_source2_oldint_1 = stat["PicardProjection"]["Source2OldIntegral1"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_picard_field2_min_0">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -540,7 +558,7 @@ checkpoint_picard_field2_min_0 = stat["PicardProjection"]["Field2"]["max"][0]</s
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_picard_source1_int = stat["PicardProjection"]["Source1"]["Integral"]</string_value>
+checkpoint_picard_source1_int = stat["PicardProjection"]["Source1Integral"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_picard_field2_int_0">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -549,7 +567,7 @@ checkpoint_picard_source1_int = stat["PicardProjection"]["Source1"]["Integral"]<
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_picard_field2_int_0 = stat["PicardProjection"]["Field2"]["Integral0"]</string_value>
+checkpoint_picard_field2_int_0 = stat["PicardProjection"]["Field2Integral0"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_picard_field2_int_1">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -558,7 +576,7 @@ checkpoint_picard_field2_int_0 = stat["PicardProjection"]["Field2"]["Integral0"]
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_picard_field2_int_1 = stat["PicardProjection"]["Field2"]["Integral1"]</string_value>
+checkpoint_picard_field2_int_1 = stat["PicardProjection"]["Field2Integral1"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_checkpoint_checkpoint_0">
           <string_value lines="20" type="code" language="python">import libspud
@@ -585,7 +603,7 @@ checkpoint_snes_field1_min = stat["SNESProjection"]["Field1"]["min"]</string_val
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_field1_int = stat["SNESProjection"]["Field1"]["Integral"]</string_value>
+checkpoint_snes_field1_int = stat["SNESProjection"]["Field1Integral"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_snes_field1_max">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -621,7 +639,7 @@ checkpoint_snes_field2_min_0 = stat["SNESProjection"]["Field2"]["max"][0]</strin
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_picard_field2_oldint_0 = stat["PicardProjection"]["Field2"]["OldIntegral0"]</string_value>
+checkpoint_picard_field2_oldint_0 = stat["PicardProjection"]["Field2OldIntegral0"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_picard_field2_oldint_1">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -630,7 +648,7 @@ checkpoint_picard_field2_oldint_0 = stat["PicardProjection"]["Field2"]["OldInteg
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_picard_field2_oldint_1 = stat["PicardProjection"]["Field2"]["OldIntegral1"]</string_value>
+checkpoint_picard_field2_oldint_1 = stat["PicardProjection"]["Field2OldIntegral1"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_snes_source1_oldint">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -639,7 +657,7 @@ checkpoint_picard_field2_oldint_1 = stat["PicardProjection"]["Field2"]["OldInteg
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_source1_oldint = stat["SNESProjection"]["Source1"]["OldIntegral"]</string_value>
+checkpoint_snes_source1_oldint = stat["SNESProjection"]["Source1OldIntegral"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_picard_field1_max">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -675,7 +693,7 @@ checkpoint_picard_field1_min = stat["PicardProjection"]["Field1"]["min"]</string
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_picard_field1_oldint = stat["PicardProjection"]["Field1"]["OldIntegral"]</string_value>
+checkpoint_picard_field1_oldint = stat["PicardProjection"]["Field1OldIntegral"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_snes_field2_max_1">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -720,7 +738,7 @@ checkpoint_picard_field2_max_0 = stat["PicardProjection"]["Field2"]["min"][0]</s
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_field1_oldint = stat["SNESProjection"]["Field1"]["OldIntegral"]</string_value>
+checkpoint_snes_field1_oldint = stat["SNESProjection"]["Field1OldIntegral"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_snes_source2_oldint_0">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -729,7 +747,7 @@ checkpoint_snes_field1_oldint = stat["SNESProjection"]["Field1"]["OldIntegral"]<
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_source2_oldint_0 = stat["SNESProjection"]["Source2"]["OldIntegral0"]</string_value>
+checkpoint_snes_source2_oldint_0 = stat["SNESProjection"]["Source2OldIntegral0"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_snes_source2_oldint_1">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -738,7 +756,7 @@ checkpoint_snes_source2_oldint_0 = stat["SNESProjection"]["Source2"]["OldIntegra
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_source2_oldint_1 = stat["SNESProjection"]["Source2"]["OldIntegral1"]</string_value>
+checkpoint_snes_source2_oldint_1 = stat["SNESProjection"]["Source2OldIntegral1"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_snes_field2_oldint_0">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -747,7 +765,7 @@ checkpoint_snes_source2_oldint_1 = stat["SNESProjection"]["Source2"]["OldIntegra
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_field2_oldint_0 = stat["SNESProjection"]["Field2"]["OldIntegral0"]</string_value>
+checkpoint_snes_field2_oldint_0 = stat["SNESProjection"]["Field2OldIntegral0"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_snes_source1_int">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -756,7 +774,7 @@ checkpoint_snes_field2_oldint_0 = stat["SNESProjection"]["Field2"]["OldIntegral0
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_source1_int = stat["SNESProjection"]["Source1"]["Integral"]</string_value>
+checkpoint_snes_source1_int = stat["SNESProjection"]["Source1Integral"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_snes_field2_oldint_1">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -765,7 +783,7 @@ checkpoint_snes_source1_int = stat["SNESProjection"]["Source1"]["Integral"]</str
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_field2_oldint_1 = stat["SNESProjection"]["Field2"]["OldIntegral1"]</string_value>
+checkpoint_snes_field2_oldint_1 = stat["SNESProjection"]["Field2OldIntegral1"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_picard_source1_oldint">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -774,7 +792,7 @@ checkpoint_snes_field2_oldint_1 = stat["SNESProjection"]["Field2"]["OldIntegral1
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_picard_source1_oldint = stat["PicardProjection"]["Source1"]["OldIntegral"]</string_value>
+checkpoint_picard_source1_oldint = stat["PicardProjection"]["Source1OldIntegral"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_picard_field1_int">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -783,7 +801,25 @@ checkpoint_picard_source1_oldint = stat["PicardProjection"]["Source1"]["OldInteg
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_picard_field1_int = stat["PicardProjection"]["Field1"]["Integral"]</string_value>
+checkpoint_picard_field1_int = stat["PicardProjection"]["Field1Integral"]["functional_value"]</string_value>
+        </variable>
+        <variable name="checkpoint_snes_field2_int_0_coeff">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+
+
+
+stat = parser("projection_checkpoint_checkpoint.stat")
+
+checkpoint_snes_field2_int_0_coeff = stat["SNESProjection"]["Field2Integral0"]["max"]</string_value>
+        </variable>
+        <variable name="checkpoint_snes_field2_int_0_steady">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+
+
+
+steady = parser("projection_checkpoint_checkpoint.steady")
+
+checkpoint_snes_field2_int_0_steady = steady["SNESProjection"]["Field2Integral0"]["functional_change"]</string_value>
         </variable>
       </variables>
     </simulation>
@@ -1533,7 +1569,51 @@ assert numpy.all(numpy.array(checkpoint_0)==0.0)</string_value>
 assert numpy.all(numpy.array(checkpoint_1)==1.0)</string_value>
     </test>
     <test name="snes_fail">
-      <string_value type="code" lines="20" language="python">assert all(snes_fail)</string_value>
+      <string_value lines="20" type="code" language="python">assert all(snes_fail)</string_value>
+    </test>
+    <test name="snes_field2_int_0_steady">
+      <string_value lines="20" type="code" language="python">import numpy
+evalues = numpy.array([0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0])
+echanges = abs(evalues[1:]-evalues[:-1])/evalues[1:]
+test = echanges[1:-1:2].tolist() + [echanges[-1]]
+values = snes_field2_int_0_steady
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
+    </test>
+    <test name="checkpoint_snes_field2_int_0_steady">
+      <string_value lines="20" type="code" language="python">import numpy
+evalues = numpy.array([1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0])
+echanges = abs(evalues[1:]-evalues[:-1])/evalues[1:]
+test = echanges[1:-1:2].tolist() + [echanges[-1]]
+values = checkpoint_snes_field2_int_0_steady
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
+    </test>
+    <test name="snes_field2_int_0_coeff">
+      <string_value lines="20" type="code" language="python">import numpy
+test = [0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
+values = snes_field2_int_0_coeff
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
+    </test>
+    <test name="checkpoint_snes_field2_int_0">
+      <string_value lines="20" type="code" language="python">import numpy
+test = [1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
+values = checkpoint_snes_field2_int_0_coeff
+maxerr = []
+for np in values.parameters["nprocs"]:
+  maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
+maxerr = numpy.array(maxerr)
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
   </tests>
 </harness_options>

@@ -81,3 +81,15 @@ class SpudSystemBucket(buckettools.systembucket.SystemBucket):
       # done with this nonlinear solver
       del solver
 
+    self.functionals = []
+    for j in range(libspud.option_count(optionpath+"/functional")):
+      functional_optionpath = optionpath+"/functional["+`j`+"]"
+      functional = buckettools.spud.SpudFunctionalBucket()
+      # get all the information about this functional from the options dictionary
+      functional.fill(functional_optionpath, self)
+      # let the system know about this functional
+      self.functionals.append(functional)
+      # done with this functional
+      del functional
+
+

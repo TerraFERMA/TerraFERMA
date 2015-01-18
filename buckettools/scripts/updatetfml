@@ -99,12 +99,25 @@ def update_solve_location():
     changed = True
   return changed
 
+def update_functional_location():
+  changed = False
+  elements = tree.findall("//include_in_statistics/functional")
+  if len(elements) != 0: changed = True
+  for element in elements:
+    function = element.getparent().getparent().getparent()
+    system   = function.getparent()
+    element.attrib["name"] = function.attrib["name"]+element.attrib["name"]
+    stats = etree.SubElement(element, "include_in_statistics")
+    system.append(element)
+  return changed
+
 for filename in filenames:
   print 'Updating: '+filename
   changed = False
   tree = etree.parse(filename)
   changed = changed or update_ufl_symbol_name("//ufl_symbol")
   changed = changed or update_solve_location()
+  changed = changed or update_functional_location()
   if changed:
     backupfilename = os.path.join(os.path.split(filename)[0], os.path.split(filename)[-1].split('.')[0]+'.tfml.bak')
     shutil.copy2(filename, backupfilename)

@@ -35,14 +35,12 @@ namespace buckettools
   FunctionSpace_ptr ufc_fetch_coefficientspace_from_functional(
                                       const std::string              // return a (boost shared) pointer to a functionspace for a 
                                             &systemname,             // coefficient function from a functional given a mesh, a
-                                      const std::string              // function name, a functional name and a (base) ufl symbol
-                                            &functionname, 
-                                      const std::string 
+                                      const std::string              // functional name and a (base) ufl symbol
                                             &funcionalname, 
                                       const std::string &uflsymbol, 
                                       Mesh_ptr mesh);
 
-  FunctionSpace_ptr ufc_fetch_coefficientspace_from_functional(
+  FunctionSpace_ptr ufc_fetch_coefficientspace_from_constant_functional(
                                       const std::string              // return a (boost shared) pointer to a functionspace for a 
                                             &systemname,             // coefficient function from a constant functional given a mesh, a
                                       const std::string              // function name and a (base) ufl symbol
@@ -51,11 +49,10 @@ namespace buckettools
                                       Mesh_ptr mesh);
 
   Form_ptr ufc_fetch_functional(const std::string &systemname,       // return a (boost shared) pointer to a form from a functional
-                          const std::string &functionname,           // given a mesh, a function name and a functional name
-                          const std::string &functionalname, 
+                          const std::string &functionalname,         // given a mesh and a functional name
                           Mesh_ptr mesh);
 
-  Form_ptr ufc_fetch_functional(const std::string &systemname,       // return a (boost shared) pointer to a form for a constant
+  Form_ptr ufc_fetch_constant_functional(const std::string &systemname,// return a (boost shared) pointer to a form for a constant
                           const std::string &functionname,           // from a functional given a mesh and a function name
                           Mesh_ptr mesh);
 

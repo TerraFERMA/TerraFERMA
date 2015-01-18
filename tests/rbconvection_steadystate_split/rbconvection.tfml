@@ -94,14 +94,7 @@
       <diagnostics>
         <include_in_visualization/>
         <include_in_statistics>
-          <functional name="TopSurfaceIntegral">
-            <string_value lines="20" type="code" language="python">int = grad(T)[1]*ds(4)</string_value>
-            <ufl_symbol name="functional">
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-        </include_in_statistics>
+          </include_in_statistics>
       </diagnostics>
     </field>
     <coefficient name="Source">
@@ -165,7 +158,14 @@ r = rT</string_value>
         <never_ignore_solver_failures/>
       </type>
     <solve name="in_timeloop"/></nonlinear_solver>
-    </system>
+    <functional name="TemperatureTopSurfaceIntegral">
+            <string_value lines="20" type="code" language="python">int = grad(T)[1]*ds(4)</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+        </system>
   <system name="Stokes">
     <mesh name="Mesh"/>
     <ufl_symbol name="global">
@@ -255,14 +255,7 @@ r = rT</string_value>
       <diagnostics>
         <include_in_visualization/>
         <include_in_statistics>
-          <functional name="L2Norm">
-            <string_value lines="20" type="code" language="python">int = inner(v,v)*dx</string_value>
-            <ufl_symbol name="functional">
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-        </include_in_statistics>
+          </include_in_statistics>
       </diagnostics>
     </field>
     <field name="Pressure">
@@ -403,5 +396,12 @@ r = rv + rp</string_value>
         <never_ignore_solver_failures/>
       </type>
     <solve name="in_timeloop"/></nonlinear_solver>
-    </system>
+    <functional name="VelocityL2Norm">
+            <string_value lines="20" type="code" language="python">int = inner(v,v)*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+        </system>
 </terraferma_options>

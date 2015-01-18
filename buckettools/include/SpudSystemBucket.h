@@ -61,8 +61,6 @@ namespace buckettools
 
     void allocate_coeff_function();                                  // allocate the coefficient functions
 
-    void initialize_forms();                                         // initialize the forms and functionals by attaching the coeffs
-
     void initialize_fields_and_coefficient_expressions();            // initialize the expressions that fields and coefficients use
 
     void initialize_coefficient_functions();                         // initialize the coefficients functions
@@ -111,6 +109,8 @@ namespace buckettools
     void fill_coeffs_();                                             // fill in the coefficient information
 
     void fill_solvers_();                                            // fill in the solver bucket information
+
+    void fill_functionals_();                                        // fill in the functional bucket information
 
   };
  

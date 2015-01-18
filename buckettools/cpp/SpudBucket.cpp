@@ -123,7 +123,7 @@ void SpudBucket::fill()
   for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *fourth* time, attaching the
                                   sys_it != systems_end(); sys_it++) // coefficients to the forms and functionals
   {
-    (*std::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).initialize_forms();
+    (*(*sys_it).second).initialize_forms();
   }
   
   for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *fifth* time, initializing
@@ -409,7 +409,7 @@ void SpudBucket::fill_timestepping_()
     buffer.str(""); buffer << "/timestepping/steady_state";
     if (Spud::have_option(buffer.str()))
     {
-      if ((Spud::option_count("/system/field/diagnostics/include_in_statistics/functional/include_in_steady_state")+
+      if ((Spud::option_count("/system/functional/include_in_steady_state")+
            Spud::option_count("/system/field/diagnostics/include_in_steady_state"))==0)
       {
         tf_err("Reqested a steady state check but selected no fields or functionals to include.", 
@@ -1062,7 +1062,7 @@ void SpudBucket::fill_diagnostics_()
   {
     if (Spud::option_count("/system/field/diagnostics/include_in_detectors")==0)
     {
-      tf_err("Reqested detectors but selected no fields or functionals to include.", 
+      tf_err("Reqested detectors but selected no fields to include.", 
              "No fields included in detectors.");
     }
 
@@ -1072,7 +1072,7 @@ void SpudBucket::fill_diagnostics_()
     (*detfile_).write_header();
   }
 
-  if ((Spud::option_count("/system/field/diagnostics/include_in_statistics/functional/include_in_steady_state")+
+  if ((Spud::option_count("/system/functional/include_in_steady_state")+
        Spud::option_count("/system/field/diagnostics/include_in_steady_state"))>0)
   {
     steadyfile_.reset( new SteadyStateFile(output_basename()+".steady",

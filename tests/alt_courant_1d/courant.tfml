@@ -106,15 +106,15 @@ values[0] = (val*bucket()-&gt;timestep())/dcell.diameter();</string_value>
       </type>
       <diagnostics>
         <include_in_statistics>
-          <functional name="Integral">
+          </include_in_statistics>
+      </diagnostics>
+    </coefficient>
+    <functional name="AltCourantNumberIntegral">
             <string_value lines="20" type="code" language="python">int = ac*dx</string_value>
             <ufl_symbol name="functional">
               <string_value lines="1">int</string_value>
             </ufl_symbol>
             <quadrature_rule name="default"/>
-          </functional>
-        </include_in_statistics>
-      </diagnostics>
-    </coefficient>
-    </system>
+          <include_in_statistics/></functional>
+        </system>
 </terraferma_options>

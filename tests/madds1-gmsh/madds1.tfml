@@ -114,14 +114,7 @@
       <diagnostics>
         <include_in_visualization/>
         <include_in_statistics>
-          <functional name="L2NormSquared">
-            <string_value lines="20" type="code" language="python">int = inner(v,v)*dx(12)</string_value>
-            <ufl_symbol name="functional">
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-        </include_in_statistics>
+          </include_in_statistics>
         <include_in_detectors/>
       </diagnostics>
     </field>
@@ -149,14 +142,7 @@
       <diagnostics>
         <include_in_visualization/>
         <include_in_statistics>
-          <functional name="Integral">
-            <string_value lines="20" type="code" language="python">int = p*dx(12)</string_value>
-            <ufl_symbol name="functional">
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-        </include_in_statistics>
+          </include_in_statistics>
         <include_in_steady_state>
           <norm>
             <string_value>linf</string_value>
@@ -214,7 +200,21 @@ r = rv + rp</string_value>
         <never_ignore_solver_failures/>
       </type>
     <solve name="at_start"/></nonlinear_solver>
-    </system>
+    <functional name="VelocityL2NormSquared">
+            <string_value lines="20" type="code" language="python">int = inner(v,v)*dx(12)</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+        <functional name="PressureIntegral">
+            <string_value lines="20" type="code" language="python">int = p*dx(12)</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+        </system>
   <system name="Divergence">
     <mesh name="Mesh"/>
     <ufl_symbol name="global">
