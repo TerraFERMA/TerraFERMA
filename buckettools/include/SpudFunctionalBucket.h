@@ -19,102 +19,82 @@
 // along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
 
-#ifndef __SPUD_SYSTEM_H
-#define __SPUD_SYSTEM_H
+#ifndef __SPUD_FUNCTIONALBUCKET_H
+#define __SPUD_FUNCTIONALBUCKET_H
 
 #include "BoostTypes.h"
-#include "SystemBucket.h"
+#include "FunctionalBucket.h"
 #include <dolfin.h>
 
 namespace buckettools
 {
   
   //*****************************************************************|************************************************************//
-  // SpudSystemBucket class:
+  // SpudFunctionalBucket class:
   //
-  // The SpudSystemBucket class is a derived class of the system that populates the
-  // data structures within a system using the spud options parser (and assumes
+  // The SpudFunctionalBucket class is a derived class of the functional that populates the
+  // data structures within a functional using the spud options parser (and assumes
   // the structure of the buckettools schema)
   //*****************************************************************|************************************************************//
-  class SpudSystemBucket : public SystemBucket
+  class SpudFunctionalBucket : public FunctionalBucket
   {
 
   //*****************************************************************|***********************************************************//
   // Publicly available functions
   //*****************************************************************|***********************************************************//
 
-  public:                                                            // accessible to everyone
+  public:
     
     //***************************************************************|***********************************************************//
     // Constructors and destructors
     //***************************************************************|***********************************************************//
 
-    SpudSystemBucket(const std::string &optionpath, Bucket* bucket); // default constructor
-
-    ~SpudSystemBucket();                                             // default destructor
+    SpudFunctionalBucket(const std::string &optionpath, 
+                                               SystemBucket* system);// specific constructor
+    
+    ~SpudFunctionalBucket();                                           // default destructor
 
     //***************************************************************|***********************************************************//
     // Filling data
     //***************************************************************|***********************************************************//
 
-    void fill();                                                     // fill the system assuming a buckettools spud schema
-
-    void allocate_coeff_function();                                  // allocate the coefficient functions
-
-    void initialize_fields_and_coefficient_expressions();            // initialize the expressions that fields and coefficients use
-
-    void initialize_coefficient_functions();                         // initialize the coefficients functions
-
-    void initialize_solvers();                                       // initialize the matrices related to forms as well as the
-                                                                     // petsc objects
+    void fill();                                                     // fill this functional
 
     //***************************************************************|***********************************************************//
     // Base data access
     //***************************************************************|***********************************************************//
 
-    const std::string optionpath() const                             // return a string containing the optionpath for the system
+    const std::string optionpath() const                             // return a string containing the optionpath of this function
     { return optionpath_; }
-    
+
     //***************************************************************|***********************************************************//
     // Output functions
     //***************************************************************|***********************************************************//
 
-    const std::string str(int indent=0) const;                       // return an indented string describing the contents of the
-                                                                     // system
+    const std::string str(const int indent=0) const;                 // return an indented string describing the contents of the functional bucket
 
+    const bool include_in_statistics() const;                        // return a boolean indicating if this function is to 
+                                                                     // be included in diagnostic output
+    
+    const bool include_in_steadystate() const;                       // return a boolean indicating if this function is to 
+                                                                     // be included in steadystate output
+    
   //*****************************************************************|***********************************************************//
   // Private functions
   //*****************************************************************|***********************************************************//
 
-  private:                                                           // only accessible in this class
+  private:                                                           // only available this class
 
     //***************************************************************|***********************************************************//
     // Base data
     //***************************************************************|***********************************************************//
 
-    std::string optionpath_;                                         // the system optionpath
-
-    //***************************************************************|***********************************************************//
-    // Filling data (continued)
-    //***************************************************************|***********************************************************//
-
-    void fill_base_();                                               // fill in the base information about the system
-
-    void fill_systemfunction_();                                     // fill in the system function information
-
-    void fill_fields_();                                             // fill in the data about the system fields (subfunctions)
-
-    void fill_bcs_();                                                // fill in the data about the system bcs
-
-    void fill_coeffs_();                                             // fill in the coefficient information
-
-    void fill_solvers_();                                            // fill in the solver bucket information
-
-    void fill_functionals_();                                        // fill in the functional bucket information
+    std::string optionpath_;                                         // the optionpath of this function
 
   };
  
-  typedef std::shared_ptr< SpudSystemBucket > SpudSystemBucket_ptr;// define a (boost shared) pointer type for the spud system
+  typedef std::shared_ptr< SpudFunctionalBucket >                    // define a (boost shared) pointer for this function class type
+                                            SpudFunctionalBucket_ptr;
 
 }
 #endif

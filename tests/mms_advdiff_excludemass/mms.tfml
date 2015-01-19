@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -29,11 +29,11 @@
   </global_parameters>
   <system name="MMS">
     <mesh name="Mesh"/>
-    <ufl_symbol>
+    <ufl_symbol name="global">
       <string_value lines="1">ut</string_value>
     </ufl_symbol>
     <field name="NumericalSolution">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">t</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -59,13 +59,13 @@
               <type type="boundary_condition" name="Dirichlet">
                 <cpp rank="0">
                   <members>
-                    <string_value type="code" lines="20" language="cpp">GenericFunction_ptr sol_ptr;</string_value>
+                    <string_value lines="20" type="code" language="cpp">GenericFunction_ptr sol_ptr;</string_value>
                   </members>
                   <initialization>
-                    <string_value type="code" lines="20" language="cpp">sol_ptr = system()-&gt;fetch_coeff("AnalyticalSolution")-&gt;genericfunction_ptr(time());</string_value>
+                    <string_value lines="20" type="code" language="cpp">sol_ptr = system()-&gt;fetch_coeff("AnalyticalSolution")-&gt;genericfunction_ptr(time());</string_value>
                   </initialization>
                   <eval>
-                    <string_value type="code" lines="20" language="cpp">sol_ptr-&gt;eval(values, x, cell);</string_value>
+                    <string_value lines="20" type="code" language="cpp">sol_ptr-&gt;eval(values, x, cell);</string_value>
                   </eval>
                 </cpp>
               </type>
@@ -79,7 +79,7 @@
       </diagnostics>
     </field>
     <coefficient name="Velocity">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">v</string_value>
       </ufl_symbol>
       <type name="Expression">
@@ -110,7 +110,7 @@
       <diagnostics/>
     </coefficient>
     <coefficient name="AnalyticalSolution">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">at</string_value>
       </ufl_symbol>
       <type name="Expression">
@@ -140,7 +140,7 @@
       <diagnostics/>
     </coefficient>
     <coefficient name="AnalyticalGradient">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">g</string_value>
       </ufl_symbol>
       <type name="Expression">
@@ -176,7 +176,7 @@
       <diagnostics/>
     </coefficient>
     <coefficient name="Source">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">s</string_value>
       </ufl_symbol>
       <type name="Expression">
@@ -230,7 +230,7 @@ S = T_t + adv*(u*T_x + v*T_y + beta*(T*(u_x + v_y))) - nu*(T_xx + T_yy)
       <diagnostics/>
     </coefficient>
     <coefficient name="AbsoluteDifference">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">d</string_value>
       </ufl_symbol>
       <type name="Expression">
@@ -264,34 +264,20 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
       </type>
       <diagnostics>
         <include_in_statistics>
-          <functional name="Integral">
-            <string_value type="code" lines="20" language="python">int = d*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="L2NormSquared">
-            <string_value type="code" lines="20" language="python">int = d*d*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-        </include_in_statistics>
+          </include_in_statistics>
       </diagnostics>
     </coefficient>
     <nonlinear_solver name="Solver">
       <type name="SNES">
         <form name="Residual" rank="0">
           <string_value lines="20" type="code" language="python">r = (t_t*inner(v_i, grad(t_i)) + nu*inner(grad(t_t), grad(t_i)) - t_t*s)*dx - t_t*nu*g[0]*ds(8) - t_t*nu*g[1]*ds(9)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">r</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
           <string_value lines="20" type="code" language="python">a = derivative(r, ut_i, ut_a)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
@@ -315,7 +301,20 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
-    </nonlinear_solver>
-    <solve name="in_timeloop"/>
-  </system>
+    <solve name="in_timeloop"/></nonlinear_solver>
+    <functional name="AbsoluteDifferenceIntegral">
+            <string_value lines="20" type="code" language="python">int = d*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="AbsoluteDifferenceL2NormSquared">
+            <string_value lines="20" type="code" language="python">int = d*d*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+        </system>
 </terraferma_options>

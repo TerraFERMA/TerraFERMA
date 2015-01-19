@@ -21,6 +21,8 @@
 
 #include "SystemsConvergenceFile.h"
 #include "Bucket.h"
+#include "SystemBucket.h"
+#include "SolverBucket.h"
 #include <cstdio>
 #include <string>
 #include <fstream>
@@ -96,7 +98,8 @@ void SystemsConvergenceFile::header_bucket_()
   for (SystemBucket_it s_it = (*bucket_).systems_begin(); 
                        s_it != (*bucket_).systems_end(); s_it++)
   {
-    if((*(*s_it).second).solve_location()==SOLVE_TIMELOOP)           // only interested in in_timeloop systems
+    const std::vector<int> locations = (*(*s_it).second).solve_locations();
+    if(std::find(locations.begin(), locations.end(), SOLVE_TIMELOOP) != locations.end())// only interested in in_timeloop systems
     {
       header_system_((*s_it).second);                                // write the header for the system itself
 

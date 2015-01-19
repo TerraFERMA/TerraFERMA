@@ -27,7 +27,7 @@ class FunctionalBucket:
   def __init__(self):
     """Define the expected members of the functional class."""
     self.form = None
-    self.function = None
+    self.system = None
     self.name = None
     self.symbol = None
     self.quadrature_degree = None
@@ -36,17 +36,17 @@ class FunctionalBucket:
   def ufl(self):
     """Write the functional to an array of ufl strings."""
     ufl = []
-    for field in self.function.system.fields:
+    for field in self.system.fields:
       ufl += field.element_ufl()
-    ufl += self.function.system.element_ufl()
+    ufl += self.system.element_ufl()
     ufl.append("\n")
-    ufl += self.function.system.function_ufl()
+    ufl += self.system.function_ufl()
     ufl.append("\n")
-    ufl += self.function.system.iterate_ufl()
+    ufl += self.system.iterate_ufl()
     ufl.append("\n")
-    ufl += self.function.system.old_ufl()
+    ufl += self.system.old_ufl()
     ufl.append("\n")
-    for coeff in self.function.system.coeffs:
+    for coeff in self.system.coeffs:
       if coeff.type=="Constant":
         ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
         for suffix in uflsymbol_suffixes():
@@ -61,7 +61,7 @@ class FunctionalBucket:
     # special_coeffs are only added for this system *not the other systems*
     ufl.append(comment("Declaring special coefficients, such as the timestep."))
     ufl.append("\n")
-    for coeff in self.function.system.special_coeffs:
+    for coeff in self.system.special_coeffs:
       if coeff.type == "Constant":
         ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
         for suffix in uflsymbol_suffixes():
@@ -77,8 +77,8 @@ class FunctionalBucket:
     ufl.append("\n")
     ufl.append(comment("Finished declaring functions for this system, start on other systems."))
     ufl.append("\n")
-    for system in self.function.system.bucket.systems:
-      if system.name == self.function.system.name: continue
+    for system in self.system.bucket.systems:
+      if system.name == self.system.name: continue
       ufl.append(declaration_comment("Function elements", "System", system.name))
       for field in system.fields:
         ufl += field.element_ufl()
@@ -103,9 +103,9 @@ class FunctionalBucket:
     ufl.append("\n")
     ufl.append(comment("Finished declaring functions for all other systems, start on forms."))
     ufl.append("\n")
-    if self.function.system.bucket.parameters:
+    if self.system.bucket.parameters:
       ufl.append(comment("Global preamble"))
-      ufl.append(self.function.system.bucket.parameters+"\n")
+      ufl.append(self.system.bucket.parameters+"\n")
     ufl.append("\n")
     ufl.append(declaration_comment("Form", "form", self.name))
     ufl.append(self.form)
@@ -133,7 +133,9 @@ class FunctionalBucket:
     ffc(self.namespace(), self.quadrature_rule, self.quadrature_degree)
 
   def namespace(self):
-    return self.function.system.name+self.function.name+self.name
+    name = self.system.name+self.name
+    if self.function is not None: name += "_coefficient"
+    return name
 
   def cpp(self, index=0):
     cpp = []
@@ -156,4 +158,16 @@ class FunctionalBucket:
     cpp.append("            coefficientspace.reset(new "+self.namespace()+"::CoefficientSpace_"+coeff.symbol+suffix+"(mesh));\n")
     cpp.append("          }\n")
     return cpp
+
+  def repeated_uflsymbol_check(self):
+    """Check for repeated ufl symbols."""
+    stat = 0
+    uflsymbols = self.system.bucket.list_globaluflsymbols()
+    if self.symbol in uflsymbols:
+      stat = 1
+      print "ERROR functional ufl_symbol %s from functional %s::%s repeated in global ufl_symbols! Change one of its instances."%(self.symbol, self.system.name, self.name)
+    repeated_auto_uflsymbols = set([s for s in uflsymbols for a in uflsymbol_suffixes() if s+a == self.symbol and a != ''])
+    if len(repeated_auto_uflsymbols) > 0: stat = 1
+    for s in repeated_auto_uflsymbols: print "ERROR functional ufl_symbol %s from functional %s::%s matches ufl_symbol generated from global ufl_symbol %s! Change functional ufl_symbol %s to avoid reserved endings."%(self.symbol, self.system.name, self.name, s, self.symbol)
+    return stat
 

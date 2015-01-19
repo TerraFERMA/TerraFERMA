@@ -40,8 +40,7 @@ namespace buckettools
   //*****************************************************************|************************************************************//
   // FunctionBucket class:
   //
-  // The FunctionBucket class describes system functions and coefficients and provides data types
-  // to the underlying functionals.
+  // The FunctionBucket class describes system functions and coefficients.
   //*****************************************************************|************************************************************//
   class FunctionBucket
   {
@@ -205,14 +204,6 @@ namespace buckettools
     // Functions used to run the model
     //***************************************************************|***********************************************************//
 
-    double functionalchange(Form_const_it f_it);                     // return the change in the value of the given functional
-
-    double oldfunctionalvalue(Form_const_it f_it);                   // return the old value of the given functional
-
-    double functionalvalue(Form_const_it f_it);                      // return the value of the given functional
-
-    void resetcalculated();                                          // reset the calculated booleans
-
     void refresh(const bool force=false);                            // refresh this function bucket - this may call solvers so 
                                                                      // its not recommened to call loosely
 
@@ -222,30 +213,15 @@ namespace buckettools
 
     void update_timedependent();                                     // update the function if it is potentially time dependent
 
+    void resetcalculated();                            
+
     void postprocess_values();                                       // cap the values in the system vector associated with a field
 
     //***************************************************************|***********************************************************//
     // Filling data
     //***************************************************************|***********************************************************//
 
-    void attach_functional_coeffs();                                 // attach the coefficients to the functionals of this function
-
-    //***************************************************************|***********************************************************//
-    // Functional data access
-    //***************************************************************|***********************************************************//
-
-    void register_functional(Form_ptr functional, 
-                                           const std::string &name); // register a functional with the given name in this function
-
-    Form_ptr fetch_functional(const std::string &name);              // return a (boost shared) pointer to a functional with the given name
-
-    Form_it functionals_begin();                                     // return an iterator to the beginning of the functionals of this function
-
-    Form_const_it functionals_begin() const;                         // return a constant iterator to the beginning of the functionals of this function
-
-    Form_it functionals_end();                                       // return an iterator to the end of the functionals of this function
-
-    Form_const_it functionals_end() const;                           // return a constant iterator to the end of the functionals of this function
+    void attach_form_coeffs();                                       // attach the coefficients to the functionals of this function
 
     //***************************************************************|***********************************************************//
     // BC data access
@@ -300,16 +276,10 @@ namespace buckettools
     virtual const bool include_in_steadystate() const;               // return a boolean indicating if this function is included in 
                                                                      // steady state output
 
-    virtual const bool include_functional_in_steadystate(const std::string &name) const;// return a boolean indicating if the named functional is included in 
-                                                                     // steady state output
-
     virtual const bool include_in_detectors() const;                 // return a boolean indicating if this function is included in 
                                                                      // detectors output
 
     virtual const std::string str(int indent=0) const;               // return an indented string describing the contents 
-                                                                     // of this function
-
-    virtual const std::string functionals_str(int indent=0) const;   // return an indented string describing the functionals 
                                                                      // of this function
 
     void checkpoint();                                               // checkpoint the functionbucket
@@ -352,7 +322,7 @@ namespace buckettools
 
     std::string type_;                                               // a *string* describing the type of function (function, expression, constant)
 
-    Expression_ptr coefficientfunction_;                             // an expression used to set the values of a coefficient functional
+    Expression_ptr coefficientfunction_;                             // an expression used to set the values of a coefficient function
 
     Form_ptr constantfunctional_;                                    // a functional that can be used to set a constant function
     
@@ -371,14 +341,6 @@ namespace buckettools
     //***************************************************************|***********************************************************//
     // Pointers data
     //***************************************************************|***********************************************************//
-
-    ordered_map<const std::string, Form_ptr> functionals_;           // map from functional names to form (boost shared) pointers
-
-    std::map< std::string, double_ptr > functional_values_,          // map from functional names to functional values
-                                        oldfunctional_values_;
-
-    std::map< std::string, bool_ptr > functional_calculated_;        // map from functional names to a boolean indicating if the
-                                                                     // functional's been evaluated this timestep
 
     std::map< std::string, Expression_ptr > bcexpressions_;          // map from bc names to bc expression (boost shared) pointers
     

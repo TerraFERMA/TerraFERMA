@@ -27,7 +27,12 @@ file(
 "execute_process(
     COMMAND ${BUCKETTOOLS_BIN}/systemwrappers_from_options -l ${PROJECT_BINARY_DIR}/cpp_filenames.txt.temp -- ${OPTIONSFILE}
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+    RESULT_VARIABLE RETCODE
     )
+
+if (NOT RETCODE EQUAL 0)
+  message(FATAL_ERROR \"Command returned \${RETCODE}\")
+endif()
 
 execute_process(
     COMMAND ${CMAKE_COMMAND} -E compare_files ${PROJECT_BINARY_DIR}/cpp_filenames.txt.temp ${PROJECT_BINARY_DIR}/cpp_filenames.txt

@@ -43,6 +43,9 @@ Several additional symbols will be automatically derived from this base symbol:
 - old function            = symbol_n
     (the old function coefficient, containing the values from the previous timestep for the system function)
 </a:documentation>
+      <attribute name="name">
+        <value>global</value>
+      </attribute>
       <ref name="anystring"/>
     </element>
   </define>
@@ -67,6 +70,9 @@ Several additional symbols will be automatically derived from this base symbol:
 - old function            = symbol_n
     (the old function coefficient, containing the values from the previous timestep for the system function)
 </a:documentation>
+      <attribute name="name">
+        <value>global</value>
+      </attribute>
       <ref name="anystring"/>
     </element>
   </define>
@@ -84,6 +90,9 @@ Several additional symbols will be automatically derived from this base symbol:
 - old function            = symbol_n
     (the old function coefficient, containing the values from the previous timestep for the system function)
 </a:documentation>
+      <attribute name="name">
+        <value>global</value>
+      </attribute>
       <ref name="anystring"/>
     </element>
   </define>
@@ -91,6 +100,9 @@ Several additional symbols will be automatically derived from this base symbol:
     <element name="ufl_symbol">
       <a:documentation>The ufl symbol used above to describe a form.  This need only be unique within this nonlinear_solver. 
 No additional symbols will be automatically generated based on this symbol.</a:documentation>
+      <attribute name="name">
+        <value>solver</value>
+      </attribute>
       <ref name="anystring"/>
     </element>
   </define>
@@ -98,6 +110,9 @@ No additional symbols will be automatically generated based on this symbol.</a:d
     <element name="ufl_symbol">
       <a:documentation>The ufl symbol used above to describe a functional.  This need not be unique as it is only accessible
 from this description.  No additional symbols will be automatically generated based on this symbol.</a:documentation>
+      <attribute name="name">
+        <value>functional</value>
+      </attribute>
       <ref name="anystring"/>
     </element>
   </define>
@@ -107,6 +122,9 @@ from this description.  No additional symbols will be automatically generated ba
       <a:documentation>The ufl symbol that will be used in ufl forms and functionals to describe the coefficient. 
 This ufl symbol must be unique across the entire options file as it may be used in any ufl form or functional
 written in this file.  No additional symbols will be augomatically generated based on this symbol.</a:documentation>
+      <attribute name="name">
+        <value>global</value>
+      </attribute>
       <ref name="anystring"/>
     </element>
   </define>
