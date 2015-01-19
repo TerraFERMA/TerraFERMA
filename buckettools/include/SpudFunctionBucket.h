@@ -78,24 +78,6 @@ namespace buckettools
     void initialize_coeff_function();                                // initialize the expressions associated with a field
 
     //***************************************************************|***********************************************************//
-    // Functional data access
-    //***************************************************************|***********************************************************//
-
-    void register_functional(Form_ptr functional, 
-                                    const std::string &name,         // register a functional with the given name and optionpath
-                                    std::string optionpath);
-
-    const std::string fetch_functional_optionpath(const std::string &name) const;// return the optionpath of the named functional
-
-    string_it functional_optionpaths_begin();                          
-
-    string_const_it functional_optionpaths_begin() const;   
-
-    string_it functional_optionpaths_end();              
-
-    string_const_it functional_optionpaths_end() const;   
-
-    //***************************************************************|***********************************************************//
     // Output functions
     //***************************************************************|***********************************************************//
 
@@ -111,15 +93,10 @@ namespace buckettools
     const bool include_in_steadystate() const;                       // return a boolean indicating if this function is to 
                                                                      // be included in steadystate output
     
-    const bool include_functional_in_steadystate(const std::string &name) const;// return a boolean indicating if the named functional is to 
-                                                                     // be included in steadystate output
-    
     const bool include_in_detectors() const;                         // return a boolean indicating if this function is to 
                                                                      // be included in steadystate output
     
     const std::string str(int indent=0) const;                       // return an indented string describing the contents of this function
-
-    const std::string functionals_str(const int &indent=0) const;    // return an indented string describing the functionals of this function
 
   //*****************************************************************|***********************************************************//
   // Private functions
@@ -132,12 +109,6 @@ namespace buckettools
     //***************************************************************|***********************************************************//
 
     std::string optionpath_;                                         // the optionpath of this function
-
-    //***************************************************************|***********************************************************//
-    // Pointers data
-    //***************************************************************|***********************************************************//
-
-    ordered_map< const std::string, std::string > functional_optionpaths_;    // a map from funcional name to functional optionpath
     
     //***************************************************************|***********************************************************//
     // Filling data
@@ -167,8 +138,6 @@ namespace buckettools
                                   const std::string &bcname);
 
     void fill_constantfunctional_();                                 // fill in the data for constant expressions defined by functionals
-
-    void fill_functionals_();                                        // fill in the data for the functionals of this function
 
     Expression_ptr allocate_expression_over_regions_(
                                       const std::string &optionpath,

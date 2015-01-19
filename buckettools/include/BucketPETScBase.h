@@ -24,12 +24,13 @@
 
 #include "BoostTypes.h"
 #include "petscsnes.h"
-#include "Bucket.h"
 #include "ConvergenceFile.h"
 #include "KSPConvergenceFile.h"
 
 namespace buckettools
 {
+
+  class SolverBucket;                                                // predeclare
 
   //*****************************************************************|************************************************************//
   // A collection of structures and callback functions used in the bucket by petsc

@@ -19,12 +19,14 @@
 // along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
 
+#include "Bucket.h"
 #include "BoostTypes.h"
 #include "SpudSystemBucket.h"
 #include "SystemSolversWrapper.h"
 #include "SpudBase.h"
 #include "SpudFunctionBucket.h"
 #include "SpudSolverBucket.h"
+#include "SpudFunctionalBucket.h"
 #include "Logger.h"
 #include <dolfin.h>
 #include <string>
@@ -71,6 +73,8 @@ void SpudSystemBucket::fill()
 
   fill_solvers_();                                                   // initialize the nonlinear solvers in this system
 
+  fill_functionals_();
+
 }
 
 //*******************************************************************|************************************************************//
@@ -86,17 +90,6 @@ void SpudSystemBucket::allocate_coeff_function()
   }                                                                  // (check that this is a coefficient function within this
                                                                      // function)
 
-}
-
-//*******************************************************************|************************************************************//
-// attach coefficients to forms and functionals
-//*******************************************************************|************************************************************//
-void SpudSystemBucket::initialize_forms()
-{
-  log(INFO, "Attaching coeffs for system %s", name().c_str());
-  attach_all_coeffs_();                                              // attach the coefficients to form and functionals
-                                                                     // this happens here as some coefficients depend on functionals
-                                                                     // to be evaluated
 }
 
 //*******************************************************************|************************************************************//
@@ -140,16 +133,16 @@ void SpudSystemBucket::initialize_coefficient_functions()
 //*******************************************************************|************************************************************//
 void SpudSystemBucket::initialize_solvers()
 {
-  if (solve_location()!=SOLVE_NEVER)
-  {
-    log(INFO, "Initializing matrices for system %s", name().c_str());
+  log(INFO, "Initializing matrices for system %s", name().c_str());
 
-    for (SolverBucket_it s_it = solvers_begin(); s_it != solvers_end();// loop over the solver buckets
-                                                                s_it++)
+  for (SolverBucket_it s_it = solvers_begin(); s_it != solvers_end();// loop over the solver buckets
+                                                              s_it++)
+  {
+    if ((*(*s_it).second).solve_location() != SOLVE_NEVER)
     {
       (*std::dynamic_pointer_cast< SpudSolverBucket >((*s_it).second)).initialize();
-                                                                       // perform a preassembly of all the matrices to set up
-                                                                       // sparsities etc. and set up petsc objects
+                                                                     // perform a preassembly of all the matrices to set up
+                                                                     // sparsities etc. and set up petsc objects
     }
   }
 }
@@ -202,24 +195,6 @@ const std::string SpudSystemBucket::str(int indent) const
 }
 
 //*******************************************************************|************************************************************//
-// checkpoint the options file
-//*******************************************************************|************************************************************//
-void SpudSystemBucket::checkpoint_options_()
-{
-  std::stringstream buffer;                                          // optionpath buffer
-  Spud::OptionError serr;                                            // spud error code
-
-  if (solve_location()==SOLVE_START)                                 // do not solve again if this system was only meant to be
-  {                                                                  // solved once
-    std::string location = "never";
-    buffer.str(""); buffer << optionpath() << "/solve/name";
-    serr = Spud::set_option_attribute(buffer.str(), location);
-    spud_err(buffer.str(), serr);
-  }
-
-}
-
-//*******************************************************************|************************************************************//
 // fill the system bucket base data 
 //*******************************************************************|************************************************************//
 void SpudSystemBucket::fill_base_()
@@ -243,34 +218,7 @@ void SpudSystemBucket::fill_base_()
   celldomains_ = (*bucket_).fetch_celldomains(meshname);             // along with the cell domains
   facetdomains_ = (*bucket_).fetch_facetdomains(meshname);           // and facet domains
 
-  std::string location;
-  buffer.str(""); buffer << optionpath() << "/solve/name";
-  serr = Spud::get_option(buffer.str(), location);
-  spud_err(buffer.str(), serr);
-  if (location=="in_timeloop")
-  {
-    solve_location_ = SOLVE_TIMELOOP;
-  }
-  else if (location=="at_start")
-  {
-    solve_location_ = SOLVE_START;
-  }
-  else if (location=="with_diagnostics")
-  {
-    solve_location_ = SOLVE_DIAGNOSTICS;
-  }
-  else if (location=="never")
-  {
-    solve_location_ = SOLVE_NEVER;
-  }
-  else
-  {
-    tf_err("Unknown solve location.", "System name: %s", name_.c_str());
-  }
-
   change_calculated_.reset( new bool(false) );                       // assume the change hasn't been calculated yet
-
-  solved_.reset( new bool(false) );                                  // assume the system hasn't been solved yet
 
 }
 
@@ -320,6 +268,26 @@ void SpudSystemBucket::fill_systemfunction_()
     (*snesupdatefunction_).rename( buffer.str(), buffer.str() );
   }
 
+}
+
+//*******************************************************************|************************************************************//
+// fill in the data about each functional of this system 
+//*******************************************************************|************************************************************//
+void SpudSystemBucket::fill_functionals_()
+{
+  std::stringstream buffer;
+
+  buffer.str(""); buffer << optionpath() << "/functional";
+  int nfunctionals = Spud::option_count(buffer.str());
+  for (uint i = 0; i < nfunctionals; i++)
+  {
+    buffer.str(""); buffer << optionpath() << "/functional[" << i << "]";
+
+    SpudFunctionalBucket_ptr functional(new SpudFunctionalBucket( buffer.str(), this ));
+    (*functional).fill();
+    register_functional(functional, (*functional).name());
+
+  }
 }
 
 //*******************************************************************|************************************************************//

@@ -86,7 +86,9 @@ namespace buckettools
     // Base data
     //***************************************************************|***********************************************************//
 
-    std::vector< std::pair< FunctionBucket_ptr, std::vector<Form_const_it> > > functions_;
+    std::vector< FunctionBucket_ptr > functions_;
+
+    std::vector< FunctionalBucket_ptr > functionals_;
 
     //***************************************************************|***********************************************************//
     // Header writing functions (continued)
@@ -97,7 +99,7 @@ namespace buckettools
 
     void header_func_(const FunctionBucket_ptr f_ptr);               // write the header for a set of functions
 
-    void header_functional_(const FunctionBucket_ptr f_ptr);         // write the header for a set of functionals of a function
+    void header_functional_(const FunctionalBucket_ptr f_ptr);       // write the header for a set of functionals of a function
 
     //***************************************************************|***********************************************************//
     // Data writing functions (continued)
@@ -105,11 +107,9 @@ namespace buckettools
 
     void data_bucket_();                                             // write the data for a steady state simulation
 
-    void data_func_(FunctionBucket_ptr f_ptr, 
-                    std::vector<Form_const_it> &functionals);        // write the data for a set of functions
+    void data_func_(FunctionBucket_ptr f_ptr);                       // write the data for a set of functions
 
-    void data_functional_(FunctionBucket_ptr f_ptr,
-                          std::vector<Form_const_it> &functionals);  // write the data for a set of functionals
+    void data_functional_(FunctionalBucket_ptr f_ptr);               // write the data for a set of functionals
 
   };
   

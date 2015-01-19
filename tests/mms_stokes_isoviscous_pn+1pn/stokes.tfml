@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -45,11 +45,11 @@
   <global_parameters/>
   <system name="Stokes">
     <mesh name="Mesh"/>
-    <ufl_symbol>
+    <ufl_symbol name="global">
       <string_value lines="1">us</string_value>
     </ufl_symbol>
     <field name="Velocity">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">v</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -92,7 +92,7 @@ def val(x):
       </diagnostics>
     </field>
     <field name="Pressure">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">p</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -124,7 +124,7 @@ def val(x):
       </diagnostics>
     </field>
     <coefficient name="AnalyticVelocity">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">ve</string_value>
       </ufl_symbol>
       <type name="Expression">
@@ -151,7 +151,7 @@ def val(x):
       <diagnostics/>
     </coefficient>
     <coefficient name="AnalyticPressure">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">pe</string_value>
       </ufl_symbol>
       <type name="Expression">
@@ -177,7 +177,7 @@ def val(x):
       <diagnostics/>
     </coefficient>
     <coefficient name="Source">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">f</string_value>
       </ufl_symbol>
       <type name="Constant">
@@ -192,7 +192,7 @@ def val(x):
       <diagnostics/>
     </coefficient>
     <coefficient name="AbsoluteDifferenceVelocity">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">diffv</string_value>
       </ufl_symbol>
       <type name="Expression">
@@ -227,18 +227,11 @@ values[1] = std::abs(num[1] - sol[1]);</string_value>
       </type>
       <diagnostics>
         <include_in_statistics>
-          <functional name="L2NormSquared">
-            <string_value lines="20" type="code" language="python">int = inner(diffv,diffv)*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-        </include_in_statistics>
+          </include_in_statistics>
       </diagnostics>
     </coefficient>
     <coefficient name="AbsoluteDifferencePressure">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">diffp</string_value>
       </ufl_symbol>
       <type name="Expression">
@@ -272,14 +265,7 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
       </type>
       <diagnostics>
         <include_in_statistics>
-          <functional name="L2NormSquared">
-            <string_value lines="20" type="code" language="python">int = diffp*diffp*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-        </include_in_statistics>
+          </include_in_statistics>
       </diagnostics>
     </coefficient>
     <nonlinear_solver name="Solver">
@@ -292,13 +278,13 @@ rv = (inner(sym(grad(v_t)), 2.*eta*sym(grad(v_i))) - div(v_t)*p_i - inner(v_t,f_
 rp = -p_t*div(v_i)*dx
 
 r = rv + rp</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">r</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
           <string_value lines="20" type="code" language="python">a = derivative(r, us_i, us_a)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
@@ -327,16 +313,30 @@ r = rv + rp</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
+      <solve name="at_start"/>
     </nonlinear_solver>
-    <solve name="at_start"/>
-  </system>
+  <functional name="AbsoluteDifferenceVelocityL2NormSquared">
+            <string_value lines="20" type="code" language="python">int = inner(diffv,diffv)*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+        <functional name="AbsoluteDifferencePressureL2NormSquared">
+            <string_value lines="20" type="code" language="python">int = diffp*diffp*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+        </system>
   <system name="Divergence">
     <mesh name="Mesh"/>
-    <ufl_symbol>
+    <ufl_symbol name="global">
       <string_value lines="1">ud</string_value>
     </ufl_symbol>
     <field name="Divergence">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">d</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -365,13 +365,13 @@ r = rv + rp</string_value>
       <type name="SNES">
         <form name="Residual" rank="0">
           <string_value lines="20" type="code" language="python">r = (d_t*d_i - d_t*div(v_i))*dx</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">r</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
           <string_value lines="20" type="code" language="python">J = derivative(r,ud_i,ud_a)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">J</string_value>
           </ufl_symbol>
         </form>
@@ -412,7 +412,7 @@ r = rv + rp</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
+      <solve name="with_diagnostics"/>
     </nonlinear_solver>
-    <solve name="with_diagnostics"/>
   </system>
 </terraferma_options>

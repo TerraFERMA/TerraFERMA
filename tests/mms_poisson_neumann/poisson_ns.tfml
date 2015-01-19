@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -51,11 +51,11 @@
   <global_parameters/>
   <system name="Poisson">
     <mesh name="Mesh"/>
-    <ufl_symbol>
+    <ufl_symbol name="global">
       <string_value lines="1">us</string_value>
     </ufl_symbol>
     <field name="Field1">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">u1</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -88,7 +88,7 @@
       </diagnostics>
     </field>
     <field name="Field2">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">u2</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -121,7 +121,7 @@
       </diagnostics>
     </field>
     <field name="Field3">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">u3</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -154,7 +154,7 @@
       </diagnostics>
     </field>
     <field name="Field4">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">u4</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -187,7 +187,7 @@
       </diagnostics>
     </field>
     <coefficient name="Source">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">f</string_value>
       </ufl_symbol>
       <type name="Expression">
@@ -213,7 +213,7 @@ def val(x):
       <diagnostics/>
     </coefficient>
     <coefficient name="BoundaryGradient">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">g</string_value>
       </ufl_symbol>
       <type name="Expression">
@@ -239,7 +239,7 @@ def val(x):
       <diagnostics/>
     </coefficient>
     <coefficient name="AnalyticField">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">ue</string_value>
       </ufl_symbol>
       <type name="Expression">
@@ -267,7 +267,7 @@ def val(x):
       </diagnostics>
     </coefficient>
     <coefficient name="AbsoluteDifference1">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">d1</string_value>
       </ufl_symbol>
       <type name="Expression">
@@ -301,18 +301,11 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
       </type>
       <diagnostics>
         <include_in_statistics>
-          <functional name="L2NormSquared">
-            <string_value lines="20" type="code" language="python">int = d1*d1*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-        </include_in_statistics>
+          </include_in_statistics>
       </diagnostics>
     </coefficient>
     <coefficient name="AbsoluteDifference2">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">d2</string_value>
       </ufl_symbol>
       <type name="Expression">
@@ -346,18 +339,11 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
       </type>
       <diagnostics>
         <include_in_statistics>
-          <functional name="L2NormSquared">
-            <string_value lines="20" type="code" language="python">int = d2*d2*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-        </include_in_statistics>
+          </include_in_statistics>
       </diagnostics>
     </coefficient>
     <coefficient name="AbsoluteDifference3">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">d3</string_value>
       </ufl_symbol>
       <type name="Expression">
@@ -391,18 +377,11 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
       </type>
       <diagnostics>
         <include_in_statistics>
-          <functional name="L2NormSquared">
-            <string_value lines="20" type="code" language="python">int = d3*d3*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-        </include_in_statistics>
+          </include_in_statistics>
       </diagnostics>
     </coefficient>
     <coefficient name="AbsoluteDifference4">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">d4</string_value>
       </ufl_symbol>
       <type name="Expression">
@@ -436,14 +415,7 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
       </type>
       <diagnostics>
         <include_in_statistics>
-          <functional name="L2NormSquared">
-            <string_value lines="20" type="code" language="python">int = d4*d4*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-        </include_in_statistics>
+          </include_in_statistics>
       </diagnostics>
     </coefficient>
     <nonlinear_solver name="SNES">
@@ -454,13 +426,13 @@ F2 = (inner(grad(u2_t),grad(u2_i)) - u2_t*f)*dx + u2_t*g[0]*ds(1) - u2_t*g[0]*ds
 F3 = (inner(grad(u3_t),grad(u3_i)) - u3_t*f)*dx + u3_t*g[0]*ds(1) - u3_t*g[0]*ds(2) + u3_t*g[1]*ds(3) - u3_t*g[1]*ds(4)
 F4 = (inner(grad(u4_t),grad(u4_i)) - u4_t*f)*dx + u4_t*g[0]*ds(1) - u4_t*g[0]*ds(2) + u4_t*g[1]*ds(3) - u4_t*g[1]*ds(4)
 F = F1 + F2 + F3 + F4</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">F</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
           <string_value lines="20" type="code" language="python">J = derivative(F,us_i,us_a)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">J</string_value>
           </ufl_symbol>
         </form>
@@ -621,7 +593,34 @@ F = F1 + F2 + F3 + F4</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
-    </nonlinear_solver>
-    <solve name="in_timeloop"/>
-  </system>
+    <solve name="in_timeloop"/></nonlinear_solver>
+    <functional name="AbsoluteDifference1L2NormSquared">
+            <string_value lines="20" type="code" language="python">int = d1*d1*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+        <functional name="AbsoluteDifference2L2NormSquared">
+            <string_value lines="20" type="code" language="python">int = d2*d2*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+        <functional name="AbsoluteDifference3L2NormSquared">
+            <string_value lines="20" type="code" language="python">int = d3*d3*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+        <functional name="AbsoluteDifference4L2NormSquared">
+            <string_value lines="20" type="code" language="python">int = d4*d4*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+        </system>
 </terraferma_options>

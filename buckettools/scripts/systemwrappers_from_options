@@ -60,6 +60,11 @@ bucket = buckettools.spud.SpudBucket()
 # populate the bucket based on the options file loaded above
 bucket.fill()
 
+stat = bucket.preprocess_checks()
+if stat != 0:
+  print "ERROR failed preprocessing checks!"
+  sys.exit(1)
+
 if not args.dry:
   # write out the ufl files described by the options tree and run ffc on them to produce ufc
   bucket.write_ufc()
@@ -84,4 +89,5 @@ if args.list is not None:
   if args.list != '': output.close()
 
 # and we're done
+sys.exit(0)
 

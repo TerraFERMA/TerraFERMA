@@ -495,6 +495,24 @@ const std::string SpudSolverBucket::forms_str(const int &indent) const
 }
 
 //*******************************************************************|************************************************************//
+// checkpoint the options file
+//*******************************************************************|************************************************************//
+void SpudSolverBucket::checkpoint_options_()
+{
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud error code
+
+  if (solve_location() == SOLVE_START)                               // do not solve again if this system was only meant to be
+  {                                                                  // solved once
+    std::string location = "never";
+    buffer.str(""); buffer << optionpath() << "/solve/name";
+    serr = Spud::set_option_attribute(buffer.str(), location);
+    spud_err(buffer.str(), serr);
+  }
+
+}
+
+//*******************************************************************|************************************************************//
 // fill the solver bucket base data assuming the buckettools schema (common for all solver types)
 //*******************************************************************|************************************************************//
 void SpudSolverBucket::fill_base_()
@@ -551,6 +569,33 @@ void SpudSolverBucket::fill_base_()
   buffer.str(""); buffer << optionpath() << 
                                 "/type/monitors/norms";
   monitornorms_ = Spud::have_option(buffer.str());
+
+  std::string location;
+  buffer.str(""); buffer << optionpath() << "/solve/name";
+  serr = Spud::get_option(buffer.str(), location);
+  spud_err(buffer.str(), serr);
+  if (location=="in_timeloop")
+  {
+    solve_location_ = SOLVE_TIMELOOP;
+  }
+  else if (location=="at_start")
+  {
+    solve_location_ = SOLVE_START;
+  }
+  else if (location=="with_diagnostics")
+  {
+    solve_location_ = SOLVE_DIAGNOSTICS;
+  }
+  else if (location=="never")
+  {
+    solve_location_ = SOLVE_NEVER;
+  }
+  else
+  {
+    tf_err("Unknown solve location.", "Solver: %s::%s", (*system()).name().c_str(), name_.c_str());
+  }
+
+  solved_.reset( new bool(false) );                                  // assume the solver hasn't been solved yet
 
   sp_   = PETSC_NULL;                                                // initialize in case we don't get a chance
   ksp_  = PETSC_NULL;                                                // to do this later

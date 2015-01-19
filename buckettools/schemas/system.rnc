@@ -39,7 +39,7 @@ system =
       field_options*,
       coefficient_options*,
       nonlinear_solver_options*,
-      solve_location,
+      functional_options*,
       comment
     }
   )
@@ -64,34 +64,29 @@ mesh_choice =
     )
   )
 
-solve_location = 
+functional_options = 
   (
-    (
-      ## Solve the equations listed in the nonlinear solvers of this system every timestep.
-      element solve {
-        attribute name {"in_timeloop"},
+    ## ufl code and symbol describing a functional.  This must return a single number and have a unique name beneath this field or coefficient.
+    element functional {
+      attribute name { xsd:string },
+      python_code,
+      functional_ufl_symbol,
+      quadrature_degree,
+      quadrature_rule,
+      (
+        ## Include this functional in the statistics output file (default).
+        element include_in_statistics {
+          comment
+        }|
+        ## Exclude this functional from the statistics output file.
+        element exclude_from_statistics {
+          comment
+        }
+      ),
+      ## Include this functional in the steady state check and output file.
+      element include_in_steady_state {
         comment
-      }|
-      ## Only solve the equations listed in the nonlinear solvers of this system at the start of the simulation.
-      element solve {
-        attribute name {"at_start"},
-        comment
-      }|
-      ## Only solve the equations listed in the nonlinear solvers of this system when diagnostic output is performed.
-      ##
-      ## This means that this system will be updated at an interval dependant on how the diagnostic dump periods are set in /io.
-      element solve {
-        attribute name {"with_diagnostics"},
-        comment
-      }|
-      ## Never solve the equations listed in the nonlinear solvers of this system.
-      ##
-      ## This is primarily intended to be used in checkpoint files when systems set to solve 'at_start' are never solved for in the 
-      ## checkpointed simulation.
-      element solve {
-        attribute name {"never"},
-        comment
-      }
-    )
+      }?
+    }
   )
 

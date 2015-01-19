@@ -111,7 +111,7 @@ void SolverBucket::solve()
 {
   PetscErrorCode perr;
 
-  if ((*system_).solve_location()==SOLVE_NEVER)
+  if (solve_location()==SOLVE_NEVER)
   {
     tf_err("Unable to solve as solve_location is set to never.", "SolverBucket name: %s, SystemBucket name: %s",
            name_.c_str(), (*system_).name().c_str());
@@ -366,6 +366,11 @@ void SolverBucket::solve()
     tf_err("Unknown solver type.", "Type: %s", type_.c_str());
   }
 
+  if (solved_)
+  {
+    *solved_ = true;
+  }
+
 }
 
 //*******************************************************************|************************************************************//
@@ -386,6 +391,17 @@ double SolverBucket::residual_norm()
 
   double norm  = (*res_).norm("l2");
   return norm;
+}
+
+//*******************************************************************|************************************************************//
+// update the solver at the end of a timestep
+//*******************************************************************|************************************************************//
+void SolverBucket::update()
+{
+  if (solved_)
+  {
+    *solved_ = false;
+  }
 }
 
 //*******************************************************************|************************************************************//
@@ -813,4 +829,21 @@ void SolverBucket::ksp_check_convergence_(KSP &ksp, int indent)
   }
   
 }
+
+//*******************************************************************|************************************************************//
+// checkpoint the solverbucket
+//*******************************************************************|************************************************************//
+void SolverBucket::checkpoint()
+{
+  checkpoint_options_();
+}
+
+//*******************************************************************|************************************************************//
+// virtual checkpointing of options
+//*******************************************************************|************************************************************//
+void SolverBucket::checkpoint_options_()
+{
+  tf_err("Failed to find virtual function checkpoint_options_.", "Need to implement a checkpointing method.");
+}
+
 

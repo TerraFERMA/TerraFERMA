@@ -122,7 +122,7 @@ namespace buckettools
              const std::string &errstr,
              const std::string &reason, ...);
 
-  #define tf_err(errstr, reason, ...) do {failure(__FILE__, __LINE__, errstr, reason,##__VA_ARGS__);} while(0)
+  #define tf_err(errstr, reason, ...) do {error(__FILE__, __LINE__, errstr, reason,##__VA_ARGS__);} while(0)
 
   void warning(const std::string &filename, 
                const int &line,
