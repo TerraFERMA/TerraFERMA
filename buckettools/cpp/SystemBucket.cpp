@@ -762,12 +762,12 @@ std::vector< const dolfin::DirichletBC* >::const_iterator SystemBucket::bcs_end(
 //*******************************************************************|************************************************************//
 // loop over the fields outputting pvd diagnostics for all the fields in this system
 //*******************************************************************|************************************************************//
-void SystemBucket::output(const bool &write_vis)
+void SystemBucket::output()
 {
   for (FunctionBucket_it f_it = fields_begin(); f_it != fields_end(); 
                                                               f_it++)
   {
-    (*(*f_it).second).output(write_vis);
+    (*(*f_it).second).output();
   }
 }
 
