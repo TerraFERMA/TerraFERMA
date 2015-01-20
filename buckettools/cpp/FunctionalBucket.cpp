@@ -119,42 +119,39 @@ void FunctionalBucket::update()
 //*******************************************************************|************************************************************//
 // output the functional (calculating it if necessary)
 //*******************************************************************|************************************************************//
-void FunctionalBucket::output(const bool &write_vis)
+void FunctionalBucket::output()
 {
-  if (write_vis)
+  if (output_cellfunction() || output_facetfunction())
   {
-    if (output_cellfunction() || output_facetfunction())
+    if (!calculated_)
     {
-      if (!calculated_)
-      {
-        double fvalue = value();
-      }
+      double fvalue = value();
+    }
 
-      if (output_cellfunction())
-      {
-        assert(cellfunction_);
-        
-        std::stringstream buffer;
-        buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
-                               << (*system()).name() << "_"
-                               << name() << "_"
-                               << (*(*system()).bucket()).visualization_count() << "_cellfunction.xml";
-        dolfin::File cellfunction_file(buffer.str());
-        cellfunction_file << *cellfunction_;
-      }
+    if (output_cellfunction())
+    {
+      assert(cellfunction_);
+      
+      std::stringstream buffer;
+      buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
+                             << (*system()).name() << "_"
+                             << name() << "_"
+                             << (*(*system()).bucket()).visualization_count() << "_cellfunction.xml";
+      dolfin::File cellfunction_file(buffer.str());
+      cellfunction_file << *cellfunction_;
+    }
 
-      if (output_facetfunction())
-      {
-        assert(facetfunction_);
-        
-        std::stringstream buffer;
-        buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
-                               << (*system()).name() << "_"
-                               << name() << "_" 
-                               << (*(*system()).bucket()).visualization_count() << "_facetfunction.xml";
-        dolfin::File facetfunction_file(buffer.str());
-        facetfunction_file << *facetfunction_;
-      }
+    if (output_facetfunction())
+    {
+      assert(facetfunction_);
+      
+      std::stringstream buffer;
+      buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
+                             << (*system()).name() << "_"
+                             << name() << "_" 
+                             << (*(*system()).bucket()).visualization_count() << "_facetfunction.xml";
+      dolfin::File facetfunction_file(buffer.str());
+      facetfunction_file << *facetfunction_;
     }
   }
 

@@ -92,7 +92,7 @@ namespace buckettools
     // Output functions
     //***************************************************************|***********************************************************//
 
-    void output(const bool &write_vis);                              // output mesh functions
+    void output();                                                   // output mesh functions
 
     virtual const std::string str(const int indent=0) const;         // return an indented string describing the contents of this
                                                                      // functional
