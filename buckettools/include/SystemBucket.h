@@ -279,7 +279,7 @@ namespace buckettools
     // Output functions
     //***************************************************************|***********************************************************//
 
-    void output(const bool &write_vis);                              // output the diagnostics on this system
+    void output();                                                   // output the diagnostics on this system
 
     const bool include_in_visualization() const;                     // return a boolean indicating if this system has fields to 
                                                                      // be included in diagnostic output
