@@ -262,7 +262,7 @@ class SystemBucket:
     if len(self.solvers)==0:
       cpp.append("      tf_err(\"Unknown system functionspace in ufc_fetch_functionspace\", \"System name: %s\", systemname.c_str());\n")
     else:
-      cpp.append(self.solvers[0].functionspace_cpp_no_if())
+      cpp += self.solvers[0].functionspace_cpp_no_if()
     cpp.append("    }\n")
     return cpp
 
