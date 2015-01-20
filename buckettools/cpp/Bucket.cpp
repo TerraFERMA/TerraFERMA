@@ -955,10 +955,13 @@ void Bucket::output(const int &location)
     (*steadyfile_).write_data();                                     // write data to the steady state file
   }
 
-  for (SystemBucket_it s_it = systems_begin(); s_it != systems_end();// loop over the systems
-                                                             s_it++)
+  if (write_vis)
   {
-    (*(*s_it).second).output(write_vis);                             // and output pvd files
+    for (SystemBucket_it s_it = systems_begin(); s_it != systems_end();// loop over the systems
+                                                               s_it++)
+    {
+      (*(*s_it).second).output();                                    // and output pvd files
+    }
   }
 
 }
