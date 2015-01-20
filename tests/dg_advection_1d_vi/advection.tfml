@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -31,7 +31,7 @@
     </finish_time>
     <timestep>
       <coefficient name="Timestep">
-        <ufl_symbol>
+        <ufl_symbol name="global">
           <string_value lines="1">dt</string_value>
         </ufl_symbol>
         <type name="Constant">
@@ -49,11 +49,11 @@
   <global_parameters/>
   <system name="System">
     <mesh name="Mesh"/>
-    <ufl_symbol>
+    <ufl_symbol name="global">
       <string_value lines="1">u</string_value>
     </ufl_symbol>
     <field name="Field">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">f</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -91,7 +91,7 @@
       </diagnostics>
     </field>
     <coefficient name="Velocity">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">v</string_value>
       </ufl_symbol>
       <type name="Constant">
@@ -108,7 +108,7 @@
       </diagnostics>
     </coefficient>
     <coefficient name="Influx">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">fin</string_value>
       </ufl_symbol>
       <type name="Constant">
@@ -123,7 +123,7 @@
       <diagnostics/>
     </coefficient>
     <coefficient name="Theta">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">theta</string_value>
       </ufl_symbol>
       <type name="Constant">
@@ -157,13 +157,13 @@ r_fs1 =  dt*dot(vn*f_t, fin)*ds(1)
 r_fs2 =  dt*theta*dot(vn*f_t, f_i)*ds(2) + dt*(1.0-theta)*dot(vn*f_t, f_n)*ds(2)
 
 r = r_m + r_a + r_fS + r_fs1 + r_fs2</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">r</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
           <string_value lines="20" type="code" language="python">a = derivative(r, u_i)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
@@ -208,7 +208,6 @@ r = r_m + r_a + r_fS + r_fs1 + r_fs2</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
-    </nonlinear_solver>
-    <solve name="in_timeloop"/>
-  </system>
+    <solve name="in_timeloop"/></nonlinear_solver>
+    </system>
 </terraferma_options>

@@ -59,7 +59,7 @@ class SpudFunctionBucket(buckettools.functionbucket.FunctionBucket):
     if libspud.have_option(optionpath+"/type/rank/value/functional"):
       functional_optionpath = optionpath+"/type/rank/value/functional"
       functional = buckettools.spud.SpudFunctionalBucket()
-      functional.fill(functional_optionpath, self)
+      functional.fill(functional_optionpath, self.system, self)
       self.functional = functional
     
     self.cpp = []
@@ -105,15 +105,4 @@ class SpudFunctionBucket(buckettools.functionbucket.FunctionBucket):
         self.cpp.append(cppexpression)
         # done with this expression
         del cppexpression
-
-    self.functionals = []
-    for k in range(libspud.option_count(optionpath+"/diagnostics/include_in_statistics/functional")):
-      functional_optionpath = optionpath+"/diagnostics/include_in_statistics/functional["+`k`+"]"
-      functional = buckettools.spud.SpudFunctionalBucket()
-      # get all the information about this functional from the options dictionary
-      functional.fill(functional_optionpath, self)
-      # let the field know about this functional
-      self.functionals.append(functional)
-      # done with this functional
-      del functional
 

@@ -19,69 +19,82 @@
 // along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
 
-#ifndef __INITIAL_CONDITION_EXPRESSION_H
-#define __INITIAL_CONDITION_EXPRESSION_H
+#ifndef __SPUD_FUNCTIONALBUCKET_H
+#define __SPUD_FUNCTIONALBUCKET_H
 
-#include <dolfin.h>
 #include "BoostTypes.h"
-#include "Bucket.h"
+#include "FunctionalBucket.h"
+#include <dolfin.h>
 
 namespace buckettools
 {
-
+  
   //*****************************************************************|************************************************************//
-  // InitalConditionExpression class:
+  // SpudFunctionalBucket class:
   //
-  // This class provides a method of looping over field initial conditions (as individual expressions)
-  // and setting a mixed function space to those initial conditions.
-  // It is a derived dolfin expression and overloads much functionality in that base class
+  // The SpudFunctionalBucket class is a derived class of the functional that populates the
+  // data structures within a functional using the spud options parser (and assumes
+  // the structure of the buckettools schema)
   //*****************************************************************|************************************************************//
-  class InitialConditionExpression : public dolfin::Expression
+  class SpudFunctionalBucket : public FunctionalBucket
   {
 
   //*****************************************************************|***********************************************************//
   // Publicly available functions
   //*****************************************************************|***********************************************************//
 
-  public:                                                            // available to everyone
-
+  public:
+    
     //***************************************************************|***********************************************************//
     // Constructors and destructors
     //***************************************************************|***********************************************************//
+
+    SpudFunctionalBucket(const std::string &optionpath, 
+                                               SystemBucket* system);// specific constructor
     
-    InitialConditionExpression(                                      // specific constructor (scalar)
-                      std::map< std::size_t, Expression_ptr > expressions);
-    
-    InitialConditionExpression(const uint &dim,                      // specific constructor (vector)
-                      std::map< std::size_t, Expression_ptr > expressions);
-    
-    InitialConditionExpression(const std::vector<std::size_t> &value_shape,// specific constructor (tensor)
-                      std::map< std::size_t, Expression_ptr > expressions);
-    
-    
-    virtual ~InitialConditionExpression();                           // default destructor
-    
+    ~SpudFunctionalBucket();                                           // default destructor
+
     //***************************************************************|***********************************************************//
-    // Overloaded base class functions
+    // Filling data
     //***************************************************************|***********************************************************//
+
+    void fill();                                                     // fill this functional
+
+    //***************************************************************|***********************************************************//
+    // Base data access
+    //***************************************************************|***********************************************************//
+
+    const std::string optionpath() const                             // return a string containing the optionpath of this function
+    { return optionpath_; }
+
+    //***************************************************************|***********************************************************//
+    // Output functions
+    //***************************************************************|***********************************************************//
+
+    const std::string str(const int indent=0) const;                 // return an indented string describing the contents of the functional bucket
+
+    const bool include_in_statistics() const;                        // return a boolean indicating if this function is to 
+                                                                     // be included in diagnostic output
     
-    void eval(dolfin::Array<double>& values,                         // evaluate this expression at a point in a given cell
-              const dolfin::Array<double>& x, 
-              const ufc::cell &cell) const;
+    const bool include_in_steadystate() const;                       // return a boolean indicating if this function is to 
+                                                                     // be included in steadystate output
     
   //*****************************************************************|***********************************************************//
   // Private functions
   //*****************************************************************|***********************************************************//
 
-  private:                                                           // only available to this class
-    
+  private:                                                           // only available this class
+
     //***************************************************************|***********************************************************//
-    // Pointers data
+    // Base data
     //***************************************************************|***********************************************************//
 
-    std::map< std::size_t, Expression_ptr > expressions_;                   // map from component to initial condition expression for a function
-  
+    std::string optionpath_;                                         // the optionpath of this function
+
   };
+ 
+  typedef std::shared_ptr< SpudFunctionalBucket >                    // define a (boost shared) pointer for this function class type
+                                            SpudFunctionalBucket_ptr;
 
 }
 #endif

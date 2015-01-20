@@ -22,9 +22,9 @@
 #ifndef __REGIONS_EXPRESSION_H
 #define __REGIONS_EXPRESSION_H
 
-#include "Bucket.h"
 #include <dolfin.h>
 #include "BoostTypes.h"
+#include "Bucket.h"
 
 namespace buckettools
 {

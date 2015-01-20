@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <harness_options>
   <length>
     <string_value>special</string_value>
@@ -32,7 +32,7 @@ from math import sqrt
 det = parser("magmawaves.det")
 stat = parser("magmawaves.stat")
 
-Porosity_L2error = stat["magma"]["Porosity"]["L2error"][-1]
+Porosity_L2error = stat["magma"]["PorosityL2error"]["functional_value"][-1]
 Porosity_L2error = sqrt(Porosity_L2error)</string_value>
         </variable>
         <variable name="timestep">
@@ -60,7 +60,7 @@ Porosity_center = det["magma"]["Porosity"]["x0"][0,-1]</string_value>
 det = parser("magmawaves.det")
 stat = parser("magmawaves.stat")
 
-Porosity_integral = stat["magma"]["Porosity"]["Integral"][-1]</string_value>
+Porosity_integral = stat["magma"]["PorosityIntegral"]["functional_value"][-1]</string_value>
         </variable>
         <variable name="Pressure_integral">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -69,7 +69,7 @@ Porosity_integral = stat["magma"]["Porosity"]["Integral"][-1]</string_value>
 det = parser("magmawaves.det")
 stat = parser("magmawaves.stat")
 
-Pressure_integral = stat["magma"]["Pressure"]["IntegralPressure"][-1]</string_value>
+Pressure_integral = stat["magma"]["PressureIntegralPressure"]["functional_value"][-1]</string_value>
         </variable>
         <variable name="Pressure_center">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser

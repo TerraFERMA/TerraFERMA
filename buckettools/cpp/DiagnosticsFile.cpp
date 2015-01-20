@@ -19,8 +19,8 @@
 // along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
 
-#include "Bucket.h"
 #include "DiagnosticsFile.h"
+#include "Bucket.h"
 #include "MPIBase.h"
 #include "Usage.h"
 #include <cstdio>

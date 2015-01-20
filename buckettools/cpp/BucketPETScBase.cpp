@@ -19,9 +19,11 @@
 // along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
 
-#include "BucketPETScBase.h"
 #include <dolfin.h>
 #include "petscsnes.h"
+#include "BucketPETScBase.h"
+#include "Bucket.h"
+#include "SystemBucket.h"
 #include "SolverBucket.h"
 #include "Logger.h"
 

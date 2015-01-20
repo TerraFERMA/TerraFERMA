@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -31,7 +31,7 @@
     </finish_time>
     <timestep>
       <coefficient name="Timestep">
-        <ufl_symbol>
+        <ufl_symbol name="global">
           <string_value lines="1">dt</string_value>
         </ufl_symbol>
         <type name="Constant">
@@ -49,11 +49,11 @@
   <global_parameters/>
   <system name="SNESProjection">
     <mesh name="Mesh"/>
-    <ufl_symbol>
+    <ufl_symbol name="global">
       <string_value lines="1">us</string_value>
     </ufl_symbol>
     <field name="Field1">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">ss1</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -106,25 +106,11 @@ values[0] = values[0]-2.0;</string_value>
       <diagnostics>
         <include_in_visualization/>
         <include_in_statistics>
-          <functional name="Integral">
-            <string_value lines="20" type="code" language="python">int = ss1*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="OldIntegral">
-            <string_value lines="20" type="code" language="python">int = ss1_n*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-        </include_in_statistics>
+          </include_in_statistics>
       </diagnostics>
     </field>
     <field name="Field2">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">ss2</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -179,39 +165,11 @@ values[1] = values[1]-2.0;</string_value>
       <diagnostics>
         <include_in_visualization/>
         <include_in_statistics>
-          <functional name="Integral0">
-            <string_value lines="20" type="code" language="python">int = ss2[0]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="Integral1">
-            <string_value lines="20" type="code" language="python">int = ss2[1]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="OldIntegral0">
-            <string_value lines="20" type="code" language="python">int = ss2_n[0]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="OldIntegral1">
-            <string_value lines="20" type="code" language="python">int = ss2_n[1]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-        </include_in_statistics>
+          </include_in_statistics>
       </diagnostics>
     </field>
     <field name="Field3">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">ss3</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -309,39 +267,11 @@ values[0] = tvalues[3];</string_value>
       </type>
       <diagnostics>
         <include_in_statistics>
-          <functional name="Integral00">
-            <string_value lines="20" type="code" language="python">int = ss3[0,0]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="Integral01">
-            <string_value lines="20" type="code" language="python">int = ss3[0,1]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="Integral10">
-            <string_value lines="20" type="code" language="python">int = ss3[1,0]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="Integral11">
-            <string_value lines="20" type="code" language="python">int = ss3[1,1]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-        </include_in_statistics>
+          </include_in_statistics>
       </diagnostics>
     </field>
     <coefficient name="PySource1">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">pfs1</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -364,25 +294,11 @@ values[0] = tvalues[3];</string_value>
       </type>
       <diagnostics>
         <include_in_statistics>
-          <functional name="Integral">
-            <string_value lines="20" type="code" language="python">int = pfs1*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="OldIntegral">
-            <string_value lines="20" type="code" language="python">int = pfs1_n*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-        </include_in_statistics>
+          </include_in_statistics>
       </diagnostics>
     </coefficient>
     <coefficient name="PySource2">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">pfs2</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -405,39 +321,11 @@ values[0] = tvalues[3];</string_value>
       </type>
       <diagnostics>
         <include_in_statistics>
-          <functional name="Integral0">
-            <string_value lines="20" type="code" language="python">int = pfs2[0]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="Integral1">
-            <string_value lines="20" type="code" language="python">int = pfs2[1]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="OldIntegral0">
-            <string_value lines="20" type="code" language="python">int = pfs2_n[0]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="OldIntegral1">
-            <string_value lines="20" type="code" language="python">int = pfs2_n[1]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-        </include_in_statistics>
+          </include_in_statistics>
       </diagnostics>
     </coefficient>
     <coefficient name="PySource3">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">pfs3</string_value>
       </ufl_symbol>
       <type name="Expression">
@@ -463,7 +351,7 @@ values[0] = tvalues[3];</string_value>
       </diagnostics>
     </coefficient>
     <coefficient name="Source1">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">fs1</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -493,25 +381,11 @@ values[0] = tvalues[3];</string_value>
       </type>
       <diagnostics>
         <include_in_statistics>
-          <functional name="Integral">
-            <string_value lines="20" type="code" language="python">int = fs1*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="OldIntegral">
-            <string_value lines="20" type="code" language="python">int = fs1_n*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-        </include_in_statistics>
+          </include_in_statistics>
       </diagnostics>
     </coefficient>
     <coefficient name="Source2">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">fs2</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -541,39 +415,11 @@ values[0] = tvalues[3];</string_value>
       </type>
       <diagnostics>
         <include_in_statistics>
-          <functional name="Integral0">
-            <string_value lines="20" type="code" language="python">int = fs2[0]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="Integral1">
-            <string_value lines="20" type="code" language="python">int = fs2[1]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="OldIntegral0">
-            <string_value lines="20" type="code" language="python">int = fs2_n[0]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="OldIntegral1">
-            <string_value lines="20" type="code" language="python">int = fs2_n[1]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-        </include_in_statistics>
+          </include_in_statistics>
       </diagnostics>
     </coefficient>
     <coefficient name="Source3">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">fs3</string_value>
       </ufl_symbol>
       <type name="Expression">
@@ -614,13 +460,13 @@ r21 = ss2_t[1]*(ss2_i[1]-fs2[1])*dx
 r2 = r20 + r21
 r3 = inner(ss3_t, (ss3_i-fs3))*dx
 r = r1 + r2 + r3</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">r</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
           <string_value lines="20" type="code" language="python">a = derivative(r, us_i)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
@@ -778,16 +624,169 @@ r = r1 + r2 + r3</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
-    </nonlinear_solver>
-    <solve name="in_timeloop"/>
-  </system>
+    <solve name="in_timeloop"/></nonlinear_solver>
+    <functional name="Field1Integral">
+            <string_value lines="20" type="code" language="python">int = ss1*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="Field1OldIntegral">
+            <string_value lines="20" type="code" language="python">int = ss1_n*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+        <functional name="Field2Integral0">
+            <string_value lines="20" type="code" language="python">int = ss2[0]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="Field2Integral1">
+            <string_value lines="20" type="code" language="python">int = ss2[1]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="Field2OldIntegral0">
+            <string_value lines="20" type="code" language="python">int = ss2_n[0]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="Field2OldIntegral1">
+            <string_value lines="20" type="code" language="python">int = ss2_n[1]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+        <functional name="Field3Integral00">
+            <string_value lines="20" type="code" language="python">int = ss3[0,0]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="Field3Integral01">
+            <string_value lines="20" type="code" language="python">int = ss3[0,1]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="Field3Integral10">
+            <string_value lines="20" type="code" language="python">int = ss3[1,0]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="Field3Integral11">
+            <string_value lines="20" type="code" language="python">int = ss3[1,1]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+        <functional name="PySource1Integral">
+            <string_value lines="20" type="code" language="python">int = pfs1*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="PySource1OldIntegral">
+            <string_value lines="20" type="code" language="python">int = pfs1_n*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+        <functional name="PySource2Integral0">
+            <string_value lines="20" type="code" language="python">int = pfs2[0]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="PySource2Integral1">
+            <string_value lines="20" type="code" language="python">int = pfs2[1]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="PySource2OldIntegral0">
+            <string_value lines="20" type="code" language="python">int = pfs2_n[0]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="PySource2OldIntegral1">
+            <string_value lines="20" type="code" language="python">int = pfs2_n[1]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+        <functional name="Source1Integral">
+            <string_value lines="20" type="code" language="python">int = fs1*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="Source1OldIntegral">
+            <string_value lines="20" type="code" language="python">int = fs1_n*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+        <functional name="Source2Integral0">
+            <string_value lines="20" type="code" language="python">int = fs2[0]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="Source2Integral1">
+            <string_value lines="20" type="code" language="python">int = fs2[1]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="Source2OldIntegral0">
+            <string_value lines="20" type="code" language="python">int = fs2_n[0]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="Source2OldIntegral1">
+            <string_value lines="20" type="code" language="python">int = fs2_n[1]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+        </system>
   <system name="PicardProjection">
     <mesh name="Mesh"/>
-    <ufl_symbol>
+    <ufl_symbol name="global">
       <string_value lines="1">up</string_value>
     </ufl_symbol>
     <field name="Field1">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">sp1</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -830,25 +829,11 @@ r = r1 + r2 + r3</string_value>
       <diagnostics>
         <include_in_visualization/>
         <include_in_statistics>
-          <functional name="Integral">
-            <string_value lines="20" type="code" language="python">int = sp1*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="OldIntegral">
-            <string_value lines="20" type="code" language="python">int = sp1_n*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-        </include_in_statistics>
+          </include_in_statistics>
       </diagnostics>
     </field>
     <field name="Field2">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">sp2</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -892,39 +877,11 @@ values[1] = 300.0*(*time())+2.0;</string_value>
       <diagnostics>
         <include_in_visualization/>
         <include_in_statistics>
-          <functional name="Integral0">
-            <string_value lines="20" type="code" language="python">int = sp2[0]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="Integral1">
-            <string_value lines="20" type="code" language="python">int = sp2[1]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="OldIntegral0">
-            <string_value lines="20" type="code" language="python">int = sp2_n[0]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="OldIntegral1">
-            <string_value lines="20" type="code" language="python">int = sp2_n[1]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-        </include_in_statistics>
+          </include_in_statistics>
       </diagnostics>
     </field>
     <coefficient name="Source1">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">fp1</string_value>
       </ufl_symbol>
       <type name="Expression">
@@ -954,25 +911,11 @@ values[1] = 300.0*(*time())+2.0;</string_value>
       </type>
       <diagnostics>
         <include_in_statistics>
-          <functional name="Integral">
-            <string_value lines="20" type="code" language="python">int = fp1*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="OldIntegral">
-            <string_value lines="20" type="code" language="python">int = fp1_n*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-        </include_in_statistics>
+          </include_in_statistics>
       </diagnostics>
     </coefficient>
     <coefficient name="Source2">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">fp2</string_value>
       </ufl_symbol>
       <type name="Expression">
@@ -1002,39 +945,11 @@ values[1] = 300.0*(*time())+2.0;</string_value>
       </type>
       <diagnostics>
         <include_in_statistics>
-          <functional name="Integral0">
-            <string_value lines="20" type="code" language="python">int = fp2[0]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="Integral1">
-            <string_value lines="20" type="code" language="python">int = fp2[1]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="OldIntegral0">
-            <string_value lines="20" type="code" language="python">int = fp2_n[0]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="OldIntegral1">
-            <string_value lines="20" type="code" language="python">int = fp2_n[1]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-        </include_in_statistics>
+          </include_in_statistics>
       </diagnostics>
     </coefficient>
     <coefficient name="PySource1">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">pfp1</string_value>
       </ufl_symbol>
       <type name="Expression">
@@ -1057,25 +972,11 @@ values[1] = 300.0*(*time())+2.0;</string_value>
       </type>
       <diagnostics>
         <include_in_statistics>
-          <functional name="Integral">
-            <string_value lines="20" type="code" language="python">int = pfp1*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="OldIntegral">
-            <string_value lines="20" type="code" language="python">int = pfp1_n*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-        </include_in_statistics>
+          </include_in_statistics>
       </diagnostics>
     </coefficient>
     <coefficient name="PySource2">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">pfp2</string_value>
       </ufl_symbol>
       <type name="Expression">
@@ -1098,39 +999,11 @@ values[1] = 300.0*(*time())+2.0;</string_value>
       </type>
       <diagnostics>
         <include_in_statistics>
-          <functional name="Integral0">
-            <string_value lines="20" type="code" language="python">int = pfp2[0]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="Integral1">
-            <string_value lines="20" type="code" language="python">int = pfp2[1]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="OldIntegral0">
-            <string_value lines="20" type="code" language="python">int = pfp2_n[0]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="OldIntegral1">
-            <string_value lines="20" type="code" language="python">int = pfp2_n[1]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-        </include_in_statistics>
+          </include_in_statistics>
       </diagnostics>
     </coefficient>
     <coefficient name="FieldEval1">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">spe1</string_value>
       </ufl_symbol>
       <type name="Expression">
@@ -1160,25 +1033,11 @@ values[1] = 300.0*(*time())+2.0;</string_value>
       </type>
       <diagnostics>
         <include_in_statistics>
-          <functional name="Integral">
-            <string_value lines="20" type="code" language="python">int = spe1*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="OldIntegral">
-            <string_value lines="20" type="code" language="python">int = spe1_n*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-        </include_in_statistics>
+          </include_in_statistics>
       </diagnostics>
     </coefficient>
     <coefficient name="FieldEval2">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">spe2</string_value>
       </ufl_symbol>
       <type name="Expression">
@@ -1208,35 +1067,7 @@ values[1] = 300.0*(*time())+2.0;</string_value>
       </type>
       <diagnostics>
         <include_in_statistics>
-          <functional name="Integral0">
-            <string_value lines="20" type="code" language="python">int = spe2[0]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="Integral1">
-            <string_value lines="20" type="code" language="python">int = spe2[1]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="OldIntegral0">
-            <string_value lines="20" type="code" language="python">int = spe2_n[0]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-          <functional name="OldIntegral1">
-            <string_value lines="20" type="code" language="python">int = spe2_n[1]*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-        </include_in_statistics>
+          </include_in_statistics>
       </diagnostics>
     </coefficient>
     <nonlinear_solver name="SimpleSolver">
@@ -1250,19 +1081,19 @@ F = F1 + F2</string_value>
         </preamble>
         <form name="Bilinear" rank="1">
           <string_value lines="20" type="code" language="python">a = lhs(F)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
         <form name="Linear" rank="0">
           <string_value lines="20" type="code" language="python">L = rhs(F)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">L</string_value>
           </ufl_symbol>
         </form>
         <form name="Residual" rank="0">
           <string_value lines="20" type="code" language="python">r = action(a, up_i) - L</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">r</string_value>
           </ufl_symbol>
         </form>
@@ -1295,7 +1126,174 @@ F = F1 + F2</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
-    </nonlinear_solver>
-    <solve name="in_timeloop"/>
-  </system>
+    <solve name="in_timeloop"/></nonlinear_solver>
+    <functional name="Field1Integral">
+            <string_value lines="20" type="code" language="python">int = sp1*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="Field1OldIntegral">
+            <string_value lines="20" type="code" language="python">int = sp1_n*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+        <functional name="Field2Integral0">
+            <string_value lines="20" type="code" language="python">int = sp2[0]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="Field2Integral1">
+            <string_value lines="20" type="code" language="python">int = sp2[1]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="Field2OldIntegral0">
+            <string_value lines="20" type="code" language="python">int = sp2_n[0]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="Field2OldIntegral1">
+            <string_value lines="20" type="code" language="python">int = sp2_n[1]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+        <functional name="Source1Integral">
+            <string_value lines="20" type="code" language="python">int = fp1*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="Source1OldIntegral">
+            <string_value lines="20" type="code" language="python">int = fp1_n*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+        <functional name="Source2Integral0">
+            <string_value lines="20" type="code" language="python">int = fp2[0]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="Source2Integral1">
+            <string_value lines="20" type="code" language="python">int = fp2[1]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="Source2OldIntegral0">
+            <string_value lines="20" type="code" language="python">int = fp2_n[0]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="Source2OldIntegral1">
+            <string_value lines="20" type="code" language="python">int = fp2_n[1]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+        <functional name="PySource1Integral">
+            <string_value lines="20" type="code" language="python">int = pfp1*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="PySource1OldIntegral">
+            <string_value lines="20" type="code" language="python">int = pfp1_n*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+        <functional name="PySource2Integral0">
+            <string_value lines="20" type="code" language="python">int = pfp2[0]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="PySource2Integral1">
+            <string_value lines="20" type="code" language="python">int = pfp2[1]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="PySource2OldIntegral0">
+            <string_value lines="20" type="code" language="python">int = pfp2_n[0]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="PySource2OldIntegral1">
+            <string_value lines="20" type="code" language="python">int = pfp2_n[1]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+        <functional name="FieldEval1Integral">
+            <string_value lines="20" type="code" language="python">int = spe1*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="FieldEval1OldIntegral">
+            <string_value lines="20" type="code" language="python">int = spe1_n*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+        <functional name="FieldEval2Integral0">
+            <string_value lines="20" type="code" language="python">int = spe2[0]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="FieldEval2Integral1">
+            <string_value lines="20" type="code" language="python">int = spe2[1]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="FieldEval2OldIntegral0">
+            <string_value lines="20" type="code" language="python">int = spe2_n[0]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+          <functional name="FieldEval2OldIntegral1">
+            <string_value lines="20" type="code" language="python">int = spe2_n[1]*dx</string_value>
+            <ufl_symbol name="functional">
+              <string_value lines="1">int</string_value>
+            </ufl_symbol>
+            <quadrature_rule name="default"/>
+          <include_in_statistics/></functional>
+        </system>
 </terraferma_options>

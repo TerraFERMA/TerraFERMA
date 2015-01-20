@@ -22,8 +22,10 @@
 #ifndef __SOLVERBUCKET_H
 #define __SOLVERBUCKET_H
 
-#include "BucketPETScBase.h"
 #include "BoostTypes.h"
+#include "BucketPETScBase.h"
+#include "ConvergenceFile.h"
+#include "KSPConvergenceFile.h"
 #include <dolfin.h>
 #include "petscsnes.h"
 
@@ -35,6 +37,8 @@ namespace buckettools
   class FunctionBucket;                                              // predeclare the class itself
   typedef std::shared_ptr< FunctionBucket > FunctionBucket_ptr;    // so we can predeclare a pointer to it
   
+  enum solve_location { SOLVE_START, SOLVE_TIMELOOP, SOLVE_DIAGNOSTICS, SOLVE_NEVER };
+
   //*****************************************************************|************************************************************//
   // SolverBucket class:
   //
@@ -67,6 +71,8 @@ namespace buckettools
     void solve();                                                    // run the nonlinear solver described by this class
 
     double residual_norm();                                          // return the norm of the residual (which will be reassembled)
+
+    void update();                                                   // update this solver at the end of a timestep
 
     //***************************************************************|***********************************************************//
     // Filling data
@@ -130,6 +136,12 @@ namespace buckettools
     MatNullSpace nullspace()
     { return sp_; }
 
+    const int solve_location() const                                 // return an integer describing where this solver is applied
+    { return solve_location_; }
+
+    const bool solved() const                                        // return a boolean indicating if this system has been solved
+    { return *solved_; }                                             // for or not
+
     //***************************************************************|***********************************************************//
     // Form data access
     //***************************************************************|***********************************************************//
@@ -180,6 +192,8 @@ namespace buckettools
 
     virtual const std::string forms_str(const int &indent=0) const;  // return an indented string describing the forms in this
                                                                      // solver
+
+    void checkpoint();                                               // checkpoint the solverbucket
 
   //*****************************************************************|***********************************************************//
   // Protected functions
@@ -237,6 +251,10 @@ namespace buckettools
 
     bool monitornorms_;                                              // monitor the norms in nonlinear iterations
 
+    int solve_location_;                                             // when this solver will be applied
+
+    bool_ptr solved_;                                                // indicate if the system has been solved this timestep
+
     //***************************************************************|***********************************************************//
     // Pointers data
     //***************************************************************|***********************************************************//
@@ -247,6 +265,13 @@ namespace buckettools
                                                                      // after assembly
 
     MatNullSpace sp_;                                                // PETSc matnullspace object
+
+    //***************************************************************|***********************************************************//
+    // Output functions (continued)
+    //***************************************************************|***********************************************************//
+
+    virtual void checkpoint_options_();                              // checkpoint the options system for the systembucket
+
 
   //*****************************************************************|***********************************************************//
   // Private functions

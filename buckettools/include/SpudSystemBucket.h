@@ -22,8 +22,8 @@
 #ifndef __SPUD_SYSTEM_H
 #define __SPUD_SYSTEM_H
 
-#include "SystemBucket.h"
 #include "BoostTypes.h"
+#include "SystemBucket.h"
 #include <dolfin.h>
 
 namespace buckettools
@@ -60,8 +60,6 @@ namespace buckettools
     void fill();                                                     // fill the system assuming a buckettools spud schema
 
     void allocate_coeff_function();                                  // allocate the coefficient functions
-
-    void initialize_forms();                                         // initialize the forms and functionals by attaching the coeffs
 
     void initialize_fields_and_coefficient_expressions();            // initialize the expressions that fields and coefficients use
 
@@ -114,11 +112,7 @@ namespace buckettools
 
     void fill_solvers_();                                            // fill in the solver bucket information
 
-    //***************************************************************|***********************************************************//
-    // Output functions (continued)
-    //***************************************************************|***********************************************************//
-
-    void checkpoint_options_();                                      // checkpoint the options system for the spudsystembucket
+    void fill_functionals_();                                        // fill in the functional bucket information
 
   };
  

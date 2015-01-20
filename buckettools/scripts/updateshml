@@ -68,9 +68,8 @@ for f in args.file:
       if depth == args.recurse:
         dirnames[:] = []
 
-changed = False
-
 def update_string_value(path):
+  global changed
   elements = tree.findall(path)
   if len(elements) is not 0:
     for element in elements:
@@ -79,18 +78,81 @@ def update_string_value(path):
         element.text = None
         child = etree.SubElement(element, "string_value", attrib={"lines":"1"})
         child.text = text
-        global changed
         changed = True
+
+def update_functional_names(path):
+  global changed
+  # grab any variables or tests that the user might have extracted data from the stat or steady state files in
+  elements = tree.findall("//simulation/variables/variable/string_value")+tree.findall("/tests/test/string_value")
+  # the extensions of files we're looking for and the acceptable values of their keys
+  extensions = [['.stat', ['max', 'min', 'functional_value'], 'functional_value'], \
+                ['.steady', ['functional_change'], 'functional_change']]
+  # first work out the output_base_names of the all the tfmls referenced by this shml
+  tfmls = tree.findall("//simulation/input_file/string_value")
+  tfmlnames = [tfml.text for tfml in tfmls]
+  basenames = []
+  for tfmlname in tfmlnames:
+    try:
+      tfmltree = etree.parse(os.path.join(path, tfmlname))
+      basename = tfmltree.find("/io/output_base_name/string_value").text
+    # try to deal with tfml files that aren't there - hopefully they're all checkpoints and follow standard naming conventions
+    except IOError:
+      checkpoint_count = tfmlname.count('_checkpoint')
+      basetfmlname = tfmlname.replace('_checkpoint', '')
+      try:
+        checkpoint_number = int(basetfmlname.split('_')[-1].split('.')[0])
+        basetfmlname = basetfmlname.replace('_'+`checkpoint_number`, '')
+      except ValueError:
+        pass
+      i = tfmlnames.index(basetfmlname)
+      tfmltree = etree.parse(os.path.join(path, tfmlnames[i]))
+      basename = tfmltree.find("/io/output_base_name/string_value").text
+      basename += '_checkpoint'*checkpoint_count
+    basenames.append(basename)
+  # loop over all the variables and tests
+  for element in elements:
+    lines = element.text.splitlines()
+    # loop over the possible output base names
+    for basename in basenames:
+      for ext in extensions:
+        state = 0
+        vname = '__uninitialized_variable_name__'
+        for i, line in enumerate(lines):
+          if state == 0:
+            if basename+ext[0] in line:
+              vname = line.split("=")[0].strip()
+              state = 1
+              continue
+          if state == 1:
+            if vname+'[' in line:
+              sline = line[line.find(vname+'['):].split('[')
+              if len(sline) > 3 and sline[3].startswith('"') and not any([sline[3].startswith('"'+s) for s in ext[1]]):
+                oldfunctionalname = sline[3].strip('"]')
+                oldfunctionname = sline[2].strip('"]')
+                if sline[2].startswith('"') and sline[2].endswith('"]'):
+                  newfunctionalname = oldfunctionname+oldfunctionalname
+                else:
+                  newfunctionalname = oldfunctionname+'+"'+oldfunctionalname+'"'
+                sline[3] = sline[3].replace(oldfunctionalname, ext[2])
+                sline[2] = sline[2].replace(oldfunctionname, newfunctionalname)
+                lines[i] = line.replace(line[line.find(vname+'['):], '['.join(sline))
+                changed = True
+                continue
+    element.text = "\n".join(lines)
 
 for filename in filenames:
   print 'Updating: '+filename
   tree = etree.parse(filename)
+  global changed
+  changed = False
   update_string_value("/owner")
   update_string_value("/description")
   update_string_value("//parameter/values")
   update_string_value("//run/commands/command")
+  update_functional_names(os.path.split(filename)[0])
   if changed:
     backupfilename = os.path.join(os.path.split(filename)[0], os.path.split(filename)[-1].split('.')[0]+'.shml.bak')
     shutil.copy2(filename, backupfilename)
     tree.write(filename, encoding='utf-8', xml_declaration=True)
+    
 

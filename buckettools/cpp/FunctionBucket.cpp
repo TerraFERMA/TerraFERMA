@@ -19,9 +19,9 @@
 // along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
 
-#include "SystemBucket.h"
 #include "BoostTypes.h"
 #include "FunctionBucket.h"
+#include "SystemBucket.h"
 #include "Bucket.h"
 #include "BucketDolfinBase.h"
 #include "DolfinPETScBase.h"
@@ -424,69 +424,18 @@ const bool FunctionBucket::symmetric() const
 }
 
 //*******************************************************************|************************************************************//
-// return the change in the value of the given functional over a timestep
-//*******************************************************************|************************************************************//
-double FunctionBucket::functionalchange(Form_const_it f_it)
-{
-  double fvalue = functionalvalue(f_it);
-  return std::abs(fvalue-oldfunctionalvalue(f_it))/std::max(std::abs(fvalue), DOLFIN_EPS);
-}
-
-//*******************************************************************|************************************************************//
-// return the value of the given functional (calculating it if necessary)
-//*******************************************************************|************************************************************//
-double FunctionBucket::functionalvalue(Form_const_it f_it)
-{
-  bool_ptr calculated = functional_calculated_[(*f_it).first];
-  if(*calculated)
-  {
-    return *functional_values_[(*f_it).first];
-  }
-  else
-  {
-    double value = dolfin::assemble((*(*f_it).second));              // assemble the functional
-    *functional_values_[(*f_it).first] = value;
-    *calculated = true;
-
-    return value;
-  }
-}
-
-//*******************************************************************|************************************************************//
-// return the old stored value of the given functional
-//*******************************************************************|************************************************************//
-double FunctionBucket::oldfunctionalvalue(Form_const_it f_it)
-{
-  return *oldfunctional_values_[(*f_it).first];
-}
-
-//*******************************************************************|************************************************************//
-// reset the calculated booleans
-//*******************************************************************|************************************************************//
-void FunctionBucket::resetcalculated()
-{
-  if(change_calculated_)
-  {
-    *change_calculated_=false;
-  }
-
-  for (bool_ptr_it b_it = functional_calculated_.begin(); 
-                       b_it != functional_calculated_.end(); b_it++)
-  {
-    *(*b_it).second = false;
-  }
-}
-
-//*******************************************************************|************************************************************//
 // refresh this functionbucket if it "needs" it
 //*******************************************************************|************************************************************//
 void FunctionBucket::refresh(const bool force)
 {
   if (functiontype_==FUNCTIONBUCKET_FIELD)
   {
-    if( (!(*system()).solved()) || force )                           // solve the field's system if it hasn't already
+    std::vector<int> locations;
+    locations.push_back(SOLVE_TIMELOOP);
+    locations.push_back(SOLVE_DIAGNOSTICS);
+    if( (!(*system()).solved(locations)) || force )                  // solve the field's system if it hasn't already
     {                                                                // been solved for this timestep or we're forcing it
-      (*system()).solve();
+      (*system()).solve(locations, force);
     }
   }
   else if (functiontype_==FUNCTIONBUCKET_COEFF)
@@ -524,10 +473,16 @@ void FunctionBucket::update()
     *std::dynamic_pointer_cast< dolfin::Constant >(oldfunction_) = 
         double(*std::dynamic_pointer_cast< dolfin::Constant >(function_));
   }
+}
 
-  for (Form_const_it f_it = functionals_begin(); f_it != functionals_end(); f_it++)
+//*******************************************************************|************************************************************//
+// update the calculated flags
+//*******************************************************************|************************************************************//
+void FunctionBucket::resetcalculated()
+{
+  if(change_calculated_)
   {
-    *oldfunctional_values_[(*f_it).first] = *functional_values_[(*f_it).first];
+    *change_calculated_=false;
   }
 }
 
@@ -648,7 +603,7 @@ void FunctionBucket::postprocess_values()
 //*******************************************************************|************************************************************//
 // loop over the functionals in this function bucket and attach the coefficients they request using the parent bucket data maps
 //*******************************************************************|************************************************************//
-void FunctionBucket::attach_functional_coeffs()
+void FunctionBucket::attach_form_coeffs()
 {
   if (system_)
   {
@@ -656,84 +611,7 @@ void FunctionBucket::attach_functional_coeffs()
     {
       (*(*system_).bucket()).attach_coeffs(constantfunctional_);
     }
-
-    (*(*system_).bucket()).attach_coeffs(functionals_begin(),
-                                                  functionals_end());
   }
-}
-
-//*******************************************************************|************************************************************//
-// register a (boost shared) pointer to a functional form in the function bucket data maps
-//*******************************************************************|************************************************************//
-void FunctionBucket::register_functional(Form_ptr functional, const std::string &name)
-{
-  Form_hash_it f_it = functionals_.get<om_key_hash>().find(name);                            // check if the name already exists
-  if (f_it != functionals_.get<om_key_hash>().end())
-  {
-    tf_err("Functional already exists in function.", "Functional name: %s, Function name: %s, System name: %s", 
-           name.c_str(), name_.c_str(), (*system_).name().c_str());
-  }
-  else
-  {
-    functionals_.insert(om_item<const std::string, Form_ptr>(name, functional));                                 // if not, insert it into the functionals_ map
-    double_ptr value;
-    value.reset( new double(0.0) );
-    functional_values_[name]      = value;
-    value.reset( new double(0.0) );
-    oldfunctional_values_[name]   = value;
-    bool_ptr calculated;
-    calculated.reset( new bool(false) );
-    functional_calculated_[name]  = calculated;
-  }
-}
-
-//*******************************************************************|************************************************************//
-// return a (boost shared) pointer to a functional form from the function bucket data maps
-//*******************************************************************|************************************************************//
-Form_ptr FunctionBucket::fetch_functional(const std::string &name)
-{
-  Form_hash_it f_it = functionals_.get<om_key_hash>().find(name);                            // check if the name already exists
-  if (f_it == functionals_.get<om_key_hash>().end())
-  {
-    tf_err("Functional does not exist in function.", "Functional name: %s, Function name: %s, System name: %s", 
-           name.c_str(), name_.c_str(), (*system_).name().c_str());
-  }
-  else
-  {
-    return (*f_it).second;                                           // if it does, return it
-  }
-}
-
-//*******************************************************************|************************************************************//
-// return an iterator to the beginning of the functionals_ map
-//*******************************************************************|************************************************************//
-Form_it FunctionBucket::functionals_begin()
-{
-  return functionals_.get<om_key_seq>().begin();
-}
-
-//*******************************************************************|************************************************************//
-// return a constant iterator to the beginning of the functionals_ map
-//*******************************************************************|************************************************************//
-Form_const_it FunctionBucket::functionals_begin() const
-{
-  return functionals_.get<om_key_seq>().begin();
-}
-
-//*******************************************************************|************************************************************//
-// return an iterator to the end of the functionals_ map
-//*******************************************************************|************************************************************//
-Form_it FunctionBucket::functionals_end()
-{
-  return functionals_.get<om_key_seq>().end();
-}
-
-//*******************************************************************|************************************************************//
-// return a constant iterator to the end of the functionals_ map
-//*******************************************************************|************************************************************//
-Form_const_it FunctionBucket::functionals_end() const
-{
-  return functionals_.get<om_key_seq>().end();
 }
 
 //*******************************************************************|************************************************************//
@@ -929,16 +807,6 @@ const bool FunctionBucket::include_in_steadystate() const
 }
 
 //*******************************************************************|************************************************************//
-// include this a functional of this function with the given name in steadystate output and checking
-// this is a virtual function and should be implemented in the derived options class
-//*******************************************************************|************************************************************//
-const bool FunctionBucket::include_functional_in_steadystate(const std::string &name) const
-{
-  tf_err("Failed to find virtual function.", "Need a virtual include_functional_in_steadystate.");
-  return false;
-}
-
-//*******************************************************************|************************************************************//
 // include this function in detectors output
 // this is a virtual function and should be implemented in the derived options class
 //*******************************************************************|************************************************************//
@@ -956,22 +824,6 @@ const std::string FunctionBucket::str(int indent) const
   std::stringstream s;
   std::string indentation (indent*2, ' ');
   s << indentation << "FunctionBucket " << name() << std::endl;
-  indent++;
-  s << functionals_str(indent);
-  return s.str();
-}
-
-//*******************************************************************|************************************************************//
-// return a string describing the functionals in the function bucket
-//*******************************************************************|************************************************************//
-const std::string FunctionBucket::functionals_str(int indent) const
-{
-  std::stringstream s;
-  std::string indentation (indent*2, ' ');
-  for ( Form_const_it f_it = functionals_begin(); f_it != functionals_end(); f_it++ )
-  {
-    s << indentation << "Functional " << (*f_it).first  << std::endl;
-  }
   return s.str();
 }
 
