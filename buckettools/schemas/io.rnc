@@ -19,6 +19,7 @@
 # along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
 include "spud_base.rnc"
+include "element.rnc"
 
 io = 
   (
@@ -75,6 +76,10 @@ detectors_options =
 
 diagnostic_output_options =
   (
+    ## Options to control the functionspace that the visualization output is interpolated to.
+    element visualization {
+      element_options_scalar_lagrange
+    },
     ## Options to control the period between dumps of diagnostic data.
     ##
     ## NOTE that unless fields and coefficients are explicitly included in diagnostic output
