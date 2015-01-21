@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -183,8 +183,7 @@
       </type>
       <diagnostics>
         <include_in_visualization/>
-        <include_in_statistics>
-          </include_in_statistics>
+        <include_in_statistics/>
         <include_in_detectors/>
       </diagnostics>
     </field>
@@ -216,8 +215,7 @@
       </type>
       <diagnostics>
         <include_in_visualization/>
-        <include_in_statistics>
-          </include_in_statistics>
+        <include_in_statistics/>
         <include_in_detectors/>
       </diagnostics>
     </field>
@@ -270,8 +268,7 @@
       </type>
       <diagnostics>
         <include_in_visualization/>
-        <include_in_statistics>
-          </include_in_statistics>
+        <include_in_statistics/>
         <include_in_detectors/>
       </diagnostics>
     </field>
@@ -314,8 +311,7 @@
         </rank>
       </type>
       <diagnostics>
-        <include_in_statistics>
-          </include_in_statistics>
+        <include_in_statistics/>
       </diagnostics>
     </coefficient>
     <nonlinear_solver name="Solver">
@@ -472,48 +468,54 @@ r = rv + rp + rT</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
-    <solve name="in_timeloop"/></nonlinear_solver>
+      <solve name="in_timeloop"/>
+    </nonlinear_solver>
     <functional name="VelocityL2NormSquared">
-            <string_value lines="20" type="code" language="python">int = inner(v,v)*dx</string_value>
-            <ufl_symbol name="functional">
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-            <include_in_steady_state/>
-          <include_in_statistics/></functional>
-        <functional name="PressureIntegral">
-            <string_value lines="20" type="code" language="python">int = p*dx</string_value>
-            <ufl_symbol name="functional">
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-            <include_in_steady_state/>
-          <include_in_statistics/></functional>
-        <functional name="TemperatureTopSurfaceIntegral">
-            <string_value lines="20" type="code" language="python">int = T.dx(1)*ds(4)</string_value>
-            <ufl_symbol name="functional">
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-            <include_in_steady_state/>
-          <include_in_statistics/></functional>
-          <functional name="TemperatureBottomSurfaceIntegral">
-            <string_value lines="20" type="code" language="python">int = T.dx(1)*ds(3)</string_value>
-            <ufl_symbol name="functional">
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-            <include_in_steady_state/>
-          <include_in_statistics/></functional>
-        <functional name="DummyIntegral">
-            <string_value lines="20" type="code" language="python">int = dummy*dx</string_value>
-            <ufl_symbol name="functional">
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-            <include_in_steady_state/>
-          <include_in_statistics/></functional>
-        </system>
+      <string_value lines="20" type="code" language="python">int = inner(v,v)*dx</string_value>
+      <ufl_symbol name="functional">
+        <string_value lines="1">int</string_value>
+      </ufl_symbol>
+      <quadrature_rule name="default"/>
+      <include_in_statistics/>
+      <include_in_steady_state/>
+    </functional>
+    <functional name="PressureIntegral">
+      <string_value lines="20" type="code" language="python">int = p*dx</string_value>
+      <ufl_symbol name="functional">
+        <string_value lines="1">int</string_value>
+      </ufl_symbol>
+      <quadrature_rule name="default"/>
+      <include_in_statistics/>
+      <include_in_steady_state/>
+    </functional>
+    <functional name="TemperatureTopSurfaceIntegral">
+      <string_value lines="20" type="code" language="python">int = T.dx(1)*ds(4)</string_value>
+      <ufl_symbol name="functional">
+        <string_value lines="1">int</string_value>
+      </ufl_symbol>
+      <quadrature_rule name="default"/>
+      <include_in_statistics/>
+      <include_in_steady_state/>
+    </functional>
+    <functional name="TemperatureBottomSurfaceIntegral">
+      <string_value lines="20" type="code" language="python">int = T.dx(1)*ds(3)</string_value>
+      <ufl_symbol name="functional">
+        <string_value lines="1">int</string_value>
+      </ufl_symbol>
+      <quadrature_rule name="default"/>
+      <include_in_statistics/>
+      <include_in_steady_state/>
+    </functional>
+    <functional name="DummyIntegral">
+      <string_value lines="20" type="code" language="python">int = dummy*dx</string_value>
+      <ufl_symbol name="functional">
+        <string_value lines="1">int</string_value>
+      </ufl_symbol>
+      <quadrature_rule name="default"/>
+      <include_in_statistics/>
+      <include_in_steady_state/>
+    </functional>
+  </system>
   <system name="Divergence">
     <mesh name="Mesh"/>
     <ufl_symbol name="global">
@@ -596,8 +598,9 @@ r = rv + rp + rT</string_value>
         </linear_solver>
         <ignore_all_solver_failures/>
       </type>
-    <solve name="with_diagnostics"/></nonlinear_solver>
-    </system>
+      <solve name="with_diagnostics"/>
+    </nonlinear_solver>
+  </system>
   <system name="CourantNumber">
     <mesh name="Mesh"/>
     <ufl_symbol name="global">
@@ -674,6 +677,7 @@ r = c_t*c_a*dx - c_t('+')*vout('+')*dt('+')*dS - c_t('-')*vout('-')*dt('-')*dS -
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
-    <solve name="with_diagnostics"/></nonlinear_solver>
-    </system>
+      <solve name="with_diagnostics"/>
+    </nonlinear_solver>
+  </system>
 </terraferma_options>
