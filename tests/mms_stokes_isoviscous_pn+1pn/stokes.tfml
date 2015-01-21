@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -226,8 +226,7 @@ values[1] = std::abs(num[1] - sol[1]);</string_value>
         </rank>
       </type>
       <diagnostics>
-        <include_in_statistics>
-          </include_in_statistics>
+        <include_in_statistics/>
       </diagnostics>
     </coefficient>
     <coefficient name="AbsoluteDifferencePressure">
@@ -264,8 +263,7 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
         </rank>
       </type>
       <diagnostics>
-        <include_in_statistics>
-          </include_in_statistics>
+        <include_in_statistics/>
       </diagnostics>
     </coefficient>
     <nonlinear_solver name="Solver">
@@ -315,21 +313,23 @@ r = rv + rp</string_value>
       </type>
       <solve name="at_start"/>
     </nonlinear_solver>
-  <functional name="AbsoluteDifferenceVelocityL2NormSquared">
-            <string_value lines="20" type="code" language="python">int = inner(diffv,diffv)*dx</string_value>
-            <ufl_symbol name="functional">
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          <include_in_statistics/></functional>
-        <functional name="AbsoluteDifferencePressureL2NormSquared">
-            <string_value lines="20" type="code" language="python">int = diffp*diffp*dx</string_value>
-            <ufl_symbol name="functional">
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          <include_in_statistics/></functional>
-        </system>
+    <functional name="AbsoluteDifferenceVelocityL2NormSquared">
+      <string_value lines="20" type="code" language="python">int = inner(diffv,diffv)*dx</string_value>
+      <ufl_symbol name="functional">
+        <string_value lines="1">int</string_value>
+      </ufl_symbol>
+      <quadrature_rule name="default"/>
+      <include_in_statistics/>
+    </functional>
+    <functional name="AbsoluteDifferencePressureL2NormSquared">
+      <string_value lines="20" type="code" language="python">int = diffp*diffp*dx</string_value>
+      <ufl_symbol name="functional">
+        <string_value lines="1">int</string_value>
+      </ufl_symbol>
+      <quadrature_rule name="default"/>
+      <include_in_statistics/>
+    </functional>
+  </system>
   <system name="Divergence">
     <mesh name="Mesh"/>
     <ufl_symbol name="global">
