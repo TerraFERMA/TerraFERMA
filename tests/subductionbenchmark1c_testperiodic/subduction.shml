@@ -31,7 +31,7 @@
           <required_output>
             <filenames name="meshfiles">
               <string>
-                <string_value type="filename" lines="1">subduction_split.xml.gz</string_value>
+                <string_value lines="1" type="filename">subduction_split.xml.gz</string_value>
               </string>
             </filenames>
           </required_output>

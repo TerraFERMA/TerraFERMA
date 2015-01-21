@@ -18,7 +18,7 @@
       <required_input>
         <filenames name="mesh">
           <string>
-            <string_value type="filename" lines="1">subduction.xml.gz</string_value>
+            <string_value lines="1" type="filename">subduction.xml.gz</string_value>
           </string>
         </filenames>
       </required_input>
