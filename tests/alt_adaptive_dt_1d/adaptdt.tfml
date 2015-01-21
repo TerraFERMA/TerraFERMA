@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -123,5 +123,5 @@ values[0] = (val*bucket()-&gt;timestep())/dcell.diameter();</string_value>
         <include_in_statistics/>
       </diagnostics>
     </coefficient>
-    </system>
+  </system>
 </terraferma_options>
