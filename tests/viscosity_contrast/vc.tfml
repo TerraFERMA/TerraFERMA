@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -197,8 +197,9 @@ r = rv</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
-    <solve name="in_timeloop"/></nonlinear_solver>
-    </system>
+      <solve name="in_timeloop"/>
+    </nonlinear_solver>
+  </system>
   <system name="SplitBenton">
     <mesh name="Mesh"/>
     <ufl_symbol name="global">
@@ -386,6 +387,7 @@ r = rsv + rsp</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
-    <solve name="in_timeloop"/></nonlinear_solver>
-    </system>
+      <solve name="in_timeloop"/>
+    </nonlinear_solver>
+  </system>
 </terraferma_options>
