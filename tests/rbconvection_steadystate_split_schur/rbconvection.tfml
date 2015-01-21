@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -103,8 +103,7 @@
       </type>
       <diagnostics>
         <include_in_visualization/>
-        <include_in_statistics>
-          </include_in_statistics>
+        <include_in_statistics/>
       </diagnostics>
     </field>
     <coefficient name="Source">
@@ -167,15 +166,17 @@ r = rT</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
-    <solve name="in_timeloop"/></nonlinear_solver>
+      <solve name="in_timeloop"/>
+    </nonlinear_solver>
     <functional name="TemperatureTopSurfaceIntegral">
-            <string_value lines="20" type="code" language="python">int = grad(T)[1]*ds(4)</string_value>
-            <ufl_symbol name="functional">
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          <include_in_statistics/></functional>
-        </system>
+      <string_value lines="20" type="code" language="python">int = grad(T)[1]*ds(4)</string_value>
+      <ufl_symbol name="functional">
+        <string_value lines="1">int</string_value>
+      </ufl_symbol>
+      <quadrature_rule name="default"/>
+      <include_in_statistics/>
+    </functional>
+  </system>
   <system name="Stokes">
     <mesh name="Mesh"/>
     <ufl_symbol name="global">
@@ -264,8 +265,7 @@ r = rT</string_value>
       </type>
       <diagnostics>
         <include_in_visualization/>
-        <include_in_statistics>
-          </include_in_statistics>
+        <include_in_statistics/>
       </diagnostics>
     </field>
     <field name="Pressure">
@@ -410,15 +410,17 @@ r = rv + rp</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
-    <solve name="in_timeloop"/></nonlinear_solver>
+      <solve name="in_timeloop"/>
+    </nonlinear_solver>
     <functional name="VelocityL2Norm">
-            <string_value lines="20" type="code" language="python">int = inner(v,v)*dx</string_value>
-            <ufl_symbol name="functional">
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          <include_in_statistics/></functional>
-        </system>
+      <string_value lines="20" type="code" language="python">int = inner(v,v)*dx</string_value>
+      <ufl_symbol name="functional">
+        <string_value lines="1">int</string_value>
+      </ufl_symbol>
+      <quadrature_rule name="default"/>
+      <include_in_statistics/>
+    </functional>
+  </system>
   <system name="Temperature2">
     <mesh name="Mesh"/>
     <ufl_symbol name="global">
@@ -471,8 +473,7 @@ r = rv + rp</string_value>
       </type>
       <diagnostics>
         <include_in_visualization/>
-        <include_in_statistics>
-          </include_in_statistics>
+        <include_in_statistics/>
       </diagnostics>
     </field>
     <nonlinear_solver name="Solver">
@@ -520,15 +521,17 @@ r = rT</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
-    <solve name="in_timeloop"/></nonlinear_solver>
+      <solve name="in_timeloop"/>
+    </nonlinear_solver>
     <functional name="TemperatureTopSurfaceIntegral">
-            <string_value lines="20" type="code" language="python">int = grad(T2)[1]*ds(4)</string_value>
-            <ufl_symbol name="functional">
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          <include_in_statistics/></functional>
-        </system>
+      <string_value lines="20" type="code" language="python">int = grad(T2)[1]*ds(4)</string_value>
+      <ufl_symbol name="functional">
+        <string_value lines="1">int</string_value>
+      </ufl_symbol>
+      <quadrature_rule name="default"/>
+      <include_in_statistics/>
+    </functional>
+  </system>
   <system name="Stokes2">
     <mesh name="Mesh"/>
     <ufl_symbol name="global">
@@ -617,8 +620,7 @@ r = rT</string_value>
       </type>
       <diagnostics>
         <include_in_visualization/>
-        <include_in_statistics>
-          </include_in_statistics>
+        <include_in_statistics/>
       </diagnostics>
     </field>
     <field name="Pressure">
@@ -763,15 +765,17 @@ r = rv + rp</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
-    <solve name="in_timeloop"/></nonlinear_solver>
+      <solve name="in_timeloop"/>
+    </nonlinear_solver>
     <functional name="VelocityL2Norm">
-            <string_value lines="20" type="code" language="python">int = inner(v2,v2)*dx</string_value>
-            <ufl_symbol name="functional">
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          <include_in_statistics/></functional>
-        </system>
+      <string_value lines="20" type="code" language="python">int = inner(v2,v2)*dx</string_value>
+      <ufl_symbol name="functional">
+        <string_value lines="1">int</string_value>
+      </ufl_symbol>
+      <quadrature_rule name="default"/>
+      <include_in_statistics/>
+    </functional>
+  </system>
   <system name="Temperature3">
     <mesh name="Mesh"/>
     <ufl_symbol name="global">
@@ -824,8 +828,7 @@ r = rv + rp</string_value>
       </type>
       <diagnostics>
         <include_in_visualization/>
-        <include_in_statistics>
-          </include_in_statistics>
+        <include_in_statistics/>
       </diagnostics>
     </field>
     <nonlinear_solver name="Solver">
@@ -873,15 +876,17 @@ r = rT</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
-    <solve name="in_timeloop"/></nonlinear_solver>
+      <solve name="in_timeloop"/>
+    </nonlinear_solver>
     <functional name="TemperatureTopSurfaceIntegral">
-            <string_value lines="20" type="code" language="python">int = grad(T3)[1]*ds(4)</string_value>
-            <ufl_symbol name="functional">
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          <include_in_statistics/></functional>
-        </system>
+      <string_value lines="20" type="code" language="python">int = grad(T3)[1]*ds(4)</string_value>
+      <ufl_symbol name="functional">
+        <string_value lines="1">int</string_value>
+      </ufl_symbol>
+      <quadrature_rule name="default"/>
+      <include_in_statistics/>
+    </functional>
+  </system>
   <system name="Stokes3">
     <mesh name="Mesh"/>
     <ufl_symbol name="global">
@@ -970,8 +975,7 @@ r = rT</string_value>
       </type>
       <diagnostics>
         <include_in_visualization/>
-        <include_in_statistics>
-          </include_in_statistics>
+        <include_in_statistics/>
       </diagnostics>
     </field>
     <field name="Pressure">
@@ -1115,13 +1119,15 @@ r = rv + rp</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
-    <solve name="in_timeloop"/></nonlinear_solver>
+      <solve name="in_timeloop"/>
+    </nonlinear_solver>
     <functional name="VelocityL2Norm">
-            <string_value lines="20" type="code" language="python">int = inner(v3,v3)*dx</string_value>
-            <ufl_symbol name="functional">
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          <include_in_statistics/></functional>
-        </system>
+      <string_value lines="20" type="code" language="python">int = inner(v3,v3)*dx</string_value>
+      <ufl_symbol name="functional">
+        <string_value lines="1">int</string_value>
+      </ufl_symbol>
+      <quadrature_rule name="default"/>
+      <include_in_statistics/>
+    </functional>
+  </system>
 </terraferma_options>

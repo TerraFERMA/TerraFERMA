@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -231,8 +231,9 @@ F = Fv + Fp</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
-    <solve name="in_timeloop"/></nonlinear_solver>
-    </system>
+      <solve name="in_timeloop"/>
+    </nonlinear_solver>
+  </system>
   <system name="Temperature">
     <mesh name="Mesh"/>
     <ufl_symbol name="global">
@@ -438,8 +439,9 @@ F = FT</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
-    <solve name="in_timeloop"/></nonlinear_solver>
-    </system>
+      <solve name="in_timeloop"/>
+    </nonlinear_solver>
+  </system>
   <system name="Divergence">
     <mesh name="Mesh"/>
     <ufl_symbol name="global">
@@ -539,6 +541,7 @@ r = d_t*d_a*dx_wedge - d_t*div(v_i)*dx_wedge</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
-    <solve name="with_diagnostics"/></nonlinear_solver>
-    </system>
+      <solve name="with_diagnostics"/>
+    </nonlinear_solver>
+  </system>
 </terraferma_options>
