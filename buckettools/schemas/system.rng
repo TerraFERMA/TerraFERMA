@@ -159,6 +159,18 @@ The return value must have the same size as the geometric dimension.</a:document
           <ref name="comment"/>
         </element>
       </optional>
+      <optional>
+        <element name="output_cell_function">
+          <a:documentation>Output the cell integrals of this functional as a mesh function (outputs at the visualization frequency).</a:documentation>
+          <ref name="comment"/>
+        </element>
+      </optional>
+      <optional>
+        <element name="output_facet_function">
+          <a:documentation>Output the facet integrals of this functional as a mesh function (outputs at the visualization frequency).</a:documentation>
+          <ref name="comment"/>
+        </element>
+      </optional>
     </element>
   </define>
 </grammar>

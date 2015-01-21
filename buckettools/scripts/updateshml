@@ -86,7 +86,8 @@ def update_functional_names(path):
   elements = tree.findall("//simulation/variables/variable/string_value")+tree.findall("/tests/test/string_value")
   # the extensions of files we're looking for and the acceptable values of their keys
   extensions = [['.stat', ['max', 'min', 'functional_value'], 'functional_value'], \
-                ['.steady', ['functional_change'], 'functional_change']]
+                ['.steady', ['functional_change'], 'functional_change'], \
+                ['.xml']]
   # first work out the output_base_names of the all the tfmls referenced by this shml
   tfmls = tree.findall("//simulation/input_file/string_value")
   tfmlnames = [tfml.text for tfml in tfmls]
@@ -115,29 +116,41 @@ def update_functional_names(path):
     # loop over the possible output base names
     for basename in basenames:
       for ext in extensions:
-        state = 0
-        vname = '__uninitialized_variable_name__'
-        for i, line in enumerate(lines):
-          if state == 0:
-            if basename+ext[0] in line:
-              vname = line.split("=")[0].strip()
-              state = 1
-              continue
-          if state == 1:
-            if vname+'[' in line:
-              sline = line[line.find(vname+'['):].split('[')
-              if len(sline) > 3 and sline[3].startswith('"') and not any([sline[3].startswith('"'+s) for s in ext[1]]):
-                oldfunctionalname = sline[3].strip('"]')
-                oldfunctionname = sline[2].strip('"]')
-                if sline[2].startswith('"') and sline[2].endswith('"]'):
-                  newfunctionalname = oldfunctionname+oldfunctionalname
-                else:
-                  newfunctionalname = oldfunctionname+'+"'+oldfunctionalname+'"'
-                sline[3] = sline[3].replace(oldfunctionalname, ext[2])
-                sline[2] = sline[2].replace(oldfunctionname, newfunctionalname)
-                lines[i] = line.replace(line[line.find(vname+'['):], '['.join(sline))
+        if ext[0] == ".xml":
+          for i, line in enumerate(lines):
+            if basename+"_" in line and ext[0] in line[line.find(basename):]:
+              bstart = line.find(basename+"_")
+              bend = line.find(".xml", bstart)
+              sline = line[bstart:bend].split("_")
+              if len(sline) == 6:
+                oldfunctionalname = sline.pop(3)
+                sline[2] += oldfunctionalname
+                lines[i] = line.replace(line[bstart:bend], "_".join(sline))
                 changed = True
+        else:
+          state = 0
+          vname = '__uninitialized_variable_name__'
+          for i, line in enumerate(lines):
+            if state == 0:
+              if basename+ext[0] in line:
+                vname = line.split("=")[0].strip()
+                state = 1
                 continue
+            if state == 1:
+              if vname+'[' in line:
+                sline = line[line.find(vname+'['):].split('[')
+                if len(sline) > 3 and sline[3].startswith('"') and not any([sline[3].startswith('"'+s) for s in ext[1]]):
+                  oldfunctionalname = sline[3].strip('"]')
+                  oldfunctionname = sline[2].strip('"]')
+                  if sline[2].startswith('"') and sline[2].endswith('"]'):
+                    newfunctionalname = oldfunctionname+oldfunctionalname
+                  else:
+                    newfunctionalname = oldfunctionname+'+"'+oldfunctionalname+'"'
+                  sline[3] = sline[3].replace(oldfunctionalname, ext[2])
+                  sline[2] = sline[2].replace(oldfunctionname, newfunctionalname)
+                  lines[i] = line.replace(line[line.find(vname+'['):], '['.join(sline))
+                  changed = True
+                  continue
     element.text = "\n".join(lines)
 
 for filename in filenames:

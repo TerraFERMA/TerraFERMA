@@ -71,7 +71,25 @@ double FunctionalBucket::value()
 {
   if(!calculated_)
   {
-    value_ = dolfin::assemble(*form_);                               // assemble the functional
+    cellfunction_=NULL;
+    facetfunction_=NULL;
+
+    if (output_cellfunction())
+    {
+      cellfunction_ = new dolfin::CellFunction<double>((*system()).mesh());
+      (*cellfunction_).set_all(0.0);
+    }
+
+    if (output_facetfunction())
+    {
+      facetfunction_ = new dolfin::FacetFunction<double>((*system()).mesh());
+      (*facetfunction_).set_all(0.0);
+    }
+
+    dolfin::Assembler assembler;
+    dolfin::Scalar value;
+    assembler.assemble(value, *form_, cellfunction_, facetfunction_);
+    value_ = (double) value;
     calculated_ = true;
   }
   return value_;
@@ -96,6 +114,47 @@ void FunctionalBucket::update()
     double fvalue = value();                                         // check that the value has been calculated this timestep
   }
   oldvalue_ = value_;
+}
+
+//*******************************************************************|************************************************************//
+// output the functional (calculating it if necessary)
+//*******************************************************************|************************************************************//
+void FunctionalBucket::output()
+{
+  if (output_cellfunction() || output_facetfunction())
+  {
+    if (!calculated_)
+    {
+      double fvalue = value();
+    }
+
+    if (output_cellfunction())
+    {
+      assert(cellfunction_);
+      
+      std::stringstream buffer;
+      buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
+                             << (*system()).name() << "_"
+                             << name() << "_"
+                             << (*(*system()).bucket()).visualization_count() << "_cellfunction.xml";
+      dolfin::File cellfunction_file(buffer.str());
+      cellfunction_file << *cellfunction_;
+    }
+
+    if (output_facetfunction())
+    {
+      assert(facetfunction_);
+      
+      std::stringstream buffer;
+      buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
+                             << (*system()).name() << "_"
+                             << name() << "_" 
+                             << (*(*system()).bucket()).visualization_count() << "_facetfunction.xml";
+      dolfin::File facetfunction_file(buffer.str());
+      facetfunction_file << *facetfunction_;
+    }
+  }
+
 }
 
 //*******************************************************************|************************************************************//
@@ -136,5 +195,24 @@ const bool FunctionalBucket::include_in_steadystate() const
   tf_err("Failed to find virtual function.", "Need a virtual include_in_steadystate.");
   return false;
 }
+
+//*******************************************************************|************************************************************//
+// output the cell integrals of the functional as a cell function
+//*******************************************************************|************************************************************//
+const bool FunctionalBucket::output_cellfunction() const
+{
+  tf_err("Failed to find virtual function.", "Need a virtual output_cellfunction.");
+  return false;
+}
+
+//*******************************************************************|************************************************************//
+// output the cell integrals of the functional as a facet function
+//*******************************************************************|************************************************************//
+const bool FunctionalBucket::output_facetfunction() const
+{
+  tf_err("Failed to find virtual function.", "Need a virtual output_facetfunction.");
+  return false;
+}
+
 
 

@@ -81,8 +81,6 @@ void SpudBucket::fill()
 
   fill_timestepping_();                                              // fill in the timestepping options (if there are any)
 
-  fill_output_();                                                    // fill in the output options (if there are any)
-
   buffer.str(""); buffer << optionpath() << "/geometry/mesh";        // put the meshes into the bucket
   int nmeshes = Spud::option_count(buffer.str());
   for (uint i = 0; i<nmeshes; i++)                                   // loop over the meshes defined in the options file
@@ -92,6 +90,9 @@ void SpudBucket::fill()
     fill_meshes_(buffer.str());
   }
   
+  fill_output_();                                                    // fill in the output options (if there are any)
+                                                                     // has to happen after fill_meshes_ as it outputs the mesh
+
   buffer.str(""); buffer << optionpath() << "/system";
   int nsystems = Spud::option_count(buffer.str());
   for (uint i = 0; i<nsystems; i++)                                  // loop over the systems registering the base uflsymbols of any
@@ -558,6 +559,8 @@ void SpudBucket::fill_output_()
     serr = Spud::get_option(buffer.str(), *visualization_period_timesteps_);
     spud_err(buffer.str(), serr);
   }
+
+  visualization_count_.reset( new int(0) );
   
   buffer.str(""); buffer << "/io/dump_periods/statistics_period";    // statistics period
   if(Spud::have_option(buffer.str()))
@@ -636,6 +639,35 @@ void SpudBucket::fill_output_()
     spud_err(buffer.str(), serr);
 
     checkpoint_count_.reset( new int(0) );
+  }
+
+  if(Spud::option_count("/system/functional/output_cell_function") +
+     Spud::option_count("/system/functional/output_facet_function") > 0)
+  {
+    int nmeshes = Spud::option_count("/geometry/mesh");
+    for (uint i = 0; i<nmeshes; i++)                                   // loop over the meshes defined in the options file
+    {
+      buffer.str(""); buffer << optionpath() << "/geometry/mesh[" 
+                                                          << i << "]/source/name";
+      std::string source;                                                // get the source of the mesh (i.e. from file or internal)
+      serr = Spud::get_option(buffer.str(), source); 
+      spud_err(buffer.str(), serr);
+      if(source!="File")
+      {
+        buffer.str(""); buffer << optionpath() << "/geometry/mesh[" 
+                                                            << i << "]/name";
+        std::string meshname;                                              // get the name of the mesh
+        serr = Spud::get_option(buffer.str(), meshname); 
+        spud_err(buffer.str(), serr);
+
+        Mesh_ptr mesh = fetch_mesh(meshname);
+
+        buffer.str(""); buffer << output_basename() << "_" << meshname << ".xml";
+        dolfin::File meshfile(buffer.str());
+        meshfile << *mesh;
+      }
+    }
+
   }
 
 }
