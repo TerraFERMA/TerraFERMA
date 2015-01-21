@@ -42,6 +42,7 @@ system_ufl_symbol =
     ##     (the old function coefficient, containing the values from the previous timestep for the system function)
     ##
     element ufl_symbol {
+      attribute name { "global" },
       anystring
     }
   )
@@ -68,6 +69,7 @@ field_ufl_symbol =
     ##     (the old function coefficient, containing the values from the previous timestep for the system function)
     ##
     element ufl_symbol {
+      attribute name { "global" },
       anystring
     }
   )
@@ -87,6 +89,7 @@ coeff_ufl_symbol =
     ##     (the old function coefficient, containing the values from the previous timestep for the system function)
     ##
     element ufl_symbol {
+      attribute name { "global" },
       anystring
     }
   )
@@ -96,6 +99,7 @@ form_ufl_symbol =
     ## The ufl symbol used above to describe a form.  This need only be unique within this nonlinear_solver. 
     ## No additional symbols will be automatically generated based on this symbol.
     element ufl_symbol {
+      attribute name { "solver" },
       anystring
     }
   )
@@ -105,6 +109,7 @@ functional_ufl_symbol =
     ## The ufl symbol used above to describe a functional.  This need not be unique as it is only accessible
     ## from this description.  No additional symbols will be automatically generated based on this symbol.
     element ufl_symbol {
+      attribute name { "functional" },
       anystring
     }
   )
@@ -116,6 +121,7 @@ special_ufl_symbol =
     ## This ufl symbol must be unique across the entire options file as it may be used in any ufl form or functional
     ## written in this file.  No additional symbols will be augomatically generated based on this symbol.
     element ufl_symbol {
+      attribute name { "global" },
       anystring
     }
   )

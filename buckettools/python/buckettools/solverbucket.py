@@ -129,5 +129,23 @@ class SolverBucket:
         sys.exit(1)
       cpp.append("          }\n")
     return cpp
-      
 
+  def repeated_uflsymbol_check(self):
+    """Check for repeated ufl symbols."""
+    stat = 0
+
+    repeated_solver_uflsymbols = set([s for s in self.form_symbols if self.form_symbols.count(s) > 1])
+    if len(repeated_solver_uflsymbols) > 0: stat = 1
+    for s in repeated_solver_uflsymbols: print "ERROR solver ufl_symbol %s repeated in solver %s::%s! Change one of its instances."%(s, self.system.name, self.name)
+
+    uflsymbols = self.system.bucket.list_globaluflsymbols()
+
+    repeated_uflsymbols = set([s for s in self.form_symbols if s in uflsymbols])
+    if len(repeated_uflsymbols) > 0: stat = 1
+    for s in repeated_uflsymbols: print "ERROR solver ufl_symbol %s from solver %s::%s repeated in global ufl_symbols! Change one of its instances (remember to update forms appropriately)."%(s, self.system.name, self.name)
+
+    repeated_auto_uflsymbols = set([(s, u) for s in self.form_symbols for u in uflsymbols for a in uflsymbol_suffixes() if u+a == s and a != ''])
+    if len(repeated_auto_uflsymbols) > 0: stat = 1
+    for s in repeated_auto_uflsymbols: print "ERROR solver ufl_symbol %s from solver %s::%s matches ufl_symbol generated from global ufl_symbol %s! Change solver ufl_symbol %s to avoid reserved endings."%(s[0], self.system.name, self.name, s[1], s[0])
+
+    return stat

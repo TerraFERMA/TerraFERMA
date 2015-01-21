@@ -125,7 +125,7 @@ void SpudBucket::fill()
   for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *fourth* time, attaching the
                                   sys_it != systems_end(); sys_it++) // coefficients to the forms and functionals
   {
-    (*std::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).initialize_forms();
+    (*(*sys_it).second).initialize_forms();
   }
   
   for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *fifth* time, initializing
@@ -407,7 +407,7 @@ void SpudBucket::fill_timestepping_()
     buffer.str(""); buffer << "/timestepping/steady_state";
     if (Spud::have_option(buffer.str()))
     {
-      if ((Spud::option_count("/system/field/diagnostics/include_in_statistics/functional/include_in_steady_state")+
+      if ((Spud::option_count("/system/functional/include_in_steady_state")+
            Spud::option_count("/system/field/diagnostics/include_in_steady_state"))==0)
       {
         tf_err("Reqested a steady state check but selected no fields or functionals to include.", 
@@ -559,6 +559,8 @@ void SpudBucket::fill_output_()
     serr = Spud::get_option(buffer.str(), *visualization_period_timesteps_);
     spud_err(buffer.str(), serr);
   }
+
+  visualization_count_.reset( new int(0) );
   
   buffer.str(""); buffer << "/io/dump_periods/statistics_period";    // statistics period
   if(Spud::have_option(buffer.str()))
@@ -639,10 +641,8 @@ void SpudBucket::fill_output_()
     checkpoint_count_.reset( new int(0) );
   }
 
-  if(Spud::option_count("/system/field/diagnostics/include_in_statistics/functional/output_cell_function") +
-     Spud::option_count("/system/field/diagnostics/include_in_statistics/functional/output_facet_function") +
-     Spud::option_count("/system/coefficient/diagnostics/include_in_statistics/functional/output_cell_function") +
-     Spud::option_count("/system/coefficient/diagnostics/include_in_statistics/functional/output_facet_function") > 0)
+  if(Spud::option_count("/system/functional/output_cell_function") +
+     Spud::option_count("/system/functional/output_facet_function") > 0)
   {
     int nmeshes = Spud::option_count("/geometry/mesh");
     for (uint i = 0; i<nmeshes; i++)                                   // loop over the meshes defined in the options file
@@ -1098,7 +1098,7 @@ void SpudBucket::fill_diagnostics_()
   {
     if (Spud::option_count("/system/field/diagnostics/include_in_detectors")==0)
     {
-      tf_err("Reqested detectors but selected no fields or functionals to include.", 
+      tf_err("Reqested detectors but selected no fields to include.", 
              "No fields included in detectors.");
     }
 
@@ -1108,7 +1108,7 @@ void SpudBucket::fill_diagnostics_()
     (*detfile_).write_header();
   }
 
-  if ((Spud::option_count("/system/field/diagnostics/include_in_statistics/functional/include_in_steady_state")+
+  if ((Spud::option_count("/system/functional/include_in_steady_state")+
        Spud::option_count("/system/field/diagnostics/include_in_steady_state"))>0)
   {
     steadyfile_.reset( new SteadyStateFile(output_basename()+".steady",
@@ -1208,7 +1208,7 @@ void SpudBucket::fill_diagnostics_()
 //*******************************************************************|************************************************************//
 // checkpoint the options file
 //*******************************************************************|************************************************************//
-void SpudBucket::checkpoint_options_()
+void SpudBucket::checkpoint_options_(const double_ptr time)
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
@@ -1224,7 +1224,7 @@ void SpudBucket::checkpoint_options_()
   if (Spud::have_option(buffer.str()))
   {
     buffer.str(""); buffer << "/timestepping/current_time";          // set the current time
-    serr = Spud::set_option(buffer.str(), current_time());
+    serr = Spud::set_option(buffer.str(), *time);
     spud_err(buffer.str(), serr);
 
     buffer.str(""); 

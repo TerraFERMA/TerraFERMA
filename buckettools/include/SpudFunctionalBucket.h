@@ -19,86 +19,88 @@
 // along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
 
-#ifndef __REGIONS_EXPRESSION_H
-#define __REGIONS_EXPRESSION_H
+#ifndef __SPUD_FUNCTIONALBUCKET_H
+#define __SPUD_FUNCTIONALBUCKET_H
 
-#include <dolfin.h>
 #include "BoostTypes.h"
-#include "Bucket.h"
+#include "FunctionalBucket.h"
+#include <dolfin.h>
 
 namespace buckettools
 {
-
+  
   //*****************************************************************|************************************************************//
-  // RegionsExpression class:
+  // SpudFunctionalBucket class:
   //
-  // This class provides a method of overloading a dolfin Expression eval function by looping over cell ids and returning the results
-  // of individual expressions in each of those regions.
+  // The SpudFunctionalBucket class is a derived class of the functional that populates the
+  // data structures within a functional using the spud options parser (and assumes
+  // the structure of the buckettools schema)
   //*****************************************************************|************************************************************//
-  class RegionsExpression : public dolfin::Expression
+  class SpudFunctionalBucket : public FunctionalBucket
   {
 
   //*****************************************************************|***********************************************************//
   // Publicly available functions
   //*****************************************************************|***********************************************************//
 
-  public:                                                            // available to everyone
-
+  public:
+    
     //***************************************************************|***********************************************************//
     // Constructors and destructors
     //***************************************************************|***********************************************************//
+
+    SpudFunctionalBucket(const std::string &optionpath, 
+                                               SystemBucket* system);// specific constructor
     
-    RegionsExpression(                                               // specific constructor (scalar)
-                      std::map< std::size_t, Expression_ptr > expressions,
-                      MeshFunction_size_t_ptr cell_ids);
-    
-    RegionsExpression(const uint &dim,                               // specific constructor (vector)
-                      std::map< std::size_t, Expression_ptr > expressions,
-                      MeshFunction_size_t_ptr cell_ids);
-    
-    RegionsExpression(const uint &dim0, const uint &dim1,            // specific constructor (tensor)
-                      std::map< std::size_t, Expression_ptr > expressions,
-                      MeshFunction_size_t_ptr cell_ids);
-    
-    RegionsExpression(const std::vector<size_t> &value_shape,          // specific constructor (alternate tensor)
-                      std::map< std::size_t, Expression_ptr > expressions,
-                      MeshFunction_size_t_ptr cell_ids);
-    
-    virtual ~RegionsExpression();                           // default destructor
-    
+    ~SpudFunctionalBucket();                                           // default destructor
+
     //***************************************************************|***********************************************************//
-    // Overloaded base class functions
+    // Filling data
     //***************************************************************|***********************************************************//
-    
-    void eval(dolfin::Array<double>& values,                         // evaluate this expression at a point in a given cell
-              const dolfin::Array<double>& x, 
-              const ufc::cell &cell) const;
-    
+
+    void fill();                                                     // fill this functional
+
     //***************************************************************|***********************************************************//
     // Base data access
     //***************************************************************|***********************************************************//
 
-    const std::map< std::size_t, Expression_ptr> expressions() const        // return the map of expressions (const version)
-    { return expressions_; }
+    const std::string optionpath() const                             // return a string containing the optionpath of this function
+    { return optionpath_; }
+
+    //***************************************************************|***********************************************************//
+    // Output functions
+    //***************************************************************|***********************************************************//
+
+    const std::string str(const int indent=0) const;                 // return an indented string describing the contents of the functional bucket
+
+    const bool include_in_statistics() const;                        // return a boolean indicating if this function is to 
+                                                                     // be included in diagnostic output
     
-    std::map< std::size_t, Expression_ptr> expressions()                    // return the map of expressions (non-const version)
-    { return expressions_; }
+    const bool include_in_steadystate() const;                       // return a boolean indicating if this function is to 
+                                                                     // be included in steadystate output
+    
+    const bool output_cellfunction() const;                          // return a boolean indicating if the functional is to 
+                                                                     // be output as a cell function
+    
+    const bool output_facetfunction() const;                         // return a boolean indicating if the functional is to 
+                                                                     // be output as a facet function
     
   //*****************************************************************|***********************************************************//
   // Private functions
   //*****************************************************************|***********************************************************//
 
-  private:                                                           // only available to this class
-    
+  private:                                                           // only available this class
+
     //***************************************************************|***********************************************************//
-    // Pointers data
+    // Base data
     //***************************************************************|***********************************************************//
 
-    std::map< std::size_t, Expression_ptr > expressions_;                   // map from region id to expression for that region
-  
-    MeshFunction_size_t_ptr cell_ids_;                                 // a (boost shared) pointer to a (uint) mesh function holding the cell ids
+    std::string optionpath_;                                         // the optionpath of this function
 
   };
+ 
+  typedef std::shared_ptr< SpudFunctionalBucket >                    // define a (boost shared) pointer for this function class type
+                                            SpudFunctionalBucket_ptr;
 
 }
 #endif

@@ -286,7 +286,6 @@ field_diagnostics_options =
       ## Include this field in the statistics output file.
       ## The minimum and maximum of functions is included.
       element include_in_statistics {
-        functional_options*,
         comment
       }?,
       ## Include this field in the steady state check and output file.
@@ -326,7 +325,6 @@ coeff_diagnostics_options =
       ## The minimum and maximum (evaluated at the vertices of the mesh) 
       ## of functions is included.
       element include_in_statistics {
-        functional_options*,
         comment
       }?,
       ## Include this coefficient in the detectors output file.
@@ -334,30 +332,6 @@ coeff_diagnostics_options =
         comment
       }?,
       comment
-    }
-  )
-
-functional_options = 
-  (
-    ## ufl code and symbol describing a functional.  This must return a single number and have a unique name beneath this field or coefficient.
-    element functional {
-      attribute name { xsd:string },
-      python_code,
-      functional_ufl_symbol,
-      quadrature_degree,
-      quadrature_rule,
-      ## Include this functional in the steady state check and output file.
-      element include_in_steady_state {
-        comment
-      }?,
-      ## Output the cell integrals of this functional as a mesh function.
-      element output_cell_function {
-        comment
-      }?,
-      ## Output the facet integrals of this functional as a mesh function.
-      element output_facet_function {
-        comment
-      }?
     }
   )
 

@@ -56,10 +56,12 @@ namespace buckettools {
   typedef std::shared_ptr< FunctionBucket >   FunctionBucket_ptr;
   class SolverBucket;                                                // predeclaration
   typedef std::shared_ptr< SolverBucket >     SolverBucket_ptr;
+  class FunctionalBucket;                                            // predeclaration
+  typedef std::shared_ptr< FunctionalBucket > FunctionalBucket_ptr;
   class GenericDetectors;                                            // predeclaration
   typedef std::shared_ptr< GenericDetectors > GenericDetectors_ptr;
   class ReferencePoint;                                              // predeclaration
-  typedef std::shared_ptr< ReferencePoint >  ReferencePoint_ptr;
+  typedef std::shared_ptr< ReferencePoint >   ReferencePoint_ptr;
 
   //*****************************************************************|************************************************************//
   // std shared pointers to dolfin objects
@@ -141,6 +143,11 @@ namespace buckettools {
   typedef boost::multi_index::index<ordered_map<const std::string,FunctionBucket_ptr>,om_key_hash>::type::const_iterator FunctionBucket_const_hash_it;
   typedef boost::multi_index::index<ordered_map<const std::string,FunctionBucket_ptr>,om_key_seq>::type::iterator        FunctionBucket_it;
   typedef boost::multi_index::index<ordered_map<const std::string,FunctionBucket_ptr>,om_key_seq>::type::const_iterator  FunctionBucket_const_it;
+
+  typedef boost::multi_index::index<ordered_map<const std::string,FunctionalBucket_ptr>,om_key_hash>::type::iterator       FunctionalBucket_hash_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,FunctionalBucket_ptr>,om_key_hash>::type::const_iterator FunctionalBucket_const_hash_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,FunctionalBucket_ptr>,om_key_seq>::type::iterator        FunctionalBucket_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,FunctionalBucket_ptr>,om_key_seq>::type::const_iterator  FunctionalBucket_const_it;
 
   typedef boost::multi_index::index<ordered_map<const std::string,Mesh_ptr>,om_key_hash>::type::iterator       Mesh_hash_it;
   typedef boost::multi_index::index<ordered_map<const std::string,Mesh_ptr>,om_key_hash>::type::const_iterator Mesh_const_hash_it;

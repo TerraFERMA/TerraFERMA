@@ -22,7 +22,6 @@
 #ifndef __BUCKETPETSC_BASE_H
 #define __BUCKETPETSC_BASE_H
 
-#include "Bucket.h"
 #include "BoostTypes.h"
 #include "petscsnes.h"
 #include "ConvergenceFile.h"
@@ -30,6 +29,8 @@
 
 namespace buckettools
 {
+
+  class SolverBucket;                                                // predeclare
 
   //*****************************************************************|************************************************************//
   // A collection of structures and callback functions used in the bucket by petsc

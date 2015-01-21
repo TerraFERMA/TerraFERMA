@@ -164,11 +164,11 @@ namespace buckettools
     // Output functions
     //***************************************************************|***********************************************************//
 
-    void checkpoint_options_();                                      // checkpoint the options system for the bucket
+    void checkpoint_options_(const double_ptr time);                 // checkpoint the options system for the bucket
 
   };
 
-  typedef std::shared_ptr< SpudBucket > SpudBucket_ptr;            // define a boost shared pointer type for this class
+  typedef std::shared_ptr< SpudBucket > SpudBucket_ptr;              // define a boost shared pointer type for this class
 
 }
 #endif

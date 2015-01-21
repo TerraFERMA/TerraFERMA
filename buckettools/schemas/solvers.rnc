@@ -41,6 +41,7 @@ nonlinear_solver_options =
           picard
         }
       ),
+      solve_location,
       comment
     }
   )
@@ -351,6 +352,37 @@ snes =
     },
     solver_failures,
     comment
+  )
+
+solve_location = 
+  (
+    (
+      ## Solve the equations listed in this nonlinear solver every timestep.
+      element solve {
+        attribute name {"in_timeloop"},
+        comment
+      }|
+      ## Only solve the equations listed in this nonlinear solver at the start of the simulation.
+      element solve {
+        attribute name {"at_start"},
+        comment
+      }|
+      ## Only solve the equations listed in this nonlinear solver when diagnostic output is performed.
+      ##
+      ## This means that this system will be updated at an interval dependant on how the diagnostic dump periods are set in /io.
+      element solve {
+        attribute name {"with_diagnostics"},
+        comment
+      }|
+      ## Never solve the equations listed in this nonlinear solver.
+      ##
+      ## This is primarily intended to be used in checkpoint files when systems set to solve 'at_start' are never solved for in the 
+      ## checkpointed simulation.
+      element solve {
+        attribute name {"never"},
+        comment
+      }
+    )
   )
 
 ident_zeros =

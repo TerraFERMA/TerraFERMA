@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -35,11 +35,11 @@
   <global_parameters/>
   <system name="Benton">
     <mesh name="Mesh"/>
-    <ufl_symbol>
+    <ufl_symbol name="global">
       <string_value lines="1">u</string_value>
     </ufl_symbol>
     <field name="Velocity">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">v</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -77,7 +77,7 @@
       </diagnostics>
     </field>
     <coefficient name="Source">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">s</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -114,19 +114,19 @@ r = rv</string_value>
         </preamble>
         <form name="Bilinear" rank="1">
           <string_value lines="20" type="code" language="python">a = lhs(r)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
         <form name="Linear" rank="0">
           <string_value lines="20" type="code" language="python">L = rhs(r)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">L</string_value>
           </ufl_symbol>
         </form>
         <form name="Residual" rank="0">
           <string_value lines="20" type="code" language="python">res = action(a, u_i) - L</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">res</string_value>
           </ufl_symbol>
         </form>
@@ -197,16 +197,15 @@ r = rv</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
-    </nonlinear_solver>
-    <solve name="in_timeloop"/>
-  </system>
+    <solve name="in_timeloop"/></nonlinear_solver>
+    </system>
   <system name="SplitBenton">
     <mesh name="Mesh"/>
-    <ufl_symbol>
+    <ufl_symbol name="global">
       <string_value lines="1">su</string_value>
     </ufl_symbol>
     <field name="Velocity">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">sv</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -244,7 +243,7 @@ r = rv</string_value>
       </diagnostics>
     </field>
     <field name="ProjectedSource">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">sp</string_value>
       </ufl_symbol>
       <type name="Function">
@@ -280,19 +279,19 @@ r = rsv + rsp</string_value>
         </preamble>
         <form name="Bilinear" rank="1">
           <string_value lines="20" type="code" language="python">a = lhs(r)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
         <form name="Linear" rank="0">
           <string_value lines="20" type="code" language="python">L = rhs(r)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">L</string_value>
           </ufl_symbol>
         </form>
         <form name="Residual" rank="0">
           <string_value lines="20" type="code" language="python">res = action(a, su_i) - L</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">res</string_value>
           </ufl_symbol>
         </form>
@@ -387,7 +386,6 @@ r = rsv + rsp</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
-    </nonlinear_solver>
-    <solve name="in_timeloop"/>
-  </system>
+    <solve name="in_timeloop"/></nonlinear_solver>
+    </system>
 </terraferma_options>

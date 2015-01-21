@@ -19,8 +19,8 @@
 // along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
 
-#include "Bucket.h"
 #include "SteadyStateFile.h"
+#include "Bucket.h"
 #include <cstdio>
 #include <string>
 #include <fstream>
@@ -99,6 +99,20 @@ void SteadyStateFile::header_bucket_()
 
   }
 
+  for (SystemBucket_const_it sys_it = (*bucket_).systems_begin();    // loop over the systems
+                             sys_it != (*bucket_).systems_end(); 
+                             sys_it++)
+  {
+
+    for (FunctionalBucket_it f_it = (*(*sys_it).second).functionals_begin(); 
+                             f_it != (*(*sys_it).second).functionals_end(); // loop over the given functionals
+                             f_it++)
+    {
+      header_functional_((*f_it).second);
+    }
+
+  }
+
 }
 
 //*******************************************************************|************************************************************//
@@ -120,30 +134,22 @@ void SteadyStateFile::header_func_(FunctionBucket_ptr f_ptr)
                              (*(*f_ptr).system()).name(), 
                              (*f_ptr).size());
     }
+
+    functions_.push_back(f_ptr);
   }
   
-  header_functional_(f_ptr);
-
 }
 
 //*******************************************************************|************************************************************//
 // write a header for a set of model functionals
 //*******************************************************************|************************************************************//
-void SteadyStateFile::header_functional_(FunctionBucket_ptr f_ptr)
+void SteadyStateFile::header_functional_(FunctionalBucket_ptr f_ptr)
 {
-  std::pair<FunctionBucket_ptr, std::vector<Form_const_it> > functionals;
-  functionals.first = f_ptr;
-  for (Form_const_it s_it = (*f_ptr).functionals_begin(); 
-                     s_it != (*f_ptr).functionals_end(); s_it++)     // loop over the functional forms associated with the given
-  {                                                                  // function bucket
-    if ((*f_ptr).include_functional_in_steadystate((*s_it).first))
-    {
-      functionals.second.push_back(s_it);
-      tag_((*f_ptr).name(), (*s_it).first+"_change",       // write tags for each functional
-                                    (*(*f_ptr).system()).name());
-    }
+  if ((*f_ptr).include_in_steadystate())
+  {
+    tag_((*f_ptr).name(), "functional_change", (*(*f_ptr).system()).name());
+    functionals_.push_back(f_ptr);
   }
-  functions_.push_back(functionals);
 }
 
 //*******************************************************************|************************************************************//
@@ -158,10 +164,14 @@ void SteadyStateFile::data_bucket_()
     (*(*sys_it).second).updatechange();
   }
 
-  std::vector< std::pair< FunctionBucket_ptr, std::vector<Form_const_it> > >::iterator f_it;
-  for (f_it = functions_.begin(); f_it != functions_.end(); f_it++)
+  for (std::vector<FunctionBucket_ptr>::iterator f_it = functions_.begin(); f_it != functions_.end(); f_it++)
   {
-    data_func_((*f_it).first, (*f_it).second);
+    data_func_(*f_it);
+  }
+
+  for (std::vector<FunctionalBucket_ptr>::iterator f_it = functionals_.begin(); f_it != functionals_.end(); f_it++)
+  {
+    data_functional_(*f_it);
   }
 
 }
@@ -169,11 +179,10 @@ void SteadyStateFile::data_bucket_()
 //*******************************************************************|************************************************************//
 // write data for a set of fields
 //*******************************************************************|************************************************************//
-void SteadyStateFile::data_func_(FunctionBucket_ptr f_ptr, 
-                                 std::vector<Form_const_it> &functionals)
+void SteadyStateFile::data_func_(FunctionBucket_ptr f_ptr)
 {
-  if ((*f_ptr).changefunction())                                   // check if they should be included in the steady state file
-  {                                                                // (shouldn't be true for coefficients)
+  if ((*f_ptr).changefunction())                                     // check if they should be included in the steady state file
+  {                                                                  // (shouldn't be true for coefficients)
     const std::size_t lsize = (*f_ptr).size();
     std::vector<double> change(lsize);
 
@@ -183,22 +192,14 @@ void SteadyStateFile::data_func_(FunctionBucket_ptr f_ptr,
     }
     data_(change);
   }
-
-  data_functional_(f_ptr, functionals);
 }
 
 //*******************************************************************|************************************************************//
 // write data for a set of functional forms
 //*******************************************************************|************************************************************//
-void SteadyStateFile::data_functional_(FunctionBucket_ptr f_ptr, 
-                                       std::vector<Form_const_it> &functionals)
+void SteadyStateFile::data_functional_(FunctionalBucket_ptr f_ptr)
 {
-  for (std::vector<Form_const_it>::const_iterator s_it = functionals.begin(); 
-                                           s_it != functionals.end(); 
-                                           s_it++)                   // loop over the given functionals
-  {
-    const double change = (*f_ptr).functionalchange(*s_it);          // get the value of the functional
-    data_(change);
-  }
+  const double change = (*f_ptr).change();                           // get the change in the functional
+  data_(change);
 }
 

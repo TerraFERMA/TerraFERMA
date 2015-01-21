@@ -25,6 +25,7 @@
 #include "PythonPeriodicMap.h"
 #include "BoostTypes.h"
 #include "FunctionBucket.h"
+#include "FunctionalBucket.h"
 #include <dolfin.h>
 
 namespace buckettools
@@ -35,8 +36,6 @@ namespace buckettools
   class SystemBucket;                                                // predeclare the class itself
   typedef std::shared_ptr< SystemBucket > SystemBucket_ptr;        // so we can predeclare a pointer to it
   
-  enum functionbucket_type { SOLVE_START, SOLVE_TIMELOOP, SOLVE_DIAGNOSTICS, SOLVE_NEVER };
-
   //*****************************************************************|************************************************************//
   // SystemBucket class:
   //
@@ -70,7 +69,10 @@ namespace buckettools
 
     void evaluate_initial_fields();                                  // evaluate the initial values of the fields
 
-    void solve();                                                    // solve the solvers in this system (in order)
+    bool solve(const int &location, const bool force=true);          // solve the solvers in this system (in order)
+
+    bool solve(const std::vector<int> &locations=std::vector<int>(), 
+                                 const bool force=true);             // solve the solvers in this system matching any locations
 
     void update();                                                   // update the functions in this system at the end of a timestep
 
@@ -86,13 +88,25 @@ namespace buckettools
 
     void postprocess_values();                                       // cap the values of the fields in this system
 
-    double residual_norm();                                          // return the norm of the residual of the last solver
+    double residual_norm(const int &location);                       // return the norm of the residual of the last solver that meets the location requirement
+
+    double residual_norm(const std::vector<int> &locations=
+                                                 std::vector<int>());// return the norm of the residual of the last solver that meets the location requirement
+
+    const std::vector<int> solve_locations() const;                  // return a std::vector indicating the solve locations of the solvers
+
+    const bool solved(const int &location) const;                    // return a boolean indicating if this system has been solved
+
+    const bool solved(const std::vector<int> &locations=
+                                          std::vector<int>()) const; // return a boolean indicating if this system has been solved
 
     //***************************************************************|***********************************************************//
     // Filling data
     //***************************************************************|***********************************************************//
 
     void initialize_diagnostics() const;                             // initialize any diagnostic output from this system
+
+    void initialize_forms();                                         // attach all fields and coefficients to forms and functionals
 
     //***************************************************************|***********************************************************//
     // Base data access
@@ -159,12 +173,6 @@ namespace buckettools
 
     const Bucket* bucket() const                                     // return a constant pointer to the parent bucket
     { return bucket_; }
-
-    const int solve_location() const                                 // return an integer describing where this system is solved
-    { return solve_location_; }
-
-    const bool solved() const                                        // return a boolean indicating if this system has been solved
-    { return *solved_; }                                              // for or not
 
     //***************************************************************|***********************************************************//
     // Field data access
@@ -234,6 +242,23 @@ namespace buckettools
     SolverBucket_const_it solvers_end() const;                       // return a constant iterator to the end of the solver buckets
 
     //***************************************************************|***********************************************************//
+    // Functional data access
+    //***************************************************************|***********************************************************//
+
+    void register_functional(FunctionalBucket_ptr functional, 
+                                           const std::string &name); // register a functional with the given name in this function
+
+    FunctionalBucket_ptr fetch_functional(const std::string &name);  // return a (boost shared) pointer to a functional with the given name
+
+    FunctionalBucket_it functionals_begin();                         // return an iterator to the beginning of the functionals of this function
+
+    FunctionalBucket_const_it functionals_begin() const;             // return a constant iterator to the beginning of the functionals of this function
+
+    FunctionalBucket_it functionals_end();                           // return an iterator to the end of the functionals of this function
+
+    FunctionalBucket_const_it functionals_end() const;               // return a constant iterator to the end of the functionals of this function
+
+    //***************************************************************|***********************************************************//
     // BC data access
     //***************************************************************|***********************************************************//
 
@@ -253,6 +278,8 @@ namespace buckettools
     //***************************************************************|***********************************************************//
     // Output functions
     //***************************************************************|***********************************************************//
+
+    void output();                                                   // output the diagnostics on this system
 
     const bool include_in_visualization() const;                     // return a boolean indicating if this system has fields to 
                                                                      // be included in diagnostic output
@@ -278,7 +305,10 @@ namespace buckettools
     virtual const std::string solvers_str(const int &indent=0) const;// return an indented string describing the solver buckets in
                                                                      // the system
 
-    void checkpoint();                                               // checkpoint the system
+    virtual const std::string functionals_str(const int &indent=0) const;// return an indented string describing the functionals 
+                                                                     // of the system
+
+    void checkpoint(const double_ptr time);                          // checkpoint the system
 
   //*****************************************************************|***********************************************************//
   // Protected functions
@@ -289,14 +319,6 @@ namespace buckettools
     //***************************************************************|***********************************************************//
     // Filling data
     //***************************************************************|***********************************************************//
-
-    void attach_all_coeffs_();                                       // attach all fields and coefficients to forms and functionals
-
-    void attach_function_coeffs_(FunctionBucket_it f_begin,          // attach specific fields or coefficients to functionals
-                                          FunctionBucket_it f_end);
-
-    void attach_solver_coeffs_(SolverBucket_it s_begin,              // attach specific fields or coefficients to solver forms
-                                          SolverBucket_it s_end);
 
     void collect_ics_(const uint &components,                        // collect the field initial conditions into an initial 
                       const std::map< std::size_t, Expression_ptr >  // condition expression
@@ -329,13 +351,9 @@ namespace buckettools
 
     File_ptr icfile_;                                                // (boost shared) pointer to a file containing a checkpointed ic
 
-    int solve_location_;                                             // when this system will be solved
-
     Function_ptr changefunction_;                                    // (boost shared) pointer to the change between timesteps
 
     bool_ptr change_calculated_;                                     // indicate if the change has been recalculated recently
-
-    bool_ptr solved_;                                                // indicate if the system has been solved this timestep
 
     Function_ptr residualfunction_;                                  // (boost shared) pointer to the residual of the system
 
@@ -345,25 +363,21 @@ namespace buckettools
     // Pointers data
     //***************************************************************|***********************************************************//
 
-    ordered_map<const std::string, FunctionBucket_ptr> fields_;             // a map from field names to (boost shared) pointers to fields
+    ordered_map<const std::string, FunctionBucket_ptr> fields_;      // a map from field names to (boost shared) pointers to fields
     
-    ordered_map<const std::string, FunctionBucket_ptr> coeffs_;             // a map from coefficient names to (boost shared) pointers to
+    ordered_map<const std::string, FunctionBucket_ptr> coeffs_;      // a map from coefficient names to (boost shared) pointers to
                                                                      // coefficients
 
-    ordered_map<const std::string, SolverBucket_ptr> solvers_;             // a map from solver bucket names to (boost shared) pointers to
+    ordered_map<const std::string, SolverBucket_ptr> solvers_;       // a map from solver bucket names to (boost shared) pointers to
                                                                      // solver buckets
+
+    ordered_map<const std::string, FunctionalBucket_ptr> functionals_;// map from functional names to form (boost shared) pointers
 
     std::vector< const dolfin::DirichletBC* > bcs_;                  // a vector of (boost shared) poitners to the dirichlet bcs
 
     PythonPeriodicMap_ptr periodicmap_;                              // periodic map for (a single) periodic bc
 
     std::vector<std::size_t> masterids_, slaveids_;                  // master and slave ids for periodic bc
-
-    //***************************************************************|***********************************************************//
-    // Output functions (continued)
-    //***************************************************************|***********************************************************//
-
-    virtual void checkpoint_options_();                              // checkpoint the options system for the systembucket
 
   };
 
