@@ -72,6 +72,12 @@ def ufl_reserved():
 
 def uflsymbol_suffixes():
   """Returns an array of available function symbols in the ufl."""
+  suffixes = function_uflsymbol_suffixes()
+  suffixes += ["_e", "_e0", "_e1"]
+  return suffixes
+
+def function_uflsymbol_suffixes():
+  """Returns an array of available function symbols in the ufl."""
   return ["", "_i", "_n"]
 
 def form_symbols(form):
