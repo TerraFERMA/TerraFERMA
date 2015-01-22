@@ -79,7 +79,7 @@ The return value must have length &gt; 0 and each entry must be of the same dime
   <define name="diagnostic_output_options">
     <element name="visualization">
       <a:documentation>Options to control the functionspace that the visualization output is interpolated to.</a:documentation>
-      <ref name="element_options_scalar_lagrange"/>
+      <ref name="element_options_scalar_lagrange_visualization"/>
     </element>
     <element name="dump_periods">
       <a:documentation>Options to control the period between dumps of diagnostic data.
