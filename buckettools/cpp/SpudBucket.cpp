@@ -847,27 +847,6 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     bottom.mark(*edgeids, 3);
     top.mark(*edgeids, 4);
   }
-  else if (source=="UnitCircle")                                     // source is an internally generated dolfin mesh
-  {
-    int cells;
-    buffer.str(""); buffer << optionpath << "/source/number_cells";
-    serr = Spud::get_option(buffer.str(), cells); 
-    spud_err(buffer.str(), serr);
-    
-    std::string diagonal;
-    buffer.str(""); buffer << optionpath << "/source/diagonal";
-    serr = Spud::get_option(buffer.str(), diagonal); 
-    spud_err(buffer.str(), serr);
-    
-    std::string transformation;
-    buffer.str(""); buffer << optionpath << "/source/transformation";
-    serr = Spud::get_option(buffer.str(), transformation); 
-    spud_err(buffer.str(), serr);
-    
-    mesh.reset(new dolfin::UnitCircleMesh(cells, 
-                                          diagonal, transformation));
-
-  }
   else if (source=="UnitCube")                                       // source is an internally generated dolfin mesh
   {
     std::vector<int> cells;
