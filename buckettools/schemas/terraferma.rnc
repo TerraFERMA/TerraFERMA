@@ -65,6 +65,30 @@ global_parameters =
        element ufl {
          python_code 
        }?,
+       ## global dolfin parameters
+       element dolfin {
+         ## Allow extrapolation in function interpolation.
+         element allow_extrapolation {
+           comment
+         }?,
+         (
+           ## Mesh ghosting type
+           element ghost_mode {
+             attribute name {"none"},
+             comment
+           }|
+           ## Mesh ghosting type
+           element ghost_mode {
+             attribute name {"shared_facet"},
+             comment
+           }|
+           ## Mesh ghosting type
+           element ghost_mode {
+             attribute name {"shared_vertex"},
+             comment
+           }
+         )?
+       }?,
        comment
      }
    )

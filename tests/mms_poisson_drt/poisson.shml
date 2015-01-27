@@ -26,6 +26,14 @@ libspud.set_option("/geometry/mesh::Mesh/source::UnitSquare/number_cells", [int(
             <single_build/>
           </update>
         </parameter>
+        <parameter name="np">
+          <values>
+            <string_value lines="1">1 2</string_value>
+          </values>
+          <process_scale>
+            <integer_value shape="2" rank="1">1 2</integer_value>
+          </process_scale>
+        </parameter>
       </parameter_sweep>
       <variables>
         <variable name="error_l2">
