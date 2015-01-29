@@ -211,16 +211,26 @@ void SolverBucket::solve()
           (*matrixpc_).ident_zeros();
         }
 
+        #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
         perr = KSPSetOperators(ksp_, (*matrix_).mat(),              // set the ksp operators with two matrices
                                      (*matrixpc_).mat(), 
                                      SAME_NONZERO_PATTERN); 
+        #else
+        perr = KSPSetOperators(ksp_, (*matrix_).mat(),              // set the ksp operators with two matrices
+                                     (*matrixpc_).mat()); 
+        #endif
         petsc_err(perr);
       }
       else
       {
+        #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
         perr = KSPSetOperators(ksp_, (*matrix_).mat(),              // set the ksp operators with the same matrices
                                       (*matrix_).mat(), 
                                         SAME_NONZERO_PATTERN); 
+        #else
+        perr = KSPSetOperators(ksp_, (*matrix_).mat(),              // set the ksp operators with the same matrices
+                                      (*matrix_).mat()); 
+        #endif
         petsc_err(perr);
       }
 
@@ -362,7 +372,7 @@ double SolverBucket::residual_norm()
 //*******************************************************************|************************************************************//
 // update the solver at the end of a timestep
 //*******************************************************************|************************************************************//
-void SolverBucket::update()
+void SolverBucket::resetcalculated()
 {
   if (solved_)
   {

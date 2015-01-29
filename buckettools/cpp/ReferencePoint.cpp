@@ -90,7 +90,13 @@ SubDomain_ptr ReferencePoint::subdomain_(const std::vector<double> &coord, const
     cell.get_vertex_coordinates(vertex_coordinates);
     dofmap.tabulate_coordinates(coordinates, vertex_coordinates, cell);
 
-    const std::vector<dolfin::la_index>& cell_dofs = dofmap.cell_dofs(cellid);
+    const std::vector<dolfin::la_index>& tmp_cell_dofs = dofmap.cell_dofs(cellid);
+    std::vector<dolfin::la_index> cell_dofs;
+    for (std::vector<dolfin::la_index>::const_iterator dof_it = tmp_cell_dofs.begin();
+                              dof_it != tmp_cell_dofs.end(); dof_it++)
+    {
+      cell_dofs.push_back(dofmap.local_to_global_index(*dof_it));
+    }
 
     std::vector<double> dist(dofmap.cell_dimension(cellid), 0.0);
     for (uint i = 0; i < dofmap.cell_dimension(cellid); ++i)
