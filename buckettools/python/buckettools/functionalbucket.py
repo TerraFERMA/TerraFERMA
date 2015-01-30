@@ -49,12 +49,12 @@ class FunctionalBucket:
     for coeff in self.system.coeffs:
       if coeff.type=="Constant":
         ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
-        for suffix in uflsymbol_suffixes():
+        for suffix in function_uflsymbol_suffixes():
           ufl.append(coeff.constant_ufl(suffix=suffix))
       else:
         ufl += coeff.element_ufl()
         ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
-        for suffix in uflsymbol_suffixes():
+        for suffix in function_uflsymbol_suffixes():
           ufl.append(coefficient_ufl(coeff.symbol, suffix=suffix))
       ufl.append("\n")
     ufl.append("\n")
@@ -64,7 +64,7 @@ class FunctionalBucket:
     for coeff in self.system.special_coeffs:
       if coeff.type == "Constant":
         ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
-        for suffix in uflsymbol_suffixes():
+        for suffix in function_uflsymbol_suffixes():
           ufl.append(coeff.constant_ufl(suffix=suffix))
       else:
         if coeff.type == "Function":
@@ -72,7 +72,7 @@ class FunctionalBucket:
           sys.exit(1)
         ufl += coeff.element_ufl()
         ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
-        for suffix in uflsymbol_suffixes():
+        for suffix in function_uflsymbol_suffixes():
           ufl.append(coefficient_ufl(coeff.symbol, suffix=suffix))
     ufl.append("\n")
     ufl.append(comment("Finished declaring functions for this system, start on other systems."))
@@ -93,12 +93,12 @@ class FunctionalBucket:
       for coeff in system.coeffs:
         if coeff.type == "Constant":
           ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
-          for suffix in uflsymbol_suffixes():
+          for suffix in function_uflsymbol_suffixes():
             ufl.append(coeff.constant_ufl(suffix=suffix))
         else:
           ufl += coeff.element_ufl()
           ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
-          for suffix in uflsymbol_suffixes():
+          for suffix in function_uflsymbol_suffixes():
             ufl.append(coefficient_ufl(coeff.symbol, suffix=suffix))
     ufl.append("\n")
     ufl.append(comment("Finished declaring functions for all other systems, start on forms."))

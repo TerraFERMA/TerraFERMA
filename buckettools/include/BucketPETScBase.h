@@ -42,8 +42,13 @@ namespace buckettools
 
   PetscErrorCode FormFunction(SNES snes, Vec x, Vec f, void* ctx);   // petsc snes callback function to form the residual
 
+  #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
   PetscErrorCode FormJacobian(SNES snes, Vec x, Mat *A, Mat *B,      // petsc snes callback function to form the jacobian
                                    MatStructure* flag, void* ctx);
+  #else
+  PetscErrorCode FormJacobian(SNES snes, Vec x, Mat A, Mat B,        // petsc snes callback function to form the jacobian
+                                   void* ctx);
+  #endif
 
   typedef struct {                                                   // a structure used to pass bucket data into monitor functions
     SolverBucket *solver;                                            // pointer to solver
@@ -60,6 +65,7 @@ namespace buckettools
 
   PetscErrorCode SNESVIDummyComputeVariableBounds(SNES snes, Vec xl, Vec xu);
 
+  #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
   void petsc_failure(PetscErrorCode perr,
                      const std::string &filename,
                      const int &line,
@@ -67,7 +73,16 @@ namespace buckettools
                      const std::string &petsc_function);
 
   #define petsc_fail(perr) do {petsc_failure(perr, __FILE__, __LINE__, __SDIR__, PETSC_FUNCTION_NAME);} while(0)
+  #else
+  void petsc_failure(PetscErrorCode perr,
+                     const std::string &filename,
+                     const int &line,
+                     const std::string &petsc_function);
 
+  #define petsc_fail(perr) do {petsc_failure(perr, __FILE__, __LINE__, PETSC_FUNCTION_NAME);} while(0)
+  #endif
+
+  #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
   void petsc_error(PetscErrorCode perr,
                    const std::string &filename,
                    const int &line,
@@ -75,6 +90,14 @@ namespace buckettools
                    const std::string &petsc_function);
 
   #define petsc_err(perr)  do {petsc_error(perr, __FILE__, __LINE__, __SDIR__, PETSC_FUNCTION_NAME);} while(0)
+  #else
+  void petsc_error(PetscErrorCode perr,
+                   const std::string &filename,
+                   const int &line,
+                   const std::string &petsc_function);
+
+  #define petsc_err(perr)  do {petsc_error(perr, __FILE__, __LINE__, PETSC_FUNCTION_NAME);} while(0)
+  #endif
 
 }
 

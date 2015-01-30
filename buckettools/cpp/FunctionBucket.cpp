@@ -542,6 +542,11 @@ void FunctionBucket::postprocess_values()
 
   for (uint i = 0; i < lsize; i++)
   {
+    if (!(zeropoints_[i]||upper_cap_[i]||lower_cap_[i]))
+    {
+      continue;
+    }
+
     double value = 0.0;
     if (zeropoints_[i])
     {
@@ -569,9 +574,12 @@ void FunctionBucket::postprocess_values()
 
     for (uint j = 0; j < np; j++)
     {
+      double current_value;
+      (*sysvec).get(&current_value, 1, &pindices[j]);
+
       if (upper_cap_[i])
       {
-        if ((*sysvec)[pindices[j]] > *upper_cap_[i])
+        if (current_value > *upper_cap_[i])
         {
           (*sysvec).setitem(pindices[j], *upper_cap_[i]);
         }
@@ -579,7 +587,7 @@ void FunctionBucket::postprocess_values()
 
       if (lower_cap_[i])
       {
-        if ((*sysvec)[pindices[j]] < *lower_cap_[i])
+        if (current_value < *lower_cap_[i])
         {
           (*sysvec).setitem(pindices[j], *lower_cap_[i]);
         }
@@ -587,7 +595,7 @@ void FunctionBucket::postprocess_values()
 
       if (zeropoints_[i])
       {
-        (*sysvec).setitem(pindices[j], (*sysvec)[pindices[j]]-value);
+        (*sysvec).setitem(pindices[j], current_value-value);
       }
     }
 
