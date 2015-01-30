@@ -190,7 +190,13 @@ boost::unordered_set<uint> buckettools::cell_dofs_values(const FunctionSpace_ptr
       }
     }
 
-    std::vector<dolfin::la_index> dof_vec = (*dofmap).cell_dofs((*cell).index());
+    std::vector<dolfin::la_index> tmp_dof_vec = (*dofmap).cell_dofs((*cell).index());
+    std::vector<dolfin::la_index> dof_vec;
+    for (std::vector<dolfin::la_index>::const_iterator dof_it = tmp_dof_vec.begin();
+                              dof_it != tmp_dof_vec.end(); dof_it++)
+    {
+      dof_vec.push_back((*dofmap).local_to_global_index(*dof_it));
+    }
 
     if(value_exp)
     {
@@ -287,8 +293,13 @@ boost::unordered_set<uint> buckettools::facet_dofs_values(const FunctionSpace_pt
 
         const std::size_t facet_number = cell.index(*facet);         // get the local index of the facet w.r.t. the cell
 
+        std::vector<dolfin::la_index> tmp_cell_dof_vec = (*dofmap).cell_dofs(cell.index());// get the cell dof (potentially for all components)
         std::vector<dolfin::la_index> cell_dof_vec;
-        cell_dof_vec = (*dofmap).cell_dofs(cell.index());            // get the cell dof (potentially for all components)
+        for (std::vector<dolfin::la_index>::const_iterator dof_it = tmp_cell_dof_vec.begin();
+                                  dof_it != tmp_cell_dof_vec.end(); dof_it++)
+        {
+          cell_dof_vec.push_back((*dofmap).local_to_global_index(*dof_it));
+        }
         
         std::vector<std::size_t> facet_dof_vec((*dofmap).num_facet_dofs(), 0);
         (*dofmap).tabulate_facet_dofs(facet_dof_vec, facet_number);
