@@ -146,6 +146,8 @@ namespace buckettools
     // Filling data (continued)
     //***************************************************************|***********************************************************//
 
+    void fill_dolfinparameters_() const;                             // fill the dolfin parameters (actually doesn't touch bucket structures)
+
     void fill_timestepping_();                                       // fill the timestepping data
  
     void fill_adaptivetimestepping_();                               // fill the timestepping data

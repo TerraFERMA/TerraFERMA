@@ -80,7 +80,11 @@ PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f,
   MatNullSpace sp = (*solver).nullspace();
   if (sp)
   {
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
     perr = MatNullSpaceRemove(sp, rhs.vec(), PETSC_NULL);
+    #else
+    perr = MatNullSpaceRemove(sp, rhs.vec());
+    #endif
     CHKERRQ(perr);
   }
   
@@ -107,9 +111,14 @@ PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f,
 //*******************************************************************|************************************************************//
 // define the petsc snes callback function that assembles the jacobian function
 //*******************************************************************|************************************************************//
+#if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
 PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A, 
-                                         Mat *B, MatStructure* flag, 
+                                         Mat *B, MatStructure* flag,
                                          void* ctx)
+#else
+PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat A, 
+                                         Mat B, void* ctx)
+#endif
 {
   log(INFO, "In FormJacobian");
 
@@ -131,16 +140,32 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
     perr = VecNorm(x,NORM_INFINITY,&norm); CHKERRQ(perr);
     log(dolfin::get_log_level(), "FormJacobian(1): inf-norm x = %g", norm);
 
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
     perr = MatNorm(*A,NORM_FROBENIUS,&norm); CHKERRQ(perr);
+    #else
+    perr = MatNorm(A,NORM_FROBENIUS,&norm); CHKERRQ(perr);
+    #endif
     log(dolfin::get_log_level(), "FormJacobian(1): Frobenius norm A = %g", norm);
 
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
     perr = MatNorm(*A,NORM_INFINITY,&norm); CHKERRQ(perr);
+    #else
+    perr = MatNorm(A,NORM_INFINITY,&norm); CHKERRQ(perr);
+    #endif
     log(dolfin::get_log_level(), "FormJacobian(1): inf-norm A = %g", norm);
 
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
     perr = MatNorm(*B,NORM_FROBENIUS,&norm); CHKERRQ(perr);
+    #else
+    perr = MatNorm(B,NORM_FROBENIUS,&norm); CHKERRQ(perr);
+    #endif
     log(dolfin::get_log_level(), "FormJacobian(1): Frobenius norm B = %g", norm);
 
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
     perr = MatNorm(*B,NORM_INFINITY,&norm); CHKERRQ(perr);
+    #else
+    perr = MatNorm(B,NORM_INFINITY,&norm); CHKERRQ(perr);
+    #endif
     log(dolfin::get_log_level(), "FormJacobian(1): inf-norm B = %g", norm);
   }
 
@@ -148,7 +173,11 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
   const std::vector< const dolfin::DirichletBC* >& bcs = 
                                          (*system).bcs();   // get the vector of bcs
   dolfin::PETScVector iteratedvec(x);
+  #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
   dolfin::PETScMatrix matrix(*A), matrixpc(*B);
+  #else
+  dolfin::PETScMatrix matrix(A), matrixpc(B);
+  #endif
 
   (*(*iteratedfunction).vector()) = iteratedvec;                     // update the iterated system bucket function
 
@@ -192,7 +221,9 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
 
   }
 
+  #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
   *flag = SAME_NONZERO_PATTERN;                                      // both matrices are assumed to have the same sparsity
+  #endif
 
   if ((*solver).monitor_norms())
   {
@@ -204,16 +235,32 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat *A,
     perr = VecNorm(x,NORM_INFINITY,&norm); CHKERRQ(perr);
     log(dolfin::get_log_level(), "FormJacobian(2): inf-norm x = %g", norm);
 
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
     perr = MatNorm(*A,NORM_FROBENIUS,&norm); CHKERRQ(perr);
+    #else
+    perr = MatNorm(A,NORM_FROBENIUS,&norm); CHKERRQ(perr);
+    #endif
     log(dolfin::get_log_level(), "FormJacobian(2): Frobenius norm A = %g", norm);
 
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
     perr = MatNorm(*A,NORM_INFINITY,&norm); CHKERRQ(perr);
+    #else
+    perr = MatNorm(A,NORM_INFINITY,&norm); CHKERRQ(perr);
+    #endif
     log(dolfin::get_log_level(), "FormJacobian(2): inf-norm A = %g", norm);
 
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
     perr = MatNorm(*B,NORM_FROBENIUS,&norm); CHKERRQ(perr);
+    #else
+    perr = MatNorm(B,NORM_FROBENIUS,&norm); CHKERRQ(perr);
+    #endif
     log(dolfin::get_log_level(), "FormJacobian(2): Frobenius norm B = %g", norm);
 
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
     perr = MatNorm(*B,NORM_INFINITY,&norm); CHKERRQ(perr);
+    #else
+    perr = MatNorm(B,NORM_INFINITY,&norm); CHKERRQ(perr);
+    #endif
     log(dolfin::get_log_level(), "FormJacobian(2): inf-norm B = %g", norm);
   }
 
@@ -340,9 +387,14 @@ PetscErrorCode buckettools::KSPNullSpaceMonitor(KSP ksp, int it,
       #endif
 
       Mat Amat, Pmat;
+     
+      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
       MatStructure flag;
 
       perr = KSPGetOperators(ksp, &Amat, &Pmat, &flag); CHKERRQ(perr);
+      #else
+      perr = KSPGetOperators(ksp, &Amat, &Pmat); CHKERRQ(perr);
+      #endif
 
       perr = MatNullSpaceTest(sp, Amat, &isNull); CHKERRQ(perr);
 
@@ -373,15 +425,26 @@ PetscErrorCode buckettools::SNESVIDummyComputeVariableBounds(SNES snes, Vec xl, 
 //*******************************************************************|************************************************************//
 // check if petsc has failed and throw a sigint if it has
 //*******************************************************************|************************************************************//
+#if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
 void buckettools::petsc_failure(PetscErrorCode perr,
                                 const std::string &filename,
                                 const int &line,
                                 const std::string &dirname,
                                 const std::string &petsc_function)
+#else
+void buckettools::petsc_failure(PetscErrorCode perr,
+                                const std::string &filename,
+                                const int &line,
+                                const std::string &petsc_function)
+#endif
 {
   if (PetscUnlikely(perr))
   {
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
     PetscErrorCode perr2 = PetscError(PETSC_COMM_SELF,line,petsc_function.c_str(),filename.c_str(),dirname.c_str(),perr,PETSC_ERROR_REPEAT," ");
+    #else
+    PetscErrorCode perr2 = PetscError(PETSC_COMM_SELF,line,petsc_function.c_str(),filename.c_str(),perr,PETSC_ERROR_REPEAT," ");
+    #endif
 
     failure(filename, line, 
             "Call to PETSc function returned an error.",
@@ -392,15 +455,26 @@ void buckettools::petsc_failure(PetscErrorCode perr,
 //*******************************************************************|************************************************************//
 // check if petsc has an error and terminate if it has
 //*******************************************************************|************************************************************//
+#if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
 void buckettools::petsc_error(PetscErrorCode perr,
                               const std::string &filename,
                               const int &line,
                               const std::string &dirname,
                               const std::string &petsc_function)
+#else
+void buckettools::petsc_error(PetscErrorCode perr,
+                              const std::string &filename,
+                              const int &line,
+                              const std::string &petsc_function)
+#endif
 {
   if (PetscUnlikely(perr))
   {
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
     PetscErrorCode perr2 = PetscError(PETSC_COMM_SELF,line,petsc_function.c_str(),filename.c_str(),dirname.c_str(),perr,PETSC_ERROR_REPEAT," ");
+    #else
+    PetscErrorCode perr2 = PetscError(PETSC_COMM_SELF,line,petsc_function.c_str(),filename.c_str(),perr,PETSC_ERROR_REPEAT," ");
+    #endif
 
     error(filename, line,
           "Call to PETSc function returned an error.",

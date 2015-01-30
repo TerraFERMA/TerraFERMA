@@ -50,7 +50,7 @@
               <real_value rank="0">0.</real_value>
             </constant>
           </initial_condition>
-          <boundary_condition name="homogeneous">
+          <boundary_condition name="LeftBase">
             <boundary_ids>
               <integer_value shape="2" rank="1">1 3</integer_value>
             </boundary_ids>

@@ -55,6 +55,12 @@ class SpudFunctionBucket(buckettools.functionbucket.FunctionBucket):
       if libspud.have_option(optionpath+"/type/rank/element/symmetric"):
         self.symmetry = True
 
+    self.enrichment_family = None
+    self.enrichment_degree = None
+    if libspud.have_option(optionpath+"/type/rank/element/enrichment"):
+      self.enrichment_family = libspud.get_option(optionpath+"/type/rank/element/enrichment/element/family")
+      self.enrichment_degree = libspud.get_option(optionpath+"/type/rank/element/enrichment/element/degree")
+
     # this should be restricted by the schema to Constant coefficients:
     if libspud.have_option(optionpath+"/type/rank/value/functional"):
       functional_optionpath = optionpath+"/type/rank/value/functional"
