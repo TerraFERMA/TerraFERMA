@@ -89,7 +89,7 @@ double FunctionalBucket::value()
     dolfin::Assembler assembler;
     dolfin::Scalar value;
     assembler.assemble(value, *form_, cellfunction_, facetfunction_);
-    value_ = (double) value;
+    value_ = value.get_scalar_value();
     calculated_ = true;
   }
   return value_;
