@@ -57,12 +57,12 @@ class SystemBucket:
     for coeff in self.coeffs:
       if coeff.type == "Constant":
         ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
-        for suffix in uflsymbol_suffixes():
+        for suffix in function_uflsymbol_suffixes():
           ufl.append(coeff.constant_ufl(suffix=suffix))
       else:
         ufl += coeff.element_ufl()
         ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
-        for suffix in uflsymbol_suffixes():
+        for suffix in function_uflsymbol_suffixes():
           ufl.append(coefficient_ufl(coeff.symbol, suffix=suffix))
     ufl.append("\n")
     # special_coeffs are only added for this system *not the other systems*
@@ -71,14 +71,14 @@ class SystemBucket:
     for coeff in self.special_coeffs:
       if coeff.type == "Constant":
         ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
-        for suffix in uflsymbol_suffixes():
+        for suffix in function_uflsymbol_suffixes():
           ufl.append(coeff.constant_ufl(suffix=suffix))
       else:
         if coeff.type == "Function":
           print "coefficient functionspaces not output for special coefficient functions"
         ufl += coeff.element_ufl()
         ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
-        for suffix in uflsymbol_suffixes():
+        for suffix in function_uflsymbol_suffixes():
           ufl.append(coefficient_ufl(coeff.symbol, suffix=suffix))
     ufl.append("\n")
     ufl.append(comment("Finished declaring functions for this system, start on other systems."))
@@ -99,12 +99,12 @@ class SystemBucket:
       for coeff in system.coeffs:
         if coeff.type == "Constant":
           ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
-          for suffix in uflsymbol_suffixes():
+          for suffix in function_uflsymbol_suffixes():
             ufl.append(coeff.constant_ufl(suffix=suffix))
         else:
           ufl += coeff.element_ufl()
           ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
-          for suffix in uflsymbol_suffixes():
+          for suffix in function_uflsymbol_suffixes():
             ufl.append(coefficient_ufl(coeff.symbol, suffix=suffix))
     ufl.append("\n")
     ufl.append(comment("Finished declaring functions for all other systems, start on forms."))
@@ -307,7 +307,7 @@ class SystemBucket:
         symbols_in_form = form_symbols(self.functionals[f].form)
         symbols_found = 0
         for c2 in range(len(self.coeffs)):
-          for suffix in uflsymbol_suffixes():
+          for suffix in function_uflsymbol_suffixes():
             if self.coeffs[c2].symbol+suffix in symbols_in_form: 
               cpp += self.functionals[f].coefficientspace_cpp(self.coeffs[c2], index=symbols_found, suffix=suffix)
               symbols_found =+ 1
@@ -350,7 +350,7 @@ class SystemBucket:
           symbols_in_form = form_symbols(self.coeffs[c].functional.form)
           symbols_found = 0
           for c2 in range(len(self.coeffs)):
-            for suffix in uflsymbol_suffixes():
+            for suffix in function_uflsymbol_suffixes():
               if self.coeffs[c2].symbol+suffix in symbols_in_form: 
                 cpp += self.coeffs[c].functional.coefficientspace_cpp(self.coeffs[c2], index=symbols_found, suffix=suffix)
                 symbols_found =+ 1
@@ -396,7 +396,7 @@ class SystemBucket:
         if self.solvers[s].preamble: symbols_in_forms += form_symbols(self.solvers[s].preamble)
         symbols_found = 0
         for c in range(len(self.coeffs)):
-          for suffix in uflsymbol_suffixes():
+          for suffix in function_uflsymbol_suffixes():
             if self.coeffs[c].symbol+suffix in symbols_in_forms: 
               cpp += self.coeffs[c].solvercoefficientspace_cpp(self.solvers[s].name, index=symbols_found, suffix=suffix)
               symbols_found =+ 1

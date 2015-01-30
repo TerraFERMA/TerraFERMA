@@ -259,50 +259,6 @@ No region ids will be assigned.
         <ref name="comment"/>
       </element>
       <element name="source">
-        <a:documentation>Choose the source of this mesh as an internally generated 2d circle of radius 1.
-
-No boundary or region ids will be assigned.</a:documentation>
-        <attribute name="name">
-          <value>UnitCircle</value>
-        </attribute>
-        <element name="number_cells">
-          <a:documentation>Specify the number of cells (same in both dimensions).</a:documentation>
-          <ref name="integer"/>
-        </element>
-        <element name="diagonal">
-          <a:documentation>Specify the direction in which the diagonal should lie.</a:documentation>
-          <!-- a hard coded string_value -->
-          <element name="string_value">
-            <choice>
-              <value>left</value>
-              <value>right</value>
-              <value>crossed</value>
-            </choice>
-          </element>
-          <ref name="comment"/>
-        </element>
-        <element name="transformation">
-          <a:documentation>Specify the transformation to the unit circle.</a:documentation>
-          <!-- a hard coded string_value -->
-          <element name="string_value">
-            <choice>
-              <value>maxn</value>
-              <value>sumn</value>
-              <value>rotsumn</value>
-            </choice>
-          </element>
-          <ref name="comment"/>
-        </element>
-        <element name="cell">
-          <a:documentation>The ufl cell type (no option allowed).</a:documentation>
-          <element name="string_value">
-            <value>triangle</value>
-          </element>
-          <ref name="comment"/>
-        </element>
-        <ref name="comment"/>
-      </element>
-      <element name="source">
         <a:documentation>Choose the source of this mesh as an internally generated 3d cube of width, depth and height 1.
 
 Boundary ids will be automatically assigned as:

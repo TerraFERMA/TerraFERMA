@@ -278,8 +278,13 @@ void SpudSolverBucket::initialize()
       serr = Spud::get_option(buffer.str(), convtest);
       if (convtest=="skip")
       {
+        #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
         perr = SNESSetConvergenceTest(snes_, SNESSkipConverged, 
                                             PETSC_NULL, PETSC_NULL);
+        #else
+        perr = SNESSetConvergenceTest(snes_, SNESConvergedSkip, 
+                                            PETSC_NULL, PETSC_NULL);
+        #endif
       }
     }
 
@@ -359,16 +364,26 @@ void SpudSolverBucket::initialize()
 
     if (bilinearpc_)
     {                                                                // if there's a pc associated
+      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
       perr = KSPSetOperators(ksp_, (*matrix_).mat(),                // set the ksp operators with two matrices
                                    (*matrixpc_).mat(), 
                                    SAME_NONZERO_PATTERN); 
+      #else
+      perr = KSPSetOperators(ksp_, (*matrix_).mat(),                // set the ksp operators with two matrices
+                                   (*matrixpc_).mat()); 
+      #endif
       petsc_err(perr);
     }
     else
     {
+      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
       perr = KSPSetOperators(ksp_, (*matrix_).mat(),                // set the ksp operators with the same matrices
                                    (*matrix_).mat(), 
                                    SAME_NONZERO_PATTERN); 
+      #else
+      perr = KSPSetOperators(ksp_, (*matrix_).mat(),                // set the ksp operators with the same matrices
+                                   (*matrix_).mat()); 
+      #endif
       petsc_err(perr);
     }
 
@@ -1102,7 +1117,11 @@ void SpudSolverBucket::fill_pc_(const std::string &optionpath, PC &pc,
   {
     #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 2
     Mat pmat;
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
     perr = PCGetOperators(pc, PETSC_NULL, &pmat, PETSC_NULL);
+    #else
+    perr = PCGetOperators(pc, PETSC_NULL, &pmat);
+    #endif
     petsc_err(perr);
 
     MatNullSpace SP;                                                 // create a set of nullspaces in a null space object
@@ -1288,15 +1307,27 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
     if (ptype == "diag")
     {
       #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 3
+      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
       perr = PCFieldSplitSchurPrecondition(pc, PC_FIELDSPLIT_SCHUR_PRE_A11, PETSC_NULL);
       #else
+      perr = PCFieldSplitSetSchurPre(pc, PC_FIELDSPLIT_SCHUR_PRE_A11, PETSC_NULL);
+      #endif
+      #else
+      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
       perr = PCFieldSplitSchurPrecondition(pc, PC_FIELDSPLIT_SCHUR_PRE_DIAG, PETSC_NULL);
+      #else
+      perr = PCFieldSplitSetSchurPre(pc, PC_FIELDSPLIT_SCHUR_PRE_DIAG, PETSC_NULL);
+      #endif
       #endif
       petsc_err(perr);
     }
     else if (ptype == "self")
     {
+      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
       perr = PCFieldSplitSchurPrecondition(pc, PC_FIELDSPLIT_SCHUR_PRE_SELF, PETSC_NULL);
+      #else
+      perr = PCFieldSplitSetSchurPre(pc, PC_FIELDSPLIT_SCHUR_PRE_SELF, PETSC_NULL);
+      #endif
       petsc_err(perr);
     }
     else if (ptype == "user")
@@ -1354,7 +1385,11 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
 
       solversubmatrices_[prefix+"SchurPC"] = submatrix;
       
+      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
       perr = PCFieldSplitSchurPrecondition(pc, PC_FIELDSPLIT_SCHUR_PRE_USER, submatrix);
+      #else
+      perr = PCFieldSplitSetSchurPre(pc, PC_FIELDSPLIT_SCHUR_PRE_USER, submatrix);
+      #endif
       petsc_err(perr);
     }
     else
@@ -1670,11 +1705,19 @@ void SpudSolverBucket::fill_constraints_()
 
   PETScVector_ptr ub;
   buffer.str(""); buffer << optionpath() << "/type/snes_type/constraints/upper_bound";
+  #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
   fill_bound_(buffer.str(), ub, SNES_VI_INF);
+  #else
+  fill_bound_(buffer.str(), ub, PETSC_INFINITY);
+  #endif
 
   PETScVector_ptr lb;
   buffer.str(""); buffer << optionpath() << "/type/snes_type/constraints/lower_bound";
+  #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
   fill_bound_(buffer.str(), lb, SNES_VI_NINF);
+  #else
+  fill_bound_(buffer.str(), lb, PETSC_NINFINITY);
+  #endif
 
   perr = SNESVISetVariableBounds(snes_, (*lb).vec(), (*ub).vec());
   petsc_err(perr);

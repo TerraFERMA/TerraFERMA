@@ -45,6 +45,83 @@
       <ref name="comment"/>
     </element>
   </define>
+  <define name="generic_vector_element_family">
+    <element name="family">
+      <a:documentation>Element family:
+
+- CG = Lagrange (continuous Galerkin)
+
+- DG = Discontinuous Lagrange (discontinuous Galerkin)
+
+- RT = Raviart-Thomas
+
+- DRT = Discontinuous Raviart-Thomas
+
+- R  = Real (global constant)
+
+- Quadrature</a:documentation>
+      <!-- a hard coded string_value -->
+      <element name="string_value">
+        <choice>
+          <value>CG</value>
+          <value>DG</value>
+          <value>RT</value>
+          <value>DRT</value>
+          <value>R</value>
+          <value>Quadrature</value>
+        </choice>
+      </element>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="generic_enrichment_element_family">
+    <element name="family">
+      <a:documentation>Element family:
+
+- B = Bubble</a:documentation>
+      <!-- a hard coded string_value -->
+      <element name="string_value">
+        <value>B</value>
+      </element>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="b_element_family">
+    <element name="family">
+      <a:documentation>Element family
+
+- B = Bubble</a:documentation>
+      <!-- a hard coded string_value -->
+      <element name="string_value">
+        <value>B</value>
+      </element>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="rt_element_family">
+    <element name="family">
+      <a:documentation>Element family
+
+- RT = Raviart-Thomas</a:documentation>
+      <!-- a hard coded string_value -->
+      <element name="string_value">
+        <value>RT</value>
+      </element>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="drt_element_family">
+    <element name="family">
+      <a:documentation>Element family
+
+- DRT = Discontinuous Raviart-Thomas</a:documentation>
+      <!-- a hard coded string_value -->
+      <element name="string_value">
+        <value>DRT</value>
+      </element>
+      <ref name="comment"/>
+    </element>
+  </define>
   <define name="cg_element_family">
     <element name="family">
       <a:documentation>Element family
@@ -146,9 +223,49 @@ Importantly, this is the degree of the resulting form not the function itself!</
       <ref name="comment"/>
     </element>
   </define>
+  <define name="p3_element_degree">
+    <element name="degree">
+      <a:documentation>Element degree</a:documentation>
+      <element name="integer_value">
+        <attribute name="rank">
+          <value>0</value>
+        </attribute>
+        <value>3</value>
+      </element>
+      <ref name="comment"/>
+    </element>
+  </define>
   <define name="generic_element">
     <ref name="generic_element_family"/>
     <ref name="generic_element_degree"/>
+  </define>
+  <define name="generic_vector_element">
+    <ref name="generic_vector_element_family"/>
+    <ref name="generic_element_degree"/>
+  </define>
+  <define name="generic_enrichment_element">
+    <ref name="generic_enrichment_element_family"/>
+    <ref name="generic_element_degree"/>
+  </define>
+  <define name="b3_element">
+    <ref name="b_element_family"/>
+    <ref name="p3_element_degree"/>
+  </define>
+  <define name="rt1_element">
+    <ref name="rt_element_family"/>
+    <ref name="p1_element_degree"/>
+  </define>
+  <define name="rt2_element">
+    <ref name="rt_element_family"/>
+    <ref name="p2_element_degree"/>
+  </define>
+  <define name="drt1_element">
+    <ref name="drt_element_family"/>
+    <ref name="p1_element_degree"/>
+  </define>
+  <define name="drt2_element">
+    <ref name="drt_element_family"/>
+    <ref name="p2_element_degree"/>
   </define>
   <define name="p1_element">
     <ref name="cg_element_family"/>
@@ -200,6 +317,32 @@ Importantly, this is the degree of the resulting form not the function itself!</
       </element>
     </optional>
   </define>
+  <define name="enrichment_options">
+    <optional>
+      <element name="enrichment">
+        <ref name="element_options_enrichment"/>
+      </element>
+    </optional>
+  </define>
+  <define name="element_options_enrichment">
+    <choice>
+      <element name="element">
+        <attribute name="name">
+          <value>UserDefined</value>
+        </attribute>
+        <ref name="generic_enrichment_element"/>
+        <ref name="comment"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing a</a:documentation>
+        <attribute name="name">
+          <value>B3</value>
+        </attribute>
+        <ref name="b3_element"/>
+        <ref name="comment"/>
+      </element>
+    </choice>
+  </define>
   <define name="element_options_scalar">
     <ref name="element_options_scalar_not_lagrange"/>
   </define>
@@ -216,6 +359,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         <value>UserDefined</value>
       </attribute>
       <ref name="generic_element"/>
+      <ref name="enrichment_options"/>
       <ref name="comment"/>
     </element>
   </define>
@@ -227,6 +371,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
           <value>P1</value>
         </attribute>
         <ref name="p1_element"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
       <element name="element">
@@ -235,6 +380,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
           <value>P2</value>
         </attribute>
         <ref name="p2_element"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
       <element name="element">
@@ -243,6 +389,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
           <value>P1DG</value>
         </attribute>
         <ref name="p1dg_element"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
       <element name="element">
@@ -251,6 +398,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
           <value>P2DG</value>
         </attribute>
         <ref name="p2dg_element"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
     </choice>
@@ -263,6 +411,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
           <value>P0</value>
         </attribute>
         <ref name="p0_element"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
       <element name="element">
@@ -290,8 +439,9 @@ Importantly, this is the degree of the resulting form not the function itself!</
         <attribute name="name">
           <value>UserDefined</value>
         </attribute>
-        <ref name="generic_element"/>
+        <ref name="generic_vector_element"/>
         <ref name="vector_element_options"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
       <element name="element">
@@ -301,6 +451,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p1_element"/>
         <ref name="vector_element_options"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
       <element name="element">
@@ -310,6 +461,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p2_element"/>
         <ref name="vector_element_options"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
       <element name="element">
@@ -319,6 +471,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p1dg_element"/>
         <ref name="vector_element_options"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
       <element name="element">
@@ -328,6 +481,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p2dg_element"/>
         <ref name="vector_element_options"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
       <element name="element">
@@ -337,6 +491,42 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p0_element"/>
         <ref name="vector_element_options"/>
+        <ref name="enrichment_options"/>
+        <ref name="comment"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing first degree Raviart-Thomas element for a vector.</a:documentation>
+        <attribute name="name">
+          <value>RT1</value>
+        </attribute>
+        <ref name="rt1_element"/>
+        <ref name="enrichment_options"/>
+        <ref name="comment"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing second degree Raviart-Thomas element for a vector.</a:documentation>
+        <attribute name="name">
+          <value>RT2</value>
+        </attribute>
+        <ref name="rt2_element"/>
+        <ref name="comment"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing first degree discontinuous Raviart-Thomas element for a vector.</a:documentation>
+        <attribute name="name">
+          <value>DRT1</value>
+        </attribute>
+        <ref name="drt1_element"/>
+        <ref name="enrichment_options"/>
+        <ref name="comment"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing second degree discontinuous Raviart-Thomas element for a vector.</a:documentation>
+        <attribute name="name">
+          <value>DRT2</value>
+        </attribute>
+        <ref name="drt2_element"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
       <element name="element">
@@ -368,6 +558,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="generic_element"/>
         <ref name="tensor_element_options"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
       <element name="element">
@@ -377,6 +568,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p1_element"/>
         <ref name="tensor_element_options"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
       <element name="element">
@@ -386,6 +578,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p2_element"/>
         <ref name="tensor_element_options"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
       <element name="element">
@@ -395,6 +588,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p1dg_element"/>
         <ref name="tensor_element_options"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
       <element name="element">
@@ -404,6 +598,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p2dg_element"/>
         <ref name="tensor_element_options"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
       <element name="element">
@@ -413,6 +608,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p0_element"/>
         <ref name="tensor_element_options"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
       <element name="element">
