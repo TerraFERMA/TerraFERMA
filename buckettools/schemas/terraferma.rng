@@ -72,6 +72,42 @@ Any system, field or coefficient ufl symbols defined in this options file may be
           <ref name="python_code"/>
         </element>
       </optional>
+      <optional>
+        <element name="dolfin">
+          <a:documentation>global dolfin parameters</a:documentation>
+          <optional>
+            <element name="allow_extrapolation">
+              <a:documentation>Allow extrapolation in function interpolation.</a:documentation>
+              <ref name="comment"/>
+            </element>
+          </optional>
+          <optional>
+            <choice>
+              <element name="ghost_mode">
+                <a:documentation>Mesh ghosting type</a:documentation>
+                <attribute name="name">
+                  <value>none</value>
+                </attribute>
+                <ref name="comment"/>
+              </element>
+              <element name="ghost_mode">
+                <a:documentation>Mesh ghosting type</a:documentation>
+                <attribute name="name">
+                  <value>shared_facet</value>
+                </attribute>
+                <ref name="comment"/>
+              </element>
+              <element name="ghost_mode">
+                <a:documentation>Mesh ghosting type</a:documentation>
+                <attribute name="name">
+                  <value>shared_vertex</value>
+                </attribute>
+                <ref name="comment"/>
+              </element>
+            </choice>
+          </optional>
+        </element>
+      </optional>
       <ref name="comment"/>
     </element>
   </define>

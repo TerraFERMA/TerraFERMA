@@ -75,6 +75,8 @@ void SpudBucket::fill()
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
   
+  fill_dolfinparameters_();
+
   buffer.str(""); buffer << optionpath() << "/geometry/dimension";   // geometry dimension set in the bucket to pass it down to all
   serr = Spud::get_option(buffer.str(), dimension_);                 // systems (we assume this is the length of things that do
   spud_err(buffer.str(), serr);                                      // not have them independently specified)
@@ -338,6 +340,32 @@ const std::string SpudBucket::detectors_str(const int &indent) const
   }
 
   return s.str();
+}
+
+//*******************************************************************|************************************************************//
+// read the dolfin parameters set in the schema
+//*******************************************************************|************************************************************//
+void SpudBucket::fill_dolfinparameters_() const
+{
+  std::stringstream buffer;
+  Spud::OptionError serr;
+
+  buffer.str(""); buffer << "/global_parameters/dolfin/allow_extrapolation";
+  if (Spud::have_option(buffer.str()))
+  {
+    dolfin::parameters["allow_extrapolation"] = true;
+  }
+
+  buffer.str(""); buffer << "/global_parameters/dolfin/ghost_mode";
+  if (Spud::have_option(buffer.str()))
+  {
+    buffer << "/name";
+    std::string ghost_mode;
+    serr = Spud::get_option(buffer.str(), ghost_mode);
+    spud_err(buffer.str(), serr);
+    dolfin::parameters["ghost_mode"] = ghost_mode;
+  }
+
 }
 
 //*******************************************************************|************************************************************//
@@ -862,27 +890,6 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     {
       markers[i] = edgeids[i];
     }
-  }
-  else if (source=="UnitCircle")                                     // source is an internally generated dolfin mesh
-  {
-    int cells;
-    buffer.str(""); buffer << optionpath << "/source/number_cells";
-    serr = Spud::get_option(buffer.str(), cells); 
-    spud_err(buffer.str(), serr);
-    
-    std::string diagonal;
-    buffer.str(""); buffer << optionpath << "/source/diagonal";
-    serr = Spud::get_option(buffer.str(), diagonal); 
-    spud_err(buffer.str(), serr);
-    
-    std::string transformation;
-    buffer.str(""); buffer << optionpath << "/source/transformation";
-    serr = Spud::get_option(buffer.str(), transformation); 
-    spud_err(buffer.str(), serr);
-    
-    mesh.reset(new dolfin::UnitCircleMesh(cells, 
-                                          diagonal, transformation));
-
   }
   else if (source=="UnitCube")                                       // source is an internally generated dolfin mesh
   {
