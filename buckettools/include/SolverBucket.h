@@ -72,7 +72,7 @@ namespace buckettools
 
     double residual_norm();                                          // return the norm of the residual (which will be reassembled)
 
-    void update();                                                   // update this solver at the end of a timestep
+    void resetcalculated();                                          // update this solver at the end of a timestep
 
     //***************************************************************|***********************************************************//
     // Filling data
