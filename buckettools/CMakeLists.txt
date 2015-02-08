@@ -39,19 +39,25 @@ endif()
 # Get DOLFIN configuration data (dolfin-config.cmake must be in DOLFIN_CMAKE_CONFIG_PATH)
 find_package(DOLFIN REQUIRED)
 
+# Need to get VTK config because VTK uses advanced VTK features which
+# mean it's not enough to just link to the DOLFIN target. See
+# http://www.vtk.org/pipermail/vtk-developers/2013-October/014402.html
+find_package(VTK HINTS ${VTK_DIR} $ENV{VTK_DIR} NO_MODULE QUIET)
+
 # Compiler definitions
 add_definitions(${DOLFIN_CXX_DEFINITIONS})
 
-# Add special DOLFIN compiler flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${DOLFIN_CXX_FLAGS}")
+# Compiler flags
+set(CMAKE_CXX_FLAGS "${DOLFIN_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+
+# Include directories
+include_directories(${DOLFIN_INCLUDE_DIRS})
+include_directories(SYSTEM ${DOLFIN_3RD_PARTY_INCLUDE_DIRS})
 
 # Add Mac specific loader flags
 if (APPLE)
   set(CMAKE_SHARED_LINKER_FLAGS "-Wl,-undefined,dynamic_lookup" CACHE STRING "should only be set if macosx" FORCE)
 endif()
-
-# Include directories
-include_directories(${DOLFIN_INCLUDE_DIRS} ${DOLFIN_3RD_PARTY_INCLUDE_DIRS})
 
 find_package(PythonInterp 2 REQUIRED)
 
