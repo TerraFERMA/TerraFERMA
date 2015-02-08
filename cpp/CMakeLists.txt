@@ -21,34 +21,41 @@
 # Require CMake 2.8
 cmake_minimum_required(VERSION 2.8)
 
+# set the project name (must be set before calling find_*(modules like vtk)
+project(terraferma)
+
 # Set verbose output while testing CMake
 #set(CMAKE_VERBOSE_MAKEFILE 1)
 
 # Set CMake behavior
 cmake_policy(SET CMP0004 OLD)
 
-# Get DOLFIN configuration data (dolfin-config.cmake must be in DOLFIN_CMAKE_CONFIG_PATH)
-find_package(DOLFIN REQUIRED)
-
 # Default build type (can be overridden by user)
 set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING
   "Choose the type of build, options are: Debug MinSizeRel Release RelWithDebInfo.")
 
+# Get DOLFIN configuration data (dolfin-config.cmake must be in DOLFIN_CMAKE_CONFIG_PATH)
+find_package(DOLFIN REQUIRED)
+
+# Need to get VTK config because VTK uses advanced VTK features which
+# mean it's not enough to just link to the DOLFIN target. See
+# http://www.vtk.org/pipermail/vtk-developers/2013-October/014402.html
+find_package(VTK HINTS ${VTK_DIR} $ENV{VTK_DIR} NO_MODULE QUIET)
+
 # Compiler definitions
 add_definitions(${DOLFIN_CXX_DEFINITIONS})
 
-# Add special DOLFIN compiler flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${DOLFIN_CXX_FLAGS}")
+# Compiler flags
+set(CMAKE_CXX_FLAGS "${DOLFIN_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+
+# Include directories
+include_directories(${DOLFIN_INCLUDE_DIRS})
+include_directories(SYSTEM ${DOLFIN_3RD_PARTY_INCLUDE_DIRS})
 
 # Add Mac specific loader flags
 if (APPLE)
   set(CMAKE_SHARED_LINKER_FLAGS "-Wl,-undefined,dynamic_lookup" CACHE STRING "should only be set if macosx" FORCE)
 endif()
-
-# Include directories
-include_directories(${DOLFIN_INCLUDE_DIRS} ${DOLFIN_3RD_PARTY_INCLUDE_DIRS})
-
-project(terraferma)
 
 set(EXECUTABLE "terraferma" CACHE STRING
      "The name of the executable")
