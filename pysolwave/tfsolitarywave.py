@@ -63,6 +63,7 @@ class TFSolitaryWave:
         assuming x is a numpy array of points of dimension d"""
         
         # check that x is the right shaped numpy array
+        
         if len(x.shape) == 1:             # 1-D array
             if self.dim == 1:
                 npnts = x.shape[0]
@@ -79,7 +80,7 @@ class TFSolitaryWave:
         else:
             dx = x[:,self.index] - self.x0[self.index]
             r = self.h*np.sqrt(np.sum(dx*dx,1))
-
+        
         return r
 
     def eval(self,x):
@@ -90,12 +91,13 @@ class TFSolitaryWave:
 
         # calculate radial coordinate r of x
         r = self.getr(x)
+
         # check if r is a scalar
         if np.isscalar(r):
             if r > self.rmax:
                 f = 1.
             else:
-                f = self.swave.interp(r)
+                f = self.swave.interp(np.array([r]))
         else:
             f = np.ones(r.shape)
             omega = r <= self.rmax # r within collocation domain
