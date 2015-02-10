@@ -9,8 +9,9 @@ __license__  = "GNU LGPL Version 2.1"
 
 import numpy as np
 from solitarywave import SolitaryWave
+from waveerrors import WaveError
 import libspud
-import sys
+import dolfin as df
 
 class TFSolitaryWave:
     """ class for calculating and evaluating solitary wave profiles with data from TerraFERMA .tfml input files
@@ -31,6 +32,7 @@ class TFSolitaryWave:
         libspud.load_options(tfml_file)
         # get model dimension
         self.dim = libspud.get_option("/geometry/dimension")
+        self.system_name = system_name
         # get solitary wave parameters
         path="/system::"+system_name+"/coefficient::"
         scalar_value="/type::Constant/rank::Scalar/value::WholeMesh/constant"
@@ -57,6 +59,32 @@ class TFSolitaryWave:
         # check that the origin point is the correct dimension
         assert (len(self.x0) == self.dim)
         
+        
+        #read in information for constructing Function space and dolfin objects
+        # get the mesh parameters and reconstruct the mesh
+        meshtype = libspud.get_option("/geometry/mesh/source[0]/name")
+        if meshtype == 'UnitSquare':
+            number_cells = libspud.get_option("/geometry/mesh[0]/source[0]/number_cells")
+            diagonal = libspud.get_option("/geometry/mesh[0]/source[0]/diagonal")
+            mesh = df.UnitSquareMesh(number_cells[0],number_cells[1],diagonal)
+        elif meshtype == 'UnitCube':
+            number_cells = libspud.get_option("/geometry/mesh[0]/source[0]/number_cells")
+            df.mesh = df.UnitCubeMesh(number_cells[0],number_cells[1],number_cells[2])
+        else:
+            df.error("Error: unknown mesh type "+meshtype)
+            
+        #set the functionspace for n-d solitary waves
+        path="/system::"+system_name+"/field::"
+        p_name = "Pressure"
+        f_name = "Porosity"
+        p_family = libspud.get_option(path+p_name+"/type/rank/element/family")
+        p_degree = libspud.get_option(path+p_name+"/type/rank/element/degree")
+        f_family = libspud.get_option(path+f_name+"/type/rank/element/family")
+        f_degree = libspud.get_option(path+f_name+"/type/rank/element/degree")        
+        Vp = df.FunctionSpace(mesh,p_family,p_degree)
+        Vf = df.FunctionSpace(mesh,f_family,f_degree)
+        self.functionspace = Vp*Vf
+                
     def getr(self,x):
         """ return radial position with respect to wave origin x0
         for solitarywave of dimension d in overall dimension dim
@@ -104,3 +132,49 @@ class TFSolitaryWave:
             f[omega] = self.swave.finterp(r[omega])
         
         return f
+        
+    def geterrors(self,checkpoint_file):
+        """
+        reads checkpoint file and accompanying .xml solution file and
+        extracts the time, and calculates shape and phase errors for the solitary waves
+        """
+        # this seems to be a dangerous thing but I'm going to clear
+        # the option then load the new ones from the checkpoint file
+        libspud.clear_options()
+        libspud.load_options(checkpoint_file)
+        time = libspud.get_option("/timestepping/current_time")
+        dt = libspud.get_option("/timestepping/timestep/coefficient/type/rank/value/constant")
+        print "t=",time," dt=", dt
+        
+        #load xml file
+        xml_file = checkpoint_file.replace("checkpoint",self.system_name)
+        xml_file = xml_file.replace("tfml","xml")
+        
+        
+        # load function and extract porosity
+        u = df.Function(self.functionspace,xml_file)
+        p, f = u.split(deepcopy = True)
+        
+        
+        #initialize Error Object
+        err = WaveError(f,self.swave,self.x0,self.h)
+        
+        #minimize error using fsolve
+        #out = err.min_grad(delta_0)
+        delta_0=np.zeros(self.dim)
+        out = err.min_grad_z(delta_0[-1])
+        
+        delta = out[0]
+        err_min = out[1]
+        elapsed_time = out[2]
+        
+        L2_f= err.L2_f
+        rel_error = err_min/L2_f
+        c_rel_error = np.sign(delta)*np.sqrt(np.dot(delta,delta))/(self.swave.c*time)
+
+        #print "delta=",delta, " err =",err_min, " elapsed_time=",elapsed_time
+        #print "L2_f=",L2_f, "rel_err =",rel_error, " c_rel_error=",c_rel_error
+        #print "L2_error=",err_min," delta=",delta," rel_error=",rel_error," c_rel_error=",c_rel_error
+        return [time,dt,err_min,delta,rel_error,c_rel_error,elapsed_time]
+        
+        

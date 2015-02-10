@@ -1,11 +1,11 @@
 from dolfin import *
-from solitarywave import *
-from waveerrors import *
+from pysolwave.solitarywave import *
+from pysolwave.waveerrors import *
 
 
 sw = SolitaryWave(5,3,0,2,400)
 
-mesh = UnitSquareMesh(64,64)
+mesh = UnitSquareMesh(32,32)
 V = FunctionSpace(mesh,"CG",2)
 f = ProjectSolitaryWave(V,[0.5,0.6],64.,sw)
 plot(f)

@@ -109,7 +109,8 @@ class WaveError:
         M = self.f*self.f*dx
 
         #calculate norm of function for relative errors
-        L2_f = assemble(M, mesh = f.function_space().mesh())
+        #L2_f = assemble(M, mesh = f.function_space().mesh())
+        L2_f = assemble(M)
         self.L2_f = sqrt(L2_f)
 
         #calculate inner product 2<f-fc,Grad(fc)>
@@ -153,7 +154,7 @@ class WaveError:
 
         # set the solitary wave fc with offset delta
         self.set_fc(delta)
-        L2_error = assemble(self.M, mesh = self.f.function_space().mesh())
+        L2_error = assemble(self.M)
 
         return sqrt(L2_error)
 
@@ -163,12 +164,12 @@ class WaveError:
         # set the solitary wave fc with offset delta
         self.set_fc(delta)
         mesh = self.f.function_space().mesh()
-        L2_0 = assemble(self.M0, mesh = mesh)
-        L2_1 = assemble(self.M1, mesh = mesh)
+        L2_0 = assemble(self.M0)
+        L2_1 = assemble(self.M1)
         if self.dim < 3:
             return array([L2_0, L2_1])
         elif self.dim == 3:
-            L2_2 = assemble(self.M2, mesh = mesh)
+            L2_2 = assemble(self.M2)
             return array([L2_0, L2_1, L2_2])
 
     def gradL2_z(self,delta_z):
@@ -182,9 +183,9 @@ class WaveError:
         self.set_fc(delta_1d)
         mesh = self.f.function_space().mesh()
         if self.dim ==2:
-            L2_z = assemble(self.M1, mesh = mesh)
+            L2_z = assemble(self.M1)
         elif self.dim == 3:
-            L2_z = assemble(self.M2, mesh = mesh)
+            L2_z = assemble(self.M2)
             
         return L2_z
         
