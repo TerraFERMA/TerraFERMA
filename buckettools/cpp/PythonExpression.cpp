@@ -130,7 +130,7 @@ void PythonExpression::eval(dolfin::Array<double>& values,
   
   if (PyErr_Occurred()){                                             // error check - in setting arguments
     PyErr_Print();
-    tf_err("In PythonDetectors::eval setting pResult.", "Python error occurred.");
+    tf_err("In PythonExpression::eval setting pResult.", "Python error occurred.");
   }
   
   for (uint i = 0; i<meshdim; i++)                                   // loop over the coordinate dimensions
@@ -143,7 +143,7 @@ void PythonExpression::eval(dolfin::Array<double>& values,
   
   if (PyErr_Occurred()){                                             // error check - in running user defined function
     PyErr_Print();
-    tf_err("In PythonDetectors::eval evaluating pResult.", "Python error occurred.");
+    tf_err("In PythonExpression::eval evaluating pResult.", "Python error occurred.");
   }
     
   if (PySequence_Check(pResult))                                     // is the result a sequence
@@ -164,7 +164,7 @@ void PythonExpression::eval(dolfin::Array<double>& values,
 
           if (PyErr_Occurred()) {
             PyErr_Print();
-            tf_err("In PythonDetectors::eval evaluating tensor values.", "Python error occurred.");
+            tf_err("In PythonExpression::eval evaluating tensor values.", "Python error occurred.");
           }
 
           Py_DECREF(pxx);
@@ -176,7 +176,7 @@ void PythonExpression::eval(dolfin::Array<double>& values,
         
         if (PyErr_Occurred()){                                       // check for errors in conversion
           PyErr_Print();
-          tf_err("In PythonDetectors::eval evaluating vector values.", "Python error occurred.");
+          tf_err("In PythonExpression::eval evaluating vector values.", "Python error occurred.");
         }
       }
       
@@ -189,7 +189,7 @@ void PythonExpression::eval(dolfin::Array<double>& values,
     
     if (PyErr_Occurred()){                                           // check for errors in conversion
       PyErr_Print();
-      tf_err("In PythonDetectors::eval evaluating scalar values.", "Python error occurred.");
+      tf_err("In PythonExpression::eval evaluating scalar values.", "Python error occurred.");
     }
   }
   
