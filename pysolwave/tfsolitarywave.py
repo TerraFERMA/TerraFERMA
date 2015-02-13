@@ -40,7 +40,7 @@ class TFSolitaryWave:
         c = libspud.get_option(path+c_name+scalar_value)
         n = int(libspud.get_option(path+n_name+scalar_value))
         m = int(libspud.get_option(path+m_name+scalar_value))
-        d = int(libspud.get_option(path+d_name+scalar_value))
+        d = float(libspud.get_option(path+d_name+scalar_value))
         N = int(libspud.get_option(path+N_name+scalar_value))
         self.h = np.sqrt(libspud.get_option(path+h_squared_name+scalar_value))
         self.x0 = np.array(libspud.get_option(path+x0_name+vector_value))
@@ -54,7 +54,7 @@ class TFSolitaryWave:
         if d == 1:
             self.index = [self.dim - 1]
         else: 
-            self.index = range(0,d)  
+            self.index = range(0,int(d))  
             
         # check that the origin point is the correct dimension
         assert (len(self.x0) == self.dim)
