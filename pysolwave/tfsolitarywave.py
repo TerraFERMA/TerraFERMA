@@ -69,7 +69,7 @@ class TFSolitaryWave:
             mesh = df.UnitSquareMesh(number_cells[0],number_cells[1],diagonal)
         elif meshtype == 'UnitCube':
             number_cells = libspud.get_option("/geometry/mesh[0]/source[0]/number_cells")
-            df.mesh = df.UnitCubeMesh(number_cells[0],number_cells[1],number_cells[2])
+            mesh = df.UnitCubeMesh(number_cells[0],number_cells[1],number_cells[2])
         else:
             df.error("Error: unknown mesh type "+meshtype)
             
