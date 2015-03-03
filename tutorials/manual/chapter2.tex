@@ -59,7 +59,7 @@ variational problem:
 It is often convenient to rewrite Eq. (\ref{eq:weakpoisson}) in the
 notation of linear forms as
 \begin{equation}
-\label{eq:7}
+\label{eq:linearforms}
   a(u,u_{t}) = L(u_{t})
 \end{equation}
 where
@@ -70,7 +70,7 @@ where
 \end{align}
 are \emph{bilinear} and \emph{linear} forms respectively.
 
-For a linear problem, Eq. (\ref{eq:weakpoisson}) or (\ref{eq:7})
+For a linear problem, Eq. (\ref{eq:weakpoisson}) or (\ref{eq:linearforms})
 assembles into the discrete linear algebra problem
 \begin{equation}
   \label{eq:1}
@@ -108,7 +108,7 @@ for all test functions $u_t\in\fspace$. }}
 $F(u;u_{t})$ is the weak form of the (possibly non-linear) residual
 and is a linear form that assembles into a vector.
 
-For the specific case of Poisson's equation with Dirichlet boundary conditions,
+For the specific case of Poisson's equation with dirichlet boundary conditions,
 the weak form of the residual can be written, after integration by
 parts as
 \begin{equation}
@@ -122,10 +122,10 @@ where $u_{i}$ is an arbitrary function in $\fspace$.   Again, if
 $u_{i}$ is a solution of the weak (or strong) form of the equations
 then $F(u_{i};u_{t})=0$.  However, if  $u_{i}$ is an arbitrary
 function, $F(u_{i},u_{t})$ assembles into a vector $\vec{F}$ of the
-discrete residual residual such that $||\vec{F}||>0$.  
+discrete residual such that $||\vec{F}||>0$.  
 
-Our goal is to iterate on $u_{i}$ (thus the subscript
-$i$) until $||\vec{F}||<\mathrm{tol}$ for some norm on $||\vec{F}||$ and stopping
+Our goal is to iterate on $u_{i}$\footnote{thus the subscript
+$i$} until $||\vec{F}||<\mathrm{tol}$ for some norm on $||\vec{F}||$ and stopping
 criterion $\mathrm{tol}$.
 
 \subsubsection{Newton's method}
@@ -158,7 +158,7 @@ $u_{i}$.  After a bit of algebra, we can see that for this problem
     \grad u_{t}\cdot\grad \delta u_{i} \right)dx
 \end{equation}
 which is a bilinear form that is equivalent to $a(\delta u_{i},u_{t})$
-(Eq.\ \ref{eq:5}), which assembles into a matrix $J$. Combining Eqs.\
+(Eq.\ \ref{eq:5}), which assembles into a matrix $\mat{J}$. Combining Eqs.\
 (\ref{eq:8}) -- (\ref{eq:10}), Newton's method
 states
 \begin{quote}
@@ -174,7 +174,9 @@ u_{i+1} = u_{i} + \delta u_{i}.
 \end{quote}
 For the purposes of the rest of this tutorial we will refer to
 $F(u_{i};u_{t})$ as the ``weak form of the residual'' and
-$J(u_{i},\delta u_{i};u_{t})$ as the ``weak form of the Jacobian''.
+$J(u_{i},\delta u_{i};u_{t})$ as the ``weak form of the
+Jacobian''.  When assembled, Eq. (\ref{eq:12}) is equivalent to the
+linear algebra problem $\mat{J}\vec{\delta u} = -\vec{F}$.
 
 \subsubsection{Writing the problem in ufl}
 \label{sec:writing-problem-ufl}
@@ -196,7 +198,7 @@ J   = inner(grad(u_t), grad(u_a))*dx
 The subscripts \texttt{\_i,\_t,\_a} etc. are somewhat non-standard but
 are used consistently in \TF{} to describe ufl symbols for the
 \emph{iterated function}, \emph{test function}, and \emph{trial
-  function} (the a is for ansatz\ldots{}) respectively.  Here we have
+  function}\footnote{the a is for ansatz\ldots{}} respectively.  Here we have
 calculated the weak form of the Jacobian analytically. A very useful
 feature of UFL, however is that it can also perform automatic
 differentiation of forms and the equivalent UFL would be produced
@@ -222,7 +224,7 @@ hierarchical options file.
 
 
 \section{Solution using \TF}
-\label{sec:solution-using-tf}
+\label{sec:ch2-solution-using-tf}
 
 To summarize,  the key choices required to fully describe and solve a
 basic finite element problem using Newton's method are
@@ -233,18 +235,18 @@ basic finite element problem using Newton's method are
 \item Choose an element (Function Space)
 \item Choose Initial/Boundary Conditions
 \item Choose a weak form for the non-linear residual $F(u)$
-\item Calculate the Jacobian $J=F'(u)$
-\item Choose a method for solving the linear problem $J\delta u = -F$
+\item Calculate the weak form of the Jacobian $J=F'(u)$
+\item Choose a method for solving the linear problem $\mat{J}\vec{\delta u} = -\vec{F}$
 \item Choose all the other adjustable parameters for controlling and
   monitoring convergence, visualization, output etc.
 \end{enumerate}
 
 The design of \TF{} is to use the SPuD library to provide a schema and interface
 for managing, recording and documenting all of these choices in an
-intuitive options file, from which a full compiled C++ application can
+intuitive options file, from which a compiled C++ application can
 be built and run.  These options files have the suffix \texttt{.tfml}
-and describe the \emph{\TF{} markup language} (which is basically xml which
-should never be read by humans).  SPuD also provides the gui
+and describe the \emph{\TF{} markup language}\footnote{which is a
+  flavor of  xml which should rarely  be read by humans}.  SPuD also provides the gui
 \texttt{diamond} that reads and writes \texttt{tfml} files through an
 intuitive interface.  
 
@@ -271,10 +273,10 @@ below) and \texttt{vtk} files that can be visualized using paraview
 (or any other vtk visualization system) to produce something like
 \begin{figure}[h]
   \centering
-  \includegraphics[width=.9\textwidth]{figures/poisson_simple.png}
-  \caption{\protect\small The FEM solution of poisson's equation on the unit square
+  \includegraphics[width=.8\textwidth]{figures/poisson_simple.png}
+  \caption{\protect\small The FEM solution of Poisson's equation on the unit square
     with unit forcing and homogeneous dirichlet boundary conditions.
-    This version solves the problem using piecewise linear elements P1
+    This version solves the problem using piecewise linear elements (P1)
     on a $32\times 32$ crossed triangular mesh. The mesh can be seen
     in the facets of the solution.}
   \label{fig:simple_poisson}
@@ -483,7 +485,7 @@ This completes the coefficient field.
   actual equations we want to solve are part of the solver as each
   solver acts as an operator over the fields (and you can have
   multiple solvers in a system).  Here we will implement Poisson using
-  PETScs Newton solver SNES.  
+  PETSc's Newton solver SNES.  
 
 Start by activating the \textbf{nonlinear\_solver} tab, name the
 solver (\texttt{Solver}) and unfold.
@@ -557,20 +559,47 @@ This completes all the choices required to build
 \texttt{poisson.tfml}. \textbf{Save your file}, cross your fingers and see if
 we can build this.
 \item \textbf{Building and running your model:}  The instructions are
-  given at the beginning of section \ref{sec:solution-using-tf} but to
+  given at the beginning of Section \ref{sec:ch2-solution-using-tf} but to
   repeat
 \begin{lstlisting}[style=Bash]
 $ tfbuild poisson.tfml
 $ cd build
 $ make run 
 \end{lstlisting} %$
-Compilation the first time requires autogeneration of C++ code from
+Compilation the first time requires automatic generation of C++ code from
 the ufl forms (using FFC), then creating wrappers to link into the
 base \TF libraries.  Once the code has been compiled however, changes
 to run-time parameters will not force a recompile or relinking and
 \lstinline[style=Bash]´$ make run´ %$
 will be much quicker.  Any change to \texttt{ufl} or expressions that
 require recompilation will force a rebuild automatically.
+\item \textbf{Trouble shooting:} Murphy is the lord of modeling and
+  anything that can go wrong will go wrong.  One of the nicer features
+  of \TF{} is that it compartmentalizes many of the choices, which can
+  help to more rapidly locate errors.  One of the poorer features of
+  \TF{} is that the error messages are somewhat cryptic.
+
+As a first cut,  use a good diff tool such as \texttt{meld} (Linux) or
+\texttt{opendiff} (MacOSX) to compare your file \texttt{poisson.tfml} to
+the working example in
+\texttt{\$TF\_HOME/tutorials/poisson/simple/poisson.tfml}.  You'll be
+comparing raw \texttt{.tfml} (which is basically xml) but the diffs
+should be small.  Simple things to watch out for are
+\begin{itemize}
+\item Make sure all the required fields are filled in (no blue fields)
+\item Extra carriage returns in ufl symbols.
+\item Syntax errors in ufl forms.  These errors will be generated
+  during the code generation step by FFC.  Read the FFC output
+  carefully to try and identify the problem.  The problem will most
+  likely lie in the ufl for the weak forms of the residual (or Jacobian).
+\item Syntax errors in python functions.  Some expressions can be
+  written as small python functions.  If the python path is not set
+  correctly or python errors are introduced, these will throw run-time errors.
+\end{itemize}
+
+
+
+
  \end{steps}
   
 %\lstinline[style=Bash]´$ tfbuild <filename>.tfml´.
@@ -589,7 +618,7 @@ files. In addition,  diamond allows entire options and option
 sub-trees to be copied and pasted preserving (with some significant
 care) work done in another model.  Here we will start by making some
 small modifications to our basic working poisson model, then add some
-advance features such as including non-constant rhs's, boundary
+advanced features such as including non-constant rhs's, boundary
 conditions etc.
 
 \subsection{Simple changes}
@@ -603,26 +632,62 @@ affect on other model options.  Some obvious ones include
 To increase the spatial resolution of the mesh, simply edit
 \textbf{number\_cells} in the UnitSquare mesh and rerun.
 
-Changing the mesh type
-itself may or may not be simple.  For example, changing to a rectangle
+\subsubsection{Changing the mesh}
+\label{sec:changing-mesh}
+
+Changing the mesh type itself may or may not be simple.  For example, changing to a rectangle
 from a square only requires changing \textbf{source (UnitSquare)} to
 \textbf{source (Rectangle)} and editing the appropriate
 suboptions. Because the boundary IDs of a square and rectangle are
 the same, however, this does not propagate to any other part of the
-model. More generally, we'd like to use meshes generated externally, e.g. by
-gmsh and we will deal with these changes in future sections.
+model. 
 \begin{figure}[h!]
   \centering
 \includegraphics[width=.7\textwidth]{figures/poisson_simple_rectangle}
-  \caption{Same problem but on a rectangular domain
+  \caption{\small Same problem but on a rectangular domain
     $\Omega=[0,2]\times[0,1]$ with $64\times32$ cells.}
 \label{fig:poisson_rectangle}
 \end{figure}
 
+More generally, we would like to use externally generated meshes.  The
+example \texttt{\$TF\_HOME/tutorials/poisson/gmsh/poisson.tfml}
+incorporates a mesh generated using \texttt{gmsh}.  The geometry file
+for this mesh is in
+\texttt{\$TF\_HOME/tutorials/poisson/gmsh/mesh/widget.geo}. To convert
+for use in TF (Dolfin) use
+\begin{lstlisting}[style=Bash]
+$ cd $TF_HOME/tutorials/poisson/gmsh/mesh
+$ gmsh -2 -algo del2d widget.geo
+$ dolfin-convert widget.msh widget.xml
+\end{lstlisting}
+the \texttt{gmsh} command generates a 2-D unstructured mesh in
+\texttt{widget.msh} and  \texttt{dolfin-convert} generates three
+\texttt{.xml} files that include the mesh geometry as well as labels
+for boundary ids.  The actual boundary id's for the exterior walls
+(1-6) and interior hole (7) can be found in the geometry file
+\texttt{widget.geo}.
+
+To incorporate this mesh into \texttt{poisson.tfml} we simply change
+the mesh source to \texttt{Source (File)} and add the file name
+relative to the \texttt{tfml} file (i.e. \texttt{../mesh/widget}
+without the \texttt{.xml} extension). We also have to edit the
+boundary id's in the boundary condition (and add one more boundary
+condition for the hole).  A fully worked out example is included and
+produces the result shown in Figure \ref{fig:poisson_gmsh}.
+\begin{figure}[h!]
+  \centering
+\includegraphics[width=.8\textwidth]{figures/poisson_simple_gmsh}
+  \caption{\small Same problem but on an unstructured mesh generated using
+    \texttt{gmsh}. Dirichlet boundary conditions for this problem are $u=0$ on
+    the exterior faces and $u=0.02$ on the interior hole. }
+\label{fig:poisson_gmsh}
+\end{figure}
+
+
 \subsubsection{Changing Elements}
 \label{sec:changing-meshes}
 
-Changing the order of a an element is also trivial. For example
+Changing the order of an element is also trivial. For example
 instead of P1 we could solve our initial problem using quadratic P2
 elements by simply changing the \textbf{element} to (P2) under
 \texttt{field} (i.e. Step 8).  To visualize these fields, however you
@@ -651,7 +716,7 @@ change from a direct solver (preonly,lu) to a algebraic-multi-grid
 preconditioned conjugate gradient solver (cg,hypre) which is optimal
 for poisson like problems, just edit the linear-solver to
 \begin{lstlisting}[style=Bash]
-iterative_method -> cg
+iterative_method (cg)
    relative_error -> 1.e-7
    max_iterations -> 20
 preconditioner (hypre)
@@ -684,18 +749,19 @@ e.g.
 \begin{lstlisting}[style=Bash]
 $ tfplot poisson.conv
 \end{lstlisting} %$
-\begin{figure}[ht!]
+\begin{figure}[b!]
   \centering
   \includegraphics[width=.7\textwidth]{figures/screendumps/tfplot_cg-hypre-residuals.png}
   \caption{tfplot figure showing convergence rate of $||F||_2$ as a function of inner iteration for a (cg,hypre) iterative solver.}
   \label{fig:tfplot-convergence-poisson}
 \end{figure}
 
+{\samepage
 The full \texttt{diamond} window for the linear solve should look like
 \begin{center}
   \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_cg-hypre.png}
 \end{center}
-
+}
 
 \subsubsection{Changing Dimensions}
 \label{sec:changing-dimensions}
@@ -707,35 +773,33 @@ difficult to simply start from scratch (or with some caution, try
 editing the \texttt{.tfml} file directly). The only changes being to
 \texttt{dimension} (Step 3) , \texttt{source (UnitCube)} (and
 suboptions) (Step 4)  and
-add additional \textbf{boundary\_ids} (Step 10).  You should also probably change
-the solver to an iterative solver (e.g. (cg,hypre) or (cg,ml)) as
+add additional \textbf{boundary\_ids} (Step 10).  You should also
+probably change the solver to an iterative solver (e.g. (cg,hypre) or (cg,ml)) as
 sparse direct solvers become significantly more expensive in memory
 and time in 3-D.  A fully worked example \texttt{tfml} file can be
 found in \texttt{tutorials/poisson/simple\_3d}.
-Convergence behavior of the SNES and KSP is[style=Bash]
+Convergence behavior of the SNES and KSP is
 \begin{lstlisting}[style=Bash]
 Solving for Poisson::SNES using SNES
 In FormFunction
   0 SNES Function norm 5.267355201652e-03 
 In FormJacobian
     Residual norms for Poisson_SNES_ solve.
-    0 KSP Residual norm 3.665430074055e+00 
-    1 KSP Residual norm 1.282361416119e-01 
-    2 KSP Residual norm 6.902615470375e-03 
-    3 KSP Residual norm 2.999124939095e-04 
-    4 KSP Residual norm 1.434224743079e-05 
-    5 KSP Residual norm 9.284142248068e-07 
-    6 KSP Residual norm 3.879463057723e-08 
-    7 KSP Residual norm 1.787355135367e-09 
-    8 KSP Residual norm 1.051145144024e-10 
+    0 KSP Residual norm 4.316879223510e+00 
+    1 KSP Residual norm 2.742504639453e-02 
+    2 KSP Residual norm 3.692535718352e-04 
+    3 KSP Residual norm 4.750897104741e-06 
+    4 KSP Residual norm 7.029490501627e-08 
+    5 KSP Residual norm 1.289791412984e-09 
+    6 KSP Residual norm 1.877399607342e-11 
 In FormFunction
-  1 SNES Function norm 1.213205969980e-12 
+  1 SNES Function norm 4.727883538082e-13 
 Convergence for Poisson::SNES
 SNESConvergedReason 3
 SNES n/o iterations 1
-SNES n/o linear solver iterations 8
+SNES n/o linear solver iterations 6
   KSPConvergedReason 2
-  KSP n/o iterations 8
+  KSP n/o iterations 6
 \end{lstlisting}
 \begin{figure}[ht!]
   \centering
@@ -779,8 +843,7 @@ and
   \right]
 \end{equation}
 
-Given the solution we can recast the problem (and now including
-Neumann boundary conditions) as solve,
+Given the solution we can recast the problem (and now include  Neumann boundary conditions) as,
 \begin{align}
   \label{eq:16}
 -\nabla^2u &= f \quad\text{in } \Omega=[0,1]\times[0,1] \nonumber\\
@@ -817,7 +880,7 @@ $(f,g)$ in the form as well as impose variable Dirichlet conditions on
 the other walls.
 
 Adding variable Coefficients as FEniCS \emph{expressions} is
-relatively straightforward in \TF{} and they can be included as small
+relatively straightforward in \TF{}. They can be included as small
 python functions (which can be slow in large calculations) or as C++
 expressions.  Here we will just demonstrate the python interface.  A
 fully worked out example is in \texttt{tutorials/poisson/mms/poisson.tfml}.
@@ -863,7 +926,7 @@ def val(x):
   return exp(x[0] + x[1]/2.)    
 \end{lstlisting}
 
-The slightly dangerous, but quicker way is to use the copy and paste features of \texttt{Diamond} where you can copy and paste entire sub-trees of options, i.e. select the top tab \texttt{coefficient (f)}, and using the edit menu select \texttt{Copy}, then activate a new coefficient tab and select \texttt{Paste}.  This should give you a copy of the entire options tree of the \textbf{coefficient (f)}.  You now just have to edit the coefficient \texttt{name} and \textbf{ufl\_symbol} to \texttt{g}, and edit the \textbf{python} function to the listing above. 
+The slightly dangerous, but quicker way is to use the copy and paste features of \texttt{diamond} where you can copy and paste entire sub-trees of options, i.e. select the top tab \texttt{coefficient (f)}, and using the edit menu select \texttt{Copy}, then activate a new coefficient tab and select \texttt{Paste}.  This should give you a copy of the entire options tree of the \textbf{coefficient (f)}.  You now just have to edit the coefficient \texttt{name} and \textbf{ufl\_symbol} to \texttt{g}, and edit the \textbf{python} function to the listing above. 
  \begin{center}
 \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_mms_g_value.png}
   \end{center} 
@@ -897,14 +960,26 @@ and it should look something like
 \paragraph{Adding Error monitoring}
 \label{sec:adding-error-monit}
 
-Pretty pictures are nice,  but the whole point of MMS is that we can calculate the exact error to test our solutions as well as convergence.  The example program \texttt{\$TF\_HOME/tutorials/poisson/mms/poisson.tfml} has two mechanisms for calculating and monitoring the absolute error of this solution.  The first calculates a functional
+Pretty pictures are nice,  but the whole point of MMS is that we can
+calculate the exact error to test our solutions as well as
+convergence.  The example program
+\texttt{\$TF\_HOME/tutorials/poisson/mms/poisson.tfml} has two
+mechanisms for calculating and monitoring the absolute error of this
+solution.  One simple approach is just to  visualize errors by
+creating a new system that calculates the projection of $e = u -
+u_{exact}$ onto the Function Space P1 and outputting this solution for
+visualization.  The example \texttt{poisson.tfml} includes this
+additional system.
+
+An alternate approach, however is to calculate a functional
 \begin{equation}
   \label{eq:18}
   e^{2} = \int_{\Omega} (u-u_{exact})^{2} dx
 \end{equation}
-which is the square of the L2 norm of the absolute error and outputs it to statistics.  To implement this
+which is the square of the L2 norm of the absolute error and output it
+to statistics for later processing.  To implement this
 \begin{steps}{Step}
-\item First create another coefficient by copying \textbf{coefficent (g)} then changing the name to \texttt{AnalyticSolution} and \textbf{ufl\_symbol} to \texttt{ue}.  The python to evaluate \texttt{g} and the analytic solution are the same (coincidentally).
+\item First create another coefficient by copying \textbf{coefficient (g)} then changing the name to \texttt{AnalyticSolution} and \textbf{ufl\_symbol} to \texttt{ue}.  The python to evaluate \texttt{g} and the analytic solution are the same (coincidentally).
 \item \textbf{Add a functional to statistics for field (u)} Next we have to attach a functional to the \textbf{field (u)} and output to statistics.  Do the following
   \begin{steps}{step}
   \item unfold \textbf{field (u)}$\rightarrow$\textbf{diagnostics}$\rightarrow$\textbf{include\_in\_statistics}
@@ -912,22 +987,108 @@ which is the square of the L2 norm of the absolute error and outputs it to stati
     \begin{lstlisting}[style=UFL]
 e2 = ( u - ue )**2 *dx
     \end{lstlisting}
-  \item set the  \textbf{ufl\_symbol} for the functional to \texttt{ue}
+  \item set the  \textbf{ufl\_symbol} for the functional to \texttt{e2}
   \end{steps}
 \end{steps}
-The value of the functional will now be written to the statistics file \texttt{poisson.stat} as part of a python dictionary that can be either viewed with \texttt{tfplot} or interrogated using additional python modules furnished with \TF{}. The python script \texttt{run\_convergence.py} in the \texttt{poisson/mms} directory provides an example of how to use the python bindings  manipulate \texttt{tfml} files and extract information from the stat files to run a convergence test.
+The value of the functional will now be written to the statistics file
+\texttt{poisson.stat} as part of a python dictionary that can be
+either viewed with \texttt{tfplot} or interrogated using additional
+python modules furnished with \TF{}.
+
+\paragraph{Running parameter sweeps using the simulation test-harness}
+\label{sec:runn-param-sweeps}
+
+To calculate convergence for this mms problem requires running our
+basic \texttt{.tfml} file for a range of mesh sizes, accumulating the
+errors for each mesh file and producing output (e.g. a convergence
+plot such as Figure \ref{fig:poisson_convergence} ).  To aid in
+running multiple simulations or parameter sweeps as well as providing
+a uniform testing environment for regression testing of \TF,  we have
+also developed the \emph{TerraFERMA simulation test-harness}.  Options for a
+simulation are recorded in another spud file with extension
+\texttt{.shml} (simulation harness markup language), which primarily
+holds pieces of python for controlling parameter sweeps and
+interacting with the base \texttt{.tfml} file.  The testharness is
+still undergoing active development but we have included an example in
+\texttt{\$TF\_HOME/tutorials/poisson/mms/poisson.shml}.  To view this
+file just use
 \begin{lstlisting}[style=Bash]
- $ python run_convergence.py
+ $ diamond poisson.shml
 \end{lstlisting} %$
-which should produce the output
+and to run it we use the utility function
+\texttt{tfsimulationharness}.  Options for tfsimulationharness are
+provided using 
 \begin{lstlisting}[style=Bash]
-N= 8     L2err= 0.00106772930839
-N= 16   L2err= 0.000272913347515
-N= 32   L2err= 6.88527616919e-05
-N= 64   L2err= 1.7282821143e-05
-N= 128 L2err= 4.32880552601e-06
+$ tfsimulationharness -h
+\end{lstlisting} %$
+% usage: tfsimulationharness [-h] [-n NTHREADS] [-r [depth]] [-l length [length ...]] [-p parallelism] [-o ownerid [ownerid ...]] [-t tag [tag ...]] [-e tag [tag ...]] [--generate] [--configure] [--build] [--run] [--test]
+%                            [--just-test] [--just-list] [--list-input] [--clean] [-f]
+%                            filename [filename ...]
+%
+% Run simulations and manipulate the output data.
+%
+% positional arguments:
+%   filename              specify filename(s)
+%
+% optional arguments:
+%   -h, --help            show this help message and exit
+%   -n NTHREADS, --nthreads NTHREADS
+%                         number of threads
+%   -r [depth], --recursive [depth]
+%                         recursively search the directory tree for files (if no depth is specified full recursion will be used)
+%   -l length [length ...], --length length [length ...]
+%                         length(s) of problem (if unspecified will run all lengths)
+%   -p parallelism, --parallelism parallelism
+%                         parallelism of problem: options are serial, parallel or any (default=any)
+%   -o ownerid [ownerid ...], --owner ownerid [ownerid ...]
+%                         run only tests that have specific owner ids (if unspecified will include all owners)
+%   -t tag [tag ...], --tags tag [tag ...]
+%                         run only tests that have specific tags (if unspecified will run all tags)
+%   -e tag [tag ...], --exclude tag [tag ...]
+%                         run only tests that do not have specific tags (takes precedence over -t, if unspecified will not exclude any tags)
+%   --generate            generate the simulation directories and input
+%   --configure           configure the simulations
+%   --build               build the simulations
+%   --run                 run the simulations
+%   --test                test the simulations
+%   --just-test           only test the current output of the simulations (do not rerun)
+%   --just-list           only list the simulations
+%   --list-input          list the input to the simulations
+%   --clean               removes the run (and build) directories from previous simulation runs
+%   -f, --force           force rebuild(s)
+% \end{lstlisting} %$
+which provides considerable flexibility in building, running and
+testing specific applications.  The testharness is currently
+undocumented (but needs to be added as an appendix to this document or
+on the wiki).
+
+To build, run and test the example mms problem just
+\begin{lstlisting}[style=Bash]
+$ cd mms
+$ tfsimulationharness --test poisson.shml
+\end{lstlisting} %$
+which will generate two directory structures:
+\texttt{poisson.tfml.build} contains the binary file and
+\texttt{poisson.tfml.run} contains a set of subdirectories for each
+individual run labeled by the parameter (in this case
+\texttt{ncells\_8}, \texttt{ncells\_16}, etc.).   Using the
+\texttt{--test} option, it will also calculate the best-fit degree of
+accuracy (which should be $p=2$ for a second order accurate problem in
+$P_1$) and check that it is greater than 1.9.  It will also use
+matplotlib to produce the pdf file shown in  Figure
+\ref{fig:poisson_convergence}.
+
+Output of a successful run should look like
+\begin{lstlisting}[style=Bash]
+poisson.shml: Running tests:
+poisson.shml: Running error_l2_p1:
+***********  order of accuracy p= 1.98737547897
+***********  convergence figure in poisson_convergence.pdf
+poisson.shml: success.
+poisson.shml: P
+Passes:   1
 \end{lstlisting}
-and the plot shown in Figure \ref{fig:poisson_convergence}
+
 \begin{figure}[ht!]
   \centering
 \includegraphics[width=.6\textwidth]{figures/poisson_convergence.pdf}
@@ -936,7 +1097,7 @@ and the plot shown in Figure \ref{fig:poisson_convergence}
 \end{figure}
 
 
-The second method to visualize errors is to create a new system that calculates the projection of $e = u - u_{exact}$ onto the Function Space P1.  A fully worked out example is given in the tutorial program.
+
 
 
 
