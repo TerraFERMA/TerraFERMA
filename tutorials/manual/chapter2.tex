@@ -327,10 +327,7 @@ It should look something like
   \end{center}
 
 \item \textbf{Set Geometry option: Mesh} Select the Mesh tab and
-  assign it a Name (default is Mesh which you can choose with the
-  green arrow).  For any name field you will
-  need to hit return in diamond to set it,  other fields you should not include
-  carriage returns. 
+  use the green arrow to choose the default name Mesh.  
   \begin{center}
     \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_03a.png}
   \end{center}
@@ -364,8 +361,8 @@ tab). Also hopefully by this point it
   parameters.
 First unfold both the \textbf{io} then \textbf{visualization} tabs.
 \textbf{output\_base\_name} is a required field and should be blue. It sets the
-rootname of any output file.  Set this to \emph{poisson} (no line
-return). 
+rootname of any output file.  Set this to \emph{poisson}.
+\textbf{Caution!} do not include a line return after the string poisson. 
 \begin{center}
     \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_04.png}
 \end{center}
@@ -377,15 +374,19 @@ also use P1 elements.
 This completes the \textbf{io} options tree.
 %{\samepage
 \item \textbf{Setting the System:}  The \textbf{system} is the heart of
-  \TF{} and includes all the choices of fields, elements, boundary
+  \TF{} and includes all the choices of fields, elements,
+  coefficients, boundary
   conditions and solvers.  You can have multiple systems in any
   problem but each one needs a \textbf{name}, a \textbf{mesh} and a
-  \emph{unique} \textbf{ufl\_symbol}.  Start by setting the system name to \texttt{poisson} 
+  \emph{unique}, global \textbf{ufl\_symbol}.  Start by setting the system
+  name to \texttt{poisson}.
+\textbf{Note!}  For any name field you will need to hit return in
+diamond to set it,  other fields you should not include carriage returns. 
 \begin{center}
     \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_05a.png}
 \end{center}
-then set the \textbf{mesh} name to be consistent with what you set in
-geometry (Mesh), and choose \textbf{ufl\_symbol} and set it to
+then choose  the \textbf{mesh} name to be consistent with what you set in
+geometry (Mesh), and choose \textbf{ufl\_symbol (global)} and set it to
 \texttt{us}. (Later on we will distinguish between system symbols
 which include all fields in a system, and the individual field
 symbols).
@@ -401,7 +402,7 @@ symbols).
 \begin{center}
     \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_06a.png}
 \end{center}
-Each field requires both a \textbf{name} and a unique
+Each field requires both a \textbf{name} and a unique, global
 \textbf{ufl\_symbol}.  Here set the field name to \texttt{ufield} and
 the ufl\_symbol to \texttt{u}.
 \begin{center}
@@ -468,7 +469,7 @@ This completes the \textbf{field} tab
   case is a constant $f=1$.  In ufl notation,  $f$ is a
   \emph{coefficient} in the form that can be evaluated at any point in
   the domain.  To set $f$, activate the \textbf{coefficient} tab and
-  give it a name (here \texttt{rhs} and unfold. We will also need to
+  give it a name (here \texttt{rhs}) and unfold. We will also need to
   give it a  ufl symbol (\texttt{f}). 
 \begin{center}
     \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_10b.png}
