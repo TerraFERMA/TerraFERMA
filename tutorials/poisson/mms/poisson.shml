@@ -1,0 +1,79 @@
+<?xml version='1.0' encoding='utf-8'?>
+<harness_options>
+  <length>
+    <string_value>short</string_value>
+  </length>
+  <owner>
+    <string_value lines="1">mspieg</string_value>
+  </owner>
+  <description>
+    <string_value lines="1">A manufactured solution convergence test for poisson</string_value>
+  </description>
+  <simulations>
+    <simulation name="poisson_mms">
+      <input_file>
+        <string_value lines="1" type="filename">poisson.tfml</string_value>
+      </input_file>
+      <run_when name="input_changed_or_output_missing"/>
+      <parameter_sweep>
+        <parameter name="ncells">
+          <values>
+            <string_value lines="1">8 16 32 64 128</string_value>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+n = int(ncells)
+libspud.set_option("/geometry/mesh::Mesh/source::UnitSquare/number_cells", [n, n])</string_value>
+            <single_build/>
+          </update>
+        </parameter>
+      </parameter_sweep>
+      <variables>
+        <variable name="error_l2">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+from math import sqrt
+stat = parser("poisson.stat")
+error_l2 = sqrt(stat["Poisson"]["uL2NormErrorSquared"]["functional_value"][-1])</string_value>
+        </variable>
+      </variables>
+    </simulation>
+  </simulations>
+  <tests>
+    <test name="error_l2_p1">
+      <string_value lines="20" type="code" language="python">import numpy as np
+import pylab as pl
+
+# get and print the  parameters dictionary in the nested list
+parameters = error_l2.parameters
+print parameters
+
+# convert nested-list error_l2  to a flattened numpy array
+slice = {}
+error_l2_a = np.array(error_l2[slice])
+
+# now make  a pretty convergence plot
+    
+# get the mesh spacing from the parameter ncells (ugly but works)
+ncells = parameters['ncells']
+h = 1./np.array([int(n) for n in ncells])  
+
+# log-log plot of the error  
+pl.figure()
+pl.loglog(h,error_l2_a,'bo-')
+pl.xlabel('h')
+pl.ylabel('||e||_2')
+pl.grid()
+
+# calculate best-fit slope on log-log plot
+p=pl.polyfit(np.log(h),np.log(error_l2_a),1)
+
+pl.title('h Convergence, p={0}'.format(p[0]))
+pl.savefig('poisson_convergence.pdf')
+
+# check convergence
+print "***********  order of accuracy p=",p[0]
+print "***********  convergence figure in poisson_convergence.pdf"
+assert(p[0] &gt; 1.9)</string_value>
+    </test>
+  </tests>
+</harness_options>
