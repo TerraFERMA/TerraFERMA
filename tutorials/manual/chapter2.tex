@@ -221,8 +221,6 @@ programs.  The whole purpose of \TF{} is to provide another layer of
 integration that assembles the full model application from a
 hierarchical options file. 
 
-
-
 \section{Solution using \TF}
 \label{sec:ch2-solution-using-tf}
 
@@ -583,7 +581,7 @@ require recompilation will force a rebuild automatically.
 As a first cut,  use a good diff tool such as \texttt{meld} (Linux) or
 \texttt{opendiff} (MacOSX) to compare your file \texttt{poisson.tfml} to
 the working example in
-\texttt{\$TF\_HOME/tutorials/poisson/simple/poisson.tfml}.  You'll be
+\texttt{\$TF\_HOME/share/terraferma/tutorials/poisson/simple/poisson.tfml}.  You'll be
 comparing raw \texttt{.tfml} (which is basically xml) but the diffs
 should be small.  Simple things to watch out for are
 \begin{itemize}
@@ -651,13 +649,13 @@ model.
 \end{figure}
 
 More generally, we would like to use externally generated meshes.  The
-example \texttt{\$TF\_HOME/tutorials/poisson/gmsh/poisson.tfml}
+example \texttt{\$TF\_HOME/share/terraferma/tutorials/poisson/gmsh/poisson.tfml}
 incorporates a mesh generated using \texttt{gmsh}.  The geometry file
 for this mesh is in
-\texttt{\$TF\_HOME/tutorials/poisson/gmsh/mesh/widget.geo}. To convert
+\texttt{\$TF\_HOME/share/terraferma/tutorials/poisson/gmsh/mesh/widget.geo}. To convert
 for use in TF (Dolfin) use
 \begin{lstlisting}[style=Bash]
-$ cd $TF_HOME/tutorials/poisson/gmsh/mesh
+$ cd $TF_HOME/share/terraferma/tutorials/poisson/gmsh/mesh
 $ gmsh -2 -algo del2d widget.geo
 $ dolfin-convert widget.msh widget.xml
 \end{lstlisting}
@@ -731,11 +729,11 @@ Solving for poisson::Solver using SNES
 In FormFunction
 In FormJacobian
     Residual norms for poisson_Solver_ solve.
-    0 KSP Residual norm 2.487818902299e+00 
-    1 KSP Residual norm 1.157371113172e-02 
-    2 KSP Residual norm 2.204318437939e-04 
-    3 KSP Residual norm 2.241213315432e-06 
-    4 KSP Residual norm 5.303609273930e-08 
+    0 KSP Residual norm 1.249018252284e+00 
+    1 KSP Residual norm 7.520968397518e-03 
+    2 KSP Residual norm 1.054134570965e-04 
+    3 KSP Residual norm 1.345208502264e-06 
+    4 KSP Residual norm 2.609245158576e-08 
 In FormFunction
 Convergence for poisson::Solver
 SNESConvergedReason 3
@@ -892,7 +890,7 @@ To add these new features (and visualize the error from the analytic solution), 
   \begin{lstlisting}[style=Bash]
 $ mkdir mymms
 $ cd mymms
-$ cp $TF_HOME/tutorials/poisson/simple/poisson.tfml .    
+$ cp $TF_HOME/share/terraferma/tutorials/poisson/simple/poisson.tfml .    
   \end{lstlisting}
 \item Change the coefficient \texttt{f} in \textbf{system (Poisson)} to a python Expression. Unfold the \textbf{coefficient (f)} tab until you see the Expression value as \textbf{constant}. 
 \begin{center}
@@ -964,7 +962,7 @@ and it should look something like
 Pretty pictures are nice,  but the whole point of MMS is that we can
 calculate the exact error to test our solutions as well as
 convergence.  The example program
-\texttt{\$TF\_HOME/tutorials/poisson/mms/poisson.tfml} has two
+\texttt{\$TF\_HOME/share/terraferma/tutorials/poisson/mms/poisson.tfml} has two
 mechanisms for calculating and monitoring the absolute error of this
 solution.  One simple approach is just to  visualize errors by
 creating a new system that calculates the projection of $e = u -
@@ -981,9 +979,9 @@ which is the square of the L2 norm of the absolute error and output it
 to statistics for later processing.  To implement this
 \begin{steps}{Step}
 \item First create another coefficient by copying \textbf{coefficient (g)} then changing the name to \texttt{AnalyticSolution} and \textbf{ufl\_symbol} to \texttt{ue}.  The python to evaluate \texttt{g} and the analytic solution are the same (coincidentally).
-\item \textbf{Add a functional to statistics for field (u)} Next we have to attach a functional to the \textbf{field (u)} and output to statistics.  Do the following
+\item \textbf{Add a functional to the system} Next we have to attach a
+  functional to the system  and output to statistics.  Do the following
   \begin{steps}{step}
-  \item unfold \textbf{field (u)}$\rightarrow$\textbf{diagnostics}$\rightarrow$\textbf{include\_in\_statistics}
   \item activate the greyed out tab \textbf{functional} and give it a \textbf{name} (L2NormErrorSquared) and a piece of ufl to evaluate the functional in Eq.\ (\ref{eq:18})
     \begin{lstlisting}[style=UFL]
 e2 = ( u - ue )**2 *dx
@@ -991,6 +989,9 @@ e2 = ( u - ue )**2 *dx
   \item set the  \textbf{ufl\_symbol} for the functional to \texttt{e2}
   \end{steps}
 \end{steps}
+\begin{center}
+    \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_mms_functional.png}
+\end{center}
 The value of the functional will now be written to the statistics file
 \texttt{poisson.stat} as part of a python dictionary that can be
 either viewed with \texttt{tfplot} or interrogated using additional
@@ -1005,18 +1006,30 @@ errors for each mesh file and producing output (e.g. a convergence
 plot such as Figure \ref{fig:poisson_convergence} ).  To aid in
 running multiple simulations or parameter sweeps as well as providing
 a uniform testing environment for regression testing of \TF,  we have
-also developed the \emph{TerraFERMA simulation test-harness}.  Options for a
-simulation are recorded in another spud file with extension
-\texttt{.shml} (simulation harness markup language), which primarily
-holds pieces of python for controlling parameter sweeps and
-interacting with the base \texttt{.tfml} file.  The testharness is
-still undergoing active development but we have included an example in
-\texttt{\$TF\_HOME/tutorials/poisson/mms/poisson.shml}.  To view this
-file just use
+also developed the \emph{TerraFERMA simulation test-harness}. 
+
+While an individual \texttt{.tfml} file records all the options
+required for a single instance of a model, a test harness options file
+(with extension
+\texttt{.shml}  for simulation harness markup language), controls the
+work flow for building, running and testing multiple models as well as
+handling dependencies such as mesh generation.   We have included an example in
+\texttt{\$TF\_HOME/share/terraferma/tutorials/poisson/mms/poisson.shml},
+that takes as input  the tfml file \texttt{poisson.tfml}  and runs a
+parameter sweep over the mesh parameter \texttt{ncells}, but using the
+python bindings to the spud library (libspud) to generate a directory
+structure and a set of individual \texttt{tfml} files for each model.
+In addition,  the test harness will build a single copy of the binary,
+run multiple versions of the model,  collect error information for
+each grid spacing and plot the convergence behavior.  It will also
+provide a test to make sure that the  MMS problem show the expected
+quadratic convergence.
+
+To view the testharness file use
 \begin{lstlisting}[style=Bash]
  $ diamond poisson.shml
 \end{lstlisting} %$
-and to run it we use the utility function
+To run it, we use the utility function
 \texttt{tfsimulationharness}.  Options for tfsimulationharness are
 provided using 
 \begin{lstlisting}[style=Bash]
@@ -1059,9 +1072,9 @@ $ tfsimulationharness -h
 %   -f, --force           force rebuild(s)
 % \end{lstlisting} %$
 which provides considerable flexibility in building, running and
-testing specific applications.  The testharness is currently
-undocumented (but needs to be added as an appendix to this document or
-on the wiki).
+testing specific applications. %  The testharness is currently
+% undocumented (but needs to be added as an appendix to this document or
+% on the wiki).
 
 To build, run and test the example mms problem just
 \begin{lstlisting}[style=Bash]
@@ -1083,11 +1096,13 @@ Output of a successful run should look like
 \begin{lstlisting}[style=Bash]
 poisson.shml: Running tests:
 poisson.shml: Running error_l2_p1:
-***********  order of accuracy p= 1.98737547897
+OrderedDict([('ncells', ['8', '16', '32', '64', '128'])])
+***********  order of accuracy p= 1.98737547825
 ***********  convergence figure in poisson_convergence.pdf
 poisson.shml: success.
 poisson.shml: P
 Passes:   1
+Failures: 0
 \end{lstlisting}
 
 \begin{figure}[ht!]
