@@ -139,14 +139,14 @@ principal changes from the mms problem \texttt{poisson.tfml} are
 A fully worked out \texttt{tfml} file for this problem using a direct
 solver along with a testharness file \texttt{stokes.shml} for running
 the convergence test can be
-found in \texttt{\$TF\_HOME/tutorials/stokes/isoviscous/mms/simple\_mms}.
+found in \texttt{\$TF\_HOME/share/terraferma/tutorials/stokes/isoviscous/mms/mms\_direct}.
 The solution is shown in Figure \ref{fig:stokesMMS}.  Figure
 \ref{fig:stokes_convergence}  shows the convergence behavior for both
 velocity and pressure and shows larger errors for pressure which
 decrease as $h^{2}$ compared to errors for velocity which scale as
 $h^{3}$. This plot can be reproduced using
 \begin{lstlisting}[style=Bash]
-$ cd $TF_HOME/tutorials/stokes/isoviscous/mms/simple_mms
+$ cd $TF_HOME/share/terraferma/tutorials/stokes/isoviscous/mms/mms_direct
 $ tfsimulationharness --test stokes.shml
 \end{lstlisting} %$
 
@@ -175,7 +175,7 @@ problem to solve Stokes are as follows.
   \begin{lstlisting}[style=Bash]
 $ mkdir mystokes
 $ chdir mystokes
-$ cp $TF_HOME/tutorials/poisson/mms/poisson.tfml stokes.tfml
+$ cp $TF_HOME/share/terraferma/tutorials/poisson/mms/poisson.tfml stokes.tfml
 $ diamond stokes.tfml &
   \end{lstlisting}%$
 \item \textbf{Change the geometry:} Under \texttt{geometry->Mesh},
@@ -223,21 +223,11 @@ def val(x):
   return [u,v]
       \end{lstlisting}
     \end{itemize}
-  \item \textbf{Modify the diagnostics for a vector valued velocity}. Under \texttt{include\_in\_statistics}
-    \begin{itemize}
-    \item change the functional
-      \texttt{L2NormErrorSquared} to
-      \begin{lstlisting}[style=Ufl]
-        errv2 = inner((v-ve),(v-ve))*dx
-      \end{lstlisting}
-      and change \texttt{ufl\_symbol} to \texttt{errv2}.
-    \item Add another functional \texttt{L2NormSquared}
-      \begin{lstlisting}[style=Ufl]
-        l2v2 = inner(v,v)*dx
-      \end{lstlisting}
-      and set its \texttt{ufl\_symbol} to \texttt{l2v2}.
-    \end{itemize}
-
+  \item \textbf{Check the diagnostics for a vector valued
+      velocity}. Just check that only
+    \texttt{include\_in\_visualization} and
+    \texttt{include\_in\_statistics} are chosen (although feel free to try any
+    other option as well)
     \item \textbf{add a new field for Pressure}
       \begin{itemize}
       \item Either create a new Field tab or copy the Velocity tab and
@@ -258,24 +248,24 @@ def val(x):
         To set this point.  Activate the \texttt{reference\_point
           (Point)} tab and set the coordinates to $(0.,0.)$.
       \end{itemize}
-  \item \textbf{Set the diagnostics for Pressure}. 
-    \begin{itemize}
-    \item add \texttt{include\_in\_visualization}
-    \item Under \texttt{include\_in\_statistics}
-      \begin{itemize}
-      \item add the functional
-      \texttt{L2NormErrorSquared} and set it to
-      \begin{lstlisting}[style=Ufl]
-        errp2 =(p-pe)**2*dx
-      \end{lstlisting}
-      and set the \texttt{ufl\_symbol} to \texttt{errp2}.
-    \item add the functional \texttt{L2NormSquared} and set it to
-      \begin{lstlisting}[style=Ufl]
-        l2p2 =p*p*dx
-      \end{lstlisting}
-      and set the \texttt{ufl\_symbol} to \texttt{l2p2}.
-      \end{itemize}
-    \end{itemize}
+  \item \textbf{Set the diagnostics for Pressure}: add \texttt{include\_in\_visualization} and \texttt{include\_in\_statistics}
+    % \begin{itemize}
+    % \item add \texttt{include\_in\_visualization} and 
+    % \item Under \texttt{include\_in\_statistics}
+    %   \begin{itemize}
+    %   \item add the functional
+    %   \texttt{L2NormErrorSquared} and set it to
+    %   \begin{lstlisting}[style=Ufl]
+    %     errp2 =(p-pe)**2*dx
+    %   \end{lstlisting}
+    %   and set the \texttt{ufl\_symbol} to \texttt{errp2}.
+    % \item add the functional \texttt{L2NormSquared} and set it to
+    %   \begin{lstlisting}[style=Ufl]
+    %     l2p2 =p*p*dx
+    %   \end{lstlisting}
+    %   and set the \texttt{ufl\_symbol} to \texttt{l2p2}.
+    %   \end{itemize}
+    % \end{itemize}
   \item \textbf{Set the rhs function f:} under \texttt{coefficient (f)}
     \begin{itemize}
     \item make sure the \texttt{ufl\_symbol} is set to \texttt{f}
@@ -330,6 +320,34 @@ Fp = -p_t*div(v_i)*dx
 
 F = Fv + Fp
     \end{lstlisting}
+  \item\textbf{ Set some Functionals for calculating errors}
+ \begin{itemize}
+ \item rename the functional \texttt{uL2NormErrorSquared} to \texttt{VelocityL2NormErrorSquared} 
+    \item and change  the functional to
+      \begin{lstlisting}[style=Ufl]
+        errv2 = inner((v-ve),(v-ve))*dx
+      \end{lstlisting}
+      and change its \texttt{ufl\_symbol} to \texttt{errv2}.
+    \item Add another functional \texttt{VelocityL2NormSquared}
+      \begin{lstlisting}[style=Ufl]
+        l2v2 = inner(v,v)*dx
+      \end{lstlisting}
+      and set its \texttt{ufl\_symbol} to \texttt{l2v2}.
+    \item repeat for the pressure functionals (diamond copy and paste can be
+      quite useful here) to make two more functionals
+      \begin{itemize}
+      \item \texttt{PressureL2NormErrorSquared}
+        \begin{lstlisting}[style=Ufl]
+        errp2 = (p - pe)**2*dx
+      \end{lstlisting}
+    \item \texttt{PressureL2NormSquared}
+        \begin{lstlisting}[style=Ufl]
+        l2p2 = p**2*dx
+      \end{lstlisting}
+      \end{itemize}
+
+    \end{itemize}
+
 
    \end{steps}
  \item \textbf{Remove the system Error} (unless you want to visualize
@@ -344,11 +362,12 @@ $ make run
  \item \textbf{Run the convergence tests:} change directory back to
    \texttt{mystokes} and
    \begin{lstlisting}[style=Bash]
-$ cp $TF_HOME/share/terraferma/tutorials/stokes/isoviscous/mms/simple_mms/stokes.shml .
+$ cp $TF_HOME/share/terraferma/tutorials/stokes/isoviscous/mms/mms_direct/stokes.shml .
 $  tfsimulationharness --test stokes.shml
 \end{lstlisting} %$
 (Note: you might need to modify some of the names in the
-\texttt{.shml} file).
+\texttt{.shml} file and you should also make sure you have enough
+memory to run large ($\geq 128\times128$ cell) direct solves. 
 \end{steps}
 
 
@@ -360,7 +379,18 @@ Many of the simple variations demonstrated in Chapter
 \ref{cha:poiss-equat-unit} for Poisson's Equation are readily adapted
 to the Stokes problem.  For example Figure \ref{fig:stokes_gmsh} shows
 an isoviscous Stokes flow solution on a more complicated mesh
-generated by gmsh.
+generated by gmsh.  A fully worked out example 
+can be found in
+\texttt{\$TF\_HOME/share/terraferma/tutorials/stokes/isoviscous/gmsh}.
+In particular this example includes  a test-harness file
+\texttt{stokes.shml} that demonstrates how to use the test harness to
+call gmsh to generate the mesh that the model depends on.  The full
+problem including the meshes can be built and run using
+\begin{lstlisting}[style=Bash]
+$ tfsimulationharness --test stokes.shml
+\end{lstlisting} %$
+
+
 
 \begin{figure}[htbp!]
   \centering
@@ -370,8 +400,7 @@ generated by gmsh.
     v=0$ on the left-hand boundary, Natural outflow boundary
     conditions on the right ($x=2$), and no-flow $\vec{v}=\vec{0}$ on
     all other boundaries including the interior hole.  This example
-    uses boundary id's generated by gmsh and a fully worked out
-    \texttt{tfml} file can be found in \texttt{\$TF\_HOME/share/terraferma/tutorials/stokes/isoviscous/gmsh}}
+    uses boundary id's generated by gmsh.}
   \label{fig:stokes_gmsh}
 \end{figure}
 
@@ -513,13 +542,14 @@ nested-fieldsplit preconditioner is relatively straightforward to
 describe in \TF{}.  Step-by-Step instructions for modifying the Stokes
 MMS problem with a direct solver are as follows (and a fully worked
 out example can be found in
-\texttt{\$TF\_HOME/share/terraferma/tutorials/stokes/isoviscous/mms/compare\_solvers/mms\_iterative}.
+\texttt{\$TF\_HOME/share/terraferma/tutorials/stokes/isoviscous/mms/mms\_iterative}.
+
 \begin{steps}{Step}
 \item Make a new tfml file from one with a direct solver
   \begin{lstlisting}[style=Bash]
 $ mkdir mymms_iterative
 $ chdir mymms_iterative
-$ cp $TF_HOME/share/terraferma/tutorials/stokes/isoviscous/mms/simple_mms/stokes.tfml .
+$ cp $TF_HOME/share/terraferma/tutorials/stokes/isoviscous/mms/mms_direct/stokes.tfml .
 $ diamond stokes.tfml &
   \end{lstlisting}%$
 \item \textbf{Remove the reference point in Pressure:} This stokes
@@ -654,19 +684,20 @@ That should do it.
 
 \subsubsection{Replacing python expressions with C++ expressions}
 
-While convenient,  using python to evaluate expressions can be
+While convenient, using python to evaluate expressions can be
 expensive for large problems and also has the issue that python does
 not share a name-space with dolfin and ufl and cannot always share or
 use other derived functions.  For this reason, we also allow you to
 directly overload the C++ Expressions from dolfin.  A full description
-of the process is beyond the current scope of these tutorials, but 
-simplified examples are given in all the \texttt{mms} subdirectories
-as \texttt{stokes\_cpp.tfml}. Changing from python to C++ expressions
-improves the overall run-time if python is heavily used in the
-diagnostics (e.g. an estimate of the L2 norm of the error against the
-manufactured solution) but has only minimal impact on the solver and
-assembly time if python is only involved in setting boundary
-conditions.
+of the process is beyond the current scope of these tutorials, but
+simplified examples are given in all the \texttt{.tfml} files in the
+subdirectory \texttt{compare\_solvers} \textbf{FIXME: this still needs
+  to be brought up to date with the test harness}. Changing from
+python to C++ expressions improves the overall run-time if python is
+heavily used in the diagnostics (e.g. an estimate of the L2 norm of
+the error against the manufactured solution) but has only minimal
+impact on the solver and assembly time if python is only involved in
+setting boundary conditions.
 
 \subsubsection{Solver comparison}
 \label{sec:solver-comparison}
@@ -682,14 +713,15 @@ and timing results for three different stokes solvers available under
   preconditioner but uses a sparse direct solver on each of the
   $\hat{S}$ and $K$ blocks.
 \end{itemize}
-These plots can be reproduced by running
-\begin{lstlisting}[style=Bash]
-  $ cd $TF_HOME/share/terraferma/tutorials/stokes/isoviscous/mms/compare_solvers
-  $ python compare_solvers.py
-\end{lstlisting} %$
-(see the \texttt{README} file for more details).
-These examples were all run using the \texttt{stokes\_cpp.tfml}
-variants of the files and  only show a few of the possible configurations of
+\textbf{FIXME:  These plots should be reproducible from the tutorials
+  using the testharness but I need to update that}
+% These plots can be reproduced by running
+% \begin{lstlisting}[style=Bash]
+%   $ cd $TF_HOME/share/terraferma/tutorials/stokes/isoviscous/mms/compare_solvers
+%   $ python compare_solvers.py
+% \end{lstlisting} %$
+% (see the \texttt{README} file for more details).
+These examples only show a few of the possible configurations of
 solvers and preconditioners possible for Stokes under
 TF. Nevertheless,  they demonstrate that optimal solvers can be
 readily constructed and tested in TF.  
