@@ -39,10 +39,10 @@
         <rank name="Scalar" rank="0">
           <element name="UserDefined">
             <family>
-              <string_value>CG</string_value>
+              <string_value>DG</string_value>
             </family>
             <degree>
-              <integer_value rank="0">3</integer_value>
+              <integer_value rank="0">0</integer_value>
             </degree>
           </element>
           <initial_condition type="initial_condition" name="WholeMesh">
@@ -50,21 +50,11 @@
               <real_value rank="0">0.</real_value>
             </constant>
           </initial_condition>
-          <boundary_condition name="LeftBase">
-            <boundary_ids>
-              <integer_value shape="2" rank="1">1 3</integer_value>
-            </boundary_ids>
-            <sub_components name="All">
-              <type type="boundary_condition" name="Dirichlet">
-                <python rank="0">
-                  <string_value lines="20" type="code" language="python">from math import exp
-def val(x):
-  global exp
-  return exp(x[0] + x[1]/2.)</string_value>
-                </python>
-              </type>
-            </sub_components>
-          </boundary_condition>
+          <reference_point name="Point">
+            <coordinates>
+              <real_value shape="2" dim1="dim" rank="1">0.5 0.5</real_value>
+            </coordinates>
+          </reference_point>
         </rank>
       </type>
       <diagnostics>
@@ -81,10 +71,10 @@ def val(x):
         <rank name="Vector" rank="1">
           <element name="UserDefined">
             <family>
-              <string_value>DRT</string_value>
+              <string_value>BDM</string_value>
             </family>
             <degree>
-              <integer_value rank="0">2</integer_value>
+              <integer_value rank="0">1</integer_value>
             </degree>
           </element>
           <initial_condition type="initial_condition" name="WholeMesh">
@@ -92,6 +82,21 @@ def val(x):
               <real_value shape="2" dim1="dim" rank="1">0. 0.</real_value>
             </constant>
           </initial_condition>
+          <boundary_condition name="LeftBase">
+            <boundary_ids>
+              <integer_value shape="2" rank="1">1 3</integer_value>
+            </boundary_ids>
+            <sub_components name="All">
+              <type type="boundary_condition" name="Dirichlet">
+                <python rank="1">
+                  <string_value lines="20" type="code" language="python">from math import exp
+def val(x):
+  global exp
+  return [exp(x[0] + x[1]/2.), 0.5*exp(x[0] + x[1]/2.)]</string_value>
+                </python>
+              </type>
+            </sub_components>
+          </boundary_condition>
         </rank>
       </type>
       <diagnostics>
@@ -108,10 +113,10 @@ def val(x):
         <rank name="Scalar" rank="0">
           <element name="UserDefined">
             <family>
-              <string_value>CG</string_value>
+              <string_value>DG</string_value>
             </family>
             <degree>
-              <integer_value rank="0">3</integer_value>
+              <integer_value rank="0">0</integer_value>
             </degree>
           </element>
           <value type="value" name="WholeMesh">
@@ -134,10 +139,10 @@ def val(x):
         <rank name="Vector" rank="1">
           <element name="UserDefined">
             <family>
-              <string_value>DRT</string_value>
+              <string_value>BDM</string_value>
             </family>
             <degree>
-              <integer_value rank="0">2</integer_value>
+              <integer_value rank="0">1</integer_value>
             </degree>
           </element>
           <value type="value" name="WholeMesh">
@@ -160,10 +165,10 @@ def val(x):
         <rank name="Scalar" rank="0">
           <element name="UserDefined">
             <family>
-              <string_value>CG</string_value>
+              <string_value>DG</string_value>
             </family>
             <degree>
-              <integer_value rank="0">3</integer_value>
+              <integer_value rank="0">0</integer_value>
             </degree>
           </element>
           <value type="value" name="WholeMesh">
@@ -171,7 +176,7 @@ def val(x):
               <string_value lines="20" type="code" language="python">from math import exp
 def val(x):
   global exp
-  return exp(x[0] + x[1]/2.)</string_value>
+  return exp(x[0] + x[1]/2.) - exp(0.5 + 0.5/2.)</string_value>
             </python>
           </value>
         </rank>
@@ -186,10 +191,10 @@ def val(x):
         <rank name="Vector" rank="1">
           <element name="UserDefined">
             <family>
-              <string_value>DRT</string_value>
+              <string_value>BDM</string_value>
             </family>
             <degree>
-              <integer_value rank="0">2</integer_value>
+              <integer_value rank="0">1</integer_value>
             </degree>
           </element>
           <value type="value" name="WholeMesh">
@@ -212,10 +217,10 @@ def val(x):
         <rank name="Scalar" rank="0">
           <element name="UserDefined">
             <family>
-              <string_value>CG</string_value>
+              <string_value>DG</string_value>
             </family>
             <degree>
-              <integer_value rank="0">3</integer_value>
+              <integer_value rank="0">0</integer_value>
             </degree>
           </element>
           <value type="value" name="WholeMesh">
@@ -249,10 +254,10 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
         <rank name="Vector" rank="1">
           <element name="UserDefined">
             <family>
-              <string_value>DRT</string_value>
+              <string_value>BDM</string_value>
             </family>
             <degree>
-              <integer_value rank="0">2</integer_value>
+              <integer_value rank="0">1</integer_value>
             </degree>
           </element>
           <value type="value" name="WholeMesh">
@@ -282,8 +287,8 @@ values[1] = std::abs(num[1] - sol[1]);</string_value>
     <nonlinear_solver name="SNES">
       <type name="SNES">
         <form name="Residual" rank="0">
-          <string_value lines="20" type="code" language="python">ru = inner(q_t, (q_i - grad(u_i)))*dx
-rq = (inner(grad(u_t), q_i) - u_t*f)*dx - u_t*g[0]*ds(2) - u_t*g[1]*ds(4)
+          <string_value lines="20" type="code" language="python">ru = (inner(q_t, q_i) + div(q_t)*u_i)*dx - q_t[0]*ue*ds(2) - q_t[1]*ue*ds(4)
+rq = (u_t*div(q_i) + u_t*f)*dx
 
 r = ru + rq</string_value>
           <ufl_symbol name="solver">
