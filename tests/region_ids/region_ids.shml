@@ -24,6 +24,16 @@
             <integer_value shape="3" rank="1">1 2 3</integer_value>
           </process_scale>
         </parameter>
+        <parameter name="ghost_mode">
+          <values>
+            <string_value lines="1">none shared_facet shared_vertex</string_value>
+          </values>
+          <update>
+            <string_value type="code" lines="20" language="python">import libspud
+libspud.set_option_attribute("/global_parameters/dolfin/ghost_mode/name", ghost_mode)</string_value>
+            <single_build/>
+          </update>
+        </parameter>
       </parameter_sweep>
       <dependencies>
         <run name="GMsh">
