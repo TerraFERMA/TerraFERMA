@@ -352,11 +352,11 @@ for i in range(len(solvers)):
   print solver, "PC_setup_time", PC_Setup_time
   
   # and plot the buggers out
-  legend.append(solver+' solve')
+  legend.append(solver+' KSP solve')
   legend.append(solver+' assemble')
-  legend.append(solver+' total')
+  #legend.append(solver+' SNES_solve')
   color = colors[i]
-  pl.semilogx(N,solve_time,color+'-o',N,assembly_time,colors[i]+'s-',N,total_time,color+'-*')
+  pl.semilogx(N,solve_time,color+'-o',N,assembly_time,colors[i]+'s-')
   pl.hold(True)
         
 pl.xlabel('N')
@@ -369,9 +369,7 @@ pl.savefig('compare_normalized_solver_timing.pdf')
 pl.savefig('Solver_Comparison_normalized_solver_timing.pdf')
 
 
-print "Timing plot in Solver_comparison_normalized_solver_timing.pdf"
-  
-  </string_value>
+print "Timing plot in Solver_comparison_normalized_solver_timing.pdf"</string_value>
     </test>
   </tests>
 </harness_options>
