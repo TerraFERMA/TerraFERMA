@@ -1,0 +1,169 @@
+<?xml version='1.0' encoding='utf-8'?>
+<harness_options>
+  <length>
+    <string_value>medium</string_value>
+  </length>
+  <owner>
+    <string_value lines="1">mspieg</string_value>
+  </owner>
+  <description>
+    <string_value lines="1">Workflow for running and comparing a range of solver strategies for the stokes mms problem</string_value>
+  </description>
+  <simulations>
+    <simulation name="stokes_direct">
+      <input_file>
+        <string_value lines="1" type="filename">mms_stokes_direct.tfml</string_value>
+      </input_file>
+      <run_when name="input_changed_or_output_missing"/>
+      <parameter_sweep>
+        <parameter name="ncells">
+          <values>
+            <string_value lines="1">16 32 64</string_value>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+n = int(ncells)
+libspud.set_option("/geometry/mesh::Mesh/source::Rectangle/number_cells", [n, n])</string_value>
+            <single_build/>
+          </update>
+        </parameter>
+      </parameter_sweep>
+      <variables>
+        <variable name="error_l2_V_direct">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+from math import sqrt
+stat = parser("stokes.stat")
+# get ||V||_2 and ||error_V||_2
+l2_norm_V = sqrt(stat["Stokes"]["VelocityL2NormSquared"]["functional_value"][-1])
+error_l2_V_direct = sqrt(stat["Stokes"]["VelocityL2NormErrorSquared"]["functional_value"][-1])/l2_norm_V</string_value>
+        </variable>
+        <variable name="error_l2_P_direct">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+from math import sqrt
+stat = parser("stokes.stat")
+# get ||P||_2 and ||error_P||_2
+l2_norm_P = sqrt(stat["Stokes"]["PressureL2NormSquared"]["functional_value"][-1])
+error_l2_P_direct = sqrt(stat["Stokes"]["PressureL2NormErrorSquared"]["functional_value"][-1])/l2_norm_P</string_value>
+        </variable>
+      </variables>
+    </simulation>
+    <simulation name="stokes_fs_direct">
+      <input_file>
+        <string_value lines="1" type="filename">mms_stokes_fs_direct.tfml</string_value>
+      </input_file>
+      <run_when name="input_changed_or_output_missing"/>
+      <parameter_sweep>
+        <parameter name="ncells">
+          <values>
+            <string_value lines="1">16 32 64</string_value>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+n = int(ncells)
+libspud.set_option("/geometry/mesh::Mesh/source::Rectangle/number_cells", [n, n])</string_value>
+            <single_build/>
+          </update>
+        </parameter>
+      </parameter_sweep>
+      <variables>
+        <variable name="error_l2_V_fs_direct">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+from math import sqrt
+stat = parser("stokes.stat")
+# get ||V||_2 and ||error_V||_2
+l2_norm_V = sqrt(stat["Stokes"]["VelocityL2NormSquared"]["functional_value"][-1])
+error_l2_V_fs_direct = sqrt(stat["Stokes"]["VelocityL2NormErrorSquared"]["functional_value"][-1])/l2_norm_V</string_value>
+        </variable>
+        <variable name="error_l2_P_fs_direct">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+from math import sqrt
+stat = parser("stokes.stat")
+# get ||P||_2 and ||error_P||_2
+l2_norm_P = sqrt(stat["Stokes"]["PressureL2NormSquared"]["functional_value"][-1])
+error_l2_P_fs_direct = sqrt(stat["Stokes"]["PressureL2NormErrorSquared"]["functional_value"][-1])/l2_norm_P</string_value>
+        </variable>
+      </variables>
+    </simulation>
+    <simulation name="stokes_iterative">
+      <input_file>
+        <string_value lines="1" type="filename">mms_stokes_iterative.tfml</string_value>
+      </input_file>
+      <run_when name="input_changed_or_output_missing"/>
+      <parameter_sweep>
+        <parameter name="ncells">
+          <values>
+            <string_value lines="1">16 32 64</string_value>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+n = int(ncells)
+libspud.set_option("/geometry/mesh::Mesh/source::Rectangle/number_cells", [n, n])</string_value>
+            <single_build/>
+          </update>
+        </parameter>
+      </parameter_sweep>
+      <variables>
+        <variable name="error_l2_V_iterative">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+from math import sqrt
+stat = parser("stokes.stat")
+# get ||V||_2 and ||error_V||_2
+l2_norm_V = sqrt(stat["Stokes"]["VelocityL2NormSquared"]["functional_value"][-1])
+error_l2_V_iterative = sqrt(stat["Stokes"]["VelocityL2NormErrorSquared"]["functional_value"][-1])/l2_norm_V</string_value>
+        </variable>
+        <variable name="error_l2_P_iterative">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+from math import sqrt
+stat = parser("stokes.stat")
+# get ||P||_2 and ||error_P||_2
+l2_norm_P = sqrt(stat["Stokes"]["PressureL2NormSquared"]["functional_value"][-1])
+error_l2_P_iterative = sqrt(stat["Stokes"]["PressureL2NormErrorSquared"]["functional_value"][-1])/l2_norm_P</string_value>
+        </variable>
+      </variables>
+    </simulation>
+  </simulations>
+  <tests>
+    <test name="Error_l2_V">
+      <string_value lines="20" type="code" language="python">print error_l2_V_direct
+print error_l2_V_fs_direct
+print error_l2_V_iterative</string_value>
+    </test>
+    <test name="Error_l2_p">
+      <string_value lines="20" type="code" language="python">print error_l2_P_direct
+print error_l2_P_fs_direct
+print error_l2_P_iterative</string_value>
+    </test>
+    <test name="PlotErrors">
+      <string_value type="code" lines="20" language="python">import pylab as pl
+import numpy as np
+
+solvers = ['direct', 'fs_direct', 'iterative']
+colors = ['r','b','g']
+pl.figure()
+
+for i in range(len(solvers)):
+  ncells = eval("error_l2_V_"+solvers[i]+".parameters['ncells']")
+  h = np.array([ 1./float(N) for N in ncells])
+  #print solvers[i], ncells, h
+  V_err = eval("error_l2_V_"+solvers[i]+"[{'ncells':ncells}]")
+  P_err = eval("error_l2_P_"+solvers[i]+"[{'ncells':ncells}]")
+  #print solvers[i], V_err, P_err
+  pv=pl.polyfit(np.log(h),np.log(V_err),1)
+  pp=pl.polyfit(np.log(h),np.log(P_err),1)
+  llabel = solvers[i]+' $p_V$={0:2.1f} $p_p$={1:2.1f}'.format(pv[0],pp[0])
+  pl.loglog(h,V_err,colors[i]+'o-',label=llabel)
+  pl.hold(True)   
+  pl.loglog(h,P_err,colors[i]+'s-')
+
+pl.grid()
+pl.xlabel('h')
+pl.ylabel('||e||_2')
+
+pl.title('Solver Convergence')
+pl.legend(loc='best',fontsize=12)
+pl.savefig('Solver_comparison_convergence.pdf')
+
+print "Convergence plot in Solver_comparison_convergence.pdf"</string_value>
+    </test>
+  </tests>
+</harness_options>
