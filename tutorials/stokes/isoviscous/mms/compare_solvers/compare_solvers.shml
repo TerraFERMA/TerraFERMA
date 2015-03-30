@@ -18,7 +18,7 @@
       <parameter_sweep>
         <parameter name="ncells">
           <values>
-            <string_value lines="1">16 32 64</string_value>
+            <string_value lines="1">16 32 64 128 256</string_value>
           </values>
           <update>
             <string_value lines="20" type="code" language="python">import libspud
@@ -53,6 +53,36 @@ conv = parser(convfile)
 # extract the system residaul
 ksp_L2residual_direct = conv['Stokes']['res_norm(l2)']</string_value>
         </variable>
+        <variable name="NDofs_direct">
+          <string_value lines="20" type="code" language="python"># this requires that the PYTHONPATH is correct by source ./environment
+from getNdofs import getNdofs
+
+NDofs_direct = max(getNdofs())</string_value>
+        </variable>
+        <variable name="petsc_time_direct">
+          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
+petsc_time_direct = sum(LocalTimes.values())/numProcs</string_value>
+        </variable>
+        <variable name="SNES_Solve_time_direct">
+          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
+SNES_Solve_time_direct =  sum([  Stages['Main Stage']['SNESSolve'][n]['time'] for n in range(numProcs) ])/numProcs</string_value>
+        </variable>
+        <variable name="SNES_FunctionEval_time_direct">
+          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
+SNES_FunctionEval_time_direct =  sum([  Stages['Main Stage']['SNESFunctionEval'][n]['time'] for n in range(numProcs) ])/numProcs</string_value>
+        </variable>
+        <variable name="SNES_JacobianEval_time_direct">
+          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
+SNES_JacobianEval_time_direct = sum([  Stages['Main Stage']['SNESJacobianEval'][n]['time'] for n in range(numProcs) ])/numProcs</string_value>
+        </variable>
+        <variable name="KSP_Solve_time_direct">
+          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
+KSP_Solve_time_direct =   sum([  Stages['Main Stage']['KSPSolve'][n]['time'] for n in range(numProcs) ])/numProcs</string_value>
+        </variable>
+        <variable name="PC_Setup_time_direct">
+          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
+PC_Setup_time_direct =  sum([  Stages['Main Stage']['PCSetUp'][n]['time'] for n in range(numProcs) ])/numProcs</string_value>
+        </variable>
       </variables>
     </simulation>
     <simulation name="stokes_fs_direct">
@@ -63,7 +93,7 @@ ksp_L2residual_direct = conv['Stokes']['res_norm(l2)']</string_value>
       <parameter_sweep>
         <parameter name="ncells">
           <values>
-            <string_value lines="1">16 32 64</string_value>
+            <string_value lines="1">16 32 64 128 256</string_value>
           </values>
           <update>
             <string_value lines="20" type="code" language="python">import libspud
@@ -98,6 +128,36 @@ conv = parser(convfile)
 # extract the system residaul
 ksp_L2residual_fs_direct = conv['Stokes']['res_norm(l2)']</string_value>
         </variable>
+        <variable name="NDofs_fs_direct">
+          <string_value lines="20" type="code" language="python"># this requires that the PYTHONPATH is correct by source ./environment
+from getNdofs import getNdofs
+
+NDofs_fs_direct = max(getNdofs())</string_value>
+        </variable>
+        <variable name="petsc_time_fs_direct">
+          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
+petsc_time_fs_direct = sum(LocalTimes.values())/numProcs</string_value>
+        </variable>
+        <variable name="SNES_Solve_time_fs_direct">
+          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
+SNES_Solve_time_fs_direct =  sum([  Stages['Main Stage']['SNESSolve'][n]['time'] for n in range(numProcs) ])/numProcs</string_value>
+        </variable>
+        <variable name="SNES_FunctionEval_time_fs_direct">
+          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
+SNES_FunctionEval_time_fs_direct =  sum([  Stages['Main Stage']['SNESFunctionEval'][n]['time'] for n in range(numProcs) ])/numProcs</string_value>
+        </variable>
+        <variable name="SNES_JacobianEval_time_fs_direct">
+          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
+SNES_JacobianEval_time_fs_direct = sum([  Stages['Main Stage']['SNESJacobianEval'][n]['time'] for n in range(numProcs) ])/numProcs</string_value>
+        </variable>
+        <variable name="KSP_Solve_time_fs_direct">
+          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
+KSP_Solve_time_fs_direct =   sum([  Stages['Main Stage']['KSPSolve'][n]['time'] for n in range(numProcs) ])/numProcs</string_value>
+        </variable>
+        <variable name="PC_Setup_time_fs_direct">
+          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
+PC_Setup_time_fs_direct =  sum([  Stages['Main Stage']['PCSetUp'][n]['time'] for n in range(numProcs) ])/numProcs</string_value>
+        </variable>
       </variables>
     </simulation>
     <simulation name="stokes_iterative">
@@ -108,7 +168,7 @@ ksp_L2residual_fs_direct = conv['Stokes']['res_norm(l2)']</string_value>
       <parameter_sweep>
         <parameter name="ncells">
           <values>
-            <string_value lines="1">16 32 64</string_value>
+            <string_value lines="1">16 32 64 128 256</string_value>
           </values>
           <update>
             <string_value lines="20" type="code" language="python">import libspud
@@ -143,6 +203,35 @@ conv = parser(convfile)
 # extract the system residaul
 ksp_L2residual_iterative = conv['Stokes']['res_norm(l2)']</string_value>
         </variable>
+        <variable name="NDofs_iterative">
+          <string_value lines="20" type="code" language="python">from getNdofs import getNdofs
+
+NDofs_iterative = max(getNdofs())</string_value>
+        </variable>
+        <variable name="petsc_time_iterative">
+          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
+petsc_time_iterative = sum(LocalTimes.values())/numProcs</string_value>
+        </variable>
+        <variable name="SNES_Solve_time_iterative">
+          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
+SNES_Solve_time_iterative =  sum([  Stages['Main Stage']['SNESSolve'][n]['time'] for n in range(numProcs) ])/numProcs</string_value>
+        </variable>
+        <variable name="SNES_FunctionEval_time_iterative">
+          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
+SNES_FunctionEval_time_iterative =  sum([  Stages['Main Stage']['SNESFunctionEval'][n]['time'] for n in range(numProcs) ])/numProcs</string_value>
+        </variable>
+        <variable name="SNES_JacobianEval_time_iterative">
+          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
+SNES_JacobianEval_time_iterative = sum([  Stages['Main Stage']['SNESJacobianEval'][n]['time'] for n in range(numProcs) ])/numProcs</string_value>
+        </variable>
+        <variable name="KSP_Solve_time_iterative">
+          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
+KSP_Solve_time_iterative =   sum([  Stages['Main Stage']['KSPSolve'][n]['time'] for n in range(numProcs) ])/numProcs</string_value>
+        </variable>
+        <variable name="PC_Setup_time_iterative">
+          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
+PC_Setup_time_iterative =  sum([  Stages['Main Stage']['PCSetUp'][n]['time'] for n in range(numProcs) ])/numProcs</string_value>
+        </variable>
       </variables>
     </simulation>
   </simulations>
@@ -158,7 +247,7 @@ print error_l2_P_fs_direct
 print error_l2_P_iterative</string_value>
     </test>
     <test name="PlotErrors">
-      <string_value type="code" lines="20" language="python">import pylab as pl
+      <string_value lines="20" type="code" language="python">import pylab as pl
 import numpy as np
 
 solvers = ['direct', 'fs_direct', 'iterative']
@@ -226,6 +315,63 @@ pl.savefig('Solver_Comparison_ksp_convergence.pdf')
 
 
 print "KSP Convergence plot in Solver_comparison_ksp_convergence.pdf"</string_value>
+    </test>
+    <test name="PlotTiming">
+      <string_value lines="20" type="code" language="python">import pylab as pl
+import numpy as np
+
+solvers = ['direct', 'fs_direct', 'iterative']
+colors = ['r','b','g']
+
+#print NDofs_direct
+#print NDofs_fs_direct
+#print NDofs_iterative
+
+pl.figure()
+legend = []    
+for i in range(len(solvers)):
+  solver = solvers[i]
+  ncells = eval("error_l2_V_"+solver+".parameters['ncells']")
+  N = np.array([ int(N) for N in ncells])
+  NDofs = np.array(eval("NDofs_"+solver+"[{'ncells':ncells}]"))
+  
+  # collect timings per dof
+  total_time = np.array(eval("petsc_time_"+solver+"[{'ncells':ncells}]"))/NDofs
+  SNES_FunctionEval_time = np.array(eval("SNES_FunctionEval_time_"+solver+"[{'ncells':ncells}]"))/NDofs
+  SNES_JacobianEval_time = np.array(eval("SNES_JacobianEval_time_"+solver+"[{'ncells':ncells}]"))/NDofs
+  SNES_Solve_time = np.array(eval("SNES_Solve_time_"+solver+"[{'ncells':ncells}]"))/NDofs
+  KSP_Solve_time = np.array(eval("KSP_Solve_time_"+solver+"[{'ncells':ncells}]"))/NDofs
+  PC_Setup_time = np.array(eval("PC_Setup_time_"+solver+"[{'ncells':ncells}]"))/NDofs
+  assembly_time = SNES_JacobianEval_time + SNES_FunctionEval_time
+  solve_time = KSP_Solve_time
+  
+  # and print some junk out
+  print solver, "total_time=",total_time
+  print solver, "assembly_time", assembly_time
+  print solver, "solve_time", solve_time
+  print solver, "PC_setup_time", PC_Setup_time
+  
+  # and plot the buggers out
+  legend.append(solver+' solve')
+  legend.append(solver+' assemble')
+  legend.append(solver+' total')
+  color = colors[i]
+  pl.semilogx(N,solve_time,color+'-o',N,assembly_time,colors[i]+'s-',N,total_time,color+'-*')
+  pl.hold(True)
+        
+pl.xlabel('N')
+pl.ylabel('time/dof (s)')
+pl.ticklabel_format(style='sci',axis='y',scilimits=(0,0))
+pl.grid()
+pl.title('Timings per dof')
+pl.legend(legend,loc='best',fontsize=10)
+pl.savefig('compare_normalized_solver_timing.pdf')
+pl.savefig('Solver_Comparison_normalized_solver_timing.pdf')
+
+
+print "Timing plot in Solver_comparison_normalized_solver_timing.pdf"
+  
+  </string_value>
     </test>
   </tests>
 </harness_options>
