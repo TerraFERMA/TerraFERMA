@@ -14,7 +14,7 @@
       <input_file>
         <string_value lines="1" type="filename">mms_stokes_direct.tfml</string_value>
       </input_file>
-      <run_when name="input_changed_or_output_missing"/>
+      <run_when name="input_changed"/>
       <parameter_sweep>
         <parameter name="ncells">
           <values>
@@ -104,7 +104,7 @@ PC_Setup_time_direct =  sum([  Stages['Main Stage']['PCSetUp'][n]['time'] for n 
       <input_file>
         <string_value lines="1" type="filename">mms_stokes_fs_direct.tfml</string_value>
       </input_file>
-      <run_when name="input_changed_or_output_missing"/>
+      <run_when name="input_changed"/>
       <parameter_sweep>
         <parameter name="ncells">
           <values>
@@ -194,7 +194,7 @@ PC_Setup_time_fs_direct =  sum([  Stages['Main Stage']['PCSetUp'][n]['time'] for
       <input_file>
         <string_value lines="1" type="filename">mms_stokes_iterative.tfml</string_value>
       </input_file>
-      <run_when name="input_changed_or_output_missing"/>
+      <run_when name="input_changed"/>
       <parameter_sweep>
         <parameter name="ncells">
           <values>

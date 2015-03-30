@@ -265,11 +265,8 @@ Jpc = Jpcv + Jpcp</string_value>
               <integer_value rank="0">30</integer_value>
             </restart>
             <relative_error>
-              <real_value rank="0">1.e-15</real_value>
+              <real_value rank="0">1.e-10</real_value>
             </relative_error>
-            <absolute_error>
-              <real_value rank="0">1.e-7</real_value>
-            </absolute_error>
             <max_iterations>
               <integer_value rank="0">50</integer_value>
             </max_iterations>
@@ -287,7 +284,7 @@ Jpc = Jpcv + Jpcp</string_value>
               <linear_solver>
                 <iterative_method name="cg">
                   <relative_error>
-                    <real_value rank="0">1.e-6</real_value>
+                    <real_value rank="0">1.e-13</real_value>
                   </relative_error>
                   <absolute_error>
                     <real_value rank="0">1.e-10</real_value>
@@ -307,21 +304,7 @@ Jpc = Jpcv + Jpcp</string_value>
               <field name="Velocity"/>
               <monitors/>
               <linear_solver>
-                <iterative_method name="fgmres">
-                  <restart>
-                    <integer_value rank="0">30</integer_value>
-                  </restart>
-                  <relative_error>
-                    <real_value rank="0">1.e-3</real_value>
-                  </relative_error>
-                  <max_iterations>
-                    <integer_value rank="0">1</integer_value>
-                  </max_iterations>
-                  <zero_initial_guess/>
-                  <monitors>
-                    <preconditioned_residual/>
-                  </monitors>
-                </iterative_method>
+                <iterative_method name="preonly"/>
                 <preconditioner name="fieldsplit">
                   <composite_type name="additive"/>
                   <fieldsplit name="Velocityx">
