@@ -27,6 +27,18 @@ libspud.set_option("/geometry/mesh::Mesh/source::Rectangle/number_cells", [n, n]
             <single_build/>
           </update>
         </parameter>
+        <parameter name="conv_file">
+          <values>
+            <string_value lines="1">0 1</string_value>
+            <comment>if conv_file = 0 then delete convergence file from monitor</comment>
+          </values>
+          <update>
+            <string_value type="code" lines="20" language="python">import libspud
+if conv_file == '0':
+  libspud.delete_option("/system::Stokes/nonlinear_solver::Solver/type::SNES/linear_solver/iterative_method[0]/monitors/convergence_file")</string_value>
+            <single_build/>
+          </update>
+        </parameter>
       </parameter_sweep>
       <variables>
         <variable name="error_l2_V_direct">
@@ -48,10 +60,13 @@ error_l2_P_direct = sqrt(stat["Stokes"]["PressureL2NormErrorSquared"]["functiona
         <variable name="ksp_L2residual_direct">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
 from glob import glob
-convfile = glob("*.conv")[0]
-conv = parser(convfile)
-# extract the system residaul
-ksp_L2residual_direct = conv['Stokes']['res_norm(l2)']</string_value>
+convfile = glob("*.conv")
+if convfile:
+  conv = parser(convfile[0])
+  # extract the system residaul
+  ksp_L2residual_direct = conv['Stokes']['res_norm(l2)']
+else:
+  ksp_L2residual_direct = []</string_value>
         </variable>
         <variable name="NDofs_direct">
           <string_value lines="20" type="code" language="python"># this requires that the PYTHONPATH is correct by source ./environment
@@ -102,6 +117,18 @@ libspud.set_option("/geometry/mesh::Mesh/source::Rectangle/number_cells", [n, n]
             <single_build/>
           </update>
         </parameter>
+        <parameter name="conv_file">
+          <values>
+            <string_value lines="1">0 1</string_value>
+            <comment>if conv_file = 0 then delete convergence file from monitor</comment>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+if conv_file == '0':
+  libspud.delete_option("/system::Stokes/nonlinear_solver::Solver/type::SNES/linear_solver/iterative_method[0]/monitors/convergence_file")</string_value>
+            <single_build/>
+          </update>
+        </parameter>
       </parameter_sweep>
       <variables>
         <variable name="error_l2_V_fs_direct">
@@ -123,10 +150,13 @@ error_l2_P_fs_direct = sqrt(stat["Stokes"]["PressureL2NormErrorSquared"]["functi
         <variable name="ksp_L2residual_fs_direct">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
 from glob import glob
-convfile = glob("*.conv")[0]
-conv = parser(convfile)
-# extract the system residaul
-ksp_L2residual_fs_direct = conv['Stokes']['res_norm(l2)']</string_value>
+convfile = glob("*.conv")
+if convfile:
+  conv = parser(convfile[0])
+  # extract the system residaul
+  ksp_L2residual_fs_direct = conv['Stokes']['res_norm(l2)']
+else:
+  ksp_L2residual_fs_direct = []</string_value>
         </variable>
         <variable name="NDofs_fs_direct">
           <string_value lines="20" type="code" language="python"># this requires that the PYTHONPATH is correct by source ./environment
@@ -177,6 +207,18 @@ libspud.set_option("/geometry/mesh::Mesh/source::Rectangle/number_cells", [n, n]
             <single_build/>
           </update>
         </parameter>
+        <parameter name="conv_file">
+          <values>
+            <string_value lines="1">0 1</string_value>
+            <comment>if conv_file = 0 then delete convergence file from monitor</comment>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+if conv_file == '0':
+  libspud.delete_option("/system::Stokes/nonlinear_solver::Solver/type::SNES/linear_solver/iterative_method[0]/monitors/convergence_file")</string_value>
+            <single_build/>
+          </update>
+        </parameter>
       </parameter_sweep>
       <variables>
         <variable name="error_l2_V_iterative">
@@ -198,10 +240,13 @@ error_l2_P_iterative = sqrt(stat["Stokes"]["PressureL2NormErrorSquared"]["functi
         <variable name="ksp_L2residual_iterative">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
 from glob import glob
-convfile = glob("*.conv")[0]
-conv = parser(convfile)
-# extract the system residaul
-ksp_L2residual_iterative = conv['Stokes']['res_norm(l2)']</string_value>
+convfile = glob("*.conv")
+if convfile:
+  conv = parser(convfile[0])
+  # extract the system residual
+  ksp_L2residual_iterative = conv['Stokes']['res_norm(l2)']
+else:
+  ksp_L2residual_iterative = []</string_value>
         </variable>
         <variable name="NDofs_iterative">
           <string_value lines="20" type="code" language="python">from getNdofs import getNdofs
@@ -254,19 +299,23 @@ solvers = ['direct', 'fs_direct', 'iterative']
 colors = ['r','b','g']
 pl.figure()
 
+
 for i in range(len(solvers)):
-  ncells = eval("error_l2_V_"+solvers[i]+".parameters['ncells']")
+  solver = solvers[i]
+  color = colors[i]
+  ncells = eval("error_l2_V_"+solver+".parameters['ncells']")
   h = np.array([ 1./float(N) for N in ncells])
   #print solvers[i], ncells, h
-  V_err = eval("error_l2_V_"+solvers[i]+"[{'ncells':ncells}]")
-  P_err = eval("error_l2_P_"+solvers[i]+"[{'ncells':ncells}]")
+  slice = "[{'ncells':ncells,'conv_file':'0'}]"
+  V_err = eval("error_l2_V_"+solver+slice)
+  P_err = eval("error_l2_P_"+solver+slice)
   #print solvers[i], V_err, P_err
   pv=pl.polyfit(np.log(h),np.log(V_err),1)
   pp=pl.polyfit(np.log(h),np.log(P_err),1)
   llabel = solvers[i]+' $p_V$={0:2.1f} $p_p$={1:2.1f}'.format(pv[0],pp[0])
-  pl.loglog(h,V_err,colors[i]+'o-',label=llabel)
+  pl.loglog(h,V_err,color+'o-',label=llabel)
   pl.hold(True)   
-  pl.loglog(h,P_err,colors[i]+'s-')
+  pl.loglog(h,P_err,color+'s-')
 
 pl.grid()
 pl.xlabel('h')
@@ -289,7 +338,8 @@ pl.figure()
 # find the maximum size run common to all solvers (this is a little dodgy)
 Nmax = []
 for i in range(len(solvers)):
-  ncells = eval("error_l2_V_"+solvers[i]+".parameters['ncells']")
+  solver = solvers[i]
+  ncells = eval("error_l2_V_"+solver+".parameters['ncells']")
   Nmax.append(max([ int(N)  for N  in ncells])) 
 
 #convert back to a string
@@ -300,10 +350,16 @@ print Nmax, NPlot
 #print ksp_L2residual_fs_direct[{'ncells':NPlot}]
 
 for i in range(len(solvers)): 
-  L2res = eval("ksp_L2residual_"+solvers[i]+"[{'ncells':NPlot}]")
+  solver = solvers[i]
+  color = colors[i]
+  ncells = eval("error_l2_V_"+solver+".parameters['ncells']")
+  h = np.array([ 1./float(N) for N in ncells])
+  #print solvers[i], ncells, h
+  slice = "[{'ncells':NPlot,'conv_file':'1'}]"
+  L2res = eval("ksp_L2residual_"+solver+slice)
   kits = range(len(L2res))
 #  print kits, L2res
-  pl.semilogy(kits,L2res,colors[i]+'+-')
+  pl.semilogy(kits,L2res,color+'+-')
   pl.hold(True)   
 
 pl.grid()
@@ -333,15 +389,16 @@ for i in range(len(solvers)):
   solver = solvers[i]
   ncells = eval("error_l2_V_"+solver+".parameters['ncells']")
   N = np.array([ int(N) for N in ncells])
-  NDofs = np.array(eval("NDofs_"+solver+"[{'ncells':ncells}]"))
+  slice = "[{'ncells':ncells,'conv_file':'0'}]"
+  NDofs = np.array(eval("NDofs_"+solver+slice))
   
   # collect timings per dof
-  total_time = np.array(eval("petsc_time_"+solver+"[{'ncells':ncells}]"))/NDofs
-  SNES_FunctionEval_time = np.array(eval("SNES_FunctionEval_time_"+solver+"[{'ncells':ncells}]"))/NDofs
-  SNES_JacobianEval_time = np.array(eval("SNES_JacobianEval_time_"+solver+"[{'ncells':ncells}]"))/NDofs
-  SNES_Solve_time = np.array(eval("SNES_Solve_time_"+solver+"[{'ncells':ncells}]"))/NDofs
-  KSP_Solve_time = np.array(eval("KSP_Solve_time_"+solver+"[{'ncells':ncells}]"))/NDofs
-  PC_Setup_time = np.array(eval("PC_Setup_time_"+solver+"[{'ncells':ncells}]"))/NDofs
+  total_time = np.array(eval("petsc_time_"+solver+slice))/NDofs
+  SNES_FunctionEval_time = np.array(eval("SNES_FunctionEval_time_"+solver+slice))/NDofs
+  SNES_JacobianEval_time = np.array(eval("SNES_JacobianEval_time_"+solver+slice))/NDofs
+  SNES_Solve_time = np.array(eval("SNES_Solve_time_"+solver+slice))/NDofs
+  KSP_Solve_time = np.array(eval("KSP_Solve_time_"+solver+slice))/NDofs
+  PC_Setup_time = np.array(eval("PC_Setup_time_"+solver+slice))/NDofs
   assembly_time = SNES_JacobianEval_time + SNES_FunctionEval_time
   solve_time = KSP_Solve_time
   
