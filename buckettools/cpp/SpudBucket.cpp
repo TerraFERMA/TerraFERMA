@@ -29,7 +29,6 @@
 #include "StatisticsFile.h"
 #include "Logger.h"
 #include <dolfin.h>
-#include <string>
 #include <spud>
 
 using namespace buckettools;
@@ -694,33 +693,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     serr = Spud::get_option(buffer.str(), basename); 
     spud_err(buffer.str(), serr);
 
-    std::ifstream file;                                              // dummy file stream to test if files exist
-                                                                     // (better way of doing this?)
-    
-    std::stringstream filename;
-
-    filename.str(""); filename << basename << ".xml";
-    file.open(filename.str().c_str(), std::ifstream::in);
-    if (file)
-    {
-      file.close();
-      mesh.reset(new dolfin::Mesh(filename.str()));
-    }
-    else
-    {
-      filename.str(""); filename << basename << ".xml.gz";
-      file.open(filename.str().c_str(), std::ifstream::in);
-      if (file)
-      {
-        file.close();
-        mesh.reset(new dolfin::Mesh(filename.str()));
-      }
-      else
-      {
-        tf_err("Could not find requested mesh.", 
-               "%s.xml or %s.xml.gz not found.", basename.c_str(), basename.c_str());
-      }
-    }
+    mesh.reset(new dolfin::Mesh(xml_filename(basename)));
     (*mesh).init();                                                  // initialize the mesh (maps between dimensions etc.)
 
   }
