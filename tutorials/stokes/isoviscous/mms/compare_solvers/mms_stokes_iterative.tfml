@@ -287,8 +287,11 @@ Jpc = Jpcv + Jpcp</string_value>
               <linear_solver>
                 <iterative_method name="cg">
                   <relative_error>
-                    <real_value rank="0">1.e-5</real_value>
+                    <real_value rank="0">1.e-6</real_value>
                   </relative_error>
+                  <absolute_error>
+                    <real_value rank="0">1.e-10</real_value>
+                  </absolute_error>
                   <max_iterations>
                     <integer_value rank="0">50</integer_value>
                   </max_iterations>

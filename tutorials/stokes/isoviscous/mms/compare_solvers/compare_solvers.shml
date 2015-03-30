@@ -45,6 +45,14 @@ stat = parser("stokes.stat")
 l2_norm_P = sqrt(stat["Stokes"]["PressureL2NormSquared"]["functional_value"][-1])
 error_l2_P_direct = sqrt(stat["Stokes"]["PressureL2NormErrorSquared"]["functional_value"][-1])/l2_norm_P</string_value>
         </variable>
+        <variable name="ksp_L2residual_direct">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+from glob import glob
+convfile = glob("*.conv")[0]
+conv = parser(convfile)
+# extract the system residaul
+ksp_L2residual_direct = conv['Stokes']['res_norm(l2)']</string_value>
+        </variable>
       </variables>
     </simulation>
     <simulation name="stokes_fs_direct">
@@ -82,6 +90,14 @@ stat = parser("stokes.stat")
 l2_norm_P = sqrt(stat["Stokes"]["PressureL2NormSquared"]["functional_value"][-1])
 error_l2_P_fs_direct = sqrt(stat["Stokes"]["PressureL2NormErrorSquared"]["functional_value"][-1])/l2_norm_P</string_value>
         </variable>
+        <variable name="ksp_L2residual_fs_direct">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+from glob import glob
+convfile = glob("*.conv")[0]
+conv = parser(convfile)
+# extract the system residaul
+ksp_L2residual_fs_direct = conv['Stokes']['res_norm(l2)']</string_value>
+        </variable>
       </variables>
     </simulation>
     <simulation name="stokes_iterative">
@@ -118,6 +134,14 @@ stat = parser("stokes.stat")
 # get ||P||_2 and ||error_P||_2
 l2_norm_P = sqrt(stat["Stokes"]["PressureL2NormSquared"]["functional_value"][-1])
 error_l2_P_iterative = sqrt(stat["Stokes"]["PressureL2NormErrorSquared"]["functional_value"][-1])/l2_norm_P</string_value>
+        </variable>
+        <variable name="ksp_L2residual_iterative">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+from glob import glob
+convfile = glob("*.conv")[0]
+conv = parser(convfile)
+# extract the system residaul
+ksp_L2residual_iterative = conv['Stokes']['res_norm(l2)']</string_value>
         </variable>
       </variables>
     </simulation>
@@ -164,6 +188,44 @@ pl.legend(loc='best',fontsize=12)
 pl.savefig('Solver_comparison_convergence.pdf')
 
 print "Convergence plot in Solver_comparison_convergence.pdf"</string_value>
+    </test>
+    <test name="PlotConvergence">
+      <string_value lines="20" type="code" language="python">import pylab as pl
+import numpy as np
+
+solvers = ['direct', 'fs_direct', 'iterative']
+colors = ['r','b','g']
+pl.figure()
+
+# find the maximum size run common to all solvers (this is a little dodgy)
+Nmax = []
+for i in range(len(solvers)):
+  ncells = eval("error_l2_V_"+solvers[i]+".parameters['ncells']")
+  Nmax.append(max([ int(N)  for N  in ncells])) 
+
+#convert back to a string
+NPlot = "{0}".format(min(Nmax))
+print Nmax, NPlot
+  
+#print ksp_L2residual_fs_direct
+#print ksp_L2residual_fs_direct[{'ncells':NPlot}]
+
+for i in range(len(solvers)): 
+  L2res = eval("ksp_L2residual_"+solvers[i]+"[{'ncells':NPlot}]")
+  kits = range(len(L2res))
+#  print kits, L2res
+  pl.semilogy(kits,L2res,colors[i]+'+-')
+  pl.hold(True)   
+
+pl.grid()
+pl.xlabel('KSP iterations')
+pl.ylabel('||r||_2')
+pl.title('KSP Convergence for N={0}'.format(NPlot))
+pl.legend(solvers,loc='best')
+pl.savefig('Solver_Comparison_ksp_convergence.pdf')
+
+
+print "KSP Convergence plot in Solver_comparison_ksp_convergence.pdf"</string_value>
     </test>
   </tests>
 </harness_options>
