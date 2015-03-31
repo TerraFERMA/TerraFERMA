@@ -10,4 +10,16 @@ which requires that several environment variables be set first.
 To run do:
 
 . ./environment
-tfsimulationharness --test compare_solvers.shml 
+tfsimulationharness --test compare_solvers.shml
+
+or just try the shell script
+
+./compare_solvers.sh
+
+Once all the parameter sweeps have run,  if you just want to replot or add another test you can use
+tfsimulationharness --just-test compare_solvers.shml
+
+run
+tfsimulationharness -h
+
+for more options

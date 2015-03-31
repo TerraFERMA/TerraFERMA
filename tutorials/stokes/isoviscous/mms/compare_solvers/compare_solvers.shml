@@ -33,7 +33,7 @@ libspud.set_option("/geometry/mesh::Mesh/source::Rectangle/number_cells", [n, n]
             <comment>if conv_file = 0 then delete convergence file from monitor</comment>
           </values>
           <update>
-            <string_value type="code" lines="20" language="python">import libspud
+            <string_value lines="20" type="code" language="python">import libspud
 if conv_file == '0':
   libspud.delete_option("/system::Stokes/nonlinear_solver::Solver/type::SNES/linear_solver/iterative_method[0]/monitors/convergence_file")</string_value>
             <single_build/>
@@ -422,7 +422,6 @@ pl.ticklabel_format(style='sci',axis='y',scilimits=(0,0))
 pl.grid()
 pl.title('Timings per dof')
 pl.legend(legend,loc='best',fontsize=10)
-pl.savefig('compare_normalized_solver_timing.pdf')
 pl.savefig('Solver_Comparison_normalized_solver_timing.pdf')
 
 
