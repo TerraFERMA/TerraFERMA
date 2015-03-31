@@ -691,8 +691,7 @@ use other derived functions.  For this reason, we also allow you to
 directly overload the C++ Expressions from dolfin.  A full description
 of the process is beyond the current scope of these tutorials, but
 simplified examples are given in all the \texttt{.tfml} files in the
-subdirectory \texttt{compare\_solvers} \textbf{FIXME: this still needs
-  to be brought up to date with the test harness}. Changing from
+subdirectory \texttt{compare\_solvers}. Changing from
 python to C++ expressions improves the overall run-time if python is
 heavily used in the diagnostics (e.g. an estimate of the L2 norm of
 the error against the manufactured solution) but has only minimal
@@ -713,14 +712,13 @@ and timing results for three different stokes solvers available under
   preconditioner but uses a sparse direct solver on each of the
   $\hat{S}$ and $K$ blocks.
 \end{itemize}
-\textbf{FIXME:  These plots should be reproducible from the tutorials
-  using the testharness but I need to update that}
-% These plots can be reproduced by running
-% \begin{lstlisting}[style=Bash]
-%   $ cd $TF_HOME/share/terraferma/tutorials/stokes/isoviscous/mms/compare_solvers
-%   $ python compare_solvers.py
-% \end{lstlisting} %$
-% (see the \texttt{README} file for more details).
+These plots can be reproduced by running
+\begin{lstlisting}[style=Bash]
+   $ cd $TF_HOME/share/terraferma/tutorials/stokes/isoviscous/mms/compare_solvers
+   $ . ./environment
+   $ tfsimulationharness --test compare_solvers.py 
+ \end{lstlisting} %$
+ (see the \texttt{README} file for more details).
 These examples only show a few of the possible configurations of
 solvers and preconditioners possible for Stokes under
 TF. Nevertheless,  they demonstrate that optimal solvers can be
@@ -729,9 +727,9 @@ readily constructed and tested in TF.
 
 \begin{figure}[htbp!]
   \centering
- \textbf{a} \includegraphics[width=.65\textwidth]{figures/stokes_cpp_mms_convergence.pdf}\\
-\textbf{b}\includegraphics[width=.65\textwidth]{figures/stokes_cpp_ksp_convergence.pdf}\\
-\textbf{c}\includegraphics[width=.65\textwidth]{figures/stokes_cpp_compare_normalized_solver_timing.pdf}\\
+ \textbf{a} \includegraphics[width=.65\textwidth]{figures/Solver_comparison_convergence.pdf}\\
+\textbf{b}\includegraphics[width=.65\textwidth]{figures/Solver_comparison_ksp_convergence.pdf}\\
+\textbf{c}\includegraphics[width=.65\textwidth]{figures/Solver_comparison_normalized_solver_timing.pdf}\\
   \caption{Comparison of Convergence and performance of MMS solution
     for three different solvers.  (\textbf{a}) relative error of
     solutions with respect to exact solution. (\textbf{b}) convergence behavior
