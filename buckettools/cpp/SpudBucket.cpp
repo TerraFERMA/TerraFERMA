@@ -30,6 +30,8 @@
 #include "VisualizationWrapper.h"
 #include "Logger.h"
 #include <dolfin.h>
+#include <dolfin/io/XMLLocalMeshSAX.h>
+#include <dolfin/mesh/MeshPartitioning.h>
 #include <spud>
 
 using namespace buckettools;
@@ -725,8 +727,63 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     buffer.str(""); buffer << optionpath << "/source/file";
     serr = Spud::get_option(buffer.str(), basename); 
     spud_err(buffer.str(), serr);
+    std::string filename = xml_filename(basename);
 
-    mesh.reset(new dolfin::Mesh(xml_filename(basename)));
+    buffer.str(""); buffer << optionpath << "/source/cell_destinations";
+    if (Spud::have_option(buffer.str()))
+    {
+      buffer.str(""); buffer << optionpath << "/source/cell_destinations/process";
+      int ndests = Spud::option_count(buffer.str());
+      std::map<int, std::vector<int> > process_region_ids;
+      for (int i = 0; i < ndests; i++)
+      {
+        buffer.str(""); buffer << optionpath << "/source/cell_destinations/process[" << i << "]";
+   
+        int proc;
+        serr = Spud::get_option(buffer.str(), proc);
+        spud_err(buffer.str(), serr);
+
+        buffer << "/region_ids";
+        serr = Spud::get_option(buffer.str(), process_region_ids[proc]);
+        spud_err(buffer.str(), serr);
+      }
+
+      dolfin::Mesh tmp_mesh(MPI_COMM_SELF, filename);
+      std::map<std::size_t, std::size_t>& tmp_cell_markers = 
+                  tmp_mesh.domains().markers(tmp_mesh.topology().dim());
+
+      mesh.reset(new dolfin::Mesh());
+      uint nprocs = dolfin::MPI::size((*mesh).mpi_comm());
+      dolfin::LocalMeshData local_mesh_data((*mesh).mpi_comm());
+      dolfin::XMLLocalMeshSAX xml_object((*mesh).mpi_comm(), local_mesh_data, filename);
+      xml_object.read();
+      
+      const std::vector<std::size_t>& global_cell_indices = local_mesh_data.global_cell_indices;
+      std::vector<std::size_t> cell_destinations(global_cell_indices.size(), 0);
+      for (std::size_t i = 0; i < global_cell_indices.size(); ++i)
+      {
+        std::size_t global_index = global_cell_indices[i];
+        std::size_t region_id = tmp_cell_markers.at(global_index);
+        for (std::size_t p = nprocs-1; p > 0; p--)
+        {
+          const std::vector<int>& region_ids = process_region_ids.at(p);
+          std::vector<int>::const_iterator region_it = 
+                    std::find(region_ids.begin(), region_ids.end(), region_id);
+          if (region_it != region_ids.end())
+          {
+            cell_destinations[i] = p;
+            break;
+          }
+        }
+      }
+      local_mesh_data.cell_partition = cell_destinations;
+
+      dolfin::MeshPartitioning::build_distributed_mesh(*mesh, local_mesh_data);
+    }
+    else
+    {
+      mesh.reset(new dolfin::Mesh(filename));
+    }
     (*mesh).init();                                                  // initialize the mesh (maps between dimensions etc.)
 
   }
