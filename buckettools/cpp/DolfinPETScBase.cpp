@@ -74,7 +74,7 @@ std::vector<std::size_t> buckettools::functionspace_dofs_values(const FunctionSp
                                                          std::size_t depth, std::size_t exp_index)
 {
   std::vector<std::size_t> dofs;
-  boost::unordered_set<std::size_t> dof_set;
+  std::unordered_set<std::size_t> dof_set;
 
   const std::size_t num_sub_elements = (*(*functionspace).element()).num_sub_elements();
   if (num_sub_elements>0)
@@ -125,7 +125,7 @@ std::vector<std::size_t> buckettools::functionspace_dofs_values(const FunctionSp
                                   values, value_exp, value_const, 
                                   exp_index);
     }                                                            
-    boost::unordered_set<std::size_t> f_dof_set;
+    std::unordered_set<std::size_t> f_dof_set;
     f_dof_set = facet_dofs_values(functionspace, facetidmeshfunction, 
                                   boundary_ids,
                                   values, value_exp, value_const, 
@@ -153,14 +153,14 @@ std::vector<std::size_t> buckettools::functionspace_dofs_values(const FunctionSp
 // return a set of dofs from the given functionspace possibly for a subset of the region ids as specified
 // FIXME: once mesh domain information is used cellidmeshfunction should be taken directly from the mesh
 //*******************************************************************|************************************************************//
-boost::unordered_set<std::size_t> buckettools::cell_dofs_values(const FunctionSpace_ptr functionspace,
+std::unordered_set<std::size_t> buckettools::cell_dofs_values(const FunctionSpace_ptr functionspace,
                                                          MeshFunction_size_t_ptr cellidmeshfunction,
                                                          const std::vector<int>* region_ids,
                                                          PETScVector_ptr values, 
                                                          const dolfin::Expression* value_exp, const double* value_const,
                                                          const std::size_t &exp_index)
 {
-  boost::unordered_set<std::size_t> dof_set;
+  std::unordered_set<std::size_t> dof_set;
 
   std::shared_ptr<const dolfin::GenericDofMap> dofmap = (*functionspace).dofmap();
   const_Mesh_ptr mesh = (*functionspace).mesh();
@@ -252,14 +252,14 @@ boost::unordered_set<std::size_t> buckettools::cell_dofs_values(const FunctionSp
 // return a set of dofs from the given dofmap for the boundary ids specified
 // FIXME: once mesh domain information is used facetidmeshfunction should be taken directly from the mesh
 //*******************************************************************|************************************************************//
-boost::unordered_set<std::size_t> buckettools::facet_dofs_values(const FunctionSpace_ptr functionspace,
+std::unordered_set<std::size_t> buckettools::facet_dofs_values(const FunctionSpace_ptr functionspace,
                                                           MeshFunction_size_t_ptr facetidmeshfunction,
                                                           const std::vector<int>* boundary_ids,
                                                           PETScVector_ptr values, 
                                                           const dolfin::Expression* value_exp, const double* value_const,
                                                           const std::size_t &exp_index)
 {
-  boost::unordered_set<std::size_t> dof_set;                                // set up an unordered set of dof
+  std::unordered_set<std::size_t> dof_set;                                // set up an unordered set of dof
 
   assert(boundary_ids);
 

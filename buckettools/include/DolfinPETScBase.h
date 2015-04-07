@@ -45,14 +45,14 @@ namespace buckettools
                                               const dolfin::Expression* value_exp=NULL, const double *value_const=NULL,
                                               std::size_t depth=0, std::size_t exp_index=0);
 
-  boost::unordered_set<std::size_t> cell_dofs_values(const FunctionSpace_ptr functionspace,
+  std::unordered_set<std::size_t> cell_dofs_values(const FunctionSpace_ptr functionspace,
                                               MeshFunction_size_t_ptr cellidmeshfunction=NULL,
                                               const std::vector<int>* region_ids=NULL,
                                               PETScVector_ptr values=NULL, 
                                               const dolfin::Expression* value_exp=NULL, const double* value_const=NULL,
                                               const std::size_t &exp_index=0);
 
-  boost::unordered_set<std::size_t> facet_dofs_values(const FunctionSpace_ptr functionspace,
+  std::unordered_set<std::size_t> facet_dofs_values(const FunctionSpace_ptr functionspace,
                                                MeshFunction_size_t_ptr facetidmeshfunction=NULL,
                                                const std::vector<int>* boundary_ids=NULL,
                                                PETScVector_ptr values=NULL, 
