@@ -51,7 +51,10 @@ error_l2_P = sqrt(stat["Stokes"]["PressureL2NormErrorSquared"]["functional_value
   <tests>
     <test name="PlotConvergence">
       <string_value lines="20" type="code" language="python">import numpy as np
-import pylab as pl
+import matplotlib
+# set a display independent backend
+matplotlib.use('Agg')
+import matplotlib.pyplot as pl
     
 # calculate the mesh spacing from the parameter ncells (ugly but works)
 ncells = error_l2_V.parameters['ncells']
@@ -65,8 +68,8 @@ pl.xlabel('h')
 pl.ylabel('relative errors ||e||_2')
 pl.grid()
 pl.legend(['e_V','e_p'],loc='best')
-pv=pl.polyfit(np.log(h),np.log(error_l2_V),1)
-pp=pl.polyfit(np.log(h),np.log(error_l2_P),1)
+pv=np.polyfit(np.log(h),np.log(error_l2_V),1)
+pp=np.polyfit(np.log(h),np.log(error_l2_P),1)
 pl.title('Convergence, p_v={0}, p_p={1}'.format(pv[0],pp[0]))
 pl.savefig('Stokes_convergence.pdf')
 

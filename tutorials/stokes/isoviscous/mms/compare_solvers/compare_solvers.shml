@@ -292,8 +292,11 @@ print error_l2_P_fs_direct
 print error_l2_P_iterative</string_value>
     </test>
     <test name="PlotErrors">
-      <string_value lines="20" type="code" language="python">import pylab as pl
-import numpy as np
+      <string_value lines="20" type="code" language="python">import numpy as np
+import matplotlib
+# set a display independent backend
+matplotlib.use('Agg')
+import matplotlib.pyplot as pl
 
 solvers = ['direct', 'fs_direct', 'iterative']
 colors = ['r','b','g']
@@ -310,8 +313,8 @@ for i in range(len(solvers)):
   V_err = eval("error_l2_V_"+solver+slice)
   P_err = eval("error_l2_P_"+solver+slice)
   #print solvers[i], V_err, P_err
-  pv=pl.polyfit(np.log(h),np.log(V_err),1)
-  pp=pl.polyfit(np.log(h),np.log(P_err),1)
+  pv=np.polyfit(np.log(h),np.log(V_err),1)
+  pp=np.polyfit(np.log(h),np.log(P_err),1)
   llabel = solvers[i]+' $p_V$={0:2.1f} $p_p$={1:2.1f}'.format(pv[0],pp[0])
   pl.loglog(h,V_err,color+'o-',label=llabel)
   pl.hold(True)   
@@ -328,8 +331,11 @@ pl.savefig('Solver_comparison_convergence.pdf')
 print "Convergence plot in Solver_comparison_convergence.pdf"</string_value>
     </test>
     <test name="PlotConvergence">
-      <string_value lines="20" type="code" language="python">import pylab as pl
-import numpy as np
+      <string_value lines="20" type="code" language="python">import numpy as np
+import matplotlib
+# set a display independent backend
+matplotlib.use('Agg')
+import matplotlib.pyplot as pl
 
 solvers = ['direct', 'fs_direct', 'iterative']
 colors = ['r','b','g']
@@ -373,15 +379,14 @@ pl.savefig('Solver_Comparison_ksp_convergence.pdf')
 print "KSP Convergence plot in Solver_comparison_ksp_convergence.pdf"</string_value>
     </test>
     <test name="PlotTiming">
-      <string_value lines="20" type="code" language="python">import pylab as pl
-import numpy as np
+      <string_value lines="20" type="code" language="python">import numpy as np
+import matplotlib
+# set a display independent backend
+matplotlib.use('Agg')
+import matplotlib.pyplot as pl
 
 solvers = ['direct', 'fs_direct', 'iterative']
 colors = ['r','b','g']
-
-#print NDofs_direct
-#print NDofs_fs_direct
-#print NDofs_iterative
 
 pl.figure()
 legend = []    
