@@ -473,6 +473,7 @@ J = derivative(r_r, us_i, us_a)</string_value>
         </max_iterations>
         <monitors>
           <residual/>
+          <convergence_file/>
         </monitors>
         <linear_solver>
           <iterative_method name="fgmres">
