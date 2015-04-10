@@ -446,9 +446,7 @@ Jv = (inner(sym(grad(v_t)), 2.*eta*sym(grad(v_a))) - div(v_t)*p_a - T_a*v_t[1])*
 Jp = p_t*div(v_a)*dx
 JT = (T_t*(T_a + dt*(inner(v_theta_a, grad(T_theta)) + inner(v_theta,grad(T_theta_a)))) + dt/Ra*inner(grad(T_t), grad(T_theta_a)))*dx
 
-J = Jv + Jp + JT
-
-J = derivative(r, us_i, us_a)</string_value>
+J = Jv + Jp + JT</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">J</string_value>
           </ufl_symbol>
