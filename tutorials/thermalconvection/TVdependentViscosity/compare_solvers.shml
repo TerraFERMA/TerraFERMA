@@ -394,10 +394,106 @@ else:
         </variable>
       </variables>
     </simulation>
+    <simulation name="newton_fieldsplit_direct_lagged">
+      <input_file>
+        <string_value lines="1" type="filename">newton_fieldsplit_direct_Tv_laggedjacobian/convection.tfml</string_value>
+      </input_file>
+      <run_when name="input_changed"/>
+      <number_processes>
+        <integer_value rank="0">1</integer_value>
+      </number_processes>
+      <parameter_sweep>
+        <parameter name="ncells">
+          <values>
+            <string_value lines="1">64</string_value>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+
+N = int(ncells)
+libspud.set_option("/geometry/mesh::Mesh/source::Rectangle/number_cells",[N,N])</string_value>
+            <comment>change the number of cells in the rectangular mesh</comment>
+            <single_build/>
+          </update>
+        </parameter>
+        <parameter name="Ra">
+          <values>
+            <string_value lines="1">1.e4</string_value>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+libspud.set_option("/system::Convection/coefficient::RayleighNumber/type::Constant/rank::Scalar/value::WholeMesh/constant",float(Ra))</string_value>
+            <comment>change the number of cells in the rectangular mesh</comment>
+            <single_build/>
+          </update>
+          <comment>Rayleigh Number</comment>
+        </parameter>
+        <parameter name="conv_file">
+          <values>
+            <string_value lines="1">0 1</string_value>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+if conv_file == '0':
+  libspud.delete_option("/system::Convection/nonlinear_solver::Solver/type::SNES/monitors/convergence_file")
+elif conv_file == '1':
+  libspud.set_option("/timestepping/finish_time",20.)</string_value>
+            <comment>if conv_file = 1 just run for about 15 time steps</comment>
+            <single_build/>
+          </update>
+          <comment>Boolean to turn on/off convergence file (keeping a convergence file will degrade performance) 
+0 will turn off convergence file
+1 will just run for a short time</comment>
+        </parameter>
+      </parameter_sweep>
+      <variables>
+        <variable name="Nu_newton_fieldsplit_direct_lagged">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+stat = parser("rbconvection.stat")
+Nu_newton_fieldsplit_direct_lagged = stat["Convection"]["TemperatureNu"]["functional_value"][-1]</string_value>
+        </variable>
+        <variable name="Vrms_newton_fieldsplit_direct_lagged">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+from math import sqrt
+stat = parser("rbconvection.stat")
+Vrms_newton_fieldsplit_direct_lagged = sqrt(stat["Convection"]["VelocityvrmsSquared"]["functional_value"][-1])</string_value>
+          <comment>RMS velocity</comment>
+        </variable>
+        <variable name="Walltime_newton_fieldsplit_direct_lagged">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+stat = parser("rbconvection.stat")
+Walltime_newton_fieldsplit_direct_lagged = stat["ElapsedWallTime"]["value"]</string_value>
+        </variable>
+        <variable name="L2res_newton_fieldsplit_direct_lagged">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+from glob import glob
+convfile = glob("*.conv")
+if convfile:
+  conv = parser(convfile[0])
+  # extract the system residaul
+  L2res_newton_fieldsplit_direct_lagged = conv['Convection']['res_norm(l2)']
+else:
+  L2res_newton_fieldsplit_direct_lagged = []</string_value>
+        </variable>
+        <variable name="timestep_newton_fieldsplit_direct_lagged">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+from glob import glob
+convfile = glob("*.conv")
+if convfile:
+  conv = parser(convfile[0])
+  # extract the time step
+  timestep_newton_fieldsplit_direct_lagged = conv['timestep']['value']
+else:
+  statfile = glob("*.stat")[0]
+  stat = parser(statfile)
+  timestep_newton_fieldsplit_direct_lagged= stat['timestep']['value']</string_value>
+        </variable>
+      </variables>
+    </simulation>
   </simulations>
   <tests>
     <test name="Print">
-      <string_value lines="20" type="code" language="python">solvers = ['newton_exact', 'newton_fieldsplit_direct', 'preonly_fieldsplit_direct','picard_splitting']
+      <string_value lines="20" type="code" language="python">solvers = ['newton_exact', 'newton_fieldsplit_direct', 'preonly_fieldsplit_direct','picard_splitting','newton_fieldsplit_direct_lagged']
 variables = ['Nu','Vrms','Walltime','L2res','timestep']
 for solver in solvers:
   for var in variables:
@@ -409,7 +505,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as pl
 import numpy as np
 
-solvers = ['newton_exact', 'newton_fieldsplit_direct', 'preonly_fieldsplit_direct','picard_splitting']
+solvers = ['newton_exact', 'newton_fieldsplit_direct', 'preonly_fieldsplit_direct','picard_splitting', 'newton_fieldsplit_direct_lagged']
 colors = ['r','b','g','k']
 
 pl.figure()
@@ -444,7 +540,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as pl
 import numpy as np
 
-solvers = ['newton_exact', 'newton_fieldsplit_direct', 'preonly_fieldsplit_direct','picard_splitting']
+solvers = ['newton_exact', 'newton_fieldsplit_direct', 'preonly_fieldsplit_direct','picard_splitting','newton_fieldsplit_direct_lagged']
 colors = ['r','b','g','k']
 
 pl.figure()
