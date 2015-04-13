@@ -439,23 +439,18 @@ r = rv + rp + rT</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
-          <string_value lines="20" type="code" language="python">J = derivative(r,us_i,us_a)</string_value>
+          <string_value lines="20" type="code" language="python"># velocity residual and derivative, viscosity block
+rv_v = inner(sym(grad(v_t)), 2.*eta*sym(grad(v_i)))*dx
+
+# remainder of the velocity residual rv = rv_v + rv_r
+rv_r =  -(div(v_t)*p_i + T_i*v_t[1])*dx
+
+r_r = rv_r + rp + rT
+
+# approximate Jacobian including derivative of viscosity with respect to T but not V
+J = derivative(r_r, us_i, us_a) + inner(sym(grad(v_t)), 2.*eta*sym(grad(v_a)))*dx + derivative(rv_v,(T_i),(T_a))</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">J</string_value>
-          </ufl_symbol>
-        </form>
-        <form name="JacobianPC" rank="1">
-          <string_value lines="20" type="code" language="python"># linearized upper triangular block preconditioner
-T_theta_a = theta*T_a 
-v_theta_a = theta_v*v_a
-
-Jv = (inner(sym(grad(v_t)), 2.*eta*sym(grad(v_a))) - div(v_t)*p_a - T_a*v_t[1])*dx
-Jp = p_t*div(v_a)*dx
-JT = (T_t*(T_a + dt*inner(v_theta,grad(T_theta_a))) + dt/Ra*inner(grad(T_t), grad(T_theta_a)))*dx
-
-Jpc = Jv + Jp + JT</string_value>
-          <ufl_symbol name="solver">
-            <string_value lines="1">Jpc</string_value>
           </ufl_symbol>
         </form>
         <quadrature_degree>
