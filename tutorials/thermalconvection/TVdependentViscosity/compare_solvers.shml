@@ -10,9 +10,9 @@
     <string_value lines="1">Workflow for running and comparing a range of solver strategies for the isoviscous thermal convection</string_value>
   </description>
   <simulations>
-    <simulation name="newton_exact">
+    <simulation name="newton_direct">
       <input_file>
-        <string_value lines="1" type="filename">newton_exact/convection.tfml</string_value>
+        <string_value lines="1" type="filename">newton_direct/convection.tfml</string_value>
       </input_file>
       <run_when name="input_changed"/>
       <number_processes>
@@ -63,46 +63,46 @@ elif conv_file == '1':
         </parameter>
       </parameter_sweep>
       <variables>
-        <variable name="Nu_newton_exact">
+        <variable name="Nu_newton_direct">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
 stat = parser("rbconvection.stat")
-Nu_newton_exact = stat["Convection"]["TemperatureNu"]["functional_value"][-1]</string_value>
+Nu_newton_direct = stat["Convection"]["TemperatureNu"]["functional_value"][-1]</string_value>
         </variable>
-        <variable name="Vrms_newton_exact">
+        <variable name="Vrms_newton_direct">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
 from math import sqrt
 stat = parser("rbconvection.stat")
-Vrms_newton_exact = sqrt(stat["Convection"]["VelocityvrmsSquared"]["functional_value"][-1])</string_value>
+Vrms_newton_direct = sqrt(stat["Convection"]["VelocityvrmsSquared"]["functional_value"][-1])</string_value>
           <comment>RMS velocity</comment>
         </variable>
-        <variable name="Walltime_newton_exact">
+        <variable name="Walltime_newton_direct">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
 stat = parser("rbconvection.stat")
-Walltime_newton_exact = stat["ElapsedWallTime"]["value"]</string_value>
+Walltime_newton_direct = stat["ElapsedWallTime"]["value"]</string_value>
         </variable>
-        <variable name="L2res_newton_exact">
+        <variable name="L2res_newton_direct">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
 from glob import glob
 convfile = glob("*.conv")
 if convfile:
   conv = parser(convfile[0])
   # extract the system residaul
-  L2res_newton_exact = conv['Convection']['res_norm(l2)']
+  L2res_newton_direct = conv['Convection']['res_norm(l2)']
 else:
-  L2res_newton_exact = []</string_value>
+  L2res_newton_direct = []</string_value>
         </variable>
-        <variable name="timestep_newton_exact">
+        <variable name="timestep_newton_direct">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
 from glob import glob
 convfile = glob("*.conv")
 if convfile:
   conv = parser(convfile[0])
   # extract the time step
-  timestep_newton_exact = conv['timestep']['value']
+  timestep_newton_direct = conv['timestep']['value']
 else:
   statfile = glob("*.stat")[0]
   stat = parser(statfile)
-  timestep_newton_exact= stat['timestep']['value']</string_value>
+  timestep_newton_direct= stat['timestep']['value']</string_value>
         </variable>
       </variables>
     </simulation>
@@ -493,7 +493,7 @@ else:
   </simulations>
   <tests>
     <test name="Print">
-      <string_value lines="20" type="code" language="python">solvers = ['newton_exact', 'newton_fieldsplit_direct', 'preonly_fieldsplit_direct','picard_splitting','newton_fieldsplit_direct_approx']
+      <string_value lines="20" type="code" language="python">solvers = ['newton_direct', 'newton_fieldsplit_direct', 'preonly_fieldsplit_direct','picard_splitting','newton_fieldsplit_direct_approx']
 #variables = ['Nu','Vrms','Walltime','L2res','timestep']
 variables = ['Nu','Vrms']
 for solver in solvers:
@@ -506,7 +506,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as pl
 import numpy as np
 
-solvers = ['newton_exact', 'newton_fieldsplit_direct', 'preonly_fieldsplit_direct','picard_splitting', 'newton_fieldsplit_direct_approx']
+solvers = ['newton_direct', 'newton_fieldsplit_direct', 'preonly_fieldsplit_direct','picard_splitting', 'newton_fieldsplit_direct_approx']
 colors = ['r','b','g','k','y','c']
 
 pl.figure()
@@ -541,7 +541,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as pl
 import numpy as np
 
-solvers = ['newton_exact', 'newton_fieldsplit_direct', 'preonly_fieldsplit_direct','picard_splitting','newton_fieldsplit_direct_approx']
+solvers = ['newton_direct', 'newton_fieldsplit_direct', 'preonly_fieldsplit_direct','picard_splitting','newton_fieldsplit_direct_approx']
 colors = ['r','b','g','k','y','c']
 
 pl.figure()
@@ -554,8 +554,8 @@ for i in range(len(solvers)):
   # convert timesteps and walltime to a numpy array
   timesteps = np.array(eval("timestep_"+solver+"[slice]"))
   walltime = np.array(eval("Walltime_"+solver+"[slice]"))
-  # extract maximum walltime for newton_exact to normalize by  
-  if solver == 'newton_exact':
+  # extract maximum walltime for newton_direct to normalize by  
+  if solver == 'newton_direct':
     walltime_norm = walltime[-1]
   # find the indices for the last timestep
   pl.plot(timesteps,walltime/walltime_norm,color+'-',linewidth=2.0)
