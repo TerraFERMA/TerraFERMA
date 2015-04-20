@@ -1,0 +1,8 @@
+A simple demo to calculate and visualize the solution of a 3D poisson problem
+Files:
+	poisson.tfml:  TerraFERMA tfml file to describe the 3-D problem
+	poisson_3D.pvsm:  a paraview state file useful for visualizing the 3-D solution
+			  to use:  open paraview
+			     	   choose load_state to load the .pvsm
+				   in the pop-up, choose the file build/poisson000001.vtu
+

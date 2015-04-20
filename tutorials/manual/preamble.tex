@@ -74,8 +74,46 @@
   linewidth=0.9\linewidth,
   xleftmargin=0.1\linewidth
 }
+
+%%%%%%%%%%%%tikz stuff
+\usepackage{tikz}
+\tikzstyle{every picture}+=[remember picture]
+
+\tikzset{onslide/.code args={<#1>#2}{%
+  \only<#1>{\pgfkeysalso{#2}} % \pgfkeysalso doesn't change the path
+}}
+\tikzstyle{highlightred}=[shape=rectangle, rounded corners, fill=red!50]
+\tikzstyle{highlightgreen}=[shape=rectangle, rounded corners, fill=green!50]
+
+\usetikzlibrary{fit, positioning, trees}
+\usetikzlibrary{decorations.markings}
+\usetikzlibrary{arrows,shapes}
+\tikzstyle arrowstyle=[scale=1]
+\tikzset{%
+  highlight/.style={rectangle,rounded corners,fill opacity=0.5,inner sep=0pt}
+}
+\newcommand{\tikzmark}[2]{\tikz[overlay,remember picture,baseline=(#1.base)] \node (#1) {#2};}
+%
+\newcommand{\tikzhighlight}[4]{%
+    \tikz[overlay,remember picture]{
+    \node[highlight,fill=#4,fit=(#2.north west) (#3.south east)] (#1) {};}
+}
+
+\newcommand{\tikztermhighlight}[3]{\tikz[baseline=(#2.base)] \node[onslide=<#1>{highlightred}] (#2) {#3};}
+\newcommand{\tikztermhighlightgreen}[3]{\tikz[baseline=(#2.base)] \node[onslide=<#1>{highlightgreen}] (#2) {#3};}
+
+\tikzset{hide on/.code={\only<#1>{\pgfkeysalso{opacity=0}}}}
+
+\tikzstyle directed=[postaction={decorate,decoration={markings,
+    mark=at position 1.0 with {\arrow[arrowstyle]{stealth}}}}]
+\tikzstyle reverse directed=[postaction={decorate,decoration={markings,
+    mark=at position .65 with
+    {\arrowreversed[arrowstyle]{stealth};}}}]
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \usepackage{macros}
-%\checkandfixthelayout
+\addtolength{\textwidth}{2cm}
+\addtolength{\foremargin}{-2cm}
+\checkandfixthelayout
 
 % See the ``Memoir customise'' template for some common customisations
 % Don't forget to read the Memoir manual: memman.pdf
