@@ -62,7 +62,8 @@ start =
          },
          ## A list of the simulations to run.  Each simulation name should be unique.
          element simulations {
-            simulation+,
+            simulation*,
+            run*,
             comment
          }?,
          ## A list of tests to run.  Each test name should be unique.
@@ -193,7 +194,7 @@ required_output =
       }
    )
 
-parameters =
+simulation_parameters =
    (
       ## Perform a sweep over the listed parameters.  Each parameter requires a unique name.
       element parameter_sweep {
@@ -228,6 +229,54 @@ parameters =
                element single_build {
                   comment
                }?
+            }?,
+            ## The factor to scale the number_processes by depending on the value of this parameter.
+            ## 
+            ## There should be the same number of integer scales as there are parameter values.
+            element process_scale {
+              integer_vector 
+            }?,
+            comment
+         }*,
+         ## The number of times the simulation should be rerun.
+         ##
+         ## Defaults to 1 if not specified.
+         element number_runs {
+            integer
+         }?,
+         comment
+      }
+   )
+
+run_parameters =
+   (
+      ## Perform a sweep over the listed parameters.  Each parameter requires a unique name.
+      element parameter_sweep {
+         ## A parameter definition.
+         ##
+         ## Each parameter should have a unique name.
+         ##
+         ## Parameters should specify a list of values to be swept over and optionally, 
+         ## python code describing how the parameter should be updated.
+         element parameter {
+            attribute name { xsd:string },
+            ## A comma, semicolon or space separated list of the parameter values.
+            ##
+            ## The values are input as a string to allow them to be used to uniquely create a folder structure.
+            ## The update python code before should convert them to appropriate types within the input file.
+            element values {
+               anystring
+            },
+            ## Python code specifying how the input file should be modified to update this parameter.
+            ##
+            ## If no code is provided the parameter will not be modified at this level 
+            ## (but may be modified at other dependency levels).
+            ## 
+            ## The values of all the parameters for this simulation will be available to this code using 
+            ## the names given to the parameters above.  They will be formatted as strings and should be converted 
+            ## appropriately within the code.
+            element update {
+               python_code
             }?,
             ## The factor to scale the number_processes by depending on the value of this parameter.
             ## 
@@ -318,7 +367,7 @@ simulation =
          run_when,
          simulation_number_processes,
          simulation_valgrind_options,
-         parameters?,
+         simulation_parameters?,
          required_input?,
          required_output?,
          dependencies?,
@@ -327,6 +376,24 @@ simulation =
          comment
       }
    )
+
+run =
+   (
+      ## Definition of a top level run (not a TerraFERMA simulation).
+      element run {
+         attribute name { xsd:string },
+         run_input_file,
+         run_when,
+         run_parameters?,
+         required_input?,
+         required_output?,
+         commands?,
+         dependencies?,
+         variables?,
+         comment
+      }
+   )
+
 
 run_when =
    (
@@ -469,7 +536,9 @@ simulation_dependency_parameters =
 
 commands =
    (
-      ## A list of commands to perform this simulation/run.
+      ## A list of commands to perform this run.
+      ##
+      ## Parameters are available to the command as $parameter_name.
       element commands {
          ## A single shell command.
          element command {

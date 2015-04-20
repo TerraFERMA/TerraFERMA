@@ -73,9 +73,12 @@ tags) and -e (exclude tags) flags.</a:documentation>
       <optional>
         <element name="simulations">
           <a:documentation>A list of the simulations to run.  Each simulation name should be unique.</a:documentation>
-          <oneOrMore>
+          <zeroOrMore>
             <ref name="simulation"/>
-          </oneOrMore>
+          </zeroOrMore>
+          <zeroOrMore>
+            <ref name="run"/>
+          </zeroOrMore>
           <ref name="comment"/>
         </element>
       </optional>
@@ -210,7 +213,7 @@ required input to the parent simulation.</a:documentation>
       <ref name="comment"/>
     </element>
   </define>
-  <define name="parameters">
+  <define name="simulation_parameters">
     <element name="parameter_sweep">
       <a:documentation>Perform a sweep over the listed parameters.  Each parameter requires a unique name.</a:documentation>
       <zeroOrMore>
@@ -250,6 +253,62 @@ If you are unsure about this it is best to leave this option turned off.</a:docu
                   <ref name="comment"/>
                 </element>
               </optional>
+            </element>
+          </optional>
+          <optional>
+            <element name="process_scale">
+              <a:documentation>The factor to scale the number_processes by depending on the value of this parameter.
+
+There should be the same number of integer scales as there are parameter values.</a:documentation>
+              <ref name="integer_vector"/>
+            </element>
+          </optional>
+          <ref name="comment"/>
+        </element>
+      </zeroOrMore>
+      <optional>
+        <element name="number_runs">
+          <a:documentation>The number of times the simulation should be rerun.
+
+Defaults to 1 if not specified.</a:documentation>
+          <ref name="integer"/>
+        </element>
+      </optional>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="run_parameters">
+    <element name="parameter_sweep">
+      <a:documentation>Perform a sweep over the listed parameters.  Each parameter requires a unique name.</a:documentation>
+      <zeroOrMore>
+        <element name="parameter">
+          <a:documentation>A parameter definition.
+
+Each parameter should have a unique name.
+
+Parameters should specify a list of values to be swept over and optionally, 
+python code describing how the parameter should be updated.</a:documentation>
+          <attribute name="name">
+            <data type="string"/>
+          </attribute>
+          <element name="values">
+            <a:documentation>A comma, semicolon or space separated list of the parameter values.
+
+The values are input as a string to allow them to be used to uniquely create a folder structure.
+The update python code before should convert them to appropriate types within the input file.</a:documentation>
+            <ref name="anystring"/>
+          </element>
+          <optional>
+            <element name="update">
+              <a:documentation>Python code specifying how the input file should be modified to update this parameter.
+
+If no code is provided the parameter will not be modified at this level 
+(but may be modified at other dependency levels).
+
+The values of all the parameters for this simulation will be available to this code using 
+the names given to the parameters above.  They will be formatted as strings and should be converted 
+appropriately within the code.</a:documentation>
+              <ref name="python_code"/>
             </element>
           </optional>
           <optional>
@@ -353,7 +412,7 @@ THE VARIABLE NAME MUST BE UNIQUE ACROSS THE ENTIRE OPTIONS FILE and the python c
       <ref name="simulation_number_processes"/>
       <ref name="simulation_valgrind_options"/>
       <optional>
-        <ref name="parameters"/>
+        <ref name="simulation_parameters"/>
       </optional>
       <optional>
         <ref name="required_input"/>
@@ -373,6 +432,35 @@ THE VARIABLE NAME MUST BE UNIQUE ACROSS THE ENTIRE OPTIONS FILE and the python c
       <ref name="comment"/>
     </element>
   </define>
+  <define name="run">
+    <element name="run">
+      <a:documentation>Definition of a top level run (not a TerraFERMA simulation).</a:documentation>
+      <attribute name="name">
+        <data type="string"/>
+      </attribute>
+      <ref name="run_input_file"/>
+      <ref name="run_when"/>
+      <optional>
+        <ref name="run_parameters"/>
+      </optional>
+      <optional>
+        <ref name="required_input"/>
+      </optional>
+      <optional>
+        <ref name="required_output"/>
+      </optional>
+      <optional>
+        <ref name="commands"/>
+      </optional>
+      <optional>
+        <ref name="dependencies"/>
+      </optional>
+      <optional>
+        <ref name="variables"/>
+      </optional>
+      <ref name="comment"/>
+    </element>
+  </define>
   <define name="run_when">
     <choice>
       <element name="run_when">
@@ -381,7 +469,7 @@ THE VARIABLE NAME MUST BE UNIQUE ACROSS THE ENTIRE OPTIONS FILE and the python c
 Run when the input has changed  (md5sum check) or some specified output is missing.
 Note that if no output is required then it will always run.
 
-Can be overridden with the command line force flag, which will force a run.</a:documentation>
+Can be overridden with the command line force flag, which will force a run (and possibly a build).</a:documentation>
         <attribute name="name">
           <value>input_changed_or_output_missing</value>
         </attribute>
@@ -392,7 +480,7 @@ Can be overridden with the command line force flag, which will force a run.</a:d
 
 Run when the input has changed (md5sum check).
 
-Can be overridden with the command line force flag, which will force a run.</a:documentation>
+Can be overridden with the command line force flag, which will force a run (and possibly a build).</a:documentation>
         <attribute name="name">
           <value>input_changed</value>
         </attribute>
@@ -404,7 +492,7 @@ Can be overridden with the command line force flag, which will force a run.</a:d
 Run when some specified output is missing.
 Note that if no output is required then it will always run.
 
-Can be overridden with the command line force flag, which will force a run.</a:documentation>
+Can be overridden with the command line force flag, which will force a run (and possibly a build).</a:documentation>
         <attribute name="name">
           <value>output_missing</value>
         </attribute>
@@ -413,7 +501,9 @@ Can be overridden with the command line force flag, which will force a run.</a:d
       <element name="run_when">
         <a:documentation>Select when to run.
 
-Always run.  This is equivalent of the command line force flag.</a:documentation>
+Always run.  
+
+The command line force flag will also force a build if necessary.</a:documentation>
         <attribute name="name">
           <value>always</value>
         </attribute>
@@ -424,7 +514,7 @@ Always run.  This is equivalent of the command line force flag.</a:documentation
 
 Never run.
 
-Can be overridden with the command line force flag, which will force a run.</a:documentation>
+Can be overridden with the command line force flag, which will force a run (and possibly a build).</a:documentation>
         <attribute name="name">
           <value>never</value>
         </attribute>
@@ -538,7 +628,9 @@ Defaults to 1 if not specified.</a:documentation>
   </define>
   <define name="commands">
     <element name="commands">
-      <a:documentation>A list of commands to perform this simulation/run.</a:documentation>
+      <a:documentation>A list of commands to perform this run.
+
+Parameters are available to the command as $parameter_name.</a:documentation>
       <oneOrMore>
         <element name="command">
           <a:documentation>A single shell command.</a:documentation>
