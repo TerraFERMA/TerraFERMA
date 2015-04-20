@@ -34,6 +34,7 @@ from buckettools.threadlibspud import *
 import traceback
 from functools import reduce
 import operator
+from string import Template as template
 
 ####################################################################################
 
@@ -255,7 +256,7 @@ class NestedList(list):
 ####################################################################################
 
 class Run:
-  def __init__(self, path, optionsdict, currentdirectory, \
+  def __init__(self, path, optionsdict, currentdirectory, tfdirectory, \
                logprefix=None, dependents=[]):
     self.optionsdict = optionsdict
 
@@ -292,10 +293,31 @@ class Run:
 
     self.variables = [Variable(name, code) for name, code in self.optionsdict["variables"].iteritems()]
 
-    self.dependencies = []
     self.alreadyrun = False
 
-    self.deferred = False # can't have deferred runs when you have no dependencies
+    self.dependencies = []
+    if "dependencies" in self.optionsdict:
+       for dependencypath, depoptionsdict in self.optionsdict["dependencies"].iteritems():
+         dependencyoptions = self.getdependencyoptions(depoptionsdict["procscales"])
+         depoptionsdict["values"] = dependencyoptions["values"]
+         depoptionsdict["procscales"] = dependencyoptions["procscales"]
+         depoptionsdict["value_indices"] = dependencyoptions["value_indices"]
+         depoptionsdict["value_lengths"] = dependencyoptions["value_lengths"]
+         self.dependencies.append(depoptionsdict["type"](dependencypath, depoptionsdict, \
+                                                         currentdirectory, tfdirectory, \
+                                                         logprefix=logprefix, dependents=[self]))
+
+    # if the input options file is an the output of a dependency then we have to
+    # defer generating, configuring and building until runtime
+    filepaths = [os.path.dirname(depoutput)  \
+                 for depoutput in self.getdependencyrequiredoutput() \
+                 if self.filename+self.ext == os.path.basename(depoutput)]
+    self.deferred = len(filepaths)>0
+    if self.deferred:
+      if os.path.isabs(filepaths[0]):
+        self.runinputdirectory = os.path.normpath(filepaths[0])
+      else:
+        self.runinputdirectory = os.path.normpath(os.path.join(currentdirectory, filepaths[0]))
 
   def writeoptions(self):
 
@@ -359,6 +381,8 @@ class Run:
     if not self.alreadyrun and (not self.optionsdict["run_when"]["never"] or force):
       commands = self.getcommands()
 
+      valuesdict=self.optionsdict["values"]
+
       for r in xrange(self.nruns):
         requiredinput = self.getrequiredinput(r)
         requiredoutput = self.getrequiredoutput(r)
@@ -411,9 +435,10 @@ class Run:
             env["PYTHONPATH"] = ":".join([dirname, env["PYTHONPATH"]])
           except KeyError:
             env["PYTHONPATH"] = dirname
+          env["PWD"] = dirname
 
           for command in commands:
-            p = subprocess.Popen(command, cwd=dirname, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
+            p = subprocess.Popen([template(c).safe_substitute(valuesdict) for c in command], cwd=dirname, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
             retcode = p.wait()
             if retcode!=0:
               self.log("ERROR: Command %s returned %d in directory: %s"%(" ".join(command), retcode, dirname))
@@ -566,43 +591,11 @@ class Simulation(Run):
   def __init__(self, path, optionsdict, currentdirectory, tfdirectory, \
                logprefix=None, dependents=[]):
 
-    Run.__init__(self, path, optionsdict, currentdirectory, \
+    Run.__init__(self, path, optionsdict, currentdirectory, tfdirectory, \
                  logprefix=logprefix, dependents=dependents)
 
     self.tfdirectory = tfdirectory
     self.builddirectory = self.getbuilddirectory()
-
-    self.dependencies = []
-    if "dependencies" in self.optionsdict:
-       for dependencypath, depoptionsdict in self.optionsdict["dependencies"].iteritems():
-         dependencyoptions = self.getdependencyoptions(depoptionsdict["procscales"])
-         depoptionsdict["values"] = dependencyoptions["values"]
-         depoptionsdict["procscales"] = dependencyoptions["procscales"]
-         depoptionsdict["value_indices"] = dependencyoptions["value_indices"]
-         depoptionsdict["value_lengths"] = dependencyoptions["value_lengths"]
-         if depoptionsdict["type"] is Run:
-           self.dependencies.append(Run(dependencypath, depoptionsdict, \
-                                        currentdirectory, logprefix=logprefix, \
-                                        dependents=[self]))
-         elif depoptionsdict["type"] is Simulation:
-           self.dependencies.append(Simulation(dependencypath, depoptionsdict, \
-                                               currentdirectory, tfdirectory, \
-                                               logprefix=logprefix, dependents=[self]))
-         else:
-           self.log("ERROR: Unknown dependency simulation type.")
-           raise SimulationsErrorInitialization
-
-    # if the input options file is an the output of a dependency then we have to
-    # defer generating, configuring and building until runtime
-    filepaths = [os.path.dirname(depoutput)  \
-                 for depoutput in self.getdependencyrequiredoutput() \
-                 if self.filename+self.ext == os.path.basename(depoutput)]
-    self.deferred = len(filepaths)>0
-    if self.deferred:
-      if os.path.isabs(filepaths[0]):
-        self.runinputdirectory = os.path.normpath(filepaths[0])
-      else:
-        self.runinputdirectory = os.path.normpath(os.path.join(currentdirectory, filepaths[0]))
 
   def writeoptions(self):
     
@@ -846,11 +839,12 @@ class SimulationBatch:
         # values to the subset we've just extracted from the parameter sweep
         localsimoptionsdict = copy.deepcopy(simoptionsdict)
         localsimoptionsdict["values"]        = optionsdict["values"]
-        localsimoptionsdict["procscales"]     = optionsdict["procscales"]
+        localsimoptionsdict["procscales"]    = optionsdict["procscales"]
         localsimoptionsdict["value_indices"] = optionsdict["value_indices"]
         localsimoptionsdict["value_lengths"] = optionsdict["value_lengths"]
         # append the simulation to the list
-        self.simulations.append(simoptionsdict["type"](simulationpath, localsimoptionsdict, currentdirectory, tfdirectory, \
+        self.simulations.append(simoptionsdict["type"](simulationpath, localsimoptionsdict, \
+                                                       currentdirectory, tfdirectory, \
                                                        logprefix=self.logprefix))
 
     self.runs = {}
@@ -869,7 +863,7 @@ class SimulationBatch:
     # if this is the first level then set up an ordered dictionary 
     # (this gets repeatedly reused but we take deep copies into the list to ensure there's no overwriting)
     if optionsdict is None: optionsdict = {"values"        : collections.OrderedDict(), \
-                                           "procscales"     : collections.OrderedDict(),
+                                           "procscales"    : collections.OrderedDict(),
                                            "value_indices" : collections.OrderedDict(),
                                            "value_lengths" : collections.OrderedDict() }
 
@@ -1323,82 +1317,14 @@ class SimulationHarnessBatch(SimulationBatch):
       # the harnessfile should be a .shml libspud compatible file
       libspud.load_options(harnessfile)
       # loop over the simulations
-      for s in xrange(libspud.option_count("/simulations/simulation")):
-        simulation_optionpath = "/simulations/simulation["+`s`+"]"
-        simulation_name = libspud.get_option(simulation_optionpath+"/name")
-        
-        # name of options file and normalize path to it relative to the path to the harnessfile itself
-        simulation_input_file = libspud.get_option(simulation_optionpath+"/input_file")
-        if os.path.isabs(simulation_input_file):
-          simulation_path = os.path.normpath(simulation_input_file)
-        else:
-          simulation_path = os.path.normpath(os.path.join(dirname, simulation_input_file))
+      for d in xrange(libspud.option_count("/simulations/simulation")):
+        simulation_optionpath = "/simulations/simulation["+`d`+"]"
+        harnessfileoptionsdict.update(self.getoptions(simulation_optionpath, dirname))
 
-        try:
-          run_when = libspud.get_option(simulation_optionpath+"/run_when/name")
-        except libspud.SpudKeyError:
-          run_when = "input_changed_or_output_missing"
-
-        try:
-          number_processes = libspud.get_option(simulation_optionpath+"/number_processes")
-        except libspud.SpudKeyError:
-          number_processes = 1
-
-        try:
-          valgrind_options = libspud.get_option(simulation_optionpath+"/valgrind_options").split()
-        except libspud.SpudKeyError:
-          valgrind_options = None
-
-        # fetch required input and output for this simulation (used to copy files into rundirectory 
-        # and establish if run has successfully completed
-        required_input  = self.getrequiredfiles(simulation_optionpath+"/required_input", dirname)
-        required_output = self.getrequiredfiles(simulation_optionpath+"/required_output")
-
-        # get the dictionary of the parameters we are sweeping over in this simulation and the number of times each run should
-        # be performed (e.g. for benchmarking purposes)
-        parameter_values, parameter_updates, \
-                          parameter_builds,  \
-                          parameter_procscales = self.getparameters(simulation_optionpath+"/parameter_sweep")
-        try:
-          nruns = libspud.get_option(simulation_optionpath+"/parameter_sweep/number_runs")
-        except libspud.SpudKeyError:
-          nruns = 1
-
-        # get the parameters for any checkpoint pickups
-        checkpoint_values, checkpoint_updates, \
-                           checkpoint_builds,  \
-                           checkpoint_procscales = self.getparameters(simulation_optionpath+"/checkpoint")
-        # don't do anything with checkpoint_builds or checkpoint_procscales
-
-        # get the details of variables we want to examine from this simulation
-        variables = self.getvariables(simulation_optionpath+"/variables")
-
-        # add details of this simulation to the harness file options dictionary
-        harnessfileoptionsdict[simulation_path] = {}
-        harnessfileoptionsdict[simulation_path]["name"]      = simulation_name
-        harnessfileoptionsdict[simulation_path]["run_when"] = {                                                         \
-                                                               "input_changed"  : run_when.find("input_changed")  != -1, \
-                                                               "output_missing" : run_when.find("output_missing") != -1, \
-                                                               "always"         : run_when == "always",                  \
-                                                               "never"          : run_when == "never",                   \
-                                                              }
-        harnessfileoptionsdict[simulation_path]["nprocs"]    = number_processes
-        harnessfileoptionsdict[simulation_path]["valgrind"]  = valgrind_options
-        harnessfileoptionsdict[simulation_path]["type"]      = Simulation
-        harnessfileoptionsdict[simulation_path]["input"]     = required_input
-        harnessfileoptionsdict[simulation_path]["output"]    = required_output
-        harnessfileoptionsdict[simulation_path]["values"]    = parameter_values
-        harnessfileoptionsdict[simulation_path]["updates"]   = parameter_updates
-        harnessfileoptionsdict[simulation_path]["builds"]    = parameter_builds
-        harnessfileoptionsdict[simulation_path]["procscales"] = parameter_procscales
-        harnessfileoptionsdict[simulation_path]["nruns"]     = nruns
-        harnessfileoptionsdict[simulation_path]["checkpoint_values"]  = checkpoint_values
-        harnessfileoptionsdict[simulation_path]["checkpoint_updates"] = checkpoint_updates
-        harnessfileoptionsdict[simulation_path]["variables"] = variables
-        # if the simulation has dependencies then recursively get their options too
-        if libspud.have_option(simulation_optionpath+"/dependencies"):
-          harnessfileoptionsdict[simulation_path]["dependencies"] = \
-             self.getdependencies(simulation_optionpath+"/dependencies", dirname, parameter_values.keys())
+      # loop over any runs
+      for d in xrange(libspud.option_count("/simulations/run")):
+        run_optionpath = "/simulations/run["+`d`+"]"
+        harnessfileoptionsdict.update(self.getoptions(run_optionpath, dirname, run=True))
 
       # fetch the tests that are included in this harness file
       tests = self.gettests("/tests")
@@ -1636,18 +1562,19 @@ class SimulationHarnessBatch(SimulationBatch):
 
      for d in xrange(libspud.option_count(optionpath+"/simulation")):
         simulation_optionpath = optionpath+"/simulation["+`d`+"]"
-        dependencies_options.update(self.getdependency(simulation_optionpath, dirname, parent_parameters))
+        dependencies_options.update(self.getoptions(simulation_optionpath, dirname, parent_parameters))
      
      for d in xrange(libspud.option_count(optionpath+"/run")):
         run_optionpath = optionpath+"/run["+`d`+"]"
-        dependencies_options.update(self.getdependency(run_optionpath, dirname, parent_parameters, run=True))
+        dependencies_options.update(self.getoptions(run_optionpath, dirname, parent_parameters, run=True))
      
      return dependencies_options
 
-  def getdependency(self, optionpath, dirname, parent_parameters, run=False):
-     dependency_options = {}
+  def getoptions(self, optionpath, dirname, parent_parameters=None, run=False):
+     options = {}
      name = libspud.get_option(optionpath+"/name")
 
+     # name of options file and normalize path to it relative to the path to the harnessfile itself
      input_file = libspud.get_option(optionpath+"/input_file")
      if os.path.isabs(input_file):
        path = os.path.normpath(input_file)
@@ -1659,14 +1586,17 @@ class SimulationHarnessBatch(SimulationBatch):
      except libspud.SpudKeyError:
        run_when = "input_changed_or_output_missing"
 
+     # fetch required input and output for this simulation (used to copy files into rundirectory 
+     # and establish if run has successfully completed
      required_input  = self.getrequiredfiles(optionpath+"/required_input", dirname)
      required_output = self.getrequiredfiles(optionpath+"/required_output")
 
+     # get the dictionary of the parameters we are sweeping over in this simulation and the number of times each run should
+     # be performed (e.g. for benchmarking purposes)
      parameter_values, parameter_updates, \
                        parameter_builds,  \
                        parameter_procscales = self.getparameters(optionpath+"/parameter_sweep", \
                                                                 parent_parameters=parent_parameters)
-     # we do nothing with parameter_values... it should be empty
      try:
        nruns = libspud.get_option(optionpath+"/parameter_sweep/number_runs")
      except libspud.SpudKeyError:
@@ -1674,40 +1604,49 @@ class SimulationHarnessBatch(SimulationBatch):
      
      variables = self.getvariables(optionpath+"/variables")
 
-     dependency_options[path] = {}
-     dependency_options[path]["name"]      = name
-     if run:
-       dependency_options[path]["type"]    = Run
-       dependency_options[path]["spudfile"] = libspud.have_option(optionpath+"/input_file/spud_file")
-     else:
-       dependency_options[path]["type"]    = Simulation
-       try:
-         dependency_options[path]["nprocs"] = libspud.get_option(optionpath+"/number_processes")
-       except libspud.SpudKeyError:
-         dependency_options[path]["nprocs"] = 1
-       try:
-         dependency_options[path]["valgrind"] = libspud.get_option(optionpath+"/valgrind_options").split()
-       except libspud.SpudKeyError:
-         dependency_options[path]["valgrind"] = None
-     dependency_options[path]["run_when"] = {                                                         \
+     options[path] = {}
+     options[path]["name"]      = name
+     options[path]["run_when"] = {                                                         \
                                              "input_changed"  : run_when.find("input_changed")  != -1, \
                                              "output_missing" : run_when.find("output_missing") != -1, \
                                              "always"         : run_when == "always",                  \
                                              "never"          : run_when == "never",                   \
                                             }
-     dependency_options[path]["input"]     = required_input
-     dependency_options[path]["output"]    = required_output
-     dependency_options[path]["updates"]   = parameter_updates
-     dependency_options[path]["builds"]    = parameter_builds
-     dependency_options[path]["procscales"]= parameter_procscales # not needed for runs but easier to keep in as dummy
-     dependency_options[path]["nruns"] = nruns
-     dependency_options[path]["variables"] = variables
+     if run:
+       options[path]["type"]    = Run
+       options[path]["spudfile"] = libspud.have_option(optionpath+"/input_file/spud_file")
+       options[path]["run"] = self.getcommands(optionpath+"/commands")
+     else:
+       options[path]["type"]    = Simulation
+       try:
+         options[path]["nprocs"] = libspud.get_option(optionpath+"/number_processes")
+       except libspud.SpudKeyError:
+         options[path]["nprocs"] = 1
+       try:
+         options[path]["valgrind"] = libspud.get_option(optionpath+"/valgrind_options").split()
+       except libspud.SpudKeyError:
+         options[path]["valgrind"] = None
+       # get the parameters for any checkpoint pickups
+       checkpoint_values, checkpoint_updates, \
+                          checkpoint_builds,  \
+                          checkpoint_procscales = self.getparameters(optionpath+"/checkpoint")
+       # don't do anything with checkpoint_builds or checkpoint_procscales
+       if len(checkpoint_values) > 0:
+         options[path]["checkpoint_values"]  = checkpoint_values
+         options[path]["checkpoint_updates"] = checkpoint_updates
+     options[path]["input"]     = required_input
+     options[path]["output"]    = required_output
+     options[path]["values"]    = parameter_values
+     options[path]["updates"]   = parameter_updates
+     options[path]["builds"]    = parameter_builds
+     options[path]["procscales"]= parameter_procscales # not needed for runs but easier to keep in as dummy
+     options[path]["nruns"] = nruns
+     options[path]["variables"] = variables
+     # if the simulation has dependencies then recursively get their options too
      if libspud.have_option(optionpath+"/dependencies"):
-       dependency_options[path]["dependencies"] = \
+       options[path]["dependencies"] = \
                            self.getdependencies(optionpath+"/dependencies", dirname, \
                                                 parameter_updates.keys())
 
-     if run:
-       dependency_options[path]["run"] = self.getcommands(optionpath+"/commands")
+     return options
 
-     return dependency_options
