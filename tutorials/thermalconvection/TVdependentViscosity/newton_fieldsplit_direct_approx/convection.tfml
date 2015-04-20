@@ -28,16 +28,6 @@
     <output_base_name>
       <string_value lines="1">rbconvection</string_value>
     </output_base_name>
-    <visualization>
-      <element name="P2DG">
-        <family>
-          <string_value>DG</string_value>
-        </family>
-        <degree>
-          <integer_value rank="0">2</integer_value>
-        </degree>
-      </element>
-    </visualization>
     <dump_periods>
       <visualization_period>
         <real_value rank="0">100.</real_value>
