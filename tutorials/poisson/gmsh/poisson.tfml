@@ -75,6 +75,7 @@
       </type>
       <diagnostics>
         <include_in_visualization/>
+        <include_in_statistics/>
         <include_residual_in_visualization/>
       </diagnostics>
     </field>
