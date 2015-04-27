@@ -67,12 +67,34 @@ class TFSolitaryWave:
             number_cells = libspud.get_option("/geometry/mesh[0]/source[0]/number_cells")
             diagonal = libspud.get_option("/geometry/mesh[0]/source[0]/diagonal")
             mesh = df.UnitSquareMesh(number_cells[0],number_cells[1],diagonal)
+        elif meshtype == 'Rectangle':
+            x0 = libspud.get_option("/geometry/mesh::Mesh/source::Rectangle/lower_left")
+            x1 = libspud.get_option("/geometry/mesh::Mesh/source::Rectangle/upper_right")
+            number_cells = libspud.get_option("/geometry/mesh::Mesh/source::Rectangle/number_cells")
+            diagonal = libspud.get_option("/geometry/mesh[0]/source[0]/diagonal")
+            mesh = df.RectangleMesh(x0[0],x0[1],x1[0],x1[1],number_cells[0],number_cells[1],diagonal)
         elif meshtype == 'UnitCube':
             number_cells = libspud.get_option("/geometry/mesh[0]/source[0]/number_cells")
             mesh = df.UnitCubeMesh(number_cells[0],number_cells[1],number_cells[2])
+        elif meshtype == 'Box':
+            x0 = libspud.get_option("/geometry/mesh::Mesh/source::Box/lower_back_left")
+            x1 = libspud.get_option("/geometry/mesh::Mesh/source::Box/upper_front_right")
+            number_cells = libspud.get_option("/geometry/mesh::Mesh/source::Box/number_cells")
+            mesh = df.BoxMesh(x0[0],x0[1],x0[2],x1[0],x1[1],x1[2],number_cells[0],number_cells[1],number_cells[2])
+        elif meshtype == 'UnitInterval':
+            number_cells = libspud.get_option("/geometry/mesh::Mesh/source::UnitInterval/number_cells")
+            mesh = df.UnitIntervalMesh(number_cells)
+        elif meshtype == 'Interval':
+            number_cells = libspud.get_option("/geometry/mesh::Mesh/source::Interval/number_cells")
+            left = libspud.get_option("/geometry/mesh::Mesh/source::Interval/left")
+            right = libspud.get_option("/geometry/mesh::Mesh/source::Interval/right")
+            mesh = df.IntervalMesh(number_cells,left,right)
+        elif meshtype == 'File':
+            filename = libspud.get_option("/geometry/mesh::Mesh/source::File/file")
+            mesh = df.Mesh(filename)
         else:
             df.error("Error: unknown mesh type "+meshtype)
-            
+           
         #set the functionspace for n-d solitary waves
         path="/system::"+system_name+"/field::"
         p_name = "Pressure"

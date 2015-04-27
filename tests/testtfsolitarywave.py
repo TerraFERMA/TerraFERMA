@@ -36,8 +36,9 @@ f = tf.eval(x)
 print "x=",x," r=",r, "f=", f
 pl.figure()
 pl.plot(r,f,'bo',tf.swave.r,tf.swave.f,'r--')
+pl.show()
 
-checkpoint=glob("*.tfml")[1]
+checkpoint=glob("*checkpoint*.tfml")[0]
 print "using checkpoint file ", checkpoint
 errors = tf.geterrors(checkpoint)
 print errors
