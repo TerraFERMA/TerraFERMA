@@ -5,7 +5,13 @@
       <integer_value rank="0">2</integer_value>
     </dimension>
     <mesh name="Mesh">
-      <source name="UnitSquare">
+      <source name="Rectangle">
+        <lower_left>
+          <real_value shape="2" dim1="2" rank="1">0. 0.</real_value>
+        </lower_left>
+        <upper_right>
+          <real_value shape="2" dim1="2" rank="1">1. 1.</real_value>
+        </upper_right>
         <number_cells>
           <integer_value shape="2" dim1="2" rank="1">32 32</integer_value>
         </number_cells>
