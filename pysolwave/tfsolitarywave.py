@@ -29,6 +29,7 @@ class TFSolitaryWave:
         h:  the size of the system in compaction lengths
         """
         # initialize libspud and extract parameters
+        libspud.clear_options()
         libspud.load_options(tfml_file)
         # get model dimension
         self.dim = libspud.get_option("/geometry/dimension")
@@ -46,6 +47,7 @@ class TFSolitaryWave:
         self.x0 = np.array(libspud.get_option(path+x0_name+vector_value))
         self.swave = SolitaryWave(c,n,m,d,N)
         self.rmax = self.swave.r[-1]
+        self.tfml_file = tfml_file
   
         # check that d <= dim
         assert (d <= self.dim)   
@@ -90,8 +92,9 @@ class TFSolitaryWave:
             right = libspud.get_option("/geometry/mesh::Mesh/source::Interval/right")
             mesh = df.IntervalMesh(number_cells,left,right)
         elif meshtype == 'File':
-            filename = libspud.get_option("/geometry/mesh::Mesh/source::File/file")
-            mesh = df.Mesh(filename)
+            mesh_filename = libspud.get_option("/geometry/mesh::Mesh/source::File/file")
+            print "tfml_file  = ",self.tfml_file, "mesh_filename=",mesh_filename
+            mesh = df.Mesh(mesh_filename)
         else:
             df.error("Error: unknown mesh type "+meshtype)
            
