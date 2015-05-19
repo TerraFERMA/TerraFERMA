@@ -101,7 +101,7 @@ class TestOrVariable:
 class Test(TestOrVariable):
     """A test for the model output"""
     def run(self, varsdict):
-        tmpdict = copy.copy(varsdict) # don't let the test code modify the variables
+        tmpdict = copy.deepcopy(varsdict) # don't let the test code modify the variables
         try:
           exec self.code in tmpdict
           return True
@@ -430,20 +430,26 @@ class Run:
             except IOError:
               self.log("WARNING: required input (%s) not found, continuing anyway."%(filepath))
           
-          env = copy.copy(os.environ)
+          env = copy.deepcopy(os.environ)
           try:
             env["PYTHONPATH"] = ":".join([dirname, env["PYTHONPATH"]])
           except KeyError:
             env["PYTHONPATH"] = dirname
           env["PWD"] = dirname
 
-          for command in commands:
-            p = subprocess.Popen([template(c).safe_substitute(valuesdict) for c in command], cwd=dirname, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
+          for i in xrange(len(commands)):
+            command = commands[i]
+            tcommand = [template(c).safe_substitute(valuesdict) for c in command]
+            logf = file(os.path.join(dirname, '_'+self.filename+self.ext+'.'+`i`+'.log'), 'w')
+            errf = file(os.path.join(dirname, '_'+self.filename+self.ext+'.'+`i`+'.err'), 'w')
+            p = subprocess.Popen(tcommand, cwd=dirname, stdout=logf, stderr=errf, env=env)
             retcode = p.wait()
             if retcode!=0:
-              self.log("ERROR: Command %s returned %d in directory: %s"%(" ".join(command), retcode, dirname))
+              self.log("ERROR: Command %s returned %d in directory: %s"%(" ".join(tcommand), retcode, dirname))
               error = True
               break
+            logf.close()
+            errf.close()
           
           self.log("  finished in directory %s:"%(os.path.relpath(dirname, self.currentdirectory)))
 
@@ -690,7 +696,7 @@ class Simulation(Run):
         except IOError:
           self.log("WARNING: required input (%s) not found, continuing anyway."%(filepath))
 
-    env = copy.copy(os.environ)
+    env = copy.deepcopy(os.environ)
     try:
       env["PYTHONPATH"] = ":".join([dirname, env["PYTHONPATH"]])
     except KeyError:
