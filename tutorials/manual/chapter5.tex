@@ -34,8 +34,15 @@ background constant porosity region.
   \label{fig:SolitaryWavesAllD}
 \end{figure}
 
-
-
+In the limit of small porosity, the governing equations for evolution
+of porosity $\phi$ and ``compaction pressure'' $\pcmp$ in a frame
+moving at a constant velocity $\Vs$ can be written
+\begin{gather}
+  \ppt{\phi} + \Vs\cdot\grad\phi = \frac{\pcmp}{\zeta}  \label{eq:5.1}\\
+-\div K \grad\pcmp + \frac{\pcmp}{\zeta} = \div K \ghat    \label{eq:5.2}
+\end{gather}
+where $K=\phi^{n}$ is the permeability, $\zeta = 1/\phi^{m}$ is the
+bulk viscosity and $\ghat$ is the unit vector in the direction of gravity.
 
 \subsection{Variational forms}
 \label{sec:variational-forms}
