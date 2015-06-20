@@ -7,7 +7,7 @@
 
 While many modeling packages in Earth science solve for thermal or
 thermo-chemical convection,  one of the strengths of \TF{} is that it
-is not a ``convection code'', but rather a general finite element PDE
+is not a ``convection code'' or a ``magma code'', but rather a general finite element PDE
 solver and can be used to model arbitrary problems as long as the weak
 forms are well posed.  In particular,  \TF{} was primarily designed to
 explore coupled fluid/solid mechanics with a primary application area
@@ -48,13 +48,69 @@ moving at a constant velocity $\Vs$ can be written
 \end{gather}
 where $K=\phi^{n}$ is the permeability, $\zeta = 1/\phi^{m}$ is the
 bulk viscosity, $\ghat$ is the unit vector in the direction of
-gravity, and $(h/\delta)$ is the system height $h$ in compaction lengths
+gravity.  These equations are scaled by an arbitrary lengthscale $h$
+(usually the system height), in which case  $(h/\delta)$ is  the
+system height  in compaction lengths
 \begin{gather}
   \delta = \sqrt{\frac{K_{0}\zeta_0}{\mu}}
 \end{gather}
-which is the intrinsic viscous length scale at the background
-porosity.  
+The compaction length is the intrinsic length scale over which
+pressure variations due to obstructions in melt flux propagate as
+viscous stresses in the matrix. (See
+\cite{spiegelman_flow_1993,spiegelman_flow_1993-1} for more details).
 
+Equations (\ref{eq:5.1})--(\ref{eq:5.2}) for a coupled
+hyperbolic/elliptic set of equations for the evolution of porosity and
+pressure.  For an arbitrary initial condition, these equations will
+break up into a series of localized solitary waves that propagate at a
+constant speed that depends on amplitude and maintain constant shape
+in the absence of collisions.  Remarkably, however,  we can seek
+solitary wave solutions in all dimensions $d$  of the form
+\begin{equation}
+  \label{eq:5.4}
+  \phi(\vec{x},t) = f(r) = f
+  \left(
+    \sqrt{\sum_{j}^{d-1} x_{j}^{2} + (x_{d} -ct)^{2}}
+  \right)
+\end{equation}
+where $r$ is the radial distance from the peak of the wave.
+Substituting $f(r)$ into Equations (\ref{eq:5.1})--(\ref{eq:5.2})
+transforms them into a 3rd order, non-linear ODE in $r$.  Except for
+some special cases,  these ODE's do not have analytic closed form
+solutions, however,  Simpson and Spiegelman
+\cite{simpson_solitary_2011}, provides an elegant spectrally accurate
+method for numerically calculating solitary wave profiles for all
+values of $c,n,m,d$ using the ``sinc collocation method''.  Moreover,
+Gideon simpson has encoded this method in a set of python routines
+\texttt{magmasinc} which have been included in this tutorial along
+with a set of classes for managing and evaluating the solitary wave
+profiles.  For example, the script
+\texttt{??/??/scripts/see\_solitarywaves.py} initializes 3 different
+solitary waves for $c=5$, $n=3$, $m=1$ and $d=[1,2,3]$, using 150
+collocation points.  Figure (\ref{fig:SolitaryWaveProfiles}) shows radial profiles $f(r)$ for these
+3 waves.  
+
+\begin{figure}[htbp!]
+  \centering
+  \includegraphics[width=.75\textwidth]{SolitaryWavesProfiles.pdf}
+  \caption{Solitary wave profiles $f(r)$ for 1,2 and 3-D waves
+    calculated using the pysolwave python package that installs with
+    \TF.  All wave travel at speed $c=5$ and have permeability
+    exponent $n=3$ and bulk viscosity exponent $m=1$.  Crosses on the
+    profiles show the collocation points.}
+\label{fig:SolitaryWaveProfiles}
+ \end{figure}
+
+\subsection{Benchmark problem}
+\label{sec:benchmark-problem}
+
+These solitary waves provide an excellent benchmark problem for
+testing any model of multi-phase flow.  If chosen as an initial
+condition in a frame moving at speed $\Vs = -c\ghat$ they should
+simply stay put and not change shape.  Any error in position or shape
+is strictly due to numerical errors.  As a first problem we will
+explore the solitary wave benchmarks as laid out in Simpson and
+Spiegelman, 2011 \cite{simpson_solitary_2011}. 
 
 
 \subsection{Variational forms}
