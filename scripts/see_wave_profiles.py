@@ -17,11 +17,12 @@ for d in dim:
 # and plot them out
 pl.figure()
 for i in range(len(dim)):
-    pl.plot(swa[i].r,swa[i].f,label='d={0}'.format(dim[i]))
+    pl.plot(swa[i].r,swa[i].f,'+-',label='d={0}'.format(dim[i]))
     pl.hold(True)
 
 pl.xlabel('Radial distance r')
 pl.ylabel('porosity f')
+pl.ylim((0.5, 4.))
 pl.legend(loc='best')
 pl.title('Solitary Wave profiles c={0}, n={1}, m={2}'.format(c,n,m))
 pl.grid()
