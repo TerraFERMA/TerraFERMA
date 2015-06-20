@@ -1,5 +1,6 @@
-from solitarywave import *
-import pylab as pl
+from pysolwave.solitarywave import *
+import numpy as np
+import matplotlib.pyplot as pl
 
 c = 5 # wave speed
 n = 3 # permeability exponent K=\phi^n
