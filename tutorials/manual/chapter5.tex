@@ -106,17 +106,79 @@ collocation points.  Figure (\ref{fig:SolitaryWaveProfiles}) shows radial profil
 
 These solitary waves provide an excellent benchmark problem for
 testing any model of multi-phase flow.  If chosen as an initial
-condition in a frame moving at speed $\Vs = -c\ghat$ they should
+condition in a frame moving at speed $\Vs = c\ghat$ they should
 simply stay put and not change shape.  Any error in position or shape
 is strictly due to numerical errors.  As a first problem we will
 explore the solitary wave benchmarks as laid out in Simpson and
-Spiegelman, 2011 \cite{simpson_solitary_2011}. 
+Spiegelman, 2011 \cite{simpson_solitary_2011} which have the initial
+condition of  a single 2-D
+or 3-D wave with its peak at the center of a unit square or cube.
+$\Vs$ is set to exactly counter the wave propagation.  Boundary
+conditions on porosity and pressure are shown in Figure (\ref{fig:solitarywavebcs}). 
+
+\begin{figure}[htbp!]
+  \centering
+  \def\svgwidth{.8\textwidth}
+  \input{solitaryWaveBCs.pdf_tex}
+  \caption{Boundary and initial conditions for the solitary wave
+    benchmark problem (Simpson and Spiegelman,\cite{simpson_solitary_2011}}
+  \label{fig:solitarywavebcs}
+\end{figure}
 
 
-\subsection{Variational forms}
+\subsection{Variational forms and Discontinuous Galerkin Porosity}
 \label{sec:variational-forms}
 
+To write out weak forms for Equations (\ref{eq:5.1}) and
+(\ref{eq:5.2}) require choosing stable element pairs for porosity and
+compaction pressure.  As Eq.\ (\ref{eq:5.2}) is an elliptic equation
+in compaction pressure, standard continuous galerkin elements (e.g. \Pone
+or \Ptwo) have been shown to be adequate for pressure.  Moreover, In the
+absence of the $\Vs\cdot\grad\phi$ term, Eq.\ (\ref{eq:5.1}) is
+actually an ODE for porosity and continuous elements are also valid.
+However, when the $\Vs\cdot\grad\phi$ is included, Eq.\ (\ref{eq:5.1})
+becomes a hyperbolic equation for the evolution of porosity in a frame
+moving with the solid which can present significant challenges for
+accurate solution using galerkin finite elements.  This term, which
+represents advection of porosity by the solid phase is actually
+expected for most magma dynamics problems where there is a non-trivial
+background flow of solid, such as at a mid-ocean ridge or subduction
+zones, and we use it here in the benchmark problem to ``freeze'' the
+solitary wave in the box by having the background flow exactly balance
+the wave speed $c$.  After some trial and error, we found that using
+discontinuous Galerkin elements for Porosity, worked fine.  Here we
+will use the mixed discrete function space $\fspace=(\Ptwo,\Ptwodg)$
+where $\vec{u}\in\fspace=(p,f)$ (where $p$ will be our  \texttt{ufl}
+symbol for pressure and $f$ for porosity $\phi$).
 
+As with the energy equation in thermal convection, we will first
+discretize the time derivative in the porosity equation using finite
+differences and integrate using a $\theta$ scheme.  
+Multiplying by appropriate test functions and integrating by parts, the
+variational form of the non-linear problem can be written
+\begin{quote}
+  \fbox{\parbox{.9\textwidth}{Find $\vec{u}\in \fspace$ such that
+      \begin{equation}
+         F(\vec{u};\vec{u}_{t}) =0 
+      \end{equation}
+  for all test functions $\vec{u}_{t}=(p_{t},f_{t}) \in\fspace$.}}
+\end{quote}
+ where $F(\vec{u};\vec{u}_{t}) = F_{p} + F_{f}$ with
+\begin{align}
+         F_{p} =  & \int_\Omega \left[\dot{\epsilon}(\vec{v}_{t}):
+             2\eta \dot{\epsilon}(\vec{v}_{i}) -
+             p_{i}\div\vec{v}_t  - T_{i}\vec{v}_{t} \cdot\vec{k} \right]d\vec{x}  \\
+ F_{f} =& -\int_\Omega p_t\div\vec{v}_{i} d\vec{x}\\
+\label{eq:5.5}\\
+\nonumber \\
+  F = & F_{p} + F_{f} \label{eq:5.systemresidual}
+\end{align}
+where 
+\begin{align*}
+  f_{\theta} = & (1-\theta)f_{n} + \theta f_{i}\\
+  \Vs_{\theta} = & (1-\theta)\Vs_{n} + \theta \Vs_{i}
+\end{align*}
+are $\theta$ weighted variables.  As before here we use $\theta=1/2$.
 
 \section{Solution using \TF}
 \label{sec:solution-using-tf}
