@@ -48,8 +48,7 @@ from math import sqrt
 
 cfl_h = int(ncells)/float(h_on_delta)*float(cfl_delta)
 
-libspud.set_option("/timestepping/timestep/adaptive/constraint[0]/requested_maximum_value",cfl_h)
-</string_value>
+libspud.set_option("/timestepping/timestep/adaptive/constraint[0]/requested_maximum_value",cfl_h)</string_value>
             <single_build/>
           </update>
         </parameter>
@@ -109,7 +108,7 @@ from glob import glob
 import os.path
 import pickle
 
-input = glob("../*.tfml")[0]
+input = glob("*.tfml")[0]
 tf = TFSolitaryWave(input)
 
 checkpoints = glob("*_checkpoint*.tfml")

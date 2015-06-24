@@ -187,7 +187,7 @@ from math import sqrt
 import libspud
 from glob import glob
 
-tfmlfile = glob("../magmawaves.tfml")[0]
+tfmlfile = glob("magmawaves.tfml")[0]
 tfswave = TFSolitaryWave(tfmlfile)
 print "Solitary Wave information:"
 print "c=",tfswave.swave.c, " n =",tfswave.swave.n, " d=",tfswave.swave.d, " r_max=",tfswave.rmax
