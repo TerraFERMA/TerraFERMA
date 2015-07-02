@@ -59,7 +59,7 @@ pressure variations due to obstructions in melt flux propagate as
 viscous stresses in the matrix. (See
 \cite{spiegelman_flow_1993,spiegelman_flow_1993-1} for more details).
 
-Equations (\ref{eq:5.1})--(\ref{eq:5.2}) for a coupled
+Equations (\ref{eq:5.1})--(\ref{eq:5.2}) form a coupled
 hyperbolic/elliptic set of equations for the evolution of porosity and
 pressure.  For an arbitrary initial condition, these equations will
 break up into a series of localized solitary waves that propagate at a
@@ -97,7 +97,10 @@ collocation points.  Figure (\ref{fig:SolitaryWaveProfiles}) shows radial profil
     calculated using the pysolwave python package that installs with
     \TF.  All wave travel at speed $c=5$ and have permeability
     exponent $n=3$ and bulk viscosity exponent $m=1$.  Crosses on the
-    profiles show the collocation points.}
+    profiles show the collocation points. All distances in pysolwave
+    are scaled to the compaction length in the small porosity
+    background ($f=1$).  I.e. these wave profiles extend about 25
+    compaction lengths from the wave peak.}
 \label{fig:SolitaryWaveProfiles}
  \end{figure}
 
@@ -121,7 +124,17 @@ conditions on porosity and pressure are shown in Figure (\ref{fig:solitarywavebc
   \def\svgwidth{.8\textwidth}
   \input{solitaryWaveBCs.pdf_tex}
   \caption{Boundary and initial conditions for the solitary wave
-    benchmark problem (Simpson and Spiegelman,\cite{simpson_solitary_2011}}
+    benchmark problem (Simpson and
+    Spiegelman,\cite{simpson_solitary_2011}). Porosity and the
+    separation flux normal to the top boundary are fixed at the top of
+    the domain to provide  a constant input flux of 1.
+  Sides are reflection and the bottom boundary condition is ``free
+  flux'' which assumes that the gradient of the compaction pressure is
+zero such that there is no viscous resistance to volume change on the
+bottom boundary. Note, the pressure boundary conditions are all of
+Neumann type,  however, unlike Poisson,  Eq.\ (\ref{eq:5.2}) is a
+modified Helmholtz problem and is well-posed with all Neumann
+conditions (i.e. is not singular)}
   \label{fig:solitarywavebcs}
 \end{figure}
 
@@ -139,7 +152,7 @@ actually an ODE for porosity and continuous elements are also valid.
 However, when the $\Vs\cdot\grad\phi$ is included, Eq.\ (\ref{eq:5.1})
 becomes a hyperbolic equation for the evolution of porosity in a frame
 moving with the solid which can present significant challenges for
-accurate solution using galerkin finite elements.  This term, which
+accurate solution using continuous galerkin finite elements.  This term, which
 represents advection of porosity by the solid phase is actually
 expected for most magma dynamics problems where there is a non-trivial
 background flow of solid, such as at a mid-ocean ridge or subduction
@@ -165,9 +178,16 @@ variational form of the non-linear problem can be written
 \end{quote}
  where $F(\vec{u};\vec{u}_{t}) = F_{p} + F_{f}$ with
 \begin{align}
-         F_{p} =  & \int_\Omega \left[\dot{\epsilon}(\vec{v}_{t}):
-             2\eta \dot{\epsilon}(\vec{v}_{i}) -
-             p_{i}\div\vec{v}_t  - T_{i}\vec{v}_{t} \cdot\vec{k} \right]d\vec{x}  \\
+         F_{p} =  & \int_\Omega \left(
+\grad p_{t}\cdot K_{i}
+                    \left[
+                    \grad p_{i} + \ghat
+                    \right] 
++ \chi_{i}p_{t}p_{i}
+ \right])d\vec{x}  - \int_{\partial\Omega} p_{t}
+                    \left[
+                    K_{i}(\grad p_{i} + \ghat)\cdot\vec{n}
+                    \right] ds\\
  F_{f} =& -\int_\Omega p_t\div\vec{v}_{i} d\vec{x}\\
 \label{eq:5.5}\\
 \nonumber \\

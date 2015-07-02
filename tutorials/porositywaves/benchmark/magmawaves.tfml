@@ -140,18 +140,6 @@ ds_right = ds(2)</string_value>
               <real_value rank="0">0.0</real_value>
             </constant>
           </initial_condition>
-          <boundary_condition name="Top">
-            <boundary_ids>
-              <integer_value shape="1" rank="1">4</integer_value>
-            </boundary_ids>
-            <sub_components name="All">
-              <type type="boundary_condition" name="Dirichlet">
-                <constant>
-                  <real_value rank="0">0.</real_value>
-                </constant>
-              </type>
-            </sub_components>
-          </boundary_condition>
         </rank>
       </type>
       <diagnostics>
@@ -374,7 +362,7 @@ pn = FacetNormal(p.cell())
 # body integral for pressure
 bp = inner(grad(p_t), K*(grad(p_i) + ghat)) + p_t*p_i*Xi_i 
 # surface integral terms for flux 
-sptop   = -p_t*inner(ghat, pn) # force K=1 on top boundary
+sptop   = -p_t*inner(ghat, pn) # force -K[grad(p) + ghat].n = 1 on top boundary
 spbot   = -p_t*inner(K*ghat, pn)
 
 #pressure residual
