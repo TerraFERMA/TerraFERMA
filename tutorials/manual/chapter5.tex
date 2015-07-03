@@ -81,7 +81,7 @@ solutions, however,  Simpson and Spiegelman
 \cite{simpson_solitary_2011}, provides an elegant spectrally accurate
 method for numerically calculating solitary wave profiles for all
 values of $c,n,m,d$ using the ``sinc collocation method''.  Moreover,
-Gideon simpson has encoded this method in a set of python routines
+Gideon Simpson has encoded this method in a set of python routines
 \texttt{magmasinc} which have been included in this tutorial along
 with a set of classes for managing and evaluating the solitary wave
 profiles.  For example, the script
@@ -95,7 +95,7 @@ collocation points.  Figure (\ref{fig:SolitaryWaveProfiles}) shows radial profil
   \includegraphics[width=.75\textwidth]{SolitaryWavesProfiles.pdf}
   \caption{Solitary wave profiles $f(r)$ for 1,2 and 3-D waves
     calculated using the pysolwave python package that installs with
-    \TF.  All wave travel at speed $c=5$ and have permeability
+    \TF.  All waves travel at speed $c=5$ and have permeability
     exponent $n=3$ and bulk viscosity exponent $m=1$.  Crosses on the
     profiles show the collocation points. All distances in pysolwave
     are scaled to the compaction length in the small porosity
@@ -159,14 +159,20 @@ background flow of solid, such as at a mid-ocean ridge or subduction
 zones, and we use it here in the benchmark problem to ``freeze'' the
 solitary wave in the box by having the background flow exactly balance
 the wave speed $c$.  After some trial and error, we found that using
-discontinuous Galerkin elements for Porosity, worked fine.  Here we
+discontinuous Galerkin elements for porosity works well\footnote{An
+  alternative approach is to use Semi-Lagrangian methods which do not
+  expressly include the $\Vs\cdot\grad\phi$ term and can be
+  implemented in \TF{}.  However, the semi-lagrangian capability is
+  not parallel and we have found, in the end that DG is superior for
+  these problems.}.  Here we
 will use the mixed discrete function space $\fspace=(\Ptwo,\Ptwodg)$
 where $\vec{u}\in\fspace=(p,f)$ (where $p$ will be our  \texttt{ufl}
 symbol for pressure and $f$ for porosity $\phi$).
 
 As with the energy equation in thermal convection, we will first
 discretize the time derivative in the porosity equation using finite
-differences and integrate using a $\theta$ scheme.  
+differences and integrate using a $\theta$ scheme (but we will simply
+choose $\theta=1/2$, i.e. a second-order in time trapezoidal integration rule).  
 Multiplying by appropriate test functions and integrating by parts, the
 variational form of the non-linear problem can be written
 \begin{quote}
@@ -188,17 +194,135 @@ variational form of the non-linear problem can be written
                     \left[
                     K_{i}(\grad p_{i} + \ghat)\cdot\vec{n}
                     \right] ds\\
- F_{f} =& -\int_\Omega p_t\div\vec{v}_{i} d\vec{x}\\
-\label{eq:5.5}\\
+ F_{f} =& \int_\Omega f_{t}[ f_{i} -f_{n}
+          -\frac{dt}{2}(\chi_{n}p_{n}+\chi_{i}p_{i})]d\vec{x}
+          \nonumber\\
+          & -\int_{\Omega} 
+            dt\left(
+            f_{1/2}\Vs\cdot\grad f_{t}
+            +f_{t}f_{1/2}\div\Vs
+            \right)d\vec{x}\nonumber\\
+          & + \int_{\partial\Omega}dt f_{t}f_{1/2}\Vs\cdot\vec{n} ds
+            \nonumber\\
+          & + \int_{\mathrm{internal\,  facets}} dt f_{t}^{*}f_{1/2}^{*}\Vs\cdot\vec{n}dS\label{eq:5.5}\\
 \nonumber \\
   F = & F_{p} + F_{f} \label{eq:5.systemresidual}
 \end{align}
 where 
 \begin{align*}
-  f_{\theta} = & (1-\theta)f_{n} + \theta f_{i}\\
-  \Vs_{\theta} = & (1-\theta)\Vs_{n} + \theta \Vs_{i}
+  f_{1/2} = & \frac{1}{2}(f_{n} + f_{i})\\
+  \chi_n = & 
+             \left(
+             \frac{h}{\delta}
+             \right)^{2}f_{n}^{m}\\
+\chi_i = & 
+             \left(
+             \frac{h}{\delta}
+             \right)^{2}f_{i}^{m}\\
+K_{i}    = & f_{i}^{n}\\
 \end{align*}
-are $\theta$ weighted variables.  As before here we use $\theta=1/2$.
+are the interpolated porosity at the half-time step, bulk viscosity
+terms at the old and new times and permeability at the new time.
+
+These variational forms appear somewhat more complicated than those of
+our previous examples for several reasons\footnote{not counting the fact, that
+most peopler are not familiar with these equations}.  First,  the
+Neumann flux boundary conditions add additional surface integrals to
+the forms.  But more significantly the Discontinuous Galerkin elements
+for porosity add additional complexity to the variational forms for
+the porosity residual.  The last three lines of Eq.\ (\ref{eq:5.5}) all arise from
+integration by parts of the advective term over each element
+\begin{displaymath}
+  \int_{\Omega} f_{t}\Vs\cdot\grad f_{1/2}
+\end{displaymath}
+which generates body integrals over the domain,  surface integrals
+over the external boundaries of the domain,  and because of the
+discontinuous nature of the basis functions,  integrals over the
+internal facets between cells.  This last term, as written, is
+actually ambiguous as both the test function $f_{t}$ and the porosity
+$f_{1/2}$ are multi-valued along the facets (thus the $*$ notation).
+To fix this ambiguity, we will use an upwind scheme to select the
+porosity from the cell that is being advected from.  Note, this is
+somewhat different from a finite volume upwind scheme that uses the
+cell average of the donor cell which can lead to significant numerical
+diffusion.  For these problems, where the porosity is quite smooth,
+this upwind scheme is quite accurate, but avoids the spurious
+oscillations produced using continuous elements.
+
+The weak form of the residual in UFL looks reasonably
+similar, however, there are some additional notation required for
+describing discontinuous elements.  For this problem we will actually
+split the UFL into two parts.  The first is a global declaration of
+some useful UFL symbols that can be used in all forms
+\begin{lstlisting}[style=UFL]
+# Global parameters for porosity pressure residual 
+#
+# permeability
+K = f_i**n
+
+#inverse bulk viscosity function
+Xi_i = hsquared*f_i**m
+Xi_n = hsquared*f_n**m
+
+#porosity at a half-time step
+f_half = 0.5*(f_i + f_n)
+
+# domains for assembly of surface integrals
+ds_top   = ds(4)
+ds_bottom = ds(3)
+ds_left  = ds(1)
+ds_right = ds(2)
+\end{lstlisting}
+The last four lines describe some convenience symbols for the
+surface integrals on the external boundaries. The actual UFL for the
+residual $F$ is then
+\begin{lstlisting}[style=UFL]
+#facet normal on pressure
+pn = FacetNormal(p.cell())
+
+# body integral for pressure
+bp = inner(grad(p_t), K*(grad(p_i) + ghat)) + p_t*p_i*Xi_i 
+
+# surface integral terms for flux 
+sptop   = -p_t*inner(ghat, pn) # force -K[grad(p) + ghat].n = 1 on top boundary
+spbot   = -p_t*inner(K*ghat, pn) #"free flux'' BC where inner(grad(p),pn)=0
+
+#pressure residual
+Fp = bp*dx + sptop*ds_top + spbot*ds_bottom
+
+#facet normal for porosity
+fn = FacetNormal(f.cell())
+
+# facet normal solid velocity
+vn = dot(W, fn)
+
+# rectified normal velocity: is 0 for inflow and vn for outflow
+vnabs = 0.5*(vn + abs(vn))
+
+# body integrals for porosity
+bfm = f_t*(f_i - f_n - dt*0.5*(p_i*Xi_i + p_n*Xi_n))
+
+# body integrals from advective term
+bfa = - dt*dot(grad(f_t), W*f_half) - dt*f_t*div(W)*f_half
+
+bf = bfm + bfa
+
+#surface integrals - external boundaries
+sftop = dt*f_t*vn  # set phi=1 on the top
+sfbot = dt*f_t*(vn*f_half)
+sfside = dt*f_t*(vnabs*f_half)  # outflows but 0 if inflow
+
+# surface integrals over interior facets
+sffacet = dt('+')*dot(vnabs('+')*f_half('+') - vnabs('-')*f_half('-'), jump(f_t))
+
+# porosity residual
+Ff =  bf*dx + sftop*ds_top + sfbot*ds_bottom + sfside*ds_left + sfside*ds_right + sffacet*dS
+
+# Total residual
+F = Fp + Ff
+\end{lstlisting}
+
+The only real notation arises in the final facet integral term (which frankly I can't reconstruct and there needs to be a very clear discussion of where this term comes from plus probably a picture of a facet).  
 
 \section{Solution using \TF}
 \label{sec:solution-using-tf}

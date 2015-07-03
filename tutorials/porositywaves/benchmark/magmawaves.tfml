@@ -363,7 +363,7 @@ pn = FacetNormal(p.cell())
 bp = inner(grad(p_t), K*(grad(p_i) + ghat)) + p_t*p_i*Xi_i 
 # surface integral terms for flux 
 sptop   = -p_t*inner(ghat, pn) # force -K[grad(p) + ghat].n = 1 on top boundary
-spbot   = -p_t*inner(K*ghat, pn)
+spbot   = -p_t*inner(K*ghat, pn) #"free flux BC where inner(grad(p),pn)=0
 
 #pressure residual
 Fp = bp*dx + sptop*ds_top + spbot*ds_bottom
@@ -381,14 +381,16 @@ bfa = - dt*dot(grad(f_t), W*f_half) - dt*f_t*div(W)*f_half
 
 bf = bfm + bfa
 
-#surface integrals
-sfin = dt('+')*dot(vnabs('+')*f_half('+') - vnabs('-')*f_half('-'),jump(f_t))
-sfsd = dt*f_t*(vnabs*f_half)  # outflows but 0 if inflow
+#surface integrals - external boundaries
 sftop = dt*f_t*vn  # set phi=1 on the top
 sfbot = dt*f_t*(vn*f_half)
+sfside = dt*f_t*(vnabs*f_half)  # outflows but 0 if inflow
+
+# surface integrals over interior facets
+sffacet = dt('+')*dot(vnabs('+')*f_half('+') - vnabs('-')*f_half('-'),jump(f_t))
 
 # porosity residual
-Ff =  bf*dx + sfin*dS + sftop*ds_top + sfbot*ds_bottom + sfsd*ds_left + sfsd*ds_right
+Ff =  bf*dx + sftop*ds_top + sfbot*ds_bottom + sfside*ds_left + sfside*ds_right + sffacet*dS
 
 
 F = Fp + Ff</string_value>
