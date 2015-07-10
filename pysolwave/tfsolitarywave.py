@@ -17,7 +17,7 @@ class TFSolitaryWave:
     """ class for calculating and evaluating solitary wave profiles with data from TerraFERMA .tfml input files
     """
 
-    def __init__(self, tfml_file,system_name='magma',c_name='c',n_name='n',m_name='m',d_name='d',N_name='N',h_squared_name='h_squared',x0_name='x0'):
+    def __init__(self, tfml_file,system_name='magma',p_name='Pressure',f_name='Porosity',c_name='c',n_name='n',m_name='m',d_name='d',N_name='N',h_squared_name='h_squared',x0_name='x0'):
         """read the tfml_file and use libspud to populate the internal parameters
 
         c: wavespeed
@@ -100,8 +100,6 @@ class TFSolitaryWave:
            
         #set the functionspace for n-d solitary waves
         path="/system::"+system_name+"/field::"
-        p_name = "Pressure"
-        f_name = "Porosity"
         p_family = libspud.get_option(path+p_name+"/type/rank/element/family")
         p_degree = libspud.get_option(path+p_name+"/type/rank/element/degree")
         f_family = libspud.get_option(path+f_name+"/type/rank/element/family")
