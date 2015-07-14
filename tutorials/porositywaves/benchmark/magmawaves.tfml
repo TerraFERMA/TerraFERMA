@@ -361,38 +361,42 @@ pn = FacetNormal(p.cell())
 
 # body integral for pressure
 bp = inner(grad(p_t), K*(grad(p_i) + ghat)) + p_t*p_i*Xi_i 
-# surface integral terms for flux 
+
+# surface integral terms for fluid flux 
 sptop   = -p_t*inner(ghat, pn) # force -K[grad(p) + ghat].n = 1 on top boundary
 spbot   = -p_t*inner(K*ghat, pn) #"free flux BC where inner(grad(p),pn)=0
 
 #pressure residual
 Fp = bp*dx + sptop*ds_top + spbot*ds_bottom
 
-#facet normal for porosity
+#outward facing facet normal for porosity cell
 fn = FacetNormal(f.cell())
 # facet normal solid velocity
 vn = dot(W, fn)
-vnabs = 0.5*(vn + abs(vn))
+# rectified normal solid velocity ( = vn if outflow, 0 if inflow)
+vnout = 0.5*(vn + abs(vn))
 
 # body integrals for porosity
 bfm = f_t*(f_i - f_n - dt*0.5*(p_i*Xi_i + p_n*Xi_n))
-# advective integrals
+# body integrals for advective integrals
 bfa = - dt*dot(grad(f_t), W*f_half) - dt*f_t*div(W)*f_half
 
+# all porosity body integrals
 bf = bfm + bfa
 
 #surface integrals - external boundaries
 sftop = dt*f_t*vn  # set phi=1 on the top
 sfbot = dt*f_t*(vn*f_half)
-sfside = dt*f_t*(vnabs*f_half)  # outflows but 0 if inflow
+sfside = dt*f_t*(vnout*f_half)  # outflows but 0 if inflow
 
 # surface integrals over interior facets
-sffacet = dt('+')*dot(vnabs('+')*f_half('+') - vnabs('-')*f_half('-'),jump(f_t))
+upwindfacetflux = vnout('+')*f_half('+') - vnout('-')*f_half('-')
+sffacet = dt*jump(f_t)*upwindfacetflux
 
 # porosity residual
 Ff =  bf*dx + sftop*ds_top + sfbot*ds_bottom + sfside*ds_left + sfside*ds_right + sffacet*dS
 
-
+# total residual
 F = Fp + Ff</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">F</string_value>

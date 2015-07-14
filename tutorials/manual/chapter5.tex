@@ -57,15 +57,18 @@ system height  in compaction lengths
 The compaction length is the intrinsic length scale over which
 pressure variations due to obstructions in melt flux propagate as
 viscous stresses in the matrix. (See
-\cite{spiegelman_flow_1993,spiegelman_flow_1993-1} for more details).
+\cite{spiegelman_flow_1993,spiegelman_flow_1993-1} for more
+details). In the limit the compaction length is much bigger than $h$,
+these equations reduce to Darcy flow in a rigid, but translating medium.
 
 Equations (\ref{eq:5.1})--(\ref{eq:5.2}) form a coupled
 hyperbolic/elliptic set of equations for the evolution of porosity and
 pressure.  For an arbitrary initial condition, these equations will
 break up into a series of localized solitary waves that propagate at a
 constant speed that depends on amplitude and maintain constant shape
-in the absence of collisions.  Remarkably, however,  we can seek
-solitary wave solutions in all dimensions $d$  of the form
+in the absence of collisions or mass transfer between solid and
+liquid.  Remarkably, however, we can seek solitary wave solutions in
+all dimensions $d$ of the form
 \begin{equation}
   \label{eq:5.4}
   \phi(\vec{x},t) = f(r) = f
@@ -85,7 +88,7 @@ Gideon Simpson has encoded this method in a set of python routines
 \texttt{magmasinc} which have been included in this tutorial along
 with a set of classes for managing and evaluating the solitary wave
 profiles.  For example, the script
-\texttt{??/??/scripts/see\_solitarywaves.py} initializes 3 different
+\texttt{\$TF\_HOME/share/terraferma/tutorials/porositywaves/python/scripts/see\_wave\_profiles.py} initializes 3 different
 solitary waves for $c=5$, $n=3$, $m=1$ and $d=[1,2,3]$, using 150
 collocation points.  Figure (\ref{fig:SolitaryWaveProfiles}) shows radial profiles $f(r)$ for these
 3 waves.  
@@ -145,14 +148,14 @@ conditions (i.e. is not singular)}
 To write out weak forms for Equations (\ref{eq:5.1}) and
 (\ref{eq:5.2}) require choosing stable element pairs for porosity and
 compaction pressure.  As Eq.\ (\ref{eq:5.2}) is an elliptic equation
-in compaction pressure, standard continuous galerkin elements (e.g. \Pone
+in compaction pressure, standard continuous Galerkin elements (e.g. \Pone
 or \Ptwo) have been shown to be adequate for pressure.  Moreover, In the
 absence of the $\Vs\cdot\grad\phi$ term, Eq.\ (\ref{eq:5.1}) is
 actually an ODE for porosity and continuous elements are also valid.
 However, when the $\Vs\cdot\grad\phi$ is included, Eq.\ (\ref{eq:5.1})
 becomes a hyperbolic equation for the evolution of porosity in a frame
 moving with the solid which can present significant challenges for
-accurate solution using continuous galerkin finite elements.  This term, which
+accurate solution using continuous Galerkin finite elements.  This term, which
 represents advection of porosity by the solid phase is actually
 expected for most magma dynamics problems where there is a non-trivial
 background flow of solid, such as at a mid-ocean ridge or subduction
@@ -167,7 +170,7 @@ discontinuous Galerkin elements for porosity works well\footnote{An
   these problems.}.  Here we
 will use the mixed discrete function space $\fspace=(\Ptwo,\Ptwodg)$
 where $\vec{u}\in\fspace=(p,f)$ (where $p$ will be our  \texttt{ufl}
-symbol for pressure and $f$ for porosity $\phi$).
+symbol for pressure, $\pcmp$, and $f$ for porosity $\phi$).
 
 As with the energy equation in thermal convection, we will first
 discretize the time derivative in the porosity equation using finite
@@ -204,7 +207,7 @@ variational form of the non-linear problem can be written
             \right)d\vec{x}\nonumber\\
           & + \int_{\partial\Omega}dt f_{t}f_{1/2}\Vs\cdot\vec{n} ds
             \nonumber\\
-          & + \int_{\mathrm{internal\,  facets}} dt f_{t}^{*}f_{1/2}^{*}\Vs\cdot\vec{n}dS\label{eq:5.5}\\
+          & + \int_{\mathrm{internal\,  facets}} dt [[f_{t}]]f_{1/2}^{*}\Vs\cdot\vec{n}dS\label{eq:5.5}\\
 \nonumber \\
   F = & F_{p} + F_{f} \label{eq:5.systemresidual}
 \end{align}
@@ -222,26 +225,43 @@ where
 K_{i}    = & f_{i}^{n}\\
 \end{align*}
 are the interpolated porosity at the half-time step, bulk viscosity
-terms at the old and new times and permeability at the new time.
+terms at the old and new times and permeability at the new time. In
+addition
+\begin{align*}
+  [[f_{t}]] = f_{t}^{+} - f_{t}^{-}
+\end{align*}
+is the ``jump operator'' which 
+measures the difference in a function across a facet (the $^{+}$ and
+$^{-}$ denote the one sided limits of the function on either side of
+the facet).  For continuous elements the jump operator is zero.
 
 These variational forms appear somewhat more complicated than those of
 our previous examples for several reasons\footnote{not counting the fact, that
-most peopler are not familiar with these equations}.  First,  the
+most people are not familiar with these equations}.  First,  the
 Neumann flux boundary conditions add additional surface integrals to
-the forms.  But more significantly the Discontinuous Galerkin elements
+the forms.  But more significantly the discontinuous Galerkin elements
 for porosity add additional complexity to the variational forms for
 the porosity residual.  The last three lines of Eq.\ (\ref{eq:5.5}) all arise from
 integration by parts of the advective term over each element
 \begin{displaymath}
-  \int_{\Omega} f_{t}\Vs\cdot\grad f_{1/2}
+  \int_{\Omega} f_{t}\Vs\cdot\grad f_{1/2} d\vec{x} = \sum_e \int_{\Omega_{e}} f_{t}\Vs\cdot\grad f_{1/2} d\vec{x}
 \end{displaymath}
 which generates body integrals over the domain,  surface integrals
 over the external boundaries of the domain,  and because of the
 discontinuous nature of the basis functions,  integrals over the
 internal facets between cells.  This last term, as written, is
-actually ambiguous as both the test function $f_{t}$ and the porosity
-$f_{1/2}$ are multi-valued along the facets (thus the $*$ notation).
-To fix this ambiguity, we will use an upwind scheme to select the
+actually ambiguous as the porosity
+$f_{1/2}$ is  multi-valued along the facets (thus the $*$ notation),
+however, we still need to specify a continuous normal flux across each
+facet 
+\begin{equation}
+  \label{eq5:flux}
+    q = f_{1/2}^{*}\vec{V}\cdot\vec{n}
+\end{equation}
+Since, for this problem, $\vec{V}$ is already continuous, the choice
+comes down to choosing an appropriate value of the porosity at the
+facet. While there are many choices for this (and many are numerically
+unstable), here we  will use an upwind scheme to select the
 porosity from the cell that is being advected from.  Note, this is
 somewhat different from a finite volume upwind scheme that uses the
 cell average of the donor cell which can lead to significant numerical
@@ -274,8 +294,9 @@ ds_left  = ds(1)
 ds_right = ds(2)
 \end{lstlisting}
 The last four lines describe some convenience symbols for the
-surface integrals on the external boundaries. The actual UFL for the
-residual $F$ is then
+surface integrals on the external boundaries. 
+
+The actual UFL for the residual $F$ is then
 \begin{lstlisting}[style=UFL]
 #facet normal on pressure
 pn = FacetNormal(p.cell())
@@ -283,46 +304,59 @@ pn = FacetNormal(p.cell())
 # body integral for pressure
 bp = inner(grad(p_t), K*(grad(p_i) + ghat)) + p_t*p_i*Xi_i 
 
-# surface integral terms for flux 
+# surface integral terms for fluid flux 
 sptop   = -p_t*inner(ghat, pn) # force -K[grad(p) + ghat].n = 1 on top boundary
-spbot   = -p_t*inner(K*ghat, pn) #"free flux'' BC where inner(grad(p),pn)=0
+spbot   = -p_t*inner(K*ghat, pn) #"free flux BC where inner(grad(p),pn)=0
 
 #pressure residual
 Fp = bp*dx + sptop*ds_top + spbot*ds_bottom
 
-#facet normal for porosity
+#outward facing facet normal for porosity cell
 fn = FacetNormal(f.cell())
-
 # facet normal solid velocity
 vn = dot(W, fn)
-
-# rectified normal velocity: is 0 for inflow and vn for outflow
-vnabs = 0.5*(vn + abs(vn))
+# rectified normal solid velocity ( = vn if outflow, 0 if inflow)
+vnout = 0.5*(vn + abs(vn))
 
 # body integrals for porosity
 bfm = f_t*(f_i - f_n - dt*0.5*(p_i*Xi_i + p_n*Xi_n))
-
-# body integrals from advective term
+# body integrals for advective integrals
 bfa = - dt*dot(grad(f_t), W*f_half) - dt*f_t*div(W)*f_half
 
+# all porosity body integrals
 bf = bfm + bfa
 
 #surface integrals - external boundaries
 sftop = dt*f_t*vn  # set phi=1 on the top
 sfbot = dt*f_t*(vn*f_half)
-sfside = dt*f_t*(vnabs*f_half)  # outflows but 0 if inflow
+sfside = dt*f_t*(vnout*f_half)  # outflows but 0 if inflow
 
 # surface integrals over interior facets
-sffacet = dt('+')*dot(vnabs('+')*f_half('+') - vnabs('-')*f_half('-'), jump(f_t))
+upwindfacetflux = vnout('+')*f_half('+') - vnout('-')*f_half('-')
+sffacet = dt*jump(f_t)*upwindfacetflux
 
 # porosity residual
 Ff =  bf*dx + sftop*ds_top + sfbot*ds_bottom + sfside*ds_left + sfside*ds_right + sffacet*dS
 
-# Total residual
+# total residual
 F = Fp + Ff
 \end{lstlisting}
 
-The only real notation arises in the final facet integral term (which frankly I can't reconstruct and there needs to be a very clear discussion of where this term comes from plus probably a picture of a facet).  
+\pagebreak{}
+The key line in the above ufl are \#16--19 and  \#35
+\begin{lstlisting}[style=UFL]
+# facet normal solid velocity
+vn = dot(W, fn)
+# rectified normal solid velocity ( = vn if outflow, 0 if inflow)
+vnout = 0.5*(vn + abs(vn))
+...
+upwindfacetflux = vnout('+')*f_half('+') - vnout('-')*f_half('-')
+\end{lstlisting}
+which sets the flux $q$ Eq.\ (\ref{eq5:flux}) to be the value of the
+porosity from the side of the facet that is an outflow.  Note that
+\texttt{vnout} evaluates to zero for an inflow facet and \texttt{vn}
+the normal component of the velocity for an outgoing facet (and
+\texttt{vn}$\geq 0$).
 
 \section{Solution using \TF}
 \label{sec:solution-using-tf}
