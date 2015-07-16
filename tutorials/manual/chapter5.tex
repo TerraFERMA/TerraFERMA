@@ -361,7 +361,60 @@ the normal component of the velocity for an outgoing facet (and
 \section{Solution using \TF}
 \label{sec:solution-using-tf}
 
+While the details of the solitary wave benchmarks appear significantly
+different from that of thermal convection (Chapter
+\ref{cha:thermal-convection}), the structure of the problem is quite
+similar and reasonably straightforward to set up in \TF{}.  We could
+start with an old \texttt{.tfml} file from thermal convection but it
+probably makes more sense to begin with a blank \texttt{.tfml} file
+and fill it in sequentially.  Where features, such as an adaptive time
+stepper, can be reused from the thermal convection problem, we will
+use the (extremely useful) cut and paste functions in diamond to reuse
+option blocks from other models.
 
+A fully worked out \texttt{tfml} file for the benchmark problem 
+can be found in
+\texttt{\$TF\_HOME/share/terraferma/tutorials/porositywaves/benchmark/magmawaves.tfml},
+along with an accompanying testharness file \texttt{magmawaves.shml}
+for testing.  A typical solution is shown in Figure \ref{fig:solitarywavebcs}.
+
+To build this model in \TF{} from scratch, do the following
+\begin{steps}{Step}
+  \item Make a new tfml file
+  \begin{lstlisting}[style=Bash]
+$ mkdir mybenchmark
+$ chdir mybenchmark
+$ diamond magmawaves.tfml &
+  \end{lstlisting}%$
+\item \textbf{Set the geometry:} Here we will use a 2-D UnitSquare mesh.
+  \begin{steps}{step}
+  \item Set dimension to 2 (this can only be done once)
+  \item Choose \texttt{mesh (Mesh)} 
+  \item Choose \texttt{source (UnitSquare)}
+  \item Set \texttt{number\_cells} to $32\times32$
+  \item Set \texttt{diagonal} to \texttt{right/left}
+  \end{steps}
+\item \textbf{Set io parameters}
+  \begin{steps}{step}
+  \item Set \texttt{output\_base\_name} to \texttt{magmawaves}
+  \item Set \texttt{visualization->element} to (P2DG)
+  \item Set dump-periods for visualization and statistics
+    output.  Under \texttt{dump\_periods} 
+    \begin{enumerate}
+    \item Activate \texttt{visualization\_period} and set to
+      0.05
+    \item Activate \texttt{statistics\_period} and set to
+      0.025
+  \end{enumerate}
+\item Activate \texttt{checkpointing} and set
+  \texttt{checkpointing\_period} to 0.05.  We will need checkpoint
+  files at every visualization time to be able to test the accuracy of
+  the solution using an external python package.
+
+  \end{steps}
+
+
+\end{steps}
 
 %\pagebreak{}
 \section{Themes and Variations}

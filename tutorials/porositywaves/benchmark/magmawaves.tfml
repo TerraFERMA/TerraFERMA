@@ -39,9 +39,6 @@
       <statistics_period>
         <real_value rank="0">.025</real_value>
       </statistics_period>
-      <detectors_period>
-        <real_value rank="0">0.025</real_value>
-      </detectors_period>
     </dump_periods>
     <detectors/>
     <checkpointing>
