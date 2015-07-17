@@ -165,7 +165,7 @@ the wave speed $c$.  After some trial and error, we found that using
 discontinuous Galerkin elements for porosity works well\footnote{An
   alternative approach is to use Semi-Lagrangian methods which do not
   expressly include the $\Vs\cdot\grad\phi$ term and can be
-  implemented in \TF{}.  However, the semi-lagrangian capability is
+  implemented in \TF{}.  However, the semi-Lagrangian capability is
   not parallel and we have found, in the end that DG is superior for
   these problems.}.  Here we
 will use the mixed discrete function space $\fspace=(\Ptwo,\Ptwodg)$
@@ -410,8 +410,132 @@ $ diamond magmawaves.tfml &
   \texttt{checkpointing\_period} to 0.05.  We will need checkpoint
   files at every visualization time to be able to test the accuracy of
   the solution using an external python package.
-
   \end{steps}
+\item \textbf{Set Time Stepping parameters}
+  \begin{steps}{step}
+  \item Activate \texttt{timestepping}
+  \item Set \texttt{current\_time} to 0.0
+  \item Set \texttt{finish\_time} to 0.5
+  \item Open \texttt{timestep}
+  \item Open \texttt{coefficient (Timestep)} and unfold all the way to \texttt{constant}
+    \begin{enumerate}
+    \item Set \texttt{ufl\_symbol (global)} to \texttt{dt}
+    \item Set \texttt{value (WholeMesh)->constant } to 0.  We're
+      going to use adaptive time-stepping with the initial \texttt{dt=0} trick
+      that we used for thermal convection.
+    \end{enumerate}
+  \item Activate \texttt{adaptive} and unfold \texttt{constraint}
+    \begin{enumerate}
+    \item Set \texttt{constraint} name to \texttt{Courant}
+      (and don't forget to hit carriage return for these name strings)
+    \item Set \texttt{system} name to \texttt{CourantNumber}.  We'll
+      add this system later by borrowing pieces from the thermal
+      convection models.
+    \item Set  \texttt{field} name to \texttt{CourantNumber}
+    \item Set \texttt{requested\_maximum\_value} to 0.25 (which is
+      appropriated for a $c=5$ wave and we will change this through
+      the testharness as well).
+    \item Activate \texttt{adapt\_period} and set to 2.0 (this won't actually try
+      to re-adapt through the run giving a constant time-step)      
+    \end{enumerate}
+  \end{steps}
+\item Unfold \texttt{global\_parameters}. Here we will set some global
+  ufl symbols that can be used across all systems along with some
+  dolfin specific parameters to allow parallel computation with DG elements.
+  \begin{steps}{step}
+  \item Activate \texttt{ufl} and in the Data box input
+    \begin{lstlisting}[style=UFL]
+# Global parameters for porosity pressure residual 
+
+# permeability
+K = f_i**n
+
+#inverse bulk viscosity function
+Xi_i = hsquared*f_i**m
+Xi_n = hsquared*f_n**m
+
+#porosity at a half-time step
+f_half = 0.5*(f_i + f_n)
+
+# domains for assembly
+ds_top   = ds(4)
+ds_bottom = ds(3)
+ds_left  = ds(1)
+ds_right = ds(2)
+    \end{lstlisting}
+(which are the same as those listed in Section
+\ref{sec:variational-forms}).  Note, any changes to this global ufl
+section will force a recompile of the model so use these sparingly and
+with some care.  
+\item Activate \texttt{dolfin} and unfold
+\item Activate \texttt{ghost\_mode} and set to
+  \texttt{shared\_facet}.  This will allow proper assembly of facet
+  integrals in parallel (this is a dolfin parameter that we
+  unfortunately need to pass through).
+  \end{steps}
+\item Set the \texttt{system} (and actually solve something).
+  \begin{steps}{step}
+  \item Set the \texttt{system} name to \texttt{magma}
+  \item Choose \texttt{mesh (Mesh)} to use the defined mesh
+  \item Set the \texttt{ufl\_symbol (global)} to \texttt{us}.  Again,
+    this is the \texttt{ufl} symbol for the entire mixed system of
+    pressure and porosity.
+  \item Activate a \texttt{field}, name it \texttt{Pressure} and unfold
+    \begin{enumerate}
+    \item Set the \texttt{ufl\_symbol (global)} to \texttt{p}
+    \item Unfold \texttt{type (Function)} and set the element to
+      \texttt{(P2)} (this should automatically be \texttt{rank
+        (Scalar)}
+    \item Unfold \texttt{initial\_condition (WholeMesh)} and set a
+      \texttt{constant} value of 0.0
+    \end{enumerate}
+\item Activate a second \texttt{field}, name it \texttt{Porosity} and unfold
+    \begin{enumerate}
+    \item Set the \texttt{ufl\_symbol (global)} to \texttt{f}
+    \item Unfold \texttt{type (Function)} and set the element to
+      \texttt{(P2DG)} (this should automatically be \texttt{rank
+        (Scalar)}
+    \item Unfold \texttt{initial\_condition (WholeMesh)} and choose
+      \texttt{python}.  Now the fun begins. To use the pysolvwave
+      utilities for easily generating solitary wave profiles,  we have
+      written a python class \texttt{tfsolitarywave},  which reads
+      parameters from a \texttt{.tfml} file (namely this one) and
+      calculates solitary wave profiles.  To invoke it, add the
+      following to the data window.
+      \begin{lstlisting}[style=Python]
+# Initialize to single solitary wave profile 
+# using PySolwave routines 
+# This header will act as a global header to all subsequent def val instances
+# (with great power comes great responsibility)
+
+from pysolwave.tfsolitarywave import TFSolitaryWave
+from glob import glob
+
+tfmlfile = glob("magmawaves.tfml")[0]
+
+#initialize solitary wave object from tfmlfile
+tfswave = TFSolitaryWave(tfmlfile)
+
+# print out some info about the solitary wave 
+print "Solitary Wave information:"
+print "c=",tfswave.swave.c, " n =",tfswave.swave.n, " d=",tfswave.swave.d, " r_max=",tfswave.rmax
+
+print "f=",tfswave.swave.f
+
+# python function for setting initial condition
+import numpy as np
+def val(x):
+  global tfswave,np
+  f = tfswave.eval(np.array(x))
+  return f
+      \end{lstlisting}
+
+      
+    \end{enumerate}
+
+    
+  \end{steps}
+
 
 
 \end{steps}
@@ -420,9 +544,6 @@ $ diamond magmawaves.tfml &
 \section{Themes and Variations}
 \label{sec:themes-variations}
 
-
-\subsection{Variable Viscosity}
-\label{sec:variable-viscosity}
 
 
 %%% Local Variables: 

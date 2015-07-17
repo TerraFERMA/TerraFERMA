@@ -162,27 +162,27 @@ ds_right = ds(2)</string_value>
           <initial_condition type="initial_condition" name="WholeMesh">
             <python rank="0">
               <string_value lines="20" type="code" language="python"># Initialize to single solitary wave profile 
-# using PySolwave routines ... need to set python path appropriately 
+# using PySolwave routines 
 # This header will act as a global header to all subsequent def val instances
 # (with great power comes great responsibility)
 
 from pysolwave.tfsolitarywave import TFSolitaryWave
-import numpy as np
-from math import sqrt
-import libspud
 from glob import glob
 
 tfmlfile = glob("magmawaves.tfml")[0]
+#initialize solitary wave object from tfmlfile
 tfswave = TFSolitaryWave(tfmlfile)
+
+# print out some info about the solitary wave 
 print "Solitary Wave information:"
 print "c=",tfswave.swave.c, " n =",tfswave.swave.n, " d=",tfswave.swave.d, " r_max=",tfswave.rmax
 
 print "f=",tfswave.swave.f
 
-
+# python function for setting initial condition
+import numpy as np
 def val(x):
-  import numpy as np
-  global tfswave
+  global tfswave,np
   f = tfswave.eval(np.array(x))
   return f</string_value>
             </python>
