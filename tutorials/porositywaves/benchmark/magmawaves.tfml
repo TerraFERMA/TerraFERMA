@@ -479,7 +479,7 @@ F = Fp + Ff</string_value>
       </type>
       <solve name="in_timeloop"/>
     </nonlinear_solver>
-    <functional name="PressureIntegralPressure">
+    <functional name="PressureIntegral">
       <string_value lines="20" type="code" language="python">int = p*dx</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>

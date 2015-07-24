@@ -26,7 +26,8 @@ class TFSolitaryWave:
         d: wave dimension
         N: number of collocation points
         x0: coordinate wave peak
-        h:  the size of the system in compaction lengths
+        h_squared:  the size of the system in compaction lengths
+                    squared (h/delta)**2
         """
         # initialize libspud and extract parameters
         libspud.clear_options()
