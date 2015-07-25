@@ -8,6 +8,7 @@
   </owner>
   <tags>
     <string_value lines="1">testable</string_value>
+    <comment>identify which tutorials have asserts in their tests so can be tested in the buildbots</comment>
   </tags>
   <description>
     <string_value lines="1">Simpson solitary wave benchmark.</string_value>
