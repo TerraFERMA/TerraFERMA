@@ -281,8 +281,8 @@ some useful UFL symbols that can be used in all forms
 K = f_i**n
 
 #inverse bulk viscosity function
-Xi_i = hsquared*f_i**m
-Xi_n = hsquared*f_n**m
+Xi_i = h_squared*f_i**m
+Xi_n = h_squared*f_n**m
 
 #porosity at a half-time step
 f_half = 0.5*(f_i + f_n)
@@ -451,8 +451,8 @@ $ diamond magmawaves.tfml &
 K = f_i**n
 
 #inverse bulk viscosity function
-Xi_i = hsquared*f_i**m
-Xi_n = hsquared*f_n**m
+Xi_i = h_squared*f_i**m
+Xi_n = h_squared*f_n**m
 
 #porosity at a half-time step
 f_half = 0.5*(f_i + f_n)
@@ -488,6 +488,8 @@ with some care.
         (Scalar)}
     \item Unfold \texttt{initial\_condition (WholeMesh)} and set a
       \texttt{constant} value of 0.0
+    \item Unfold \texttt{diagnostics} and activate
+      \texttt{include\_in\_visualization} and \texttt{include\_in\_statistics}
     \end{enumerate}
 \item Activate a second \texttt{field}, name it \texttt{Porosity} and unfold
     \begin{enumerate}
@@ -528,21 +530,262 @@ def val(x):
   global tfswave,np
   f = tfswave.eval(np.array(x))
   return f
-      \end{lstlisting}
+\end{lstlisting}
+\textbf{CAUTION:} if you copy the text from the pdf into diamond, be
+very careful to maintain indentation and be aware that copy/paste may
+from this tutorial may introduce non-ascii characters into diamond
+which will cause an error (In particular, the double quotes
+\texttt{``} need to be edited to simple ascii ones.
 
-      
+The source code for \texttt{tfsolitarywave.py} can be found in
+\texttt{\$TF\_HOME/share/terraferma/tutorials/porositywaves/python/pysolwave/tfsolitarywave.py}. In
+particular it assumes a number of default parameters and locations to
+be present in the \texttt{.tfml} file.  It's full syntax is
+\begin{lstlisting}[style=Python]
+class TFSolitaryWave:
+    """ class for calculating and evaluating solitary wave profiles
+        with data from  TerraFERMA .tfml input files
+    """
+
+    def __init__(self,tfml_file,
+       system_name='magma',p_name='Pressure',f_name='Porosity',
+       c_name='c',n_name='n',m_name='m',d_name='d',N_name='N',
+       h_squared_name='h_squared',x0_name='x0'):
+        
+     """read the tfml_file and use libspud to populate the internal parameters
+
+        c: wavespeed
+        n: permeability exponent
+        m: bulk viscosity exponent
+        d: wave dimension
+        N: number of collocation points
+        x0: coordinate wave peak
+        h_squared:  the size of the system in compaction lengths
+                          squared (h/delta)**2
+        """
+\end{lstlisting}
+Thus the default is to look for the system named \texttt{magma}, for
+fields and coefficients with names \texttt{Pressure},
+\texttt{Porosity}, \texttt{c,n,m,d,N,x0} and \texttt{h\_squared}.  Any
+changes in these names just need to be passed to
+\texttt{TFSolitaryWave}.  Here however, we will just set up a set of
+coefficients with the appropriate names.
+        \item Set the upper dirichlet boundary condition $\phi=1$.
+    \begin{enumerate}
+    \item Activate a new boundary condition, name it \texttt{top} and unfold
+    \item Set \texttt{boundary\_ids} to 4 (upper boundary)
+    \item Set \texttt{sub\_components (All)}$\rightarrow$\texttt{type
+        (Dirichlet)}$\rightarrow$\texttt{constant} to 1.
+    \end{enumerate}
+  \item Unfold \texttt{diagnostics} and activate
+      \texttt{include\_in\_visualization} and \texttt{include\_in\_statistics}
+
     \end{enumerate}
 
+  \item Activate a lot of coefficients and set their values.  We'll
+    start with the physical parameters, then the solitarywave
+    parameters needed for \texttt{TFSolitaryWave}
+    \begin{enumerate}
+    \item Set the background advection velocity \texttt{W}.  Activate
+      a coefficient named \texttt{W}, with \texttt{ufl\_symbol (global)}
+      \texttt{W}, \texttt{type (Constant)}$\rightarrow$\texttt{rank (Vector)}$\rightarrow$\texttt{value (WholeMesh)}$\rightarrow$\texttt{constant (dim)} to $[0,-5.]$
+      (i.e. $-c$ in the $z$ direction).
+    \item Set the gravity unit vector $\ghat=[0,-1]$.  Activate
+      a coefficient named \texttt{ghat}, with \texttt{ufl\_symbol (global)}
+      \texttt{ghat}, \texttt{type (Constant)}$\rightarrow$\texttt{rank (Vector)}$\rightarrow$\texttt{value (WholeMesh)}$\rightarrow$\texttt{constant (dim)} to $[0,-1.]$
+    \item Set the wavespeed $c=5.$ Activate
+      a coefficient named \texttt{c}, with \texttt{ufl\_symbol (global)}
+      \texttt{c}, \texttt{type (Constant)}$\rightarrow$\texttt{rank
+        (Scalar)}$\rightarrow$\texttt{value
+        (WholeMesh)}$\rightarrow$\texttt{constant} to $5.$
+\item Set the permeability exponent $n=3$. Activate
+      a coefficient named \texttt{n}, with \texttt{ufl\_symbol (global)}
+      \texttt{n}, \texttt{type (Constant)}$\rightarrow$\texttt{rank
+        (Scalar)}$\rightarrow$\texttt{value
+        (WholeMesh)}$\rightarrow$\texttt{constant} to $3.$
+    \item Repeat for the rest of the scalar wave parameters
+      \begin{itemize}
+      \item \texttt{m}=0
+      \item \texttt{d}=2
+      \item \texttt{N}=150
+      \item \texttt{h\_squared}=4096 ($(h/\delta)^{2}=64^{2}$)
+      \end{itemize}
+    \item And set a vector valued Constant coefficient \texttt{x0} for
+      the location of the wave peak to $[0.5,0.5]$
+
+    \end{enumerate}
+  \item Name the \texttt{nonlinear\_solver} \texttt{Solver} and unfold
+    \begin{enumerate}
+    \item Set the Residual \texttt{F}.  \emph{Carefully} copy the ufl for the
+      residual $F$ described
+      above in \texttt{form (Residual)} and set the
+      \texttt{ufl\_symbol (solver)} to \texttt{F}.  In particular, if
+      you copy and paste from this pdf manual, you will introduce some
+      non ascii characters into the ufl (in this case the \texttt{'}
+      single quote character,  \texttt{'}).  This will need to be
+      replaced in the ufl in diamond.
+    \item Set the Jacobian \texttt{J}.  Copy the \texttt{ufl}
+      \begin{lstlisting}[style=UFL]
+        J = derivative(F, us_i, us_a)
+      \end{lstlisting}
+      to \texttt{form (Jacobian)} and set the \texttt{ufl\_symbol
+        (solver)} to \texttt{J}
+    \item Set \texttt{relative\_error} to \texttt{1.e-7}
+    \item Activate \texttt{absolute\_error} and set to \texttt{1.e-11}
+    \item Set \texttt{max\_iterations} to \texttt{50} (it shouldn't
+      take that many)
+    \item Activate \texttt{monitors}$\rightarrow$\texttt{residual} to
+      log the non-linear residuals.
+    \end{enumerate}
+  \item Set the Linear solver
+    \begin{enumerate}
+    \item Choose \texttt{iterative\_method (fgmres)} (flexible
+      gmres). Unfold and set
+      \begin{itemize}
+      \item \texttt{restart} $=$ 30
+      \item \texttt{relative\_error} $=$ \texttt{1.e-7}
+      \item \texttt{absolute\_error} $=$  \texttt{1.e-12}
+      \item \texttt{max\_iterations} $=$  \texttt{20}
+      \item and activate \texttt{monitors}$\rightarrow$\texttt{preconditioned\_residual}
+      \end{itemize}
+
+    \item Choose \texttt{preconditioner (fieldsplit)} and unfold
+      \begin{itemize}
+      \item Name the first \texttt{fieldsplit} \texttt{Pressure}.
+        Here we will just apply the hypre preconditioner to the
+        pressure field.
+        \begin{itemize}
+        \item Activate \texttt{field} and name it
+          Pressure.
+        \item Unfold the \texttt{linear\_solver}
+        \item Choose \texttt{iterative\_method (preonly)} 
+        \item Choose \texttt{preconditioner (hypre)} 
+        \end{itemize}
+      \item Activate a second \texttt{fieldsplit} and name it
+        \texttt{Porosity}.  Here we will apply an eisenstat
+        preconditioned gmres iterative solver which we have found
+        works quite well for these problems. (the Option Properties
+        Description in diamond, provides a brief discussion of the eisenstat preconditioner).
+        \begin{itemize}
+        \item Activate \texttt{field} and name it
+          Porosity.
+        \item Unfold the \texttt{linear\_solver}
+        \item Choose \texttt{iterative\_method (gmres)}, unfold and set
+         \texttt{restart}$=$30, \texttt{relative\_error}$=$1.e-7, \texttt{max\_iterations}$=$50
+        \item Choose \texttt{preconditioner (eisenstat)} 
+        \end{itemize}
+      \end{itemize}
+    \end{enumerate}
     
+  \item If you want, add some functionals to calculate the integral of the
+    pressure and porosity.
+    \begin{enumerate}
+    \item Activate a functional and name it \texttt{PressureIntegral}
+      and unfold.
+    \item set the ufl for the functional to
+      \begin{lstlisting}[style=ufl]
+        int = p*dx
+      \end{lstlisting}
+    \item set the \texttt{ufl\_symbol (functional)} to \texttt{int}
+    \end{enumerate}
+  \item Add a functional to calculate the integral of the porosity
+    which should be constant over time. Here we can use the cut and
+    paste feature of diamond.  Click on \texttt{functional
+      (PressureIntegral)} to highlight that tab.  Using the edit menu
+    in diamond, choose copy,  then highlight a new functional tab and
+    using the edit menu choose paste.\footnote{There are also some
+      mouse shortcuts for cutting and pasting but these will vary by
+      operating system}  This will duplicate the
+    pressure functional.  Now simply change the name from
+    \texttt{PressureIntegral} to \texttt{PorosityIntegral} and the ufl to
+    \begin{lstlisting}[style=ufl]
+        int = f*dx
+     \end{lstlisting}
+  \end{steps}
+\item The final step is to add a system to calculate the Courant
+  number for the adaptive time-stepper.  Again,  here we can use the
+  copy and paste features of diamond to reuse the CourantNumber system
+  we already developed for Thermal Convection
+  \begin{steps}{step}  
+  \item Using diamond, open the \texttt{tfml} file for
+    thermal convection \texttt{\$TF\_HOME/share/terraferma/tutorials/thermalconvection/isoviscous/newton\_direct/convection.tfml}
+  \item Highlight \texttt{system (CourantNumber)} and use
+    \texttt{Edit}$\rightarrow$\texttt{Copy} to copy the entire system
+    to the clipboard.
+  \item move to your \texttt{magmawaves.tfml} window, highlight the
+    unactivated system at the bottom and use
+    \texttt{Edit}$\rightarrow$\texttt{Paste} to insert the full
+    Courant number system. \textbf{Caution:} when cutting and pasting
+    between models (and even within a model, there is always the
+    chance of duplicating \texttt{ufl\_symbols} or introducing
+    inconsistencies so each option should be checked. In this case
+    there will be a few things to patch up.
+  \item Unfold \texttt{system (CourantNumber)} and note that the
+    \texttt{ufl\_symbol (global)} for the field \texttt{CourantNumber}
+    is set to \texttt{c}, which we have already used for wavespeed.
+    We will change the name here to \texttt{cfl} and then make
+    subsequent changes to the Residual \texttt{ufl}.
+  \item Unfold the \texttt{nonlinear\_solver (Solver)} and expose the
+    \texttt{residual} which should look like
+    \begin{lstlisting}[style=UFL]
+      # Finite volume style estimate of Courant number
+# calculate the outward facing normal component of velocity for each facet
+n = FacetNormal(c_e.cell())
+vn = dot(v_i, n)
+vout = 0.5*(vn + abs(vn))
+
+# project the cell integral of the the outgoing flux from each cell
+F = c_t*c_i*dx - c_t('+')*vout('+')*dt('+')*dS - c_t('-')*vout('-')*dt('-')*dS - c_t*vout*dt*ds(1) - c_t*vout*dt*ds(2) - c_t*vout*dt*ds(3) - c_t*vout*dt*ds(4)
+    \end{lstlisting}
+and modify all occurences of \texttt{c} to \texttt{cfl} and change
+\texttt{v\_i} to \texttt{W\_i} to record the proper solid velocity
+field.  You're final ufl should look like
+\begin{lstlisting}[style=UFL]
+  # Finite volume style estimate of Courant number
+# calculate the outward facing normal component of velocity for each facet
+n = FacetNormal(cfl_e.cell())
+vn = dot(W_i, n)
+vout = 0.5*(vn + abs(vn))
+
+# project the cell integral of the the outgoing flux from each cell
+F = cfl_t*cfl_i*dx - cfl_t('+')*vout('+')*dt('+')*dS - cfl_t('-')*vout('-')*dt('-')*dS - cfl_t*vout*dt*ds(1) - cfl_t*vout*dt*ds(2) - cfl_t*vout*dt*ds(3) - cfl_t*vout*dt*ds(4)
+\end{lstlisting}
+
+
   \end{steps}
 
 
 
 \end{steps}
 
+That should conclude construction of the basic model \texttt{.tfml}
+file.  To build it use
+\begin{lstlisting}[style=Bash]
+$ tfbuild magmawaves.tfml -a magmawaves.tfml
+$ cd build
+$ make
+$ make run 
+\end{lstlisting}
+The extra \texttt{-a} argument adds a copy of magmawaves.tfml to the
+build directory which will be necessary for \texttt{TFSolitaryWave} to
+work.  If everything is working you should generate a set of images of a
+stationary solitary wave.  To go further, you should look at the
+testharness file \texttt{magmawaves.shml} in the tutorials directory
+that runs this problem over a range of mesh resolutions and time-steps
+and reinvokes \texttt{TFSolitaryWave} to calculate velocity and phase
+errors against the exact solutions and produces an output .tex table
+\begin{table}[h]
+  \centering
+  \caption{output table showing relative phase and velocity errors for the
+    solitary wave benchmark}
+  \label{benchmark_table}
+\input{table0_short_c5._n3_m0..tex}  
+\end{table}
+
+
 %\pagebreak{}
-\section{Themes and Variations}
-\label{sec:themes-variations}
+%\section{Themes and Variations}
+%\label{sec:themes-variations}
 
 
 
