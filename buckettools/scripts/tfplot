@@ -68,7 +68,7 @@ except ImportError:
   pass
 
 parser = argparse.ArgumentParser( \
-                       description="""Generate a quick plot a diagnostic file.\n"""
+                       description="""Generate a quick plot from a diagnostics file.\n"""
                                    """\n"""
                                    """When running tfplot responds to the following keys:\n"""
                                    """ r : refresh data (update bounds)\n"""

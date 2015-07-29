@@ -46,7 +46,7 @@ appears linear in $T$ if $\vec{v}$ is known.   When all three fields are unknown
 T\right)$ is non-linear because the velocity is a function of temperature and vice versa.  Adding additional coupling through more
 complex rheologies, $\eta\left(T,\vec{v},p\right)$, only increases the
 non-linearity of the system. These problems can be solved using either
-Newton's method (N) or a Picard splitting scheme (P), which both can
+Newton's method (N) or a Picard splitting scheme (P), both of which can
 be implemented in \TF{}.
 
 
@@ -227,7 +227,7 @@ problem to solve thermal convection are as follows.
 \item Make a new tfml file
   \begin{lstlisting}[style=Bash]
 $ mkdir myconvection
-$ chdir myconvection
+$ cd myconvection
 $ cp $TF_HOME/share/terraferma/tutorials/stokes/isoviscous/mms/mms_direct/stokes.tfml convection.tfml
 $ diamond convection.tfml &
   \end{lstlisting}%$

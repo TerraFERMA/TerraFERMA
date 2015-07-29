@@ -26,7 +26,7 @@
 
 A classic problem for learning any new PDE solver package is to
 consider  Poisson's equation on the unit square,  with unit
-forcing and homogeneous dirichlet boundary conditions.  The strong
+forcing and homogeneous Dirichlet boundary conditions.  The strong
 form of this problem is
 \begin{align}
 -\nabla^2u &= f \quad\text{in } \Omega=[0,1]\times[0,1]\\
@@ -108,7 +108,7 @@ for all test functions $u_t\in\fspace$. }}
 $F(u;u_{t})$ is the weak form of the (possibly non-linear) residual
 and is a linear form that assembles into a vector.
 
-For the specific case of Poisson's equation with dirichlet boundary conditions,
+For the specific case of Poisson's equation with Dirichlet boundary conditions,
 the weak form of the residual can be written, after integration by
 parts as
 \begin{equation}
@@ -178,7 +178,7 @@ $J(u_{i},\delta u_{i};u_{t})$ as the ``weak form of the
 Jacobian''.  When assembled, Eq. (\ref{eq:12}) is equivalent to the
 linear algebra problem $\mat{J}\vec{\delta u} = -\vec{F}$.
 
-\subsubsection{Writing the problem in ufl}
+\subsubsection{Writing the problem in UFL}
 \label{sec:writing-problem-ufl}
 
 The FEniCS project provides a  high level language (UFL) for describing
@@ -196,7 +196,7 @@ F   = (inner(grad(u_t), grad(u_i)) - u_t*f)*dx
 J   = inner(grad(u_t), grad(u_a))*dx
 \end{lstlisting}
 The subscripts \texttt{\_i,\_t,\_a} etc. are somewhat non-standard but
-are used consistently in \TF{} to describe ufl symbols for the
+are used consistently in \TF{} to describe UFL symbols for the
 \emph{iterated function}, \emph{test function}, and \emph{trial
   function}\footnote{the a is for ansatz\ldots{}} respectively.  Here we have
 calculated the weak form of the Jacobian analytically. A very useful
@@ -206,15 +206,15 @@ using
 \begin{lstlisting}[style=UFL]
 J = derivative(F,u_i,u_a)
 \end{lstlisting}
-where in both descriptions, \texttt{u\_a} is the ufl symbol for the
+where in both descriptions, \texttt{u\_a} is the UFL symbol for the
 correction $\delta u_{i}$.  
 
-Given a description of the weak forms in ufl,  FEniCS provides the
-Fenics Form Compiler (FFC), which transforms high level UFL into
+Given a description of the weak forms in UFL,  FEniCS provides the
+FEniCS Form Compiler (FFC), which transforms high level UFL into
 compileable C++ code using the UFC library for describing assembly of
 local tensors over cells etc.  However, UFL and FFC are not sufficient
 to describe the full set of choices required to construct a finite
-element solution.  In FEniCS,  the \emph{dolfin} library (and its
+element solution.  In FEniCS,  the \emph{DOLFIN} library (and its
 python interface) provides the integration tools however, one must
 construct individual applications from scratch as either python or C++
 programs.  The whole purpose of \TF{} is to provide another layer of
@@ -244,7 +244,7 @@ for managing, recording and documenting all of these choices in an
 intuitive options file, from which a compiled C++ application can
 be built and run.  These options files have the suffix \texttt{.tfml}
 and describe the \emph{\TF{} markup language}\footnote{which is a
-  flavor of  xml which should rarely  be read by humans}.  SPuD also provides the gui
+  flavor of  xml which should rarely  be read by humans}.  SPuD also provides the GUI
 \texttt{diamond} that reads and writes \texttt{tfml} files through an
 intuitive interface.  
 
@@ -273,7 +273,7 @@ below) and \texttt{vtk} files that can be visualized using paraview
   \centering
   \includegraphics[width=.8\textwidth]{figures/poisson_simple.png}
   \caption{\protect\small The FEM solution of Poisson's equation on the unit square
-    with unit forcing and homogeneous dirichlet boundary conditions.
+    with unit forcing and homogeneous Dirichlet boundary conditions.
     This version solves the problem using piecewise linear elements (P1)
     on a $32\times 32$ crossed triangular mesh. The mesh can be seen
     in the facets of the solution.}
@@ -289,7 +289,7 @@ which we can then modify and extend later in the themes and variations
 section.  Because of the graphical nature of \texttt{diamond} the
 following set of steps will probably take longer to read than it
 actually takes to set the problem up.  But to be completely pedantic,
-here are all the steps spelled out with screendumps to compare.
+here are all the steps spelled out with screen-dumps to compare.
 
 \begin{steps}{Step}
 \item  create an empty directory somewhere and start diamond
@@ -359,7 +359,7 @@ tab). Also hopefully by this point it
   parameters.
 First unfold both the \textbf{io} then \textbf{visualization} tabs.
 \textbf{output\_base\_name} is a required field and should be blue. It sets the
-rootname of any output file.  Set this to \emph{poisson}.
+root-name of any output file.  Set this to \emph{poisson}.
 \textbf{Caution!} do not include a line return after the string poisson. 
 \begin{center}
     \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_04.png}
@@ -417,7 +417,7 @@ the ufl\_symbol to \texttt{u}.
 \textbf{rank} is already set to Scalar (green arrows could choose
 vector or tensor). Use the green arrows to choose the built in
 \textbf{element} P1 (which automatically chooses an element family
-``CG'' (continuous galerkin, or Lagrange element) of degree 1.
+``CG'' (continuous Galerkin, or Lagrange element) of degree 1.
 \begin{center}
     \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_07b.png}
 \end{center}
@@ -434,13 +434,13 @@ vector or tensor). Use the green arrows to choose the built in
   Dirichlet conditions on the field so that it is zero on all four
   boundaries. First, activate the \textbf{boundary\_condition} tab,
   give it a name (\texttt{ZeroBCs}) and
-  unfold all the suboptions. 
+  unfold all the sub-options. 
 \begin{center}
     \includegraphics[width=\diamondwidth]{figures/screendumps/diamond_poisson_08b.png}
 \end{center}
 This will expose the options \textbf{boundary\_ids} which identify
 which boundaries are affected, and \textbf{Type (Dirichlet)} which
-let's you set a function that evaluates the dirichlet BCs.  For the
+let's you set a function that evaluates the Dirichlet BCs.  For the
 unit square,  the Boundary ID's are shown with the \textbf{source
   (UnitSquare)} tab (see Step 4, second figure).  Here we'll set all
 of them by putting \texttt{1 2 3 4} in \textbf{boundary\_ids}.  
@@ -463,7 +463,7 @@ This completes the \textbf{Function} tab, which you can refold.
 \end{center}
 This completes the \textbf{field} tab
 \item \textbf{Setting the RHS coefficient $f$:} To solve Poisson, we
-  need to give the system a rhs function $f(\vec{x})$ which in this
+  need to give the system a RHS function $f(\vec{x})$ which in this
   case is a constant $f=1$.  In ufl notation,  $f$ is a
   \emph{coefficient} in the form that can be evaluated at any point in
   the domain.  To set $f$, activate the \textbf{coefficient} tab and
@@ -653,17 +653,17 @@ example \texttt{\$TF\_HOME/share/terraferma/tutorials/poisson/gmsh/poisson.tfml}
 incorporates a mesh generated using \texttt{gmsh}.  The geometry file
 for this mesh is in
 \texttt{\$TF\_HOME/share/terraferma/tutorials/poisson/gmsh/mesh/widget.geo}. To convert
-for use in TF (Dolfin) use
+for use in TF (DOLFIN) use
 \begin{lstlisting}[style=Bash]
 $ cd $TF_HOME/share/terraferma/tutorials/poisson/gmsh/mesh
 $ gmsh -2 -algo del2d widget.geo
 $ dolfin-convert widget.msh widget.xml
 \end{lstlisting}
 the \texttt{gmsh} command generates a 2-D unstructured mesh in
-\texttt{widget.msh} and  \texttt{dolfin-convert} generates three
-\texttt{.xml} files that include the mesh geometry as well as labels
-for boundary ids.  The actual boundary id's for the exterior walls
-(1-6) and interior hole (7) can be found in the geometry file
+\texttt{widget.msh} and  \texttt{dolfin-convert} generates a dolfin
+meshfile in \texttt{.xml} format  that include the mesh geometry as
+well as labels for boundary ids.  The actual boundary id's for the
+exterior walls (1-6) and interior hole (7) can be found in the geometry file
 \texttt{widget.geo}.
 
 To incorporate this mesh into \texttt{poisson.tfml} we simply change
@@ -681,6 +681,28 @@ produces the result shown in Figure \ref{fig:poisson_gmsh}.
     the exterior faces and $u=0.02$ on the interior hole. }
 \label{fig:poisson_gmsh}
 \end{figure}
+
+Alternatively, the mesh generation, model building and model execution
+can be automated using the simulation testharness.  An example
+testharness file, \texttt{poisson.shml} can be found in the gmsh
+directory.  To run this file use
+\begin{lstlisting}[style=Bash]
+$ tfsimulationharness --test poisson.shml
+\end{lstlisting}
+%$
+If all is successful,  the jobs will finish with
+\begin{lstlisting}[style=Bash]
+poisson.shml: Running tests:
+poisson.shml: Running umax:
+u_max = [0.037188591984999998]
+poisson.shml: success.
+poisson.shml: Running umin:
+u_min = [0.0]
+poisson.shml: success.
+poisson.shml: PP
+Passes:   2
+Failures: 0
+\end{lstlisting}
 
 
 \subsubsection{Changing Elements}
@@ -857,7 +879,7 @@ with  prescribed functions
   h &=  \exp(x+y/2)\nonumber
 \end{align}
 where $\partial\Omega_{N}$ are Neumann boundaries (here the right side
-of the box at $x=1$) and $\partial\Omega_{D}$ are the remaining dirichlet boundaries (top, bottom,and left).
+of the box at $x=1$) and $\partial\Omega_{D}$ are the remaining Dirichlet boundaries (top, bottom,and left).
 
 The weak form of the residual after integration by parts (and
 including the surface terms) now looks like
@@ -1083,7 +1105,7 @@ $ tfsimulationharness --test poisson.shml
 \end{lstlisting} %$
 which will generate two directory structures:
 \texttt{poisson.tfml.build} contains the binary file and
-\texttt{poisson.tfml.run} contains a set of subdirectories for each
+\texttt{poisson.tfml.run} contains a set of sub-directories for each
 individual run labeled by the parameter (in this case
 \texttt{ncells\_8}, \texttt{ncells\_16}, etc.).   Using the
 \texttt{--test} option, it will also calculate the best-fit degree of
