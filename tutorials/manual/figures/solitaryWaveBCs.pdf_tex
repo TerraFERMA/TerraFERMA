@@ -52,7 +52,7 @@
     \put(0.29191732,0.49512702){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{}}}%
     \put(0.5557215,0.49322296){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{}}}%
     \put(0.79971611,0.51045677){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{}}}%
-    \put(0,0){\includegraphics[width=\unitlength,page=1]{solitaryWaveBCs.pdf}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=1]{figures/solitaryWaveBCs.pdf}}%
     \put(0.49265222,0.47515474){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{{\large $f=1$, $-K[\grad p +\ghat]\cdot\vec{n}=1$}}}}%
     \put(0.49513527,0.00491267){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{{\large $\grad p\cdot\hat{n}=0$}}}}%
     \put(0.79969894,0.25185803){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{{\large $\grad p\cdot\hat{n}=0$}}}}%
