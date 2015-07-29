@@ -174,7 +174,7 @@ problem to solve Stokes are as follows.
 \item Make a new tfml file
   \begin{lstlisting}[style=Bash]
 $ mkdir mystokes
-$ chdir mystokes
+$ cd mystokes
 $ cp $TF_HOME/share/terraferma/tutorials/poisson/mms/poisson.tfml stokes.tfml
 $ diamond stokes.tfml &
   \end{lstlisting}%$
@@ -352,15 +352,20 @@ F = Fv + Fp
    \end{steps}
  \item \textbf{Remove the system Error} (unless you want to visualize
    the errors in which case you'll need to modify this system).
- \item \textbf{Test the build using}
+ \item \textbf{Test the build using either}
    \begin{lstlisting}[style=Bash]
 $ tfbuild stokes.tfml
 $ cd build
 $ make -j 3
 $ make run
+$ cd ..
    \end{lstlisting}
- \item \textbf{Run the convergence tests:} change directory back to
-   \texttt{mystokes} and
+   \textbf{or}
+   \begin{lstlisting}[style=Bash]
+$ cp $TF_HOME/share/terraferma/tutorials/stokes/isoviscous/mms/mms_direct/stokes.shml .
+$  tfsimulationharness --build stokes.shml
+\end{lstlisting} %$
+ \item \textbf{Run the convergence tests:}
    \begin{lstlisting}[style=Bash]
 $ cp $TF_HOME/share/terraferma/tutorials/stokes/isoviscous/mms/mms_direct/stokes.shml .
 $  tfsimulationharness --test stokes.shml
@@ -440,7 +445,7 @@ be written
   \right]
 \end{equation}
 
-\cite{may_preconditioned_2008} present a large number of block
+May and Moresi \cite{may_preconditioned_2008} present a large number of block
 preconditioning schemes for this problem including Schur Complement
 Reduction based schemes (SCR) and Fully coupled block preconditioners
 (FC).  Here we will discuss one FC upper triangular block
@@ -548,7 +553,7 @@ out example can be found in
 \item Make a new tfml file from one with a direct solver
   \begin{lstlisting}[style=Bash]
 $ mkdir mymms_iterative
-$ chdir mymms_iterative
+$ cd mymms_iterative
 $ cp $TF_HOME/share/terraferma/tutorials/stokes/isoviscous/mms/mms_direct/stokes.tfml .
 $ diamond stokes.tfml &
   \end{lstlisting}%$
