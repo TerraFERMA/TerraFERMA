@@ -178,8 +178,24 @@ initial condition
 \begin{displaymath}
   T(x,0) = 1 - z + 0.2\cos(\pi x)\sin(\pi z)
 \end{displaymath}
-to which will set up a steady cell rotating clock-wise.
-\pagebreak{}
+which will set up a steady cell rotating clock-wise. Figure
+\ref{fig:convection1a} shows the near steady-state solution of this
+problem implemented in \TF.
+
+\begin{figure}[htbp!]
+  \centering
+  \includegraphics[width=.9\textwidth]{figures/convection_isoviscous_TV.png}
+  \caption{Near-steady state solution of a simple isoviscous thermal
+    convection problem Blankenbach 1a
+    \cite{blankenbach_benchmark_1989} ($\Ra=10^{4}$). Resolution is
+    $64\times64\times2$ triangles with mixed element
+    $(v,p,T)\in([P2,P2],P1,P2])$ for 54148 total degrees of freedom.  Color field
+    shows dimensionless Temperature with the velocity field shown as
+    arrows. The steady state stopping criterion for this run was set
+    such that all fields change by $\leq10^{-5}$ between time-steps.}
+  \label{fig:convection1a}
+\end{figure}
+
 \section{Solution using \TF}
 \label{sec:solution-using-tf}
 
@@ -205,21 +221,9 @@ can be found in
 solution is shown in Figure \ref{fig:convection1a}.   
 
 
-\begin{figure}[htbp!]
-  \centering
-  \includegraphics[width=.9\textwidth]{figures/convection_isoviscous_TV.png}
-  \caption{Near-steady state solution of a simple isoviscous thermal
-    convection problem Blankenbach 1a
-    \cite{blankenbach_benchmark_1989} ($\Ra=10^{4}$). Resolution is
-    $64\times64\times2$ triangles with mixed element
-    $(v,p,T)\in([P2,P2],P1,P2])$ for 54148 total degrees of freedom.  Color field
-    shows dimensionless Temperature with the velocity field shown as
-    arrows. The steady state stopping criterion for this run was set
-    such that all fields change by $\leq10^{-5}$ between time-steps.}
-  \label{fig:convection1a}
-\end{figure}
 
-\pagebreak{}
+
+%\pagebreak{}
 
 In more detail, the specific steps required to modify the Stokes mms
 problem to solve thermal convection are as follows.
@@ -466,6 +470,7 @@ def val(x):
     \item Change the residual from Stokes to full   thermal convection
       by adding the temperature residual i.e. implement the ufl
       described above 
+\pagebreak{}
     \begin{lstlisting}[style=UFL]
 # theta weighted variables
 T_theta = theta*T_i + (1.-theta)*T_n
@@ -568,7 +573,11 @@ F = c_t*c_i*dx -
       c_t*vout*dt*ds(3) - c_t*vout*dt*ds(4)
     \end{lstlisting}
 which is the weak form for $\alpha$ that depends on the timestep
-$\Delta t$ and integral of the outgoing flux through each cell.
+$\Delta t$ and integral of the outgoing flux through each cell. \textbf{CAUTION!}
+ if you copy and paste the above UFL from the pdf manual to diamond,
+ you will introduce some non-ascii characters into the ufl that will
+ break FFC.  In this case,  the single quote character \texttt{'} will need to
+ be edited to a standard ascii single quote.
 \item set the residual \texttt{ufl\_symbol (solver) = F}
 \end{itemize}
 \item \textbf{Set the Jacobian}
@@ -1079,7 +1088,7 @@ Unlike the isoviscous case, \texttt{preonly\_fieldsplit\_direct} and
 However, their convergence behaviors are similar with only
 marginal gains seen using the approximate Newton scheme.  As before
 the full benefits of Newton's method are only seen
-using\texttt{newton\_direct} and \texttt{newton\_fieldsplit\_direct},
+using \texttt{newton\_direct} and \texttt{newton\_fieldsplit\_direct},
 where the norm of the residual drops $\sim 7$ orders of magnitude in 2
 as opposed to 4 iterations.  These higher
 convergence rates however come at a higher cost than using
@@ -1097,6 +1106,7 @@ non-linearity in temperature but does not assemble the
 $K_{\vec{v}}$ block in Eq.\ (\ref{eq:TVJacobian}). The only
 substantive change from \texttt{newton\_fieldsplit\_direct} is in the
 ufl for the residual, which is now
+\pagebreak{}
 \begin{lstlisting}[style=ufl]
 # velocity residual and derivative, viscosity block
 rv_v = inner(sym(grad(v_t)), 2.*eta*sym(grad(v_i)))*dx
