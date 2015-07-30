@@ -111,8 +111,8 @@ problem we need boundary conditions and a forcing function $\vec{f}$. Elman et. 
    p(x,y) =& 60x^{2}y - 20y^{3} \nonumber \\
    \vec{f}(x,y) =& \vec{0} \nonumber 
 \end{align}
-on the domain  $\Omega=[-1,1]\times[-1,1]$ with dirichlet boundary conditions on velocity interpolated from the
-analytic solution.  Note: the discrete problem with all dirichlet
+on the domain  $\Omega=[-1,1]\times[-1,1]$ with Dirichlet boundary conditions on velocity interpolated from the
+analytic solution.  Note: the discrete problem with all Dirichlet
 conditions on velocity is singular (with a trivial constant null space
 for the pressure) and some care needs to be taken with both direct and
 iterative solvers to solve this problem accurately. Figure
@@ -246,7 +246,7 @@ def val(x):
         \item Set \texttt{element (P1)}
         \item Set \texttt{initial\_condition} to a constant (0.0)
         \end{itemize}
-      \item \textbf{Set a reference point:}  Stokes with all dirichlet
+      \item \textbf{Set a reference point:}  Stokes with all Dirichlet 
         BC's for velocity is actually singular allowing an arbitrary
         constant in the pressure.  There are multiple ways in TF to
         remove this singularity.  For direct solvers, we can set  a single reference
@@ -256,23 +256,6 @@ def val(x):
           (Point)} tab and set the coordinates to $(0.,0.)$.
       \end{itemize}
   \item \textbf{Set the diagnostics for Pressure}: add \texttt{include\_in\_visualization} and \texttt{include\_in\_statistics}
-    % \begin{itemize}
-    % \item add \texttt{include\_in\_visualization} and 
-    % \item Under \texttt{include\_in\_statistics}
-    %   \begin{itemize}
-    %   \item add the functional
-    %   \texttt{L2NormErrorSquared} and set it to
-    %   \begin{lstlisting}[style=Ufl]
-    %     errp2 =(p-pe)**2*dx
-    %   \end{lstlisting}
-    %   and set the \texttt{ufl\_symbol} to \texttt{errp2}.
-    % \item add the functional \texttt{L2NormSquared} and set it to
-    %   \begin{lstlisting}[style=Ufl]
-    %     l2p2 =p*p*dx
-    %   \end{lstlisting}
-    %   and set the \texttt{ufl\_symbol} to \texttt{l2p2}.
-    %   \end{itemize}
-    % \end{itemize}
   \item \textbf{Set the rhs function f:} under \texttt{coefficient (f)}
     \begin{itemize}
     \item make sure the \texttt{ufl\_symbol} is set to \texttt{f}
@@ -599,7 +582,7 @@ although this will also assemble the $G^{T}$ block.
 \item Set the \texttt{ufl\_symbol} to
   \texttt{Jpc}.
 \item You might also want to activate and set the
-  \texttt{quadrature\_degree} to 3 to keep all the jacobians and
+  \texttt{quadrature\_degree} to 3 to keep all the Jacobians and
   residuals to the same order of quadrature.
   \end{steps}
 

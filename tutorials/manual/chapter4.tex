@@ -384,9 +384,6 @@ eta = 1.
         \item \texttt{components} = 1
         \item \texttt{type(Dirichlet)} constant = 0
         \end{itemize}
-      % \item \textbf{Delete the Functional} \texttt{L2NormErrorSquared}
-      % from
-      %\texttt{diagnostics $\rightarrow$ include\_in\_statistics}
     \item \textbf{Turn on steady-state checking}: under
       \texttt{diagnostics}, activate the tab
       \texttt{include\_in\_steady\_state} and set the norm to be
@@ -395,7 +392,6 @@ eta = 1.
     \item \textbf{Modify Properties for Pressure}
       \begin{itemize}
       \item Move the reference point to $[0.5, 0.5]$
-      % \item \textbf{Delete the Functional} \texttt{L2NormErrorSquared}  from \texttt{diagnostics $\rightarrow$ include\_in\_statistics}
       \item \textbf{Turn on steady-state checking}:  under
       \texttt{diagnostics}, activate the tab
       \texttt{include\_in\_steady\_state} and set the norm to be
@@ -438,17 +434,7 @@ def val(x):
   should add to visualization, statistics and steady-state monitoring
   \begin{itemize}
   \item activate \texttt{include\_in\_visualization}
-  \item activate \texttt{include\_in\_statistics}. % If you want to
-%     calculate the Nusselt number
-%     \begin{itemize}
-%     \item Add a new \texttt{functional} named \texttt{Nu} with
-%       \texttt{ufl\_symbol} = \texttt{Nu} and ufl
-%       \begin{lstlisting}[style=UFL]
-%         Nu = -T.dx(1)*ds(4)
-%       \end{lstlisting}
-% which will calculate the integral of the heat-flux ($-\nabla T\cdot
-% \hat{n}$) across the top boundary.
-%    \end{itemize}
+  \item activate \texttt{include\_in\_statistics}. 
 \item activate \texttt{include\_in\_steady\_state} and set the norm
   type to \texttt{linf}
   \end{itemize}
@@ -489,7 +475,7 @@ F = Fv + Fp + FT
   \item \textbf{Change the SNES type to ls}:  This is real newton now
     and you'll need a real non-linear solver.
   \item \textbf{Keep a direct solver for Newton (for the moment)}.  A
-    sparse direct solve for the full $3\time3$ block jacobian is
+    sparse direct solve for the full $3\time3$ block Jacobian is
     inefficient and we will change it shortly to a
     block-preconditioned iterative solver, but for now we'll keep the
     sparse direct solver and use it as a base-line case.
@@ -653,7 +639,7 @@ could also use a physically motivated approximate Jacobian
   \right].
 \end{equation}
 instead of the full Jacobian $J$. $P$ simply neglects the coupling between temperature and velocity
-(by  assumingthat $B=0$).  In this case, $P$ is block
+(by  assuming that $B=0$).  In this case, $P$ is block
 upper-triangular such that $P\delta = -\vec{F}$  can be solved
 sequentially by first solving for the Temperature correction $\delta
 T_{i}$ using
@@ -784,7 +770,7 @@ strategies are
     \begin{itemize}
     \item set \texttt{composite\_type (multiplicative)}\footnote{a
         multiplicative fieldsplit preconditioner uses the results of
-        previous block solves as they become availalable.  Thus the
+        previous block solves as they become available.  Thus the
         order of splits is important.  If we solve $T$ then Stokes,
         the preconditioner is upper triangular, otherwise it's lower
         triangular.  A \texttt{composite\_type (additive) is just
