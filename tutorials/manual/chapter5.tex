@@ -6,25 +6,32 @@
 
 
 While many modeling packages in Earth science solve for thermal or
-thermo-chemical convection,  one of the strengths of \TF{} is that it
-is not a ``convection code'' or a ``magma code'', but rather a general finite element PDE
-solver and can be used to model arbitrary problems as long as the weak
-forms are well posed.  In particular,  \TF{} was primarily designed to
-explore coupled fluid/solid mechanics with a primary application area
-being the flow of magma and fluids in the deep earth.  A more general
-theory of magma dynamics has been derived by multiple authors
+thermo-chemical convection, one of the strengths of \TF{} is that it
+is not a ``convection code'' or a ``lithosphere code'', but rather a
+general finite element PDE solver that can be used to model arbitrary
+problems as long as the weak forms are well posed.  In particular,
+\TF{} was primarily designed to explore coupled fluid/solid mechanics
+with a primary application area being the flow of magma and fluids in
+the deep earth.  A more general theory of magma dynamics has been
+derived by multiple authors
 \cite{mckenzie_generation_1984,scott_magma_1984,scott_magma_1986,spiegelman_flow_1993,spiegelman_flow_1993-1,bercovici_two-phase_2001-1,bercovici_energetics_2003,simpson_multiscale_2010,simpson_multiscale_2010-1}
 that considers the flow of a low viscosity fluid in a viscously
-deformable solid matrix.  From the beginning of magma dynamics,  one
-of the intriguing features of these models is that they admit
-dispersive non-linear magmatic
-solitary  waves that propagate through the solid as ``hump
-shaped'' blobs with radial symmetry that propagate at a characteristic
-speed $c$ that depends on amplitude, dimension and material
-parameters.  Figure \ref{fig:SolitaryWavesAllD} shows some example
-solitary wave profiles for 1,2 and 3-D solitary waves that all
+deformable solid matrix. This theory has been the basis for a large
+number of models of magmatic regimes including mid-ocean ridges and
+subduction zones.  However, rather than begin by developing such 
+complex models,  it is useful to start with the basic benchmark
+problems in magma-dynamics, namely calculating the evolution and
+propagation of non-linear porosity waves.
+
+From the beginning of magma dynamics, one of
+the intriguing features of these equations is that they admit dispersive
+non-linear magmatic solitary waves that propagate through the solid as
+``hump shaped'' blobs with radial symmetry that propagate at a
+characteristic speed $c$ that depends on amplitude, dimension and
+material parameters.  Figure \ref{fig:SolitaryWavesAllD} shows some
+example solitary wave profiles for 1,2 and 3-D solitary waves that all
 propagate at the same speed $c=5$ times the melt velocity in the
-background constant porosity region.  
+background constant porosity region.
 
 \begin{figure}[htb!]
   \centering
@@ -48,17 +55,19 @@ moving at a constant velocity $\Vs$ can be written
 \end{gather}
 where $K=\phi^{n}$ is the permeability, $\zeta = 1/\phi^{m}$ is the
 bulk viscosity, $\ghat$ is the unit vector in the direction of
-gravity.  These equations are scaled by an arbitrary lengthscale $h$
+gravity.  These equations are scaled by an arbitrary length scale $h$
 (usually the system height), in which case  $(h/\delta)$ is  the
 system height  in compaction lengths
 \begin{gather}
   \delta = \sqrt{\frac{K_{0}\zeta_0}{\mu}}
 \end{gather}
+Where $K_{0}$ and $\zeta_{0}$ are the permeability and bulk viscosity
+at some reference porosity $\phi_{0}\sim0.1-1$\%.  
 The compaction length is the intrinsic length scale over which
 pressure variations due to obstructions in melt flux propagate as
 viscous stresses in the matrix. (See
 \cite{spiegelman_flow_1993,spiegelman_flow_1993-1} for more
-details). In the limit the compaction length is much bigger than $h$,
+details). In the limit that the compaction length is much bigger than $h$,
 these equations reduce to Darcy flow in a rigid, but translating medium.
 
 Equations (\ref{eq:5.1})--(\ref{eq:5.2}) form a coupled
@@ -265,7 +274,7 @@ unstable), here we  will use an upwind scheme to select the
 porosity from the cell that is being advected from.  Note, this is
 somewhat different from a finite volume upwind scheme that uses the
 cell average of the donor cell which can lead to significant numerical
-diffusion.  For these problems, where the porosity is quite smooth,
+diffusion.  For these problems, where the porosity is essentially smooth,
 this upwind scheme is quite accurate, but avoids the spurious
 oscillations produced using continuous elements.
 
@@ -400,12 +409,12 @@ $ diamond magmawaves.tfml &
   \item Set \texttt{visualization->element} to (P2DG)
   \item Set dump-periods for visualization and statistics
     output.  Under \texttt{dump\_periods} 
-    \begin{enumerate}
+    \begin{itemize}
     \item Activate \texttt{visualization\_period} and set to
       0.05
     \item Activate \texttt{statistics\_period} and set to
       0.025
-  \end{enumerate}
+  \end{itemize}
 \item Activate \texttt{checkpointing} and set
   \texttt{checkpointing\_period} to 0.05.  We will need checkpoint
   files at every visualization time to be able to test the accuracy of
@@ -418,14 +427,14 @@ $ diamond magmawaves.tfml &
   \item Set \texttt{finish\_time} to 0.5
   \item Open \texttt{timestep}
   \item Open \texttt{coefficient (Timestep)} and unfold all the way to \texttt{constant}
-    \begin{enumerate}
+    \begin{itemize}
     \item Set \texttt{ufl\_symbol (global)} to \texttt{dt}
     \item Set \texttt{value (WholeMesh)->constant } to 0.  We're
       going to use adaptive time-stepping with the initial \texttt{dt=0} trick
       that we used for thermal convection.
-    \end{enumerate}
+    \end{itemize}
   \item Activate \texttt{adaptive} and unfold \texttt{constraint}
-    \begin{enumerate}
+    \begin{itemize}
     \item Set \texttt{constraint} name to \texttt{Courant}
       (and don't forget to hit carriage return for these name strings)
     \item Set \texttt{system} name to \texttt{CourantNumber}.  We'll
@@ -437,7 +446,7 @@ $ diamond magmawaves.tfml &
       the testharness as well).
     \item Activate \texttt{adapt\_period} and set to 2.0 (this won't actually try
       to re-adapt through the run giving a constant time-step)      
-    \end{enumerate}
+    \end{itemize}
   \end{steps}
 \item Unfold \texttt{global\_parameters}. Here we will set some global
   ufl symbols that can be used across all systems along with some
@@ -481,7 +490,7 @@ with some care.
     this is the \texttt{ufl} symbol for the entire mixed system of
     pressure and porosity.
   \item Activate a \texttt{field}, name it \texttt{Pressure} and unfold
-    \begin{enumerate}
+    \begin{itemize}
     \item Set the \texttt{ufl\_symbol (global)} to \texttt{p}
     \item Unfold \texttt{type (Function)} and set the element to
       \texttt{(P2)} (this should automatically be \texttt{rank
@@ -490,15 +499,15 @@ with some care.
       \texttt{constant} value of 0.0
     \item Unfold \texttt{diagnostics} and activate
       \texttt{include\_in\_visualization} and \texttt{include\_in\_statistics}
-    \end{enumerate}
+    \end{itemize}
 \item Activate a second \texttt{field}, name it \texttt{Porosity} and unfold
-    \begin{enumerate}
+    \begin{itemize}
     \item Set the \texttt{ufl\_symbol (global)} to \texttt{f}
     \item Unfold \texttt{type (Function)} and set the element to
       \texttt{(P2DG)} (this should automatically be \texttt{rank
         (Scalar)}
     \item Unfold \texttt{initial\_condition (WholeMesh)} and choose
-      \texttt{python}.  Now the fun begins. To use the pysolvwave
+      \texttt{python}.  Now the fun begins. To use the pysolwave
       utilities for easily generating solitary wave profiles,  we have
       written a python class \texttt{tfsolitarywave},  which reads
       parameters from a \texttt{.tfml} file (namely this one) and
@@ -570,52 +579,57 @@ fields and coefficients with names \texttt{Pressure},
 changes in these names just need to be passed to
 \texttt{TFSolitaryWave}.  Here however, we will just set up a set of
 coefficients with the appropriate names.
-        \item Set the upper dirichlet boundary condition $\phi=1$.
-    \begin{enumerate}
+        \item Set the upper Dirichlet boundary condition $\phi=1$.
+    \begin{itemize}
     \item Activate a new boundary condition, name it \texttt{top} and unfold
     \item Set \texttt{boundary\_ids} to 4 (upper boundary)
     \item Set \texttt{sub\_components (All)}$\rightarrow$\texttt{type
         (Dirichlet)}$\rightarrow$\texttt{constant} to 1.
-    \end{enumerate}
+    \end{itemize}
   \item Unfold \texttt{diagnostics} and activate
       \texttt{include\_in\_visualization} and \texttt{include\_in\_statistics}
 
-    \end{enumerate}
+    \end{itemize}
 
   \item Activate a lot of coefficients and set their values.  We'll
     start with the physical parameters, then the solitarywave
     parameters needed for \texttt{TFSolitaryWave}
-    \begin{enumerate}
+    \begin{itemize}
     \item Set the background advection velocity \texttt{W}.  Activate
-      a coefficient named \texttt{W}, with \texttt{ufl\_symbol (global)}
-      \texttt{W}, \texttt{type (Constant)}$\rightarrow$\texttt{rank (Vector)}$\rightarrow$\texttt{value (WholeMesh)}$\rightarrow$\texttt{constant (dim)} to $[0,-5.]$
-      (i.e. $-c$ in the $z$ direction).
-    \item Set the gravity unit vector $\ghat=[0,-1]$.  Activate
-      a coefficient named \texttt{ghat}, with \texttt{ufl\_symbol (global)}
-      \texttt{ghat}, \texttt{type (Constant)}$\rightarrow$\texttt{rank (Vector)}$\rightarrow$\texttt{value (WholeMesh)}$\rightarrow$\texttt{constant (dim)} to $[0,-1.]$
-    \item Set the wavespeed $c=5.$ Activate
-      a coefficient named \texttt{c}, with \texttt{ufl\_symbol (global)}
-      \texttt{c}, \texttt{type (Constant)}$\rightarrow$\texttt{rank
-        (Scalar)}$\rightarrow$\texttt{value
-        (WholeMesh)}$\rightarrow$\texttt{constant} to $5.$
-\item Set the permeability exponent $n=3$. Activate
-      a coefficient named \texttt{n}, with \texttt{ufl\_symbol (global)}
-      \texttt{n}, \texttt{type (Constant)}$\rightarrow$\texttt{rank
-        (Scalar)}$\rightarrow$\texttt{value
-        (WholeMesh)}$\rightarrow$\texttt{constant} to $3.$
+      a coefficient named \texttt{W} and unfold and set
+      \begin{itemize}
+      \item  \texttt{ufl\_symbol (global)} \texttt{W}
+      \item \texttt{type (Constant)}
+      \item \texttt{rank (Vector)}
+      \item \texttt{value (WholeMesh)}
+      \item \texttt{constant (dim)} to $[0,-5.]$ (i.e. $-c$ in the $z$ direction).
+      \end{itemize}
+    \item Set the gravity unit vector $\ghat=[0,-1]$.  Add another
+      vector valued coefficient named \texttt{ghat}, with \texttt{ufl\_symbol (global)}
+      \texttt{ghat} and constant value = $[0,-1.]$
+    \item Set the wavespeed $c=5.$  Activate
+      a coefficient named \texttt{c} and unfold and set
+      \begin{itemize}
+      \item  \texttt{ufl\_symbol (global)} \texttt{c}
+      \item \texttt{type (Constant)}
+      \item \texttt{rank (Scalar)}
+      \item \texttt{value (WholeMesh)}
+      \item \texttt{constant} = 5.
+      \end{itemize}
     \item Repeat for the rest of the scalar wave parameters
       \begin{itemize}
+      \item \texttt{n}=3
       \item \texttt{m}=0
       \item \texttt{d}=2
       \item \texttt{N}=150
-      \item \texttt{h\_squared}=4096 ($(h/\delta)^{2}=64^{2}$)
+      \item \texttt{h\_squared}=4096 ($(h/\delta)=64$)
       \end{itemize}
     \item And set a vector valued Constant coefficient \texttt{x0} for
       the location of the wave peak to $[0.5,0.5]$
 
-    \end{enumerate}
+    \end{itemize}
   \item Name the \texttt{nonlinear\_solver} \texttt{Solver} and unfold
-    \begin{enumerate}
+    \begin{itemize}
     \item Set the Residual \texttt{F}.  \emph{Carefully} copy the ufl for the
       residual $F$ described
       above in \texttt{form (Residual)} and set the
@@ -636,9 +650,9 @@ coefficients with the appropriate names.
       take that many)
     \item Activate \texttt{monitors}$\rightarrow$\texttt{residual} to
       log the non-linear residuals.
-    \end{enumerate}
+    \end{itemize}
   \item Set the Linear solver
-    \begin{enumerate}
+    \begin{itemize}
     \item Choose \texttt{iterative\_method (fgmres)} (flexible
       gmres). Unfold and set
       \begin{itemize}
@@ -675,11 +689,11 @@ coefficients with the appropriate names.
         \item Choose \texttt{preconditioner (eisenstat)} 
         \end{itemize}
       \end{itemize}
-    \end{enumerate}
+    \end{itemize}
     
   \item If you want, add some functionals to calculate the integral of the
     pressure and porosity.
-    \begin{enumerate}
+    \begin{itemize}
     \item Activate a functional and name it \texttt{PressureIntegral}
       and unfold.
     \item set the ufl for the functional to
@@ -687,7 +701,7 @@ coefficients with the appropriate names.
         int = p*dx
       \end{lstlisting}
     \item set the \texttt{ufl\_symbol (functional)} to \texttt{int}
-    \end{enumerate}
+    \end{itemize}
   \item Add a functional to calculate the integral of the porosity
     which should be constant over time. Here we can use the cut and
     paste feature of diamond.  Click on \texttt{functional
@@ -708,7 +722,9 @@ coefficients with the appropriate names.
   we already developed for Thermal Convection
   \begin{steps}{step}  
   \item Using diamond, open the \texttt{tfml} file for
-    thermal convection \texttt{\$TF\_HOME/share/terraferma/tutorials/thermalconvection/isoviscous/newton\_direct/convection.tfml}
+    thermal convection
+    \texttt{\$TF\_HOME/share/terraferma/tutorials/thermalconvection/isoviscous/
+      newton\_direct/convection.tfml}
   \item Highlight \texttt{system (CourantNumber)} and use
     \texttt{Edit}$\rightarrow$\texttt{Copy} to copy the entire system
     to the clipboard.
@@ -728,27 +744,30 @@ coefficients with the appropriate names.
   \item Unfold the \texttt{nonlinear\_solver (Solver)} and expose the
     \texttt{residual} which should look like
     \begin{lstlisting}[style=UFL]
-      # Finite volume style estimate of Courant number
+# Finite volume style estimate of Courant number
 # calculate the outward facing normal component of velocity for each facet
 n = FacetNormal(c_e.cell())
 vn = dot(v_i, n)
 vout = 0.5*(vn + abs(vn))
 
-# project the cell integral of the the outgoing flux from each cell
-F = c_t*c_i*dx - c_t('+')*vout('+')*dt('+')*dS - c_t('-')*vout('-')*dt('-')*dS - c_t*vout*dt*ds(1) - c_t*vout*dt*ds(2) - c_t*vout*dt*ds(3) - c_t*vout*dt*ds(4)
+# project the cell integral of the outgoing flux from each cell
+F = c_t*c_i*dx - c_t('+')*vout('+')*dt('+')*dS - c_t('-')*vout('-')*dt('-')*dS - 
+c_t*vout*dt*ds(1) - c_t*vout*dt*ds(2) - c_t*vout*dt*ds(3) - c_t*vout*dt*ds(4)
     \end{lstlisting}
-and modify all occurences of \texttt{c} to \texttt{cfl} and change
+and modify all occurrences of \texttt{c} to \texttt{cfl} and change
 \texttt{v\_i} to \texttt{W\_i} to record the proper solid velocity
-field.  You're final ufl should look like
+field.  Your final ufl should look like
+\pagebreak{}
 \begin{lstlisting}[style=UFL]
-  # Finite volume style estimate of Courant number
+# Finite volume style estimate of Courant number
 # calculate the outward facing normal component of velocity for each facet
 n = FacetNormal(cfl_e.cell())
 vn = dot(W_i, n)
 vout = 0.5*(vn + abs(vn))
 
-# project the cell integral of the the outgoing flux from each cell
-F = cfl_t*cfl_i*dx - cfl_t('+')*vout('+')*dt('+')*dS - cfl_t('-')*vout('-')*dt('-')*dS - cfl_t*vout*dt*ds(1) - cfl_t*vout*dt*ds(2) - cfl_t*vout*dt*ds(3) - cfl_t*vout*dt*ds(4)
+# project the cell integral of the outgoing flux from each cell
+F = cfl_t*cfl_i*dx - cfl_t('+')*vout('+')*dt('+')*dS - cfl_t('-')*vout('-')*dt('-')*dS -
+cfl_t*vout*dt*ds(1) - cfl_t*vout*dt*ds(2) - cfl_t*vout*dt*ds(3) - cfl_t*vout*dt*ds(4)
 \end{lstlisting}
 
 
@@ -774,6 +793,7 @@ testharness file \texttt{magmawaves.shml} in the tutorials directory
 that runs this problem over a range of mesh resolutions and time-steps
 and reinvokes \texttt{TFSolitaryWave} to calculate velocity and phase
 errors against the exact solutions and produces an output .tex table
+as well as checks the integrals of porosity and pressure.
 \begin{table}[h]
   \centering
   \caption{output table showing relative phase and velocity errors for the

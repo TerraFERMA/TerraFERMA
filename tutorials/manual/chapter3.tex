@@ -62,7 +62,9 @@ linear ($p\in P_{1}$) such that the entire system $\vec{u}\in \fspace
              p_{i}\div\vec{v}_t  - \vec{v}_{t} \cdot\vec{f} \right]d\vec{x}  \\
  F_{p} =& -\int_\Omega p_t\div\vec{v}_{i} d\vec{x}
 \end{align}
-(after some algebra and integration by parts). Here
+(after some algebra and integration by parts). $F_{\vec{v}}$ is the
+velocity residual, $F_{p}$ is the pressure residual, but our solution
+is minimizing residual of the entire system.  Here
 \begin{equation}
   \label{eq:19}
   \dot{\epsilon}(\vec{v}) = \frac{1}{2}
@@ -109,11 +111,20 @@ problem we need boundary conditions and a forcing function $\vec{f}$. Elman et. 
    p(x,y) =& 60x^{2}y - 20y^{3} \nonumber \\
    \vec{f}(x,y) =& \vec{0} \nonumber 
 \end{align}
-on the domain  $\Omega=[-1,1]\times[-1,1]$ with dirichlet boundary conditions on velocity interpolated from the
-analytic solution.  Note: the discrete problem with all dirichlet
+on the domain  $\Omega=[-1,1]\times[-1,1]$ with Dirichlet boundary conditions on velocity interpolated from the
+analytic solution.  Note: the discrete problem with all Dirichlet
 conditions on velocity is singular (with a trivial constant null space
 for the pressure) and some care needs to be taken with both direct and
-iterative solvers to solve this problem accurately.
+iterative solvers to solve this problem accurately. Figure
+\ref{fig:stokesMMS} shows a \TF{} solution for this problem.
+
+\begin{figure}[htbp!]
+  \centering
+  \includegraphics[width=.7\textwidth]{figures/stokes_flow.png}
+  \caption{MMS solution of Stokes equation from
+    \cite{elman_finite_2005} showing the pressure field in the background color map and the velocity field shown with arrows.}
+  \label{fig:stokesMMS}
+\end{figure}
 
 \section{Solution using \TF}
 \label{sec:solution-using-tf}
@@ -145,19 +156,15 @@ The solution is shown in Figure \ref{fig:stokesMMS}.  Figure
 velocity and pressure and shows larger errors for pressure which
 decrease as $h^{2}$ compared to errors for velocity which scale as
 $h^{3}$. This plot can be reproduced using
+
+\pagebreak{}
 \begin{lstlisting}[style=Bash]
 $ cd $TF_HOME/share/terraferma/tutorials/stokes/isoviscous/mms/mms_direct
 $ tfsimulationharness --test stokes.shml
 \end{lstlisting} %$
 
 
-\begin{figure}[htbp!]
-  \centering
-  \includegraphics[width=.7\textwidth]{figures/stokes_flow.png}
-  \caption{MMS solution of Stokes equation from
-    \cite{elman_finite_2005} showing the pressure field in the background color map and the velocity field shown with arrows.}
-  \label{fig:stokesMMS}
-\end{figure}
+
 \begin{figure}[htbp!]
   \centering
   \includegraphics[width=.7\textwidth]{figures/Stokes_convergence.pdf}
@@ -166,7 +173,7 @@ $ tfsimulationharness --test stokes.shml
   \label{fig:stokes_convergence}
 \end{figure}
 
-\pagebreak{}
+%\pagebreak{}
 
 In more detail, the specific steps required to modify the poisson mms
 problem to solve Stokes are as follows.
@@ -193,12 +200,12 @@ $ diamond stokes.tfml &
   \end{steps}
 \item \textbf{Modify System Poisson to System Stokes}
   \begin{steps}{step}
-  \item Change the system name to  Stokes (the \texttt{ufl\_symbol}
-    remain the same, \texttt{us})
+  \item Change the system name to  Stokes (the \texttt{ufl\_symbol (global)}
+    remains the same as \texttt{us})
   \item Change the field \texttt{u} to \texttt{Velocity}
     \begin{itemize}{}
     \item change the field name to \texttt{Velocity}
-    \item change the \texttt{ufl\_symbol} to \texttt{v}
+    \item change the \texttt{ufl\_symbol (global)} to \texttt{v}
     \end{itemize}
   \item Modify the velocity field to be vector valued [P2,P2]
     function.   Under \texttt{type (Function)}
@@ -232,14 +239,14 @@ def val(x):
       \begin{itemize}
       \item Either create a new Field tab or copy the Velocity tab and
         rename to Pressure
-      \item Set the \texttt{ufl\_symbol} to \texttt{p}
+      \item Set the \texttt{ufl\_symbol (global)} to \texttt{p}
       \item Choose \texttt{type (Function)} and
         \begin{itemize}
         \item Set \texttt{rank (Scalar)}
         \item Set \texttt{element (P1)}
         \item Set \texttt{initial\_condition} to a constant (0.0)
         \end{itemize}
-      \item \textbf{Set a reference point:}  Stokes with all dirichlet
+      \item \textbf{Set a reference point:}  Stokes with all Dirichlet 
         BC's for velocity is actually singular allowing an arbitrary
         constant in the pressure.  There are multiple ways in TF to
         remove this singularity.  For direct solvers, we can set  a single reference
@@ -249,23 +256,6 @@ def val(x):
           (Point)} tab and set the coordinates to $(0.,0.)$.
       \end{itemize}
   \item \textbf{Set the diagnostics for Pressure}: add \texttt{include\_in\_visualization} and \texttt{include\_in\_statistics}
-    % \begin{itemize}
-    % \item add \texttt{include\_in\_visualization} and 
-    % \item Under \texttt{include\_in\_statistics}
-    %   \begin{itemize}
-    %   \item add the functional
-    %   \texttt{L2NormErrorSquared} and set it to
-    %   \begin{lstlisting}[style=Ufl]
-    %     errp2 =(p-pe)**2*dx
-    %   \end{lstlisting}
-    %   and set the \texttt{ufl\_symbol} to \texttt{errp2}.
-    % \item add the functional \texttt{L2NormSquared} and set it to
-    %   \begin{lstlisting}[style=Ufl]
-    %     l2p2 =p*p*dx
-    %   \end{lstlisting}
-    %   and set the \texttt{ufl\_symbol} to \texttt{l2p2}.
-    %   \end{itemize}
-    % \end{itemize}
   \item \textbf{Set the rhs function f:} under \texttt{coefficient (f)}
     \begin{itemize}
     \item make sure the \texttt{ufl\_symbol} is set to \texttt{f}
@@ -592,7 +582,7 @@ although this will also assemble the $G^{T}$ block.
 \item Set the \texttt{ufl\_symbol} to
   \texttt{Jpc}.
 \item You might also want to activate and set the
-  \texttt{quadrature\_degree} to 3 to keep all the jacobians and
+  \texttt{quadrature\_degree} to 3 to keep all the Jacobians and
   residuals to the same order of quadrature.
   \end{steps}
 
