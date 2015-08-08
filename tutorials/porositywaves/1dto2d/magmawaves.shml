@@ -15,6 +15,9 @@
         <string_value lines="1" type="filename">magmawaves.tfml</string_value>
       </input_file>
       <run_when name="input_changed_or_output_missing"/>
+      <number_processes>
+        <integer_value rank="0">2</integer_value>
+      </number_processes>
       <parameter_sweep>
         <parameter name="ncells">
           <values>
