@@ -144,5 +144,13 @@
       </type>
       <solve name="in_timeloop"/>
     </nonlinear_solver>
+    <functional name="IntegralU">
+      <string_value type="code" lines="20" language="python">int = u*dx</string_value>
+      <ufl_symbol name="functional">
+        <string_value lines="1">int</string_value>
+      </ufl_symbol>
+      <quadrature_rule name="default"/>
+      <include_in_statistics/>
+    </functional>
   </system>
 </terraferma_options>
