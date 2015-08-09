@@ -78,7 +78,7 @@ if (PYTHONINTERP_FOUND)
 
   # Get Python version from interpreter (find_package sets this but only for cmake >= 2.8.5, which we don't require)
   execute_process(COMMAND "${PYTHON_EXECUTABLE}" -c
-                           "import sys; sys.stdout.write(sys.version[:5])"
+                           "import sys; sys.stdout.write(sys.version.split()[0])"
                   OUTPUT_VARIABLE _PYTHON_VERSION_STR
                   RESULT_VARIABLE _PYTHON_VERSION_RESULT)
 
