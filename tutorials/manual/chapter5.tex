@@ -860,23 +860,23 @@ have used a Courant number adaptive time-step however instead of
 using the solid velocity, we adapt to the melt-separation velocity
 \begin{equation}
   \label{eq:sep-velocity}
-\vf  = -\frac{K}{\phi}
+\vec{q} =\vf - \Vs  = -\frac{K}{\phi}
 \left[
   \grad\pcmp + \ghat
 \right] 
 \end{equation}
-\item To do this we will need another system \texttt{MeltVelocity}
+\item To do this we will need another system \texttt{SeparationVelocity}
   \begin{itemize}
-  \item Create a new system called \texttt{MeltVelocity} that
+  \item Create a new system called \texttt{SeparationVelocity} that
     calculates the separation velocity as a projection onto $[P_{1},P_{1}]$ using the ufl
 \begin{lstlisting}[style=UFL]
-F = inner(vf_t,(vf_i + K/f_i*(grad(p) + ghat)))*dx
+F = inner(q_t,(q_i + K/f_i*(grad(p) + ghat)))*dx
 \end{lstlisting}
 \item For efficiency use a simple (SOR,CG) linear solver for the
   projection. (see the example file)
   \end{itemize}
 \item Change the velocity in the system \texttt{CourantNumber} from
-  the solid velocity $\vec{W}$ to $\vf$. This approach has the advantage of
+  the solid velocity \texttt{W\_i} to \texttt{q\_i}. This approach has the advantage of
 taking a smaller time step as the waves grow, because larger waves
 have larger separation velocities.  However, this approach is not perfect as the solitary
 wave speeds tend to be faster than the separation velocity requiring a
