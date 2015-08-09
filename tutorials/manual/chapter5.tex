@@ -592,7 +592,7 @@ coefficients with the appropriate names.
     \end{itemize}
 
   \item Activate a lot of coefficients and set their values.  We'll
-    start with the physical parameters, then the solitarywave
+    start with the physical parameters, then the solitary wave
     parameters needed for \texttt{TFSolitaryWave}
     \begin{itemize}
     \item Set the background advection velocity \texttt{W}.  Activate
@@ -804,10 +804,193 @@ as well as checks the integrals of porosity and pressure.
 
 
 %\pagebreak{}
-%\section{Themes and Variations}
-%\label{sec:themes-variations}
+\section{Themes and Variations}
+\label{sec:themes-variations}
+
+The single solitary wave benchmarks are extremely important for
+verifying the accuracy of numerical schemes for magma migration as
+they are fully non-linear solutions with well understood behavior that
+rapidly expose any numerical artifacts with a given scheme.  That
+said,  they're still a bit dull as if they are working well,  the
+result is a single static solitary wave that doesn't do anything.
+However with a few small changes to the tfml files  there are a few
+more interesting things that can be explored with the solitary waves. 
+
+\begin{figure}[htbp!]
+  \centering
+  \includegraphics[width=\textwidth]{figures/1dto2d.pdf}
+  \caption{Instability of a 1-D solitary wave ($c=5$, $n=3$, $m=0$,
+    $d=1$) in 2 dimensions. This calculation is done in a frame moving
+    with the initial solitary wave $W=-5$, such that the wave appears
+    to be stationary. The initial 1-D wave propagates for some time
+    ($t\approx 1$) before developing local melt concentrations that
+    rapidly form into stable 2-D solitary waves (e.g. $t=1.15-1.25$)
+    plus some smaller waves and background radiation.  The large 2-D
+    waves, when well separated, propagate with constant shape and speed.}
+  \label{fig:1dto2d}
+\end{figure}
+
+\subsection{Stability of solitary waves}
+\label{sec:stab-solit}
 
 
+It has long been known that in each embedding dimension (1, 2 or 3-D)
+there are stable solitary wave solutions, however, lower dimensional
+waves are always unstable to higher dimensional waves
+\cite{scott_magma_1986,barcilon_nonlinear-waves_1986,barcilon_solitary_1989}.
+For example, Figure \ref{fig:1dto2d} demonstrates the instability of a
+1-D solitary wave in 2-D dimensions with the eventual break down of the
+1-D wave into a set of 2-D solitary waves plus background radiation.
+A fully worked out example for this problem can be found in
+\texttt{\$TF\_HOME/share/terraferma/tutorials/porositywaves/1dto2d/magmawaves.tfml}
+along with a testharness file.  These models take some time to run so
+the included testharness file runs this problem in parallel on two
+processors.  If you have more or less cores, it is easy to change this
+by adjusting the \texttt{number\_processes} tab in
+\texttt{magmawaves.shml}.
+
+The principal changes to the \texttt{tfml} file from the benchmark
+problem, are
+\begin{itemize}
+\item change the value of the wave dimension \texttt{d} from 2 to 1
+\item increase the \texttt{finish\_time} to about 1.5 (see below)
+\item modify the adaptive time-stepper to try and keep up with the
+evolving solution (although this can be difficult).  In the example we
+have used a Courant number adaptive time-step however instead of
+using the solid velocity, we adapt to the melt-separation velocity
+\begin{equation}
+  \label{eq:sep-velocity}
+\vf  = -\frac{K}{\phi}
+\left[
+  \grad\pcmp + \ghat
+\right] 
+\end{equation}
+\item To do this we will need another system \texttt{MeltVelocity}
+  \begin{itemize}
+  \item Create a new system called \texttt{MeltVelocity} that
+    calculates the separation velocity as a projection onto $[P_{1},P_{1}]$ using the ufl
+\begin{lstlisting}[style=UFL]
+F = inner(vf_t,(vf_i + K/f_i*(grad(p) + ghat)))*dx
+\end{lstlisting}
+\item For efficiency use a simple (SOR,CG) linear solver for the
+  projection. (see the example file)
+  \end{itemize}
+\item Change the velocity in the system \texttt{CourantNumber} from
+  the solid velocity $\vec{W}$ to $\vf$. This approach has the advantage of
+taking a smaller time step as the waves grow, because larger waves
+have larger separation velocities.  However, this approach is not perfect as the solitary
+wave speeds tend to be faster than the separation velocity requiring a
+relatively small value of the Courant number to keep the convergence
+of the SNES solvers reasonable once the instability forms.  However,
+we find that a maximum Courant number of 0.5 provides a reasonable
+trade-off between speed and convergence. The testharness file
+\texttt{magmawaves.shml} allows you to do parameter sweeps over the Courant number by exploring the parameter \texttt{cfl}.  
+
+\end{itemize}
+ 
+
+For this model set up, we run for a maximum dimensionless time
+$t=1.5$.  Running for longer than this allows the small waves to
+interact with the lower boundary free-flux boundary condition which
+for sufficiently large porosity excesses becomes unstable and the
+waves will grow, breaking the solution.
+
+
+
+\subsection{Collision of two 2-D solitary waves}
+\label{sec:collision-two-2}
+
+\begin{figure}[htbp!]
+  \centering
+  \includegraphics[width=\textwidth]{figures/collision.pdf}
+  \caption{Non-linear collision of two 2-D solitary waves, the larger
+    wave has a speed $c=7$ which collides with a smaller wave with
+    $c=5$. This calculation is done in a frame moving at the mean
+    velocity of the two solitary waves (i.e. $W=-6$).  While these
+    porosity waves are not solitons (i.e. they are not completely
+    conserved on collision), they do demonstrate a soliton-like
+    collision property where there is a phase-shift in which  the large
+    wave ``fills'' the smaller wave such that the two waves appear to
+    trade places and then continue to propagate with unchanging form.
+  Closer inspection of this model, though, shows the generation of a
+  small amount of background porosity that is shed during the
+  collision.  More oblique collisions produce more scattering of the
+  porosity.  }
+  \label{fig:collision}
+\end{figure}
+
+Another set of problems involve the interaction of multiple solitary
+waves.  In the early days of magma dynamics where most calculations
+were 1-D,  numerical solutions suggested that the collision of two
+solitary waves showed soliton-like behavior where the two waves passed
+through each other without scattering and the waves were often
+referred to as magma solitons (or ``magmons'').  However it was soon
+shown that even in 1-D the governing equations did not demonstrate an
+infinite number of conservation laws and in fact showed scattering on
+collision
+\cite{barcilon_nonlinear-waves_1986,barcilon_solitary_1989}. Moreover,
+in 2-D the scattering was much more noticeable. Figure
+\ref{fig:collision} shows such a calculation done using \TF{} and a
+fully worked out example for this model can be found in
+\texttt{\$TF\_HOME/share/terraferma/tutorials/porositywaves/collision/magmawaves.tfml} 
+
+Setting up such collision problems is relatively easy in \TF{} and
+only requires minor modifications to the instability problem.  The
+chief changes are
+\begin{itemize}
+\item Changing unit square to a rectangle such that
+  $\Omega=[0.,0.5]\times[0.,1.]$
+\item Change the porosity initial condition and coefficients to allow
+  for two solitary waves and then take the maximum value of the two
+  waves.  In particular,  the two waves will now have different speeds $c$
+  and different initial locations $x_{0}$.  So we will need to
+  \begin{itemize}
+  \item add or modify the coefficients to include ones with names
+    \texttt{c0},\texttt{x0} and \texttt{c1},\texttt{x1}.  The example
+    uses \texttt{c0=7}, \texttt{x0=[ 0.25,0.25]}, \texttt{c1=5}, \texttt{x1=[0.25,0.75]}
+  \item Modify the python for the initial conditions so that
+    \texttt{TFSolitaryWave} knows about the new names.  The python in
+    the example code is
+    \begin{lstlisting}[style=python]
+# Initialize to two solitary wave profiles 
+# using PySolwave routines 
+# This header will act as a global header to all subsequent def val instances
+# (with great power comes great responsibility)
+
+from pysolwave.tfsolitarywave import TFSolitaryWave
+from glob import glob
+
+tfmlfile = glob("magmawaves.tfml")[0]
+
+#initialize solitary wave objects from tfmlfile
+tfswave0 = TFSolitaryWave(tfmlfile,c_name="c0",x0_name="x0")
+tfswave1 = TFSolitaryWave(tfmlfile,c_name="c1",x0_name="x1")
+
+# print some diagnostics
+print 'rmax = ',tfswave0.rmax, tfswave1.rmax
+print 'c0,c1 =', tfswave0.swave.c, tfswave1.swave.c
+print 'x0,x1 =', tfswave0.x0, tfswave1.x0
+
+# python function for setting initial condition
+import numpy as np
+def val(x):
+  global np,tfswave0,tfswave1
+  xa = np.array(x)
+  f0 = tfswave0.eval(xa)
+  f1 = tfswave1.eval(xa)
+  return max(f0,f1)
+    \end{lstlisting}
+
+  \end{itemize}
+\item Change the run time and visualization dump period to adequately
+  capture the collision. Here we only run to a dimensionless \texttt{finish\_time}
+  of 0.5 visualizing every 0.01 time units.
+\end{itemize}
+
+Again, these time-dependent problems can take some time to run so the
+example testharness file assumes two processors and runs in parallel.
+It is straightforward to modify this file to explore other wave
+combinations and different initial positions.  Have fun.
 
 %%% Local Variables: 
 %%% mode: latex
