@@ -6,6 +6,9 @@
   <owner>
     <string_value lines="1">mspieg</string_value>
   </owner>
+  <tags>
+    <string_value lines="1">testable</string_value>
+  </tags>
   <description>
     <string_value lines="1">A manufactured solution convergence test for stokes</string_value>
   </description>

@@ -6,6 +6,9 @@
   <owner>
     <string_value lines="1">mspieg</string_value>
   </owner>
+  <tags>
+    <string_value lines="1">testable</string_value>
+  </tags>
   <description>
     <string_value lines="1">Solution of isothermal Rayleigh Benard convection on a unit square using a full Newton scheme with a direct solver on the entire jacobian.
 
@@ -82,12 +85,36 @@ Walltime = stat["ElapsedWallTime"]["value"][-1]</string_value>
     </simulation>
   </simulations>
   <tests>
-    <test name="Print">
-      <string_value lines="20" type="code" language="python">print 'Nu = ',Nu
-print 'Vrms = ',Vrms
-print 'Walltime = ',Walltime
+    <test name="Nu">
+      <string_value lines="20" type="code" language="python">#extract value from nested list
+parameters=Nu.parameters
+Nu_value=Nu[parameters]
 
-# and do some asserts for regression testing</string_value>
+#regression test
+value = 4.8964700443
+relerror = abs(Nu_value -value)/abs(value)
+print "Nu =", Nu_value, "regression test value =", value, "relative error =", relerror
+assert (relerror &lt; 1.e-5)</string_value>
+    </test>
+    <test name="Vrms">
+      <string_value lines="20" type="code" language="python">#extract value from nested list
+parameters=Nu.parameters
+Vrms_value=Vrms[parameters]
+
+#regression test
+value = 42.8377673601
+relerror = abs(Vrms_value -value)/abs(value)
+print "Vrms =", Vrms_value, "regression test value =", value, "relative error =", relerror
+assert (relerror &lt; 1.e-5)</string_value>
+    </test>
+    <test name="Walltime">
+      <string_value lines="20" type="code" language="python">#extract value from nested list
+parameters=Nu.parameters
+Walltime_value=Walltime[parameters]
+
+#regression test
+print "Walltime =",Walltime_value
+assert (Walltime_value &lt;= 3000.)</string_value>
     </test>
   </tests>
 </harness_options>
