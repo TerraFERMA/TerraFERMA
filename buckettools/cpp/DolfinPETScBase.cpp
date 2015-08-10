@@ -487,6 +487,14 @@ void buckettools::restrict_indices(std::vector<std::size_t> &indices,
                                         c_it != indices.end(); 
                                         c_it++)
     {
+      if (p_ind == p_size)                                           // we've reach the end
+      {
+        if (c_it == indices.begin())                                 // if we're here on the first iteration then the parent_indices
+        {                                                            // were empty so throw a warning as we're ditching all the children
+          extra = true;
+        }
+        break;                                                       // get out of here
+      }
       while ((*parent_indices)[p_ind] != *c_it)                      // indices is sorted, so parent_indices should be too...
       {                                                              // search parent_indices until the current index is found
         p_ind++;
@@ -505,10 +513,6 @@ void buckettools::restrict_indices(std::vector<std::size_t> &indices,
         tmp_indices.push_back(*c_it);                                // include indices that are in the parent
         p_ind++;                                                     // indices shouldn't be repeated so increment the parent too
         p_reset = p_ind;                                             // this is where the next failed search should continue from
-        if (p_ind == p_size)                                         // we've reached the end
-        { 
-          break;                                            
-        }
       }
     } 
 

@@ -1,0 +1,645 @@
+<?xml version='1.0' encoding='utf-8'?>
+<terraferma_options>
+  <geometry>
+    <dimension>
+      <integer_value rank="0">2</integer_value>
+    </dimension>
+    <mesh name="Mesh">
+      <source name="Rectangle">
+        <lower_left>
+          <real_value shape="2" dim1="2" rank="1">0. 0.</real_value>
+        </lower_left>
+        <upper_right>
+          <real_value shape="2" dim1="2" rank="1">1. 1.</real_value>
+        </upper_right>
+        <number_cells>
+          <integer_value shape="2" dim1="2" rank="1">64 64</integer_value>
+        </number_cells>
+        <diagonal>
+          <string_value>right/left</string_value>
+        </diagonal>
+        <cell>
+          <string_value>triangle</string_value>
+        </cell>
+      </source>
+    </mesh>
+  </geometry>
+  <io>
+    <output_base_name>
+      <string_value lines="1">magmawaves</string_value>
+    </output_base_name>
+    <dump_periods>
+      <visualization_period>
+        <real_value rank="0">0.05</real_value>
+      </visualization_period>
+      <statistics_period_in_timesteps>
+        <integer_value rank="0">5</integer_value>
+      </statistics_period_in_timesteps>
+    </dump_periods>
+    <detectors/>
+    <checkpointing>
+      <checkpoint_period>
+        <real_value rank="0">.5</real_value>
+      </checkpoint_period>
+    </checkpointing>
+  </io>
+  <timestepping>
+    <current_time>
+      <real_value rank="0">0.0</real_value>
+    </current_time>
+    <finish_time>
+      <real_value rank="0">1.5</real_value>
+    </finish_time>
+    <timestep>
+      <coefficient name="Timestep">
+        <ufl_symbol name="global">
+          <string_value lines="1">dt</string_value>
+        </ufl_symbol>
+        <type name="Constant">
+          <rank name="Scalar" rank="0">
+            <value name="WholeMesh">
+              <constant>
+                <real_value rank="0">0.</real_value>
+              </constant>
+            </value>
+          </rank>
+        </type>
+      </coefficient>
+      <adaptive>
+        <constraint name="Courant">
+          <system name="CourantNumber"/>
+          <field name="CourantNumber"/>
+          <requested_maximum_value>
+            <real_value rank="0">0.1</real_value>
+            <comment>Courant number for a c=5 wave that moves 1/2 a compaction length in one time step.</comment>
+          </requested_maximum_value>
+        </constraint>
+        <adapt_period_in_timesteps>
+          <integer_value rank="0">5</integer_value>
+        </adapt_period_in_timesteps>
+        <increase_tolerance>
+          <real_value rank="0">1.1</real_value>
+        </increase_tolerance>
+      </adaptive>
+    </timestep>
+  </timestepping>
+  <global_parameters>
+    <ufl>
+      <string_value lines="20" type="code" language="python"># Global parameters for porosity pressure residual 
+
+# permeability
+K = f_i**n
+
+#inverse bulk viscosity function
+Xi_i = hsquared*f_i**m
+Xi_n = hsquared*f_n**m
+
+#porosity at a half-time step
+f_half = 0.5*(f_i + f_n)
+
+
+# domains for assembly
+# top of fluid region
+ds_top   = ds(4)
+ds_bottom = ds(3)
+ds_left  = ds(1)
+ds_right = ds(2)</string_value>
+    </ufl>
+    <dolfin>
+      <ghost_mode name="shared_facet"/>
+    </dolfin>
+  </global_parameters>
+  <system name="magma">
+    <mesh name="Mesh"/>
+    <ufl_symbol name="global">
+      <string_value lines="1">us</string_value>
+    </ufl_symbol>
+    <field name="Pressure">
+      <ufl_symbol name="global">
+        <string_value lines="1">p</string_value>
+      </ufl_symbol>
+      <type name="Function">
+        <rank name="Scalar" rank="0">
+          <element name="P2">
+            <family>
+              <string_value>CG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">2</integer_value>
+            </degree>
+          </element>
+          <initial_condition type="initial_condition" name="WholeMesh">
+            <constant>
+              <real_value rank="0">0.0</real_value>
+            </constant>
+          </initial_condition>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_visualization/>
+        <include_in_statistics/>
+      </diagnostics>
+      <comment>Compaction pressure  p = Xi Div(V)</comment>
+    </field>
+    <field name="Porosity">
+      <ufl_symbol name="global">
+        <string_value lines="1">f</string_value>
+      </ufl_symbol>
+      <type name="Function">
+        <rank name="Scalar" rank="0">
+          <element name="P2DG">
+            <family>
+              <string_value>DG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">2</integer_value>
+            </degree>
+          </element>
+          <initial_condition type="initial_condition" name="WholeMesh">
+            <python rank="0">
+              <string_value lines="20" type="code" language="python"># Initialize to single solitary wave profile 
+# using PySolwave routines 
+# This header will act as a global header to all subsequent def val instances
+# (with great power comes great responsibility)
+
+from pysolwave.tfsolitarywave import TFSolitaryWave
+from glob import glob
+
+tfmlfile = glob("magmawaves.tfml")[0]
+#initialize solitary wave object from tfmlfile
+tfswave = TFSolitaryWave(tfmlfile)
+
+# print out some info about the solitary wave 
+print "Solitary Wave information:"
+print "c=",tfswave.swave.c, " n =",tfswave.swave.n, " d=",tfswave.swave.d, " r_max=",tfswave.rmax
+
+print "f=",tfswave.swave.f
+
+# python function for setting initial condition
+import numpy as np
+def val(x):
+  global tfswave,np
+  f = tfswave.eval(np.array(x))
+  return f</string_value>
+            </python>
+          </initial_condition>
+          <boundary_condition name="top">
+            <boundary_ids>
+              <integer_value shape="1" rank="1">4</integer_value>
+            </boundary_ids>
+            <sub_components name="All">
+              <type type="boundary_condition" name="Dirichlet">
+                <constant>
+                  <real_value rank="0">1.</real_value>
+                </constant>
+              </type>
+            </sub_components>
+          </boundary_condition>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_visualization/>
+        <include_in_statistics/>
+      </diagnostics>
+      <comment>scaled porosity f = phi/phi_0</comment>
+    </field>
+    <coefficient name="W">
+      <ufl_symbol name="global">
+        <string_value lines="1">W</string_value>
+      </ufl_symbol>
+      <type name="Constant">
+        <rank name="Vector" rank="1">
+          <value type="value" name="WholeMesh">
+            <constant name="dim">
+              <real_value shape="2" dim1="dim" rank="1">0. -5.</real_value>
+            </constant>
+          </value>
+        </rank>
+      </type>
+      <diagnostics/>
+      <comment>background solid advection velocity</comment>
+    </coefficient>
+    <coefficient name="h_squared">
+      <ufl_symbol name="global">
+        <string_value lines="1">hsquared</string_value>
+      </ufl_symbol>
+      <type name="Constant">
+        <rank name="Scalar" rank="0">
+          <value type="value" name="WholeMesh">
+            <constant>
+              <real_value rank="0">4096.</real_value>
+            </constant>
+          </value>
+        </rank>
+      </type>
+      <diagnostics/>
+      <comment>(h/delta)**2...   the system size in compacition lengths (delta) squared</comment>
+    </coefficient>
+    <coefficient name="c">
+      <ufl_symbol name="global">
+        <string_value lines="1">c</string_value>
+      </ufl_symbol>
+      <type name="Constant">
+        <rank name="Scalar" rank="0">
+          <value type="value" name="WholeMesh">
+            <constant>
+              <real_value rank="0">5.</real_value>
+            </constant>
+          </value>
+        </rank>
+      </type>
+      <diagnostics/>
+      <comment>solitary wave speed</comment>
+    </coefficient>
+    <coefficient name="n">
+      <ufl_symbol name="global">
+        <string_value lines="1">n</string_value>
+      </ufl_symbol>
+      <type name="Constant">
+        <rank name="Scalar" rank="0">
+          <value type="value" name="WholeMesh">
+            <constant>
+              <real_value rank="0">3</real_value>
+            </constant>
+          </value>
+        </rank>
+      </type>
+      <diagnostics/>
+      <comment>exponent n in permeability K = phi**n</comment>
+    </coefficient>
+    <coefficient name="m">
+      <ufl_symbol name="global">
+        <string_value lines="1">m</string_value>
+      </ufl_symbol>
+      <type name="Constant">
+        <rank name="Scalar" rank="0">
+          <value type="value" name="WholeMesh">
+            <constant>
+              <real_value rank="0">0.</real_value>
+            </constant>
+          </value>
+        </rank>
+      </type>
+      <diagnostics/>
+      <comment>bulk viscosity exponent m,  such that the viscosity zeta = eta*phi^{- m}</comment>
+    </coefficient>
+    <coefficient name="d">
+      <ufl_symbol name="global">
+        <string_value lines="1">d</string_value>
+      </ufl_symbol>
+      <type name="Constant">
+        <rank name="Scalar" rank="0">
+          <value type="value" name="WholeMesh">
+            <constant>
+              <real_value rank="0">1</real_value>
+            </constant>
+          </value>
+        </rank>
+      </type>
+      <diagnostics/>
+      <comment>dimension of the solitary wave (should be &lt;= dim which is the dimension of the simulation)</comment>
+    </coefficient>
+    <coefficient name="N">
+      <ufl_symbol name="global">
+        <string_value lines="1">N</string_value>
+      </ufl_symbol>
+      <type name="Constant">
+        <rank name="Scalar" rank="0">
+          <value type="value" name="WholeMesh">
+            <constant>
+              <real_value rank="0">150</real_value>
+            </constant>
+          </value>
+        </rank>
+      </type>
+      <diagnostics/>
+      <comment>number of collocation points for sinc-collocation method solitary wave profile generator</comment>
+    </coefficient>
+    <coefficient name="x0">
+      <ufl_symbol name="global">
+        <string_value lines="1">x0</string_value>
+      </ufl_symbol>
+      <type name="Constant">
+        <rank name="Vector" rank="1">
+          <value type="value" name="WholeMesh">
+            <constant name="dim">
+              <real_value shape="2" dim1="dim" rank="1">0.5 0.5</real_value>
+            </constant>
+          </value>
+        </rank>
+      </type>
+      <diagnostics/>
+      <comment>coordinate of initial peak of the solitary wave</comment>
+    </coefficient>
+    <coefficient name="ghat">
+      <ufl_symbol name="global">
+        <string_value lines="1">ghat</string_value>
+      </ufl_symbol>
+      <type name="Constant">
+        <rank name="Vector" rank="1">
+          <value type="value" name="WholeMesh">
+            <constant name="dim">
+              <real_value shape="2" dim1="dim" rank="1">0.0 -1.0</real_value>
+            </constant>
+          </value>
+        </rank>
+      </type>
+      <diagnostics/>
+    </coefficient>
+    <nonlinear_solver name="Solver">
+      <type name="SNES">
+        <form name="Residual" rank="0">
+          <string_value lines="20" type="code" language="python">#facet normal on pressure
+pn = FacetNormal(p.cell())
+
+# body integral for pressure
+bp = inner(grad(p_t), K*(grad(p_i) + ghat)) + p_t*p_i*Xi_i 
+
+# surface integral terms for fluid flux 
+sptop   = -p_t*inner(ghat, pn) # force -K[grad(p) + ghat].n = 1 on top boundary
+spbot   = -p_t*inner(K*ghat, pn) #"free flux BC where inner(grad(p),pn)=0
+
+#pressure residual
+Fp = bp*dx + sptop*ds_top + spbot*ds_bottom
+
+#outward facing facet normal for porosity cell
+fn = FacetNormal(f.cell())
+# facet normal solid velocity
+vn = dot(W, fn)
+# rectified normal solid velocity ( = vn if outflow, 0 if inflow)
+vnout = 0.5*(vn + abs(vn))
+
+# body integrals for porosity
+bfm = f_t*(f_i - f_n - dt*0.5*(p_i*Xi_i + p_n*Xi_n))
+# body integrals for advective integrals
+bfa = - dt*dot(grad(f_t), W*f_half) - dt*f_t*div(W)*f_half
+
+# all porosity body integrals
+bf = bfm + bfa
+
+#surface integrals - external boundaries
+sftop = dt*f_t*vn  # set phi=1 on the top
+sfbot = dt*f_t*(vn*f_half)
+sfside = dt*f_t*(vnout*f_half)  # outflows but 0 if inflow
+
+# surface integrals over interior facets
+upwindfacetflux = vnout('+')*f_half('+') - vnout('-')*f_half('-')
+sffacet = dt*jump(f_t)*upwindfacetflux
+
+# porosity residual
+Ff =  bf*dx + sftop*ds_top + sfbot*ds_bottom + sfside*ds_left + sfside*ds_right + sffacet*dS
+
+# total residual
+F = Fp + Ff</string_value>
+          <ufl_symbol name="solver">
+            <string_value lines="1">F</string_value>
+          </ufl_symbol>
+        </form>
+        <form name="Jacobian" rank="1">
+          <string_value lines="20" type="code" language="python">J = derivative(F, us_i, us_a)</string_value>
+          <ufl_symbol name="solver">
+            <string_value lines="1">J</string_value>
+          </ufl_symbol>
+        </form>
+        <quadrature_rule name="default"/>
+        <snes_type name="ls">
+          <ls_type name="cubic"/>
+          <convergence_test name="default"/>
+        </snes_type>
+        <relative_error>
+          <real_value rank="0">1.e-7</real_value>
+        </relative_error>
+        <absolute_error>
+          <real_value rank="0">1.e-11</real_value>
+        </absolute_error>
+        <max_iterations>
+          <integer_value rank="0">50</integer_value>
+        </max_iterations>
+        <monitors>
+          <residual/>
+        </monitors>
+        <linear_solver>
+          <iterative_method name="fgmres">
+            <restart>
+              <integer_value rank="0">30</integer_value>
+            </restart>
+            <relative_error>
+              <real_value rank="0">1.e-7</real_value>
+            </relative_error>
+            <absolute_error>
+              <real_value rank="0">1.e-12</real_value>
+            </absolute_error>
+            <max_iterations>
+              <integer_value rank="0">20</integer_value>
+            </max_iterations>
+            <zero_initial_guess/>
+            <monitors>
+              <preconditioned_residual/>
+            </monitors>
+          </iterative_method>
+          <preconditioner name="fieldsplit">
+            <composite_type name="multiplicative"/>
+            <fieldsplit name="Pressure">
+              <field name="Pressure"/>
+              <monitors/>
+              <linear_solver>
+                <iterative_method name="preonly"/>
+                <preconditioner name="hypre">
+                  <hypre_type name="boomeramg"/>
+                </preconditioner>
+              </linear_solver>
+            </fieldsplit>
+            <fieldsplit name="Porosity">
+              <field name="Porosity"/>
+              <monitors/>
+              <linear_solver>
+                <iterative_method name="gmres">
+                  <restart>
+                    <integer_value rank="0">30</integer_value>
+                  </restart>
+                  <relative_error>
+                    <real_value rank="0">1.e-7</real_value>
+                  </relative_error>
+                  <max_iterations>
+                    <integer_value rank="0">50</integer_value>
+                  </max_iterations>
+                  <zero_initial_guess/>
+                  <monitors/>
+                </iterative_method>
+                <preconditioner name="eisenstat"/>
+              </linear_solver>
+            </fieldsplit>
+          </preconditioner>
+        </linear_solver>
+        <never_ignore_solver_failures/>
+      </type>
+      <solve name="in_timeloop"/>
+    </nonlinear_solver>
+    <functional name="PressureIntegral">
+      <string_value lines="20" type="code" language="python">int = p*dx</string_value>
+      <ufl_symbol name="functional">
+        <string_value lines="1">int</string_value>
+      </ufl_symbol>
+      <quadrature_rule name="default"/>
+      <include_in_statistics/>
+    </functional>
+    <functional name="PorosityIntegral">
+      <string_value lines="20" type="code" language="python">int = f*dx</string_value>
+      <ufl_symbol name="functional">
+        <string_value lines="1">int</string_value>
+      </ufl_symbol>
+      <quadrature_rule name="default"/>
+      <include_in_statistics/>
+    </functional>
+  </system>
+  <system name="SeparationVelocity">
+    <mesh name="Mesh"/>
+    <ufl_symbol name="global">
+      <string_value lines="1">uq</string_value>
+    </ufl_symbol>
+    <field name="SeparationVelocity">
+      <ufl_symbol name="global">
+        <string_value lines="1">q</string_value>
+      </ufl_symbol>
+      <type name="Function">
+        <rank name="Vector" rank="1">
+          <element name="P1">
+            <family>
+              <string_value>CG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">1</integer_value>
+            </degree>
+          </element>
+          <initial_condition type="initial_condition" name="WholeMesh">
+            <constant name="dim">
+              <real_value shape="2" dim1="dim" rank="1">1. 1.</real_value>
+            </constant>
+          </initial_condition>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_visualization/>
+        <include_in_statistics/>
+      </diagnostics>
+    </field>
+    <nonlinear_solver name="Solver">
+      <type name="SNES">
+        <form name="Residual" rank="0">
+          <string_value lines="20" type="code" language="python">F = inner(q_t,(q_i + K/f_i*(grad(p) + ghat)))*dx</string_value>
+          <ufl_symbol name="solver">
+            <string_value lines="1">F</string_value>
+          </ufl_symbol>
+        </form>
+        <form name="Jacobian" rank="1">
+          <string_value lines="20" type="code" language="python">J = derivative(F,uq_i,uq_a)</string_value>
+          <ufl_symbol name="solver">
+            <string_value lines="1">J</string_value>
+          </ufl_symbol>
+        </form>
+        <quadrature_rule name="default"/>
+        <snes_type name="ksponly"/>
+        <relative_error>
+          <real_value rank="0">1.e-6</real_value>
+        </relative_error>
+        <max_iterations>
+          <integer_value rank="0">20</integer_value>
+        </max_iterations>
+        <monitors/>
+        <linear_solver>
+          <iterative_method name="cg">
+            <relative_error>
+              <real_value rank="0">1.e-7</real_value>
+            </relative_error>
+            <max_iterations>
+              <integer_value rank="0">20</integer_value>
+            </max_iterations>
+            <zero_initial_guess/>
+            <monitors>
+              <preconditioned_residual/>
+            </monitors>
+          </iterative_method>
+          <preconditioner name="sor"/>
+        </linear_solver>
+        <never_ignore_solver_failures/>
+      </type>
+      <solve name="with_diagnostics"/>
+    </nonlinear_solver>
+  </system>
+  <system name="CourantNumber">
+    <mesh name="Mesh"/>
+    <ufl_symbol name="global">
+      <string_value lines="1">ucfl</string_value>
+    </ufl_symbol>
+    <field name="CourantNumber">
+      <ufl_symbol name="global">
+        <string_value lines="1">cfl</string_value>
+      </ufl_symbol>
+      <type name="Function">
+        <rank name="Scalar" rank="0">
+          <element name="P0">
+            <family>
+              <string_value>DG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">0</integer_value>
+            </degree>
+          </element>
+          <initial_condition type="initial_condition" name="WholeMesh">
+            <constant>
+              <real_value rank="0">0.</real_value>
+            </constant>
+          </initial_condition>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_visualization/>
+        <include_in_statistics/>
+      </diagnostics>
+    </field>
+    <nonlinear_solver name="Solver">
+      <type name="SNES">
+        <form name="Residual" rank="0">
+          <string_value lines="20" type="code" language="python"># Finite volume style estimate of Courant number
+# calculate the outward facing normal component of velocity for each facet
+n = FacetNormal(cfl_e.cell())
+vn = dot(q_i, n)
+vout = 0.5*(vn + abs(vn))
+
+# project the cell integral of the the outgoing flux from each cell
+F = cfl_t*cfl_i*dx - cfl_t('+')*vout('+')*dt('+')*dS - cfl_t('-')*vout('-')*dt('-')*dS - cfl_t*vout*dt*ds(1) - cfl_t*vout*dt*ds(2) - cfl_t*vout*dt*ds(3) - cfl_t*vout*dt*ds(4)</string_value>
+          <ufl_symbol name="solver">
+            <string_value lines="1">F</string_value>
+          </ufl_symbol>
+        </form>
+        <form name="Jacobian" rank="1">
+          <string_value lines="20" type="code" language="python">J = derivative(F,ucfl_i,ucfl_a)</string_value>
+          <ufl_symbol name="solver">
+            <string_value lines="1">J</string_value>
+          </ufl_symbol>
+        </form>
+        <quadrature_rule name="default"/>
+        <snes_type name="ls">
+          <ls_type name="cubic"/>
+          <convergence_test name="default"/>
+        </snes_type>
+        <relative_error>
+          <real_value rank="0">1.e-6</real_value>
+        </relative_error>
+        <absolute_error>
+          <real_value rank="0">1.e-10</real_value>
+        </absolute_error>
+        <max_iterations>
+          <integer_value rank="0">1</integer_value>
+        </max_iterations>
+        <monitors/>
+        <linear_solver>
+          <iterative_method name="preonly"/>
+          <preconditioner name="jacobi"/>
+        </linear_solver>
+        <never_ignore_solver_failures/>
+      </type>
+      <solve name="with_diagnostics"/>
+    </nonlinear_solver>
+  </system>
+</terraferma_options>

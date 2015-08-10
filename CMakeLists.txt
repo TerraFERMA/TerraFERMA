@@ -314,5 +314,9 @@ add_custom_target(
 # install tutorials under share
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/tutorials DESTINATION share/terraferma)
 
+if (BUCKETTOOLS_PYTHON_INSTALL_DIR)
+  install(DIRECTORY ${PROJECT_SOURCE_DIR}/tutorials/porositywaves/python/pysolwave DESTINATION ${BUCKETTOOLS_PYTHON_INSTALL_DIR})
+endif()
+
 # print post-install message
 add_subdirectory(cmake/post-install)
