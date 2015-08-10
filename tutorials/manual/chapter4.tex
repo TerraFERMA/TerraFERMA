@@ -178,8 +178,24 @@ initial condition
 \begin{displaymath}
   T(x,0) = 1 - z + 0.2\cos(\pi x)\sin(\pi z)
 \end{displaymath}
-to which will set up a steady cell rotating clock-wise.
-\pagebreak{}
+which will set up a steady cell rotating clock-wise. Figure
+\ref{fig:convection1a} shows the near steady-state solution of this
+problem implemented in \TF.
+
+\begin{figure}[htbp!]
+  \centering
+  \includegraphics[width=.9\textwidth]{figures/convection_isoviscous_TV.png}
+  \caption{Near-steady state solution of a simple isoviscous thermal
+    convection problem Blankenbach 1a
+    \cite{blankenbach_benchmark_1989} ($\Ra=10^{4}$). Resolution is
+    $64\times64\times2$ triangles with mixed element
+    $(v,p,T)\in([P2,P2],P1,P2])$ for 54148 total degrees of freedom.  Color field
+    shows dimensionless Temperature with the velocity field shown as
+    arrows. The steady state stopping criterion for this run was set
+    such that all fields change by $\leq10^{-5}$ between time-steps.}
+  \label{fig:convection1a}
+\end{figure}
+
 \section{Solution using \TF}
 \label{sec:solution-using-tf}
 
@@ -205,21 +221,9 @@ can be found in
 solution is shown in Figure \ref{fig:convection1a}.   
 
 
-\begin{figure}[htbp!]
-  \centering
-  \includegraphics[width=.9\textwidth]{figures/convection_isoviscous_TV.png}
-  \caption{Near-steady state solution of a simple isoviscous thermal
-    convection problem Blankenbach 1a
-    \cite{blankenbach_benchmark_1989} ($\Ra=10^{4}$). Resolution is
-    $64\times64\times2$ triangles with mixed element
-    $(v,p,T)\in([P2,P2],P1,P2])$ for 54148 total degrees of freedom.  Color field
-    shows dimensionless Temperature with the velocity field shown as
-    arrows. The steady state stopping criterion for this run was set
-    such that all fields change by $\leq10^{-5}$ between time-steps.}
-  \label{fig:convection1a}
-\end{figure}
 
-\pagebreak{}
+
+%\pagebreak{}
 
 In more detail, the specific steps required to modify the Stokes mms
 problem to solve thermal convection are as follows.
@@ -380,9 +384,6 @@ eta = 1.
         \item \texttt{components} = 1
         \item \texttt{type(Dirichlet)} constant = 0
         \end{itemize}
-      % \item \textbf{Delete the Functional} \texttt{L2NormErrorSquared}
-      % from
-      %\texttt{diagnostics $\rightarrow$ include\_in\_statistics}
     \item \textbf{Turn on steady-state checking}: under
       \texttt{diagnostics}, activate the tab
       \texttt{include\_in\_steady\_state} and set the norm to be
@@ -391,7 +392,6 @@ eta = 1.
     \item \textbf{Modify Properties for Pressure}
       \begin{itemize}
       \item Move the reference point to $[0.5, 0.5]$
-      % \item \textbf{Delete the Functional} \texttt{L2NormErrorSquared}  from \texttt{diagnostics $\rightarrow$ include\_in\_statistics}
       \item \textbf{Turn on steady-state checking}:  under
       \texttt{diagnostics}, activate the tab
       \texttt{include\_in\_steady\_state} and set the norm to be
@@ -434,17 +434,7 @@ def val(x):
   should add to visualization, statistics and steady-state monitoring
   \begin{itemize}
   \item activate \texttt{include\_in\_visualization}
-  \item activate \texttt{include\_in\_statistics}. % If you want to
-%     calculate the Nusselt number
-%     \begin{itemize}
-%     \item Add a new \texttt{functional} named \texttt{Nu} with
-%       \texttt{ufl\_symbol} = \texttt{Nu} and ufl
-%       \begin{lstlisting}[style=UFL]
-%         Nu = -T.dx(1)*ds(4)
-%       \end{lstlisting}
-% which will calculate the integral of the heat-flux ($-\nabla T\cdot
-% \hat{n}$) across the top boundary.
-%    \end{itemize}
+  \item activate \texttt{include\_in\_statistics}. 
 \item activate \texttt{include\_in\_steady\_state} and set the norm
   type to \texttt{linf}
   \end{itemize}
@@ -466,6 +456,7 @@ def val(x):
     \item Change the residual from Stokes to full   thermal convection
       by adding the temperature residual i.e. implement the ufl
       described above 
+\pagebreak{}
     \begin{lstlisting}[style=UFL]
 # theta weighted variables
 T_theta = theta*T_i + (1.-theta)*T_n
@@ -484,7 +475,7 @@ F = Fv + Fp + FT
   \item \textbf{Change the SNES type to ls}:  This is real newton now
     and you'll need a real non-linear solver.
   \item \textbf{Keep a direct solver for Newton (for the moment)}.  A
-    sparse direct solve for the full $3\time3$ block jacobian is
+    sparse direct solve for the full $3\time3$ block Jacobian is
     inefficient and we will change it shortly to a
     block-preconditioned iterative solver, but for now we'll keep the
     sparse direct solver and use it as a base-line case.
@@ -568,7 +559,11 @@ F = c_t*c_i*dx -
       c_t*vout*dt*ds(3) - c_t*vout*dt*ds(4)
     \end{lstlisting}
 which is the weak form for $\alpha$ that depends on the timestep
-$\Delta t$ and integral of the outgoing flux through each cell.
+$\Delta t$ and integral of the outgoing flux through each cell. \textbf{CAUTION!}
+ if you copy and paste the above UFL from the pdf manual to diamond,
+ you will introduce some non-ascii characters into the ufl that will
+ break FFC.  In this case,  the single quote character \texttt{'} will need to
+ be edited to a standard ascii single quote.
 \item set the residual \texttt{ufl\_symbol (solver) = F}
 \end{itemize}
 \item \textbf{Set the Jacobian}
@@ -644,7 +639,7 @@ could also use a physically motivated approximate Jacobian
   \right].
 \end{equation}
 instead of the full Jacobian $J$. $P$ simply neglects the coupling between temperature and velocity
-(by  assumingthat $B=0$).  In this case, $P$ is block
+(by  assuming that $B=0$).  In this case, $P$ is block
 upper-triangular such that $P\delta = -\vec{F}$  can be solved
 sequentially by first solving for the Temperature correction $\delta
 T_{i}$ using
@@ -775,7 +770,7 @@ strategies are
     \begin{itemize}
     \item set \texttt{composite\_type (multiplicative)}\footnote{a
         multiplicative fieldsplit preconditioner uses the results of
-        previous block solves as they become availalable.  Thus the
+        previous block solves as they become available.  Thus the
         order of splits is important.  If we solve $T$ then Stokes,
         the preconditioner is upper triangular, otherwise it's lower
         triangular.  A \texttt{composite\_type (additive) is just
@@ -1079,7 +1074,7 @@ Unlike the isoviscous case, \texttt{preonly\_fieldsplit\_direct} and
 However, their convergence behaviors are similar with only
 marginal gains seen using the approximate Newton scheme.  As before
 the full benefits of Newton's method are only seen
-using\texttt{newton\_direct} and \texttt{newton\_fieldsplit\_direct},
+using \texttt{newton\_direct} and \texttt{newton\_fieldsplit\_direct},
 where the norm of the residual drops $\sim 7$ orders of magnitude in 2
 as opposed to 4 iterations.  These higher
 convergence rates however come at a higher cost than using
@@ -1097,6 +1092,7 @@ non-linearity in temperature but does not assemble the
 $K_{\vec{v}}$ block in Eq.\ (\ref{eq:TVJacobian}). The only
 substantive change from \texttt{newton\_fieldsplit\_direct} is in the
 ufl for the residual, which is now
+\pagebreak{}
 \begin{lstlisting}[style=ufl]
 # velocity residual and derivative, viscosity block
 rv_v = inner(sym(grad(v_t)), 2.*eta*sym(grad(v_i)))*dx

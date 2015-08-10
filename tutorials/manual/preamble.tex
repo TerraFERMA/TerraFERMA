@@ -30,6 +30,35 @@
 \usepackage{xcolor}
 \usepackage{enumitem}
 
+\usepackage[square,sort,comma,numbers]{natbib}
+\usepackage{rotating}
+\setlength\fboxrule{0.0pt}
+\setlength\fboxsep{0pt}
+
+% Units
+\usepackage{units}
+
+\newcommand{\m}[1][]{\unit[#1]{m}}
+\newcommand{\mm}[1][]{\unit[#1]{mm}}
+\newcommand{\km}[1][]{\unit[#1]{km}}
+\newcommand{\s}[1][]{\unit[#1]{s}}
+\newcommand{\hrs}[1][]{\unit[#1]{hrs}}
+\newcommand{\invs}[1][]{\unit[#1]{s}\ensuremath{^{-1}}}
+\newcommand{\ms}[1][]{\unit[#1]{m\ensuremath{\,}s\ensuremath{^{-1}}}}
+\newcommand{\mss}[1][]{\unit[#1]{m\ensuremath{\,}s\ensuremath{^{-2}}}}
+\newcommand{\J}[1][]{\unit[#1]{J}}
+\newcommand{\K}[1][]{\unit[#1]{K}}
+\newcommand{\W}[1][]{\unit[#1]{W}}
+\newcommand{\PSU}[1][]{\unit[#1]{PSU}}
+\newcommand{\Pa}[1][]{\unit[#1]{Pa}}
+\newcommand{\kg}[1][]{\unit[#1]{kg}}
+\newcommand{\rads}[1][]{\unit[#1]{rad\ensuremath{\,}s\ensuremath{^{-1}}}}
+\newcommand{\kgmm}[1][]{\unit[#1]{kg\ensuremath{\,}m\ensuremath{^{-2}}}}
+\newcommand{\kgmmm}[1][]{\unit[#1]{kg\ensuremath{\,}m\ensuremath{^{-3}}}}
+\newcommand{\Nmm}[1][]{\unit[#1]{N\ensuremath{\,}m\ensuremath{^{-2}}}}
+\newcommand\Celsius{\ensuremath{^\circ}\unit{C}}
+
+
 \usepackage[final]{listings}
 \lstloadlanguages{[LaTeX]TeX,Python,bash,[gnu]Make,XML}
 
@@ -137,9 +166,12 @@
     {\huge\raggedright \@title\par}%
     %\vskip 1cm
     \vfill
+    \includegraphics[width=.9\textwidth]{figures/3D_Solitary_Wave_c5n3m0b_cropped.png}\\
+    \vfill{}
+    {\Large Version 1.0\par}%
     {\Large \@date\par}%
   \end{center}%
-  %\vfill
+  \vfill
   \null
   \cleardoublepage
   }
@@ -147,7 +179,6 @@
 \author{Marc Spiegelman and Cian Wilson}
 \title{A Tutorial Cookbook for \TF{}}
 \date{\today}
-
 
 %%% HEADERS & FOOTERS
 \pagestyle{ruled} % try also: empty , plain , headings , ruled , Ruled , companion
