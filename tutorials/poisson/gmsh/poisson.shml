@@ -42,7 +42,7 @@ libspud.set_option("/geometry/mesh::Mesh/source::File/file","widget")</string_va
           <required_output>
             <filenames name="meshfile">
               <string>
-                <string_value lines="1" type="filename">widget.xml.gz</string_value>
+                <string_value lines="1" type="filename">widget.xml.gz widget_facet_region.xml.gz</string_value>
               </string>
             </filenames>
           </required_output>
@@ -54,7 +54,7 @@ libspud.set_option("/geometry/mesh::Mesh/source::File/file","widget")</string_va
               <string_value lines="1">dolfin-convert widget.msh widget.xml</string_value>
             </command>
             <command name="Compress">
-              <string_value lines="1">gzip widget.xml</string_value>
+              <string_value lines="1">gzip widget.xml widget_facet_region.xml</string_value>
             </command>
           </commands>
           <comment>runs gmsh to generate mesh</comment>
