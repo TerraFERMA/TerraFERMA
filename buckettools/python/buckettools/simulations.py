@@ -1293,7 +1293,7 @@ class SimulationHarnessBatch(SimulationBatch):
   '''A derived SimulationBatch that takes in a list of spud based harnessfiles and sets up
      subgroups of SimulationBatches based on them.'''
 
-  def __init__(self, harnessfiles, filename, currentdirectory, tfdirectory, nthreads=1):
+  def __init__(self, harnessfiles, filename, currentdirectory, tfdirectory, nthreads=1, parameters={}):
     '''Initialize a SimulationHarnessBatch.'''
 
     # record the current directory from where the script calling this is being run
@@ -1310,6 +1310,8 @@ class SimulationHarnessBatch(SimulationBatch):
     self.logprefix = None
     # number of threads we are to run processes over
     self.nthreads = nthreads
+    # any parameter values we want to overload
+    self.parameters = parameters
 
     # set up a list sub SimulationBatches - one for each harnessfile so that tests can be grouped together
     self.simulationtestgroups = []
@@ -1537,14 +1539,17 @@ class SimulationHarnessBatch(SimulationBatch):
            raise SimulationsErrorInitialization
        
        # try to get a list of the parameter values (not necessarily specified for child parameters so except failure)
-       try:
-         parameter_values[parameter_name]  = r.findall(libspud.get_option(parameter_optionpath+"/values"))
+       if libspud.have_option(parameter_optionpath+"/values"):
+         if parameter_name in self.parameters:
+           parameter_values[parameter_name] = self.parameters[parameter_name]
+         else:
+           parameter_values[parameter_name]  = r.findall(libspud.get_option(parameter_optionpath+"/values"))
          # try to get a list of the process scales (not necessarily specified so except failure)
          try:
            parameter_procscales[parameter_name] = libspud.get_option(parameter_optionpath+"/process_scale")
          except libspud.SpudKeyError:
            parameter_procscales[parameter_name] = [1 for v in xrange(len(parameter_values[parameter_name]))]
-       except libspud.SpudKeyError:
+       else:
          # insert nothing if we haven't specified any values
          # try to get a list of the process scales (not necessarily specified so except failure)
          try:

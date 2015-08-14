@@ -98,6 +98,8 @@ if __name__ == "__main__":
                       help="list the input to the simulations")
   parser.add_argument("--clean", action='store_const', dest='clean', const=True, default=False, required=False,
                       help="removes the run (and build) directories from previous simulation runs")
+  parser.add_argument("--parameters", action='store', metavar='name value', default=None, nargs='+', required=False, dest='params', type=str,
+                      help="allows users to crudely override parameters in shmls")
   parser.add_argument('-f', '--force', action='store_const', dest='force', const=True, default=False, 
                       required=False,
                       help='force rebuild(s)')
@@ -106,6 +108,14 @@ if __name__ == "__main__":
   except NameError:
     pass
   args = parser.parse_args()
+
+  params = {}
+  if args.params is not None:
+    for i in xrange(0, len(args.params), 2):
+      if args.params[i] in params:
+        params[args.params[i]].append(args.params[i+1])
+      else:
+        params[args.params[i]] = [args.params[i+1]]
 
   filenames = set()
   for f in args.filename:
@@ -158,7 +168,8 @@ if __name__ == "__main__":
 
   try:
     batch = simulations.SimulationHarnessBatch(filenames, os.path.realpath(__file__), curdir, \
-                                               os.environ["TF_CMAKE_PATH"], nthreads=args.nthreads)
+                                               os.environ["TF_CMAKE_PATH"], nthreads=args.nthreads,
+                                               parameters=params)
   except simulations.SimulationsErrorInitialization:
     print "Error while initializing the simulations."
     sys.exit(1)
