@@ -88,6 +88,8 @@ if __name__ == "__main__":
                       help="build the simulations")
   parser.add_argument("--run", action='store_const', dest='run', const=True, default=False, required=False,
                       help="run the simulations")
+  parser.add_argument("--just-run", action='store_const', dest='justrun', const=True, default=False, required=False,
+                      help="only run the simulations (do not reconfigure or rebuild)")
   parser.add_argument("--test", action='store_const', dest='test', const=True, default=False, required=False,
                       help="test the simulations")
   parser.add_argument("--just-test", action='store_const', dest='justtest', const=True, default=False, required=False,
@@ -224,6 +226,12 @@ if __name__ == "__main__":
             except simulations.SimulationsErrorTest:
               print "Error while testing simulations, exiting with error."
               sys.exit(1)
+  elif args.justrun:
+    try:
+      batch.run(force=args.force)
+    except simulations.SimulationsErrorRun:
+      print "Error while running simulations, exiting with error."
+      sys.exit(1)
   elif args.justtest:
     try:
       batch.test(force=args.force)
