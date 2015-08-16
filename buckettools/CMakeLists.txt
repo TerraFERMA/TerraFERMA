@@ -28,7 +28,13 @@ cmake_minimum_required(VERSION 2.8)
 cmake_policy(SET CMP0004 OLD)
 
 # The project name for buckettools (sets up environment variables for binary and source directories)
-project(buckettools)
+project(BUCKETTOOLS)
+set(BUCKETTOOLS_VERSION_RELEASE "${TERRAFERMA_VERSION_RELEASE}")
+set(BUCKETTOOLS_VERSION_MAJOR   "${TERRAFERMA_VERSION_MAJOR}")
+set(BUCKETTOOLS_VERSION_MINOR   "${TERRAFERMA_VERSION_MINOR}")
+set(BUCKETTOOLS_VERSION_PATCH   "${TERRAFERMA_VERSION_PATCH}")
+set(BUCKETTOOLS_VERSION_SHORT   "${TERRAFERMA_VERSION_SHORT}")
+set(BUCKETTOOLS_VERSION         "${TERRAFERMA_VERSION}")
 
 # Default build type (can be overridden by user)
 if (NOT CMAKE_BUILD_TYPE)
@@ -39,25 +45,16 @@ endif()
 # Get DOLFIN configuration data (dolfin-config.cmake must be in DOLFIN_CMAKE_CONFIG_PATH)
 find_package(DOLFIN REQUIRED)
 
+list(APPEND BUCKETTOOLS_DEP_INCLUDE_DIRECTORIES "${DOLFIN_INCLUDE_DIRS};${DOLFIN_3RD_PARTY_INCLUDE_DIRS}")
+list(APPEND BUCKETTOOLS_TARGET_LINK_LIBRARIES "${DOLFIN_LIBRARIES}")
+list(APPEND BUCKETTOOLS_CXX_DEFINITIONS "${DOLFIN_CXX_DEFINITIONS}")
+list(APPEND BUCKETTOOLS_LINK_FLAGS "${DOLFIN_LINK_FLAGS}")
+set(BUCKETTOOLS_CXX_FLAGS "${BUCKETTOOLS_CXX_FLAGS} ${DOLFIN_CXX_FLAGS}")
+
 # Need to get VTK config because VTK uses advanced VTK features which
 # mean it's not enough to just link to the DOLFIN target. See
 # http://www.vtk.org/pipermail/vtk-developers/2013-October/014402.html
 find_package(VTK HINTS ${VTK_DIR} $ENV{VTK_DIR} NO_MODULE QUIET)
-
-# Compiler definitions
-add_definitions(${DOLFIN_CXX_DEFINITIONS})
-
-# Compiler flags
-set(CMAKE_CXX_FLAGS "${DOLFIN_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
-
-# Include directories
-include_directories(${DOLFIN_INCLUDE_DIRS})
-include_directories(SYSTEM ${DOLFIN_3RD_PARTY_INCLUDE_DIRS})
-
-# Add Mac specific loader flags
-if (APPLE)
-  set(CMAKE_SHARED_LINKER_FLAGS "-Wl,-undefined,dynamic_lookup" CACHE STRING "should only be set if macosx" FORCE)
-endif()
 
 find_package(PythonInterp 2 REQUIRED)
 
@@ -107,24 +104,27 @@ else()
   message(FATAL_ERROR "Could not find python interpreter.")
 endif()
 
-# Find Pythons livs
+# Find Pythons libs
 find_package(PythonLibs ${PYTHON_VERSION_STR} EXACT REQUIRED)
 
 if(NOT ${PYTHONLIBS_FOUND})
   message(FATAL_ERROR "Could not find python libraries.")
 endif(NOT ${PYTHONLIBS_FOUND})
 
-include_directories(${PYTHON_INCLUDE_PATH})
+list(APPEND BUCKETTOOLS_DEP_INCLUDE_DIRECTORIES "${PYTHON_INCLUDE_DIRS}")
+list(APPEND BUCKETTOOLS_TARGET_LINK_LIBRARIES "${PYTHON_LIBRARIES}")
+list(APPEND BUCKETTOOLS_CXX_DEFINITIONS "-DHAS_PYTHON")
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules")
-
 find_package(Spud REQUIRED)
 
 if(NOT ${SPUD_FOUND})
   message(FATAL_ERROR "Could not find Spud.")
 endif(NOT ${SPUD_FOUND})
 
-include_directories(${SPUD_INCLUDE_DIRS})
+list(APPEND BUCKETTOOLS_DEP_INCLUDE_DIRECTORIES "${SPUD_INCLUDE_DIRS}")
+list(APPEND BUCKETTOOLS_TARGET_LINK_LIBRARIES "${SPUD_LIBRARIES}")
+list(APPEND BUCKETTOOLS_CXX_DEFINITIONS "-DHAS_SPUD")
 
 add_subdirectory(cpp)
 
@@ -182,6 +182,9 @@ install(FILES ${SCRIPTS} DESTINATION bin
         PERMISSIONS OWNER_WRITE OWNER_READ GROUP_READ WORLD_READ OWNER_EXECUTE GROUP_EXECUTE WORLD_EXECUTE)
 
 configure_file(${PROJECT_SOURCE_DIR}/cmake/templates/BUCKETTOOLSConfig.cmake.in
-  ${PROJECT_BINARY_DIR}/BUCKETTOOLSConfig.cmake @ONLY)
+  ${PROJECT_BINARY_DIR}/BUCKETTOOLSConfig.cmake @ONLY ESCAPE_QUOTES)
+configure_file(${PROJECT_SOURCE_DIR}/cmake/templates/BUCKETTOOLSConfigVersion.cmake.in
+  ${PROJECT_BINARY_DIR}/BUCKETTOOLSConfigVersion.cmake @ONLY ESCAPE_QUOTES)
 install(FILES ${PROJECT_BINARY_DIR}/BUCKETTOOLSConfig.cmake DESTINATION share/buckettools/cmake)
+install(FILES ${PROJECT_BINARY_DIR}/BUCKETTOOLSConfigVersion.cmake DESTINATION share/buckettools/cmake)
 

@@ -256,7 +256,7 @@ class NestedList(list):
 ####################################################################################
 
 class Run:
-  def __init__(self, path, optionsdict, currentdirectory, tfdirectory, \
+  def __init__(self, path, optionsdict, currentdirectory, tfdirectory, batchdirectory, \
                logprefix=None, dependents=[]):
     self.optionsdict = optionsdict
 
@@ -271,6 +271,7 @@ class Run:
     self.logprefix = logprefix
 
     self.currentdirectory = currentdirectory
+    self.batchdirectory   = batchdirectory
 
     # we preserve the original path passed to us so we can use it to reference back to this
     # simulation in the batch global options dictionary
@@ -304,7 +305,7 @@ class Run:
          depoptionsdict["value_indices"] = dependencyoptions["value_indices"]
          depoptionsdict["value_lengths"] = dependencyoptions["value_lengths"]
          self.dependencies.append(depoptionsdict["type"](dependencypath, depoptionsdict, \
-                                                         currentdirectory, tfdirectory, \
+                                                         currentdirectory, tfdirectory, batchdirectory, \
                                                          logprefix=logprefix, dependents=[self]))
 
     # if the input options file is an the output of a dependency then we have to
@@ -349,19 +350,58 @@ class Run:
   def updateoptions(self, valuesdict=None, prefix=""):
     os.chdir(self.basedirectory)
     sys.path.append(self.basedirectory)
-    if valuesdict is None: valuesdict={}
-    for k,v in self.optionsdict[prefix+"values"].iteritems():
-      if k in valuesdict:
-        self.log("ERROR: in updateoptions, %s multiply defined"%(k))
-        if k=="input_file":
-          self.log("parameter cannot be named input_file")
-        raise SimulationsErrorWriteOptions
-      valuesdict[k] = v
+    valuesdict = self.getvaluesdict(valuesdict=valuesdict, prefix=prefix)
     for update in self.optionsdict[prefix+"updates"].itervalues():
       if update is not None:
         exec update in valuesdict
     sys.path.remove(self.basedirectory)
     os.chdir(self.currentdirectory)
+
+  def getvaluesdict(self, valuesdict=None, prefix=""):
+    if valuesdict is None: valuesdict={}
+    valuesdict["input_filename"] = os.path.join(self.runinputdirectory, self.filename+self.ext)
+    valuesdict["_self"] = self
+    for k,v in self.optionsdict[prefix+"values"].iteritems():
+      if k in valuesdict:
+        self.log("ERROR: in getvaluesdict, %s multiply defined"%(k))
+        if k=="input_file":
+          self.log("parameter cannot be named input_file")
+        if k=="input_filename":
+          self.log("parameter cannot be named input_filename")
+        if k=="_self":
+          self.log("parameter cannot be named _self")
+        raise SimulationsErrorWriteOptions
+      valuesdict[k] = v
+    return valuesdict
+
+  def resolvepythonrequiredfiles(self, required_files_python, dirname=None):
+     '''Get a list of files from the supplied list of filenames and python code.'''
+
+     required_files = []
+     for filename_name, filename_code in required_files_python:
+       var = Variable(filename_name, filename_code)
+       varsdict = self.getvaluesdict()
+       os.chdir(self.batchdirectory)
+       var.run(varsdict)
+       os.chdir(self.currentdirectory)
+       filenames = varsdict[filename_name]
+       # we accept either a string or a list of filenames from python
+       if isinstance(filenames, str):
+         required_files.append(filenames)
+       else:
+         required_files += filenames
+
+     # if dirname has been supplied then make the filenames relative to it
+     if dirname is not None:
+       for f in xrange(len(required_files)):
+         filename = required_files[f]
+         if os.path.isabs(filename):
+           required_files[f] = os.path.normpath(filename)
+         else:
+           required_files[f] = os.path.normpath(os.path.join(dirname, filename))
+
+     # return the required files
+     return required_files
 
   def configure(self, force=False):
     return None
@@ -381,7 +421,7 @@ class Run:
     if not self.alreadyrun and (not self.optionsdict["run_when"]["never"] or force):
       commands = self.getcommands()
 
-      valuesdict=self.optionsdict["values"]
+      valuesdict=self.getvaluesdict()
 
       for r in xrange(self.nruns):
         requiredinput = self.getrequiredinput(r)
@@ -482,7 +522,7 @@ class Run:
       for var in self.variables:
         if self.nruns > 1: varsdict = []
         # set up a temporary variable dictionary for this variable calculation
-        tmpdict  = {}
+        tmpdict  = self.getvaluesdict()
         # try running the variable assignment
         try:
           var.run(tmpdict)
@@ -550,6 +590,8 @@ class Run:
   def getrequiredoutput(self, run):
     requiredoutput = []
     if "output" in self.optionsdict: requiredoutput += self.optionsdict["output"]
+    if "output_python" in self.optionsdict:
+      requiredoutput += self.resolvepythonrequiredfiles(self.optionsdict["output_python"])
     return requiredoutput
  
   def getdependencyrequiredoutput(self, run=0):
@@ -569,6 +611,9 @@ class Run:
     if not self.deferred: requiredinput.append(os.path.join(self.basedirectory, self.filename+self.ext))
     if "input" in self.optionsdict:
       requiredinput += self.optionsdict["input"]
+    if "input_python" in self.optionsdict:
+      requiredinput += \
+         self.resolvepythonrequiredfiles(self.optionsdict["input_python"], dirname=self.batchdirectory)
     return requiredinput
 
   def getrequiredinput(self, run):
@@ -576,6 +621,11 @@ class Run:
     # get any input specified in the optionsdict
     if "input" in self.optionsdict: 
       for filepath in self.optionsdict["input"]:
+        # filter out any filenames that have already been added (i.e. make sure our latest input file is used)
+        if os.path.basename(filepath) not in [os.path.basename(inputpath) for inputpath in requiredinput]:
+          requiredinput.append(filepath)
+    if "input_python" in self.optionsdict:
+      for filepath in self.resolvepythonrequiredfiles(self.optionsdict["input_python"], dirname=self.batchdirectory):
         # filter out any filenames that have already been added (i.e. make sure our latest input file is used)
         if os.path.basename(filepath) not in [os.path.basename(inputpath) for inputpath in requiredinput]:
           requiredinput.append(filepath)
@@ -594,10 +644,10 @@ class Run:
 ################################################################################################
 
 class Simulation(Run):
-  def __init__(self, path, optionsdict, currentdirectory, tfdirectory, \
+  def __init__(self, path, optionsdict, currentdirectory, tfdirectory, batchdirectory, \
                logprefix=None, dependents=[]):
 
-    Run.__init__(self, path, optionsdict, currentdirectory, tfdirectory, \
+    Run.__init__(self, path, optionsdict, currentdirectory, tfdirectory, batchdirectory, \
                  logprefix=logprefix, dependents=dependents)
 
     self.tfdirectory = tfdirectory
@@ -850,7 +900,7 @@ class SimulationBatch:
         localsimoptionsdict["value_lengths"] = optionsdict["value_lengths"]
         # append the simulation to the list
         self.simulations.append(simoptionsdict["type"](simulationpath, localsimoptionsdict, \
-                                                       currentdirectory, tfdirectory, \
+                                                       currentdirectory, tfdirectory, dirname, \
                                                        logprefix=self.logprefix))
 
     self.runs = {}
@@ -1293,7 +1343,7 @@ class SimulationHarnessBatch(SimulationBatch):
   '''A derived SimulationBatch that takes in a list of spud based harnessfiles and sets up
      subgroups of SimulationBatches based on them.'''
 
-  def __init__(self, harnessfiles, filename, currentdirectory, tfdirectory, nthreads=1):
+  def __init__(self, harnessfiles, filename, currentdirectory, tfdirectory, nthreads=1, parameters={}):
     '''Initialize a SimulationHarnessBatch.'''
 
     # record the current directory from where the script calling this is being run
@@ -1310,6 +1360,8 @@ class SimulationHarnessBatch(SimulationBatch):
     self.logprefix = None
     # number of threads we are to run processes over
     self.nthreads = nthreads
+    # any parameter values we want to overload
+    self.parameters = parameters
 
     # set up a list sub SimulationBatches - one for each harnessfile so that tests can be grouped together
     self.simulationtestgroups = []
@@ -1408,6 +1460,7 @@ class SimulationHarnessBatch(SimulationBatch):
      r = re.compile(r'(?:[^,; ])+')
 
      required_files = []
+     required_files_python = []
      # loop over the filenames
      for f in xrange(libspud.option_count(optionpath+"/filenames")):
        filename_optionpath = optionpath+"/filenames["+`f`+"]"
@@ -1417,20 +1470,12 @@ class SimulationHarnessBatch(SimulationBatch):
          required_files += r.findall(filenames)
        # otherwise run a python string to get the filename(s)
        except libspud.SpudKeyError:
+         # can't do anything with these yet as we need the simulation
+         # options dict as an environment
          filename_name = libspud.get_option(filename_optionpath+"/name")
          filename_code = libspud.get_option(filename_optionpath+"/python")
-         var = Variable(filename_name, filename_code)
-         varsdict = {}
-         if dirname is not None: os.chdir(dirname)
-         var.run(varsdict)
-         os.chdir(self.currentdirectory)
-         filenames = varsdict[filename_name]
-         # we accept either a string or a list of filenames from python
-         if isinstance(filenames, str):
-           required_files.append(filenames)
-         else:
-           required_files += filenames
-
+         required_files_python.append((filename_name, filename_code))
+         
      # if dirname has been supplied then make the filenames relative to it
      if dirname is not None:
        for f in xrange(len(required_files)):
@@ -1441,7 +1486,7 @@ class SimulationHarnessBatch(SimulationBatch):
            required_files[f] = os.path.normpath(os.path.join(dirname, filename))
 
      # return the required files
-     return required_files
+     return required_files, required_files_python
 
   def getcommands(self, optionpath):
      commands = []
@@ -1537,14 +1582,17 @@ class SimulationHarnessBatch(SimulationBatch):
            raise SimulationsErrorInitialization
        
        # try to get a list of the parameter values (not necessarily specified for child parameters so except failure)
-       try:
-         parameter_values[parameter_name]  = r.findall(libspud.get_option(parameter_optionpath+"/values"))
+       if libspud.have_option(parameter_optionpath+"/values"):
+         if parameter_name in self.parameters:
+           parameter_values[parameter_name] = self.parameters[parameter_name]
+         else:
+           parameter_values[parameter_name]  = r.findall(libspud.get_option(parameter_optionpath+"/values"))
          # try to get a list of the process scales (not necessarily specified so except failure)
          try:
            parameter_procscales[parameter_name] = libspud.get_option(parameter_optionpath+"/process_scale")
          except libspud.SpudKeyError:
            parameter_procscales[parameter_name] = [1 for v in xrange(len(parameter_values[parameter_name]))]
-       except libspud.SpudKeyError:
+       else:
          # insert nothing if we haven't specified any values
          # try to get a list of the process scales (not necessarily specified so except failure)
          try:
@@ -1594,8 +1642,10 @@ class SimulationHarnessBatch(SimulationBatch):
 
      # fetch required input and output for this simulation (used to copy files into rundirectory 
      # and establish if run has successfully completed
-     required_input  = self.getrequiredfiles(optionpath+"/required_input", dirname)
-     required_output = self.getrequiredfiles(optionpath+"/required_output")
+     required_input, required_input_python  = \
+                        self.getrequiredfiles(optionpath+"/required_input", dirname)
+     required_output, required_output_python = \
+                        self.getrequiredfiles(optionpath+"/required_output")
 
      # get the dictionary of the parameters we are sweeping over in this simulation and the number of times each run should
      # be performed (e.g. for benchmarking purposes)
@@ -1640,12 +1690,14 @@ class SimulationHarnessBatch(SimulationBatch):
        if len(checkpoint_values) > 0:
          options[path]["checkpoint_values"]  = checkpoint_values
          options[path]["checkpoint_updates"] = checkpoint_updates
-     options[path]["input"]     = required_input
-     options[path]["output"]    = required_output
-     options[path]["values"]    = parameter_values
-     options[path]["updates"]   = parameter_updates
-     options[path]["builds"]    = parameter_builds
-     options[path]["procscales"]= parameter_procscales # not needed for runs but easier to keep in as dummy
+     options[path]["input"]         = required_input
+     options[path]["input_python"]  = required_input_python
+     options[path]["output"]        = required_output
+     options[path]["output_python"] = required_output_python
+     options[path]["values"]        = parameter_values
+     options[path]["updates"]       = parameter_updates
+     options[path]["builds"]        = parameter_builds
+     options[path]["procscales"]    = parameter_procscales # not needed for runs but easier to keep in as dummy
      options[path]["nruns"] = nruns
      options[path]["variables"] = variables
      # if the simulation has dependencies then recursively get their options too

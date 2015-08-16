@@ -50,6 +50,8 @@ namespace buckettools
 
   std::string githash();                                             // return a string describing the git hash
 
+  std::string tfversion();                                           // return a string describing the TerraFERMA version
+
   std::string compiletime();                                         // return a string describing the compilation time
 
 }
