@@ -24,7 +24,16 @@ cmake_minimum_required(VERSION 2.8)
 # Set verbose output while testing CMake
 #set(CMAKE_VERBOSE_MAKEFILE 1)
 
-project(terraferma)
+project(TERRAFERMA)
+set(TERRAFERMA_VERSION_RELEASE "0")
+set(TERRAFERMA_VERSION_MAJOR   "0")
+set(TERRAFERMA_VERSION_MINOR   "9")
+set(TERRAFERMA_VERSION_PATCH   "0")
+set(TERRAFERMA_VERSION_SHORT "${TERRAFERMA_VERSION_MAJOR}.${TERRAFERMA_VERSION_MINOR}.${TERRAFERMA_VERSION_PATCH}")
+set(TERRAFERMA_VERSION "${TERRAFERMA_VERSION_SHORT}")
+if(NOT ${TERRAFERMA_VERSION_RELEASE})
+  set(TERRAFERMA_VERSION "${TERRAFERMA_VERSION}+")
+endif()
 
 # Check for some compiler flags
 include(CheckCXXCompilerFlag)
@@ -42,7 +51,9 @@ set(BUCKETTOOLS_DIR "${PROJECT_SOURCE_DIR}/buckettools")
 
 add_subdirectory(${BUCKETTOOLS_DIR} "buckettools")
 
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/cpp DESTINATION share/terraferma)
+install(FILES ${PROJECT_SOURCE_DIR}/cpp/main.cpp DESTINATION share/terraferma/cpp)
+configure_file(${PROJECT_SOURCE_DIR}/cpp/CMakeLists.txt.in ${PROJECT_BINARY_DIR}/cpp/CMakeLists.txt @ONLY ESCAPE_QUOTES)
+install(FILES ${PROJECT_BINARY_DIR}/cpp/CMakeLists.txt DESTINATION share/terraferma/cpp)
 
 file(
     WRITE ${PROJECT_BINARY_DIR}/terraferma.conf
