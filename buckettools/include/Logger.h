@@ -131,6 +131,11 @@ namespace buckettools
 
   #define tf_warn(errstr, reason, ...) do {warning(__FILE__, __LINE__, errstr, reason,##__VA_ARGS__);} while(0)
 
+  void not_parallelized(const std::string &filename, 
+                        const int &line, 
+                        const std::string &what);
+  #define tf_not_parallelized(what) do {not_parallelized(__FILE__, __LINE__, what);} while(0)
+
 }
 
 #endif
