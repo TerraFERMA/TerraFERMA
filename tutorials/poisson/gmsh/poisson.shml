@@ -1,0 +1,110 @@
+<?xml version='1.0' encoding='utf-8'?>
+<harness_options>
+  <length>
+    <string_value>short</string_value>
+  </length>
+  <owner>
+    <string_value lines="1">mspieg</string_value>
+  </owner>
+  <tags>
+    <string_value lines="1">testable</string_value>
+  </tags>
+  <description>
+    <string_value lines="1">simple script to generate mesh from gmsh .geo file and run the tfml file</string_value>
+  </description>
+  <simulations>
+    <simulation name="poisson">
+      <input_file>
+        <string_value lines="1" type="filename">poisson.tfml</string_value>
+      </input_file>
+      <run_when name="input_changed"/>
+      <parameter_sweep>
+        <parameter name="nprocs">
+          <values>
+            <string_value lines="1">1</string_value>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+libspud.set_option("/geometry/mesh::Mesh/source::File/file","widget")</string_value>
+            <single_build/>
+          </update>
+          <process_scale>
+            <integer_value shape="1" rank="1">1</integer_value>
+          </process_scale>
+        </parameter>
+      </parameter_sweep>
+      <dependencies>
+        <run name="Mesh">
+          <input_file>
+            <string_value lines="1" type="filename">mesh/widget.geo</string_value>
+          </input_file>
+          <run_when name="input_changed_or_output_missing"/>
+          <required_output>
+            <filenames name="meshfile">
+              <string>
+                <string_value lines="1" type="filename">widget.xml.gz widget_facet_region.xml.gz</string_value>
+              </string>
+            </filenames>
+          </required_output>
+          <commands>
+            <command name="Gmsh">
+              <string_value lines="1">gmsh -2 -algo del2d widget.geo</string_value>
+            </command>
+            <command name="Convert">
+              <string_value lines="1">dolfin-convert widget.msh widget.xml</string_value>
+            </command>
+            <command name="Compress">
+              <string_value lines="1">gzip widget.xml widget_facet_region.xml</string_value>
+            </command>
+          </commands>
+          <comment>runs gmsh to generate mesh</comment>
+        </run>
+      </dependencies>
+      <variables>
+        <variable name="umax">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+from math import sqrt
+stat = parser("poisson.stat")
+umax= stat["Poisson"]["u"]["max"][-1]</string_value>
+        </variable>
+        <variable name="umin">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+from math import sqrt
+stat = parser("poisson.stat")
+umin= stat["Poisson"]["u"]["min"][-1]</string_value>
+        </variable>
+        <variable name="uIntegral">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+stat = parser("poisson.stat")
+uIntegral= stat["Poisson"]["IntegralU"]["functional_value"][-1]</string_value>
+        </variable>
+      </variables>
+    </simulation>
+  </simulations>
+  <tests>
+    <test name="umax">
+      <string_value lines="20" type="code" language="python">parameters=umax.parameters
+umax_a = umax[parameters]
+value =  0.037188591985
+relerror = abs(umax_a - value)/abs(value)
+print "umax =", umax_a, "value =", value, "relative error =", relerror
+assert (relerror &lt; 1.e-4)</string_value>
+    </test>
+    <test name="umin">
+      <string_value lines="20" type="code" language="python">parameters=umin.parameters
+umin_a = umin[parameters]
+value =  0.
+abserror = abs(umin_a - value)
+print "umin =", umin_a, "value =", value, "absolute error =", abserror
+assert (abserror &lt; 1.e-4)</string_value>
+    </test>
+    <test name="uIntegral">
+      <string_value lines="20" type="code" language="python">parameters=umax.parameters
+uIntegral_a = uIntegral[parameters]
+value =  0.026119123823
+relerror = abs(uIntegral_a - value)/abs(value)
+print "Integral u =", uIntegral_a, "value =", value, "relative error =", relerror
+assert (relerror &lt; 1.e-4)</string_value>
+    </test>
+  </tests>
+</harness_options>

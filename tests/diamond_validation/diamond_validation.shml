@@ -14,6 +14,7 @@
       <string_value lines="20" type="code" language="python">import sys
 import glob
 import os
+import string
 import xml.dom.minidom
 import xml.parsers.expat
 
@@ -52,7 +53,7 @@ class DiamondValidator:
 
     return
 
-  def ValidateOptionsFiles(self, testDir, depth, schemafile=None, extensions = None, alias=None):
+  def ValidateOptionsFiles(self, testDir, depth=-1, schemafile=None, extensions = None, alias=None):
     extdict = {}
     if schemafile is None:
       if extensions is None:
@@ -70,9 +71,9 @@ class DiamondValidator:
 
     if extension is not None:
       for extension in extensions:
-        debug.dprint("Testing files with extension: " + extension, 0)
+        debug.dprint("***Testing files with extension ." + extension + " in directory " + testDir, 0)
         sch = schemadict[extension]
-        for filename in self._TestFiles(extension, testDir, depth):
+        for filename in self._TestFiles(extension, testDir, depth=depth):
           optionsTree = sch.read(filename)
           lost_eles, added_eles, lost_attrs, added_attrs = sch.read_errors()
           if len(lost_eles) + len(added_eles) + len(lost_attrs) + len(added_attrs) == 0 and optionsTree.valid:
@@ -84,12 +85,14 @@ class DiamondValidator:
 
     return
 
-  def _TestFiles(self, extension, testDir, depth):
+  def _TestFiles(self, extension, testDir, depth=-1):
     filenames = []
     baseDir = os.path.join(self._rootDir, testDir)
-    for i in range(depth + 1):
-      filenames += glob.glob(os.path.join(baseDir, "*." + extension))
-      baseDir = os.path.join(baseDir, "*")
+    for dirname, dirnames, files in os.walk(baseDir, topdown=True):
+      current_depth = string.count(dirname, os.path.sep) - string.count(baseDir, os.path.sep)
+      filenames += glob.glob(os.path.join(dirname, "*." + extension))
+      dirnames[:] = filter(lambda dir: not (dir.endswith('.build') or dir.endswith('.run')), dirnames)
+      if current_depth == depth: dirnames[:] = []
 
     return filenames
 
@@ -99,12 +102,19 @@ class DiamondValidator:
   def OptionErrors(self):
     return self._optionErrors
 
-validator = DiamondValidator(rootDir = dirname)
+test_validator = DiamondValidator(rootDir = dirname)
 
-validator.ValidateOptionsFiles(testDir = "tests", depth = 1, extensions = ["tfml", "shml"])
+test_validator.ValidateOptionsFiles(testDir = "tests", extensions = ["tfml", "shml"])
 
-passes = validator.Passes()
-optionErrors = validator.OptionErrors()
+passes = test_validator.Passes()
+optionErrors = test_validator.OptionErrors()
+
+tutorial_validator = DiamondValidator(rootDir = dirname)
+
+tutorial_validator.ValidateOptionsFiles(testDir = "tutorials", extensions = ["tfml", "shml"])
+
+passes += tutorial_validator.Passes()
+optionErrors.update(tutorial_validator.OptionErrors())
 
 failures = []
 for filename in optionErrors.keys():
@@ -112,9 +122,10 @@ for filename in optionErrors.keys():
     failures.append(filename)
 
 if len(failures)&gt;0:
-  print "Summary of options files with failures:"
+  print "*****Summary of options files with failures:"
   for filename in failures:
     print filename
+  print "*****\n"
 
 print "diamond_validation: validation passes: " + str(passes)
 print "diamond_validation: validation failures: " + str(len(failures))
