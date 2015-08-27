@@ -22,7 +22,7 @@
           </values>
           <update>
             <string_value lines="20" type="code" language="python">import libspud
-libspud.set_option("/geometry/mesh::Mesh/source::UnitSquare/number_cells", [int(ncells), int(ncells)])</string_value>
+libspud.set_option("/geometry/mesh::Mesh/source::Rectangle/number_cells", [int(ncells), int(ncells)])</string_value>
             <single_build/>
           </update>
         </parameter>
@@ -87,203 +87,49 @@ nlogs = len(glob.glob("terraferma.log-?"))</string_value>
     </simulation>
   </simulations>
   <tests>
-    <test name="v_error_l2_p1_np1">
+    <test name="v_error_l2">
       <string_value lines="20" type="code" language="python">import numpy
-print v_error_l2
-print v_error_l2[{'n':['1'], 'np':['1']}]
-error_l2_a = numpy.array(v_error_l2[{'n':['1'], 'np':['1']}])
-conv_l2 = numpy.log2(error_l2_a[:-1]/error_l2_a[1:])
-print conv_l2
-assert(numpy.all(conv_l2 &gt; 2.9))</string_value>
+nprocs = v_error_l2.parameters['np']
+for n in v_error_l2.parameters['n']:
+  print '***** n=',n
+  for np in nprocs:
+    error_a = numpy.array(v_error_l2[{'n':n,'np':np}])
+    conv_p = numpy.log2(error_a[:-1]/error_a[1:])
+    print 'np=',np,' err=',error_a,' p=',conv_p
+    assert(numpy.all(conv_p &gt; int(n)+1.9))</string_value>
     </test>
-    <test name="v_error_linf_p1_np1">
+    <test name="v_error_linf">
       <string_value lines="20" type="code" language="python">import numpy
-print v_error_linf[{'n':['1'], 'np':['1']}]
-error_linf_a = numpy.array(v_error_linf[{'n':['1'], 'np':['1']}])
-conv_linf = numpy.log2(error_linf_a[:-1]/error_linf_a[1:])
-print conv_linf
-assert(numpy.all(conv_linf &gt; 2.5))</string_value>
+nprocs = v_error_l2.parameters['np']
+for n in v_error_l2.parameters['n']:
+  print '***** n=',n
+  for np in nprocs:
+    error_a = numpy.array(v_error_linf[{'n':n,'np':np}])
+    conv_p = numpy.log2(error_a[:-1]/error_a[1:])
+    print 'np=',np,' err=',error_a,' p=',conv_p
+    assert(numpy.all(conv_p &gt; int(n)+1.5))</string_value>
     </test>
-    <test name="v_error_l2_p2_np1">
+    <test name="p_error_l2">
       <string_value lines="20" type="code" language="python">import numpy
-print v_error_l2[{'n':['2'], 'np':['1']}]
-error_l2_a = numpy.array(v_error_l2[{'n':['2'], 'np':['1']}])
-conv_l2 = numpy.log2(error_l2_a[:-1]/error_l2_a[1:])
-print conv_l2
-assert(numpy.all(conv_l2 &gt; 3.9))</string_value>
+nprocs = v_error_l2.parameters['np']
+for n in v_error_l2.parameters['n']:
+  print '***** n=',n
+  for np in nprocs:
+    error_a = numpy.array(p_error_l2[{'n':n,'np':np}])
+    conv_p = numpy.log2(error_a[:-1]/error_a[1:])
+    print 'np=',np,' err=',error_a,' p=',conv_p
+    assert(numpy.all(conv_p &gt; int(n)+0.9))</string_value>
     </test>
-    <test name="v_error_linf_p2_np1">
+    <test name="p_error_linf">
       <string_value lines="20" type="code" language="python">import numpy
-print v_error_linf[{'n':['2'], 'np':['1']}]
-error_linf_a = numpy.array(v_error_linf[{'n':['2'], 'np':['1']}])
-conv_linf = numpy.log2(error_linf_a[:-1]/error_linf_a[1:])
-print conv_linf
-assert(numpy.all(conv_linf &gt; 3.5))</string_value>
-    </test>
-    <test name="p_error_l2_p1_np1">
-      <string_value lines="20" type="code" language="python">import numpy
-print p_error_l2
-print p_error_l2[{'n':['1'], 'np':['1']}]
-error_l2_a = numpy.array(p_error_l2[{'n':['1'], 'np':['1']}])
-conv_l2 = numpy.log2(error_l2_a[:-1]/error_l2_a[1:])
-print conv_l2
-assert(numpy.all(conv_l2 &gt; 1.9))</string_value>
-    </test>
-    <test name="p_error_linf_p1_np1">
-      <string_value lines="20" type="code" language="python">import numpy
-print p_error_linf[{'n':['1'], 'np':['1']}]
-error_linf_a = numpy.array(p_error_linf[{'n':['1'], 'np':['1']}])
-conv_linf = numpy.log2(error_linf_a[:-1]/error_linf_a[1:])
-print conv_linf
-assert(numpy.all(conv_linf &gt; 1.5))</string_value>
-    </test>
-    <test name="p_error_l2_p2_np1">
-      <string_value lines="20" type="code" language="python">import numpy
-print p_error_l2[{'n':['2'], 'np':['1']}]
-error_l2_a = numpy.array(p_error_l2[{'n':['2'], 'np':['1']}])
-conv_l2 = numpy.log2(error_l2_a[:-1]/error_l2_a[1:])
-print conv_l2
-assert(numpy.all(conv_l2 &gt; 2.9))</string_value>
-    </test>
-    <test name="p_error_linf_p2_np1">
-      <string_value lines="20" type="code" language="python">import numpy
-print p_error_linf[{'n':['2'], 'np':['1']}]
-error_linf_a = numpy.array(p_error_linf[{'n':['2'], 'np':['1']}])
-conv_linf = numpy.log2(error_linf_a[:-1]/error_linf_a[1:])
-print conv_linf
-assert(numpy.all(conv_linf &gt; 2.5))</string_value>
-    </test>
-    <test name="v_error_l2_p1_np2">
-      <string_value lines="20" type="code" language="python">import numpy
-print v_error_l2
-print v_error_l2[{'n':['1'], 'np':['2']}]
-error_l2_a = numpy.array(v_error_l2[{'n':['1'], 'np':['2']}])
-conv_l2 = numpy.log2(error_l2_a[:-1]/error_l2_a[1:])
-print conv_l2
-assert(numpy.all(conv_l2 &gt; 2.9))</string_value>
-    </test>
-    <test name="v_error_linf_p1_np2">
-      <string_value lines="20" type="code" language="python">import numpy
-print v_error_linf[{'n':['1'], 'np':['2']}]
-error_linf_a = numpy.array(v_error_linf[{'n':['1'], 'np':['2']}])
-conv_linf = numpy.log2(error_linf_a[:-1]/error_linf_a[1:])
-print conv_linf
-assert(numpy.all(conv_linf &gt; 2.5))</string_value>
-    </test>
-    <test name="v_error_l2_p2_np2">
-      <string_value lines="20" type="code" language="python">import numpy
-print v_error_l2[{'n':['2'], 'np':['2']}]
-error_l2_a = numpy.array(v_error_l2[{'n':['2'], 'np':['2']}])
-conv_l2 = numpy.log2(error_l2_a[:-1]/error_l2_a[1:])
-print conv_l2
-assert(numpy.all(conv_l2 &gt; 3.9))</string_value>
-    </test>
-    <test name="v_error_linf_p2_np2">
-      <string_value lines="20" type="code" language="python">import numpy
-print v_error_linf[{'n':['2'], 'np':['2']}]
-error_linf_a = numpy.array(v_error_linf[{'n':['2'], 'np':['2']}])
-conv_linf = numpy.log2(error_linf_a[:-1]/error_linf_a[1:])
-print conv_linf
-assert(numpy.all(conv_linf &gt; 3.5))</string_value>
-    </test>
-    <test name="p_error_l2_p1_np2">
-      <string_value lines="20" type="code" language="python">import numpy
-print p_error_l2
-print p_error_l2[{'n':['1'], 'np':['2']}]
-error_l2_a = numpy.array(p_error_l2[{'n':['1'], 'np':['2']}])
-conv_l2 = numpy.log2(error_l2_a[:-1]/error_l2_a[1:])
-print conv_l2
-assert(numpy.all(conv_l2 &gt; 1.9))</string_value>
-    </test>
-    <test name="p_error_linf_p1_np2">
-      <string_value lines="20" type="code" language="python">import numpy
-print p_error_linf[{'n':['1'], 'np':['2']}]
-error_linf_a = numpy.array(p_error_linf[{'n':['1'], 'np':['2']}])
-conv_linf = numpy.log2(error_linf_a[:-1]/error_linf_a[1:])
-print conv_linf
-assert(numpy.all(conv_linf &gt; 1.5))</string_value>
-    </test>
-    <test name="p_error_l2_p2_np2">
-      <string_value lines="20" type="code" language="python">import numpy
-print p_error_l2[{'n':['2'], 'np':['2']}]
-error_l2_a = numpy.array(p_error_l2[{'n':['2'], 'np':['2']}])
-conv_l2 = numpy.log2(error_l2_a[:-1]/error_l2_a[1:])
-print conv_l2
-assert(numpy.all(conv_l2 &gt; 2.9))</string_value>
-    </test>
-    <test name="p_error_linf_p2_np2">
-      <string_value lines="20" type="code" language="python">import numpy
-print p_error_linf[{'n':['2'], 'np':['2']}]
-error_linf_a = numpy.array(p_error_linf[{'n':['2'], 'np':['2']}])
-conv_linf = numpy.log2(error_linf_a[:-1]/error_linf_a[1:])
-print conv_linf
-assert(numpy.all(conv_linf &gt; 2.5))</string_value>
-    </test>
-    <test name="v_error_l2_p1_np3">
-      <string_value lines="20" type="code" language="python">import numpy
-print v_error_l2
-print v_error_l2[{'n':['1'], 'np':['3']}]
-error_l2_a = numpy.array(v_error_l2[{'n':['1'], 'np':['3']}])
-conv_l2 = numpy.log2(error_l2_a[:-1]/error_l2_a[1:])
-print conv_l2
-assert(numpy.all(conv_l2 &gt; 2.9))</string_value>
-    </test>
-    <test name="v_error_linf_p1_np3">
-      <string_value lines="20" type="code" language="python">import numpy
-print v_error_linf[{'n':['1'], 'np':['3']}]
-error_linf_a = numpy.array(v_error_linf[{'n':['1'], 'np':['3']}])
-conv_linf = numpy.log2(error_linf_a[:-1]/error_linf_a[1:])
-print conv_linf
-assert(numpy.all(conv_linf &gt; 2.5))</string_value>
-    </test>
-    <test name="v_error_l2_p2_np3">
-      <string_value lines="20" type="code" language="python">import numpy
-print v_error_l2[{'n':['2'], 'np':['3']}]
-error_l2_a = numpy.array(v_error_l2[{'n':['2'], 'np':['3']}])
-conv_l2 = numpy.log2(error_l2_a[:-1]/error_l2_a[1:])
-print conv_l2
-assert(numpy.all(conv_l2 &gt; 3.9))</string_value>
-    </test>
-    <test name="v_error_linf_p2_np3">
-      <string_value lines="20" type="code" language="python">import numpy
-print v_error_linf[{'n':['2'], 'np':['3']}]
-error_linf_a = numpy.array(v_error_linf[{'n':['2'], 'np':['3']}])
-conv_linf = numpy.log2(error_linf_a[:-1]/error_linf_a[1:])
-print conv_linf
-assert(numpy.all(conv_linf &gt; 3.5))</string_value>
-    </test>
-    <test name="p_error_l2_p1_np3">
-      <string_value lines="20" type="code" language="python">import numpy
-print p_error_l2
-print p_error_l2[{'n':['1'], 'np':['3']}]
-error_l2_a = numpy.array(p_error_l2[{'n':['1'], 'np':['3']}])
-conv_l2 = numpy.log2(error_l2_a[:-1]/error_l2_a[1:])
-print conv_l2
-assert(numpy.all(conv_l2 &gt; 1.9))</string_value>
-    </test>
-    <test name="p_error_linf_p1_np3">
-      <string_value lines="20" type="code" language="python">import numpy
-print p_error_linf[{'n':['1'], 'np':['3']}]
-error_linf_a = numpy.array(p_error_linf[{'n':['1'], 'np':['3']}])
-conv_linf = numpy.log2(error_linf_a[:-1]/error_linf_a[1:])
-print conv_linf
-assert(numpy.all(conv_linf &gt; 1.5))</string_value>
-    </test>
-    <test name="p_error_l2_p2_np3">
-      <string_value lines="20" type="code" language="python">import numpy
-print p_error_l2[{'n':['2'], 'np':['3']}]
-error_l2_a = numpy.array(p_error_l2[{'n':['2'], 'np':['3']}])
-conv_l2 = numpy.log2(error_l2_a[:-1]/error_l2_a[1:])
-print conv_l2
-assert(numpy.all(conv_l2 &gt; 2.9))</string_value>
-    </test>
-    <test name="p_error_linf_p2_np3">
-      <string_value lines="20" type="code" language="python">import numpy
-print p_error_linf[{'n':['2'], 'np':['3']}]
-error_linf_a = numpy.array(p_error_linf[{'n':['2'], 'np':['3']}])
-conv_linf = numpy.log2(error_linf_a[:-1]/error_linf_a[1:])
-print conv_linf
-assert(numpy.all(conv_linf &gt; 2.5))</string_value>
+nprocs = v_error_l2.parameters['np']
+for n in v_error_l2.parameters['n']:
+  print '***** n=',n
+  for np in nprocs:
+    error_a = numpy.array(p_error_linf[{'n':n,'np':np}])
+    conv_p = numpy.log2(error_a[:-1]/error_a[1:])
+    print 'np=',np,' err=',error_a,' p=',conv_p
+    assert(numpy.all(conv_p &gt; int(n)+0.9))</string_value>
     </test>
     <test name="nlogs">
       <string_value lines="20" type="code" language="python">import itertools

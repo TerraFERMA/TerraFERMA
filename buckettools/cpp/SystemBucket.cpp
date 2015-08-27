@@ -135,12 +135,6 @@ void SystemBucket::update()
     (*(*f_it).second).update();
   }
 
-  for (SolverBucket_it s_it = solvers_begin();
-                         s_it != solvers_end(); s_it++)
-  {
-    (*(*s_it).second).update();                                      // reset the solved_ indicator to false for the next timestep
-  }
-
   for (FunctionalBucket_it f_it = functionals_begin(); 
                                   f_it != functionals_end(); f_it++)
   {
@@ -237,10 +231,22 @@ void SystemBucket::resetcalculated()
     *change_calculated_ = false;
   }
 
-  for (FunctionBucket_it f_it = coeffs_begin();           // also loop over coefficients again to update any coefficient
-                           f_it != coeffs_end(); f_it++)      // functions, constant functionals or statistic functionals
+  for (FunctionBucket_it f_it = fields_begin();
+                           f_it != fields_end(); f_it++)
   {
     (*(*f_it).second).resetcalculated();
+  }
+
+  for (FunctionBucket_it f_it = coeffs_begin();
+                           f_it != coeffs_end(); f_it++)
+  {
+    (*(*f_it).second).resetcalculated();
+  }
+
+  for (SolverBucket_it s_it = solvers_begin();
+                         s_it != solvers_end(); s_it++)
+  {
+    (*(*s_it).second).resetcalculated();                                      // reset the solved_ indicator to false for the next timestep
   }
 
   for (FunctionalBucket_it f_it = functionals_begin(); 

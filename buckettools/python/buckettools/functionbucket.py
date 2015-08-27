@@ -36,6 +36,8 @@ class FunctionBucket:
     self.rank = None
     self.shape = None
     self.size = None
+    self.enrichment_degree = None
+    self.enrichment_family = None
     self.symbol = None
     self.symmetry = None
     self.type = None
@@ -57,23 +59,45 @@ class FunctionBucket:
     sys.exit(1)
 
   def element_ufl(self):
+    ufl = []
+    if self.enrichment_degree is not None and self.enrichment_family is not None:
+      ufl = self.sub_element_ufl(index=0)
+      ufl += self.sub_element_ufl(family=self.enrichment_family, degree=self.enrichment_degree, index=1)
+      ufl.append(self.symbol+"_e = "+self.symbol+"_e0 + "+self.symbol+"_e1\n")
+      ufl.append("\n")
+    else:
+      ufl = self.sub_element_ufl()
+    return ufl
+
+  def sub_element_ufl(self, family=None, degree=None, index=None):
     """Write an array of ufl strings describing the function (field or coefficient) element."""
+    if family is None: family = self.family
+    if degree is None: degree = self.degree
+    if index is not None:
+      index = `index`
+    else:
+      index = ""
     ufl = []
     ufl.append(declaration_comment("Element", self.type, self.name))
-    ufl_line = self.symbol+"_e = "
+    ufl_line = self.symbol+"_e"+index+"= "
     if self.rank == "Scalar":
       ufl_line += "FiniteElement("
     elif self.rank == "Vector":
-      ufl_line += "VectorElement("
+      # special case for vector elements - will need to be expanded
+      if family in ["RT", "DRT", "BDM"]:
+        assert(self.size is None)
+        ufl_line += "FiniteElement("
+      else:
+        ufl_line += "VectorElement("
     elif self.rank == "Tensor":
       ufl_line += "TensorElement("
     else:
       print self.rank
       print "Unknown rank."
       sys.exit(1)
-    ufl_line += "\""+self.family +"\", " \
+    ufl_line += "\""+family +"\", " \
                +self.system.cell+", " \
-               +`self.degree`
+               +`degree`
     if self.rank == "Vector":
       if self.size: ufl_line += ", dim="+`self.size`
     elif self.rank == "Tensor":

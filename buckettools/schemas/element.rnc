@@ -40,6 +40,102 @@ generic_element_family =
      }
   )
 
+generic_vector_element_family = 
+  (
+     ## Element family:
+     ##
+     ## - CG = Lagrange (continuous Galerkin)
+     ##
+     ## - DG = Discontinuous Lagrange (discontinuous Galerkin)
+     ##
+     ## - RT = Raviart-Thomas
+     ##
+     ## - DRT = Discontinuous Raviart-Thomas
+     ##
+     ## - BDM = Brezzi–Douglas–Marini
+     ##
+     ## - R  = Real (global constant)
+     ##
+     ## - Quadrature
+     element family {
+        # a hard coded string_value
+        element string_value {
+          ( "CG" | "DG" | "RT" | "DRT" | "BDM" | "R" | "Quadrature" )
+        },
+        comment
+     }
+  )
+
+generic_enrichment_element_family = 
+  (
+     ## Element family:
+     ##
+     ## - B = Bubble
+     element family {
+        # a hard coded string_value
+        element string_value {
+          ( "B" )
+        },
+        comment
+     }
+  )
+
+b_element_family = 
+  (
+     ## Element family
+     ##
+     ## - B = Bubble
+     element family {
+        # a hard coded string_value
+        element string_value {
+          ( "B" )
+        },
+        comment
+     }
+  )
+
+rt_element_family = 
+  (
+     ## Element family
+     ##
+     ## - RT = Raviart-Thomas
+     element family {
+        # a hard coded string_value
+        element string_value {
+          ( "RT" )
+        },
+        comment
+     }
+  )
+
+drt_element_family = 
+  (
+     ## Element family
+     ##
+     ## - DRT = Discontinuous Raviart-Thomas
+     element family {
+        # a hard coded string_value
+        element string_value {
+          ( "DRT" )
+        },
+        comment
+     }
+  )
+
+bdm_element_family = 
+  (
+     ## Element family
+     ##
+     ## - BDM = Brezzi–Douglas–Marini
+     element family {
+        # a hard coded string_value
+        element string_value {
+          ( "BDM" )
+        },
+        comment
+     }
+  )
+
 cg_element_family = 
   (
      ## Element family
@@ -153,10 +249,76 @@ p2_element_degree =
      }
   )
 
+p3_element_degree =
+  (
+     ## Element degree
+     element degree {
+       element integer_value {
+          attribute rank {"0"},
+          ( "3" )
+       }, 
+       comment
+     }
+  )
+
 generic_element =
   (
      generic_element_family,
      generic_element_degree
+  )
+
+generic_vector_element =
+  (
+     generic_vector_element_family,
+     generic_element_degree
+  )
+
+generic_enrichment_element =
+  (
+     generic_enrichment_element_family,
+     generic_element_degree
+  )
+
+b3_element =
+  (
+     b_element_family,
+     p3_element_degree
+  )
+
+rt1_element =
+  (
+     rt_element_family,
+     p1_element_degree
+  )
+
+rt2_element =
+  (
+     rt_element_family,
+     p2_element_degree
+  )
+
+drt1_element =
+  (
+     drt_element_family,
+     p1_element_degree
+  )
+
+drt2_element =
+  (
+     drt_element_family,
+     p2_element_degree
+  )
+
+bdm1_element =
+  (
+     bdm_element_family,
+     p1_element_degree
+  )
+
+bdm2_element =
+  (
+     bdm_element_family,
+     p2_element_degree
   )
 
 p1_element =
@@ -221,6 +383,30 @@ tensor_element_options =
     }?
   )
 
+enrichment_options = 
+  (
+    element enrichment {
+      element_options_enrichment
+    }?
+  )
+
+element_options_enrichment =
+  (
+    (
+       element element {
+         attribute name { "UserDefined" },
+         generic_enrichment_element,
+         comment
+       }|
+       ## Options describing a
+       element element {
+         attribute name { "B3" },
+         b3_element,
+         comment
+       }
+    )
+  )
+
 element_options_scalar = element_options_scalar_not_lagrange
 element_options_scalar |= element_options_scalar_lagrange
 element_options_scalar |= element_options_scalar_user
@@ -232,12 +418,13 @@ element_options_scalar_user =
        element element {
          attribute name { "UserDefined" },
          generic_element,
+         enrichment_options,
          comment
        }
      )
   )
 
-element_options_scalar_lagrange =
+element_options_scalar_lagrange_visualization =
   (
      (
        ## Options describing piecewise linear continuous Lagrange finite element.
@@ -267,6 +454,40 @@ element_options_scalar_lagrange =
      )
   )
 
+element_options_scalar_lagrange =
+  (
+     (
+       ## Options describing piecewise linear continuous Lagrange finite element.
+       element element {
+         attribute name { "P1" },
+         p1_element,
+         enrichment_options,
+         comment
+       }|
+       ## Options describing piecewise quadratic continuous Lagrange finite element.
+       element element {
+         attribute name { "P2" },
+         p2_element,
+         enrichment_options,
+         comment
+       }|
+       ## Options describing piecewise linear discontinuous Lagrange finite element.
+       element element {
+         attribute name { "P1DG" },
+         p1dg_element,
+         enrichment_options,
+         comment
+       }|
+       ## Options describing piecewise quadratic discontinuous Lagrange finite element.
+       element element {
+         attribute name { "P2DG" },
+         p2dg_element,
+         enrichment_options,
+         comment
+       }
+     )
+  )
+
 element_options_scalar_not_lagrange =
   (
      (
@@ -274,6 +495,7 @@ element_options_scalar_not_lagrange =
        element element {
          attribute name { "P0" },
          p0_element,
+         enrichment_options,
          comment
        }|
        ## Options describing piecewise constant continuous real, e.g. for a global Lagrange multiplier.
@@ -297,8 +519,9 @@ element_options_vector =
        ## Options describing a user defined finite element for a vector.
        element element {
          attribute name { "UserDefined" },
-         generic_element,
+         generic_vector_element,
          vector_element_options,
+         enrichment_options,
          comment
        }|
        ## Options describing piecewise linear continuous Lagrange finite element for a vector.
@@ -306,6 +529,7 @@ element_options_vector =
          attribute name { "P1" },
          p1_element,
          vector_element_options,
+         enrichment_options,
          comment
        }|
        ## Options describing piecewise quadratic continuous Lagrange finite element for a vector.
@@ -313,6 +537,7 @@ element_options_vector =
          attribute name { "P2" },
          p2_element,
          vector_element_options,
+         enrichment_options,
          comment
        }|
        ## Options describing piecewise linear discontinuous Lagrange finite element for a vector.
@@ -320,6 +545,7 @@ element_options_vector =
          attribute name { "P1DG" },
          p1dg_element,
          vector_element_options,
+         enrichment_options,
          comment
        }|
        ## Options describing piecewise quadratic discontinuous Lagrange finite element for a vector.
@@ -327,6 +553,7 @@ element_options_vector =
          attribute name { "P2DG" },
          p2dg_element,
          vector_element_options,
+         enrichment_options,
          comment
        }|
        ## Options describing piecewise constant discontinuous Lagrange finite element for a vector.
@@ -334,6 +561,48 @@ element_options_vector =
          attribute name { "P0" },
          p0_element,
          vector_element_options,
+         enrichment_options,
+         comment
+       }|
+       ## Options describing first degree Raviart-Thomas element for a vector.
+       element element {
+         attribute name { "RT1" },
+         rt1_element,
+         enrichment_options,
+         comment
+       }|
+       ## Options describing second degree Raviart-Thomas element for a vector.
+       element element {
+         attribute name { "RT2" },
+         rt2_element,
+         comment
+       }|
+       ## Options describing first degree discontinuous Raviart-Thomas element for a vector.
+       element element {
+         attribute name { "DRT1" },
+         drt1_element,
+         enrichment_options,
+         comment
+       }|
+       ## Options describing second degree discontinuous Raviart-Thomas element for a vector.
+       element element {
+         attribute name { "DRT2" },
+         drt2_element,
+         enrichment_options,
+         comment
+       }|
+       ## Options describing first degree discontinuous Raviart-Thomas element for a vector.
+       element element {
+         attribute name { "BDM1" },
+         bdm1_element,
+         enrichment_options,
+         comment
+       }|
+       ## Options describing second degree discontinuous Raviart-Thomas element for a vector.
+       element element {
+         attribute name { "BDM2" },
+         bdm2_element,
+         enrichment_options,
          comment
        }|
        ## Options describing piecewise constant continuous real for a vector, e.g. for a global Lagrange multiplier.
@@ -361,6 +630,7 @@ element_options_tensor =
          attribute name { "UserDefined" },
          generic_element,
          tensor_element_options,
+         enrichment_options,
          comment
        }|
        ## Options describing piecewise linear continuous Lagrange finite element for a tensor.
@@ -368,6 +638,7 @@ element_options_tensor =
          attribute name { "P1" },
          p1_element,
          tensor_element_options,
+         enrichment_options,
          comment
        }|
        ## Options describing piecewise quadratic continuous Lagrange finite element for a tensor.
@@ -375,6 +646,7 @@ element_options_tensor =
          attribute name { "P2" },
          p2_element,
          tensor_element_options,
+         enrichment_options,
          comment
        }|
        ## Options describing piecewise linear discontinuous Lagrange finite element for a tensor.
@@ -382,6 +654,7 @@ element_options_tensor =
          attribute name { "P1DG" },
          p1dg_element,
          tensor_element_options,
+         enrichment_options,
          comment
        }|
        ## Options describing piecewise quadratic discontinuous Lagrange finite element for a tensor.
@@ -389,6 +662,7 @@ element_options_tensor =
          attribute name { "P2DG" },
          p2dg_element,
          tensor_element_options,
+         enrichment_options,
          comment
        }|
        ## Options describing piecewise constant discontinuous Lagrange finite element for a tensor.
@@ -396,6 +670,7 @@ element_options_tensor =
          attribute name { "P0" },
          p0_element,
          tensor_element_options,
+         enrichment_options,
          comment
        }|
        ## Options describing piecewise constant continuous real for a tensor, e.g. for a global Lagrange multiplier.

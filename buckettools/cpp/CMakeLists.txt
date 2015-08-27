@@ -19,7 +19,7 @@
 # along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
 # The project name for buckettools (sets up environment variables for binary and source directories)
-project(buckettools_cpp)
+project(BUCKETTOOLS_CPP)
 
 # Write a template header file to disk at configuration time
 # (this holds the template for the mercurial id information that will
@@ -27,7 +27,17 @@ project(buckettools_cpp)
 #  below)
 file(
     WRITE ${PROJECT_BINARY_DIR}/builddefs.h.in
-    "#define __GIT_SHA__ @GIT_SHA@\n"
+"
+#define __GIT_SHA__                   @GIT_SHA@\n
+#define __BUCKETTOOLS_VERSION_MAJOR__ \"@BUCKETTOOLS_VERSION_MAJOR@\"\n
+#define __BUCKETTOOLS_VERSION_MINOR__ \"@BUCKETTOOLS_VERSION_MINOR@\"\n
+#define __BUCKETTOOLS_VERSION_MICRO__ \"@BUCKETTOOLS_VERSION_MICRO@\"\n
+#define __BUCKETTOOLS_VERSION__       \"@BUCKETTOOLS_VERSION@\"\n
+#define __TERRAFERMA_VERSION_MAJOR__  \"@TERRAFERMA_VERSION_MAJOR@\"\n
+#define __TERRAFERMA_VERSION_MINOR__  \"@TERRAFERMA_VERSION_MINOR@\"\n
+#define __TERRAFERMA_VERSION_MICRO__  \"@TERRAFERMA_VERSION_MICRO@\"\n
+#define __TERRAFERMA_VERSION__        \"@TERRAFERMA_VERSION@\"\n
+"
     )
 
 # Write a cmake script to disk at configuration time
@@ -68,9 +78,23 @@ add_custom_target(
 
 
 # include the buckettools include directory and the binary directory (for builddefs and the systemswrapper)
-include_directories("${PROJECT_SOURCE_DIR}/../include" ${PROJECT_BINARY_DIR})
-# include python
-include_directories(${PYTHON_INCLUDE_PATH})
+include_directories("${BUCKETTOOLS_SOURCE_DIR}/include" ${BUCKETTOOLS_CPP_BINARY_DIR})
+include_directories(SYSTEM ${BUCKETTOOLS_DEP_INCLUDE_DIRECTORIES})
+
+add_definitions(${BUCKETTOOLS_CXX_DEFINITIONS})
+set(CMAKE_CXX_FLAGS "${BUCKETTOOLS_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+
+# Add Mac specific loader flags
+if (APPLE)
+  set(CMAKE_SHARED_LINKER_FLAGS "-Wl,-undefined,dynamic_lookup" CACHE STRING "should only be set if macosx" FORCE)
+  # Set a consistent MACOSX_RPATH default across all CMake versions.
+  # When CMake 2.8.12 is required, change this default to 1.
+  # When CMake 3.0.0 is required, remove this block (see CMP0042).
+  if (NOT DEFINED CMAKE_MACOSX_RPATH)
+    set(CMAKE_MACOSX_RPATH 0)
+  endif()
+endif()
+
 # generate a library - really the main point of this whole process
 add_library(buckettools_cpp SHARED
                             Usage.cpp SignalHandler.cpp SigIntEventHandler.cpp Logger.cpp
@@ -90,11 +114,14 @@ set_source_files_properties(builddefs.h PROPERTIES GENERATED 1)
 # the project depends on this target
 add_dependencies(buckettools_cpp builddefs)
 # link to other libraries
-target_link_libraries(buckettools_cpp ${DOLFIN_LIBRARIES} ${DOLFIN_3RD_PARTY_LIBRARIES} ${SPUD_LIBRARIES} ${PYTHON_LIBRARIES})
-get_target_property(BUCKETTOOLS_LIBRARY_LOCATION buckettools_cpp LOCATION)
-get_filename_component(BUCKETTOOLS_LIBRARY_FILENAME ${BUCKETTOOLS_LIBRARY_LOCATION} NAME)
-set(BUCKETTOOLS_LIBRARY "${CMAKE_INSTALL_PREFIX}/lib/${BUCKETTOOLS_LIBRARY_FILENAME}" PARENT_SCOPE)
+target_link_libraries(buckettools_cpp ${BUCKETTOOLS_TARGET_LINK_LIBRARIES})
+# set the library version
+set_target_properties(buckettools_cpp PROPERTIES 
+                      VERSION   ${BUCKETTOOLS_VERSION_SHORT}
+                      SOVERSION ${BUCKETTOOLS_VERSION_SHORT}
+                      )
 
-install(TARGETS buckettools_cpp DESTINATION lib)
+install(TARGETS buckettools_cpp EXPORT BUCKETTOOLSTargets DESTINATION lib)
+install(EXPORT BUCKETTOOLSTargets DESTINATION "share/buckettools/cmake")
 
 

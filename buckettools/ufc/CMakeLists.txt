@@ -19,11 +19,11 @@
 # along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
 # The project name for buckettools (sets up environment variables for binary and source directories)
-project(buckettools_ufc)
+project(BUCKETTOOLS_UFC)
 
 ## write a script that runs the ufc generation script and reruns cmake if necessary
 file(
-    WRITE ${PROJECT_BINARY_DIR}/${PREFIX}genwrappers.cmake
+    WRITE ${PROJECT_BINARY_DIR}/genwrappers.cmake
 "execute_process(
     COMMAND ${BUCKETTOOLS_BIN}/systemwrappers_from_options -l ${PROJECT_BINARY_DIR}/cpp_filenames.txt.temp -- ${OPTIONSFILE}
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
@@ -57,8 +57,8 @@ endif (CPP_FILENAMES_CHANGED)
 
 # create a custom target so we can make the project depend on this
 add_custom_target(
-   ${PREFIX}genwrappers
-   COMMAND ${CMAKE_COMMAND} -P ${PREFIX}genwrappers.cmake
+   genwrappers
+   COMMAND ${CMAKE_COMMAND} -P genwrappers.cmake
    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
    )
 
@@ -72,12 +72,8 @@ endif()
 
 file(STRINGS ${PROJECT_BINARY_DIR}/cpp_filenames.txt CPP_FILENAMES)
 
-# include the buckettools include directory and the binary directory (for the systemswrapper)
-include_directories(${BUCKETTOOLS_INCLUDE_DIRS} ${PROJECT_BINARY_DIR})
-# include python
-include_directories(${PYTHON_INCLUDE_PATH})
 # generate a library - really the main point of this whole process
-add_library(${PREFIX}buckettools_ufc SHARED
+add_library(buckettools_ufc SHARED
             ${PROJECT_BINARY_DIR}/SystemFunctionalsWrapper.cpp ${PROJECT_BINARY_DIR}/SystemSolversWrapper.cpp ${PROJECT_BINARY_DIR}/SystemExpressionsWrapper.cpp ${PROJECT_BINARY_DIR}/VisualizationWrapper.cpp 
             ${CPP_FILENAMES})
 # tell cmake that this file doesn't exist until build time
@@ -87,7 +83,7 @@ set_source_files_properties(${PROJECT_BINARY_DIR}/SystemExpressionsWrapper.cpp P
 set_source_files_properties(${PROJECT_BINARY_DIR}/VisualizationWrapper.cpp PROPERTIES GENERATED 1)
 set_source_files_properties(${CPP_FILENAMES} PROPERTIES GENERATED 1)
 # the project depends on this target
-add_dependencies(${PREFIX}buckettools_ufc ${PREFIX}genwrappers)
+add_dependencies(buckettools_ufc genwrappers)
 # link to other libraries
-target_link_libraries(${PREFIX}buckettools_ufc ${DOLFIN_LIBRARIES} ${DOLFIN_3RD_PARTY_LIBRARIES})
+target_link_libraries(buckettools_ufc ${DOLFIN_LIBRARIES})
 

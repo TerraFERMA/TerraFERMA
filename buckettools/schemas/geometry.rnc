@@ -221,40 +221,6 @@ mesh_options =
          },
          comment
        }|
-       ## Choose the source of this mesh as an internally generated 2d circle of radius 1.
-       ##
-       ## No boundary or region ids will be assigned.
-       element source {
-         attribute name { "UnitCircle" },
-         ## Specify the number of cells (same in both dimensions).
-         element number_cells {
-           integer
-         },
-         ## Specify the direction in which the diagonal should lie.
-         element diagonal {
-           # a hard coded string_value
-           element string_value {
-             ( "left" | "right" | "crossed" )
-           },
-           comment
-         },
-         ## Specify the transformation to the unit circle.
-         element transformation {
-           # a hard coded string_value
-           element string_value {
-             ( "maxn" | "sumn" | "rotsumn" )
-           },
-           comment
-         },
-         ## The ufl cell type (no option allowed).
-         element cell {
-           element string_value {
-             "triangle"
-           },
-           comment
-         },
-         comment
-       }|
        ## Choose the source of this mesh as an internally generated 3d cube of width, depth and height 1.
        ##
        ## Boundary ids will be automatically assigned as:
