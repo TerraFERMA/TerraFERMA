@@ -52,13 +52,15 @@ generic_vector_element_family =
      ##
      ## - DRT = Discontinuous Raviart-Thomas
      ##
+     ## - BDM = Brezzi–Douglas–Marini
+     ##
      ## - R  = Real (global constant)
      ##
      ## - Quadrature
      element family {
         # a hard coded string_value
         element string_value {
-          ( "CG" | "DG" | "RT" | "DRT" | "R" | "Quadrature" )
+          ( "CG" | "DG" | "RT" | "DRT" | "BDM" | "R" | "Quadrature" )
         },
         comment
      }
@@ -115,6 +117,20 @@ drt_element_family =
         # a hard coded string_value
         element string_value {
           ( "DRT" )
+        },
+        comment
+     }
+  )
+
+bdm_element_family = 
+  (
+     ## Element family
+     ##
+     ## - BDM = Brezzi–Douglas–Marini
+     element family {
+        # a hard coded string_value
+        element string_value {
+          ( "BDM" )
         },
         comment
      }
@@ -290,6 +306,18 @@ drt1_element =
 drt2_element =
   (
      drt_element_family,
+     p2_element_degree
+  )
+
+bdm1_element =
+  (
+     bdm_element_family,
+     p1_element_degree
+  )
+
+bdm2_element =
+  (
+     bdm_element_family,
      p2_element_degree
   )
 
@@ -530,6 +558,20 @@ element_options_vector =
        element element {
          attribute name { "DRT2" },
          drt2_element,
+         enrichment_options,
+         comment
+       }|
+       ## Options describing first degree discontinuous Raviart-Thomas element for a vector.
+       element element {
+         attribute name { "BDM1" },
+         bdm1_element,
+         enrichment_options,
+         comment
+       }|
+       ## Options describing second degree discontinuous Raviart-Thomas element for a vector.
+       element element {
+         attribute name { "BDM2" },
+         bdm2_element,
          enrichment_options,
          comment
        }|

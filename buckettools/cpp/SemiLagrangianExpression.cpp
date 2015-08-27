@@ -21,6 +21,7 @@
 #include "SemiLagrangianExpression.h"
 #include "BoostTypes.h"
 #include "Bucket.h"
+#include "Logger.h"
 #include <dolfin.h>
 
 using namespace buckettools;
@@ -40,7 +41,7 @@ SemiLagrangianExpression::SemiLagrangianExpression(const Bucket *bucket, const d
                                                       outname_(outside),
                                                       initialized_(false)
 {
-                                                                     // do nothing
+  tf_not_parallelized("SemiLagrangianExpression");
 }
     
 //*******************************************************************|************************************************************//
@@ -59,7 +60,7 @@ SemiLagrangianExpression::SemiLagrangianExpression(const std::size_t &dim,
                                                       outname_(outside),
                                                       initialized_(false)
 {
-                                                                     // do nothing
+  tf_not_parallelized("SemiLagrangianExpression");
 }
     
 //*******************************************************************|************************************************************//
@@ -78,7 +79,7 @@ SemiLagrangianExpression::SemiLagrangianExpression(const std::vector<std::size_t
                                                       outname_(outside),
                                                       initialized_(false)
 {
-                                                                     // do nothing
+  tf_not_parallelized("SemiLagrangianExpression");
 }
     
 //*******************************************************************|************************************************************//

@@ -1,0 +1,122 @@
+<?xml version='1.0' encoding='utf-8'?>
+<harness_options>
+  <length>
+    <string_value>medium</string_value>
+  </length>
+  <owner>
+    <string_value lines="1">mspieg</string_value>
+  </owner>
+  <description>
+    <string_value lines="1">Demo to show instability of 1-D waves to 2-D waves</string_value>
+  </description>
+  <simulations>
+    <simulation name="collision">
+      <input_file>
+        <string_value lines="1" type="filename">magmawaves.tfml</string_value>
+      </input_file>
+      <run_when name="input_changed_or_output_missing"/>
+      <number_processes>
+        <integer_value rank="0">2</integer_value>
+      </number_processes>
+      <parameter_sweep>
+        <parameter name="ncells">
+          <values>
+            <string_value lines="1">64</string_value>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+libspud.set_option("/geometry/mesh::Mesh/source::Rectangle/number_cells", [int(ncells), int(ncells)])</string_value>
+            <single_build/>
+          </update>
+        </parameter>
+        <parameter name="h_on_delta">
+          <values>
+            <string_value lines="1">128</string_value>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+
+libspud.set_option("/system::magma/coefficient::h_squared/type::Constant/rank::Scalar/value::WholeMesh/constant",float(h_on_delta)**2)</string_value>
+            <single_build/>
+          </update>
+          <comment>height of computational box in compaction lengths</comment>
+        </parameter>
+        <parameter name="cfl">
+          <values>
+            <string_value lines="1">0.1</string_value>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+from math import sqrt
+
+
+libspud.set_option("/timestepping/timestep/adaptive/constraint::Courant/requested_maximum_value",float(cfl))</string_value>
+            <single_build/>
+          </update>
+          <comment>cfl condition for melt velocity</comment>
+        </parameter>
+        <parameter name="c0">
+          <values>
+            <string_value lines="1">7.</string_value>
+            <comment>1-D wave speed</comment>
+          </values>
+          <comment>wavespeed</comment>
+        </parameter>
+        <parameter name="c1">
+          <values>
+            <string_value lines="1">5.</string_value>
+            <comment>1-D wave speed</comment>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+# need to update c0, c1  and the background velocity W = -.5*(c0+c1)
+libspud.set_option("/system::magma/coefficient::c0/type::Constant/rank::Scalar/value::WholeMesh/constant",float(c0))
+libspud.set_option("/system::magma/coefficient::c1/type::Constant/rank::Scalar/value::WholeMesh/constant",float(c1))
+cbar = 0.5*(float(c0) + float(c1))
+libspud.set_option("/system::magma/coefficient::W/type::Constant/rank::Vector/value::WholeMesh/constant::dim",[0.,-cbar])</string_value>
+            <single_build/>
+          </update>
+          <comment>wavespeed</comment>
+        </parameter>
+        <parameter name="n">
+          <values>
+            <string_value lines="1">3</string_value>
+            <comment>permeability exponent</comment>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+libspud.set_option("/system::magma/coefficient::n/type::Constant/rank::Scalar/value::WholeMesh/constant",float(n))</string_value>
+            <single_build/>
+          </update>
+          <comment>permeability exponent K = \phi^n</comment>
+        </parameter>
+        <parameter name="m">
+          <values>
+            <string_value lines="1">0.</string_value>
+            <comment>bulk viscosity exponent</comment>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+libspud.set_option("/system::magma/coefficient::m/type::Constant/rank::Scalar/value::WholeMesh/constant",float(m))</string_value>
+            <single_build/>
+          </update>
+          <comment>bulk viscosity exponent \zeta = 1./\phi^m</comment>
+        </parameter>
+        <parameter name="N">
+          <values>
+            <string_value lines="1">150</string_value>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+libspud.set_option("/system::magma/coefficient::N/type::Constant/rank::Scalar/value::WholeMesh/constant",float(N))</string_value>
+            <single_build/>
+          </update>
+          <comment>number of collocation points for Simpson collocation method
+(this parameter may need to be tuned to &lt; 150 for large waves or waves with m=1 or the waveforms won't converge)
+e.g. for n=3, m=1  N=120 will produce solutions but 150 will fail</comment>
+        </parameter>
+      </parameter_sweep>
+      <comment>Example program demonstrating the instability of an initial 1-D solitary wave in 2-D</comment>
+    </simulation>
+  </simulations>
+</harness_options>
