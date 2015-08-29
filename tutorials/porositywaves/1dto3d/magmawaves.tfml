@@ -55,7 +55,7 @@
       <real_value rank="0">0.0</real_value>
     </current_time>
     <finish_time>
-      <real_value rank="0">1.0</real_value>
+      <real_value rank="0">0.8</real_value>
     </finish_time>
     <timestep>
       <coefficient name="Timestep">
