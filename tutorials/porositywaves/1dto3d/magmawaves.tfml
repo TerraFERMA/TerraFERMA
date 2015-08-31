@@ -579,10 +579,17 @@ F = Fp + Ff</string_value>
               <field name="Pressure"/>
               <monitors/>
               <linear_solver>
-                <iterative_method name="preonly"/>
-                <preconditioner name="hypre">
-                  <hypre_type name="boomeramg"/>
-                </preconditioner>
+                <iterative_method name="richardson">
+                  <relative_error>
+                    <real_value rank="0">1.e-3</real_value>
+                  </relative_error>
+                  <max_iterations>
+                    <integer_value rank="0">2</integer_value>
+                  </max_iterations>
+                  <zero_initial_guess/>
+                  <monitors/>
+                </iterative_method>
+                <preconditioner name="gamg"/>
               </linear_solver>
             </fieldsplit>
             <fieldsplit name="Porosity">
