@@ -855,9 +855,9 @@ problem, are
 \item change the value of the wave dimension \texttt{d} from 2 to 1
 \item increase the \texttt{finish\_time} to about 1.5 (see below)
 \item modify the adaptive time-stepper to try and keep up with the
-evolving solution (although this can be difficult).  In the example we
+evolving solution.  In the example we
 have used a Courant number adaptive time-step however instead of
-using the solid velocity, we adapt to the melt-separation velocity
+using the solid velocity, we adapt to the melt-separation velocity.
 \begin{equation}
   \label{eq:sep-velocity}
 \vec{q} =\vf - \Vs  = -\frac{K}{\phi}
@@ -878,13 +878,48 @@ F = inner(q_t,(q_i + K/f_i*(grad(p) + ghat)))*dx
 \item Change the velocity in the system \texttt{CourantNumber} from
   the solid velocity \texttt{W\_i} to \texttt{q\_i}. This approach has the advantage of
 taking a smaller time step as the waves grow, because larger waves
-have larger separation velocities.  However, this approach is not perfect as the solitary
-wave speeds tend to be faster than the separation velocity requiring a
-relatively small value of the Courant number to keep the convergence
-of the SNES solvers reasonable once the instability forms.  However,
-we find that a maximum Courant number of 0.5 provides a reasonable
-trade-off between speed and convergence. The testharness file
-\texttt{magmawaves.shml} allows you to do parameter sweeps over the Courant number by exploring the parameter \texttt{cfl}.  
+have larger separation velocities.  
+\item Most importantly,  we add an additional
+  \texttt{nonlinear\_solver}  \texttt{InitialGuess} to the system
+  \texttt{magma}.  This solver simply takes a first order Euler step
+  to update the porosity using the pressure at the previous time-step
+  (the pressure is just formulated as a projection problem but not
+  solved for).  By starting with a guess for the evolved porosity,
+  this extra solve greatly increases the rate of convergence and
+  overall robustness and performance of this model. To add this solver
+  \emph{before} the main Newton solver (\texttt{Solver})
+  \begin{itemize}
+  \item Copy the \texttt{nonlinear\_solver} tab \texttt{Solver} and
+    paste it over the greyed out \texttt{nonlinear\_solver} tab below
+    it.
+  \item Rename the first solver \texttt{InitialGuess}
+  \item Edit the UFL for the residual so that the pressure residual is
+    just a projection problem, i.e.
+    \begin{lstlisting}[style=UFL]
+#pressure residual (just project)
+Fp = p_t*(p_i - p_n)*dx
+    \end{lstlisting}
+  \item And change the porosity residual so that it takes an Euler
+    step (i.e. only depends on \texttt{p\_n} not \texttt{p\_i}
+    i.e. change one line to
+    \begin{lstlisting}[style=UFL]
+# body integrals for porosity
+bfm = f_t*(f_i - f_n - dt*p_n*Xi_n)
+    \end{lstlisting}
+  \item To just solve for porosity in the initial guess, change the
+    fieldsplit preconditioner to
+    \begin{itemize}
+    \item \texttt{composite\_type} = additive
+    \item under \texttt{fieldsplit (Pressure)} set the
+      \texttt{iterative\_method} to \texttt{preonly} and the
+      \texttt{preconditioner} to none
+    \end{itemize}
+
+
+
+  \end{itemize}
+
+
 
 \end{itemize}
  
@@ -895,7 +930,23 @@ interact with the lower boundary free-flux boundary condition which
 for sufficiently large porosity excesses becomes unstable and the
 waves will grow, breaking the solution.
 
+\subsubsection{Instability of 1-D waves in 3-D}
+\label{sec:instability-1-d3d}
 
+In addition to exploring the stability of 1-D waves in 2 dimensions,
+we can easily extend the problem to 3-dimensions (although the problem
+becomes considerably more expensive and requires significant parallel
+resources).  An example model with testharness file can be found in
+\texttt{\$TF\_HOME/share/terraferma/tutorials/porositywaves/1dto3d/magmawaves.tfml}
+and solutions are shown on the cover page of this manual for a problem
+with $n=3$, $m=1$ in 3-D in a domain
+$\Omega=[0,2]\times[0,2]\times[0,1]$ with a box height $h/\delta =
+64$.  This particular solution was run on 16 cores, and these can be
+controlled in the \texttt{.shml} file.
+
+As expected,  the 1-D wave breaks up into a set of spherical 3-D
+waves.  The overall structure of the model, however is basically
+identical to the 2-D problem with minor modifications made for the third dimension. 
 
 \subsection{Collision of two 2-D solitary waves}
 \label{sec:collision-two-2}
