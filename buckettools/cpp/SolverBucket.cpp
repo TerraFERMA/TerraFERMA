@@ -701,6 +701,7 @@ void SolverBucket::snes_check_convergence_()
 //  perr = SNESGetOptionsPrefix(snes_, snesprefix); petsc_err(perr);   // FIXME: segfaults!
   perr = SNESGetConvergedReason(snes_, &snesreason); petsc_err(perr);     
   perr = SNESGetIterationNumber(snes_, &snesiterations); petsc_err(perr);
+  iteration_count(snesiterations);
   perr = SNESGetLinearSolveIterations(snes_, &sneslsiterations);  petsc_err(perr);
   log(INFO, "SNESConvergedReason %d", snesreason);
   log(INFO, "SNES n/o iterations %d", 
