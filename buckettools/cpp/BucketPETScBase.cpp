@@ -130,6 +130,10 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat A,
   SystemBucket* system = (*solver).system();                         // retrieve a (standard) pointer to the parent system of this solver
   Bucket*       bucket = (*system).bucket();                         // retrieve a (standard) pointer to the parent bucket of this solver
 
+  PetscInt iter;
+  perr = SNESGetIterationNumber(snes, &iter); CHKERRQ(perr);
+  (*solver).iteration_count(iter);
+
   if ((*solver).monitor_norms())
   {
     PetscReal norm;

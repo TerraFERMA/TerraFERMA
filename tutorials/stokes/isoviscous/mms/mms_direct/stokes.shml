@@ -1,0 +1,85 @@
+<?xml version='1.0' encoding='utf-8'?>
+<harness_options>
+  <length>
+    <string_value>short</string_value>
+  </length>
+  <owner>
+    <string_value lines="1">mspieg</string_value>
+  </owner>
+  <tags>
+    <string_value lines="1">testable</string_value>
+  </tags>
+  <description>
+    <string_value lines="1">A manufactured solution convergence test for stokes</string_value>
+  </description>
+  <simulations>
+    <simulation name="stokes_direct">
+      <input_file>
+        <string_value lines="1" type="filename">stokes.tfml</string_value>
+      </input_file>
+      <run_when name="input_changed_or_output_missing"/>
+      <parameter_sweep>
+        <parameter name="ncells">
+          <values>
+            <string_value lines="1">16 32 64 128 256</string_value>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+n = int(ncells)
+libspud.set_option("/geometry/mesh::Mesh/source::Rectangle/number_cells", [n, n])</string_value>
+            <single_build/>
+          </update>
+        </parameter>
+      </parameter_sweep>
+      <variables>
+        <variable name="error_l2_V">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+from math import sqrt
+stat = parser("stokes.stat")
+# get ||V||_2 and ||error_V||_2
+l2_norm_V = sqrt(stat["Stokes"]["VelocityL2NormSquared"]["functional_value"][-1])
+error_l2_V = sqrt(stat["Stokes"]["VelocityL2NormErrorSquared"]["functional_value"][-1])/l2_norm_V</string_value>
+        </variable>
+        <variable name="error_l2_P">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+from math import sqrt
+stat = parser("stokes.stat")
+# get ||P||_2 and ||error_P||_2
+l2_norm_P = sqrt(stat["Stokes"]["PressureL2NormSquared"]["functional_value"][-1])
+error_l2_P = sqrt(stat["Stokes"]["PressureL2NormErrorSquared"]["functional_value"][-1])/l2_norm_P</string_value>
+        </variable>
+      </variables>
+    </simulation>
+  </simulations>
+  <tests>
+    <test name="PlotConvergence">
+      <string_value lines="20" type="code" language="python">import numpy as np
+import matplotlib
+# set a display independent backend
+matplotlib.use('Agg')
+import matplotlib.pyplot as pl
+    
+# calculate the mesh spacing from the parameter ncells (ugly but works)
+ncells = error_l2_V.parameters['ncells']
+h = 1./np.array([int(n) for n in ncells])  
+
+# now make  a pretty convergence plot
+# log-log plot of the error  
+pl.figure()
+pl.loglog(h,error_l2_V,'bo-',h,error_l2_P,'ro-')
+pl.xlabel('h')
+pl.ylabel('relative errors ||e||_2')
+pl.grid()
+pl.legend(['e_V','e_p'],loc='best')
+pv=np.polyfit(np.log(h),np.log(error_l2_V),1)
+pp=np.polyfit(np.log(h),np.log(error_l2_P),1)
+pl.title('Convergence, p_v={0}, p_p={1}'.format(pv[0],pp[0]))
+pl.savefig('Stokes_convergence.pdf')
+
+print "********** Order of convergence p_v=",pv[0]," p_p=",pp[0]
+print "********** Plot in Stokes_convergence.pdf"
+assert(pv[0] &gt; 2.9)
+assert(pp[0] &gt; 1.9)</string_value>
+    </test>
+  </tests>
+</harness_options>

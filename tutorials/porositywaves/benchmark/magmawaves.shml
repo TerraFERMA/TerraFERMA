@@ -1,0 +1,234 @@
+<?xml version='1.0' encoding='utf-8'?>
+<harness_options>
+  <length>
+    <string_value>short</string_value>
+  </length>
+  <owner>
+    <string_value lines="1">mspieg</string_value>
+  </owner>
+  <tags>
+    <string_value lines="1">testable</string_value>
+    <comment>identify which tutorials have asserts in their tests so can be tested in the buildbots</comment>
+  </tags>
+  <description>
+    <string_value lines="1">Simpson solitary wave benchmark.</string_value>
+  </description>
+  <simulations>
+    <simulation name="Simpson">
+      <input_file>
+        <string_value lines="1" type="filename">magmawaves.tfml</string_value>
+      </input_file>
+      <run_when name="input_changed_or_output_missing"/>
+      <parameter_sweep>
+        <parameter name="ncells">
+          <values>
+            <string_value lines="1">16 32 64</string_value>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+libspud.set_option("/geometry/mesh::Mesh/source::UnitSquare/number_cells", [int(ncells), int(ncells)])</string_value>
+            <single_build/>
+          </update>
+        </parameter>
+        <parameter name="h_on_delta">
+          <values>
+            <string_value lines="1">64.</string_value>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+
+libspud.set_option("/system::magma/coefficient::h_squared/type::Constant/rank::Scalar/value::WholeMesh/constant",float(h_on_delta)**2)</string_value>
+            <single_build/>
+          </update>
+          <comment>height of computational box in compaction lengths</comment>
+        </parameter>
+        <parameter name="cfl_delta">
+          <values>
+            <string_value lines="1">0.5 1. 2.</string_value>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+from math import sqrt
+
+cfl_h = int(ncells)/float(h_on_delta)*float(cfl_delta)
+
+libspud.set_option("/timestepping/timestep/adaptive/constraint[0]/requested_maximum_value",cfl_h)</string_value>
+            <single_build/>
+          </update>
+        </parameter>
+        <parameter name="c">
+          <values>
+            <string_value lines="1">5.</string_value>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+# need to update c and the background velocity W = -c
+libspud.set_option("/system::magma/coefficient::c/type::Constant/rank::Scalar/value::WholeMesh/constant",float(c))
+libspud.set_option("/system::magma/coefficient::W/type::Constant/rank::Vector/value::WholeMesh/constant::dim",[0.,-float(c)])</string_value>
+            <single_build/>
+          </update>
+          <comment>wavespeed</comment>
+        </parameter>
+        <parameter name="n">
+          <values>
+            <string_value lines="1">3</string_value>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+libspud.set_option("/system::magma/coefficient::n/type::Constant/rank::Scalar/value::WholeMesh/constant",float(n))</string_value>
+            <single_build/>
+          </update>
+          <comment>permeability exponent K = \phi^n</comment>
+        </parameter>
+        <parameter name="m">
+          <values>
+            <string_value lines="1">0.</string_value>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+libspud.set_option("/system::magma/coefficient::m/type::Constant/rank::Scalar/value::WholeMesh/constant",float(m))</string_value>
+            <single_build/>
+          </update>
+          <comment>bulk viscosity exonent \zeta = 1/\phi^m</comment>
+        </parameter>
+        <parameter name="N">
+          <values>
+            <string_value lines="1">150</string_value>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+libspud.set_option("/system::magma/coefficient::N/type::Constant/rank::Scalar/value::WholeMesh/constant",float(N))</string_value>
+            <single_build/>
+          </update>
+          <comment>number of collocation points for Simpson collocation method
+(this parameter may need to be tuned to &lt; 150 for large waves or waves with m=1 or the waveforms won't converge)
+e.g. for n=3, m=1  N=120 will produce solutions but 150 will fail</comment>
+        </parameter>
+      </parameter_sweep>
+      <variables>
+        <variable name="errors">
+          <string_value lines="20" type="code" language="python">from pysolwave.tfsolitarywave import TFSolitaryWave
+from glob import glob
+import os.path
+import pickle
+
+input = glob("*.tfml")[0]
+tf = TFSolitaryWave(input)
+
+checkpoints = glob("*_checkpoint*.tfml")
+nfiles = len(checkpoints)
+firstfileend = checkpoints[0].split('_')[-1]
+lastfile = checkpoints[0].replace(firstfileend,"{0}.tfml".format(nfiles-1))
+print lastfile
+
+lastfile_errors = lastfile.replace(".tfml","_errors.pkl")
+
+if os.path.isfile(lastfile_errors):
+  last_errors = pickle.load( open(lastfile_errors,"rb"))
+else:
+  last_errors = tf.geterrors(lastfile)
+  pickle.dump(last_errors, open(lastfile_errors,"wb"))
+  
+errors = last_errors</string_value>
+        </variable>
+        <variable name="pressure_integral">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+stat = parser("magmawaves.stat")
+pressure_integral = stat["magma"]["PressureIntegral"]["functional_value"][-1]</string_value>
+        </variable>
+        <variable name="porosity_integral">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+stat = parser("magmawaves.stat")
+porosity_integral = stat["magma"]["PorosityIntegral"]["functional_value"][-1]</string_value>
+        </variable>
+      </variables>
+    </simulation>
+  </simulations>
+  <tests>
+    <test name="Tables">
+      <string_value lines="20" type="code" language="python">import numpy as np
+
+#print errors.parameters
+ncells = errors.parameters['ncells']
+cfl_delta = errors.parameters['cfl_delta']
+c = errors.parameters['c'][0]
+h_on_delta = errors.parameters['h_on_delta'][0]
+kn = errors.parameters['n'][0]
+m = errors.parameters['m'][0]
+N = errors.parameters['N'][0]
+slice0 = {'c':c, 'h_on_delta':h_on_delta, 'n':kn,'m':m,'N':N}
+
+# collect data for plotting and assertion
+relerrors = []
+for n in ncells:
+  h = float(h_on_delta)/float(n)
+  for cfl in cfl_delta:
+    slice = slice0.copy()
+    slice.update({'ncells':n,'cfl_delta':cfl})
+    cdt_on_del = float(c)*errors[slice][1]*float(h_on_delta)
+    rel_err_shape = errors[slice][4]
+    rel_err_c = errors[slice][5][-1]
+    print "cfl={0}: dt={1}, rel_err_shape={2}, rel_err_c={3}".format(cfl,cdt_on_del,rel_err_shape,rel_err_c)
+    relerrors.append([int(n), h, cdt_on_del, rel_err_shape, rel_err_c])
+    
+nlines =len(relerrors)
+table0 = []
+table0.append("\\begin{tabular}{c|cccc}\n")
+table0.append("\hline\n")
+table0.append(" $N$ &amp; $h_{cell}/\delta$ &amp; $c\Delta t/\delta$ &amp; $||e||_2/||\phi_c||_2$ &amp;$\Delta c/c$\\\\\n")
+table0.append("\hline\n")
+for n in range(nlines):
+  table0.append(" {0} &amp; {1:g} &amp; {2:.2f} &amp; {3:.5e} &amp; {4:.5e} \\\\\n".format(relerrors[n][0],relerrors[n][1],relerrors[n][2],relerrors[n][3],relerrors[n][4]))  
+table0.append("\hline\n")
+table0.append("\\end{tabular}\n")
+
+for line in table0:
+  print line[0:-1]
+
+filename = "table0_short_c{0}_n{1}_m{2}.tex".format(c,kn,m)
+filehandle = file(filename, 'w')
+filehandle.writelines(table0)
+filehandle.close()</string_value>
+    </test>
+    <test name="pressure_integral">
+      <string_value lines="20" type="code" language="python">import numpy as np
+
+ncells = errors.parameters['ncells']
+cfl_delta = errors.parameters['cfl_delta']
+c = errors.parameters['c'][0]
+h_on_delta = errors.parameters['h_on_delta'][0]
+kn = errors.parameters['n'][0]
+m = errors.parameters['m'][0]
+N = errors.parameters['N'][0]
+slice0 = {'c':c, 'h_on_delta':h_on_delta, 'n':kn,'m':m,'N':N}
+
+pressure_int=np.array(pressure_integral[slice0])
+pressure_int = np.mean(pressure_int,axis=1)
+test_values = np.array([2.54975197e-08,3.36557995e-09,9.65322417e-11])
+rel_error = np.abs(pressure_int - test_values)/test_values
+print 'relative error =',rel_error
+assert np.all(rel_error &lt; 5.e10)</string_value>
+    </test>
+    <test name="porosity_integral">
+      <string_value lines="20" type="code" language="python">import numpy as np
+
+ncells = errors.parameters['ncells']
+cfl_delta = errors.parameters['cfl_delta']
+c = errors.parameters['c'][0]
+h_on_delta = errors.parameters['h_on_delta'][0]
+kn = errors.parameters['n'][0]
+m = errors.parameters['m'][0]
+N = errors.parameters['N'][0]
+slice0 = {'c':c, 'h_on_delta':h_on_delta, 'n':kn,'m':m,'N':N}
+
+porosity_int=np.array(porosity_integral[slice0])
+porosity_int = np.mean(porosity_int,axis=1)
+print 'porosity integral=',porosity_int
+
+test_value = 1.0378223388000001
+rel_error = np.abs(porosity_int - test_value)/test_value
+print 'relative error=', rel_error
+assert np.all(rel_error &lt; 5.e-4)</string_value>
+    </test>
+  </tests>
+</harness_options>

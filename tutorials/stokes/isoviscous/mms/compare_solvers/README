@@ -1,0 +1,25 @@
+This directory contains several different solver setups for solving a manufactured Stokes Solution (see manual).
+
+mms_direct:  uses a direct solve on the entire Stokes Jacobian
+mms_fs_direct:  uses an upper triangular block pre-conditioner with direct solves on the K and \hat(S) blocks
+mms_iterative: uses the same uppter triangular block pre-conditioner but with a nested multi-grid preconditioner on the K block and (cg,sor) on the \hat(S) block
+
+To compare the different solvers for convergence, ksp_convergence and timing, you can run the testharness file compare_solvers.shml
+which requires that several environment variables be set first.
+
+To run do:
+
+. ./environment
+tfsimulationharness --test compare_solvers.shml
+
+or just try the shell script
+
+./compare_solvers.sh
+
+Once all the parameter sweeps have run,  if you just want to replot or add another test you can use
+tfsimulationharness --just-test compare_solvers.shml
+
+run
+tfsimulationharness -h
+
+for more options

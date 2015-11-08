@@ -76,7 +76,8 @@ if __name__ == "__main__":
                         help='alternate name of executable, defaults to filename')
     parser.add_argument('-D', '--extra_Doptions', action='store', metavar='-Doption', dest='extra_Doptions', 
                         required=False, default=[], nargs='+', 
-                        help='alternate name of executable, defaults to filename')
+                        help='provide extra options to CMake (these can also be set using\
+                        the TF_CMAKE_EXTRA_DARGS environment variable)')
     parser.add_argument('-i', '--interactive', action='store_const', dest='interactive', const=True, default=False, 
                         required=False,
                         help='use ccmake for interactive ccmake build (defaults to cmake)')
