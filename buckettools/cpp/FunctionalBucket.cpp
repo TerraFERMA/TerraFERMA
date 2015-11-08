@@ -53,7 +53,14 @@ FunctionalBucket::FunctionalBucket(SystemBucket* system) : system_(system), valu
 //*******************************************************************|************************************************************//
 FunctionalBucket::~FunctionalBucket()
 {
-                                                                     // do nothing
+  if (cellfunction_)
+  {
+    delete cellfunction_;
+  }
+  if (facetfunction_)
+  {
+    delete facetfunction_;
+  }
 }
 
 //*******************************************************************|************************************************************//
@@ -71,18 +78,22 @@ double FunctionalBucket::value()
 {
   if(!calculated_)
   {
-    cellfunction_=NULL;
-    facetfunction_=NULL;
 
     if (output_cellfunction())
     {
-      cellfunction_ = new dolfin::CellFunction<double>((*system()).mesh());
+      if (!cellfunction_)
+      {
+        cellfunction_ = new dolfin::CellFunction<double>((*system()).mesh());
+      }
       (*cellfunction_).set_all(0.0);
     }
 
     if (output_facetfunction())
     {
-      facetfunction_ = new dolfin::FacetFunction<double>((*system()).mesh());
+      if (!facetfunction_)
+      {
+        facetfunction_ = new dolfin::FacetFunction<double>((*system()).mesh());
+      }
       (*facetfunction_).set_all(0.0);
     }
 
