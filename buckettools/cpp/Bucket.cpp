@@ -1122,7 +1122,7 @@ void Bucket::fill_uflsymbols_()
                              s_it != systems_end(); s_it++)
   {
     SystemBucket_ptr system = (*s_it).second;
-    register_uflsymbol((*system).function(),                         // current system function
+    register_uflsymbol((*system).iteratedfunction(),                 // current system function
                                       (*system).uflsymbol());
     register_uflsymbol((*system).oldfunction(),                      // old system function
                                       (*system).uflsymbol()+"_n");
@@ -1132,7 +1132,7 @@ void Bucket::fill_uflsymbols_()
                             f_it != (*system).fields_end(); f_it++)
     {
       FunctionBucket_ptr field = (*f_it).second;
-      register_uflsymbol((*system).function(),                       // current field
+      register_uflsymbol((*system).iteratedfunction(),               // current field
                                       (*field).uflsymbol());
       register_uflsymbol((*system).oldfunction(),                    // old field
                                       (*field).uflsymbol()+"_n");
@@ -1143,7 +1143,7 @@ void Bucket::fill_uflsymbols_()
                             f_it != (*system).coeffs_end(); f_it++)
     {
       FunctionBucket_ptr coeff = (*f_it).second;
-      register_uflsymbol((*coeff).function(),                        // current coefficient
+      register_uflsymbol((*coeff).iteratedfunction(),                // current coefficient
                                       (*coeff).uflsymbol());
       register_uflsymbol((*coeff).oldfunction(),                     // old coefficient
                                       (*coeff).uflsymbol()+"_n");
