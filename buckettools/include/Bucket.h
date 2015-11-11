@@ -131,7 +131,9 @@ namespace buckettools
 
     const double finish_time() const;                                // return the finish time
 
-    const double number_timesteps() const;                           // return the number of timesteps after which the simulation will finish
+    const int number_timesteps() const;                              // return the number of timesteps after which the simulation will finish
+
+    const double walltime_limit() const;                             // return the walltime limit
 
     const double timestep() const;                                   // return the timestep (as a double)
 
@@ -295,7 +297,8 @@ namespace buckettools
                                                                      //  their own size explicitly)
     
     double_ptr start_time_, old_time_,
-                            current_time_, finish_time_;             // the current and finish times of the simulation
+                            current_time_, finish_time_, 
+                            walltime_limit_;                         // the current and finish times of the simulation
 
     int_ptr timestep_count_, number_timesteps_;                      // the number of timesteps and number of nonlinear iterations taken
 

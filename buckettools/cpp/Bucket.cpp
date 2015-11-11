@@ -290,6 +290,18 @@ bool Bucket::complete()
     }
   }
 
+  if (!completed)
+  {
+    if (walltime_limit_)
+    {
+      if (elapsed_walltime() >= walltime_limit())
+      {
+        log(INFO, "Walltime limit reached, terminating timeloop.");
+        completed = true;
+      }
+    }
+  }
+
   return completed;
 }
 
@@ -413,10 +425,19 @@ const double Bucket::finish_time() const
 //*******************************************************************|************************************************************//
 // return the number of timesteps after which the simulation will finish
 //*******************************************************************|************************************************************//
-const double Bucket::number_timesteps() const
+const int Bucket::number_timesteps() const
 {
   assert(number_timesteps_);
   return *number_timesteps_;
+}
+
+//*******************************************************************|************************************************************//
+// return the walltime limit after which the simulation will finish
+//*******************************************************************|************************************************************//
+const double Bucket::walltime_limit() const
+{
+  assert(walltime_limit_);
+  return *walltime_limit_;
 }
 
 //*******************************************************************|************************************************************//

@@ -156,6 +156,14 @@ to the most recent compared to the given tolerance in the given norm</a:document
           <ref name="comment"/>
         </element>
       </optional>
+      <optional>
+        <element name="walltime_limit">
+          <a:documentation>Set a walltime limit (in seconds) after which the simulation will be terminated.
+
+Useful in combination with checkpointing on clusters.</a:documentation>
+          <ref name="real"/>
+        </element>
+      </optional>
       <ref name="comment"/>
     </element>
   </define>
