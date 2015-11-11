@@ -145,8 +145,8 @@ namespace buckettools
     static const time_t* start_walltime()                            // return the start time
     { return &start_walltime_; }
 
-    static const double elapsed_walltime()                           // return the start time
-    { return timer_.elapsed(); }
+    static const double elapsed_walltime()                           // return the elapsed wall time
+    { return dolfin::MPI::max(MPI_COMM_WORLD, timer_.elapsed()); }
 
     const int checkpoint_count() const;                              // return the checkpoint count
 
