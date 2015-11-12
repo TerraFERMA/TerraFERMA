@@ -110,6 +110,64 @@ double FunctionalBucket::value(const bool& force)
 }
 
 //*******************************************************************|************************************************************//
+// return the values of the functional per cell
+//*******************************************************************|************************************************************//
+dolfin::CellFunction<double> FunctionalBucket::cellfunction(const bool& force) const
+{
+  // set up new functions so this can be const
+  dolfin::CellFunction<double> l_cellfunction((*system()).mesh());
+
+  // only calculate the cell function if we haven't calculated it yet or we're not
+  // outputing the cell function (in which case it won't be included in our normal
+  // calculation of the functional anyway) or if we're forcing it
+  if (!force && calculated_ && output_cellfunction())
+  {
+    l_cellfunction = *cellfunction_;
+  }
+  else
+  {
+    l_cellfunction.set_all(0.0);
+    dolfin::FacetFunction<double>* l_facetfunction = NULL;
+  
+    dolfin::Assembler assembler;
+    dolfin::Scalar value;
+    assembler.assemble(value, *form_, &l_cellfunction, l_facetfunction);
+
+  }
+
+  return l_cellfunction;
+}
+
+//*******************************************************************|************************************************************//
+// return the values of the functional per facet
+//*******************************************************************|************************************************************//
+dolfin::FacetFunction<double> FunctionalBucket::facetfunction(const bool& force) const
+{
+  // set up new functions so this can be const
+  dolfin::FacetFunction<double> l_facetfunction((*system()).mesh());
+
+  // only calculate the cell function if we haven't calculated it yet or we're not
+  // outputing the cell function (in which case it won't be included in our normal
+  // calculation of the functional anyway) or if we're forcing it
+  if (!force && calculated_ && output_cellfunction())
+  {
+    l_facetfunction = *facetfunction_;
+  }
+  else
+  {
+    l_facetfunction.set_all(0.0);
+    dolfin::CellFunction<double>* l_cellfunction = NULL;
+  
+    dolfin::Assembler assembler;
+    dolfin::Scalar value;
+    assembler.assemble(value, *form_, l_cellfunction, &l_facetfunction);
+
+  }
+
+  return l_facetfunction;
+}
+
+//*******************************************************************|************************************************************//
 // return the change in the value of the functional over a timestep
 //*******************************************************************|************************************************************//
 double FunctionalBucket::change()
