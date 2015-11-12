@@ -466,6 +466,14 @@ void SpudBucket::fill_timestepping_()
       spud_err(buffer.str(), serr);
     }
 
+    buffer.str(""); buffer << "/timestepping/walltime_limit";
+    if (Spud::have_option(buffer.str()))
+    {
+      walltime_limit_.reset( new double );
+      serr = Spud::get_option(buffer.str(), *walltime_limit_);
+      spud_err(buffer.str(), serr);
+    }
+
   }
   else
   {

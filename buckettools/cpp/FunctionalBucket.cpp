@@ -74,9 +74,9 @@ void FunctionalBucket::attach_form_coeffs()
 //*******************************************************************|************************************************************//
 // return the value of the functional (calculating it if necessary)
 //*******************************************************************|************************************************************//
-double FunctionalBucket::value()
+double FunctionalBucket::value(const bool& force)
 {
-  if(!calculated_)
+  if(!calculated_ || force)
   {
 
     if (output_cellfunction())
@@ -101,7 +101,10 @@ double FunctionalBucket::value()
     dolfin::Scalar value;
     assembler.assemble(value, *form_, cellfunction_, facetfunction_);
     value_ = value.get_scalar_value();
-    calculated_ = true;
+    if (!force)                                                      // if this has been forced it is outside the normal scope
+    {                                                                // of us calculating the functional value for output
+      calculated_ = true;                                            // so don't update the calculated flag or it'll throw off
+    }                                                                // our output assumptions
   }
   return value_;
 }

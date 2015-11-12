@@ -121,6 +121,8 @@ void SolverBucket::solve()
                           (*system_).name().c_str(), name().c_str(), 
                           type().c_str());
 
+  *iteration_count_ = 0;                                             // an iteration counter
+
   if (type()=="SNES")                                                // this is a petsc snes solver - FIXME: switch to an enumerated type
   {
     for(std::vector< const dolfin::DirichletBC* >::const_iterator    // loop over the collected vector of system bcs
@@ -131,7 +133,7 @@ void SolverBucket::solve()
       (*(*bc)).apply(*(*(*system_).iteratedfunction()).vector());    // iterated solution
     }
     *work_ = (*(*(*system_).function()).vector());                   // set the work vector to the function vector
-    perr = SNESSolve(snes_, PETSC_NULL, (*work_).vec());            // call petsc to perform a snes solve
+    perr = SNESSolve(snes_, PETSC_NULL, (*work_).vec());             // call petsc to perform a snes solve
     petsc_fail(perr);
     snes_check_convergence_();
     (*(*(*system_).function()).vector()) = *work_;                   // update the function
@@ -139,7 +141,6 @@ void SolverBucket::solve()
   else if (type()=="Picard")                                         // this is a hand-rolled picard iteration - FIXME: switch to enum
   {
 
-    *iteration_count_ = 0;                                           // an iteration counter
 
     assert(residual_);                                               // we need to assemble the residual again here as it may depend
                                                                      // on other systems that have been solved since the last call
@@ -378,6 +379,7 @@ void SolverBucket::resetcalculated()
   {
     *solved_ = false;
   }
+  *iteration_count_ = 0;                                             // an iteration counter
 }
 
 //*******************************************************************|************************************************************//
