@@ -54,13 +54,17 @@ generic_vector_element_family =
      ##
      ## - BDM = Brezzi–Douglas–Marini
      ##
+     ## - N1curl = Nedelec 1st kind H(curl)
+     ##
+     ## - N2curl = Nedelec 2nd kind H(curl)
+     ##
      ## - R  = Real (global constant)
      ##
      ## - Quadrature
      element family {
         # a hard coded string_value
         element string_value {
-          ( "CG" | "DG" | "RT" | "DRT" | "BDM" | "R" | "Quadrature" )
+          ( "CG" | "DG" | "RT" | "DRT" | "BDM" | "N1curl" | "N2curl" | "R" | "Quadrature" )
         },
         comment
      }
@@ -131,6 +135,34 @@ bdm_element_family =
         # a hard coded string_value
         element string_value {
           ( "BDM" )
+        },
+        comment
+     }
+  )
+
+n1curl_element_family = 
+  (
+     ## Element family
+     ##
+     ## - N1curl = Nedelec 1st kind H(curl)
+     element family {
+        # a hard coded string_value
+        element string_value {
+          ( "N1curl" )
+        },
+        comment
+     }
+  )
+
+n2curl_element_family = 
+  (
+     ## Element family
+     ##
+     ## - N2curl = Nedelec 2nd kind H(curl)
+     element family {
+        # a hard coded string_value
+        element string_value {
+          ( "N2curl" )
         },
         comment
      }
@@ -318,6 +350,30 @@ bdm1_element =
 bdm2_element =
   (
      bdm_element_family,
+     p2_element_degree
+  )
+
+n1curl1_element =
+  (
+     n1curl_element_family,
+     p1_element_degree
+  )
+
+n1curl2_element =
+  (
+     n1curl_element_family,
+     p2_element_degree
+  )
+
+n2curl1_element =
+  (
+     n2curl_element_family,
+     p1_element_degree
+  )
+
+n2curl2_element =
+  (
+     n2curl_element_family,
      p2_element_degree
   )
 
@@ -572,6 +628,34 @@ element_options_vector =
        element element {
          attribute name { "BDM2" },
          bdm2_element,
+         enrichment_options,
+         comment
+       }|
+       ## Options describing first degree Nedelec 1st kind H(curl) element for a vector.
+       element element {
+         attribute name { "N1curl1" },
+         n1curl1_element,
+         enrichment_options,
+         comment
+       }|
+       ## Options describing second degree Nedelec 1st kind H(curl) element for a vector.
+       element element {
+         attribute name { "N1curl2" },
+         n1curl2_element,
+         enrichment_options,
+         comment
+       }|
+       ## Options describing first degree Nedelec 2nd kind H(curl) element for a vector.
+       element element {
+         attribute name { "N2curl1" },
+         n2curl1_element,
+         enrichment_options,
+         comment
+       }|
+       ## Options describing second degree Nedelec 2nd kind H(curl) element for a vector.
+       element element {
+         attribute name { "N2curl2" },
+         n2curl2_element,
          enrichment_options,
          comment
        }|
