@@ -65,7 +65,13 @@ namespace buckettools
     // Base data access
     //***************************************************************|***********************************************************//
 
-    double value();
+    double value(const bool& force=false);                           // calculate and return the value of the functional
+
+    dolfin::CellFunction<double> cellfunction(const bool& force=false) // calculate and return the value per cell of the functional
+              const;
+
+    dolfin::FacetFunction<double> facetfunction(const bool& force=false) // calculate and return the value per facet of the functional
+              const;
 
     double oldvalue() const
     { return oldvalue_; }

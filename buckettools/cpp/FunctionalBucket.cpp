@@ -74,9 +74,9 @@ void FunctionalBucket::attach_form_coeffs()
 //*******************************************************************|************************************************************//
 // return the value of the functional (calculating it if necessary)
 //*******************************************************************|************************************************************//
-double FunctionalBucket::value()
+double FunctionalBucket::value(const bool& force)
 {
-  if(!calculated_)
+  if(!calculated_ || force)
   {
 
     if (output_cellfunction())
@@ -101,9 +101,70 @@ double FunctionalBucket::value()
     dolfin::Scalar value;
     assembler.assemble(value, *form_, cellfunction_, facetfunction_);
     value_ = value.get_scalar_value();
-    calculated_ = true;
+    if (!force)                                                      // if this has been forced it is outside the normal scope
+    {                                                                // of us calculating the functional value for output
+      calculated_ = true;                                            // so don't update the calculated flag or it'll throw off
+    }                                                                // our output assumptions
   }
   return value_;
+}
+
+//*******************************************************************|************************************************************//
+// return the values of the functional per cell
+//*******************************************************************|************************************************************//
+dolfin::CellFunction<double> FunctionalBucket::cellfunction(const bool& force) const
+{
+  // set up new functions so this can be const
+  dolfin::CellFunction<double> l_cellfunction((*system()).mesh());
+
+  // only calculate the cell function if we haven't calculated it yet or we're not
+  // outputing the cell function (in which case it won't be included in our normal
+  // calculation of the functional anyway) or if we're forcing it
+  if (!force && calculated_ && output_cellfunction())
+  {
+    l_cellfunction = *cellfunction_;
+  }
+  else
+  {
+    l_cellfunction.set_all(0.0);
+    dolfin::FacetFunction<double>* l_facetfunction = NULL;
+  
+    dolfin::Assembler assembler;
+    dolfin::Scalar value;
+    assembler.assemble(value, *form_, &l_cellfunction, l_facetfunction);
+
+  }
+
+  return l_cellfunction;
+}
+
+//*******************************************************************|************************************************************//
+// return the values of the functional per facet
+//*******************************************************************|************************************************************//
+dolfin::FacetFunction<double> FunctionalBucket::facetfunction(const bool& force) const
+{
+  // set up new functions so this can be const
+  dolfin::FacetFunction<double> l_facetfunction((*system()).mesh());
+
+  // only calculate the cell function if we haven't calculated it yet or we're not
+  // outputing the cell function (in which case it won't be included in our normal
+  // calculation of the functional anyway) or if we're forcing it
+  if (!force && calculated_ && output_cellfunction())
+  {
+    l_facetfunction = *facetfunction_;
+  }
+  else
+  {
+    l_facetfunction.set_all(0.0);
+    dolfin::CellFunction<double>* l_cellfunction = NULL;
+  
+    dolfin::Assembler assembler;
+    dolfin::Scalar value;
+    assembler.assemble(value, *form_, l_cellfunction, &l_facetfunction);
+
+  }
+
+  return l_facetfunction;
 }
 
 //*******************************************************************|************************************************************//

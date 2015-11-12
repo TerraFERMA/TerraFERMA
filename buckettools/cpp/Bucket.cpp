@@ -1240,6 +1240,8 @@ void Bucket::solve_at_start_()
 void Bucket::solve_in_timeloop_()
 {
   double aerror0 = 0.0;
+  *iteration_count_ = 0;
+
   if (rtol_)
   {
     aerror0 = residual_norm();
@@ -1262,7 +1264,6 @@ void Bucket::solve_in_timeloop_()
     }
 
   }
-  *iteration_count_ = 0;
 
   while (!complete_iterating_(aerror0))
   {

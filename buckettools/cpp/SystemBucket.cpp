@@ -702,6 +702,23 @@ FunctionalBucket_ptr SystemBucket::fetch_functional(const std::string &name)
 }
 
 //*******************************************************************|************************************************************//
+// return a constant (boost shared) pointer to a functional form from the system bucket data maps
+//*******************************************************************|************************************************************//
+const FunctionalBucket_ptr SystemBucket::fetch_functional(const std::string &name) const
+{
+  FunctionalBucket_hash_it f_it = functionals_.get<om_key_hash>().find(name);                            // check if the name already exists
+  if (f_it == functionals_.get<om_key_hash>().end())
+  {
+    tf_err("Functional does not exist in system.", "Functional name: %s, System name: %s", 
+           name.c_str(), name_.c_str());
+  }
+  else
+  {
+    return (*f_it).second;                                           // if it does, return it
+  }
+}
+
+//*******************************************************************|************************************************************//
 // return an iterator to the beginning of the functionals_ map
 //*******************************************************************|************************************************************//
 FunctionalBucket_it SystemBucket::functionals_begin()
