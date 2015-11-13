@@ -122,7 +122,6 @@ values[0] = maxvalue;</string_value>
         </rank>
       </type>
       <diagnostics>
-        <include_in_visualization/>
         <include_in_statistics/>
       </diagnostics>
     </coefficient>
@@ -169,7 +168,6 @@ values[0] = maxvalue;</string_value>
         </rank>
       </type>
       <diagnostics>
-        <include_in_visualization/>
         <include_in_statistics/>
       </diagnostics>
     </coefficient>
