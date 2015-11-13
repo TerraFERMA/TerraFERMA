@@ -59,6 +59,10 @@
 
 - BDM = Brezzi–Douglas–Marini
 
+- N1curl = Nedelec 1st kind H(curl)
+
+- N2curl = Nedelec 2nd kind H(curl)
+
 - R  = Real (global constant)
 
 - Quadrature</a:documentation>
@@ -70,6 +74,8 @@
           <value>RT</value>
           <value>DRT</value>
           <value>BDM</value>
+          <value>N1curl</value>
+          <value>N2curl</value>
           <value>R</value>
           <value>Quadrature</value>
         </choice>
@@ -133,6 +139,30 @@
       <!-- a hard coded string_value -->
       <element name="string_value">
         <value>BDM</value>
+      </element>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="n1curl_element_family">
+    <element name="family">
+      <a:documentation>Element family
+
+- N1curl = Nedelec 1st kind H(curl)</a:documentation>
+      <!-- a hard coded string_value -->
+      <element name="string_value">
+        <value>N1curl</value>
+      </element>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="n2curl_element_family">
+    <element name="family">
+      <a:documentation>Element family
+
+- N2curl = Nedelec 2nd kind H(curl)</a:documentation>
+      <!-- a hard coded string_value -->
+      <element name="string_value">
+        <value>N2curl</value>
       </element>
       <ref name="comment"/>
     </element>
@@ -288,6 +318,22 @@ Importantly, this is the degree of the resulting form not the function itself!</
   </define>
   <define name="bdm2_element">
     <ref name="bdm_element_family"/>
+    <ref name="p2_element_degree"/>
+  </define>
+  <define name="n1curl1_element">
+    <ref name="n1curl_element_family"/>
+    <ref name="p1_element_degree"/>
+  </define>
+  <define name="n1curl2_element">
+    <ref name="n1curl_element_family"/>
+    <ref name="p2_element_degree"/>
+  </define>
+  <define name="n2curl1_element">
+    <ref name="n2curl_element_family"/>
+    <ref name="p1_element_degree"/>
+  </define>
+  <define name="n2curl2_element">
+    <ref name="n2curl_element_family"/>
     <ref name="p2_element_degree"/>
   </define>
   <define name="p1_element">
@@ -603,6 +649,42 @@ Importantly, this is the degree of the resulting form not the function itself!</
           <value>BDM2</value>
         </attribute>
         <ref name="bdm2_element"/>
+        <ref name="enrichment_options"/>
+        <ref name="comment"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing first degree Nedelec 1st kind H(curl) element for a vector.</a:documentation>
+        <attribute name="name">
+          <value>N1curl1</value>
+        </attribute>
+        <ref name="n1curl1_element"/>
+        <ref name="enrichment_options"/>
+        <ref name="comment"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing second degree Nedelec 1st kind H(curl) element for a vector.</a:documentation>
+        <attribute name="name">
+          <value>N1curl2</value>
+        </attribute>
+        <ref name="n1curl2_element"/>
+        <ref name="enrichment_options"/>
+        <ref name="comment"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing first degree Nedelec 2nd kind H(curl) element for a vector.</a:documentation>
+        <attribute name="name">
+          <value>N2curl1</value>
+        </attribute>
+        <ref name="n2curl1_element"/>
+        <ref name="enrichment_options"/>
+        <ref name="comment"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing second degree Nedelec 2nd kind H(curl) element for a vector.</a:documentation>
+        <attribute name="name">
+          <value>N2curl2</value>
+        </attribute>
+        <ref name="n2curl2_element"/>
         <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>

@@ -84,7 +84,7 @@ class FunctionBucket:
       ufl_line += "FiniteElement("
     elif self.rank == "Vector":
       # special case for vector elements - will need to be expanded
-      if family in ["RT", "DRT", "BDM"]:
+      if family in ["RT", "DRT", "BDM", "N1curl", "N2curl"]:
         assert(self.size is None)
         ufl_line += "FiniteElement("
       else:
