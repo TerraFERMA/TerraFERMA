@@ -1232,8 +1232,18 @@ void SpudBucket::fill_diagnostics_()
                                        f_it != (*(*s_it).second).fields_end();
                                        f_it++)
           {
-            functions.push_back( (*(*f_it).second).function() );
-            functions.push_back( (*(*f_it).second).residualfunction() );
+            functions.push_back( (*(*f_it).second).function() );      // all fields and residuals get output in this debugging output
+            functions.push_back( (*(*f_it).second).residualfunction() ); // regardless of whether they're included in standard output
+          }
+
+          for (FunctionBucket_const_it c_it = (*(*s_it).second).coeffs_begin(); 
+                                       c_it != (*(*s_it).second).coeffs_end();
+                                       c_it++)
+          {
+            if ((*(*c_it).second).include_in_visualization())         // including coefficients here is just a niceity but some
+            {                                                         // coefficients aren't suitable for visualization so
+              functions.push_back( (*(*c_it).second).function() );    // only output them if we've asked for them in the normal
+            }                                                         // output
           }
 
         }
