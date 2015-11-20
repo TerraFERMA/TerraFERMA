@@ -1550,10 +1550,12 @@ void SpudSolverBucket::fill_nullspace_(const std::string &optionpath, MatNullSpa
 
   buffer.str(""); buffer << optionpath << "/null_space";
   int nnulls = Spud::option_count(buffer.str());                     // how many null spaces?
+  buffer.str(""); buffer << optionpath <<  "/null_space/remove_from_rhs/only_remove_from_rhs";
+  int rhsnnulls = Spud::option_count(buffer.str());
 
   PETScVector_ptr sysvec = std::dynamic_pointer_cast<dolfin::PETScVector>((*(*system_).function()).vector());
 
-  Vec vecs[nnulls];                                                  // and here (for the petsc interface)
+  Vec vecs[nnulls-rhsnnulls];                                        // and here (for the petsc interface)
 
   for (uint i = 0; i<nnulls; i++)                                    // loop over the nullspaces
   {
@@ -1614,6 +1616,13 @@ void SpudSolverBucket::fill_nullspace_(const std::string &optionpath, MatNullSpa
       petsc_err(perr);                                                 // isview?
     }
 
+    buffer.str(""); buffer << optionpath << "/null_space[" 
+                                 << i << "]/remove_from_rhs/only_remove_from_rhs";
+    if (Spud::have_option(buffer.str()))
+    {
+      continue;
+    }
+
     perr = VecCreate((*(*system_).mesh()).mpi_comm(), &vecs[i]);
     petsc_err(perr);
     if (parent_indices)
@@ -1658,7 +1667,7 @@ void SpudSolverBucket::fill_nullspace_(const std::string &optionpath, MatNullSpa
   }
 
   perr = MatNullSpaceCreate((*(*system_).mesh()).mpi_comm(), 
-                            PETSC_FALSE, nnulls, vecs, &SP); 
+                            PETSC_FALSE, nnulls-rhsnnulls, vecs, &SP); 
   petsc_err(perr);
 
   buffer.str(""); buffer << optionpath << 
