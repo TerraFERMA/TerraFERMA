@@ -294,6 +294,9 @@ field_diagnostics_options =
         element norm {
           # a hard coded string_value
           element string_value {
+            # Lines is a hint to the gui about the size of the text box.
+            # It is not an enforced limit on string length.
+            attribute lines { "1" },
             ( "linf" | "l2" | "l1" )
           },
           comment
