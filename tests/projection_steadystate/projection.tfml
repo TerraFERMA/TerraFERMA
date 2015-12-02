@@ -10,10 +10,10 @@
           <integer_value shape="2" dim1="2" rank="1">4 4</integer_value>
         </number_cells>
         <diagonal>
-          <string_value>crossed</string_value>
+          <string_value lines="1">crossed</string_value>
         </diagonal>
         <cell>
-          <string_value>triangle</string_value>
+          <string_value lines="1">triangle</string_value>
         </cell>
       </source>
     </mesh>
@@ -25,7 +25,7 @@
     <visualization>
       <element name="P1">
         <family>
-          <string_value>CG</string_value>
+          <string_value lines="1">CG</string_value>
         </family>
         <degree>
           <integer_value rank="0">1</integer_value>
@@ -87,7 +87,7 @@
         <rank name="Scalar" rank="0">
           <element name="P1">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">1</integer_value>
@@ -121,7 +121,7 @@
         <include_in_statistics/>
         <include_in_steady_state>
           <norm>
-            <string_value>linf</string_value>
+            <string_value lines="1">linf</string_value>
           </norm>
         </include_in_steady_state>
       </diagnostics>
@@ -134,7 +134,7 @@
         <rank name="Scalar" rank="0">
           <element name="P0">
             <family>
-              <string_value>DG</string_value>
+              <string_value lines="1">DG</string_value>
             </family>
             <degree>
               <integer_value rank="0">0</integer_value>
