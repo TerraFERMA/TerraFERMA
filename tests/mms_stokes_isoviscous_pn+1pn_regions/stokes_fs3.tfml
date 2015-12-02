@@ -10,7 +10,7 @@
           <string_value lines="1" type="filename">square_regions</string_value>
         </file>
         <cell>
-          <string_value>triangle</string_value>
+          <string_value lines="1">triangle</string_value>
         </cell>
         <cell_destinations>
           <process name="1">
@@ -73,7 +73,7 @@
         <rank name="Vector" rank="1">
           <element name="UserDefined">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">2</integer_value>
@@ -116,7 +116,7 @@ def val(x):
         <rank name="Scalar" rank="0">
           <element name="UserDefined">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">1</integer_value>
@@ -148,7 +148,7 @@ def val(x):
         <rank name="Vector" rank="1">
           <element name="UserDefined">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">2</integer_value>
@@ -186,7 +186,7 @@ def val(x):
         <rank name="Scalar" rank="0">
           <element name="UserDefined">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">1</integer_value>
@@ -238,7 +238,7 @@ def val(x):
         <rank name="Vector" rank="1">
           <element name="UserDefined">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">2</integer_value>
@@ -287,7 +287,7 @@ values[1] = std::abs(num[1] - sol[1]);</string_value>
         <rank name="Scalar" rank="0">
           <element name="UserDefined">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">1</integer_value>
@@ -335,7 +335,7 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
         <rank name="Scalar" rank="0">
           <element name="P1">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">1</integer_value>
@@ -434,7 +434,7 @@ else
         <rank name="Scalar" rank="0">
           <element name="P1">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">1</integer_value>
@@ -533,7 +533,7 @@ else
         <rank name="Scalar" rank="0">
           <element name="P1">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">1</integer_value>
@@ -789,7 +789,7 @@ r = rv + rp</string_value>
         <rank name="Scalar" rank="0">
           <element name="UserDefined">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">1</integer_value>
