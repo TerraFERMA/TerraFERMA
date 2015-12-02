@@ -42,6 +42,13 @@ This option can be used by tfsimulationharness to filter the available
 simulation harness files and decide which simulations to run.</a:documentation>
         <!-- a hard coded string_value -->
         <element name="string_value">
+          <!--
+            Lines is a hint to the gui about the size of the text box.
+            It is not an enforced limit on string length.
+          -->
+          <attribute name="lines">
+            <value>1</value>
+          </attribute>
           <choice>
             <value>special</value>
             <value>short</value>
@@ -180,7 +187,15 @@ All filenames must have a unique name.</a:documentation>
           <a:documentation>Enter python code to evaluate a (or a list of) filename(s).
 
 The variable containing the filename(s) MUST share a name with 
-the filenames parent element above. </a:documentation>
+the filenames parent element above. 
+
+The values of all the parameters for this simulation will be available to this code using 
+the names given to the parameters above.  They will be formatted as strings and should be converted 
+appropriately within the code.
+
+Additionally, the full path to the input file is available as input_filename.
+
+For more advanced usage the Run or Simulation class object is available as _self.</a:documentation>
           <ref name="python_code"/>
         </element>
       </choice>
@@ -243,7 +258,11 @@ If no code is provided the parameter will not be modified at this level
 
 The values of all the parameters for this simulation will be available to this code using 
 the names given to the parameters above.  They will be formatted as strings and should be converted 
-appropriately within the code.</a:documentation>
+appropriately within the code.
+
+Additionally, the full path to the input file is available as input_filename.
+
+For more advanced usage the Run or Simulation class object is available as _self.</a:documentation>
               <ref name="python_code"/>
               <optional>
                 <element name="single_build">
@@ -307,16 +326,14 @@ If no code is provided the parameter will not be modified at this level
 
 The values of all the parameters for this simulation will be available to this code using 
 the names given to the parameters above.  They will be formatted as strings and should be converted 
-appropriately within the code.</a:documentation>
-              <ref name="python_code"/>
-            </element>
-          </optional>
-          <optional>
-            <element name="process_scale">
-              <a:documentation>The factor to scale the number_processes by depending on the value of this parameter.
+appropriately within the code.
 
-There should be the same number of integer scales as there are parameter values.</a:documentation>
-              <ref name="integer_vector"/>
+Additionally, the full path to the input file is available as input_filename and, if not a spud file, 
+the contents of the input file are available as a string as input_file.  The input_file string should be 
+modified - it is what will be written back to file.
+
+For more advanced usage the Run or Simulation class object is available as _self.</a:documentation>
+              <ref name="python_code"/>
             </element>
           </optional>
           <ref name="comment"/>
@@ -386,12 +403,20 @@ appropriately within the code.</a:documentation>
   </define>
   <define name="variables">
     <element name="variables">
-      <a:documentation>A list of tests to run.  Each test name should be unique.</a:documentation>
+      <a:documentation>A list of variables to evaluate.  Each variable name should be unique.</a:documentation>
       <oneOrMore>
         <element name="variable">
           <a:documentation>Define a variable in python.
 
-THE VARIABLE NAME MUST BE UNIQUE ACROSS THE ENTIRE OPTIONS FILE and the python code MUST set that variable name!</a:documentation>
+THE VARIABLE NAME MUST BE UNIQUE ACROSS THE ENTIRE OPTIONS FILE and the python code MUST set that variable name!
+
+The values of all the parameters for this simulation will be available to this code using 
+the names given to the parameters above.  They will be formatted as strings and should be converted 
+appropriately within the code.
+
+Additionally, the full path to the input file is available as input_filename.
+
+For more advanced usage the Run or Simulation class object is available as _self.</a:documentation>
           <attribute name="name">
             <data type="string"/>
           </attribute>
@@ -548,7 +573,13 @@ If no code is provided the parameter will not be modified at this level
 
 The values of all the parameters for this simulation will be available to this code using 
 the names given to the parameters above.  They will be formatted as strings and should be converted 
-appropriately within the code.</a:documentation>
+appropriately within the code.
+
+Additionally, the full path to the input file is available as input_filename and, if not a spud file, 
+the contents of the input file are available as a string as input_file.  The input_file string should be 
+modified - it is what will be written back to file.
+
+For more advanced usage the Run or Simulation class object is available as _self.</a:documentation>
               <ref name="python_code"/>
             </element>
           </optional>
@@ -592,7 +623,11 @@ If no code is provided the parameter will not be modified at this level
 
 The values of all the parameters for this simulation will be available to this code using 
 the names given to the parameters above.  They will be formatted as strings and should be converted 
-appropriately within the code.</a:documentation>
+appropriately within the code.
+
+Additionally, the full path to the input file is available as input_filename.
+
+For more advanced usage the Run or Simulation class object is available as _self.</a:documentation>
               <ref name="python_code"/>
               <optional>
                 <element name="single_build">
@@ -630,7 +665,7 @@ Defaults to 1 if not specified.</a:documentation>
     <element name="commands">
       <a:documentation>A list of commands to perform this run.
 
-Parameters are available to the command as $parameter_name.</a:documentation>
+Parameters are available to the command as $parameter_name and the input filename is available as $input_filename.</a:documentation>
       <oneOrMore>
         <element name="command">
           <a:documentation>A single shell command.</a:documentation>

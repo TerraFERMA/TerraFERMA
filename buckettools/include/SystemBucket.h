@@ -240,6 +240,9 @@ namespace buckettools
 
     FunctionalBucket_ptr fetch_functional(const std::string &name);  // return a (boost shared) pointer to a functional with the given name
 
+    const FunctionalBucket_ptr fetch_functional(const std::string &name) 
+                                                             const;  // return a constant (boost shared) pointer to a functional with the given name
+
     FunctionalBucket_it functionals_begin();                         // return an iterator to the beginning of the functionals of this function
 
     FunctionalBucket_const_it functionals_begin() const;             // return a constant iterator to the beginning of the functionals of this function

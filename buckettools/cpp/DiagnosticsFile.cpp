@@ -87,18 +87,19 @@ void DiagnosticsFile::header_constants_(const bool &binary)
   char cbuffer[maxlencbuffer];
   int cerr;
 
-  constant_tag_("GitHash", "string", githash());                 // the git sha
+  constant_tag_("TFVersion", "string", tfversion());                 // the TF version
+  constant_tag_("GitHash", "string", githash());                     // the git sha
   
   buffer.str("");
   buffer << __DATE__;
   buffer << " ";
   buffer << __TIME__;
-  constant_tag_("CompileTime", "string", buffer.str());            // the compilation time
+  constant_tag_("CompileTime", "string", buffer.str());              // the compilation time
   
   buffer.str("");
   buffer << ctime(((*bucket_).start_walltime()));
   constant_tag_("StartTime", "string", 
-              buffer.str().substr( 0, buffer.str().length() - 1)); // the simulation start time
+              buffer.str().substr( 0, buffer.str().length() - 1));   // the simulation start time
   
   buffer.str("");
   cerr = gethostname(cbuffer, maxlencbuffer);
@@ -229,6 +230,7 @@ void DiagnosticsFile::data_endlineflush_()
 void DiagnosticsFile::data_timestep_()
 {
   
+  double walltime = (*bucket_).elapsed_walltime();
   if (dolfin::MPI::rank(mpicomm_)==0)
   {
     file_.setf(std::ios::scientific);
@@ -236,7 +238,7 @@ void DiagnosticsFile::data_timestep_()
     
     file_ << (*bucket_).timestep_count() << " ";  
     file_ << (*bucket_).current_time() << " ";
-    file_ << (*bucket_).elapsed_walltime() << " ";
+    file_ << walltime << " ";
     file_ << (*bucket_).timestep() << " ";
     
     file_.unsetf(std::ios::scientific);

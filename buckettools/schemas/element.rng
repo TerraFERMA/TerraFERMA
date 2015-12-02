@@ -35,6 +35,13 @@
 - Quadrature</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
         <choice>
           <value>CG</value>
           <value>DG</value>
@@ -59,17 +66,30 @@
 
 - BDM = Brezzi–Douglas–Marini
 
+- N1curl = Nedelec 1st kind H(curl)
+
+- N2curl = Nedelec 2nd kind H(curl)
+
 - R  = Real (global constant)
 
 - Quadrature</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
         <choice>
           <value>CG</value>
           <value>DG</value>
           <value>RT</value>
           <value>DRT</value>
           <value>BDM</value>
+          <value>N1curl</value>
+          <value>N2curl</value>
           <value>R</value>
           <value>Quadrature</value>
         </choice>
@@ -84,6 +104,13 @@
 - B = Bubble</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
         <value>B</value>
       </element>
       <ref name="comment"/>
@@ -96,6 +123,13 @@
 - B = Bubble</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
         <value>B</value>
       </element>
       <ref name="comment"/>
@@ -108,6 +142,13 @@
 - RT = Raviart-Thomas</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
         <value>RT</value>
       </element>
       <ref name="comment"/>
@@ -120,6 +161,13 @@
 - DRT = Discontinuous Raviart-Thomas</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
         <value>DRT</value>
       </element>
       <ref name="comment"/>
@@ -132,7 +180,52 @@
 - BDM = Brezzi–Douglas–Marini</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
         <value>BDM</value>
+      </element>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="n1curl_element_family">
+    <element name="family">
+      <a:documentation>Element family
+
+- N1curl = Nedelec 1st kind H(curl)</a:documentation>
+      <!-- a hard coded string_value -->
+      <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
+        <value>N1curl</value>
+      </element>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="n2curl_element_family">
+    <element name="family">
+      <a:documentation>Element family
+
+- N2curl = Nedelec 2nd kind H(curl)</a:documentation>
+      <!-- a hard coded string_value -->
+      <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
+        <value>N2curl</value>
       </element>
       <ref name="comment"/>
     </element>
@@ -144,6 +237,13 @@
 - CG = Lagrange (continuous Galerkin)</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
         <value>CG</value>
       </element>
       <ref name="comment"/>
@@ -156,6 +256,13 @@
 - DG = Discontinuous Lagrange (discontinuous Galerkin)</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
         <value>DG</value>
       </element>
       <ref name="comment"/>
@@ -168,6 +275,13 @@
 - R  = Real (global constant)</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
         <value>R</value>
       </element>
       <ref name="comment"/>
@@ -180,6 +294,13 @@
 - Quadrature</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
         <value>Quadrature</value>
       </element>
       <ref name="comment"/>
@@ -288,6 +409,22 @@ Importantly, this is the degree of the resulting form not the function itself!</
   </define>
   <define name="bdm2_element">
     <ref name="bdm_element_family"/>
+    <ref name="p2_element_degree"/>
+  </define>
+  <define name="n1curl1_element">
+    <ref name="n1curl_element_family"/>
+    <ref name="p1_element_degree"/>
+  </define>
+  <define name="n1curl2_element">
+    <ref name="n1curl_element_family"/>
+    <ref name="p2_element_degree"/>
+  </define>
+  <define name="n2curl1_element">
+    <ref name="n2curl_element_family"/>
+    <ref name="p1_element_degree"/>
+  </define>
+  <define name="n2curl2_element">
+    <ref name="n2curl_element_family"/>
     <ref name="p2_element_degree"/>
   </define>
   <define name="p1_element">
@@ -567,6 +704,42 @@ Importantly, this is the degree of the resulting form not the function itself!</
           <value>BDM2</value>
         </attribute>
         <ref name="bdm2_element"/>
+        <ref name="enrichment_options"/>
+        <ref name="comment"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing first degree Nedelec 1st kind H(curl) element for a vector.</a:documentation>
+        <attribute name="name">
+          <value>N1curl1</value>
+        </attribute>
+        <ref name="n1curl1_element"/>
+        <ref name="enrichment_options"/>
+        <ref name="comment"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing second degree Nedelec 1st kind H(curl) element for a vector.</a:documentation>
+        <attribute name="name">
+          <value>N1curl2</value>
+        </attribute>
+        <ref name="n1curl2_element"/>
+        <ref name="enrichment_options"/>
+        <ref name="comment"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing first degree Nedelec 2nd kind H(curl) element for a vector.</a:documentation>
+        <attribute name="name">
+          <value>N2curl1</value>
+        </attribute>
+        <ref name="n2curl1_element"/>
+        <ref name="enrichment_options"/>
+        <ref name="comment"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing second degree Nedelec 2nd kind H(curl) element for a vector.</a:documentation>
+        <attribute name="name">
+          <value>N2curl2</value>
+        </attribute>
+        <ref name="n2curl2_element"/>
         <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>

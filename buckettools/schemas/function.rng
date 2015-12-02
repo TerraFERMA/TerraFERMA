@@ -371,6 +371,13 @@ The minimum and maximum of functions is included.</a:documentation>
             <a:documentation>Norm to test for a steady state in </a:documentation>
             <!-- a hard coded string_value -->
             <element name="string_value">
+              <!--
+                Lines is a hint to the gui about the size of the text box.
+                It is not an enforced limit on string length.
+              -->
+              <attribute name="lines">
+                <value>1</value>
+              </attribute>
               <choice>
                 <value>linf</value>
                 <value>l2</value>
