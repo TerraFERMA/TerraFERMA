@@ -42,6 +42,13 @@ This option can be used by tfsimulationharness to filter the available
 simulation harness files and decide which simulations to run.</a:documentation>
         <!-- a hard coded string_value -->
         <element name="string_value">
+          <!--
+            Lines is a hint to the gui about the size of the text box.
+            It is not an enforced limit on string length.
+          -->
+          <attribute name="lines">
+            <value>1</value>
+          </attribute>
           <choice>
             <value>special</value>
             <value>short</value>

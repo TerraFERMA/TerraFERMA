@@ -88,6 +88,13 @@ and/or ds will not work without id information - dx(id) and/or ds(id))</a:docume
           <a:documentation>Choose the type of ufl cell</a:documentation>
           <!-- a hard coded string_value -->
           <element name="string_value">
+            <!--
+              Lines is a hint to the gui about the size of the text box.
+              It is not an enforced limit on string length.
+            -->
+            <attribute name="lines">
+              <value>1</value>
+            </attribute>
             <choice>
               <value>interval</value>
               <value>triangle</value>
@@ -116,7 +123,15 @@ No region ids will be assigned.
         </element>
         <element name="cell">
           <a:documentation>The ufl cell type (no option allowed).</a:documentation>
+          <!-- a hard coded string_value -->
           <element name="string_value">
+            <!--
+              Lines is a hint to the gui about the size of the text box.
+              It is not an enforced limit on string length.
+            -->
+            <attribute name="lines">
+              <value>1</value>
+            </attribute>
             <value>interval</value>
           </element>
           <ref name="comment"/>
@@ -149,7 +164,15 @@ No region ids will be assigned.
         </element>
         <element name="cell">
           <a:documentation>The ufl cell type (no option allowed).</a:documentation>
+          <!-- a hard coded string_value -->
           <element name="string_value">
+            <!--
+              Lines is a hint to the gui about the size of the text box.
+              It is not an enforced limit on string length.
+            -->
+            <attribute name="lines">
+              <value>1</value>
+            </attribute>
             <value>interval</value>
           </element>
           <ref name="comment"/>
@@ -179,6 +202,13 @@ No region ids will be assigned.
           <a:documentation>Specify the direction in which the diagonal should lie.</a:documentation>
           <!-- a hard coded string_value -->
           <element name="string_value">
+            <!--
+              Lines is a hint to the gui about the size of the text box.
+              It is not an enforced limit on string length.
+            -->
+            <attribute name="lines">
+              <value>1</value>
+            </attribute>
             <choice>
               <value>left</value>
               <value>right</value>
@@ -191,7 +221,15 @@ No region ids will be assigned.
         </element>
         <element name="cell">
           <a:documentation>The ufl cell type (no option allowed).</a:documentation>
+          <!-- a hard coded string_value -->
           <element name="string_value">
+            <!--
+              Lines is a hint to the gui about the size of the text box.
+              It is not an enforced limit on string length.
+            -->
+            <attribute name="lines">
+              <value>1</value>
+            </attribute>
             <value>triangle</value>
           </element>
           <ref name="comment"/>
@@ -239,6 +277,13 @@ No region ids will be assigned.
           <a:documentation>Specify the direction in which the diagonal should lie.</a:documentation>
           <!-- a hard coded string_value -->
           <element name="string_value">
+            <!--
+              Lines is a hint to the gui about the size of the text box.
+              It is not an enforced limit on string length.
+            -->
+            <attribute name="lines">
+              <value>1</value>
+            </attribute>
             <choice>
               <value>left</value>
               <value>right</value>
@@ -251,7 +296,15 @@ No region ids will be assigned.
         </element>
         <element name="cell">
           <a:documentation>The ufl cell type (no option allowed).</a:documentation>
+          <!-- a hard coded string_value -->
           <element name="string_value">
+            <!--
+              Lines is a hint to the gui about the size of the text box.
+              It is not an enforced limit on string length.
+            -->
+            <attribute name="lines">
+              <value>1</value>
+            </attribute>
             <value>triangle</value>
           </element>
           <ref name="comment"/>
@@ -279,7 +332,15 @@ No region ids will be assigned.   </a:documentation>
         </element>
         <element name="cell">
           <a:documentation>The ufl cell type (no option allowed).</a:documentation>
+          <!-- a hard coded string_value -->
           <element name="string_value">
+            <!--
+              Lines is a hint to the gui about the size of the text box.
+              It is not an enforced limit on string length.
+            -->
+            <attribute name="lines">
+              <value>1</value>
+            </attribute>
             <value>tetrahedron</value>
           </element>
           <ref name="comment"/>
@@ -329,7 +390,15 @@ No region ids will be assigned.   </a:documentation>
         </element>
         <element name="cell">
           <a:documentation>The ufl cell type (no option allowed).</a:documentation>
+          <!-- a hard coded string_value -->
           <element name="string_value">
+            <!--
+              Lines is a hint to the gui about the size of the text box.
+              It is not an enforced limit on string length.
+            -->
+            <attribute name="lines">
+              <value>1</value>
+            </attribute>
             <value>tetrahedron</value>
           </element>
           <ref name="comment"/>
