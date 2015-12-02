@@ -787,12 +787,6 @@ std::vector< const dolfin::DirichletBC* >::const_iterator SystemBucket::bcs_end(
 //*******************************************************************|************************************************************//
 void SystemBucket::output()
 {
-  for (FunctionBucket_it f_it = fields_begin(); f_it != fields_end(); 
-                                                              f_it++)
-  {
-    (*(*f_it).second).output();
-  }
-
   for (FunctionalBucket_it f_it = functionals_begin(); f_it != functionals_end(); 
                                                               f_it++)
   {
@@ -815,6 +809,20 @@ const bool SystemBucket::include_in_visualization() const
       break;
     }
   }
+
+  if (!include)
+  {
+    for (FunctionBucket_const_it c_it = coeffs_begin(); c_it != coeffs_end(); 
+                                                                c_it++)
+    {
+      include = (*(*c_it).second).include_in_visualization();
+      if (include)
+      {
+        break;
+      }
+    }
+  }
+
   return include;
 }
     

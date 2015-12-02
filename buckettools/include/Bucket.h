@@ -191,6 +191,19 @@ namespace buckettools
 
     MeshFunction_size_t_const_it facetdomains_end() const;            // return a constant iterator to the end of the meshfunctions
  
+    void register_visfunctionspace(
+               FunctionSpace_ptr functionspace, Mesh_ptr mesh);      // register a visualization functionspace with a mesh
+
+    FunctionSpace_ptr fetch_visfunctionspace(const Mesh_ptr mesh);   // return a (boost shared) pointer to a functionspace on the given mesh
+    
+    Mesh_FunctionSpace_it visfunctionspaces_begin();                 // return an iterator to the beginning of the visfunctionspaces
+
+    Mesh_FunctionSpace_const_it visfunctionspaces_begin() const;     // return a constant iterator to the beginning of the visfunctionspaces
+
+    Mesh_FunctionSpace_it visfunctionspaces_end();                   // return an iterator to the end of the visfunctionspaces
+
+    Mesh_FunctionSpace_const_it visfunctionspaces_end() const;       // return a constant iterator to the end of the visfunctionspaces
+ 
     //***************************************************************|***********************************************************//
     // System data access
     //***************************************************************|***********************************************************//
@@ -353,6 +366,8 @@ namespace buckettools
     ordered_map<const std::string, MeshFunction_size_t_ptr> facetdomains_;  // a map from mesh names to (boost shared) pointers to
                                                                      // meshfunctions describing the facetids
 
+    std::map< Mesh_ptr, FunctionSpace_ptr > visfunctionspaces_;      // pointers to visualization functionspaces
+
     ordered_map<const std::string, SystemBucket_ptr> systems_;             // a map from system names to (boost shared) pointers to systems
 
     ordered_map<const std::string, GenericDetectors_ptr> detectors_;        // a map from detector set name to (boost shared) pointers to detectors
@@ -368,6 +383,16 @@ namespace buckettools
     SteadyStateFile_ptr steadyfile_;                                 // pointer to a steady state file
 
     SystemsConvergenceFile_ptr convfile_;                            // nonlinear systems convergence file
+
+    std::map< File_ptr, 
+              std::pair< FunctionSpace_ptr, 
+                         std::vector< GenericFunction_ptr > > > 
+                                                          visfiles_; // pointer to visualization file(s)
+
+    std::map< std::string,
+              std::pair< File_ptr,
+                         std::vector< GenericFunction_ptr > > >
+                                                      convvisfiles_; // pointer to nonlinear systems convergence visualization file(s)
 
     //***************************************************************|***********************************************************//
     // Filling data

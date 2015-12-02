@@ -640,6 +640,70 @@ MeshFunction_size_t_const_it Bucket::facetdomains_end() const
 }
 
 //*******************************************************************|************************************************************//
+// register a (boost shared) pointer to a visualization functionspace in the bucket data maps
+//*******************************************************************|************************************************************//
+void Bucket::register_visfunctionspace(FunctionSpace_ptr visfunctionspace, Mesh_ptr mesh)
+{
+  Mesh_FunctionSpace_it f_it = visfunctionspaces_.find(mesh);        // check if a visfunctionspace mesh with this mesh already exists
+  if (f_it != visfunctionspaces_end())
+  {
+    dolfin::error("Visualization FunctionSpace already exists in bucket.");// if it does, issue an error
+  }
+  else
+  {
+    visfunctionspaces_[mesh] = visfunctionspace;                     // if not, insert it into the visfunctionspaces_ map
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return a (boost shared) pointer to a visualization functionspace in the bucket data maps
+//*******************************************************************|************************************************************//
+FunctionSpace_ptr Bucket::fetch_visfunctionspace(const Mesh_ptr mesh)
+{
+  Mesh_FunctionSpace_it f_it = visfunctionspaces_.find(mesh);        // check if this visfunctionspace exists in the visfunctionspaces_ map
+  if (f_it == visfunctionspaces_end())
+  {
+    dolfin::error("Visualization FunctionSpace does not exist in bucket.");// if it doesn't, issue an error
+  }
+  else
+  {
+    return (*f_it).second;                                           // if it does, return a (boost shared) pointer to it
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the beginning of the visfunctionspaces_ map
+//*******************************************************************|************************************************************//
+Mesh_FunctionSpace_it Bucket::visfunctionspaces_begin()
+{
+  return visfunctionspaces_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the beginning of the visfunctionspaces_ map
+//*******************************************************************|************************************************************//
+Mesh_FunctionSpace_const_it Bucket::visfunctionspaces_begin() const
+{
+  return visfunctionspaces_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the end of the visfunctionspaces_ map
+//*******************************************************************|************************************************************//
+Mesh_FunctionSpace_it Bucket::visfunctionspaces_end()
+{
+  return visfunctionspaces_.end();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the end of the visfunctionspaces_ map
+//*******************************************************************|************************************************************//
+Mesh_FunctionSpace_const_it Bucket::visfunctionspaces_end() const
+{
+  return visfunctionspaces_.end();
+}
+
+//*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a system bucket in the bucket data maps
 //*******************************************************************|************************************************************//
 void Bucket::register_system(SystemBucket_ptr system, 
@@ -987,6 +1051,13 @@ void Bucket::output(const int &location)
 
   if (write_vis)
   {
+    for (Vis_it v_it = visfiles_.begin(); 
+                      v_it != visfiles_.end(); v_it++)
+    {
+      (*(*v_it).first).write((*v_it).second.second,               // write data to the visualization file(s)
+                             (*((*v_it).second).first), 
+                             current_time());
+    }
     for (SystemBucket_it s_it = systems_begin(); s_it != systems_end();// loop over the systems
                                                                s_it++)
     {
@@ -1275,6 +1346,23 @@ void Bucket::solve_in_timeloop_()
   {
     aerror0 = residual_norm();
     log(INFO, "Entering nonlinear systems iteration.");
+
+    std::map< std::string, std::pair< File_ptr, std::vector< GenericFunction_ptr > > >::iterator v_it;
+    for (v_it = convvisfiles_.begin(); 
+         v_it != convvisfiles_.end(); v_it++)
+    {
+      std::stringstream buffer;
+      if (meshes_.size()>1)                                          // allocate the pvd file with an appropriate name
+      {
+        buffer.str(""); buffer << output_basename() << "_" << (*v_it).first << "_nonlinearsystems_" << timestep_count() << ".pvd";
+      }
+      else
+      {
+        buffer.str(""); buffer << output_basename() << "_nonlinearsystems_" << timestep_count() << ".pvd";
+      }
+      (*v_it).second.first.reset( new dolfin::File(buffer.str(), "compressed") );
+    }
+
   }
 
   while (!complete_iterating_(aerror0))
@@ -1313,6 +1401,17 @@ bool Bucket::complete_iterating_(const double &aerror0)
     if(convfile_)
     {
       (*convfile_).write_data(aerror);
+    }
+
+    std::map< std::string, std::pair< File_ptr, std::vector< GenericFunction_ptr > > >::iterator v_it;
+    for (v_it = convvisfiles_.begin(); 
+         v_it != convvisfiles_.end(); v_it++)
+    {
+      FunctionSpace_ptr vis_fs = fetch_visfunctionspace(fetch_mesh((*v_it).first));
+
+      (*(*v_it).second.first).write((*v_it).second.second,           // write data to the convergence visualization file(s)
+                                    *vis_fs, 
+                                    (double) iteration_count());
     }
 
     completed = ((rerror <= *rtol_ || 
