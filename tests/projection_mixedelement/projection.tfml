@@ -25,7 +25,7 @@
     <visualization>
       <element name="P2">
         <family>
-          <string_value>CG</string_value>
+          <string_value lines="1">CG</string_value>
         </family>
         <degree>
           <integer_value rank="0">2</integer_value>

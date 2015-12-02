@@ -25,7 +25,7 @@
     <visualization>
       <element name="P2DG">
         <family>
-          <string_value>DG</string_value>
+          <string_value lines="1">DG</string_value>
         </family>
         <degree>
           <integer_value rank="0">2</integer_value>
