@@ -34,6 +34,7 @@
 #include "RegionsExpression.h"
 #include "SemiLagrangianExpression.h"
 #include "PointDetectors.h"
+#include "BucketDolfinBase.h"
 
 using namespace buckettools;
 
@@ -534,13 +535,13 @@ void SpudFunctionBucket::allocate_field_()
                    << "/type/rank/initial_condition::WholeMesh/file";
   if(Spud::have_option(buffer.str()))
   {
-    std::string icfilename;
-    serr = Spud::get_option(buffer.str(), icfilename);
+    std::string icfilebasename;
+    serr = Spud::get_option(buffer.str(), icfilebasename);
     spud_err(buffer.str(), serr);
     if (!(*system()).icfile())                                       // if there's no icfile_ associated with the system
     {
       assert(index()==0);
-      (*system()).icfile().reset( new dolfin::File(icfilename) );
+      (*system()).icfile().reset( new dolfin::File(xml_filename(icfilebasename)) );
     }
   }
   else

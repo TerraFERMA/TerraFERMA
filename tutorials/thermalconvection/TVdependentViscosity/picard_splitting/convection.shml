@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <harness_options>
   <length>
-    <string_value>long</string_value>
+    <string_value lines="1">long</string_value>
   </length>
   <owner>
     <string_value lines="1">mspieg</string_value>

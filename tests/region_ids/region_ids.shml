@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <harness_options>
   <length>
-    <string_value>short</string_value>
+    <string_value lines="1">short</string_value>
   </length>
   <owner>
     <string_value lines="1">cwilson</string_value>
@@ -23,6 +23,16 @@
           <process_scale>
             <integer_value shape="3" rank="1">1 2 3</integer_value>
           </process_scale>
+        </parameter>
+        <parameter name="ghost_mode">
+          <values>
+            <string_value lines="1">none shared_facet shared_vertex</string_value>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+libspud.set_option_attribute("/global_parameters/dolfin/ghost_mode/name", ghost_mode)</string_value>
+            <single_build/>
+          </update>
         </parameter>
       </parameter_sweep>
       <dependencies>

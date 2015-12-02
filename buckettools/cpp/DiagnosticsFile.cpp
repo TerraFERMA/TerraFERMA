@@ -230,6 +230,7 @@ void DiagnosticsFile::data_endlineflush_()
 void DiagnosticsFile::data_timestep_()
 {
   
+  double walltime = (*bucket_).elapsed_walltime();
   if (dolfin::MPI::rank(mpicomm_)==0)
   {
     file_.setf(std::ios::scientific);
@@ -237,7 +238,7 @@ void DiagnosticsFile::data_timestep_()
     
     file_ << (*bucket_).timestep_count() << " ";  
     file_ << (*bucket_).current_time() << " ";
-    file_ << (*bucket_).elapsed_walltime() << " ";
+    file_ << walltime << " ";
     file_ << (*bucket_).timestep() << " ";
     
     file_.unsetf(std::ios::scientific);

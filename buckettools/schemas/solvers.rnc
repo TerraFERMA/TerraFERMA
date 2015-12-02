@@ -513,6 +513,10 @@ is_null_space =
     is_field_null*,
     ## Removes the null space from the rhs after assembly.
     element remove_from_rhs {
+      ## Do not remove the null space at every iteration of the solve.
+      element only_remove_from_rhs {
+        comment
+      }?,
       comment
     }?,
     is_monitor

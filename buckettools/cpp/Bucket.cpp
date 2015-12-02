@@ -290,6 +290,18 @@ bool Bucket::complete()
     }
   }
 
+  if (!completed)
+  {
+    if (walltime_limit_)
+    {
+      if (elapsed_walltime() >= walltime_limit())
+      {
+        log(INFO, "Walltime limit reached, terminating timeloop.");
+        completed = true;
+      }
+    }
+  }
+
   return completed;
 }
 
@@ -413,10 +425,19 @@ const double Bucket::finish_time() const
 //*******************************************************************|************************************************************//
 // return the number of timesteps after which the simulation will finish
 //*******************************************************************|************************************************************//
-const double Bucket::number_timesteps() const
+const int Bucket::number_timesteps() const
 {
   assert(number_timesteps_);
   return *number_timesteps_;
+}
+
+//*******************************************************************|************************************************************//
+// return the walltime limit after which the simulation will finish
+//*******************************************************************|************************************************************//
+const double Bucket::walltime_limit() const
+{
+  assert(walltime_limit_);
+  return *walltime_limit_;
 }
 
 //*******************************************************************|************************************************************//
@@ -1022,7 +1043,7 @@ void Bucket::fill_uflsymbols_()
                              s_it != systems_end(); s_it++)
   {
     SystemBucket_ptr system = (*s_it).second;
-    register_uflsymbol((*system).function(),                         // current system function
+    register_uflsymbol((*system).iteratedfunction(),                 // current system function
                                       (*system).uflsymbol());
     register_uflsymbol((*system).oldfunction(),                      // old system function
                                       (*system).uflsymbol()+"_n");
@@ -1032,7 +1053,7 @@ void Bucket::fill_uflsymbols_()
                             f_it != (*system).fields_end(); f_it++)
     {
       FunctionBucket_ptr field = (*f_it).second;
-      register_uflsymbol((*system).function(),                       // current field
+      register_uflsymbol((*system).iteratedfunction(),               // current field
                                       (*field).uflsymbol());
       register_uflsymbol((*system).oldfunction(),                    // old field
                                       (*field).uflsymbol()+"_n");
@@ -1043,7 +1064,7 @@ void Bucket::fill_uflsymbols_()
                             f_it != (*system).coeffs_end(); f_it++)
     {
       FunctionBucket_ptr coeff = (*f_it).second;
-      register_uflsymbol((*coeff).function(),                        // current coefficient
+      register_uflsymbol((*coeff).iteratedfunction(),                // current coefficient
                                       (*coeff).uflsymbol());
       register_uflsymbol((*coeff).oldfunction(),                     // old coefficient
                                       (*coeff).uflsymbol()+"_n");
@@ -1138,12 +1159,13 @@ void Bucket::solve_at_start_()
 void Bucket::solve_in_timeloop_()
 {
   double aerror0 = 0.0;
+  *iteration_count_ = 0;
+
   if (rtol_)
   {
     aerror0 = residual_norm();
     log(INFO, "Entering nonlinear systems iteration.");
   }
-  *iteration_count_ = 0;
 
   while (!complete_iterating_(aerror0))
   {
