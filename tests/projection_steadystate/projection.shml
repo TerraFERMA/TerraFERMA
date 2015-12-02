@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <harness_options>
   <length>
-    <string_value>short</string_value>
+    <string_value lines="1">short</string_value>
   </length>
   <owner>
     <string_value lines="1">cwilson</string_value>
@@ -83,8 +83,7 @@ snes_field1_max = stat["SNESProjection"]["Field1"]["max"]</string_value>
 
 steady = parser("projection.steady")
 
-snes_field1_int_steady = steady["SNESProjection"]["Field1Integral"]["functional_change"]
-</string_value>
+snes_field1_int_steady = steady["SNESProjection"]["Field1Integral"]["functional_change"]</string_value>
         </variable>
         <variable name="snes_field1_max_steady">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -96,7 +95,7 @@ steady = parser("projection.steady")
 snes_field1_max_steady = steady["SNESProjection"]["Field1"]["change(linf)"]</string_value>
         </variable>
         <variable name="ntimesteps">
-          <string_value type="code" lines="20" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
 
 
 
@@ -163,7 +162,7 @@ maxerr = numpy.array(maxerr)
 assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="ntimesteps">
-      <string_value type="code" lines="20" language="python">import numpy
+      <string_value lines="20" type="code" language="python">import numpy
 assert((numpy.array(ntimesteps) == 11.0).all())</string_value>
     </test>
   </tests>

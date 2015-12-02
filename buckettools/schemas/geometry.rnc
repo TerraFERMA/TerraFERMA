@@ -75,6 +75,9 @@ mesh_options =
          element cell {
            # a hard coded string_value
            element string_value {
+             # Lines is a hint to the gui about the size of the text box.
+             # It is not an enforced limit on string length.
+             attribute lines { "1" },
              ( "interval" | "triangle" | "tetrahedron" )
            },
            comment
@@ -97,7 +100,11 @@ mesh_options =
          },
          ## The ufl cell type (no option allowed).
          element cell {
+           # a hard coded string_value
            element string_value {
+             # Lines is a hint to the gui about the size of the text box.
+             # It is not an enforced limit on string length.
+             attribute lines { "1" },
              "interval"
            },
            comment
@@ -128,7 +135,11 @@ mesh_options =
          },
          ## The ufl cell type (no option allowed).
          element cell {
+           # a hard coded string_value
            element string_value {
+             # Lines is a hint to the gui about the size of the text box.
+             # It is not an enforced limit on string length.
+             attribute lines { "1" },
              "interval"
            },
            comment
@@ -156,13 +167,20 @@ mesh_options =
          element diagonal {
            # a hard coded string_value
            element string_value {
+             # Lines is a hint to the gui about the size of the text box.
+             # It is not an enforced limit on string length.
+             attribute lines { "1" },
              ( "left" | "right" | "right/left" | "left/right" | "crossed" )
            },
            comment
          },
          ## The ufl cell type (no option allowed).
          element cell {
+           # a hard coded string_value
            element string_value {
+             # Lines is a hint to the gui about the size of the text box.
+             # It is not an enforced limit on string length.
+             attribute lines { "1" },
              "triangle"
            },
            comment
@@ -208,13 +226,20 @@ mesh_options =
          element diagonal {
            # a hard coded string_value
            element string_value {
+             # Lines is a hint to the gui about the size of the text box.
+             # It is not an enforced limit on string length.
+             attribute lines { "1" },
              ( "left" | "right" | "right/left" | "left/right" | "crossed" )
            },
            comment
          },
          ## The ufl cell type (no option allowed).
          element cell {
+           # a hard coded string_value
            element string_value {
+             # Lines is a hint to the gui about the size of the text box.
+             # It is not an enforced limit on string length.
+             attribute lines { "1" },
              "triangle"
            },
            comment
@@ -240,7 +265,11 @@ mesh_options =
          },
          ## The ufl cell type (no option allowed).
          element cell {
+           # a hard coded string_value
            element string_value {
+             # Lines is a hint to the gui about the size of the text box.
+             # It is not an enforced limit on string length.
+             attribute lines { "1" },
              "tetrahedron"
            },
            comment
@@ -288,7 +317,11 @@ mesh_options =
          },
          ## The ufl cell type (no option allowed).
          element cell {
+           # a hard coded string_value
            element string_value {
+             # Lines is a hint to the gui about the size of the text box.
+             # It is not an enforced limit on string length.
+             attribute lines { "1" },
              "tetrahedron"
            },
            comment
