@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <harness_options>
   <length>
-    <string_value>short</string_value>
+    <string_value lines="1">short</string_value>
   </length>
   <owner>
     <string_value lines="1">mspieg</string_value>
@@ -12,7 +12,7 @@
   <simulations>
     <simulation name="rigidrotation">
       <input_file>
-        <string_value type="filename" lines="1">rigidrotation.tfml</string_value>
+        <string_value lines="1" type="filename">rigidrotation.tfml</string_value>
       </input_file>
       <run_when name="input_changed_or_output_missing"/>
       <parameter_sweep>
@@ -26,7 +26,7 @@
             <string_value lines="1">.01 .02</string_value>
           </values>
           <update>
-            <string_value type="code" lines="20" language="python">import libspud
+            <string_value lines="20" type="code" language="python">import libspud
 # set number of cells on mesh
 libspud.set_option("/geometry/mesh::Mesh/source::UnitSquare/number_cells",[ int(ncells), int(ncells)])
 
@@ -39,12 +39,10 @@ libspud.set_option("/timestepping/timestep/coefficient::Timestep/type::Constant/
       </parameter_sweep>
       <variables>
         <variable name="IntPhi">
-          <string_value type="code" lines="20" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
 stat = parser("rigidrotation.stat")
-IntPhi = stat["Advection"]["phiIntPhi"]["functional_value"]
-</string_value>
-          <comment>relative change in the integral of porosity over the domain
-</comment>
+IntPhi = stat["Advection"]["phiIntPhi"]["functional_value"]</string_value>
+          <comment>relative change in the integral of porosity over the domain</comment>
         </variable>
         <variable name="L2Error">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -62,7 +60,7 @@ Time = stat["ElapsedTime"]["value"]</string_value>
   </simulations>
   <tests>
     <test name="DeltaPhiRelative">
-      <string_value type="code" lines="20" language="python">import numpy as np
+      <string_value lines="20" type="code" language="python">import numpy as np
 deltaphi=[]
 for ncells in IntPhi.parameters['ncells']:
   print "ncells =",ncells
@@ -72,9 +70,7 @@ for ncells in IntPhi.parameters['ncells']:
     deltaphi.append((iphi[-1] - iphi[0])/iphi[0])
     print "dt =",dt," dPhi/Phi = ",deltaphi[-1]
 
-assert(np.all(np.array(deltaphi) &lt; 0.01))
-
-</string_value>
+assert(np.all(np.array(deltaphi) &lt; 0.01))</string_value>
       <comment>calculates relative change in  the integral of phi from begining to end</comment>
     </test>
     <test name="L2ErrorRelative">
