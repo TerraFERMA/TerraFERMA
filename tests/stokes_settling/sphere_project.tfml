@@ -10,7 +10,7 @@
           <string_value lines="1" type="filename">sphere</string_value>
         </file>
         <cell>
-          <string_value>triangle</string_value>
+          <string_value lines="1">triangle</string_value>
         </cell>
       </source>
     </mesh>
@@ -76,7 +76,7 @@ ds_interface = dS(6)</string_value>
         <rank name="Scalar" rank="0">
           <element name="P0R">
             <family>
-              <string_value>R</string_value>
+              <string_value lines="1">R</string_value>
             </family>
             <degree>
               <integer_value rank="0">0</integer_value>

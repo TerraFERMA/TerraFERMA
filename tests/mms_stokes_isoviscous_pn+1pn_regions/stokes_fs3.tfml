@@ -1,0 +1,854 @@
+<?xml version='1.0' encoding='utf-8'?>
+<terraferma_options>
+  <geometry>
+    <dimension>
+      <integer_value rank="0">2</integer_value>
+    </dimension>
+    <mesh name="Mesh">
+      <source name="File">
+        <file>
+          <string_value lines="1" type="filename">square_regions</string_value>
+        </file>
+        <cell>
+          <string_value lines="1">triangle</string_value>
+        </cell>
+        <cell_destinations>
+          <process name="1">
+            <integer_value rank="0">1</integer_value>
+            <region_ids>
+              <integer_value shape="4" rank="1">20 25 60 80</integer_value>
+            </region_ids>
+          </process>
+          <process name="2">
+            <integer_value rank="0">2</integer_value>
+            <region_ids>
+              <integer_value shape="4" rank="1">10 15 50 70</integer_value>
+            </region_ids>
+          </process>
+          <process name="3">
+            <integer_value rank="0">3</integer_value>
+            <region_ids>
+              <integer_value shape="4" rank="1">40 45 70 80</integer_value>
+            </region_ids>
+          </process>
+        </cell_destinations>
+      </source>
+    </mesh>
+  </geometry>
+  <io>
+    <output_base_name>
+      <string_value lines="1">stokes</string_value>
+    </output_base_name>
+    <dump_periods/>
+    <detectors>
+      <point name="Point">
+        <real_value shape="2" dim1="dim" rank="1">0. 1.</real_value>
+      </point>
+      <point name="corner">
+        <real_value shape="2" dim1="dim" rank="1">1. 1.</real_value>
+      </point>
+    </detectors>
+  </io>
+  <global_parameters/>
+  <system name="Stokes">
+    <mesh name="Mesh"/>
+    <ufl_symbol name="global">
+      <string_value lines="1">us</string_value>
+    </ufl_symbol>
+    <field name="Velocity">
+      <ufl_symbol name="global">
+        <string_value lines="1">v</string_value>
+      </ufl_symbol>
+      <type name="Function">
+        <rank name="Vector" rank="1">
+          <element name="UserDefined">
+            <family>
+              <string_value lines="1">CG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">2</integer_value>
+            </degree>
+          </element>
+          <initial_condition type="initial_condition" name="WholeMesh">
+            <constant name="dim">
+              <real_value shape="2" dim1="dim" rank="1">0.0 0.0</real_value>
+            </constant>
+          </initial_condition>
+          <boundary_condition name="all">
+            <boundary_ids>
+              <integer_value shape="4" rank="1">1 2 3 4</integer_value>
+            </boundary_ids>
+            <sub_components name="All">
+              <type type="boundary_condition" name="Dirichlet">
+                <python rank="1">
+                  <string_value lines="20" type="code" language="python"># exact solution for velocity
+def val(x):
+  u = 20.*x[0]*x[1]**3
+  v = 5.*(x[0]**4 - x[1]**4)
+  return [u,v]</string_value>
+                </python>
+              </type>
+            </sub_components>
+          </boundary_condition>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_visualization/>
+        <include_in_statistics/>
+        <include_in_detectors/>
+      </diagnostics>
+    </field>
+    <field name="Pressure">
+      <ufl_symbol name="global">
+        <string_value lines="1">p</string_value>
+      </ufl_symbol>
+      <type name="Function">
+        <rank name="Scalar" rank="0">
+          <element name="UserDefined">
+            <family>
+              <string_value lines="1">CG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">1</integer_value>
+            </degree>
+          </element>
+          <initial_condition type="initial_condition" name="WholeMesh">
+            <constant>
+              <real_value rank="0">0.0</real_value>
+            </constant>
+          </initial_condition>
+          <reference_point name="Point">
+            <coordinates>
+              <real_value shape="2" dim1="dim" rank="1">0. 0.</real_value>
+            </coordinates>
+          </reference_point>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_visualization/>
+        <include_in_statistics/>
+        <include_in_detectors/>
+      </diagnostics>
+    </field>
+    <coefficient name="AnalyticVelocity">
+      <ufl_symbol name="global">
+        <string_value lines="1">ve</string_value>
+      </ufl_symbol>
+      <type name="Expression">
+        <rank name="Vector" rank="1">
+          <element name="UserDefined">
+            <family>
+              <string_value lines="1">CG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">2</integer_value>
+            </degree>
+          </element>
+          <value type="value" name="Sides">
+            <region_ids>
+              <integer_value shape="12" rank="1">10 15 20 25 30 35 40 45 50 60 70 80</integer_value>
+            </region_ids>
+            <constant name="dim">
+              <real_value shape="2" dim1="dim" rank="1">0.0 0.0</real_value>
+            </constant>
+          </value>
+          <value type="value" name="Center">
+            <region_ids>
+              <integer_value shape="4" rank="1">1 2 3 4</integer_value>
+            </region_ids>
+            <python rank="1">
+              <string_value lines="20" type="code" language="python"># exact solution for velocity
+def val(x):
+  u = 20.*x[0]*x[1]**3
+  v = 5.*(x[0]**4 - x[1]**4)
+  return [u,v]</string_value>
+            </python>
+          </value>
+        </rank>
+      </type>
+      <diagnostics/>
+    </coefficient>
+    <coefficient name="AnalyticPressure">
+      <ufl_symbol name="global">
+        <string_value lines="1">pe</string_value>
+      </ufl_symbol>
+      <type name="Expression">
+        <rank name="Scalar" rank="0">
+          <element name="UserDefined">
+            <family>
+              <string_value lines="1">CG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">1</integer_value>
+            </degree>
+          </element>
+          <value type="value" name="Sides">
+            <region_ids>
+              <integer_value shape="12" rank="1">10 15 20 25 30 35 40 45 50 60 70 80</integer_value>
+            </region_ids>
+            <constant>
+              <real_value rank="0">0.0</real_value>
+            </constant>
+          </value>
+          <value type="value" name="Center">
+            <region_ids>
+              <integer_value shape="4" rank="1">1 2 3 4</integer_value>
+            </region_ids>
+            <python rank="0">
+              <string_value lines="20" type="code" language="python"># exact solution for pressure
+def val(x):
+  p = 60.*x[0]**2*x[1] - 20.*x[1]**3
+  return p</string_value>
+            </python>
+          </value>
+        </rank>
+      </type>
+      <diagnostics/>
+    </coefficient>
+    <coefficient name="Source">
+      <ufl_symbol name="global">
+        <string_value lines="1">f</string_value>
+      </ufl_symbol>
+      <type name="Constant">
+        <rank name="Vector" rank="1">
+          <value type="value" name="WholeMesh">
+            <constant name="dim">
+              <real_value shape="2" dim1="dim" rank="1">0. 0.</real_value>
+            </constant>
+          </value>
+        </rank>
+      </type>
+      <diagnostics/>
+    </coefficient>
+    <coefficient name="AbsoluteDifferenceVelocity">
+      <ufl_symbol name="global">
+        <string_value lines="1">diffv</string_value>
+      </ufl_symbol>
+      <type name="Expression">
+        <rank name="Vector" rank="1">
+          <element name="UserDefined">
+            <family>
+              <string_value lines="1">CG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">2</integer_value>
+            </degree>
+          </element>
+          <value type="value" name="Sides">
+            <region_ids>
+              <integer_value shape="12" rank="1">10 15 20 25 30 35 40 45 50 60 70 80</integer_value>
+            </region_ids>
+            <constant name="dim">
+              <real_value shape="2" dim1="dim" rank="1">0.0 0.0</real_value>
+            </constant>
+          </value>
+          <value type="value" name="Center">
+            <region_ids>
+              <integer_value shape="4" rank="1">1 2 3 4</integer_value>
+            </region_ids>
+            <cpp rank="1">
+              <members>
+                <string_value lines="20" type="code" language="cpp">GenericFunction_ptr num_ptr, sol_ptr;</string_value>
+              </members>
+              <initialization>
+                <string_value lines="20" type="code" language="cpp">num_ptr = system()-&gt;fetch_field("Velocity")-&gt;genericfunction_ptr(time());
+sol_ptr = system()-&gt;fetch_coeff("AnalyticVelocity")-&gt;genericfunction_ptr(time());</string_value>
+              </initialization>
+              <eval>
+                <string_value lines="20" type="code" language="cpp">dolfin::Array&lt;double&gt; num(2), sol(2);
+num_ptr-&gt;eval(num, x, cell);
+sol_ptr-&gt;eval(sol, x, cell);
+values[0] = std::abs(num[0] - sol[0]);
+values[1] = std::abs(num[1] - sol[1]);</string_value>
+              </eval>
+            </cpp>
+          </value>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_statistics/>
+      </diagnostics>
+    </coefficient>
+    <coefficient name="AbsoluteDifferencePressure">
+      <ufl_symbol name="global">
+        <string_value lines="1">diffp</string_value>
+      </ufl_symbol>
+      <type name="Expression">
+        <rank name="Scalar" rank="0">
+          <element name="UserDefined">
+            <family>
+              <string_value lines="1">CG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">1</integer_value>
+            </degree>
+          </element>
+          <value type="value" name="Sides">
+            <region_ids>
+              <integer_value shape="12" rank="1">10 15 20 25 30 35 40 45 50 60 70 80</integer_value>
+            </region_ids>
+            <constant>
+              <real_value rank="0">0.0</real_value>
+            </constant>
+          </value>
+          <value type="value" name="Center">
+            <region_ids>
+              <integer_value shape="4" rank="1">1 2 3 4</integer_value>
+            </region_ids>
+            <cpp rank="0">
+              <members>
+                <string_value lines="20" type="code" language="cpp">GenericFunction_ptr num_ptr, sol_ptr;</string_value>
+              </members>
+              <initialization>
+                <string_value lines="20" type="code" language="cpp">num_ptr = system()-&gt;fetch_field("Pressure")-&gt;genericfunction_ptr(time());
+sol_ptr = system()-&gt;fetch_coeff("AnalyticPressure")-&gt;genericfunction_ptr(time());</string_value>
+              </initialization>
+              <eval>
+                <string_value lines="20" type="code" language="cpp">dolfin::Array&lt;double&gt; num(1), sol(1);
+num_ptr-&gt;eval(num, x, cell);
+sol_ptr-&gt;eval(sol, x, cell);
+values[0] = std::abs(num[0] - sol[0]);</string_value>
+              </eval>
+            </cpp>
+          </value>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_statistics/>
+      </diagnostics>
+    </coefficient>
+    <coefficient name="PressureNodeOwner">
+      <ufl_symbol name="global">
+        <string_value lines="1">pno</string_value>
+      </ufl_symbol>
+      <type name="Expression">
+        <rank name="Scalar" rank="0">
+          <element name="P1">
+            <family>
+              <string_value lines="1">CG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">1</integer_value>
+            </degree>
+          </element>
+          <value type="value" name="WholeMesh">
+            <cpp rank="0">
+              <members>
+                <string_value lines="20" type="code" language="cpp">struct lt_point
+{
+  bool operator() (const dolfin::Point&amp; p1, const dolfin::Point&amp; p2) const
+  {
+    for (unsigned int i = 0; i &lt; 3; ++i)
+    {
+      if (p1[i] &lt; (p2[i] - DOLFIN_EPS))
+        return true;
+      else if (p1[i] &gt; (p2[i] + DOLFIN_EPS))
+        return false;
+    }
+    return false;
+  }
+};
+
+dolfin::MeshFunction&lt;std::map&lt;dolfin::Point, std::size_t, lt_point&gt; &gt; cell_dof_map;</string_value>
+              </members>
+              <initialization>
+                <string_value lines="20" type="code" language="cpp">const Mesh_ptr m_ptr = system()-&gt;mesh();
+const std::size_t tdim = m_ptr-&gt;topology().dim();
+
+cell_dof_map.init(*m_ptr, tdim);
+
+const std::size_t gdim = m_ptr-&gt;geometry().dim();
+
+const GenericFunction_ptr gf_ptr = system()-&gt;fetch_field("Pressure")-&gt;genericfunction_ptr(time());
+const Function_ptr f_ptr = std::dynamic_pointer_cast&lt;dolfin::Function&gt;(gf_ptr);
+const std::shared_ptr&lt;const dolfin::GenericDofMap&gt; dofmap = f_ptr-&gt;function_space()-&gt;dofmap();
+
+const std::pair&lt;std::size_t, std::size_t&gt; range = dofmap-&gt;ownership_range();
+const std::size_t local = range.second - range.first;
+const std::vector&lt;int&gt; owner = dofmap-&gt;off_process_owner();
+const std::size_t this_process = dolfin::MPI::rank(m_ptr-&gt;mpi_comm());
+
+// Loop over cells and tabulate dofs
+boost::multi_array&lt;double, 2&gt; coordinates;
+std::vector&lt;double&gt; vertex_coordinates;
+std::vector&lt;double&gt; point_coordinates(gdim);
+
+for (dolfin::CellIterator cell(*m_ptr); !cell.end(); ++cell)
+{
+  cell-&gt;get_vertex_coordinates(vertex_coordinates);
+
+  std::map&lt;dolfin::Point, std::size_t, lt_point&gt;&amp; points = cell_dof_map[cell-&gt;index()];
+
+  // Get local-to-global map
+  const std::vector&lt;dolfin::la_index&gt;&amp; dofs = dofmap-&gt;cell_dofs(cell-&gt;index());
+
+  // Tabulate dof coordinates on cell
+  dofmap-&gt;tabulate_coordinates(coordinates, vertex_coordinates, *cell);
+
+  // Copy dof coordinates into vector
+  for (std::size_t i = 0; i &lt; dofs.size(); ++i)
+  {
+    const dolfin::la_index dof = dofs[i];
+    for (std::size_t j = 0; j &lt; gdim; ++j)
+    {
+      point_coordinates[j] = coordinates[i][j];
+    }
+    dolfin::Point lp(gdim, point_coordinates.data());
+    if (dof &lt; local)
+      points[lp] = this_process;
+    else
+      points[lp] = owner[dof-local];
+  }
+}</string_value>
+              </initialization>
+              <eval>
+                <string_value lines="20" type="code" language="cpp">dolfin::Point lp(x.size(), x.data());
+const std::map&lt;dolfin::Point, std::size_t, lt_point&gt;&amp; points = cell_dof_map[cell.index];
+const std::map&lt;dolfin::Point, std::size_t&gt;::const_iterator dof = points.find(lp);
+if (dof != points.end())
+  values[0] = (double)dof-&gt;second;
+else
+  values[0] = -1;</string_value>
+              </eval>
+            </cpp>
+          </value>
+        </rank>
+      </type>
+      <diagnostics/>
+    </coefficient>
+    <coefficient name="Velocity0NodeOwner">
+      <ufl_symbol name="global">
+        <string_value lines="1">v0no</string_value>
+      </ufl_symbol>
+      <type name="Expression">
+        <rank name="Scalar" rank="0">
+          <element name="P1">
+            <family>
+              <string_value lines="1">CG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">1</integer_value>
+            </degree>
+          </element>
+          <value type="value" name="WholeMesh">
+            <cpp rank="0">
+              <members>
+                <string_value lines="20" type="code" language="cpp">struct lt_point
+{
+  bool operator() (const dolfin::Point&amp; p1, const dolfin::Point&amp; p2) const
+  {
+    for (unsigned int i = 0; i &lt; 3; ++i)
+    {
+      if (p1[i] &lt; (p2[i] - DOLFIN_EPS))
+        return true;
+      else if (p1[i] &gt; (p2[i] + DOLFIN_EPS))
+        return false;
+    }
+    return false;
+  }
+};
+
+dolfin::MeshFunction&lt;std::map&lt;dolfin::Point, std::size_t, lt_point&gt; &gt; cell_dof_map;</string_value>
+              </members>
+              <initialization>
+                <string_value lines="20" type="code" language="cpp">const Mesh_ptr m_ptr = system()-&gt;mesh();
+const std::size_t tdim = m_ptr-&gt;topology().dim();
+
+cell_dof_map.init(*m_ptr, tdim);
+
+const std::size_t gdim = m_ptr-&gt;geometry().dim();
+
+const GenericFunction_ptr gf_ptr = system()-&gt;fetch_field("Velocity")-&gt;genericfunction_ptr(time());
+const Function_ptr f_ptr = std::dynamic_pointer_cast&lt;dolfin::Function&gt;(gf_ptr);
+const std::shared_ptr&lt;const dolfin::GenericDofMap&gt; dofmap = (*f_ptr-&gt;function_space())[0]-&gt;dofmap();
+
+const std::pair&lt;std::size_t, std::size_t&gt; range = dofmap-&gt;ownership_range();
+const std::size_t local = range.second - range.first;
+const std::vector&lt;int&gt; owner = dofmap-&gt;off_process_owner();
+const std::size_t this_process = dolfin::MPI::rank(m_ptr-&gt;mpi_comm());
+
+// Loop over cells and tabulate dofs
+boost::multi_array&lt;double, 2&gt; coordinates;
+std::vector&lt;double&gt; vertex_coordinates;
+std::vector&lt;double&gt; point_coordinates(gdim);
+
+for (dolfin::CellIterator cell(*m_ptr); !cell.end(); ++cell)
+{
+  cell-&gt;get_vertex_coordinates(vertex_coordinates);
+
+  std::map&lt;dolfin::Point, std::size_t, lt_point&gt;&amp; points = cell_dof_map[cell-&gt;index()];
+
+  // Get local-to-global map
+  const std::vector&lt;dolfin::la_index&gt;&amp; dofs = dofmap-&gt;cell_dofs(cell-&gt;index());
+
+  // Tabulate dof coordinates on cell
+  dofmap-&gt;tabulate_coordinates(coordinates, vertex_coordinates, *cell);
+
+  // Copy dof coordinates into vector
+  for (std::size_t i = 0; i &lt; dofs.size(); ++i)
+  {
+    const dolfin::la_index dof = dofs[i];
+    for (std::size_t j = 0; j &lt; gdim; ++j)
+    {
+      point_coordinates[j] = coordinates[i][j];
+    }
+    dolfin::Point lp(gdim, point_coordinates.data());
+    if (dof &lt; local)
+      points[lp] = this_process;
+    else
+      points[lp] = owner[dof-local];
+  }
+}</string_value>
+              </initialization>
+              <eval>
+                <string_value lines="20" type="code" language="cpp">dolfin::Point lp(x.size(), x.data());
+const std::map&lt;dolfin::Point, std::size_t, lt_point&gt;&amp; points = cell_dof_map[cell.index];
+const std::map&lt;dolfin::Point, std::size_t&gt;::const_iterator dof = points.find(lp);
+if (dof != points.end())
+  values[0] = (double)dof-&gt;second;
+else
+  values[0] = -1;</string_value>
+              </eval>
+            </cpp>
+          </value>
+        </rank>
+      </type>
+      <diagnostics/>
+    </coefficient>
+    <coefficient name="Velocity1NodeOwner">
+      <ufl_symbol name="global">
+        <string_value lines="1">v1no</string_value>
+      </ufl_symbol>
+      <type name="Expression">
+        <rank name="Scalar" rank="0">
+          <element name="P1">
+            <family>
+              <string_value lines="1">CG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">1</integer_value>
+            </degree>
+          </element>
+          <value type="value" name="WholeMesh">
+            <cpp rank="0">
+              <members>
+                <string_value lines="20" type="code" language="cpp">struct lt_point
+{
+  bool operator() (const dolfin::Point&amp; p1, const dolfin::Point&amp; p2) const
+  {
+    for (unsigned int i = 0; i &lt; 3; ++i)
+    {
+      if (p1[i] &lt; (p2[i] - DOLFIN_EPS))
+        return true;
+      else if (p1[i] &gt; (p2[i] + DOLFIN_EPS))
+        return false;
+    }
+    return false;
+  }
+};
+
+dolfin::MeshFunction&lt;std::map&lt;dolfin::Point, std::size_t, lt_point&gt; &gt; cell_dof_map;</string_value>
+              </members>
+              <initialization>
+                <string_value lines="20" type="code" language="cpp">const Mesh_ptr m_ptr = system()-&gt;mesh();
+const std::size_t tdim = m_ptr-&gt;topology().dim();
+
+cell_dof_map.init(*m_ptr, tdim);
+
+const std::size_t gdim = m_ptr-&gt;geometry().dim();
+
+const GenericFunction_ptr gf_ptr = system()-&gt;fetch_field("Velocity")-&gt;genericfunction_ptr(time());
+const Function_ptr f_ptr = std::dynamic_pointer_cast&lt;dolfin::Function&gt;(gf_ptr);
+const std::shared_ptr&lt;const dolfin::GenericDofMap&gt; dofmap = (*f_ptr-&gt;function_space())[1]-&gt;dofmap();
+
+const std::pair&lt;std::size_t, std::size_t&gt; range = dofmap-&gt;ownership_range();
+const std::size_t local = range.second - range.first;
+const std::vector&lt;int&gt; owner = dofmap-&gt;off_process_owner();
+const std::size_t this_process = dolfin::MPI::rank(m_ptr-&gt;mpi_comm());
+
+// Loop over cells and tabulate dofs
+boost::multi_array&lt;double, 2&gt; coordinates;
+std::vector&lt;double&gt; vertex_coordinates;
+std::vector&lt;double&gt; point_coordinates(gdim);
+
+for (dolfin::CellIterator cell(*m_ptr); !cell.end(); ++cell)
+{
+  cell-&gt;get_vertex_coordinates(vertex_coordinates);
+
+  std::map&lt;dolfin::Point, std::size_t, lt_point&gt;&amp; points = cell_dof_map[cell-&gt;index()];
+
+  // Get local-to-global map
+  const std::vector&lt;dolfin::la_index&gt;&amp; dofs = dofmap-&gt;cell_dofs(cell-&gt;index());
+
+  // Tabulate dof coordinates on cell
+  dofmap-&gt;tabulate_coordinates(coordinates, vertex_coordinates, *cell);
+
+  // Copy dof coordinates into vector
+  for (std::size_t i = 0; i &lt; dofs.size(); ++i)
+  {
+    const dolfin::la_index dof = dofs[i];
+    for (std::size_t j = 0; j &lt; gdim; ++j)
+    {
+      point_coordinates[j] = coordinates[i][j];
+    }
+    dolfin::Point lp(gdim, point_coordinates.data());
+    if (dof &lt; local)
+      points[lp] = this_process;
+    else
+      points[lp] = owner[dof-local];
+  }
+}</string_value>
+              </initialization>
+              <eval>
+                <string_value lines="20" type="code" language="cpp">dolfin::Point lp(x.size(), x.data());
+const std::map&lt;dolfin::Point, std::size_t, lt_point&gt;&amp; points = cell_dof_map[cell.index];
+const std::map&lt;dolfin::Point, std::size_t&gt;::const_iterator dof = points.find(lp);
+if (dof != points.end())
+  values[0] = (double)dof-&gt;second;
+else
+  values[0] = -1;</string_value>
+              </eval>
+            </cpp>
+          </value>
+        </rank>
+      </type>
+      <diagnostics/>
+    </coefficient>
+    <nonlinear_solver name="Solver">
+      <type name="SNES">
+        <form name="Residual" rank="0">
+          <string_value lines="20" type="code" language="python">dx_center = dx(1) + dx(2) + dx(3) + dx(4)
+# scaled viscosity term
+eta = 1.
+
+rv = (inner(sym(grad(v_t)), 2.*eta*sym(grad(v_i))) - div(v_t)*p_i - inner(v_t,f_i))*dx_center
+rp = -p_t*div(v_i)*dx_center
+
+r = rv + rp</string_value>
+          <ufl_symbol name="solver">
+            <string_value lines="1">r</string_value>
+          </ufl_symbol>
+        </form>
+        <form name="Jacobian" rank="1">
+          <string_value lines="20" type="code" language="python">a = derivative(r, us_i, us_a)</string_value>
+          <ufl_symbol name="solver">
+            <string_value lines="1">a</string_value>
+          </ufl_symbol>
+        </form>
+        <quadrature_rule name="default"/>
+        <snes_type name="ls">
+          <ls_type name="cubic"/>
+          <convergence_test name="default"/>
+        </snes_type>
+        <relative_error>
+          <real_value rank="0">1.e-7</real_value>
+        </relative_error>
+        <absolute_error>
+          <real_value rank="0">1.e-11</real_value>
+        </absolute_error>
+        <max_iterations>
+          <integer_value rank="0">1</integer_value>
+        </max_iterations>
+        <monitors>
+          <view_snes/>
+          <residual/>
+        </monitors>
+        <linear_solver>
+          <iterative_method name="preonly"/>
+          <preconditioner name="fieldsplit">
+            <composite_type name="multiplicative"/>
+            <fieldsplit name="Center">
+              <field name="Velocity">
+                <region_ids>
+                  <integer_value shape="12" rank="1">1 2 3 4 10 15 30 35 40 45 50 70</integer_value>
+                </region_ids>
+              </field>
+              <field name="Pressure">
+                <region_ids>
+                  <integer_value shape="12" rank="1">1 2 3 4 10 15 30 35 40 45 50 70</integer_value>
+                </region_ids>
+              </field>
+              <monitors>
+                <view_index_set/>
+              </monitors>
+              <linear_solver>
+                <iterative_method name="preonly"/>
+                <preconditioner name="fieldsplit">
+                  <composite_type name="multiplicative"/>
+                  <fieldsplit name="Center">
+                    <field name="Velocity">
+                      <region_ids>
+                        <integer_value shape="6" rank="1">1 2 3 4 10 15</integer_value>
+                      </region_ids>
+                    </field>
+                    <field name="Pressure">
+                      <region_ids>
+                        <integer_value shape="6" rank="1">1 2 3 4 10 15</integer_value>
+                      </region_ids>
+                    </field>
+                    <monitors>
+                      <view_index_set/>
+                    </monitors>
+                    <linear_solver>
+                      <iterative_method name="preonly"/>
+                      <preconditioner name="fieldsplit">
+                        <composite_type name="multiplicative"/>
+                        <fieldsplit name="Center">
+                          <field name="Velocity">
+                            <region_ids>
+                              <integer_value shape="4" rank="1">1 2 3 4</integer_value>
+                            </region_ids>
+                          </field>
+                          <field name="Pressure">
+                            <region_ids>
+                              <integer_value shape="4" rank="1">1 2 3 4</integer_value>
+                            </region_ids>
+                          </field>
+                          <monitors>
+                            <view_index_set/>
+                          </monitors>
+                          <linear_solver>
+                            <iterative_method name="preonly"/>
+                            <preconditioner name="lu">
+                              <factorization_package name="mumps"/>
+                            </preconditioner>
+                          </linear_solver>
+                        </fieldsplit>
+                        <fieldsplit name="Sides">
+                          <monitors/>
+                          <linear_solver>
+                            <iterative_method name="preonly"/>
+                            <preconditioner name="none"/>
+                          </linear_solver>
+                        </fieldsplit>
+                      </preconditioner>
+                    </linear_solver>
+                  </fieldsplit>
+                  <fieldsplit name="Sides">
+                    <monitors/>
+                    <linear_solver>
+                      <iterative_method name="preonly"/>
+                      <preconditioner name="none"/>
+                    </linear_solver>
+                  </fieldsplit>
+                </preconditioner>
+              </linear_solver>
+            </fieldsplit>
+            <fieldsplit name="Sides">
+              <monitors>
+                <view_index_set/>
+              </monitors>
+              <linear_solver>
+                <iterative_method name="preonly"/>
+                <preconditioner name="none"/>
+              </linear_solver>
+            </fieldsplit>
+          </preconditioner>
+        </linear_solver>
+        <never_ignore_solver_failures/>
+      </type>
+      <solve name="at_start"/>
+    </nonlinear_solver>
+    <functional name="AbsoluteDifferenceVelocityL2NormSquared">
+      <string_value lines="20" type="code" language="python">int = inner(diffv,diffv)*dx</string_value>
+      <ufl_symbol name="functional">
+        <string_value lines="1">int</string_value>
+      </ufl_symbol>
+      <quadrature_rule name="default"/>
+      <include_in_statistics/>
+    </functional>
+    <functional name="AbsoluteDifferencePressureL2NormSquared">
+      <string_value lines="20" type="code" language="python">int = diffp*diffp*dx</string_value>
+      <ufl_symbol name="functional">
+        <string_value lines="1">int</string_value>
+      </ufl_symbol>
+      <quadrature_rule name="default"/>
+      <include_in_statistics/>
+    </functional>
+  </system>
+  <system name="Divergence">
+    <mesh name="Mesh"/>
+    <ufl_symbol name="global">
+      <string_value lines="1">ud</string_value>
+    </ufl_symbol>
+    <field name="Divergence">
+      <ufl_symbol name="global">
+        <string_value lines="1">d</string_value>
+      </ufl_symbol>
+      <type name="Function">
+        <rank name="Scalar" rank="0">
+          <element name="UserDefined">
+            <family>
+              <string_value lines="1">CG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">1</integer_value>
+            </degree>
+          </element>
+          <initial_condition type="initial_condition" name="WholeMesh">
+            <constant>
+              <real_value rank="0">0.0</real_value>
+            </constant>
+          </initial_condition>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_visualization/>
+        <include_in_statistics/>
+      </diagnostics>
+    </field>
+    <nonlinear_solver name="Solver">
+      <type name="SNES">
+        <form name="Residual" rank="0">
+          <string_value lines="20" type="code" language="python">r = (d_t*d_i - d_t*div(v_i))*dx</string_value>
+          <ufl_symbol name="solver">
+            <string_value lines="1">r</string_value>
+          </ufl_symbol>
+        </form>
+        <form name="Jacobian" rank="1">
+          <string_value lines="20" type="code" language="python">J = derivative(r,ud_i,ud_a)</string_value>
+          <ufl_symbol name="solver">
+            <string_value lines="1">J</string_value>
+          </ufl_symbol>
+        </form>
+        <quadrature_rule name="default"/>
+        <snes_type name="ls">
+          <ls_type name="cubic"/>
+          <convergence_test name="skip"/>
+        </snes_type>
+        <relative_error>
+          <real_value rank="0">1.e-7</real_value>
+        </relative_error>
+        <absolute_error>
+          <real_value rank="0">1.e-16</real_value>
+        </absolute_error>
+        <max_iterations>
+          <integer_value rank="0">1</integer_value>
+        </max_iterations>
+        <monitors>
+          <residual/>
+        </monitors>
+        <linear_solver>
+          <iterative_method name="cg">
+            <relative_error>
+              <real_value rank="0">1.e-10</real_value>
+            </relative_error>
+            <absolute_error>
+              <real_value rank="0">1.e-15</real_value>
+            </absolute_error>
+            <max_iterations>
+              <integer_value rank="0">20</integer_value>
+            </max_iterations>
+            <zero_initial_guess/>
+            <monitors>
+              <preconditioned_residual/>
+            </monitors>
+          </iterative_method>
+          <preconditioner name="sor"/>
+        </linear_solver>
+        <never_ignore_solver_failures/>
+      </type>
+      <solve name="with_diagnostics"/>
+    </nonlinear_solver>
+  </system>
+</terraferma_options>

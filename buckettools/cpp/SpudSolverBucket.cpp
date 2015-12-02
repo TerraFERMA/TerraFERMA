@@ -852,7 +852,7 @@ void SpudSolverBucket::initialize_tensors_()
 //*******************************************************************|************************************************************//
 void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp, 
                                  const std::string prefix,
-                                 const std::vector<uint>* parent_indices)
+                                 const std::vector<std::size_t>* parent_indices)
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
@@ -874,7 +874,7 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
   PC pc;
   perr = KSPGetPC(ksp, &pc); petsc_err(perr);                          // get the pc from the ksp
 
-  uint parent_offset = 0;
+  std::size_t parent_offset = 0;
   if (parent_indices)
   {
     parent_offset = dolfin::MPI::global_offset((*(*system_).mesh()).mpi_comm(),
@@ -1018,8 +1018,8 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
 //*******************************************************************|************************************************************//
 void SpudSolverBucket::fill_pc_(const std::string &optionpath, PC &pc, 
                                 const std::string prefix,
-                                const uint &parent_offset,
-                                const std::vector<uint>* parent_indices)
+                                const std::size_t &parent_offset,
+                                const std::vector<std::size_t>* parent_indices)
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
@@ -1147,8 +1147,8 @@ void SpudSolverBucket::fill_pc_(const std::string &optionpath, PC &pc,
 //*******************************************************************|************************************************************//
 void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath, 
                                            PC &pc, const std::string prefix,
-                                           const uint &parent_offset,
-                                           const std::vector<uint>* parent_indices)
+                                           const std::size_t &parent_offset,
+                                           const std::vector<std::size_t>* parent_indices)
 {
 
   std::stringstream buffer;                                          // optionpath buffer
@@ -1156,11 +1156,11 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
   PetscErrorCode perr;                                               // petsc error code
 
 
-  std::vector< std::vector<uint> > child_indices;                    // a vector of vectors to collect the child indices (the
+  std::vector< std::vector<std::size_t> > child_indices;                    // a vector of vectors to collect the child indices (the
                                                                      // subsets of the parent_indices vector (if associated) that
                                                                      // will themselves become the parent_indices on the next
                                                                      // recursion)
-  std::vector<uint> prev_indices;
+  std::vector<std::size_t> prev_indices;
 
   buffer.str(""); buffer << optionpath << "/fieldsplit";
   int nsplits = Spud::option_count(buffer.str());                    // how many fieldsplits exist for this pc
@@ -1168,7 +1168,7 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
   {
     buffer.str(""); buffer << optionpath << 
                                         "/fieldsplit[" << i << "]";
-    std::vector<uint> indices;
+    std::vector<std::size_t> indices;
     if (i==0)
     {
       fill_indices_values_by_field_(buffer.str(),                                // setup an IS for each fieldsplit
@@ -1336,8 +1336,8 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
       PetscInt *petscindices;
       PetscMalloc(n*sizeof(PetscInt), &petscindices);
       
-      uint ind = 0;
-      for (std::vector<uint>::const_iterator                         // loop over the indices
+      std::size_t ind = 0;
+      for (std::vector<std::size_t>::const_iterator                         // loop over the indices
                                   ind_it = child_indices[1].begin(); 
                                   ind_it != child_indices[1].end(); 
                                   ind_it++)
@@ -1456,10 +1456,10 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
 // Additionally the resulting IS is checked for consistency with any parents or siblings in the tree.
 //*******************************************************************|************************************************************//
 void SpudSolverBucket::fill_indices_values_by_field_(const std::string &optionpath,
-                                                     std::vector<uint> &child_indices, 
+                                                     std::vector<std::size_t> &child_indices, 
                                                      PETScVector_ptr values,
-                                                     const std::vector<uint>* parent_indices,
-                                                     const std::vector<uint>* sibling_indices)
+                                                     const std::vector<std::size_t>* parent_indices,
+                                                     const std::vector<std::size_t>* sibling_indices)
 {
 
   std::stringstream buffer;                                          // optionpath buffer
@@ -1478,14 +1478,13 @@ void SpudSolverBucket::fill_indices_values_by_field_(const std::string &optionpa
   child_indices.clear();
   if (nfields==0)                                                    // if no fields have been specified... **no fields**
   {
-    std::pair<uint, uint> ownership_range =                          // the parallel ownership range of the system functionspace
-            (*(*(*system_).functionspace()).dofmap()).ownership_range();
-    for (uint i = ownership_range.first; i < ownership_range.second; i++)
+    (*(*(*system_).functionspace()).dofmap()).tabulate_local_to_global_dofs(child_indices);
+    if (tmp_values)
     {
-      child_indices.push_back(i);
-      if (tmp_values)
+      for (std::vector<std::size_t>::const_iterator it = child_indices.begin(); 
+                                         it != child_indices.end(); ++it)
       {
-        (*tmp_values).setitem(i, 1.0);
+        (*tmp_values).setitem(*it, 1.0);
       }
     }
   }
@@ -1529,7 +1528,7 @@ void SpudSolverBucket::fill_indices_values_by_field_(const std::string &optionpa
                           value_exp, value_const, 
                           fieldshape, fieldsymmetric);
      
-      std::vector<uint> tmp_indices;
+      std::vector<std::size_t> tmp_indices;
       tmp_indices  = functionspace_dofs_values(functionspace, 
                                                (*system_).celldomains(),
                                                (*system_).facetdomains(),
@@ -1561,7 +1560,7 @@ void SpudSolverBucket::fill_indices_values_by_field_(const std::string &optionpa
 // fill a petsc nullspace object using the options in the optionpath provided
 //*******************************************************************|************************************************************//
 void SpudSolverBucket::fill_nullspace_(const std::string &optionpath, MatNullSpace &SP,
-                                       const uint &parent_offset, const std::vector<uint>* parent_indices)
+                                       const std::size_t &parent_offset, const std::vector<std::size_t>* parent_indices)
 {
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
@@ -1569,15 +1568,17 @@ void SpudSolverBucket::fill_nullspace_(const std::string &optionpath, MatNullSpa
 
   buffer.str(""); buffer << optionpath << "/null_space";
   int nnulls = Spud::option_count(buffer.str());                     // how many null spaces?
+  buffer.str(""); buffer << optionpath <<  "/null_space/remove_from_rhs/only_remove_from_rhs";
+  int rhsnnulls = Spud::option_count(buffer.str());
 
   PETScVector_ptr sysvec = std::dynamic_pointer_cast<dolfin::PETScVector>((*(*system_).function()).vector());
 
-  Vec vecs[nnulls];                                                  // and here (for the petsc interface)
+  Vec vecs[nnulls-rhsnnulls];                                        // and here (for the petsc interface)
 
   for (uint i = 0; i<nnulls; i++)                                    // loop over the nullspaces
   {
 
-    std::vector<uint> indices;                                       // the indices of the system vector used in the null space
+    std::vector<std::size_t> indices;                                       // the indices of the system vector used in the null space
     PETScVector_ptr nullvec( new dolfin::PETScVector(*sysvec) );
     (*nullvec).zero();                                               // create a null vector (with the size and attributes of the
                                                                      // system)
@@ -1633,6 +1634,13 @@ void SpudSolverBucket::fill_nullspace_(const std::string &optionpath, MatNullSpa
       petsc_err(perr);                                                 // isview?
     }
 
+    buffer.str(""); buffer << optionpath << "/null_space[" 
+                                 << i << "]/remove_from_rhs/only_remove_from_rhs";
+    if (Spud::have_option(buffer.str()))
+    {
+      continue;
+    }
+
     perr = VecCreate((*(*system_).mesh()).mpi_comm(), &vecs[i]);
     petsc_err(perr);
     if (parent_indices)
@@ -1677,7 +1685,7 @@ void SpudSolverBucket::fill_nullspace_(const std::string &optionpath, MatNullSpa
   }
 
   perr = MatNullSpaceCreate((*(*system_).mesh()).mpi_comm(), 
-                            PETSC_FALSE, nnulls, vecs, &SP); 
+                            PETSC_FALSE, nnulls-rhsnnulls, vecs, &SP); 
   petsc_err(perr);
 
   buffer.str(""); buffer << optionpath << 
@@ -1749,7 +1757,7 @@ void SpudSolverBucket::fill_bound_(const std::string &optionpath, PETScVector_pt
 
   if (Spud::have_option(optionpath))
   {
-    std::vector<uint> indices;
+    std::vector<std::size_t> indices;
     fill_indices_values_by_field_(optionpath, indices, bound);
     indices.clear();
   }

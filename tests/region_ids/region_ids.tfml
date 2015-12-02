@@ -10,7 +10,7 @@
           <string_value lines="1" type="filename">region_id</string_value>
         </file>
         <cell>
-          <string_value>triangle</string_value>
+          <string_value lines="1">triangle</string_value>
         </cell>
       </source>
     </mesh>
@@ -45,7 +45,11 @@
       </point>
     </detectors>
   </io>
-  <global_parameters/>
+  <global_parameters>
+    <dolfin>
+      <ghost_mode name="none"/>
+    </dolfin>
+  </global_parameters>
   <system name="Regions">
     <mesh name="Mesh"/>
     <ufl_symbol name="global">
@@ -59,7 +63,7 @@
         <rank name="Scalar" rank="0">
           <element name="UserDefined">
             <family>
-              <string_value>DG</string_value>
+              <string_value lines="1">DG</string_value>
             </family>
             <degree>
               <integer_value rank="0">1</integer_value>
@@ -113,7 +117,7 @@
         <rank name="Scalar" rank="0">
           <element name="UserDefined">
             <family>
-              <string_value>DG</string_value>
+              <string_value lines="1">DG</string_value>
             </family>
             <degree>
               <integer_value rank="0">1</integer_value>

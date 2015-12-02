@@ -65,7 +65,7 @@ namespace buckettools
     // Base data access
     //***************************************************************|***********************************************************//
 
-    double value();
+    double value(const bool& force=false);                           // calculate and return the value of the functional
 
     double oldvalue() const
     { return oldvalue_; }

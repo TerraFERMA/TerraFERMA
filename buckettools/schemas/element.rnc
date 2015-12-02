@@ -34,6 +34,9 @@ generic_element_family =
      element family {
         # a hard coded string_value
         element string_value {
+          # Lines is a hint to the gui about the size of the text box.
+          # It is not an enforced limit on string length.
+          attribute lines { "1" },
           ( "CG" | "DG" | "R" | "Quadrature" )
         },
         comment
@@ -54,13 +57,20 @@ generic_vector_element_family =
      ##
      ## - BDM = Brezzi–Douglas–Marini
      ##
+     ## - N1curl = Nedelec 1st kind H(curl)
+     ##
+     ## - N2curl = Nedelec 2nd kind H(curl)
+     ##
      ## - R  = Real (global constant)
      ##
      ## - Quadrature
      element family {
         # a hard coded string_value
         element string_value {
-          ( "CG" | "DG" | "RT" | "DRT" | "BDM" | "R" | "Quadrature" )
+          # Lines is a hint to the gui about the size of the text box.
+          # It is not an enforced limit on string length.
+          attribute lines { "1" },
+          ( "CG" | "DG" | "RT" | "DRT" | "BDM" | "N1curl" | "N2curl" | "R" | "Quadrature" )
         },
         comment
      }
@@ -74,6 +84,9 @@ generic_enrichment_element_family =
      element family {
         # a hard coded string_value
         element string_value {
+          # Lines is a hint to the gui about the size of the text box.
+          # It is not an enforced limit on string length.
+          attribute lines { "1" },
           ( "B" )
         },
         comment
@@ -88,6 +101,9 @@ b_element_family =
      element family {
         # a hard coded string_value
         element string_value {
+          # Lines is a hint to the gui about the size of the text box.
+          # It is not an enforced limit on string length.
+          attribute lines { "1" },
           ( "B" )
         },
         comment
@@ -102,6 +118,9 @@ rt_element_family =
      element family {
         # a hard coded string_value
         element string_value {
+          # Lines is a hint to the gui about the size of the text box.
+          # It is not an enforced limit on string length.
+          attribute lines { "1" },
           ( "RT" )
         },
         comment
@@ -116,6 +135,9 @@ drt_element_family =
      element family {
         # a hard coded string_value
         element string_value {
+          # Lines is a hint to the gui about the size of the text box.
+          # It is not an enforced limit on string length.
+          attribute lines { "1" },
           ( "DRT" )
         },
         comment
@@ -130,7 +152,44 @@ bdm_element_family =
      element family {
         # a hard coded string_value
         element string_value {
+          # Lines is a hint to the gui about the size of the text box.
+          # It is not an enforced limit on string length.
+          attribute lines { "1" },
           ( "BDM" )
+        },
+        comment
+     }
+  )
+
+n1curl_element_family = 
+  (
+     ## Element family
+     ##
+     ## - N1curl = Nedelec 1st kind H(curl)
+     element family {
+        # a hard coded string_value
+        element string_value {
+          # Lines is a hint to the gui about the size of the text box.
+          # It is not an enforced limit on string length.
+          attribute lines { "1" },
+          ( "N1curl" )
+        },
+        comment
+     }
+  )
+
+n2curl_element_family = 
+  (
+     ## Element family
+     ##
+     ## - N2curl = Nedelec 2nd kind H(curl)
+     element family {
+        # a hard coded string_value
+        element string_value {
+          # Lines is a hint to the gui about the size of the text box.
+          # It is not an enforced limit on string length.
+          attribute lines { "1" },
+          ( "N2curl" )
         },
         comment
      }
@@ -144,6 +203,9 @@ cg_element_family =
      element family {
         # a hard coded string_value
         element string_value {
+          # Lines is a hint to the gui about the size of the text box.
+          # It is not an enforced limit on string length.
+          attribute lines { "1" },
           ( "CG" )
         },
         comment
@@ -158,6 +220,9 @@ dg_element_family =
      element family {
         # a hard coded string_value
         element string_value {
+          # Lines is a hint to the gui about the size of the text box.
+          # It is not an enforced limit on string length.
+          attribute lines { "1" },
           ( "DG" )
         },
         comment
@@ -172,6 +237,9 @@ r_element_family =
      element family {
         # a hard coded string_value
         element string_value {
+          # Lines is a hint to the gui about the size of the text box.
+          # It is not an enforced limit on string length.
+          attribute lines { "1" },
           ( "R" )
         },
         comment
@@ -186,6 +254,9 @@ q_element_family =
      element family {
         # a hard coded string_value
         element string_value {
+          # Lines is a hint to the gui about the size of the text box.
+          # It is not an enforced limit on string length.
+          attribute lines { "1" },
           ( "Quadrature" )
         },
         comment
@@ -318,6 +389,30 @@ bdm1_element =
 bdm2_element =
   (
      bdm_element_family,
+     p2_element_degree
+  )
+
+n1curl1_element =
+  (
+     n1curl_element_family,
+     p1_element_degree
+  )
+
+n1curl2_element =
+  (
+     n1curl_element_family,
+     p2_element_degree
+  )
+
+n2curl1_element =
+  (
+     n2curl_element_family,
+     p1_element_degree
+  )
+
+n2curl2_element =
+  (
+     n2curl_element_family,
      p2_element_degree
   )
 
@@ -602,6 +697,34 @@ element_options_vector =
        element element {
          attribute name { "BDM2" },
          bdm2_element,
+         enrichment_options,
+         comment
+       }|
+       ## Options describing first degree Nedelec 1st kind H(curl) element for a vector.
+       element element {
+         attribute name { "N1curl1" },
+         n1curl1_element,
+         enrichment_options,
+         comment
+       }|
+       ## Options describing second degree Nedelec 1st kind H(curl) element for a vector.
+       element element {
+         attribute name { "N1curl2" },
+         n1curl2_element,
+         enrichment_options,
+         comment
+       }|
+       ## Options describing first degree Nedelec 2nd kind H(curl) element for a vector.
+       element element {
+         attribute name { "N2curl1" },
+         n2curl1_element,
+         enrichment_options,
+         comment
+       }|
+       ## Options describing second degree Nedelec 2nd kind H(curl) element for a vector.
+       element element {
+         attribute name { "N2curl2" },
+         n2curl2_element,
          enrichment_options,
          comment
        }|
