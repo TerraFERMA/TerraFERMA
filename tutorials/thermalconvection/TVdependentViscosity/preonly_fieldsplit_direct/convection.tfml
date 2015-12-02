@@ -16,10 +16,10 @@
           <integer_value shape="2" dim1="2" rank="1">64 64</integer_value>
         </number_cells>
         <diagonal>
-          <string_value>right/left</string_value>
+          <string_value lines="1">right/left</string_value>
         </diagonal>
         <cell>
-          <string_value>triangle</string_value>
+          <string_value lines="1">triangle</string_value>
         </cell>
       </source>
     </mesh>
@@ -145,7 +145,7 @@ eta = 1./inv_etaprime</string_value>
         <rank name="Vector" rank="1">
           <element name="P2">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">2</integer_value>
@@ -223,7 +223,7 @@ eta = 1./inv_etaprime</string_value>
         <include_in_statistics/>
         <include_in_steady_state>
           <norm>
-            <string_value>linf</string_value>
+            <string_value lines="1">linf</string_value>
           </norm>
         </include_in_steady_state>
         <include_in_detectors/>
@@ -237,7 +237,7 @@ eta = 1./inv_etaprime</string_value>
         <rank name="Scalar" rank="0">
           <element name="P1">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">1</integer_value>
@@ -260,7 +260,7 @@ eta = 1./inv_etaprime</string_value>
         <include_in_statistics/>
         <include_in_steady_state>
           <norm>
-            <string_value>linf</string_value>
+            <string_value lines="1">linf</string_value>
           </norm>
         </include_in_steady_state>
       </diagnostics>
@@ -273,7 +273,7 @@ eta = 1./inv_etaprime</string_value>
         <rank name="Scalar" rank="0">
           <element name="P2">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">2</integer_value>
@@ -326,7 +326,7 @@ eta = 1./inv_etaprime</string_value>
         <include_in_statistics/>
         <include_in_steady_state>
           <norm>
-            <string_value>linf</string_value>
+            <string_value lines="1">linf</string_value>
           </norm>
         </include_in_steady_state>
         <include_in_detectors/>
@@ -534,7 +534,7 @@ r = rv + rp + rT</string_value>
         <rank name="Scalar" rank="0">
           <element name="P0">
             <family>
-              <string_value>DG</string_value>
+              <string_value lines="1">DG</string_value>
             </family>
             <degree>
               <integer_value rank="0">0</integer_value>
@@ -613,7 +613,7 @@ r = c_t*c_a*dx - c_t('+')*vout('+')*dt('+')*dS - c_t('-')*vout('-')*dt('-')*dS -
         <rank name="Scalar" rank="0">
           <element name="P2DG">
             <family>
-              <string_value>DG</string_value>
+              <string_value lines="1">DG</string_value>
             </family>
             <degree>
               <integer_value rank="0">2</integer_value>
@@ -692,7 +692,7 @@ r = c_t*c_a*dx - c_t('+')*vout('+')*dt('+')*dS - c_t('-')*vout('-')*dt('-')*dS -
         <rank name="Scalar" rank="0">
           <element name="P2DG">
             <family>
-              <string_value>DG</string_value>
+              <string_value lines="1">DG</string_value>
             </family>
             <degree>
               <integer_value rank="0">2</integer_value>

@@ -10,7 +10,7 @@
           <string_value lines="1" type="filename">interval</string_value>
         </file>
         <cell>
-          <string_value>interval</string_value>
+          <string_value lines="1">interval</string_value>
         </cell>
       </source>
     </mesh>
@@ -70,7 +70,7 @@
         <rank name="Scalar" rank="0">
           <element name="P1DG">
             <family>
-              <string_value>DG</string_value>
+              <string_value lines="1">DG</string_value>
             </family>
             <degree>
               <integer_value rank="0">1</integer_value>

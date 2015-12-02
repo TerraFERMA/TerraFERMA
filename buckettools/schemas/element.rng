@@ -35,6 +35,13 @@
 - Quadrature</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
         <choice>
           <value>CG</value>
           <value>DG</value>
@@ -68,6 +75,13 @@
 - Quadrature</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
         <choice>
           <value>CG</value>
           <value>DG</value>
@@ -90,6 +104,13 @@
 - B = Bubble</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
         <value>B</value>
       </element>
       <ref name="comment"/>
@@ -102,6 +123,13 @@
 - B = Bubble</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
         <value>B</value>
       </element>
       <ref name="comment"/>
@@ -114,6 +142,13 @@
 - RT = Raviart-Thomas</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
         <value>RT</value>
       </element>
       <ref name="comment"/>
@@ -126,6 +161,13 @@
 - DRT = Discontinuous Raviart-Thomas</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
         <value>DRT</value>
       </element>
       <ref name="comment"/>
@@ -138,6 +180,13 @@
 - BDM = Brezzi–Douglas–Marini</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
         <value>BDM</value>
       </element>
       <ref name="comment"/>
@@ -150,6 +199,13 @@
 - N1curl = Nedelec 1st kind H(curl)</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
         <value>N1curl</value>
       </element>
       <ref name="comment"/>
@@ -162,6 +218,13 @@
 - N2curl = Nedelec 2nd kind H(curl)</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
         <value>N2curl</value>
       </element>
       <ref name="comment"/>
@@ -174,6 +237,13 @@
 - CG = Lagrange (continuous Galerkin)</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
         <value>CG</value>
       </element>
       <ref name="comment"/>
@@ -186,6 +256,13 @@
 - DG = Discontinuous Lagrange (discontinuous Galerkin)</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
         <value>DG</value>
       </element>
       <ref name="comment"/>
@@ -198,6 +275,13 @@
 - R  = Real (global constant)</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
         <value>R</value>
       </element>
       <ref name="comment"/>
@@ -210,6 +294,13 @@
 - Quadrature</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
         <value>Quadrature</value>
       </element>
       <ref name="comment"/>

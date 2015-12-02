@@ -634,6 +634,12 @@ If left unspecified, defaults to the whole boundary of the above region(s) (if s
     <optional>
       <element name="remove_from_rhs">
         <a:documentation>Removes the null space from the rhs after assembly.</a:documentation>
+        <optional>
+          <element name="only_remove_from_rhs">
+            <a:documentation>Do not remove the null space at every iteration of the solve.</a:documentation>
+            <ref name="comment"/>
+          </element>
+        </optional>
         <ref name="comment"/>
       </element>
     </optional>

@@ -10,10 +10,10 @@
           <integer_value shape="2" dim1="2" rank="1">2 2</integer_value>
         </number_cells>
         <diagonal>
-          <string_value>crossed</string_value>
+          <string_value lines="1">crossed</string_value>
         </diagonal>
         <cell>
-          <string_value>triangle</string_value>
+          <string_value lines="1">triangle</string_value>
         </cell>
       </source>
     </mesh>
@@ -73,7 +73,7 @@
         <rank name="Scalar" rank="0">
           <element name="P1">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">1</integer_value>
@@ -100,7 +100,7 @@
         <rank name="Vector" rank="1">
           <element name="P2">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">2</integer_value>
@@ -127,7 +127,7 @@
         <rank name="Tensor" rank="2">
           <element name="UserDefined">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">3</integer_value>
@@ -221,7 +221,7 @@
         <rank name="Scalar" rank="0">
           <element name="P0">
             <family>
-              <string_value>DG</string_value>
+              <string_value lines="1">DG</string_value>
             </family>
             <degree>
               <integer_value rank="0">0</integer_value>
@@ -563,7 +563,7 @@ r = r1 + r2 + r3</string_value>
         <rank name="Scalar" rank="0">
           <element name="P1">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">1</integer_value>
@@ -590,7 +590,7 @@ r = r1 + r2 + r3</string_value>
         <rank name="Vector" rank="1">
           <element name="P2">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">2</integer_value>
@@ -653,7 +653,7 @@ r = r1 + r2 + r3</string_value>
         <rank name="Scalar" rank="0">
           <element name="P0">
             <family>
-              <string_value>DG</string_value>
+              <string_value lines="1">DG</string_value>
             </family>
             <degree>
               <integer_value rank="0">0</integer_value>
