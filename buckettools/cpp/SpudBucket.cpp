@@ -868,8 +868,9 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     serr = Spud::get_option(buffer.str(), diagonal); 
     spud_err(buffer.str(), serr);
     
-    mesh.reset(new dolfin::RectangleMesh(lowerleft[0], lowerleft[1], 
-                                    upperright[0], upperright[1], 
+    const dolfin::Point lowerleftpoint(2, lowerleft.data());
+    const dolfin::Point upperrightpoint(2, upperright.data());
+    mesh.reset(new dolfin::RectangleMesh(lowerleftpoint, upperrightpoint, 
                                     cells[0], cells[1], diagonal));
 
     Side left(0, lowerleft[0]);
@@ -928,12 +929,10 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     serr = Spud::get_option(buffer.str(), cells); 
     spud_err(buffer.str(), serr);
     
-    mesh.reset( new dolfin::BoxMesh(lowerbackleft[0], 
-                                lowerbackleft[1], 
-                                lowerbackleft[2],
-                                upperfrontright[0], 
-                                upperfrontright[1], 
-                                upperfrontright[2], 
+    const dolfin::Point lowerbackleftpoint(3, lowerbackleft.data());
+    const dolfin::Point upperfrontrightpoint(3, upperfrontright.data());
+    mesh.reset( new dolfin::BoxMesh(lowerbackleftpoint, 
+                                upperfrontrightpoint, 
                                 cells[0], cells[1], cells[2]) );
 
     Side left(0, lowerbackleft[0]);

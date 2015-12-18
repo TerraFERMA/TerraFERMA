@@ -323,13 +323,13 @@ void SpudSystemBucket::fill_bcs_()
           b_it = (*(*f_it).second).dirichletbcs_begin(); 
           b_it != (*(*f_it).second).dirichletbcs_end(); b_it++)
     {
-      bcs_.push_back(&(*(*b_it).second));                   // add the bcs to a std vector
+      bcs_.push_back((*b_it).second);                   // add the bcs to a std vector
     }
     for (ReferencePoint_const_it                                    // loop over all the points
           p_it = (*(*f_it).second).referencepoints_begin(); 
           p_it != (*(*f_it).second).referencepoints_end(); p_it++)
     {
-      bcs_.push_back(&(*(*p_it).second));                    // add the point to a std vector
+      bcs_.push_back((*p_it).second);                    // add the point to a std vector
     }
   }
 

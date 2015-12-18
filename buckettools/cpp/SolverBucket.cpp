@@ -124,8 +124,8 @@ void SolverBucket::solve()
   *iteration_count_ = 0;                                             // an iteration counter
 
   if (type()=="SNES")                                                // this is a petsc snes solver - FIXME: switch to an enumerated type
-  {
-    for(std::vector< const dolfin::DirichletBC* >::const_iterator    // loop over the collected vector of system bcs
+  {                                                                  // loop over the collected vector of system bcs
+    for(std::vector< std::shared_ptr<const dolfin::DirichletBC> >::const_iterator    
                       bc = (*system_).bcs_begin(); 
                       bc != (*system_).bcs_end(); bc++)
     {
@@ -146,7 +146,7 @@ void SolverBucket::solve()
                                                                      // on other systems that have been solved since the last call
     dolfin::Assembler assemblerres;
     assemblerres.assemble(*res_, *residual_);                        // assemble the residual
-    for(std::vector< const dolfin::DirichletBC* >::const_iterator bc = 
+    for(std::vector< std::shared_ptr<const dolfin::DirichletBC> >::const_iterator bc = 
                           (*system_).bcs_begin(); 
                           bc != (*system_).bcs_end(); bc++)
     {                                                                // apply bcs to residuall (should we do this?!)
@@ -295,7 +295,7 @@ void SolverBucket::solve()
 
       assert(residual_);
       assemblerres.assemble(*res_, *residual_);                      // assemble the residual
-      for(std::vector< const dolfin::DirichletBC* >::const_iterator bc = 
+      for(std::vector< std::shared_ptr<const dolfin::DirichletBC> >::const_iterator bc = 
                              (*system_).bcs_begin(); 
                              bc != (*system_).bcs_end(); bc++)
       {                                                              // apply bcs to residual (should we do this?!)
@@ -359,7 +359,7 @@ double SolverBucket::residual_norm()
   dolfin::Assembler assembler;
 
   assembler.assemble(*res_, *residual_);
-  for(std::vector< const dolfin::DirichletBC* >::const_iterator bc = 
+  for(std::vector< std::shared_ptr<const dolfin::DirichletBC> >::const_iterator bc = 
                         (*system_).bcs_begin(); 
                         bc != (*system_).bcs_end(); bc++)
   {                                                                  // apply bcs to residual (should we do this?!)

@@ -753,7 +753,7 @@ FunctionalBucket_const_it SystemBucket::functionals_end() const
 //*******************************************************************|************************************************************//
 // return an iterator to the beginning of the bcs_ vector
 //*******************************************************************|************************************************************//
-std::vector< const dolfin::DirichletBC* >::iterator SystemBucket::bcs_begin()
+std::vector< std::shared_ptr<const dolfin::DirichletBC> >::iterator SystemBucket::bcs_begin()
 {
   return bcs_.begin();
 }
@@ -761,7 +761,7 @@ std::vector< const dolfin::DirichletBC* >::iterator SystemBucket::bcs_begin()
 //*******************************************************************|************************************************************//
 // return a constant iterator to the beginning of the bcs_ vector
 //*******************************************************************|************************************************************//
-std::vector< const dolfin::DirichletBC* >::const_iterator SystemBucket::bcs_begin() const
+std::vector< std::shared_ptr<const dolfin::DirichletBC> >::const_iterator SystemBucket::bcs_begin() const
 {
   return bcs_.begin();
 }
@@ -769,7 +769,7 @@ std::vector< const dolfin::DirichletBC* >::const_iterator SystemBucket::bcs_begi
 //*******************************************************************|************************************************************//
 // return an iterator to the end of the bcs_ vector
 //*******************************************************************|************************************************************//
-std::vector< const dolfin::DirichletBC* >::iterator SystemBucket::bcs_end()
+std::vector< std::shared_ptr<const dolfin::DirichletBC> >::iterator SystemBucket::bcs_end()
 {
   return bcs_.end();
 }
@@ -777,7 +777,7 @@ std::vector< const dolfin::DirichletBC* >::iterator SystemBucket::bcs_end()
 //*******************************************************************|************************************************************//
 // return a constant iterator to the end of the bcs_ vector
 //*******************************************************************|************************************************************//
-std::vector< const dolfin::DirichletBC* >::const_iterator SystemBucket::bcs_end() const
+std::vector< std::shared_ptr<const dolfin::DirichletBC> >::const_iterator SystemBucket::bcs_end() const
 {
   return bcs_.end();
 }
@@ -1038,7 +1038,7 @@ void SystemBucket::apply_ic_()
 //*******************************************************************|************************************************************//
 void SystemBucket::apply_bcs_()
 {
-  for (std::vector< const dolfin::DirichletBC* >::const_iterator     // loop over all the bcs
+  for (std::vector< std::shared_ptr<const dolfin::DirichletBC> >::const_iterator     // loop over all the bcs
        b_it = bcs_begin(); b_it != bcs_end(); b_it++)
   {
     (**b_it).apply((*(*oldfunction_).vector()));
