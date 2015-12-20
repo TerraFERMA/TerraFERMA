@@ -1027,7 +1027,7 @@ void SystemBucket::apply_ic_()
   }
   else
   {
-    tf_err("Unknown way of applying initial condition.", "No suitable expression or checkpoint file found.");
+    (*(*oldfunction_).vector()).zero();                              // by default we have a zero ic
   }
   (*(*iteratedfunction_).vector()) = (*(*oldfunction_).vector());    // set the iterated function vector to the old function vector
   (*(*function_).vector()) = (*(*oldfunction_).vector());            // set the function vector to the old function vector

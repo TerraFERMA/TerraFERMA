@@ -114,6 +114,13 @@ void SpudBucket::fill()
   }                                                                  // we couldn't do this before because we might not have had
                                                                      // the right functionspace available
   
+  for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *fourth* time, this time filling
+                                  sys_it != systems_end(); sys_it++) // in the data for the bcs
+  {                                                                  // 
+    (*std::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).allocate_bcs();
+  }                                                                  // we couldn't do this before now because we allow reference
+                                                                     // bcs so everything had to be allocated
+  
   fill_uflsymbols_();                                                // now all the functions in the systems are complete we can 
                                                                      // register them in the bucket so it's easy to attach them
                                                                      // to the forms and functionals
@@ -122,13 +129,13 @@ void SpudBucket::fill()
                                                                      // this can also be done now because all relevant pointers should be
                                                                      // allocated
 
-  for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *fourth* time, attaching the
+  for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *fifth* time, attaching the
                                   sys_it != systems_end(); sys_it++) // coefficients to the forms and functionals
   {
     (*(*sys_it).second).initialize_forms();
   }
   
-  for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *fifth* time, initializing
+  for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *sixth* time, initializing
                                   sys_it != systems_end(); sys_it++) // the values of any expressions, functionals or functions
   {                                                                  // used by fields or coefficients
     (*std::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).initialize_fields_and_coefficient_expressions();
@@ -143,14 +150,14 @@ void SpudBucket::fill()
                                                                      // just deal with them by evaluating coefficient functions 
                                                                      // in the order the user specified followed by fields last.
 
-  for (SystemBucket_it sys_it = systems_begin();          // loop over the systems for a *sixth* time, initializing
-                       sys_it != systems_end(); sys_it++) // the values of any coefficient functions
+  for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *seventh* time, initializing
+                       sys_it != systems_end(); sys_it++)            // the values of any coefficient functions
   {                                                                  
     (*std::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).initialize_coefficient_functions();
   }
   
-  for (SystemBucket_it sys_it = systems_begin();          // loop over the systems for a *seventh* time, initializing
-                       sys_it != systems_end(); sys_it++) // the values of the fields
+  for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *eighth* time, initializing
+                       sys_it != systems_end(); sys_it++)            // the values of the fields
   {
     (*(*sys_it).second).evaluate_initial_fields();
   }

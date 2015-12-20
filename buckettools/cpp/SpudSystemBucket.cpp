@@ -65,8 +65,6 @@ void SpudSystemBucket::fill()
 
   fill_fields_();                                                    // initialize the fields (subfunctions) of this system
 
-  fill_bcs_();                                                       // fill in data about the bcs relative to the system (includes
-                                                                     // periodic)
   fill_coeffs_();                                                    // initialize the coefficient expressions (and constants)
                                                                      // (can't do coefficient functions now because it's unlikely we 
                                                                      // have all the coefficient functionspaces)
@@ -89,6 +87,23 @@ void SpudSystemBucket::allocate_coeff_function()
     (*(std::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).allocate_coeff_function();
   }                                                                  // (check that this is a coefficient function within this
                                                                      // function)
+
+}
+
+//*******************************************************************|************************************************************//
+// allocate bcs
+//*******************************************************************|************************************************************//
+void SpudSystemBucket::allocate_bcs()
+{
+
+  for (FunctionBucket_it f_it = fields_begin(); f_it != fields_end();
+                                                              f_it++)
+  {
+    (*(std::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).allocate_bcs();
+  } 
+
+  fill_bcs_();                                                       // fill in data about the bcs relative to the system (includes
+                                                                     // periodic)
 
 }
 
@@ -303,7 +318,7 @@ void SpudSystemBucket::fill_fields_()
 
   if (!icexpressions.empty())
   {
-    collect_ics_(component, icexpressions);        // collect all the ics together into a new initial condition expression
+    collect_ics_(component, icexpressions);                          // collect all the ics together into a new initial condition expression
   }
 
 }
