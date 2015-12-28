@@ -981,34 +981,38 @@ void SystemBucket::checkpoint(const double_ptr time)
 void SystemBucket::collect_ics_(const uint &components, const std::map< std::size_t, Expression_ptr > &icexpressions)
 {
   const std::size_t nfields = icexpressions.size();
-  if (nfields==1)                                                    // single field
+  if (nfields>0)
   {
-    const std::size_t rank = (*(*icexpressions.begin()).second).value_rank();
-    if (rank==0)                                                     // scalar
+    const std::size_t size = (*(*icexpressions.begin()).second).value_size();
+    if (nfields==1 && size==components)                              // single field
     {
-      icexpression_.reset(new InitialConditionExpression(icexpressions));
+      const std::size_t rank = (*(*icexpressions.begin()).second).value_rank();
+      if (rank==0)                                                   // scalar
+      {
+        icexpression_.reset(new InitialConditionExpression(icexpressions));
+      }
+      else if (rank==1)                                              // vector
+      {
+        icexpression_.reset(new InitialConditionExpression(components, icexpressions));
+      }
+      else if (rank==2)                                              // tensor
+      {
+        std::vector<std::size_t> value_shape(2, 0);
+        for (uint i=0; i<rank; i++)
+        {
+          value_shape[i] = (*(*icexpressions.begin()).second).value_dimension(i);
+        }
+        icexpression_.reset(new InitialConditionExpression(value_shape, icexpressions));
+      }
+      else
+      {
+        tf_err("Unknown rank in collect_ics_.", "Rank: %d", rank);
+      }
     }
-    else if (rank==1)                                                // vector
+    else                                                             // vectors are the general case for a mixed function
     {
       icexpression_.reset(new InitialConditionExpression(components, icexpressions));
     }
-    else if (rank==2)                                                // tensor
-    {
-      std::vector<std::size_t> value_shape(2, 0);
-      for (uint i=0; i<rank; i++)
-      {
-        value_shape[i] = (*(*icexpressions.begin()).second).value_dimension(i);
-      }
-      icexpression_.reset(new InitialConditionExpression(value_shape, icexpressions));
-    }
-    else
-    {
-      tf_err("Unknown rank in collect_ics_.", "Rank: %d", rank);
-    }
-  }
-  else                                                               // vectors are the general case for a mixed function
-  {
-    icexpression_.reset(new InitialConditionExpression(components, icexpressions));
   }
 }
 

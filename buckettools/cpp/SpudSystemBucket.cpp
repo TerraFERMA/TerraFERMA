@@ -301,7 +301,7 @@ void SpudSystemBucket::fill_fields_()
     {
                                                                      // insert the field's initial condition expression into a 
                                                                      // temporary system map:
-      size_t_Expression_it e_it = icexpressions.find(component);       // check if this component already exists
+      size_t_Expression_it e_it = icexpressions.find(component);     // check if this component already exists
       if (e_it != icexpressions.end())
       {
         tf_err("IC expression with given component number already exists in inexpressions map.", "Component: %d", component);
@@ -310,10 +310,10 @@ void SpudSystemBucket::fill_fields_()
       {
         icexpressions[component] = (*field).icexpression();          // if it doesn't, insert it into the map
       }
-
-      component += (*(*field).icexpression()).value_size();          // increment the component count by the size of this field
-                                                                     // (i.e. no. of scalar components)
     }
+
+    component += (*field).size();                                    // increment the component count by the size of this field
+                                                                     // (i.e. no. of scalar components)
   }
 
   if (!icexpressions.empty())
