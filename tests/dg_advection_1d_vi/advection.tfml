@@ -90,6 +90,48 @@
         <include_residual_in_visualization/>
       </diagnostics>
     </field>
+    <field name="Field2">
+      <ufl_symbol name="global">
+        <string_value lines="1">f2</string_value>
+      </ufl_symbol>
+      <type name="Function">
+        <rank name="Scalar" rank="0">
+          <element name="P1">
+            <family>
+              <string_value lines="1">CG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">1</integer_value>
+            </degree>
+          </element>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_visualization/>
+        <include_in_statistics/>
+      </diagnostics>
+    </field>
+    <field name="Field3">
+      <ufl_symbol name="global">
+        <string_value lines="1">f3</string_value>
+      </ufl_symbol>
+      <type name="Function">
+        <rank name="Scalar" rank="0">
+          <element name="P1">
+            <family>
+              <string_value lines="1">CG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">1</integer_value>
+            </degree>
+          </element>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_visualization/>
+        <include_in_statistics/>
+      </diagnostics>
+    </field>
     <coefficient name="Velocity">
       <ufl_symbol name="global">
         <string_value lines="1">v</string_value>
@@ -156,7 +198,10 @@ r_fS =  dt_av*theta_av*(dot(vnabs('+')*f_i('+') - vnabs('-')*f_i('-'), jump(f_t)
 r_fs1 =  dt*dot(vn*f_t, fin)*ds(1)
 r_fs2 =  dt*theta*dot(vn*f_t, f_i)*ds(2) + dt*(1.0-theta)*dot(vn*f_t, f_n)*ds(2)
 
-r = r_m + r_a + r_fS + r_fs1 + r_fs2</string_value>
+r2 = f2_t*(f2_i - fin)*dx
+r3 = f3_t*(f3_i - 2*fin)*dx
+
+r = r_m + r_a + r_fS + r_fs1 + r_fs2 + r2 + r3</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">r</string_value>
           </ufl_symbol>
@@ -202,8 +247,49 @@ r = r_m + r_a + r_fS + r_fs1 + r_fs2</string_value>
         </monitors>
         <linear_solver>
           <iterative_method name="preonly"/>
-          <preconditioner name="lu">
-            <factorization_package name="umfpack"/>
+          <preconditioner name="fieldsplit">
+            <composite_type name="additive"/>
+            <fieldsplit name="Field">
+              <field name="Field"/>
+              <monitors/>
+              <linear_solver>
+                <iterative_method name="preonly"/>
+                <preconditioner name="lu">
+                  <factorization_package name="mumps"/>
+                </preconditioner>
+              </linear_solver>
+            </fieldsplit>
+            <fieldsplit name="OtherFields">
+              <field name="Field2"/>
+              <field name="Field3"/>
+              <monitors/>
+              <linear_solver>
+                <iterative_method name="preonly"/>
+                <preconditioner name="fieldsplit">
+                  <composite_type name="additive"/>
+                  <fieldsplit name="Field2">
+                    <field name="Field2"/>
+                    <monitors/>
+                    <linear_solver>
+                      <iterative_method name="preonly"/>
+                      <preconditioner name="lu">
+                        <factorization_package name="mumps"/>
+                      </preconditioner>
+                    </linear_solver>
+                  </fieldsplit>
+                  <fieldsplit name="Field3">
+                    <field name="Field3"/>
+                    <monitors/>
+                    <linear_solver>
+                      <iterative_method name="preonly"/>
+                      <preconditioner name="lu">
+                        <factorization_package name="mumps"/>
+                      </preconditioner>
+                    </linear_solver>
+                  </fieldsplit>
+                </preconditioner>
+              </linear_solver>
+            </fieldsplit>
           </preconditioner>
         </linear_solver>
         <never_ignore_solver_failures/>
