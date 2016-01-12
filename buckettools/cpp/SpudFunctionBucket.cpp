@@ -129,8 +129,8 @@ void SpudFunctionBucket::allocate_coeff_function()
     functionspace_ =                                                 // grab the functionspace for this coefficient from the bucket
           (*(*system_).bucket()).fetch_coefficientspace(uflsymbol());// data maps
 
-    function_.reset( new dolfin::Function(*functionspace_) );        // allocate the function on this functionspace
-    oldfunction_.reset( new dolfin::Function(*functionspace_) );     // allocate the old function on this functionspace
+    function_.reset( new dolfin::Function(functionspace_) );        // allocate the function on this functionspace
+    oldfunction_.reset( new dolfin::Function(functionspace_) );     // allocate the old function on this functionspace
     iteratedfunction_ = function_;                                   // just point this at the function
 
                                                                      // can't initialize this yet (it may depend on other
@@ -671,7 +671,7 @@ void SpudFunctionBucket::fill_bc_component_(const std::string &optionpath,
          for (std::vector<int>::const_iterator bcid = bcids.begin(); // loop over the boundary ids
                                             bcid < bcids.end(); bcid++)
          {                                                           // create a new bc on each boundary id for this subcomponent
-           DirichletBC_ptr bc(new dolfin::DirichletBC(*subfunctionspace, *bcfunc, *(*system_).facetdomains(), *bcid));
+           DirichletBC_ptr bc(new dolfin::DirichletBC(subfunctionspace, bcfunc, (*system_).facetdomains(), *bcid));
            namebuffer.str(""); namebuffer << bcname << "::" 
                                       << *subcompid << "::" << *bcid;// assemble a name incorporating the boundary id
            register_dirichletbc(bc, namebuffer.str());               // register the bc in the function bucket
@@ -684,7 +684,7 @@ void SpudFunctionBucket::fill_bc_component_(const std::string &optionpath,
       for (std::vector<int>::const_iterator bcid = bcids.begin();    // loop over the boundary ids
                                           bcid < bcids.end(); bcid++)
       {                                                              // create a bc on each boundary id for all components
-        DirichletBC_ptr bc(new dolfin::DirichletBC(*functionspace(), *bcfunc, *(*system_).facetdomains(), *bcid));
+        DirichletBC_ptr bc(new dolfin::DirichletBC(functionspace(), bcfunc, (*system_).facetdomains(), *bcid));
         namebuffer.str(""); namebuffer << bcname << "::" << *bcid;   // assemble a name for this bc incorporating the boundary id
         register_dirichletbc(bc, namebuffer.str());                  // register the bc in the function bucket
       }
