@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <harness_options>
   <length>
-    <string_value>short</string_value>
+    <string_value lines="1">short</string_value>
   </length>
   <owner>
     <string_value lines="1">cwilson</string_value>
@@ -26,6 +26,16 @@ facets = MeshFunction("double", mesh, "functional_System_Fieldint_1_facetfunctio
 mesh = UnitSquareMesh(1,1,'crossed')
 cells = MeshFunction("double", mesh, "functional_System_Fieldint_1_cellfunction.xml").array()</string_value>
         </variable>
+        <variable name="maxfacet">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+stat = parser("functional.stat")
+maxfacet = stat["System"]["MaxFacet"]["max"]</string_value>
+        </variable>
+        <variable name="maxcell">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+stat = parser("functional.stat")
+maxcell = stat["System"]["MaxCell"]["max"]</string_value>
+        </variable>
       </variables>
     </simulation>
   </simulations>
@@ -37,6 +47,14 @@ assert(numpy.all(abs(facets-1)&lt;1.e-6))</string_value>
     <test name="cells">
       <string_value lines="20" type="code" language="python">import numpy
 assert(numpy.all(abs(cells-1)&lt;1.e-6))</string_value>
+    </test>
+    <test name="maxfacet">
+      <string_value lines="20" type="code" language="python">import numpy
+assert(numpy.all(abs(maxfacet-1)&lt;1.e-6))</string_value>
+    </test>
+    <test name="maxcell">
+      <string_value lines="20" type="code" language="python">import numpy
+assert(numpy.all(abs(maxcell-1)&lt;1.e-6))</string_value>
     </test>
   </tests>
 </harness_options>
