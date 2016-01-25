@@ -122,20 +122,20 @@ SubDomain_ptr ReferencePoint::subdomain_(const std::vector<double> &coord, const
   if (cellid >= 0)
   {
     const dolfin::GenericDofMap& dofmap = *(*functionspace).dofmap();
+    std::shared_ptr<const dolfin::FiniteElement> element = (*functionspace).element();
 
     const dolfin::Cell cell(mesh, cellid);
 
     boost::multi_array<double, 2> coordinates(boost::extents[dofmap.cell_dimension(cellid)][gdim]);
-    std::vector<double> vertex_coordinates;
-    cell.get_vertex_coordinates(vertex_coordinates);
-    dofmap.tabulate_coordinates(coordinates, vertex_coordinates, cell);
+    std::vector<double> dof_coordinates;
+    cell.get_coordinate_dofs(dof_coordinates);
+    (*element).tabulate_dof_coordinates(coordinates, dof_coordinates, cell);
 
-    const std::vector<dolfin::la_index>& tmp_cell_dofs = dofmap.cell_dofs(cellid);
+    dolfin::ArrayView<const dolfin::la_index> tmp_cell_dofs = dofmap.cell_dofs(cellid);
     std::vector<dolfin::la_index> cell_dofs;
-    for (std::vector<dolfin::la_index>::const_iterator dof_it = tmp_cell_dofs.begin();
-                              dof_it != tmp_cell_dofs.end(); dof_it++)
+    for (std::size_t i = 0; i < tmp_cell_dofs.size(); i++)
     {
-      cell_dofs.push_back(dofmap.local_to_global_index(*dof_it));
+      cell_dofs.push_back(dofmap.local_to_global_index(tmp_cell_dofs[i]));
     }
 
     std::vector<double> dist(dofmap.cell_dimension(cellid), 0.0);
