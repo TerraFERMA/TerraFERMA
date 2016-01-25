@@ -35,12 +35,197 @@
 - Quadrature</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
         <choice>
           <value>CG</value>
           <value>DG</value>
           <value>R</value>
           <value>Quadrature</value>
         </choice>
+      </element>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="generic_vector_element_family">
+    <element name="family">
+      <a:documentation>Element family:
+
+- CG = Lagrange (continuous Galerkin)
+
+- DG = Discontinuous Lagrange (discontinuous Galerkin)
+
+- RT = Raviart-Thomas
+
+- DRT = Discontinuous Raviart-Thomas
+
+- BDM = Brezzi–Douglas–Marini
+
+- N1curl = Nedelec 1st kind H(curl)
+
+- N2curl = Nedelec 2nd kind H(curl)
+
+- R  = Real (global constant)
+
+- Quadrature</a:documentation>
+      <!-- a hard coded string_value -->
+      <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
+        <choice>
+          <value>CG</value>
+          <value>DG</value>
+          <value>RT</value>
+          <value>DRT</value>
+          <value>BDM</value>
+          <value>N1curl</value>
+          <value>N2curl</value>
+          <value>R</value>
+          <value>Quadrature</value>
+        </choice>
+      </element>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="generic_enrichment_element_family">
+    <element name="family">
+      <a:documentation>Element family:
+
+- B = Bubble</a:documentation>
+      <!-- a hard coded string_value -->
+      <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
+        <value>B</value>
+      </element>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="b_element_family">
+    <element name="family">
+      <a:documentation>Element family
+
+- B = Bubble</a:documentation>
+      <!-- a hard coded string_value -->
+      <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
+        <value>B</value>
+      </element>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="rt_element_family">
+    <element name="family">
+      <a:documentation>Element family
+
+- RT = Raviart-Thomas</a:documentation>
+      <!-- a hard coded string_value -->
+      <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
+        <value>RT</value>
+      </element>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="drt_element_family">
+    <element name="family">
+      <a:documentation>Element family
+
+- DRT = Discontinuous Raviart-Thomas</a:documentation>
+      <!-- a hard coded string_value -->
+      <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
+        <value>DRT</value>
+      </element>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="bdm_element_family">
+    <element name="family">
+      <a:documentation>Element family
+
+- BDM = Brezzi–Douglas–Marini</a:documentation>
+      <!-- a hard coded string_value -->
+      <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
+        <value>BDM</value>
+      </element>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="n1curl_element_family">
+    <element name="family">
+      <a:documentation>Element family
+
+- N1curl = Nedelec 1st kind H(curl)</a:documentation>
+      <!-- a hard coded string_value -->
+      <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
+        <value>N1curl</value>
+      </element>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="n2curl_element_family">
+    <element name="family">
+      <a:documentation>Element family
+
+- N2curl = Nedelec 2nd kind H(curl)</a:documentation>
+      <!-- a hard coded string_value -->
+      <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
+        <value>N2curl</value>
       </element>
       <ref name="comment"/>
     </element>
@@ -52,6 +237,13 @@
 - CG = Lagrange (continuous Galerkin)</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
         <value>CG</value>
       </element>
       <ref name="comment"/>
@@ -64,6 +256,13 @@
 - DG = Discontinuous Lagrange (discontinuous Galerkin)</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
         <value>DG</value>
       </element>
       <ref name="comment"/>
@@ -76,6 +275,13 @@
 - R  = Real (global constant)</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
         <value>R</value>
       </element>
       <ref name="comment"/>
@@ -88,6 +294,13 @@
 - Quadrature</a:documentation>
       <!-- a hard coded string_value -->
       <element name="string_value">
+        <!--
+          Lines is a hint to the gui about the size of the text box.
+          It is not an enforced limit on string length.
+        -->
+        <attribute name="lines">
+          <value>1</value>
+        </attribute>
         <value>Quadrature</value>
       </element>
       <ref name="comment"/>
@@ -146,9 +359,73 @@ Importantly, this is the degree of the resulting form not the function itself!</
       <ref name="comment"/>
     </element>
   </define>
+  <define name="p3_element_degree">
+    <element name="degree">
+      <a:documentation>Element degree</a:documentation>
+      <element name="integer_value">
+        <attribute name="rank">
+          <value>0</value>
+        </attribute>
+        <value>3</value>
+      </element>
+      <ref name="comment"/>
+    </element>
+  </define>
   <define name="generic_element">
     <ref name="generic_element_family"/>
     <ref name="generic_element_degree"/>
+  </define>
+  <define name="generic_vector_element">
+    <ref name="generic_vector_element_family"/>
+    <ref name="generic_element_degree"/>
+  </define>
+  <define name="generic_enrichment_element">
+    <ref name="generic_enrichment_element_family"/>
+    <ref name="generic_element_degree"/>
+  </define>
+  <define name="b3_element">
+    <ref name="b_element_family"/>
+    <ref name="p3_element_degree"/>
+  </define>
+  <define name="rt1_element">
+    <ref name="rt_element_family"/>
+    <ref name="p1_element_degree"/>
+  </define>
+  <define name="rt2_element">
+    <ref name="rt_element_family"/>
+    <ref name="p2_element_degree"/>
+  </define>
+  <define name="drt1_element">
+    <ref name="drt_element_family"/>
+    <ref name="p1_element_degree"/>
+  </define>
+  <define name="drt2_element">
+    <ref name="drt_element_family"/>
+    <ref name="p2_element_degree"/>
+  </define>
+  <define name="bdm1_element">
+    <ref name="bdm_element_family"/>
+    <ref name="p1_element_degree"/>
+  </define>
+  <define name="bdm2_element">
+    <ref name="bdm_element_family"/>
+    <ref name="p2_element_degree"/>
+  </define>
+  <define name="n1curl1_element">
+    <ref name="n1curl_element_family"/>
+    <ref name="p1_element_degree"/>
+  </define>
+  <define name="n1curl2_element">
+    <ref name="n1curl_element_family"/>
+    <ref name="p2_element_degree"/>
+  </define>
+  <define name="n2curl1_element">
+    <ref name="n2curl_element_family"/>
+    <ref name="p1_element_degree"/>
+  </define>
+  <define name="n2curl2_element">
+    <ref name="n2curl_element_family"/>
+    <ref name="p2_element_degree"/>
   </define>
   <define name="p1_element">
     <ref name="cg_element_family"/>
@@ -200,6 +477,32 @@ Importantly, this is the degree of the resulting form not the function itself!</
       </element>
     </optional>
   </define>
+  <define name="enrichment_options">
+    <optional>
+      <element name="enrichment">
+        <ref name="element_options_enrichment"/>
+      </element>
+    </optional>
+  </define>
+  <define name="element_options_enrichment">
+    <choice>
+      <element name="element">
+        <attribute name="name">
+          <value>UserDefined</value>
+        </attribute>
+        <ref name="generic_enrichment_element"/>
+        <ref name="comment"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing a</a:documentation>
+        <attribute name="name">
+          <value>B3</value>
+        </attribute>
+        <ref name="b3_element"/>
+        <ref name="comment"/>
+      </element>
+    </choice>
+  </define>
   <define name="element_options_scalar">
     <ref name="element_options_scalar_not_lagrange"/>
   </define>
@@ -216,10 +519,11 @@ Importantly, this is the degree of the resulting form not the function itself!</
         <value>UserDefined</value>
       </attribute>
       <ref name="generic_element"/>
+      <ref name="enrichment_options"/>
       <ref name="comment"/>
     </element>
   </define>
-  <define name="element_options_scalar_lagrange">
+  <define name="element_options_scalar_lagrange_visualization">
     <choice>
       <element name="element">
         <a:documentation>Options describing piecewise linear continuous Lagrange finite element.</a:documentation>
@@ -255,6 +559,46 @@ Importantly, this is the degree of the resulting form not the function itself!</
       </element>
     </choice>
   </define>
+  <define name="element_options_scalar_lagrange">
+    <choice>
+      <element name="element">
+        <a:documentation>Options describing piecewise linear continuous Lagrange finite element.</a:documentation>
+        <attribute name="name">
+          <value>P1</value>
+        </attribute>
+        <ref name="p1_element"/>
+        <ref name="enrichment_options"/>
+        <ref name="comment"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing piecewise quadratic continuous Lagrange finite element.</a:documentation>
+        <attribute name="name">
+          <value>P2</value>
+        </attribute>
+        <ref name="p2_element"/>
+        <ref name="enrichment_options"/>
+        <ref name="comment"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing piecewise linear discontinuous Lagrange finite element.</a:documentation>
+        <attribute name="name">
+          <value>P1DG</value>
+        </attribute>
+        <ref name="p1dg_element"/>
+        <ref name="enrichment_options"/>
+        <ref name="comment"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing piecewise quadratic discontinuous Lagrange finite element.</a:documentation>
+        <attribute name="name">
+          <value>P2DG</value>
+        </attribute>
+        <ref name="p2dg_element"/>
+        <ref name="enrichment_options"/>
+        <ref name="comment"/>
+      </element>
+    </choice>
+  </define>
   <define name="element_options_scalar_not_lagrange">
     <choice>
       <element name="element">
@@ -263,6 +607,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
           <value>P0</value>
         </attribute>
         <ref name="p0_element"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
       <element name="element">
@@ -290,8 +635,9 @@ Importantly, this is the degree of the resulting form not the function itself!</
         <attribute name="name">
           <value>UserDefined</value>
         </attribute>
-        <ref name="generic_element"/>
+        <ref name="generic_vector_element"/>
         <ref name="vector_element_options"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
       <element name="element">
@@ -301,6 +647,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p1_element"/>
         <ref name="vector_element_options"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
       <element name="element">
@@ -310,6 +657,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p2_element"/>
         <ref name="vector_element_options"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
       <element name="element">
@@ -319,6 +667,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p1dg_element"/>
         <ref name="vector_element_options"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
       <element name="element">
@@ -328,6 +677,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p2dg_element"/>
         <ref name="vector_element_options"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
       <element name="element">
@@ -337,6 +687,96 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p0_element"/>
         <ref name="vector_element_options"/>
+        <ref name="enrichment_options"/>
+        <ref name="comment"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing first degree Raviart-Thomas element for a vector.</a:documentation>
+        <attribute name="name">
+          <value>RT1</value>
+        </attribute>
+        <ref name="rt1_element"/>
+        <ref name="enrichment_options"/>
+        <ref name="comment"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing second degree Raviart-Thomas element for a vector.</a:documentation>
+        <attribute name="name">
+          <value>RT2</value>
+        </attribute>
+        <ref name="rt2_element"/>
+        <ref name="comment"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing first degree discontinuous Raviart-Thomas element for a vector.</a:documentation>
+        <attribute name="name">
+          <value>DRT1</value>
+        </attribute>
+        <ref name="drt1_element"/>
+        <ref name="enrichment_options"/>
+        <ref name="comment"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing second degree discontinuous Raviart-Thomas element for a vector.</a:documentation>
+        <attribute name="name">
+          <value>DRT2</value>
+        </attribute>
+        <ref name="drt2_element"/>
+        <ref name="enrichment_options"/>
+        <ref name="comment"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing first degree discontinuous Raviart-Thomas element for a vector.</a:documentation>
+        <attribute name="name">
+          <value>BDM1</value>
+        </attribute>
+        <ref name="bdm1_element"/>
+        <ref name="enrichment_options"/>
+        <ref name="comment"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing second degree discontinuous Raviart-Thomas element for a vector.</a:documentation>
+        <attribute name="name">
+          <value>BDM2</value>
+        </attribute>
+        <ref name="bdm2_element"/>
+        <ref name="enrichment_options"/>
+        <ref name="comment"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing first degree Nedelec 1st kind H(curl) element for a vector.</a:documentation>
+        <attribute name="name">
+          <value>N1curl1</value>
+        </attribute>
+        <ref name="n1curl1_element"/>
+        <ref name="enrichment_options"/>
+        <ref name="comment"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing second degree Nedelec 1st kind H(curl) element for a vector.</a:documentation>
+        <attribute name="name">
+          <value>N1curl2</value>
+        </attribute>
+        <ref name="n1curl2_element"/>
+        <ref name="enrichment_options"/>
+        <ref name="comment"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing first degree Nedelec 2nd kind H(curl) element for a vector.</a:documentation>
+        <attribute name="name">
+          <value>N2curl1</value>
+        </attribute>
+        <ref name="n2curl1_element"/>
+        <ref name="enrichment_options"/>
+        <ref name="comment"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing second degree Nedelec 2nd kind H(curl) element for a vector.</a:documentation>
+        <attribute name="name">
+          <value>N2curl2</value>
+        </attribute>
+        <ref name="n2curl2_element"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
       <element name="element">
@@ -368,6 +808,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="generic_element"/>
         <ref name="tensor_element_options"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
       <element name="element">
@@ -377,6 +818,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p1_element"/>
         <ref name="tensor_element_options"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
       <element name="element">
@@ -386,6 +828,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p2_element"/>
         <ref name="tensor_element_options"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
       <element name="element">
@@ -395,6 +838,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p1dg_element"/>
         <ref name="tensor_element_options"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
       <element name="element">
@@ -404,6 +848,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p2dg_element"/>
         <ref name="tensor_element_options"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
       <element name="element">
@@ -413,6 +858,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="p0_element"/>
         <ref name="tensor_element_options"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
       <element name="element">

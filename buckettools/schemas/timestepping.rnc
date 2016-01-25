@@ -131,6 +131,12 @@ timestepping =
           },
           comment
         }?,
+        ## Set a walltime limit (in seconds) after which the simulation will be terminated.
+        ##
+        ## Useful in combination with checkpointing on clusters.
+        element walltime_limit {
+          real
+        }?,
         comment
       }
    )

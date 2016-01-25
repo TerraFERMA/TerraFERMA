@@ -10,10 +10,10 @@
           <integer_value shape="2" dim1="2" rank="1">32 32</integer_value>
         </number_cells>
         <diagonal>
-          <string_value>right/left</string_value>
+          <string_value lines="1">right/left</string_value>
         </diagonal>
         <cell>
-          <string_value>triangle</string_value>
+          <string_value lines="1">triangle</string_value>
         </cell>
       </source>
     </mesh>
@@ -25,7 +25,7 @@
     <visualization>
       <element name="P1">
         <family>
-          <string_value>CG</string_value>
+          <string_value lines="1">CG</string_value>
         </family>
         <degree>
           <integer_value rank="0">1</integer_value>
@@ -52,7 +52,7 @@
         <rank name="Scalar" rank="0">
           <element name="UserDefined">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">1</integer_value>
@@ -69,9 +69,12 @@
             </boundary_ids>
             <sub_components name="All">
               <type type="boundary_condition" name="Dirichlet">
-                <constant>
-                  <real_value rank="0">0.0</real_value>
-                </constant>
+                <python rank="0">
+                  <string_value lines="20" type="code" language="python">from math import sin,cos,pi
+def val(x):
+  global sin,cos,pi
+  return cos(2*pi*x[0] + 0.25*pi)*sin(4*pi*x[1] + 0.25*pi)</string_value>
+                </python>
               </type>
             </sub_components>
           </boundary_condition>
@@ -91,7 +94,7 @@
         <rank name="Scalar" rank="0">
           <element name="UserDefined">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">1</integer_value>
@@ -102,7 +105,7 @@
               <string_value lines="20" type="code" language="python">from math import sin,cos,pi
 def val(x):
   global sin,cos,pi
-  return 20.*pi**2*sin(4.*pi*x[1])*cos(2.*pi*x[0] + 0.25*pi)</string_value>
+  return 20.*pi**2*sin(4.*pi*x[1] + 0.25*pi)*cos(2.*pi*x[0] + 0.25*pi)</string_value>
             </python>
           </value>
         </rank>
@@ -117,7 +120,7 @@ def val(x):
         <rank name="Scalar" rank="0">
           <element name="UserDefined">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">1</integer_value>
@@ -128,7 +131,7 @@ def val(x):
               <string_value lines="20" type="code" language="python">from math import sin,cos,pi
 def val(x):
   global sin,cos,pi
-  return cos(2*pi*x[0] + 0.25*pi)*sin(4*pi*x[1])</string_value>
+  return cos(2*pi*x[0] + 0.25*pi)*sin(4*pi*x[1] + 0.25*pi)</string_value>
             </python>
           </value>
         </rank>
@@ -143,7 +146,7 @@ def val(x):
         <rank name="Scalar" rank="0">
           <element name="UserDefined">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">1</integer_value>

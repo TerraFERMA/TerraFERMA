@@ -67,9 +67,9 @@ void FunctionalBucket::attach_form_coeffs()
 //*******************************************************************|************************************************************//
 // return the value of the functional (calculating it if necessary)
 //*******************************************************************|************************************************************//
-double FunctionalBucket::value()
+double FunctionalBucket::value(const bool& force)
 {
-  if(!calculated_)
+  if(!calculated_ || force)
   {
     cellfunction_=NULL;
     facetfunction_=NULL;

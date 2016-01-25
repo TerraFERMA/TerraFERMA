@@ -161,12 +161,13 @@ std::string Logger::description(const std::string &filename,
   std::stringstream s;
   s << "-------------------------------------------------------------------------"
     << std::endl
-    << "*** " << "Problem:  " << errstr << std::endl
-    << "*** " << "Reason:   " << reason << std::endl
-    << "*** " << "Where:    " << filename << ":" << line << std::endl
+    << "*** " << "Problem:   " << errstr << std::endl
+    << "*** " << "Reason:    " << reason << std::endl
+    << "*** " << "Where:     " << filename << ":" << line << std::endl
     << "*** " << std::endl
-    << "*** " << "GitHash:  " << githash() << std::endl
-    << "*** " << "Compiled: " << compiletime() << std::endl
+    << "*** " << "TFVersion: " << tfversion() << std::endl
+    << "*** " << "GitHash:   " << githash() << std::endl
+    << "*** " << "Compiled:  " << compiletime() << std::endl
     << "*** " << std::endl
     << "-------------------------------------------------------------------------"
     << std::endl;
@@ -242,5 +243,15 @@ void buckettools::warning(const std::string &filename,
 {
   va_read(va_buffer_.get(), reason);
   (*Logger::instance()).warning(filename, line, errstr, va_buffer_.get());
+}
+                            
+void buckettools::not_parallelized(const std::string &filename, 
+                                   const int &line,
+                                   const std::string &what)
+{
+  if (dolfin::MPI::size(MPI_COMM_WORLD) > 1)
+  {
+    error(filename, line, "Not parallelized!", "%s cannot yet be used in parallel.  Please file a bug report.", what.c_str());
+  }
 }
                             

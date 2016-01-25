@@ -10,7 +10,7 @@
           <integer_value rank="0">10</integer_value>
         </number_cells>
         <cell>
-          <string_value>interval</string_value>
+          <string_value lines="1">interval</string_value>
         </cell>
       </source>
     </mesh>
@@ -22,7 +22,7 @@
     <visualization>
       <element name="P1">
         <family>
-          <string_value>CG</string_value>
+          <string_value lines="1">CG</string_value>
         </family>
         <degree>
           <integer_value rank="0">1</integer_value>
@@ -102,7 +102,7 @@
         <rank name="Scalar" rank="0">
           <element name="P0">
             <family>
-              <string_value>DG</string_value>
+              <string_value lines="1">DG</string_value>
             </family>
             <degree>
               <integer_value rank="0">0</integer_value>

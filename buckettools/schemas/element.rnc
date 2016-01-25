@@ -34,7 +34,162 @@ generic_element_family =
      element family {
         # a hard coded string_value
         element string_value {
+          # Lines is a hint to the gui about the size of the text box.
+          # It is not an enforced limit on string length.
+          attribute lines { "1" },
           ( "CG" | "DG" | "R" | "Quadrature" )
+        },
+        comment
+     }
+  )
+
+generic_vector_element_family = 
+  (
+     ## Element family:
+     ##
+     ## - CG = Lagrange (continuous Galerkin)
+     ##
+     ## - DG = Discontinuous Lagrange (discontinuous Galerkin)
+     ##
+     ## - RT = Raviart-Thomas
+     ##
+     ## - DRT = Discontinuous Raviart-Thomas
+     ##
+     ## - BDM = Brezzi–Douglas–Marini
+     ##
+     ## - N1curl = Nedelec 1st kind H(curl)
+     ##
+     ## - N2curl = Nedelec 2nd kind H(curl)
+     ##
+     ## - R  = Real (global constant)
+     ##
+     ## - Quadrature
+     element family {
+        # a hard coded string_value
+        element string_value {
+          # Lines is a hint to the gui about the size of the text box.
+          # It is not an enforced limit on string length.
+          attribute lines { "1" },
+          ( "CG" | "DG" | "RT" | "DRT" | "BDM" | "N1curl" | "N2curl" | "R" | "Quadrature" )
+        },
+        comment
+     }
+  )
+
+generic_enrichment_element_family = 
+  (
+     ## Element family:
+     ##
+     ## - B = Bubble
+     element family {
+        # a hard coded string_value
+        element string_value {
+          # Lines is a hint to the gui about the size of the text box.
+          # It is not an enforced limit on string length.
+          attribute lines { "1" },
+          ( "B" )
+        },
+        comment
+     }
+  )
+
+b_element_family = 
+  (
+     ## Element family
+     ##
+     ## - B = Bubble
+     element family {
+        # a hard coded string_value
+        element string_value {
+          # Lines is a hint to the gui about the size of the text box.
+          # It is not an enforced limit on string length.
+          attribute lines { "1" },
+          ( "B" )
+        },
+        comment
+     }
+  )
+
+rt_element_family = 
+  (
+     ## Element family
+     ##
+     ## - RT = Raviart-Thomas
+     element family {
+        # a hard coded string_value
+        element string_value {
+          # Lines is a hint to the gui about the size of the text box.
+          # It is not an enforced limit on string length.
+          attribute lines { "1" },
+          ( "RT" )
+        },
+        comment
+     }
+  )
+
+drt_element_family = 
+  (
+     ## Element family
+     ##
+     ## - DRT = Discontinuous Raviart-Thomas
+     element family {
+        # a hard coded string_value
+        element string_value {
+          # Lines is a hint to the gui about the size of the text box.
+          # It is not an enforced limit on string length.
+          attribute lines { "1" },
+          ( "DRT" )
+        },
+        comment
+     }
+  )
+
+bdm_element_family = 
+  (
+     ## Element family
+     ##
+     ## - BDM = Brezzi–Douglas–Marini
+     element family {
+        # a hard coded string_value
+        element string_value {
+          # Lines is a hint to the gui about the size of the text box.
+          # It is not an enforced limit on string length.
+          attribute lines { "1" },
+          ( "BDM" )
+        },
+        comment
+     }
+  )
+
+n1curl_element_family = 
+  (
+     ## Element family
+     ##
+     ## - N1curl = Nedelec 1st kind H(curl)
+     element family {
+        # a hard coded string_value
+        element string_value {
+          # Lines is a hint to the gui about the size of the text box.
+          # It is not an enforced limit on string length.
+          attribute lines { "1" },
+          ( "N1curl" )
+        },
+        comment
+     }
+  )
+
+n2curl_element_family = 
+  (
+     ## Element family
+     ##
+     ## - N2curl = Nedelec 2nd kind H(curl)
+     element family {
+        # a hard coded string_value
+        element string_value {
+          # Lines is a hint to the gui about the size of the text box.
+          # It is not an enforced limit on string length.
+          attribute lines { "1" },
+          ( "N2curl" )
         },
         comment
      }
@@ -48,6 +203,9 @@ cg_element_family =
      element family {
         # a hard coded string_value
         element string_value {
+          # Lines is a hint to the gui about the size of the text box.
+          # It is not an enforced limit on string length.
+          attribute lines { "1" },
           ( "CG" )
         },
         comment
@@ -62,6 +220,9 @@ dg_element_family =
      element family {
         # a hard coded string_value
         element string_value {
+          # Lines is a hint to the gui about the size of the text box.
+          # It is not an enforced limit on string length.
+          attribute lines { "1" },
           ( "DG" )
         },
         comment
@@ -76,6 +237,9 @@ r_element_family =
      element family {
         # a hard coded string_value
         element string_value {
+          # Lines is a hint to the gui about the size of the text box.
+          # It is not an enforced limit on string length.
+          attribute lines { "1" },
           ( "R" )
         },
         comment
@@ -90,6 +254,9 @@ q_element_family =
      element family {
         # a hard coded string_value
         element string_value {
+          # Lines is a hint to the gui about the size of the text box.
+          # It is not an enforced limit on string length.
+          attribute lines { "1" },
           ( "Quadrature" )
         },
         comment
@@ -153,10 +320,100 @@ p2_element_degree =
      }
   )
 
+p3_element_degree =
+  (
+     ## Element degree
+     element degree {
+       element integer_value {
+          attribute rank {"0"},
+          ( "3" )
+       }, 
+       comment
+     }
+  )
+
 generic_element =
   (
      generic_element_family,
      generic_element_degree
+  )
+
+generic_vector_element =
+  (
+     generic_vector_element_family,
+     generic_element_degree
+  )
+
+generic_enrichment_element =
+  (
+     generic_enrichment_element_family,
+     generic_element_degree
+  )
+
+b3_element =
+  (
+     b_element_family,
+     p3_element_degree
+  )
+
+rt1_element =
+  (
+     rt_element_family,
+     p1_element_degree
+  )
+
+rt2_element =
+  (
+     rt_element_family,
+     p2_element_degree
+  )
+
+drt1_element =
+  (
+     drt_element_family,
+     p1_element_degree
+  )
+
+drt2_element =
+  (
+     drt_element_family,
+     p2_element_degree
+  )
+
+bdm1_element =
+  (
+     bdm_element_family,
+     p1_element_degree
+  )
+
+bdm2_element =
+  (
+     bdm_element_family,
+     p2_element_degree
+  )
+
+n1curl1_element =
+  (
+     n1curl_element_family,
+     p1_element_degree
+  )
+
+n1curl2_element =
+  (
+     n1curl_element_family,
+     p2_element_degree
+  )
+
+n2curl1_element =
+  (
+     n2curl_element_family,
+     p1_element_degree
+  )
+
+n2curl2_element =
+  (
+     n2curl_element_family,
+     p2_element_degree
   )
 
 p1_element =
@@ -221,6 +478,30 @@ tensor_element_options =
     }?
   )
 
+enrichment_options = 
+  (
+    element enrichment {
+      element_options_enrichment
+    }?
+  )
+
+element_options_enrichment =
+  (
+    (
+       element element {
+         attribute name { "UserDefined" },
+         generic_enrichment_element,
+         comment
+       }|
+       ## Options describing a
+       element element {
+         attribute name { "B3" },
+         b3_element,
+         comment
+       }
+    )
+  )
+
 element_options_scalar = element_options_scalar_not_lagrange
 element_options_scalar |= element_options_scalar_lagrange
 element_options_scalar |= element_options_scalar_user
@@ -232,12 +513,13 @@ element_options_scalar_user =
        element element {
          attribute name { "UserDefined" },
          generic_element,
+         enrichment_options,
          comment
        }
      )
   )
 
-element_options_scalar_lagrange =
+element_options_scalar_lagrange_visualization =
   (
      (
        ## Options describing piecewise linear continuous Lagrange finite element.
@@ -267,6 +549,40 @@ element_options_scalar_lagrange =
      )
   )
 
+element_options_scalar_lagrange =
+  (
+     (
+       ## Options describing piecewise linear continuous Lagrange finite element.
+       element element {
+         attribute name { "P1" },
+         p1_element,
+         enrichment_options,
+         comment
+       }|
+       ## Options describing piecewise quadratic continuous Lagrange finite element.
+       element element {
+         attribute name { "P2" },
+         p2_element,
+         enrichment_options,
+         comment
+       }|
+       ## Options describing piecewise linear discontinuous Lagrange finite element.
+       element element {
+         attribute name { "P1DG" },
+         p1dg_element,
+         enrichment_options,
+         comment
+       }|
+       ## Options describing piecewise quadratic discontinuous Lagrange finite element.
+       element element {
+         attribute name { "P2DG" },
+         p2dg_element,
+         enrichment_options,
+         comment
+       }
+     )
+  )
+
 element_options_scalar_not_lagrange =
   (
      (
@@ -274,6 +590,7 @@ element_options_scalar_not_lagrange =
        element element {
          attribute name { "P0" },
          p0_element,
+         enrichment_options,
          comment
        }|
        ## Options describing piecewise constant continuous real, e.g. for a global Lagrange multiplier.
@@ -297,8 +614,9 @@ element_options_vector =
        ## Options describing a user defined finite element for a vector.
        element element {
          attribute name { "UserDefined" },
-         generic_element,
+         generic_vector_element,
          vector_element_options,
+         enrichment_options,
          comment
        }|
        ## Options describing piecewise linear continuous Lagrange finite element for a vector.
@@ -306,6 +624,7 @@ element_options_vector =
          attribute name { "P1" },
          p1_element,
          vector_element_options,
+         enrichment_options,
          comment
        }|
        ## Options describing piecewise quadratic continuous Lagrange finite element for a vector.
@@ -313,6 +632,7 @@ element_options_vector =
          attribute name { "P2" },
          p2_element,
          vector_element_options,
+         enrichment_options,
          comment
        }|
        ## Options describing piecewise linear discontinuous Lagrange finite element for a vector.
@@ -320,6 +640,7 @@ element_options_vector =
          attribute name { "P1DG" },
          p1dg_element,
          vector_element_options,
+         enrichment_options,
          comment
        }|
        ## Options describing piecewise quadratic discontinuous Lagrange finite element for a vector.
@@ -327,6 +648,7 @@ element_options_vector =
          attribute name { "P2DG" },
          p2dg_element,
          vector_element_options,
+         enrichment_options,
          comment
        }|
        ## Options describing piecewise constant discontinuous Lagrange finite element for a vector.
@@ -334,6 +656,76 @@ element_options_vector =
          attribute name { "P0" },
          p0_element,
          vector_element_options,
+         enrichment_options,
+         comment
+       }|
+       ## Options describing first degree Raviart-Thomas element for a vector.
+       element element {
+         attribute name { "RT1" },
+         rt1_element,
+         enrichment_options,
+         comment
+       }|
+       ## Options describing second degree Raviart-Thomas element for a vector.
+       element element {
+         attribute name { "RT2" },
+         rt2_element,
+         comment
+       }|
+       ## Options describing first degree discontinuous Raviart-Thomas element for a vector.
+       element element {
+         attribute name { "DRT1" },
+         drt1_element,
+         enrichment_options,
+         comment
+       }|
+       ## Options describing second degree discontinuous Raviart-Thomas element for a vector.
+       element element {
+         attribute name { "DRT2" },
+         drt2_element,
+         enrichment_options,
+         comment
+       }|
+       ## Options describing first degree discontinuous Raviart-Thomas element for a vector.
+       element element {
+         attribute name { "BDM1" },
+         bdm1_element,
+         enrichment_options,
+         comment
+       }|
+       ## Options describing second degree discontinuous Raviart-Thomas element for a vector.
+       element element {
+         attribute name { "BDM2" },
+         bdm2_element,
+         enrichment_options,
+         comment
+       }|
+       ## Options describing first degree Nedelec 1st kind H(curl) element for a vector.
+       element element {
+         attribute name { "N1curl1" },
+         n1curl1_element,
+         enrichment_options,
+         comment
+       }|
+       ## Options describing second degree Nedelec 1st kind H(curl) element for a vector.
+       element element {
+         attribute name { "N1curl2" },
+         n1curl2_element,
+         enrichment_options,
+         comment
+       }|
+       ## Options describing first degree Nedelec 2nd kind H(curl) element for a vector.
+       element element {
+         attribute name { "N2curl1" },
+         n2curl1_element,
+         enrichment_options,
+         comment
+       }|
+       ## Options describing second degree Nedelec 2nd kind H(curl) element for a vector.
+       element element {
+         attribute name { "N2curl2" },
+         n2curl2_element,
+         enrichment_options,
          comment
        }|
        ## Options describing piecewise constant continuous real for a vector, e.g. for a global Lagrange multiplier.
@@ -361,6 +753,7 @@ element_options_tensor =
          attribute name { "UserDefined" },
          generic_element,
          tensor_element_options,
+         enrichment_options,
          comment
        }|
        ## Options describing piecewise linear continuous Lagrange finite element for a tensor.
@@ -368,6 +761,7 @@ element_options_tensor =
          attribute name { "P1" },
          p1_element,
          tensor_element_options,
+         enrichment_options,
          comment
        }|
        ## Options describing piecewise quadratic continuous Lagrange finite element for a tensor.
@@ -375,6 +769,7 @@ element_options_tensor =
          attribute name { "P2" },
          p2_element,
          tensor_element_options,
+         enrichment_options,
          comment
        }|
        ## Options describing piecewise linear discontinuous Lagrange finite element for a tensor.
@@ -382,6 +777,7 @@ element_options_tensor =
          attribute name { "P1DG" },
          p1dg_element,
          tensor_element_options,
+         enrichment_options,
          comment
        }|
        ## Options describing piecewise quadratic discontinuous Lagrange finite element for a tensor.
@@ -389,6 +785,7 @@ element_options_tensor =
          attribute name { "P2DG" },
          p2dg_element,
          tensor_element_options,
+         enrichment_options,
          comment
        }|
        ## Options describing piecewise constant discontinuous Lagrange finite element for a tensor.
@@ -396,6 +793,7 @@ element_options_tensor =
          attribute name { "P0" },
          p0_element,
          tensor_element_options,
+         enrichment_options,
          comment
        }|
        ## Options describing piecewise constant continuous real for a tensor, e.g. for a global Lagrange multiplier.

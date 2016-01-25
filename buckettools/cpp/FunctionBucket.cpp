@@ -542,6 +542,11 @@ void FunctionBucket::postprocess_values()
 
   for (uint i = 0; i < lsize; i++)
   {
+    if (!(zeropoints_[i]||upper_cap_[i]||lower_cap_[i]))
+    {
+      continue;
+    }
+
     double value = 0.0;
     if (zeropoints_[i])
     {
@@ -569,9 +574,12 @@ void FunctionBucket::postprocess_values()
 
     for (uint j = 0; j < np; j++)
     {
+      double current_value;
+      (*sysvec).get(&current_value, 1, &pindices[j]);
+
       if (upper_cap_[i])
       {
-        if ((*sysvec)[pindices[j]] > *upper_cap_[i])
+        if (current_value > *upper_cap_[i])
         {
           (*sysvec).setitem(pindices[j], *upper_cap_[i]);
         }
@@ -579,7 +587,7 @@ void FunctionBucket::postprocess_values()
 
       if (lower_cap_[i])
       {
-        if ((*sysvec)[pindices[j]] < *lower_cap_[i])
+        if (current_value < *lower_cap_[i])
         {
           (*sysvec).setitem(pindices[j], *lower_cap_[i]);
         }
@@ -587,7 +595,7 @@ void FunctionBucket::postprocess_values()
 
       if (zeropoints_[i])
       {
-        (*sysvec).setitem(pindices[j], (*sysvec)[pindices[j]]-value);
+        (*sysvec).setitem(pindices[j], current_value-value);
       }
     }
 
@@ -824,8 +832,7 @@ void FunctionBucket::fill_is_()
     {
       for (int i = 0; i < lsize; i++)
       {
-        std::vector<uint> indices = functionspace_dofs(functionspace(), i);
-        restrict_indices(indices, functionspace());
+        std::vector<std::size_t> indices = local_functionspace_dofs(functionspace(), i);
         component_is_[i] = convert_vector_to_is((*mesh).mpi_comm(), 
                                                 indices);
       }
@@ -853,8 +860,7 @@ void FunctionBucket::fill_is_()
             }
           }
 
-          std::vector<uint> indices = functionspace_dofs(functionspace(), kf);
-          restrict_indices(indices, functionspace());
+          std::vector<std::size_t> indices = local_functionspace_dofs(functionspace(), kf);
           component_is_[k] = convert_vector_to_is((*mesh).mpi_comm(), 
                                                   indices);
         }
@@ -875,7 +881,7 @@ void FunctionBucket::fill_is_()
                                              true);
       for (int i = 0; i < lsize; i++)
       {
-        std::vector<uint> indices(nv);
+        std::vector<std::size_t> indices(nv);
         std::iota(indices.begin(), indices.end(), offset + i*(*mesh).num_vertices());
         component_is_[i] = convert_vector_to_is((*mesh).mpi_comm(), 
                                                 indices);

@@ -1,0 +1,2 @@
+export PETSC_OPTIONS='-log_view :petsc_log.py:ascii_info_detail'
+export PYTHONPATH=./python:${PYTHONPATH}

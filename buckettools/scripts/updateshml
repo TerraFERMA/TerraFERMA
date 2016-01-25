@@ -27,6 +27,7 @@ import argparse
 import string
 import shutil
 from lxml import etree
+import copy
 
 parser = argparse.ArgumentParser( \
                        description="""Updates shml files so they pass validation.""")
@@ -113,8 +114,14 @@ def update_functional_names(path):
   # loop over all the variables and tests
   for element in elements:
     lines = element.text.splitlines()
+    ebasenames = copy.deepcopy(basenames)
+    for line in lines:
+      if "/io/output_base_name" in line:
+        basenamev = line.split("=")[0].strip()
+        basenamev += '+"'
+        ebasenames.append(basenamev)
     # loop over the possible output base names
-    for basename in basenames:
+    for basename in ebasenames:
       for ext in extensions:
         if ext[0] == ".xml":
           for i, line in enumerate(lines):

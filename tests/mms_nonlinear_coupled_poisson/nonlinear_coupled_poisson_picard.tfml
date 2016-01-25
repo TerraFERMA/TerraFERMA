@@ -10,10 +10,10 @@
           <integer_value shape="2" dim1="2" rank="1">1 1</integer_value>
         </number_cells>
         <diagonal>
-          <string_value>left</string_value>
+          <string_value lines="1">left</string_value>
         </diagonal>
         <cell>
-          <string_value>triangle</string_value>
+          <string_value lines="1">triangle</string_value>
         </cell>
       </source>
     </mesh>
@@ -25,7 +25,7 @@
     <visualization>
       <element name="P1">
         <family>
-          <string_value>CG</string_value>
+          <string_value lines="1">CG</string_value>
         </family>
         <degree>
           <integer_value rank="0">1</integer_value>
@@ -49,7 +49,7 @@
         <rank name="Scalar" rank="0">
           <element name="UserDefined">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">1</integer_value>
@@ -90,7 +90,7 @@ def val(x):
         <rank name="Scalar" rank="0">
           <element name="UserDefined">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">1</integer_value>
@@ -131,7 +131,7 @@ def val(x):
         <rank name="Scalar" rank="0">
           <element name="UserDefined">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">1</integer_value>
@@ -159,7 +159,7 @@ def val(x):
         <rank name="Scalar" rank="0">
           <element name="UserDefined">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">1</integer_value>
@@ -217,7 +217,7 @@ def val(x):
         <rank name="Scalar" rank="0">
           <element name="UserDefined">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">1</integer_value>
@@ -243,7 +243,7 @@ def val(x):
         <rank name="Scalar" rank="0">
           <element name="UserDefined">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">1</integer_value>
@@ -269,7 +269,7 @@ def val(x):
         <rank name="Scalar" rank="0">
           <element name="UserDefined">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">1</integer_value>
@@ -306,7 +306,7 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
         <rank name="Scalar" rank="0">
           <element name="UserDefined">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">1</integer_value>
@@ -343,7 +343,7 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
         <rank name="Vector" rank="1">
           <element name="UserDefined">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">1</integer_value>
@@ -369,7 +369,7 @@ def val(x):
         <rank name="Vector" rank="1">
           <element name="UserDefined">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">1</integer_value>

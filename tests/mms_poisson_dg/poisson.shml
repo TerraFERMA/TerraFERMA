@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <harness_options>
   <length>
-    <string_value>short</string_value>
+    <string_value lines="1">short</string_value>
   </length>
   <owner>
     <string_value lines="1">cwilson</string_value>
@@ -25,6 +25,14 @@
 libspud.set_option("/geometry/mesh::Mesh/source::UnitSquare/number_cells", [int(ncells), int(ncells)])</string_value>
             <single_build/>
           </update>
+        </parameter>
+        <parameter name="np">
+          <values>
+            <string_value lines="1">1 2</string_value>
+          </values>
+          <process_scale>
+            <integer_value shape="2" rank="1">1 2</integer_value>
+          </process_scale>
         </parameter>
       </parameter_sweep>
       <variables>

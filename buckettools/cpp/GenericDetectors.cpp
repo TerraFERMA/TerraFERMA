@@ -108,6 +108,8 @@ void GenericDetectors::eval_ownership(Mesh_ptr mesh)
     uint dim;
     bool id_not_found = false;
 
+    std::size_t cell_ghost_offset = (*mesh).topology().ghost_offset((*mesh).topology().dim());
+
     for (uint i = 0; i<positions_.size(); i++)                         // loop over the detector positions
     {
       pos = (*positions_[i]).data(); 
@@ -118,7 +120,7 @@ void GenericDetectors::eval_ownership(Mesh_ptr mesh)
       {
         id_not_found = true;
       }
-      else
+      else if (ids[0] < cell_ghost_offset)
       {
         cellids.push_back(ids[0]);
         detectorids.push_back(i);
@@ -136,7 +138,7 @@ void GenericDetectors::eval_ownership(Mesh_ptr mesh)
       }
       if (global_number_detectors > number_detectors_)
       {
-        tf_warn("More than one process found the same detector.  Detectors name %s. Found %d out of %d detectors.", 
+        tf_warn("More than one process found the same detector.",  "Detectors name %s. Found %d out of %d detectors.", 
                 name().c_str(), global_number_detectors, number_detectors_);
       }
     }

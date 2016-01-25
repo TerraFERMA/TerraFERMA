@@ -121,6 +121,8 @@ void SolverBucket::solve()
                           (*system_).name().c_str(), name().c_str(), 
                           type().c_str());
 
+  *iteration_count_ = 0;                                             // an iteration counter
+
   if (type()=="SNES")                                                // this is a petsc snes solver - FIXME: switch to an enumerated type
   {
     for(std::vector< const dolfin::DirichletBC* >::const_iterator    // loop over the collected vector of system bcs
@@ -131,7 +133,7 @@ void SolverBucket::solve()
       (*(*bc)).apply(*(*(*system_).iteratedfunction()).vector());    // iterated solution
     }
     *work_ = (*(*(*system_).function()).vector());                   // set the work vector to the function vector
-    perr = SNESSolve(snes_, PETSC_NULL, (*work_).vec());            // call petsc to perform a snes solve
+    perr = SNESSolve(snes_, PETSC_NULL, (*work_).vec());             // call petsc to perform a snes solve
     petsc_fail(perr);
     snes_check_convergence_();
     (*(*(*system_).function()).vector()) = *work_;                   // update the function
@@ -139,7 +141,6 @@ void SolverBucket::solve()
   else if (type()=="Picard")                                         // this is a hand-rolled picard iteration - FIXME: switch to enum
   {
 
-    *iteration_count_ = 0;                                           // an iteration counter
 
     File_ptr pvdfile;
     FunctionSpace_ptr visfuncspace;
@@ -241,16 +242,26 @@ void SolverBucket::solve()
           (*matrixpc_).ident_zeros();
         }
 
+        #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
         perr = KSPSetOperators(ksp_, (*matrix_).mat(),              // set the ksp operators with two matrices
                                      (*matrixpc_).mat(), 
                                      SAME_NONZERO_PATTERN); 
+        #else
+        perr = KSPSetOperators(ksp_, (*matrix_).mat(),              // set the ksp operators with two matrices
+                                     (*matrixpc_).mat()); 
+        #endif
         petsc_err(perr);
       }
       else
       {
+        #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
         perr = KSPSetOperators(ksp_, (*matrix_).mat(),              // set the ksp operators with the same matrices
                                       (*matrix_).mat(), 
                                         SAME_NONZERO_PATTERN); 
+        #else
+        perr = KSPSetOperators(ksp_, (*matrix_).mat(),              // set the ksp operators with the same matrices
+                                      (*matrix_).mat()); 
+        #endif
         petsc_err(perr);
       }
 
@@ -396,12 +407,13 @@ double SolverBucket::residual_norm()
 //*******************************************************************|************************************************************//
 // update the solver at the end of a timestep
 //*******************************************************************|************************************************************//
-void SolverBucket::update()
+void SolverBucket::resetcalculated()
 {
   if (solved_)
   {
     *solved_ = false;
   }
+  *iteration_count_ = 0;                                             // an iteration counter
 }
 
 //*******************************************************************|************************************************************//
@@ -740,6 +752,7 @@ void SolverBucket::snes_check_convergence_()
 //  perr = SNESGetOptionsPrefix(snes_, snesprefix); petsc_err(perr);   // FIXME: segfaults!
   perr = SNESGetConvergedReason(snes_, &snesreason); petsc_err(perr);     
   perr = SNESGetIterationNumber(snes_, &snesiterations); petsc_err(perr);
+  iteration_count(snesiterations);
   perr = SNESGetLinearSolveIterations(snes_, &sneslsiterations);  petsc_err(perr);
   log(INFO, "SNESConvergedReason %d", snesreason);
   log(INFO, "SNES n/o iterations %d", 

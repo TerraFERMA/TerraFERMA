@@ -135,12 +135,6 @@ void SystemBucket::update()
     (*(*f_it).second).update();
   }
 
-  for (SolverBucket_it s_it = solvers_begin();
-                         s_it != solvers_end(); s_it++)
-  {
-    (*(*s_it).second).update();                                      // reset the solved_ indicator to false for the next timestep
-  }
-
   for (FunctionalBucket_it f_it = functionals_begin(); 
                                   f_it != functionals_end(); f_it++)
   {
@@ -237,10 +231,22 @@ void SystemBucket::resetcalculated()
     *change_calculated_ = false;
   }
 
-  for (FunctionBucket_it f_it = coeffs_begin();           // also loop over coefficients again to update any coefficient
-                           f_it != coeffs_end(); f_it++)      // functions, constant functionals or statistic functionals
+  for (FunctionBucket_it f_it = fields_begin();
+                           f_it != fields_end(); f_it++)
   {
     (*(*f_it).second).resetcalculated();
+  }
+
+  for (FunctionBucket_it f_it = coeffs_begin();
+                           f_it != coeffs_end(); f_it++)
+  {
+    (*(*f_it).second).resetcalculated();
+  }
+
+  for (SolverBucket_it s_it = solvers_begin();
+                         s_it != solvers_end(); s_it++)
+  {
+    (*(*s_it).second).resetcalculated();                                      // reset the solved_ indicator to false for the next timestep
   }
 
   for (FunctionalBucket_it f_it = functionals_begin(); 
@@ -682,6 +688,23 @@ void SystemBucket::register_functional(FunctionalBucket_ptr functional, const st
 // return a (boost shared) pointer to a functional form from the system bucket data maps
 //*******************************************************************|************************************************************//
 FunctionalBucket_ptr SystemBucket::fetch_functional(const std::string &name)
+{
+  FunctionalBucket_hash_it f_it = functionals_.get<om_key_hash>().find(name);                            // check if the name already exists
+  if (f_it == functionals_.get<om_key_hash>().end())
+  {
+    tf_err("Functional does not exist in system.", "Functional name: %s, System name: %s", 
+           name.c_str(), name_.c_str());
+  }
+  else
+  {
+    return (*f_it).second;                                           // if it does, return it
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return a constant (boost shared) pointer to a functional form from the system bucket data maps
+//*******************************************************************|************************************************************//
+const FunctionalBucket_ptr SystemBucket::fetch_functional(const std::string &name) const
 {
   FunctionalBucket_hash_it f_it = functionals_.get<om_key_hash>().find(name);                            // check if the name already exists
   if (f_it == functionals_.get<om_key_hash>().end())

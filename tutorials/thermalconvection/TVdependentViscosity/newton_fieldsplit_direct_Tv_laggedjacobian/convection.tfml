@@ -5,15 +5,21 @@
       <integer_value rank="0">2</integer_value>
     </dimension>
     <mesh name="Mesh">
-      <source name="UnitSquare">
+      <source name="Rectangle">
+        <lower_left>
+          <real_value shape="2" dim1="2" rank="1">0. 0.</real_value>
+        </lower_left>
+        <upper_right>
+          <real_value shape="2" dim1="2" rank="1">1. 1.</real_value>
+        </upper_right>
         <number_cells>
           <integer_value shape="2" dim1="2" rank="1">64 64</integer_value>
         </number_cells>
         <diagonal>
-          <string_value>right/left</string_value>
+          <string_value lines="1">right/left</string_value>
         </diagonal>
         <cell>
-          <string_value>triangle</string_value>
+          <string_value lines="1">triangle</string_value>
         </cell>
       </source>
     </mesh>
@@ -25,7 +31,7 @@
     <visualization>
       <element name="P2DG">
         <family>
-          <string_value>DG</string_value>
+          <string_value lines="1">DG</string_value>
         </family>
         <degree>
           <integer_value rank="0">2</integer_value>
@@ -34,11 +40,14 @@
     </visualization>
     <dump_periods>
       <visualization_period>
-        <real_value rank="0">10.</real_value>
+        <real_value rank="0">100.</real_value>
       </visualization_period>
       <statistics_period_in_timesteps>
         <integer_value rank="0">5</integer_value>
       </statistics_period_in_timesteps>
+      <steady_state_period_in_timesteps>
+        <integer_value rank="0">10</integer_value>
+      </steady_state_period_in_timesteps>
     </dump_periods>
     <detectors/>
   </io>
@@ -51,7 +60,7 @@
     </finish_time>
     <timestep>
       <coefficient name="Timestep">
-        <ufl_symbol>
+        <ufl_symbol name="global">
           <string_value lines="1">dt</string_value>
         </ufl_symbol>
         <type name="Constant">
@@ -76,7 +85,7 @@
     </timestep>
     <steady_state>
       <tolerance>
-        <real_value rank="0">1.e-9</real_value>
+        <real_value rank="0">1.e-5</real_value>
       </tolerance>
     </steady_state>
   </timestepping>
@@ -131,18 +140,18 @@ eta_r = 1./inv_etaprime_r</string_value>
   </global_parameters>
   <system name="Convection">
     <mesh name="Mesh"/>
-    <ufl_symbol>
+    <ufl_symbol name="global">
       <string_value lines="1">us</string_value>
     </ufl_symbol>
     <field name="Velocity">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">v</string_value>
       </ufl_symbol>
       <type name="Function">
         <rank name="Vector" rank="1">
           <element name="P2">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">2</integer_value>
@@ -217,32 +226,24 @@ eta_r = 1./inv_etaprime_r</string_value>
       </type>
       <diagnostics>
         <include_in_visualization/>
-        <include_in_statistics>
-          <functional name="vrmsSquared">
-            <string_value lines="20" type="code" language="python">int = Ra*Ra*inner(v,v)*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-        </include_in_statistics>
+        <include_in_statistics/>
         <include_in_steady_state>
           <norm>
-            <string_value>linf</string_value>
+            <string_value lines="1">linf</string_value>
           </norm>
         </include_in_steady_state>
         <include_in_detectors/>
       </diagnostics>
     </field>
     <field name="Pressure">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">p</string_value>
       </ufl_symbol>
       <type name="Function">
         <rank name="Scalar" rank="0">
           <element name="P1">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">1</integer_value>
@@ -257,37 +258,28 @@ eta_r = 1./inv_etaprime_r</string_value>
             <coordinates>
               <real_value shape="2" dim1="dim" rank="1">0.5 0.5</real_value>
             </coordinates>
-            <sub_components name="All"/>
           </reference_point>
         </rank>
       </type>
       <diagnostics>
         <include_in_visualization/>
-        <include_in_statistics>
-          <functional name="Integral">
-            <string_value lines="20" type="code" language="python">int = p*dx</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-        </include_in_statistics>
+        <include_in_statistics/>
         <include_in_steady_state>
           <norm>
-            <string_value>linf</string_value>
+            <string_value lines="1">linf</string_value>
           </norm>
         </include_in_steady_state>
       </diagnostics>
     </field>
     <field name="Temperature">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">T</string_value>
       </ufl_symbol>
       <type name="Function">
         <rank name="Scalar" rank="0">
           <element name="P2">
             <family>
-              <string_value>CG</string_value>
+              <string_value lines="1">CG</string_value>
             </family>
             <degree>
               <integer_value rank="0">2</integer_value>
@@ -337,25 +329,17 @@ eta_r = 1./inv_etaprime_r</string_value>
       </type>
       <diagnostics>
         <include_in_visualization/>
-        <include_in_statistics>
-          <functional name="Nu">
-            <string_value lines="20" type="code" language="python">int = -T.dx(1)*ds(4)</string_value>
-            <ufl_symbol>
-              <string_value lines="1">int</string_value>
-            </ufl_symbol>
-            <quadrature_rule name="default"/>
-          </functional>
-        </include_in_statistics>
+        <include_in_statistics/>
         <include_in_steady_state>
           <norm>
-            <string_value>linf</string_value>
+            <string_value lines="1">linf</string_value>
           </norm>
         </include_in_steady_state>
         <include_in_detectors/>
       </diagnostics>
     </field>
     <coefficient name="RayleighNumber">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">Ra</string_value>
       </ufl_symbol>
       <type name="Constant">
@@ -370,7 +354,7 @@ eta_r = 1./inv_etaprime_r</string_value>
       <diagnostics/>
     </coefficient>
     <coefficient name="ViscosityScale">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">eta0</string_value>
       </ufl_symbol>
       <type name="Constant">
@@ -385,7 +369,7 @@ eta_r = 1./inv_etaprime_r</string_value>
       <diagnostics/>
     </coefficient>
     <coefficient name="ViscosityCap">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">etamax</string_value>
       </ufl_symbol>
       <type name="Constant">
@@ -400,7 +384,7 @@ eta_r = 1./inv_etaprime_r</string_value>
       <diagnostics/>
     </coefficient>
     <coefficient name="Diffusivity">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">kappa</string_value>
       </ufl_symbol>
       <type name="Constant">
@@ -415,7 +399,7 @@ eta_r = 1./inv_etaprime_r</string_value>
       <diagnostics/>
     </coefficient>
     <coefficient name="LengthScale">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">h</string_value>
       </ufl_symbol>
       <type name="Constant">
@@ -430,7 +414,7 @@ eta_r = 1./inv_etaprime_r</string_value>
       <diagnostics/>
     </coefficient>
     <coefficient name="RegularizationParameter">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">epssquared</string_value>
       </ufl_symbol>
       <type name="Constant">
@@ -456,7 +440,7 @@ rT = (T_t*((T_i - T_n) + dt*inner(v_theta, grad(T_theta))) + dt/Ra*inner(grad(T_
 
 r = rv + rp + rT</string_value>
           <comment>simple T dependent viscosity as in blankenbach 2a</comment>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">r</string_value>
           </ufl_symbol>
         </form>
@@ -466,7 +450,7 @@ r = rv + rp + rT</string_value>
 r_r = rv_r + rp + rT
 
 J = derivative(r_r, us_i, us_a)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">J</string_value>
           </ufl_symbol>
         </form>
@@ -476,21 +460,20 @@ J = derivative(r_r, us_i, us_a)</string_value>
         <quadrature_rule name="default"/>
         <snes_type name="ls">
           <ls_type name="cubic"/>
+          <convergence_test name="default"/>
         </snes_type>
         <relative_error>
-          <real_value rank="0">1.e-9</real_value>
+          <real_value rank="0">1.e-7</real_value>
         </relative_error>
         <absolute_error>
-          <real_value rank="0">1e-14</real_value>
+          <real_value rank="0">1e-11</real_value>
         </absolute_error>
-        <solution_error>
-          <real_value rank="0">1.e-50</real_value>
-        </solution_error>
         <max_iterations>
           <integer_value rank="0">20</integer_value>
         </max_iterations>
         <monitors>
           <residual/>
+          <convergence_file/>
         </monitors>
         <linear_solver>
           <iterative_method name="fgmres">
@@ -538,23 +521,47 @@ J = derivative(r_r, us_i, us_a)</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
+      <solve name="in_timeloop"/>
     </nonlinear_solver>
-    <solve name="in_timeloop"/>
+    <functional name="VelocityvrmsSquared">
+      <string_value lines="20" type="code" language="python">int = Ra*Ra*inner(v,v)*dx</string_value>
+      <ufl_symbol name="functional">
+        <string_value lines="1">int</string_value>
+      </ufl_symbol>
+      <quadrature_rule name="default"/>
+      <include_in_statistics/>
+    </functional>
+    <functional name="PressureIntegral">
+      <string_value lines="20" type="code" language="python">int = p*dx</string_value>
+      <ufl_symbol name="functional">
+        <string_value lines="1">int</string_value>
+      </ufl_symbol>
+      <quadrature_rule name="default"/>
+      <include_in_statistics/>
+    </functional>
+    <functional name="TemperatureNu">
+      <string_value lines="20" type="code" language="python">int = -T.dx(1)*ds(4)</string_value>
+      <ufl_symbol name="functional">
+        <string_value lines="1">int</string_value>
+      </ufl_symbol>
+      <quadrature_rule name="default"/>
+      <include_in_statistics/>
+    </functional>
   </system>
   <system name="CourantNumber">
     <mesh name="Mesh"/>
-    <ufl_symbol>
+    <ufl_symbol name="global">
       <string_value lines="1">uc</string_value>
     </ufl_symbol>
     <field name="CourantNumber">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">c</string_value>
       </ufl_symbol>
       <type name="Function">
         <rank name="Scalar" rank="0">
           <element name="P0">
             <family>
-              <string_value>DG</string_value>
+              <string_value lines="1">DG</string_value>
             </family>
             <degree>
               <integer_value rank="0">0</integer_value>
@@ -583,19 +590,19 @@ r = c_t*c_a*dx - c_t('+')*vout('+')*dt('+')*dS - c_t('-')*vout('-')*dt('-')*dS -
         </preamble>
         <form name="Bilinear" rank="1">
           <string_value lines="20" type="code" language="python">a = lhs(r)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
         <form name="Linear" rank="0">
           <string_value lines="20" type="code" language="python">L = rhs(r)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">L</string_value>
           </ufl_symbol>
         </form>
         <form name="Residual" rank="0">
           <string_value lines="20" type="code" language="python">res = action(a, uc_i) - L</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">res</string_value>
           </ufl_symbol>
         </form>
@@ -617,23 +624,23 @@ r = c_t*c_a*dx - c_t('+')*vout('+')*dt('+')*dS - c_t('-')*vout('-')*dt('-')*dS -
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
+      <solve name="with_diagnostics"/>
     </nonlinear_solver>
-    <solve name="with_diagnostics"/>
   </system>
   <system name="Viscosity">
     <mesh name="Mesh"/>
-    <ufl_symbol>
+    <ufl_symbol name="global">
       <string_value lines="1">uv</string_value>
     </ufl_symbol>
     <field name="eta">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">etad</string_value>
       </ufl_symbol>
       <type name="Function">
         <rank name="Scalar" rank="0">
           <element name="P2DG">
             <family>
-              <string_value>DG</string_value>
+              <string_value lines="1">DG</string_value>
             </family>
             <degree>
               <integer_value rank="0">2</integer_value>
@@ -655,19 +662,20 @@ r = c_t*c_a*dx - c_t('+')*vout('+')*dt('+')*dS - c_t('-')*vout('-')*dt('-')*dS -
       <type name="SNES">
         <form name="Residual" rank="0">
           <string_value lines="20" type="code" language="python">r = etad_t*(etad_i - eta)*dx</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">r</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
           <string_value lines="20" type="code" language="python">J = derivative(r,uv_i,uv_a)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">J</string_value>
           </ufl_symbol>
         </form>
         <quadrature_rule name="canonical"/>
         <snes_type name="ls">
           <ls_type name="cubic"/>
+          <convergence_test name="default"/>
         </snes_type>
         <relative_error>
           <real_value rank="0">1.e-6</real_value>
@@ -695,23 +703,23 @@ r = c_t*c_a*dx - c_t('+')*vout('+')*dt('+')*dS - c_t('-')*vout('-')*dt('-')*dS -
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
+      <solve name="with_diagnostics"/>
     </nonlinear_solver>
-    <solve name="with_diagnostics"/>
   </system>
   <system name="StrainRateInvariant">
     <mesh name="Mesh"/>
-    <ufl_symbol>
+    <ufl_symbol name="global">
       <string_value lines="1">ueII</string_value>
     </ufl_symbol>
     <field name="eII">
-      <ufl_symbol>
+      <ufl_symbol name="global">
         <string_value lines="1">eIIp</string_value>
       </ufl_symbol>
       <type name="Function">
         <rank name="Scalar" rank="0">
           <element name="P2DG">
             <family>
-              <string_value>DG</string_value>
+              <string_value lines="1">DG</string_value>
             </family>
             <degree>
               <integer_value rank="0">2</integer_value>
@@ -735,19 +743,20 @@ r = c_t*c_a*dx - c_t('+')*vout('+')*dt('+')*dS - c_t('-')*vout('-')*dt('-')*dS -
           <string_value lines="20" type="code" language="python">eII = sqrt(0.5*inner(edot, edot))
 
 r = eIIp_t*(eIIp_i - eII)*dx</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">r</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
           <string_value lines="20" type="code" language="python">J = derivative(r,ueII_i)</string_value>
-          <ufl_symbol>
+          <ufl_symbol name="solver">
             <string_value lines="1">J</string_value>
           </ufl_symbol>
         </form>
         <quadrature_rule name="canonical"/>
         <snes_type name="ls">
           <ls_type name="cubic"/>
+          <convergence_test name="default"/>
         </snes_type>
         <relative_error>
           <real_value rank="0">1.e-6</real_value>
@@ -775,7 +784,7 @@ r = eIIp_t*(eIIp_i - eII)*dx</string_value>
         </linear_solver>
         <never_ignore_solver_failures/>
       </type>
+      <solve name="with_diagnostics"/>
     </nonlinear_solver>
-    <solve name="with_diagnostics"/>
   </system>
 </terraferma_options>

@@ -39,6 +39,9 @@ start =
          element length {
             # a hard coded string_value
             element string_value {
+              # Lines is a hint to the gui about the size of the text box.
+              # It is not an enforced limit on string length.
+              attribute lines { "1" },
               ( "special" | "short" | "medium" | "long" )
             },
             comment
@@ -62,7 +65,8 @@ start =
          },
          ## A list of the simulations to run.  Each simulation name should be unique.
          element simulations {
-            simulation+,
+            simulation*,
+            run*,
             comment
          }?,
          ## A list of tests to run.  Each test name should be unique.
@@ -159,6 +163,14 @@ required_file =
            ##
            ## The variable containing the filename(s) MUST share a name with 
            ## the filenames parent element above. 
+           ##
+           ## The values of all the parameters for this simulation will be available to this code using 
+           ## the names given to the parameters above.  They will be formatted as strings and should be converted 
+           ## appropriately within the code.
+           ##
+           ## Additionally, the full path to the input file is available as input_filename.
+           ##
+           ## For more advanced usage the Run or Simulation class object is available as _self.
            element python {
               python_code
            }
@@ -193,7 +205,7 @@ required_output =
       }
    )
 
-parameters =
+simulation_parameters =
    (
       ## Perform a sweep over the listed parameters.  Each parameter requires a unique name.
       element parameter_sweep {
@@ -220,6 +232,10 @@ parameters =
             ## The values of all the parameters for this simulation will be available to this code using 
             ## the names given to the parameters above.  They will be formatted as strings and should be converted 
             ## appropriately within the code.
+            ##
+            ## Additionally, the full path to the input file is available as input_filename.
+            ##
+            ## For more advanced usage the Run or Simulation class object is available as _self.
             element update {
                python_code,
                ## Turn this option on if updating this parameter does not require a rebuild.  
@@ -234,6 +250,54 @@ parameters =
             ## There should be the same number of integer scales as there are parameter values.
             element process_scale {
               integer_vector 
+            }?,
+            comment
+         }*,
+         ## The number of times the simulation should be rerun.
+         ##
+         ## Defaults to 1 if not specified.
+         element number_runs {
+            integer
+         }?,
+         comment
+      }
+   )
+
+run_parameters =
+   (
+      ## Perform a sweep over the listed parameters.  Each parameter requires a unique name.
+      element parameter_sweep {
+         ## A parameter definition.
+         ##
+         ## Each parameter should have a unique name.
+         ##
+         ## Parameters should specify a list of values to be swept over and optionally, 
+         ## python code describing how the parameter should be updated.
+         element parameter {
+            attribute name { xsd:string },
+            ## A comma, semicolon or space separated list of the parameter values.
+            ##
+            ## The values are input as a string to allow them to be used to uniquely create a folder structure.
+            ## The update python code before should convert them to appropriate types within the input file.
+            element values {
+               anystring
+            },
+            ## Python code specifying how the input file should be modified to update this parameter.
+            ##
+            ## If no code is provided the parameter will not be modified at this level 
+            ## (but may be modified at other dependency levels).
+            ## 
+            ## The values of all the parameters for this simulation will be available to this code using 
+            ## the names given to the parameters above.  They will be formatted as strings and should be converted 
+            ## appropriately within the code.
+            ##
+            ## Additionally, the full path to the input file is available as input_filename and, if not a spud file, 
+            ## the contents of the input file are available as a string as input_file.  The input_file string should be 
+            ## modified - it is what will be written back to file.
+            ##
+            ## For more advanced usage the Run or Simulation class object is available as _self.
+            element update {
+               python_code
             }?,
             comment
          }*,
@@ -296,11 +360,19 @@ checkpoint =
 
 variables =
    (
-      ## A list of tests to run.  Each test name should be unique.
+      ## A list of variables to evaluate.  Each variable name should be unique.
       element variables {
          ## Define a variable in python.
          ##
          ## THE VARIABLE NAME MUST BE UNIQUE ACROSS THE ENTIRE OPTIONS FILE and the python code MUST set that variable name!
+         ##
+         ## The values of all the parameters for this simulation will be available to this code using 
+         ## the names given to the parameters above.  They will be formatted as strings and should be converted 
+         ## appropriately within the code.
+         ##
+         ## Additionally, the full path to the input file is available as input_filename.
+         ##
+         ## For more advanced usage the Run or Simulation class object is available as _self.
          element variable {
             attribute name { xsd:string },
             python_code
@@ -318,7 +390,7 @@ simulation =
          run_when,
          simulation_number_processes,
          simulation_valgrind_options,
-         parameters?,
+         simulation_parameters?,
          required_input?,
          required_output?,
          dependencies?,
@@ -327,6 +399,24 @@ simulation =
          comment
       }
    )
+
+run =
+   (
+      ## Definition of a top level run (not a TerraFERMA simulation).
+      element run {
+         attribute name { xsd:string },
+         run_input_file,
+         run_when,
+         run_parameters?,
+         required_input?,
+         required_output?,
+         commands?,
+         dependencies?,
+         variables?,
+         comment
+      }
+   )
+
 
 run_when =
    (
@@ -402,6 +492,12 @@ run_dependency_parameters =
             ## The values of all the parameters for this simulation will be available to this code using 
             ## the names given to the parameters above.  They will be formatted as strings and should be converted 
             ## appropriately within the code.
+            ##
+            ## Additionally, the full path to the input file is available as input_filename and, if not a spud file, 
+            ## the contents of the input file are available as a string as input_file.  The input_file string should be 
+            ## modified - it is what will be written back to file.
+            ##
+            ## For more advanced usage the Run or Simulation class object is available as _self.
             element update {
                python_code
             }?,
@@ -440,6 +536,10 @@ simulation_dependency_parameters =
             ## The values of all the parameters for this simulation will be available to this code using 
             ## the names given to the parameters above.  They will be formatted as strings and should be converted 
             ## appropriately within the code.
+            ##
+            ## Additionally, the full path to the input file is available as input_filename.
+            ##
+            ## For more advanced usage the Run or Simulation class object is available as _self.
             element update {
                python_code,
                ## Turn this option on if updating this parameter does not require a rebuild.  
@@ -469,7 +569,9 @@ simulation_dependency_parameters =
 
 commands =
    (
-      ## A list of commands to perform this simulation/run.
+      ## A list of commands to perform this run.
+      ##
+      ## Parameters are available to the command as $parameter_name and the input filename is available as $input_filename.
       element commands {
          ## A single shell command.
          element command {

@@ -35,7 +35,46 @@ ReferencePoint::ReferencePoint(const std::vector<double> &coord, const FunctionS
                                        dolfin::DirichletBC(functionspace, value, subdomain_(coord, functionspace),
                                                            "pointwise")
 {
-                                                                     // do nothing
+  // perform a check that dolfin::DirichetBC finds the reference point too...
+  std::unordered_map<std::size_t, double> boundary_values;
+  get_boundary_values(boundary_values);
+  std::vector<std::size_t> dofs;
+  for (std::unordered_map<std::size_t, double>::const_iterator bv = boundary_values.begin();
+                                                               bv != boundary_values.end();
+                                                               bv++)
+  {
+    dofs.push_back((*(*functionspace).dofmap()).local_to_global_index((*bv).first));
+  }
+  std::vector<std::vector<std::size_t> > all_dofs;
+  dolfin::MPI::all_gather((*(*functionspace).mesh()).mpi_comm(), dofs, all_dofs);
+  std::set<std::size_t> unique_dofs;
+  for (std::vector<std::vector<std::size_t> >::const_iterator ds = all_dofs.begin();
+                                                              ds != all_dofs.end();
+                                                              ds++)
+  {
+    for (std::vector<std::size_t>::const_iterator d = (*ds).begin(); d != (*ds).end(); d++)
+    {
+      unique_dofs.insert(*d);
+    }
+  }
+
+  if (unique_dofs.size()!=1)
+  {
+    std::stringstream buffer;
+    buffer.str("");
+    for (std::vector<double>::const_iterator c = coord.begin(); c != coord.end(); c++)
+    {
+      buffer << *c << " ";
+    }
+    if (unique_dofs.size()==0)
+    {
+      tf_err("ReferencePoint::get_boundary_values failed to find any dofs.", "coord = %s", buffer.str().c_str());
+    }
+    else if (unique_dofs.size()>1)
+    {
+      log(WARNING, "Warning: ReferencePoint::get_boundary_values found multiple dofs at coord = %s", buffer.str().c_str());
+    }
+  }
 }
 
 //*******************************************************************|************************************************************//
@@ -55,10 +94,11 @@ SubDomain_ptr ReferencePoint::subdomain_(const std::vector<double> &coord, const
   const uint num_sub_elements = (*(*functionspace).element()).num_sub_elements();
   if (num_sub_elements>0)
   {
-    return subdomain_(coord, (*functionspace)[0]);                     // make sure we're only going to find one point
+    tf_err("ReferencePoint::subdomain_ called with non-scalar functionspace.", "num_sub_elements = %d", num_sub_elements);
+                                                                     // make sure we're only going to find one point
   }                                                                  // shouldn't actually get here (because of how we call this
-                                                                     // constructor from TF) - hence aribtrary decision
-                                                                     // just to take first subfunctionspace
+                                                                     // constructor from TF)
+
   const dolfin::Mesh& mesh = *(*functionspace).mesh();
 
   const std::size_t gdim = mesh.geometry().dim();
@@ -90,7 +130,13 @@ SubDomain_ptr ReferencePoint::subdomain_(const std::vector<double> &coord, const
     cell.get_vertex_coordinates(vertex_coordinates);
     dofmap.tabulate_coordinates(coordinates, vertex_coordinates, cell);
 
-    const std::vector<dolfin::la_index>& cell_dofs = dofmap.cell_dofs(cellid);
+    const std::vector<dolfin::la_index>& tmp_cell_dofs = dofmap.cell_dofs(cellid);
+    std::vector<dolfin::la_index> cell_dofs;
+    for (std::vector<dolfin::la_index>::const_iterator dof_it = tmp_cell_dofs.begin();
+                              dof_it != tmp_cell_dofs.end(); dof_it++)
+    {
+      cell_dofs.push_back(dofmap.local_to_global_index(*dof_it));
+    }
 
     std::vector<double> dist(dofmap.cell_dimension(cellid), 0.0);
     for (uint i = 0; i < dofmap.cell_dimension(cellid); ++i)
@@ -102,13 +148,9 @@ SubDomain_ptr ReferencePoint::subdomain_(const std::vector<double> &coord, const
     }
 
     const uint i = std::distance(&dist[0], std::min_element(&dist[0], &dist[dist.size()]));
-    std::pair<uint, uint> ownership_range = dofmap.ownership_range();
-    if (cell_dofs[i] >= ownership_range.first && cell_dofs[i] < ownership_range.second)
+    for (uint j = 0; j < gdim; ++j)
     {
-      for (uint j = 0; j < gdim; ++j)
-      {
-        point.push_back(coordinates[i][j]);
-      }
+      point.push_back(coordinates[i][j]);
     }
   }
 

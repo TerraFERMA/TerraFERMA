@@ -30,7 +30,8 @@
 #include "VisualizationWrapper.h"
 #include "Logger.h"
 #include <dolfin.h>
-#include <string>
+#include <dolfin/io/XMLLocalMeshSAX.h>
+#include <dolfin/mesh/MeshPartitioning.h>
 #include <spud>
 
 using namespace buckettools;
@@ -75,6 +76,8 @@ void SpudBucket::fill()
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
   
+  fill_dolfinparameters_();
+
   buffer.str(""); buffer << optionpath() << "/geometry/dimension";   // geometry dimension set in the bucket to pass it down to all
   serr = Spud::get_option(buffer.str(), dimension_);                 // systems (we assume this is the length of things that do
   spud_err(buffer.str(), serr);                                      // not have them independently specified)
@@ -341,6 +344,32 @@ const std::string SpudBucket::detectors_str(const int &indent) const
 }
 
 //*******************************************************************|************************************************************//
+// read the dolfin parameters set in the schema
+//*******************************************************************|************************************************************//
+void SpudBucket::fill_dolfinparameters_() const
+{
+  std::stringstream buffer;
+  Spud::OptionError serr;
+
+  buffer.str(""); buffer << "/global_parameters/dolfin/allow_extrapolation";
+  if (Spud::have_option(buffer.str()))
+  {
+    dolfin::parameters["allow_extrapolation"] = true;
+  }
+
+  buffer.str(""); buffer << "/global_parameters/dolfin/ghost_mode";
+  if (Spud::have_option(buffer.str()))
+  {
+    buffer << "/name";
+    std::string ghost_mode;
+    serr = Spud::get_option(buffer.str(), ghost_mode);
+    spud_err(buffer.str(), serr);
+    dolfin::parameters["ghost_mode"] = ghost_mode;
+  }
+
+}
+
+//*******************************************************************|************************************************************//
 // fill in any timestepping data (except adaptive stuff) or set up dummy values instead (zero essentially)
 //*******************************************************************|************************************************************//
 void SpudBucket::fill_timestepping_()
@@ -432,6 +461,14 @@ void SpudBucket::fill_timestepping_()
       number_timesteps_.reset( new int );
       buffer.str(""); buffer << "/timestepping/number_timesteps";    // get the finish time (assumed zero for steady simulations)
       serr = Spud::get_option(buffer.str(), *number_timesteps_); 
+      spud_err(buffer.str(), serr);
+    }
+
+    buffer.str(""); buffer << "/timestepping/walltime_limit";
+    if (Spud::have_option(buffer.str()))
+    {
+      walltime_limit_.reset( new double );
+      serr = Spud::get_option(buffer.str(), *walltime_limit_);
       spud_err(buffer.str(), serr);
     }
 
@@ -698,33 +735,62 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     buffer.str(""); buffer << optionpath << "/source/file";
     serr = Spud::get_option(buffer.str(), basename); 
     spud_err(buffer.str(), serr);
+    std::string filename = xml_filename(basename);
 
-    std::ifstream file;                                              // dummy file stream to test if files exist
-                                                                     // (better way of doing this?)
-    
-    std::stringstream filename;
-
-    filename.str(""); filename << basename << ".xml";
-    file.open(filename.str().c_str(), std::ifstream::in);
-    if (file)
+    buffer.str(""); buffer << optionpath << "/source/cell_destinations";
+    if (Spud::have_option(buffer.str()))
     {
-      file.close();
-      mesh.reset(new dolfin::Mesh(filename.str()));
+      buffer.str(""); buffer << optionpath << "/source/cell_destinations/process";
+      int ndests = Spud::option_count(buffer.str());
+      std::map<int, std::vector<int> > process_region_ids;
+      for (int i = 0; i < ndests; i++)
+      {
+        buffer.str(""); buffer << optionpath << "/source/cell_destinations/process[" << i << "]";
+   
+        int proc;
+        serr = Spud::get_option(buffer.str(), proc);
+        spud_err(buffer.str(), serr);
+
+        buffer << "/region_ids";
+        serr = Spud::get_option(buffer.str(), process_region_ids[proc]);
+        spud_err(buffer.str(), serr);
+      }
+
+      dolfin::Mesh tmp_mesh(MPI_COMM_SELF, filename);
+      std::map<std::size_t, std::size_t>& tmp_cell_markers = 
+                  tmp_mesh.domains().markers(tmp_mesh.topology().dim());
+
+      mesh.reset(new dolfin::Mesh());
+      uint nprocs = dolfin::MPI::size((*mesh).mpi_comm());
+      dolfin::LocalMeshData local_mesh_data((*mesh).mpi_comm());
+      dolfin::XMLLocalMeshSAX xml_object((*mesh).mpi_comm(), local_mesh_data, filename);
+      xml_object.read();
+      
+      const std::vector<std::size_t>& global_cell_indices = local_mesh_data.global_cell_indices;
+      std::vector<std::size_t> cell_destinations(global_cell_indices.size(), 0);
+      for (std::size_t i = 0; i < global_cell_indices.size(); ++i)
+      {
+        std::size_t global_index = global_cell_indices[i];
+        std::size_t region_id = tmp_cell_markers.at(global_index);
+        for (std::size_t p = nprocs-1; p > 0; p--)
+        {
+          const std::vector<int>& region_ids = process_region_ids.at(p);
+          std::vector<int>::const_iterator region_it = 
+                    std::find(region_ids.begin(), region_ids.end(), region_id);
+          if (region_it != region_ids.end())
+          {
+            cell_destinations[i] = p;
+            break;
+          }
+        }
+      }
+      local_mesh_data.cell_partition = cell_destinations;
+
+      dolfin::MeshPartitioning::build_distributed_mesh(*mesh, local_mesh_data);
     }
     else
     {
-      filename.str(""); filename << basename << ".xml.gz";
-      file.open(filename.str().c_str(), std::ifstream::in);
-      if (file)
-      {
-        file.close();
-        mesh.reset(new dolfin::Mesh(filename.str()));
-      }
-      else
-      {
-        tf_err("Could not find requested mesh.", 
-               "%s.xml or %s.xml.gz not found.", basename.c_str(), basename.c_str());
-      }
+      mesh.reset(new dolfin::Mesh(filename));
     }
     (*mesh).init();                                                  // initialize the mesh (maps between dimensions etc.)
 
@@ -862,27 +928,6 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     {
       markers[i] = edgeids[i];
     }
-  }
-  else if (source=="UnitCircle")                                     // source is an internally generated dolfin mesh
-  {
-    int cells;
-    buffer.str(""); buffer << optionpath << "/source/number_cells";
-    serr = Spud::get_option(buffer.str(), cells); 
-    spud_err(buffer.str(), serr);
-    
-    std::string diagonal;
-    buffer.str(""); buffer << optionpath << "/source/diagonal";
-    serr = Spud::get_option(buffer.str(), diagonal); 
-    spud_err(buffer.str(), serr);
-    
-    std::string transformation;
-    buffer.str(""); buffer << optionpath << "/source/transformation";
-    serr = Spud::get_option(buffer.str(), transformation); 
-    spud_err(buffer.str(), serr);
-    
-    mesh.reset(new dolfin::UnitCircleMesh(cells, 
-                                          diagonal, transformation));
-
   }
   else if (source=="UnitCube")                                       // source is an internally generated dolfin mesh
   {
@@ -1187,8 +1232,18 @@ void SpudBucket::fill_diagnostics_()
                                        f_it != (*(*s_it).second).fields_end();
                                        f_it++)
           {
-            functions.push_back( (*(*f_it).second).function() );
-            functions.push_back( (*(*f_it).second).residualfunction() );
+            functions.push_back( (*(*f_it).second).function() );      // all fields and residuals get output in this debugging output
+            functions.push_back( (*(*f_it).second).residualfunction() ); // regardless of whether they're included in standard output
+          }
+
+          for (FunctionBucket_const_it c_it = (*(*s_it).second).coeffs_begin(); 
+                                       c_it != (*(*s_it).second).coeffs_end();
+                                       c_it++)
+          {
+            if ((*(*c_it).second).include_in_visualization())         // including coefficients here is just a niceity but some
+            {                                                         // coefficients aren't suitable for visualization so
+              functions.push_back( (*(*c_it).second).function() );    // only output them if we've asked for them in the normal
+            }                                                         // output
           }
 
         }
