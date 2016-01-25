@@ -957,7 +957,9 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
           "/iterative_method/monitors/preconditioned_residual_graph";// plot a graph of the preconditioned residual
     if (Spud::have_option(buffer.str()))
     {
-      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 3
+      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 4
+      tf_err("Preconditioned residual graph not available", "Not supported with PETSc > 3.4.");
+      #elif PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 3
       perr = KSPMonitorSet(ksp, KSPMonitorLGResidualNorm, 
                                              PETSC_NULL, PETSC_NULL); 
       #else
@@ -1003,7 +1005,20 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
     MatNullSpace SP;                                                 // create a set of nullspaces in a null space object
     fill_nullspace_(buffer.str(), SP, parent_offset, parent_indices);
 
+    Mat mat;
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
+    perr = KSPGetOperators(ksp, &mat, PETSC_NULL, PETSC_NULL);
+    #else
+    perr = KSPGetOperators(ksp, &mat, PETSC_NULL);
+    #endif
+    petsc_err(perr);
+
+    perr = MatSetNullSpace(mat, SP); petsc_err(perr);
+
+    #if PETSC_VERSION_MAJOR < 4 && PETSC_VERSION_MINOR < 6
     perr = KSPSetNullSpace(ksp, SP); petsc_err(perr);                  // attach it to the ksp
+    #endif
+
     #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
     perr = MatNullSpaceDestroy(&SP); petsc_err(perr);                  // destroy the null space object, necessary?
     #else
