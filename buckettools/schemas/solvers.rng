@@ -1737,7 +1737,7 @@ PETSc has to do extra computations.</a:documentation>
       <element name="preconditioned_residual_graph">
         <a:documentation>Draws a graph over the convergence of the preconditioned residual
 during the solve. This option only works for systems where PETSc
-has been linked with the X library.</a:documentation>
+has been linked with the X library and with PETSc &lt;= 3.4.</a:documentation>
         <ref name="comment"/>
       </element>
     </optional>

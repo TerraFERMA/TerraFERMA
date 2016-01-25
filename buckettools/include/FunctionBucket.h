@@ -65,7 +65,7 @@ namespace buckettools
     // Base data access
     //***************************************************************|***********************************************************//
 
-    const GenericFunction_ptr genericfunction_ptr(                   // return a constant (boost shared) pointer to the 
+    const GenericFunction_ptr genericfunction_ptr(                   // return a constant (std shared) pointer to the 
                                        const double_ptr time) const; // old or iterated function depending on the time pointer provided
                                                                      // NOTE: if this is a field of a mixed
                                                                      // system functionspace, this will return a subfunction
@@ -146,55 +146,55 @@ namespace buckettools
     const SystemBucket* system() const                               // return a constant pointer to the parent system
     { return system_; }
 
-    const FunctionSpace_ptr functionspace() const                    // return a constant (boost shared) pointer to the
+    const FunctionSpace_ptr functionspace() const                    // return a constant (std shared) pointer to the
     { return functionspace_; }                                       // functionspace
                                                                      // NOTE: if this is a field of a mixed system functionspace,
                                                                      // this will return a subspace
 
 
-    const GenericFunction_ptr function() const                       // return a constant (boost shared) pointer to the 
+    const GenericFunction_ptr function() const                       // return a constant (std shared) pointer to the 
     { return function_; }                                            // function 
                                                                      // NOTE: if this is a field of a mixed
                                                                      // system functionspace, this will return a subfunction
                                                                      // so it will be necessary to make a deep copy to access
                                                                      // the vector
 
-    const GenericFunction_ptr oldfunction() const                    // return a constant (boost shared) pointer to the old
+    const GenericFunction_ptr oldfunction() const                    // return a constant (std shared) pointer to the old
     { return oldfunction_; }                                         // function (previous timestep's values)
                                                                      // NOTE: if this is a field of a mixed
                                                                      // system functionspace, this will return a subfunction
                                                                      // so it will be necessary to make a deep copy to access
                                                                      // the vector
 
-    const GenericFunction_ptr iteratedfunction() const               // return a constant (boost shared) pointer to the iterated
+    const GenericFunction_ptr iteratedfunction() const               // return a constant (std shared) pointer to the iterated
     { return iteratedfunction_; }                                    // function (most up to date values within an iteration)
                                                                      // NOTE: if this is a field of a mixed
                                                                      // system functionspace, this will return a subfunction
                                                                      // so it will be necessary to make a deep copy to access
                                                                      // the vector
 
-    const GenericFunction_ptr changefunction() const                 // return a constant (boost shared) pointer to the change
+    const GenericFunction_ptr changefunction() const                 // return a constant (std shared) pointer to the change
     { return changefunction_; }                                      // function (change between timesteps)
                                                                      // NOTE: if this is a field of a mixed
                                                                      // system functionspace, this will return a subfunction
                                                                      // so it will be necessary to make a deep copy to access
                                                                      // the vector
 
-    const GenericFunction_ptr residualfunction() const               // return a constant (boost shared) pointer to the residual
+    const GenericFunction_ptr residualfunction() const               // return a constant (std shared) pointer to the residual
     { return residualfunction_; }                                    // function
                                                                      // NOTE: if this is a field of a mixed
                                                                      // system functionspace, this will return a subfunction
                                                                      // so it will be necessary to make a deep copy to access
                                                                      // the vector
 
-    const GenericFunction_ptr snesupdatefunction() const             // return a constant (boost shared) pointer to the snes update
+    const GenericFunction_ptr snesupdatefunction() const             // return a constant (std shared) pointer to the snes update
     { return snesupdatefunction_; }                                  // function
                                                                      // NOTE: if this is a field of a mixed
                                                                      // system functionspace, this will return a subfunction
                                                                      // so it will be necessary to make a deep copy to access
                                                                      // the vector
 
-    const Expression_ptr icexpression() const                        // return a constant (boost shared) pointer to the initial
+    const Expression_ptr icexpression() const                        // return a constant (std shared) pointer to the initial
     { return icexpression_; }                                        // condition expression for this function
 
     const std::string change_normtype() const                        // return the change norm type
@@ -227,10 +227,10 @@ namespace buckettools
     // BC data access
     //***************************************************************|***********************************************************//
 
-    void register_bcexpression(Expression_ptr bcexpression,          // register an expression for a bc in this function
+    void register_bcfunction(GenericFunction_ptr bcfunction,         // register a function for a bc in this function
                                           const std::string &name);
 
-    Expression_ptr fetch_bcexpression(const std::string &name);      // return a (boost shared) pointer to a bc expression with the given name
+    GenericFunction_ptr fetch_bcfunction(const std::string &name);   // return a (std shared) pointer to a bc function with the given name
 
     void register_dirichletbc(DirichletBC_ptr bc, 
                                         const std::string &name);    // register a Dirichlet bc in this function
@@ -304,15 +304,15 @@ namespace buckettools
     FunctionSpace_ptr functionspace_;                                // the functionspace (may be a subspace) of this function (if it is
                                                                      // a field or a coefficient function)
 
-    GenericFunction_ptr function_, oldfunction_, iteratedfunction_;  // (boost shared) pointers to different timelevel values of this function
+    GenericFunction_ptr function_, oldfunction_, iteratedfunction_;  // (std shared) pointers to different timelevel values of this function
 
-    GenericFunction_ptr changefunction_;                             // (boost shared) pointer to the change in the function over a timestep
+    GenericFunction_ptr changefunction_;                             // (std shared) pointer to the change in the function over a timestep
 
-    GenericFunction_ptr residualfunction_;                           // (boost shared) pointer to the residual in the function (only fields)
+    GenericFunction_ptr residualfunction_;                           // (std shared) pointer to the residual in the function (only fields)
 
-    GenericFunction_ptr snesupdatefunction_;                         // (boost shared) pointer to the snes update of the function (only fields that use snes monitors)
+    GenericFunction_ptr snesupdatefunction_;                         // (std shared) pointer to the snes update of the function (only fields that use snes monitors)
 
-    Expression_ptr icexpression_;                                    // (boost shared) pointer to an expression describing the initial condition
+    Expression_ptr icexpression_;                                    // (std shared) pointer to an expression describing the initial condition
 
     std::vector< std::size_t > shape_;                               // shape of the function
 
@@ -338,11 +338,11 @@ namespace buckettools
     // Pointers data
     //***************************************************************|***********************************************************//
 
-    std::map< std::string, Expression_ptr > bcexpressions_;          // map from bc names to bc expression (boost shared) pointers
+    std::map< std::string, GenericFunction_ptr > bcfunctions_;       // map from bc names to bc function (std shared) pointers
     
-    ordered_map<const std::string, DirichletBC_ptr> dirichletbcs_;   // map from bc names to (boost shared) pointers to dirichlet bcs
+    ordered_map<const std::string, DirichletBC_ptr> dirichletbcs_;   // map from bc names to (std shared) pointers to dirichlet bcs
 
-    ordered_map<const std::string, ReferencePoint_ptr> referencepoints_;   // map from bc::id names to (boost shared) pointers to bcs
+    ordered_map<const std::string, ReferencePoint_ptr> referencepoints_;   // map from bc::id names to (std shared) pointers to bcs
 
     std::vector< PointDetectors_ptr > zeropoints_;                   // a list of zero points
 
@@ -364,7 +364,7 @@ namespace buckettools
 
   };
 
-  typedef std::shared_ptr< FunctionBucket > FunctionBucket_ptr;    // define a (boost shared) pointer to the function bucket class type
+  typedef std::shared_ptr< FunctionBucket > FunctionBucket_ptr;    // define a (std shared) pointer to the function bucket class type
 
 }
 #endif

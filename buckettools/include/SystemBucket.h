@@ -255,17 +255,17 @@ namespace buckettools
     // BC data access
     //***************************************************************|***********************************************************//
 
-    std::vector< const dolfin::DirichletBC* >::iterator bcs_begin();// return an iterator to the beginning of the system bcs
+    std::vector< std::shared_ptr<const dolfin::DirichletBC> >::iterator bcs_begin();// return an iterator to the beginning of the system bcs
 
-    std::vector< const dolfin::DirichletBC* >::const_iterator bcs_begin()// return a constant iterator to the beginning of the system
+    std::vector< std::shared_ptr<const dolfin::DirichletBC> >::const_iterator bcs_begin()// return a constant iterator to the beginning of the system
                                                           const;     // bcs
 
-    std::vector< const dolfin::DirichletBC* >::iterator bcs_end();  // return an iterator to the end of the system bcs
+    std::vector< std::shared_ptr<const dolfin::DirichletBC> >::iterator bcs_end();  // return an iterator to the end of the system bcs
 
-    std::vector< const dolfin::DirichletBC* >::const_iterator bcs_end()// return a constant iterator to the end of the system bcs
+    std::vector< std::shared_ptr<const dolfin::DirichletBC> >::const_iterator bcs_end()// return a constant iterator to the end of the system bcs
                                                           const;
 
-    const std::vector< const dolfin::DirichletBC* > bcs() const     // return a constant vector of system bcs
+    const std::vector< std::shared_ptr<const dolfin::DirichletBC> > bcs() const     // return a constant vector of system bcs
     { return bcs_; }
     
     //***************************************************************|***********************************************************//
@@ -364,7 +364,7 @@ namespace buckettools
 
     ordered_map<const std::string, FunctionalBucket_ptr> functionals_;// map from functional names to form (boost shared) pointers
 
-    std::vector< const dolfin::DirichletBC* > bcs_;                  // a vector of (boost shared) poitners to the dirichlet bcs
+    std::vector< std::shared_ptr<const dolfin::DirichletBC> > bcs_;                  // a vector of (boost shared) poitners to the dirichlet bcs
 
   };
 

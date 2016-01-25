@@ -753,7 +753,7 @@ FunctionalBucket_const_it SystemBucket::functionals_end() const
 //*******************************************************************|************************************************************//
 // return an iterator to the beginning of the bcs_ vector
 //*******************************************************************|************************************************************//
-std::vector< const dolfin::DirichletBC* >::iterator SystemBucket::bcs_begin()
+std::vector< std::shared_ptr<const dolfin::DirichletBC> >::iterator SystemBucket::bcs_begin()
 {
   return bcs_.begin();
 }
@@ -761,7 +761,7 @@ std::vector< const dolfin::DirichletBC* >::iterator SystemBucket::bcs_begin()
 //*******************************************************************|************************************************************//
 // return a constant iterator to the beginning of the bcs_ vector
 //*******************************************************************|************************************************************//
-std::vector< const dolfin::DirichletBC* >::const_iterator SystemBucket::bcs_begin() const
+std::vector< std::shared_ptr<const dolfin::DirichletBC> >::const_iterator SystemBucket::bcs_begin() const
 {
   return bcs_.begin();
 }
@@ -769,7 +769,7 @@ std::vector< const dolfin::DirichletBC* >::const_iterator SystemBucket::bcs_begi
 //*******************************************************************|************************************************************//
 // return an iterator to the end of the bcs_ vector
 //*******************************************************************|************************************************************//
-std::vector< const dolfin::DirichletBC* >::iterator SystemBucket::bcs_end()
+std::vector< std::shared_ptr<const dolfin::DirichletBC> >::iterator SystemBucket::bcs_end()
 {
   return bcs_.end();
 }
@@ -777,7 +777,7 @@ std::vector< const dolfin::DirichletBC* >::iterator SystemBucket::bcs_end()
 //*******************************************************************|************************************************************//
 // return a constant iterator to the end of the bcs_ vector
 //*******************************************************************|************************************************************//
-std::vector< const dolfin::DirichletBC* >::const_iterator SystemBucket::bcs_end() const
+std::vector< std::shared_ptr<const dolfin::DirichletBC> >::const_iterator SystemBucket::bcs_end() const
 {
   return bcs_.end();
 }
@@ -983,34 +983,38 @@ void SystemBucket::checkpoint(const double_ptr time)
 void SystemBucket::collect_ics_(const uint &components, const std::map< std::size_t, Expression_ptr > &icexpressions)
 {
   const std::size_t nfields = icexpressions.size();
-  if (nfields==1)                                                    // single field
+  if (nfields>0)
   {
-    const std::size_t rank = (*(*icexpressions.begin()).second).value_rank();
-    if (rank==0)                                                     // scalar
+    const std::size_t size = (*(*icexpressions.begin()).second).value_size();
+    if (nfields==1 && size==components)                              // single field
     {
-      icexpression_.reset(new InitialConditionExpression(icexpressions));
+      const std::size_t rank = (*(*icexpressions.begin()).second).value_rank();
+      if (rank==0)                                                   // scalar
+      {
+        icexpression_.reset(new InitialConditionExpression(icexpressions));
+      }
+      else if (rank==1)                                              // vector
+      {
+        icexpression_.reset(new InitialConditionExpression(components, icexpressions));
+      }
+      else if (rank==2)                                              // tensor
+      {
+        std::vector<std::size_t> value_shape(2, 0);
+        for (uint i=0; i<rank; i++)
+        {
+          value_shape[i] = (*(*icexpressions.begin()).second).value_dimension(i);
+        }
+        icexpression_.reset(new InitialConditionExpression(value_shape, icexpressions));
+      }
+      else
+      {
+        tf_err("Unknown rank in collect_ics_.", "Rank: %d", rank);
+      }
     }
-    else if (rank==1)                                                // vector
+    else                                                             // vectors are the general case for a mixed function
     {
       icexpression_.reset(new InitialConditionExpression(components, icexpressions));
     }
-    else if (rank==2)                                                // tensor
-    {
-      std::vector<std::size_t> value_shape(2, 0);
-      for (uint i=0; i<rank; i++)
-      {
-        value_shape[i] = (*(*icexpressions.begin()).second).value_dimension(i);
-      }
-      icexpression_.reset(new InitialConditionExpression(value_shape, icexpressions));
-    }
-    else
-    {
-      tf_err("Unknown rank in collect_ics_.", "Rank: %d", rank);
-    }
-  }
-  else                                                               // vectors are the general case for a mixed function
-  {
-    icexpression_.reset(new InitialConditionExpression(components, icexpressions));
   }
 }
 
@@ -1029,7 +1033,7 @@ void SystemBucket::apply_ic_()
   }
   else
   {
-    tf_err("Unknown way of applying initial condition.", "No suitable expression or checkpoint file found.");
+    (*(*oldfunction_).vector()).zero();                              // by default we have a zero ic
   }
   (*(*iteratedfunction_).vector()) = (*(*oldfunction_).vector());    // set the iterated function vector to the old function vector
   (*(*function_).vector()) = (*(*oldfunction_).vector());            // set the function vector to the old function vector
@@ -1040,7 +1044,7 @@ void SystemBucket::apply_ic_()
 //*******************************************************************|************************************************************//
 void SystemBucket::apply_bcs_()
 {
-  for (std::vector< const dolfin::DirichletBC* >::const_iterator     // loop over all the bcs
+  for (std::vector< std::shared_ptr<const dolfin::DirichletBC> >::const_iterator     // loop over all the bcs
        b_it = bcs_begin(); b_it != bcs_end(); b_it++)
   {
     (**b_it).apply((*(*oldfunction_).vector()));
