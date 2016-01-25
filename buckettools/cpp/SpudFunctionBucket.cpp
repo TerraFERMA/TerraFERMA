@@ -151,12 +151,12 @@ void SpudFunctionBucket::initialize_field()
   int nbcs = Spud::option_count(buffer.str());
   for (uint i = 0; i < nbcs; i++)                                    // loop over the bcs
   {
-    buffer.str(""); buffer << optionpath() 
+    buffer.str(""); buffer << optionpath()
                   << "/type/rank/boundary_condition[" << i << "]";
     initialize_bc_(buffer.str());                                    // and initialize the expressions describing the bc
   }
     
-  buffer.str(""); buffer << optionpath() 
+  buffer.str(""); buffer << optionpath()
                    << "/type/rank/initial_condition::WholeMesh/file";
   if(!Spud::have_option(buffer.str()))
   {
@@ -305,7 +305,7 @@ void SpudFunctionBucket::fill_base_(const uint &index)
     int size_int;                                                    // or an expression
     if (type_=="Constant")
     {
-      buffer.str(""); buffer << optionpath() 
+      buffer.str(""); buffer << optionpath()
                                       << "/type/rank/value/constant";
       std::vector< int > shape_int;
       serr = Spud::get_option_shape(buffer.str(), shape_int);
@@ -319,12 +319,12 @@ void SpudFunctionBucket::fill_base_(const uint &index)
       serr = Spud::get_option(buffer.str(), size_int, (*(*system_).bucket()).dimension()); 
       spud_err(buffer.str(), serr);
 
-      buffer.str(""); buffer << optionpath() 
+      buffer.str(""); buffer << optionpath()
                                       << "/type/rank/value";
       int nvalues = Spud::option_count(buffer.str());
       for (uint i = 0; i < nvalues; i++)
       {
-        buffer.str(""); buffer << optionpath() 
+        buffer.str(""); buffer << optionpath()
                                         << "/type/rank/value[" << i << "]/constant";
         if (Spud::have_option(buffer.str()))
         {
@@ -344,7 +344,7 @@ void SpudFunctionBucket::fill_base_(const uint &index)
     std::vector< int > shape_int;
     if (type_=="Constant")
     {
-      buffer.str(""); buffer << optionpath() 
+      buffer.str(""); buffer << optionpath()
                                       << "/type/rank/value/constant";
       serr = Spud::get_option_shape(buffer.str(), shape_int); 
       spud_err(buffer.str(), serr);
@@ -357,12 +357,12 @@ void SpudFunctionBucket::fill_base_(const uint &index)
       serr = Spud::get_option(buffer.str(), shape_int, default_shape); 
       spud_err(buffer.str(), serr);
 
-      buffer.str(""); buffer << optionpath() 
+      buffer.str(""); buffer << optionpath()
                                       << "/type/rank/value";
       int nvalues = Spud::option_count(buffer.str());
       for (uint i = 0; i < nvalues; i++)
       {
-        buffer.str(""); buffer << optionpath() 
+        buffer.str(""); buffer << optionpath()
                                         << "/type/rank/value[" << i << "]/constant";
         if (Spud::have_option(buffer.str()))
         {
@@ -464,7 +464,7 @@ void SpudFunctionBucket::allocate_field_()
 
     change_calculated_.reset( new bool(false) );
 
-    buffer.str(""); buffer << optionpath() 
+    buffer.str(""); buffer << optionpath()
                       << "/diagnostics/include_in_steady_state/norm";
     serr = Spud::get_option(buffer.str(), change_normtype_);
     spud_err(buffer.str(), serr);
@@ -484,7 +484,7 @@ void SpudFunctionBucket::allocate_field_()
   {
     for (uint i = 0; i < nbcs; i++)                                  // loop over the bcs
     {
-      buffer.str(""); buffer << optionpath() 
+      buffer.str(""); buffer << optionpath()
                     << "/type/rank/boundary_condition[" << i << "]";
       fill_bc_(buffer.str());                                        // and fill in details about the bc
     }
@@ -497,7 +497,7 @@ void SpudFunctionBucket::allocate_field_()
   {
     for (uint i = 0; i < nrpoints; i++)                              // loop over the points
     {
-      buffer.str(""); buffer << optionpath() 
+      buffer.str(""); buffer << optionpath()
                     << "/type/rank/reference_point[" << i << "]";
       fill_reference_point_(buffer.str());                           // and fill in details about the reference point
     }
@@ -511,13 +511,13 @@ void SpudFunctionBucket::allocate_field_()
   {
     for (uint i = 0; i < nzpoints; i++)                              // loop over the points
     {
-      buffer.str(""); buffer << optionpath() 
+      buffer.str(""); buffer << optionpath()
                     << "/type/rank/zero_point[" << i << "]";
       fill_zero_point_(buffer.str());                                // and fill in details about the zero point
     }
   }
     
-  buffer.str(""); buffer << optionpath() 
+  buffer.str(""); buffer << optionpath()
                    << "/type/rank/initial_condition::WholeMesh/file";
   if(Spud::have_option(buffer.str()))
   {
@@ -547,7 +547,7 @@ void SpudFunctionBucket::allocate_field_()
   {
     for (uint i = 0; i < ncaps; i++)                                 // loop over the caps
     {
-      buffer.str(""); buffer << optionpath() 
+      buffer.str(""); buffer << optionpath()
                     << "/type/rank/value_cap[" << i << "]";
       fill_cap_(buffer.str());                                       // and fill in details about the cap
     }
@@ -1556,7 +1556,7 @@ void SpudFunctionBucket::checkpoint_options_()
   namebuffer.str(""); namebuffer << (*(*system()).bucket()).output_basename() << "_" 
                                  << (*system()).name() << "_" 
                                  << (*(*system()).bucket()).checkpoint_count() << ".xml";
-  buffer.str(""); buffer << optionpath() 
+  buffer.str(""); buffer << optionpath()
                                   << "/type[0]/rank[0]/initial_condition";
   int nics = Spud::option_count(buffer.str());
   for (int i = nics-1; i >= 0; i--)
@@ -1566,14 +1566,19 @@ void SpudFunctionBucket::checkpoint_options_()
     spud_err(buffer.str(), serr);
   }
 
-  buffer.str(""); buffer << optionpath() 
+  buffer.str(""); buffer << optionpath()
                                   << "/type[0]/rank[0]/initial_condition::WholeMesh/file";
   serr = Spud::set_option(buffer.str(), namebuffer.str());
   spud_err_accept(buffer.str(), serr, Spud::SPUD_NEW_KEY_WARNING);
 
-  buffer.str(""); buffer << optionpath() 
+  buffer.str(""); buffer << optionpath()
                                   << "/type[0]/rank[0]/initial_condition::WholeMesh/type";
   serr = Spud::set_option_attribute(buffer.str(), "initial_condition");
+  spud_err_accept(buffer.str(), serr, Spud::SPUD_NEW_KEY_WARNING);
+
+  buffer.str(""); buffer << optionpath()
+                                  << "/type[0]/rank[0]/initial_condition::WholeMesh/file/__value/lines";
+  serr = Spud::set_option_attribute(buffer.str(), "1");
   spud_err_accept(buffer.str(), serr, Spud::SPUD_NEW_KEY_WARNING);
 
 }
