@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<dolfin xmlns:dolfin="http://www.fenics.org/dolfin/">
+<dolfin xmlns:dolfin="http://fenicsproject.org">
   <mesh_function type="uint" dim="1" size="50">
     <entity index="0" value="1"/>
     <entity index="1" value="1"/>
@@ -46,10 +46,10 @@
     <entity index="42" value="2"/>
     <entity index="43" value="2"/>
     <entity index="44" value="2"/>
-    <entity index="45" value="2"/>
-    <entity index="46" value="2"/>
-    <entity index="47" value="2"/>
-    <entity index="48" value="2"/>
-    <entity index="49" value="2"/>
+    <entity index="45" value="3"/>
+    <entity index="46" value="3"/>
+    <entity index="47" value="3"/>
+    <entity index="48" value="3"/>
+    <entity index="49" value="3"/>
   </mesh_function>
 </dolfin>

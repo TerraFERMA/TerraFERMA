@@ -22,6 +22,40 @@
           </python>
         </filenames>
       </required_input>
+      <parameter_sweep>
+        <parameter name="nprocs">
+          <values>
+            <string_value lines="1">1</string_value>
+          </values>
+          <process_scale>
+            <integer_value shape="1" rank="1">1</integer_value>
+            <comment>higher number of processes requires the mvc_parallel branch</comment>
+          </process_scale>
+        </parameter>
+      </parameter_sweep>
+      <dependencies>
+        <run name="Mesh">
+          <input_file>
+            <string_value lines="1" type="filename">interval.geo</string_value>
+          </input_file>
+          <run_when name="input_changed_or_output_missing"/>
+          <required_output>
+            <filenames name="meshfiles">
+              <string>
+                <string_value lines="1" type="filename">interval.xml</string_value>
+              </string>
+            </filenames>
+          </required_output>
+          <commands>
+            <command name="GMsh">
+              <string_value lines="1">gmsh -1 interval.geo</string_value>
+            </command>
+            <command name="Convert">
+              <string_value lines="1">dolfin-convert interval.msh interval.xml</string_value>
+            </command>
+          </commands>
+        </run>
+      </dependencies>
       <variables>
         <variable name="lower_bound">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
@@ -37,17 +71,208 @@ stat = parser("advection.stat")
 
 upper_bound = stat["System"]["Field"]["max"]</string_value>
         </variable>
+        <variable name="lower_bound_2">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+
+stat = parser("advection.stat")
+
+lower_bound_2 = stat["System"]["Field2"]["min"]</string_value>
+        </variable>
+        <variable name="upper_bound_2">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+
+stat = parser("advection.stat")
+
+upper_bound_2 = stat["System"]["Field2"]["max"]</string_value>
+        </variable>
+        <variable name="lower_bound_3">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+
+stat = parser("advection.stat")
+
+lower_bound_3 = stat["System"]["Field3"]["min"]</string_value>
+        </variable>
+        <variable name="upper_bound_3">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+
+stat = parser("advection.stat")
+
+upper_bound_3 = stat["System"]["Field3"]["max"]</string_value>
+        </variable>
+        <variable name="elapsedtime">
+          <string_value type="code" lines="20" language="python">from buckettools.statfile import parser
+
+stat = parser("advection.stat")
+
+elapsedtime = stat["ElapsedTime"]["value"][-1]</string_value>
+        </variable>
+        <variable name="contour_location">
+          <string_value type="code" lines="20" language="python">import buckettools.vtktools as vtktools
+import vtk
+from lxml import etree
+from buckettools.threadlibspud import *
+import os
+import numpy as np
+import scipy.interpolate as spinterp
+
+def lastvtuinpvd(filename):
+  assert(filename[-4:]==".pvd")
+  dirname = os.path.dirname(filename)
+  tree = etree.parse(filename)
+  vtunames = [[element.attrib['timestep'], os.path.join(dirname, element.attrib['file'])] for element in tree.getroot().iterdescendants(tag="DataSet")]
+  sortedvtunames = sorted(vtunames, key=lambda entry: float(entry[0]))
+  return sortedvtunames[-1][-1]
+
+filename = os.path.split(input_filename)[-1]
+threadlibspud.load_options(filename)
+basename = libspud.get_option("/io/output_base_name")
+threadlibspud.clear_options()
+
+vtufilename = lastvtuinpvd(basename+"_System_Field.pvd")
+vtu = vtktools.vtu(vtufilename)
+
+a = vtu.ugrid.GetPointData().SetActiveScalars("System::Field")
+contour = vtk.vtkContourFilter()
+if vtk.vtkVersion.GetVTKMajorVersion() &lt;= 5:
+  contour.SetInput(vtu.ugrid)
+else:
+  contour.SetInputData(vtu.ugrid)
+contour.SetValue(0, 0.5)
+contour.Update()
+polydata = contour.GetOutput()
+points = polydata.GetPoints()
+contour_location = np.array([points.GetPoint(i) for i in xrange(points.GetNumberOfPoints())])
+</string_value>
+        </variable>
+        <variable name="contour_location_2">
+          <string_value lines="20" type="code" language="python">import buckettools.vtktools as vtktools
+import vtk
+from lxml import etree
+from buckettools.threadlibspud import *
+import os
+import numpy as np
+import scipy.interpolate as spinterp
+
+def lastvtuinpvd(filename):
+  assert(filename[-4:]==".pvd")
+  dirname = os.path.dirname(filename)
+  tree = etree.parse(filename)
+  vtunames = [[element.attrib['timestep'], os.path.join(dirname, element.attrib['file'])] for element in tree.getroot().iterdescendants(tag="DataSet")]
+  sortedvtunames = sorted(vtunames, key=lambda entry: float(entry[0]))
+  return sortedvtunames[-1][-1]
+
+filename = os.path.split(input_filename)[-1]
+threadlibspud.load_options(filename)
+basename = libspud.get_option("/io/output_base_name")
+threadlibspud.clear_options()
+
+vtufilename = lastvtuinpvd(basename+"_System_Field2.pvd")
+vtu = vtktools.vtu(vtufilename)
+
+a = vtu.ugrid.GetPointData().SetActiveScalars("System::Field2")
+contour = vtk.vtkContourFilter()
+if vtk.vtkVersion.GetVTKMajorVersion() &lt;= 5:
+  contour.SetInput(vtu.ugrid)
+else:
+  contour.SetInputData(vtu.ugrid)
+contour.SetValue(0, 1.0)
+contour.Update()
+polydata = contour.GetOutput()
+points = polydata.GetPoints()
+contour_location_2 = np.array([points.GetPoint(i) for i in xrange(points.GetNumberOfPoints())])</string_value>
+        </variable>
+        <variable name="contour_location_3">
+          <string_value lines="20" type="code" language="python">import buckettools.vtktools as vtktools
+import vtk
+from lxml import etree
+from buckettools.threadlibspud import *
+import os
+import numpy as np
+import scipy.interpolate as spinterp
+
+def lastvtuinpvd(filename):
+  assert(filename[-4:]==".pvd")
+  dirname = os.path.dirname(filename)
+  tree = etree.parse(filename)
+  vtunames = [[element.attrib['timestep'], os.path.join(dirname, element.attrib['file'])] for element in tree.getroot().iterdescendants(tag="DataSet")]
+  sortedvtunames = sorted(vtunames, key=lambda entry: float(entry[0]))
+  return sortedvtunames[-1][-1]
+
+filename = os.path.split(input_filename)[-1]
+threadlibspud.load_options(filename)
+basename = libspud.get_option("/io/output_base_name")
+threadlibspud.clear_options()
+
+vtufilename = lastvtuinpvd(basename+"_System_Field3.pvd")
+vtu = vtktools.vtu(vtufilename)
+
+a = vtu.ugrid.GetPointData().SetActiveScalars("System::Field3")
+contour = vtk.vtkContourFilter()
+if vtk.vtkVersion.GetVTKMajorVersion() &lt;= 5:
+  contour.SetInput(vtu.ugrid)
+else:
+  contour.SetInputData(vtu.ugrid)
+contour.SetValue(0, 1.5)
+contour.Update()
+polydata = contour.GetOutput()
+points = polydata.GetPoints()
+contour_location_3 = np.array([points.GetPoint(i) for i in xrange(points.GetNumberOfPoints())])</string_value>
+        </variable>
       </variables>
     </simulation>
   </simulations>
   <tests>
     <test name="lower_bound">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(lower_bound&gt;=0.0)</string_value>
+for np in lower_bound.parameters["nprocs"]:
+  assert numpy.all(lower_bound[{"nprocs":np}]&gt;=0.0)</string_value>
     </test>
     <test name="upper_bound">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(upper_bound&lt;=1.0)</string_value>
+for np in upper_bound.parameters["nprocs"]:
+  assert numpy.all(upper_bound[{"nprocs":np}]&lt;=1.0)</string_value>
+    </test>
+    <test name="lower_bound_2">
+      <string_value lines="20" type="code" language="python">import numpy
+for np in lower_bound_2.parameters["nprocs"]:
+  assert numpy.all(lower_bound_2[{"nprocs":np}]&gt;=0.0)</string_value>
+    </test>
+    <test name="upper_bound_2">
+      <string_value lines="20" type="code" language="python">import numpy
+for np in upper_bound_2.parameters["nprocs"]:
+  assert numpy.all(upper_bound_2[{"nprocs":np}]&lt;=2.0)</string_value>
+    </test>
+    <test name="lower_bound_3">
+      <string_value lines="20" type="code" language="python">import numpy
+for np in lower_bound_3.parameters["nprocs"]:
+  assert numpy.all(lower_bound_3[{"nprocs":np}]&gt;=0.0)</string_value>
+    </test>
+    <test name="upper_bound_3">
+      <string_value lines="20" type="code" language="python">import numpy
+for np in upper_bound_3.parameters["nprocs"]:
+  assert numpy.all(upper_bound_3[{"nprocs":np}]&lt;=3.0)</string_value>
+    </test>
+    <test name="elapsedtime">
+      <string_value type="code" lines="20" language="python">for np in elapsedtime.parameters["nprocs"]:
+  assert(abs(elapsedtime[{"nprocs":np}]-2.0)&lt;1.e-6)</string_value>
+    </test>
+    <test name="contour_location">
+      <string_value type="code" lines="20" language="python">for np in contour_location.parameters["nprocs"]:
+  cl = contour_location[{"nprocs":np}]
+  assert(len(cl)==1)
+  assert(abs(cl[0][0]-2.5)&lt;0.1)</string_value>
+    </test>
+    <test name="contour_location_2">
+      <string_value lines="20" type="code" language="python">for np in contour_location_2.parameters["nprocs"]:
+  cl = contour_location_2[{"nprocs":np}]
+  assert(len(cl)==1)
+  assert(abs(cl[0][0]-2.5)&lt;0.1)</string_value>
+    </test>
+    <test name="contour_location_3">
+      <string_value lines="20" type="code" language="python">for np in contour_location_3.parameters["nprocs"]:
+  cl = contour_location_3[{"nprocs":np}]
+  assert(len(cl)==1)
+  assert(abs(cl[0][0]-2.5)&lt;0.1)</string_value>
     </test>
   </tests>
 </harness_options>
