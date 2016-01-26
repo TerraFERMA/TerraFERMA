@@ -15,6 +15,24 @@
         <string_value lines="1" type="filename">advection.tfml</string_value>
       </input_file>
       <run_when name="input_changed_or_output_missing"/>
+      <parameter_sweep>
+        <parameter name="nprocs">
+          <values>
+            <string_value lines="1">1 2 3</string_value>
+          </values>
+          <process_scale>
+            <integer_value shape="1" rank="1">1 2 3</integer_value>
+            <comment>higher number of processes requires the mvc_parallel branch</comment>
+          </process_scale>
+        </parameter>
+      </parameter_sweep>
+      <required_input>
+        <filenames name="meshxmls">
+          <python>
+            <string_value lines="20" type="code" language="python">meshxmls = ["interval"+ext for ext in [".xml", "_physical_region.xml", "_facet_region.xml"]]</string_value>
+          </python>
+        </filenames>
+      </required_input>
       <dependencies>
         <run name="Mesh">
           <input_file>
@@ -53,17 +71,78 @@ stat = parser("advection.stat")
 
 upper_bound = stat["System"]["Field"]["max"]</string_value>
         </variable>
+        <variable name="lower_bound_2">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+
+stat = parser("advection.stat")
+
+lower_bound_2 = stat["System"]["Field2"]["min"]</string_value>
+        </variable>
+        <variable name="upper_bound_2">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+
+stat = parser("advection.stat")
+
+upper_bound_2 = stat["System"]["Field2"]["max"]</string_value>
+        </variable>
+        <variable name="lower_bound_3">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+
+stat = parser("advection.stat")
+
+lower_bound_3 = stat["System"]["Field3"]["min"]</string_value>
+        </variable>
+        <variable name="upper_bound_3">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+
+stat = parser("advection.stat")
+
+upper_bound_3 = stat["System"]["Field3"]["max"]</string_value>
+        </variable>
+        <variable name="elapsedtime">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+
+stat = parser("advection.stat")
+
+elapsedtime = stat["ElapsedTime"]["value"][-1]</string_value>
+        </variable>
       </variables>
     </simulation>
   </simulations>
   <tests>
     <test name="lower_bound">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(lower_bound&gt;=0.0)</string_value>
+for np in lower_bound.parameters["nprocs"]:
+  assert numpy.all(lower_bound[{"nprocs":np}]&gt;=0.0)</string_value>
     </test>
     <test name="upper_bound">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(upper_bound&lt;=1.0)</string_value>
+for np in upper_bound.parameters["nprocs"]:
+  assert numpy.all(upper_bound[{"nprocs":np}]&lt;=1.0)</string_value>
+    </test>
+    <test name="lower_bound_2">
+      <string_value lines="20" type="code" language="python">import numpy
+for np in lower_bound_2.parameters["nprocs"]:
+  assert numpy.all(lower_bound_2[{"nprocs":np}]&gt;=0.0)</string_value>
+    </test>
+    <test name="upper_bound_2">
+      <string_value lines="20" type="code" language="python">import numpy
+for np in upper_bound_2.parameters["nprocs"]:
+  assert numpy.all(upper_bound_2[{"nprocs":np}]&lt;=2.0)</string_value>
+    </test>
+    <test name="lower_bound_3">
+      <string_value lines="20" type="code" language="python">import numpy
+for np in lower_bound_3.parameters["nprocs"]:
+  assert numpy.all(lower_bound_3[{"nprocs":np}]&gt;=0.0)</string_value>
+    </test>
+    <test name="upper_bound_3">
+      <string_value lines="20" type="code" language="python">import numpy
+for np in upper_bound_3.parameters["nprocs"]:
+  assert numpy.all(upper_bound_3[{"nprocs":np}]&lt;=3.0)</string_value>
+    </test>
+    <test name="elapsedtime">
+      <string_value lines="20" type="code" language="python">for np in elapsedtime.parameters["nprocs"]:
+  assert(abs(elapsedtime[{"nprocs":np}]-2.0)&lt;1.e-6)</string_value>
     </test>
   </tests>
 </harness_options>
