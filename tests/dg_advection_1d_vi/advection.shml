@@ -128,7 +128,7 @@ threadlibspud.load_options(filename)
 basename = libspud.get_option("/io/output_base_name")
 threadlibspud.clear_options()
 
-vtufilename = lastvtuinpvd(basename+"_System_Field.pvd")
+vtufilename = lastvtuinpvd(basename+".pvd")
 vtu = vtktools.vtu(vtufilename)
 
 a = vtu.ugrid.GetPointData().SetActiveScalars("System::Field")
@@ -166,7 +166,7 @@ threadlibspud.load_options(filename)
 basename = libspud.get_option("/io/output_base_name")
 threadlibspud.clear_options()
 
-vtufilename = lastvtuinpvd(basename+"_System_Field2.pvd")
+vtufilename = lastvtuinpvd(basename+".pvd")
 vtu = vtktools.vtu(vtufilename)
 
 a = vtu.ugrid.GetPointData().SetActiveScalars("System::Field2")
@@ -203,7 +203,7 @@ threadlibspud.load_options(filename)
 basename = libspud.get_option("/io/output_base_name")
 threadlibspud.clear_options()
 
-vtufilename = lastvtuinpvd(basename+"_System_Field3.pvd")
+vtufilename = lastvtuinpvd(basename+".pvd")
 vtu = vtktools.vtu(vtufilename)
 
 a = vtu.ugrid.GetPointData().SetActiveScalars("System::Field3")
