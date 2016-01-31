@@ -193,18 +193,6 @@ def val(x):
   return f</string_value>
             </python>
           </initial_condition>
-          <boundary_condition name="top">
-            <boundary_ids>
-              <integer_value shape="1" rank="1">4</integer_value>
-            </boundary_ids>
-            <sub_components name="All">
-              <type type="boundary_condition" name="Dirichlet">
-                <constant>
-                  <real_value rank="0">1.</real_value>
-                </constant>
-              </type>
-            </sub_components>
-          </boundary_condition>
         </rank>
       </type>
       <diagnostics>
