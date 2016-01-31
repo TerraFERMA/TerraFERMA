@@ -686,7 +686,7 @@ produces the result shown in Figure \ref{fig:poisson_gmsh}.
 
 Alternatively, the mesh generation, model building and model execution
 can be automated using the simulation testharness.  An example
-testharness file, \texttt{poisson.shml} can be found in the gmsh
+simulationharness file, \texttt{poisson.shml} can be found in the gmsh
 directory.  To run this file use
 \begin{lstlisting}[style=Bash]
 $ tfsimulationharness --test poisson.shml
@@ -1056,7 +1056,7 @@ each grid spacing and plot the convergence behavior.  It will also
 provide a test to make sure that the  MMS problem show the expected
 quadratic convergence.
 
-To view the testharness file use
+To view the simulationharness file use
 \begin{lstlisting}[style=Bash]
  $ diamond poisson.shml
 \end{lstlisting} %$
@@ -1103,7 +1103,7 @@ $ tfsimulationharness -h
 %   -f, --force           force rebuild(s)
 % \end{lstlisting} %$
 which provides considerable flexibility in building, running and
-testing specific applications. More details on the testharness and
+testing specific applications. More details on the simulationharness and
 other \TF{} utilities can be found on the \TF{}
 \href{https://terraferma.github.io}{Wiki} under additional tools.
 
