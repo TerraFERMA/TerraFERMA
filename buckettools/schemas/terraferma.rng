@@ -52,7 +52,7 @@ When viewed in diamond, options which are shaded blue are incomplete and require
       </optional>
       <optional>
         <!-- in timestepping.rnc -->
-        <ref name="nonlinear"/>
+        <ref name="solution_order"/>
       </optional>
       <ref name="global_parameters"/>
       <oneOrMore>

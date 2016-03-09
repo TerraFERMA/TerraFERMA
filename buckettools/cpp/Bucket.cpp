@@ -26,6 +26,7 @@
 #include "EventHandler.h"
 #include "StatisticsFile.h"
 #include "Logger.h"
+#include "SystemsSolverBucket.h"
 #include <signal.h>
 #include <time.h>
 
@@ -66,15 +67,6 @@ Bucket::~Bucket()
   if(steadyfile_)
   {  
     (*steadyfile_).close();
-  }
-  if(convfile_)
-  {
-    (*convfile_).close();
-  }
-  if(rtol_)
-  {
-    delete rtol_;
-    rtol_ = NULL;
   }
 }
 
@@ -141,18 +133,6 @@ void Bucket::run()
 }
 
 //*******************************************************************|************************************************************//
-// loop over the ordered systems in the bucket, calling solve on each of them
-//*******************************************************************|************************************************************//
-void Bucket::solve(const int &location)
-{
-  for (SystemBucket_const_it s_it = systems_begin(); 
-                             s_it != systems_end(); s_it++)
-  {
-    bool solved = (*(*s_it).second).solve(location);
-  }
-}
-
-//*******************************************************************|************************************************************//
 // loop over the ordered systems in the bucket, reseting the calculated booleans in all of them
 //*******************************************************************|************************************************************//
 void Bucket::resetcalculated()
@@ -161,6 +141,12 @@ void Bucket::resetcalculated()
                              s_it != systems_end(); s_it++)
   {
     (*(*s_it).second).resetcalculated();
+  }
+
+  for (i_SystemsSolverBucket_it ss_it = systemssolvers_begin(); 
+                           ss_it != systemssolvers_end(); ss_it++)
+  {
+    (*(*ss_it).second).resetcalculated();
   }
 }
 
@@ -173,6 +159,12 @@ void Bucket::update()
                              s_it != systems_end(); s_it++)
   {
     (*(*s_it).second).update();
+  }
+
+  for (i_SystemsSolverBucket_it ss_it = systemssolvers_begin(); 
+                           ss_it != systemssolvers_end(); ss_it++)
+  {
+    (*(*ss_it).second).resetcalculated();
   }
 }
 
@@ -447,14 +439,6 @@ const double Bucket::timestep() const
 {
   assert(timestep_.second);
   return double(*(timestep_.second));
-}
-
-//*******************************************************************|************************************************************//
-// return the number of nonlinear iterations taken
-//*******************************************************************|************************************************************//
-const int Bucket::iteration_count() const
-{
-  return *iteration_count_;
 }
 
 //*******************************************************************|************************************************************//
@@ -910,6 +894,71 @@ GenericDetectors_const_it Bucket::detectors_end() const
 }
 
 //*******************************************************************|************************************************************//
+// register a (boost shared) pointer to a systemssolver set in the bucket data maps
+//*******************************************************************|************************************************************//
+void Bucket::register_systemssolver(SystemsSolverBucket_ptr systemssolver, 
+                                            const int &location)
+{
+  i_SystemsSolverBucket_hash_it s_it = systemssolvers_.get<om_key_hash>().find(location);// check if a systems solver with this location already exists
+  if (s_it != systemssolvers_.get<om_key_hash>().end())
+  {
+    tf_err("SystemsSolver set already exists in bucket.", "SystemsSolver location: %s", location);
+  }
+  else
+  {
+    systemssolvers_.insert(om_item<const int, SystemsSolverBucket_ptr>(location,systemssolver));// if not, insert it into the systemssolvers_ map
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return a (boost shared) pointer to a systemssolver set from the bucket data maps
+//*******************************************************************|************************************************************//
+SystemsSolverBucket_ptr Bucket::fetch_systemssolver(const int &location)
+{
+  i_SystemsSolverBucket_hash_it s_it = systemssolvers_.get<om_key_hash>().find(location);// check if this systemssolver exists in the systemssolvers_ map
+  if (s_it == systemssolvers_.get<om_key_hash>().end())
+  {
+    tf_err("SystemsSolver not exist in bucket.", "SystemsSolver location: %d", location);
+  }
+  else
+  {
+    return (*s_it).second;                                           // if it does, return a (boost shared) pointer to it
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the beginning of the systemssolvers_ map
+//*******************************************************************|************************************************************//
+i_SystemsSolverBucket_it Bucket::systemssolvers_begin()
+{
+  return systemssolvers_.get<om_key_seq>().begin();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the beginning of the systemssolvers_ map
+//*******************************************************************|************************************************************//
+i_SystemsSolverBucket_const_it Bucket::systemssolvers_begin() const
+{
+  return systemssolvers_.get<om_key_seq>().begin();
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the end of the systemssolvers_ map
+//*******************************************************************|************************************************************//
+i_SystemsSolverBucket_it Bucket::systemssolvers_end()
+{
+  return systemssolvers_.get<om_key_seq>().end();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the end of the systemssolvers_ map
+//*******************************************************************|************************************************************//
+i_SystemsSolverBucket_const_it Bucket::systemssolvers_end() const
+{
+  return systemssolvers_.get<om_key_seq>().end();
+}
+
+//*******************************************************************|************************************************************//
 // loop over the systems in the bucket, telling each to output diagnostic data
 //*******************************************************************|************************************************************//
 void Bucket::output(const int &location)
@@ -940,23 +989,13 @@ void Bucket::output(const int &location)
     return;
   }  
 
-  bool systems_solved = false;
+  SystemsSolverBucket_ptr solver = fetch_systemssolver(SOLVE_DIAGNOSTICS);
+  bool solved = (*solver).solve_diagnostics(write_vis, 
+                                            write_stat, 
+                                            write_steady, 
+                                            write_det);
 
-  for (SystemBucket_const_it s_it = systems_begin();      // loop over the systems (in order)
-                             s_it != systems_end(); s_it++)
-  {
-    if( (write_vis    && (*(*s_it).second).include_in_visualization()) ||
-        (write_stat   && (*(*s_it).second).include_in_statistics())    ||
-        (write_steady && (*(*s_it).second).include_in_steadystate())   ||
-        (write_det    && (*(*s_it).second).include_in_detectors())        )
-    {
-      bool solved = (*(*s_it).second).solve(SOLVE_DIAGNOSTICS, false);// solve for those fields (and don't force a solve if they've
-                                                                      // already been solved)
-      systems_solved = solved || systems_solved;
-    }
-  }
-
-  if(systems_solved)
+  if(solved)
   {
     update_timedependent();
   }
@@ -1023,7 +1062,7 @@ void Bucket::checkpoint(const int &location)
 }
 
 //*******************************************************************|************************************************************//
-// loop over the systems in the bucket, telling each to output diagnostic data
+// loop over the systems in the bucket, telling each to checkpoint
 //*******************************************************************|************************************************************//
 void Bucket::checkpoint_(const double_ptr time)
 {
@@ -1034,6 +1073,12 @@ void Bucket::checkpoint_(const double_ptr time)
                        s_it != systems_end(); s_it++)
   {
     (*(*s_it).second).checkpoint(time);
+  }
+
+  for (i_SystemsSolverBucket_it ss_it = systemssolvers_begin(); 
+                       ss_it != systemssolvers_end(); ss_it++)
+  {
+    (*(*ss_it).second).checkpoint();
   }
 
   checkpoint_options_(time);
@@ -1054,6 +1099,7 @@ const std::string Bucket::str() const
   s << coefficientspaces_str(indent);
   s << meshes_str(indent);
   s << systems_str(indent);
+  s << systemssolvers_str(indent);
   return s.str();
 }
 
@@ -1068,6 +1114,21 @@ const std::string Bucket::meshes_str(const int &indent) const
                                                             m_it++ )
   {
     s << indentation << "Mesh " << (*m_it).first  << std::endl;
+  }
+  return s.str();
+}
+
+//*******************************************************************|************************************************************//
+// return a string describing the contents of the systemssolvers_ data structure
+// (loop over the systemssolvers producing appending strings for each)
+//*******************************************************************|************************************************************//
+const std::string Bucket::systemssolvers_str(const int &indent) const
+{
+  std::stringstream s;
+  for ( i_SystemsSolverBucket_const_it s_it = systemssolvers_begin(); 
+                              s_it != systemssolvers_end(); s_it++ )
+  {
+    s << (*(*s_it).second).str(indent);
   }
   return s.str();
 }
@@ -1235,16 +1296,10 @@ bool Bucket::perform_action_(double_ptr action_period,
 //*******************************************************************|************************************************************//
 void Bucket::solve_at_start_()
 {
-  bool systems_solved = false;
+  SystemsSolverBucket_ptr solver = fetch_systemssolver(SOLVE_START);
+  bool solved = (*solver).solve();
 
-  for (SystemBucket_const_it s_it = systems_begin(); 
-                             s_it != systems_end(); s_it++)
-  {
-    bool solved = (*(*s_it).second).solve(SOLVE_START);
-    systems_solved = solved || systems_solved;
-  }
-
-  if(systems_solved)
+  if(solved)
   {
     update_timedependent();
     output(OUTPUT_START);
@@ -1258,79 +1313,8 @@ void Bucket::solve_at_start_()
 //*******************************************************************|************************************************************//
 void Bucket::solve_in_timeloop_()
 {
-  double aerror0 = 0.0;
-  *iteration_count_ = 0;
-
-  if (rtol_)
-  {
-    aerror0 = residual_norm();
-    log(INFO, "Entering nonlinear systems iteration.");
-  }
-
-  while (!complete_iterating_(aerror0))
-  {
-    (*iteration_count_)++;                                           // increment iteration counter
-
-    solve(SOLVE_TIMELOOP);                                           // solve all systems in the bucket
-
-    //update_nonlinear();
-  }
-}
-
-//*******************************************************************|************************************************************//
-// return a boolean indicating if the timestep has finished iterating or not
-//*******************************************************************|************************************************************//
-bool Bucket::complete_iterating_(const double &aerror0)
-{
-  bool completed = true;
-  
-  if (rtol_)
-  {
-    double aerror = residual_norm();
-    double rerror;
-    if (aerror0 == 0.0)
-    {
-      rerror = aerror;
-    }
-    else
-    {
-      rerror = aerror/aerror0;
-    }
-
-    log(INFO, "  %u Nonlinear Systems Residual Norm (absolute, relative) = %g, %g\n", 
-                                    iteration_count(), aerror, rerror);
-
-    if(convfile_)
-    {
-      (*convfile_).write_data(aerror);
-    }
-
-    completed = ((rerror <= *rtol_ || 
-                  aerror <= atol_ || 
-                  iteration_count() >= maxits_) 
-                 && iteration_count() >= minits_);
-
-    if (iteration_count() == maxits_ && rerror > *rtol_ && aerror > atol_)
-    {
-      log(WARNING, "it = %d, maxits_ = %d", iteration_count(), maxits_);
-      log(WARNING, "rerror = %.12e, rtol_ = %.12e", rerror, *rtol_);
-      log(WARNING, "aerror = %.12e, atol_ = %.12e", aerror, atol_);
-      if (ignore_failures_)
-      {
-        log(WARNING, "Ignoring: Nonlinear system failure.");
-      }
-      else
-      {
-        tf_fail("Nonlinear systems failed to converge.", "Iteration count, relative error or absolute error too high.");
-      }
-    }
-  }
-  else
-  {
-    completed = iteration_count() >= maxits_;
-  }
-
-  return completed;
+  SystemsSolverBucket_ptr solver = fetch_systemssolver(SOLVE_TIMELOOP);
+  bool solved = (*solver).solve();
 }
 
 //*******************************************************************|************************************************************//

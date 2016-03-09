@@ -68,6 +68,8 @@ namespace buckettools
     void initialize_solvers();                                       // initialize the matrices related to forms as well as the
                                                                      // petsc objects
 
+    void initialize_diagnostics() const;                             // initialize any diagnostic output from this system
+
     //***************************************************************|***********************************************************//
     // Base data access
     //***************************************************************|***********************************************************//

@@ -47,18 +47,36 @@
       </array>
     </detectors>
   </io>
-  <nonlinear_systems>
-    <relative_error>
-      <real_value rank="0">1.e-4</real_value>
-    </relative_error>
-    <max_iterations>
-      <integer_value rank="0">15</integer_value>
-    </max_iterations>
-    <monitors>
-      <convergence_file/>
-    </monitors>
-    <never_ignore_convergence_failures/>
-  </nonlinear_systems>
+  <solution_order>
+    <solve name="in_timeloop">
+      <solver name="nonlinear_systems">
+        <type name="nonlinear_systems_solver">
+          <relative_error>
+            <real_value rank="0">1.e-4</real_value>
+          </relative_error>
+          <max_iterations>
+            <integer_value rank="0">15</integer_value>
+          </max_iterations>
+          <monitors>
+            <convergence_file/>
+          </monitors>
+          <never_ignore_solver_failures/>
+          <solver name="Stokes::Solver">
+            <type name="nonlinear_solver">
+              <system name="Stokes"/>
+              <nonlinear_solver name="Solver"/>
+            </type>
+          </solver>
+          <solver name="Temperature::Solver">
+            <type name="nonlinear_solver">
+              <system name="Temperature"/>
+              <nonlinear_solver name="Solver"/>
+            </type>
+          </solver>
+        </type>
+      </solver>
+    </solve>
+  </solution_order>
   <global_parameters/>
   <system name="Stokes">
     <mesh name="Mesh"/>

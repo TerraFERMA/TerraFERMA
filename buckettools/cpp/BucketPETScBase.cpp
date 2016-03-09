@@ -310,10 +310,11 @@ PetscErrorCode buckettools::SNESCustomMonitor(SNES snes, PetscInt its,
   *(*(*system).snesupdatefunction()).vector() = solupdate;
 
 
-  if ((*solver).convergence_file())
+  ConvergenceFile_ptr convfile = (*solver).convergencefile();
+  if (convfile)
   {
 
-    (*(*solver).convergence_file()).write_data();
+    (*convfile).write_data();
 
   }
 
@@ -356,10 +357,11 @@ PetscErrorCode buckettools::KSPCustomMonitor(KSP ksp, int it,
     (*solver).iteration_count(iter);
   }
 
-  if ((*solver).ksp_convergence_file())
+  KSPConvergenceFile_ptr kspconvfile = (*solver).kspconvergencefile();
+  if (kspconvfile)
   {
 
-    (*(*solver).ksp_convergence_file()).write_data(it);
+    (*kspconvfile).write_data(it);
 
   }
 

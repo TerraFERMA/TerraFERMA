@@ -24,6 +24,7 @@
 #include "SystemBucket.h"
 #include "FunctionBucket.h"
 #include "SolverBucket.h"
+#include "SystemsSolverBucket.h"
 #include "FunctionalBucket.h"
 #include "Logger.h"
 #include <dolfin.h>
@@ -83,32 +84,112 @@ bool SystemBucket::solve(const int &location, const bool force)
 //*******************************************************************|************************************************************//
 bool SystemBucket::solve(const std::vector<int> &locations, const bool force)
 {
-  bool solved = false;
+  bool any_solved = false;
 
-  for (SolverBucket_const_it s_it = solvers_begin(); 
-                             s_it != solvers_end(); s_it++)
-  {
+  // the introduction of systems solvers makes this logic quite complicated...
+  for (i_SystemsSolverBucket_it ss_it = (*bucket()).systemssolvers_begin();
+                  ss_it != (*bucket()).systemssolvers_end(); ss_it++)
+  {                                                                  // loop over the highest level systems solvers in the bucket
     bool solve = true;
-    if (!locations.empty())
+    if (!locations.empty())                                          // skip any system solve that isn't at the requested location
     {
-      solve = std::find(locations.begin(), locations.end(), (*(*s_it).second).solve_location()) != locations.end();
+      solve = std::find(locations.begin(), locations.end(), (*ss_it).first) != locations.end();
     }
-                                                                     // solve if the location meets requirements AND
-    if (solve && (!(*(*s_it).second).solved() || solved || force))   // if this solver hasn't be solved this timestep yet, a previous solver
-    {                                                                // has been solved (potentially changing the initial guess of
-      (*(*s_it).second).solve();                                     // this solver or if we are forcing (which is actually the
-                                                                     // default unless explicitly set to false)
+    if (!solve)
+    {
+      continue;
+    }
 
-      postprocess_values();
+    const std::vector<SolverBucket_ptr>& residualsolvers = (*(*ss_it).second).residualsolvers();
+    bool solver_present = false;                                     // also skip any system solver that doesn't contain a solver 
+    for (SolverBucket_const_it s_it = solvers_begin(); s_it != solvers_end(); s_it++) // from this system
+    {
+      if (std::find(residualsolvers.begin(), residualsolvers.end(), (*s_it).second) != residualsolvers.end())
+      {
+        solver_present = true;
+        break;
+      }
+    }
+    if (!solver_present)
+    {
+      continue;
+    }
 
-      (*(*residualfunction_).vector()) = (*std::dynamic_pointer_cast< dolfin::GenericVector >((*(*s_it).second).residual_vector()));
-      // update_nonlinear...
+    // if we made it this far then we are in a systems solver that meets the location criterion and has something to do with this
+    // sytem
+    if ((*(*ss_it).second).coupled())                                // this is simple if we're coupled, we just solve the whole
+    {                                                                // systems solver
+      if (!(*(*ss_it).second).solved() || any_solved || force)       // but only if it hasn't been solved before or a previous
+      {                                                              // solver has been solved or we're forcing it
+        bool solved = (*(*ss_it).second).solve();
+        any_solved = any_solved || solved;
+      }
+    }
+    else                                                             // if we're not coupled then we only want to solve those
+    {                                                                // sub generic solvers that are relevant to this sytem
+      for (GenericSolverBucket_const_it gs_it = (*(*ss_it).second).solvers_begin();// loop over the sub generic solvers
+                                  gs_it != (*(*ss_it).second).solvers_end(); gs_it++)
+      {
+        SystemsSolverBucket_ptr ss_ptr = std::dynamic_pointer_cast<SystemsSolverBucket>((*gs_it).second);
+        if (ss_ptr)                                                  // if this is a systems solver then
+        {
+          const std::vector<SolverBucket_ptr>& subresidualsolvers = (*ss_ptr).residualsolvers();
+          bool subsolver_present = false;                            // test if it touches solvers in this sytem and skip if
+          for (SolverBucket_const_it s_it = solvers_begin(); s_it != solvers_end(); s_it++) // it doesn't
+          {
+            if (std::find(subresidualsolvers.begin(), subresidualsolvers.end(), (*s_it).second) != subresidualsolvers.end())
+            {
+              subsolver_present = true;
+              break;
+            }
+          }
+          if (!subsolver_present)
+          {
+            continue;
+          }
 
-      solved = true;
+          if (!(*ss_ptr).solved() || any_solved || force)
+          {
+            bool solved = (*ss_ptr).solve();
+            any_solved = any_solved || solved;
+          }
+        }
+        else
+        {
+          SolverBucket_ptr s_ptr = std::dynamic_pointer_cast<SolverBucket>((*gs_it).second);
+          if (s_ptr)                                                 // if this is a standard solver then
+          {                                                          // just test that it's from our system
+            bool subsolver_present = false;
+            for (SolverBucket_const_it s_it = solvers_begin(); s_it != solvers_end(); s_it++)
+            {
+              if ((*s_it).second == s_ptr)
+              {
+                subsolver_present = true;
+                break;
+              }
+            }
+            if (!subsolver_present)
+            {
+              continue;
+            }
+
+            if (!(*s_ptr).solved() || any_solved || force)
+            {
+              bool solved = (*s_ptr).solve();
+              any_solved = any_solved || solved;
+            }
+          }
+          else
+          {
+            tf_err("Failed to down cast GenericSolverBucket.", "SystemBucket name: %s, GenericSolverBucket name: %s", 
+                                                                           name().c_str(), (*(*gs_it).second).name().c_str());
+          }
+        }
+      }
     }
   }
 
-  return solved;
+  return any_solved;
 }
 
 //*******************************************************************|************************************************************//
@@ -123,14 +204,8 @@ void SystemBucket::update()
   
                                                                      // fields share a vector with the system function so no need to
                                                                      // update them...
-  for (FunctionBucket_it f_it = fields_begin();           // except that they contain functionals which need updating
-                           f_it != fields_end(); f_it++) 
-  {
-    (*(*f_it).second).update();
-  }
-
-  for (FunctionBucket_it f_it = coeffs_begin();           // also loop over coefficients again to update any coefficient
-                           f_it != coeffs_end(); f_it++)      // functions, constant functionals or statistic functionals
+  for (FunctionBucket_it f_it = coeffs_begin();                      // so just loop over coefficients again to update any coefficient
+                           f_it != coeffs_end(); f_it++)             // functions, constant functionals or statistic functionals
   {
     (*(*f_it).second).update();
   }
@@ -152,10 +227,10 @@ void SystemBucket::update()
 void SystemBucket::update_timedependent()
 {
 
-  for (FunctionBucket_it f_it = coeffs_begin();           // loop over coefficients again to update any constant
-                           f_it != coeffs_end(); f_it++)      // functionals
+  for (FunctionBucket_it f_it = coeffs_begin();                      // loop over coefficients again to update any function coefficients
+                           f_it != coeffs_end(); f_it++)
   {
-    (*(*f_it).second).update_timedependent();                        // this does nothing to non constant functionals
+    (*(*f_it).second).update_timedependent();                        // this does nothing to non function coefficients
   }
 
 }
@@ -166,8 +241,8 @@ void SystemBucket::update_timedependent()
 void SystemBucket::update_nonlinear()
 {
 
-  for (FunctionBucket_it f_it = coeffs_begin();           // loop over coefficients again to update any constant
-                           f_it != coeffs_end(); f_it++)      // functionals
+  for (FunctionBucket_it f_it = coeffs_begin();                      // loop over coefficients again to update any constant
+                           f_it != coeffs_end(); f_it++)             // functionals
   {
     (*(*f_it).second).update_nonlinear();                            // this does nothing to non constant functionals
   }
@@ -306,8 +381,6 @@ double SystemBucket::residual_norm(const std::vector<int> &locations)
     if (calculate_norm)
     {
       norm = (*(*s_it).second).residual_norm();
-
-      (*(*residualfunction_).vector()) = (*std::dynamic_pointer_cast< dolfin::GenericVector >((*(*s_it).second).residual_vector()));
     }
   }
 
@@ -328,50 +401,6 @@ const std::vector<int> SystemBucket::solve_locations() const
   }
 
   return locations;
-}
-
-//*******************************************************************|************************************************************//
-// return a boolean indicating if all the relevant solvers in this system have been solved or not
-//*******************************************************************|************************************************************//
-const bool SystemBucket::solved(const int &location) const
-{
-  std::vector<int> locations(1, location);
-  return solved(locations);
-}
-
-//*******************************************************************|************************************************************//
-// return a boolean indicating if all the relevant solvers in this system have been solved or not
-//*******************************************************************|************************************************************//
-const bool SystemBucket::solved(const std::vector<int> &locations) const
-{
-  bool solved = true;
-  for (SolverBucket_it s_it = solvers_begin();
-                         s_it != solvers_end();
-                         s_it++)
-  {
-    bool test = true;
-    if (!locations.empty())
-    {
-      test = std::find(locations.begin(), locations.end(), (*(*s_it).second).solve_location()) != locations.end();
-    }
-    if (test)
-    {
-      solved = solved && (*(*s_it).second).solved();
-    }
-  }
-
-  return solved;
-}
-
-//*******************************************************************|************************************************************//
-// initialize any diagnostic output in this system
-//*******************************************************************|************************************************************//
-void SystemBucket::initialize_diagnostics() const                    // doesn't allocate anything so can be const
-{
-  for (SolverBucket_const_it s_it = solvers_begin(); s_it != solvers_end(); s_it++)
-  {
-    (*(*s_it).second).initialize_diagnostics();
-  }
 }
 
 //*******************************************************************|************************************************************//
@@ -827,6 +856,19 @@ const bool SystemBucket::include_in_statistics() const
       break;
     }
   }
+
+  if (!include)
+  {
+    for (FunctionalBucket_const_it f_it = functionals_begin(); f_it != functionals_end(); 
+                                                                f_it++)
+    {
+      include = (*(*f_it).second).include_in_statistics();
+      if (include)
+      {
+        break;
+      }
+    }
+  }
   return include;
 }
     
@@ -843,6 +885,19 @@ const bool SystemBucket::include_in_steadystate() const
     if (include)
     {
       break;
+    }
+  }
+
+  if (!include)
+  {
+    for (FunctionalBucket_const_it f_it = functionals_begin(); f_it != functionals_end(); 
+                                                                f_it++)
+    {
+      include = (*(*f_it).second).include_in_steadystate();
+      if (include)
+      {
+        break;
+      }
     }
   }
   return include;
@@ -923,6 +978,7 @@ const std::string SystemBucket::solvers_str(const int &indent) const
                                 s_it != solvers_end(); s_it++ )
   {
     s << (*(*s_it).second).str(indent);
+    s << (*(*s_it).second).forms_str(indent+1);
   }
   return s.str();
 }

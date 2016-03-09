@@ -109,6 +109,35 @@ def update_functional_location():
       system.append(element)
     changed = True
 
+def update_nonlinear_systems_location():
+  global changed
+  element = tree.find("/nonlinear_systems")
+  if element is not None:
+    root = element.getparent()
+    solves = root.findall("solution_order/solve")
+    solves = [solve for solve in solves if "in_timeloop" in solve.attrib]
+    if len(solves) > 0:
+      print 'ERROR: Updating file that already has an in_timeloop solution_order.'
+      sys.exit(1)
+    order = etree.SubElement(root, "solution_order")
+    solve = etree.SubElement(order, "solve", attrib={"name":"in_timeloop"})
+    solver = etree.SubElement(solve, "solver", attrib={"name":"nonlinear_systems"})
+    stype = etree.SubElement(solver, "type", attrib={"name":"nonlinear_systems_solver"})
+    for child in element.getchildren():
+      if child.tag == "never_ignore_convergence_failures":  child.tag = "never_ignore_solver_failures"
+      stype.append(child)
+    root.remove(element)
+    systems = root.findall("system")
+    for system in systems:
+      solvers = system.findall("nonlinear_solver")
+      for solver in solvers:
+        if solver.find("solve").attrib["name"] == "in_timeloop":
+          sref = etree.SubElement(stype, "solver", attrib={"name":system.attrib["name"]+"::"+solver.attrib["name"]})
+          sreftype = etree.SubElement(sref, "type", attrib={"name":"nonlinear_solver"})
+          sysname = etree.SubElement(sreftype, "system", attrib={"name":system.attrib["name"]})
+          solname = etree.SubElement(sreftype, "nonlinear_solver", attrib={"name":solver.attrib["name"]})
+    changed = True
+
 for filename in filenames:
   print 'Updating: '+filename
   tree = etree.parse(filename)
@@ -117,6 +146,7 @@ for filename in filenames:
   update_ufl_symbol_name("//ufl_symbol")
   update_solve_location()
   update_functional_location()
+  update_nonlinear_systems_location()
   if changed:
     backupfilename = os.path.join(os.path.split(filename)[0], os.path.split(filename)[-1].split('.')[0]+'.tfml.bak')
     shutil.copy2(filename, backupfilename)

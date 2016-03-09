@@ -309,15 +309,6 @@ void SpudSolverBucket::initialize()
     if (Spud::have_option(optionpath()+"/type/monitors/convergence_file"))
     {
       snesmctx_.solver = this;
-      if (Spud::have_option(optionpath()+"/type/monitors/convergence_file"))
-      {
-        buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
-                               << (*system()).name() << "_" 
-                               << name() << "_snes.conv";
-        convfile_.reset( new ConvergenceFile(buffer.str(),
-                                      (*(*system_).mesh()).mpi_comm(),// allocate the file but don't write the header yet as the
-                                      &(*(*system()).bucket()), (*system()).name(), name()) ); // bucket isn't complete
-      }
       perr = SNESMonitorSet(snes_, SNESCustomMonitor,                // set a custom snes monitor
                                             &snesmctx_, PETSC_NULL); 
       petsc_err(perr);
@@ -347,16 +338,6 @@ void SpudSolverBucket::initialize()
 
     perr = KSPCreate((*(*system_).mesh()).mpi_comm(), &ksp_); 
     petsc_err(perr);                                                   // create a ksp object from the variable in the solverbucket
-
-    if (Spud::have_option(optionpath()+"/type/monitors/convergence_file"))
-    {
-      buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
-                             << (*system()).name() << "_" 
-                             << name() << "_picard.conv";
-      convfile_.reset( new ConvergenceFile(buffer.str(), 
-                                    (*(*system_).mesh()).mpi_comm(), // allocate the file but don't write the header yet as the
-                                    &(*(*system()).bucket()), (*system()).name(), name()) );   // bucket isn't complete
-    }
 
     if (bilinearpc_)
     {                                                                // if there's a pc associated
@@ -403,6 +384,72 @@ void SpudSolverBucket::initialize()
   create_nullspace();                                                // this should be safe to call now as null spaces will
                                                                      // have been initialized from all the solvers
 
+}
+
+//*******************************************************************|************************************************************//
+// initialize any diagnostic output from the solver
+//*******************************************************************|************************************************************//
+void SpudSolverBucket::initialize_diagnostics()                      // doesn't allocate anything so can be const
+{
+  std::stringstream buffer;
+
+  if (Spud::have_option(optionpath()+"/type/monitors/convergence_file"))
+  {
+    buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
+                           << (*system()).name() << "_" 
+                           << name();
+    if (type()=="SNES")
+    {
+      buffer << "_snes";
+    }
+    else if (type()=="Picard")
+    {
+      buffer << "_picard";
+    }
+    else                                                               // unknown solver type
+    {
+      tf_err("Unknown solver type.", "Solver type: %s", type().c_str());
+    }
+    std::string prefix = buffer.str();
+
+    // we always set up a standard convergence file in case we are being called from a non-standard location
+    ConvergenceFile_ptr convfile( new ConvergenceFile(prefix+".conv",
+                                                     (*(*system()).mesh()).mpi_comm(),
+                                                     &(*(*system()).bucket()), (*system()).name(), name()) );
+    register_convergencefile(convfile);
+
+    // then we loop over the systems solvers setting up a convergence file relative to each of them
+    for (p_SystemsSolverBucket_it s_it = systemssolvers_begin(); s_it != systemssolvers_end(); s_it++)
+    {
+      ConvergenceFile_ptr convfile( new ConvergenceFile(prefix+"_"+(*s_it).first+".conv", 
+                                                        (*(*system()).mesh()).mpi_comm(),
+                                                        &(*(*system()).bucket()), 
+                                                        (*system()).name(), name(), (*s_it).first) );
+      register_convergencefile(convfile, (*s_it).first);
+    }
+  }
+
+  if (Spud::have_option(optionpath()+"/type/linear_solver/iterative_method/monitors/convergence_file"))
+  {
+    buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
+                           << (*system()).name() << "_" 
+                           << name() << "_ksp";
+    std::string prefix = buffer.str();
+
+    // as above
+    KSPConvergenceFile_ptr kspconvfile( new KSPConvergenceFile(prefix+".conv",
+                                  (*(*system_).mesh()).mpi_comm(),
+                                  &(*(*system()).bucket()), (*system()).name(), name()) );
+    register_kspconvergencefile(kspconvfile);
+
+    for (p_SystemsSolverBucket_it s_it = systemssolvers_begin(); s_it != systemssolvers_end(); s_it++)
+    {
+      KSPConvergenceFile_ptr kspconvfile( new KSPConvergenceFile(prefix+"_"+(*s_it).first+".conv",
+                                    (*(*system_).mesh()).mpi_comm(),
+                                    &(*(*system()).bucket()), (*system()).name(), name(), (*s_it).first) );
+      register_kspconvergencefile(kspconvfile, (*s_it).first);
+    }
+  }
 }
 
 //*******************************************************************|************************************************************//
@@ -482,8 +529,6 @@ const std::string SpudSolverBucket::str(int indent) const
   std::string indentation (indent*2, ' ');
   s << indentation << "SolverBucket " << name() << " (" << 
                                     optionpath() << ")" << std::endl;
-  indent++;
-  s << forms_str(indent);
   return s.str();
 }
 
@@ -956,12 +1001,6 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
     if (Spud::have_option(optionpath+"/iterative_method/monitors/convergence_file"))
     {
       kspmctx_.solver = this;
-      buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
-                             << (*system()).name() << "_" 
-                             << name() << "_ksp.conv";
-      kspconvfile_.reset( new KSPConvergenceFile(buffer.str(), 
-                                    (*(*system_).mesh()).mpi_comm(), // allocate the file but don't write the header yet as the
-                                    &(*(*system()).bucket()), (*system()).name(), name()) );   // bucket isn't complete
       perr = KSPMonitorSet(ksp, KSPCustomMonitor, 
                                              &kspmctx_, PETSC_NULL); 
       petsc_err(perr);

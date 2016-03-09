@@ -102,12 +102,22 @@ SolverBucket::~SolverBucket()
     #endif
   }
 
+  for (ConvergenceFile_it f_it = convergencefiles_begin(); f_it != convergencefiles_end(); f_it++)
+  {
+    (*(*f_it).second).close();
+  }
+
+  for (KSPConvergenceFile_it k_it = kspconvergencefiles_begin(); k_it != kspconvergencefiles_end(); k_it++)
+  {
+    (*(*k_it).second).close();
+  }
+
 }
 
 //*******************************************************************|************************************************************//
 // solve the bilinear system described by the forms in the solver bucket
 //*******************************************************************|************************************************************//
-void SolverBucket::solve()
+bool SolverBucket::solve()
 {
   PetscErrorCode perr;
 
@@ -172,12 +182,13 @@ void SolverBucket::solve()
     log(INFO, "  %u Picard Residual Norm (absolute, relative) = %g, %g\n", 
                                     iteration_count(), aerror, rerror);
 
-    if(convfile_)
+    ConvergenceFile_ptr convfile = convergencefile();
+    if(convfile)
     {
       *(*(*system()).residualfunction()).vector() = (*std::dynamic_pointer_cast< dolfin::GenericVector >(residual_vector()));
-      if (convfile_)
+      if (convfile)
       {
-        (*convfile_).write_data();
+        (*convfile).write_data();
       }
     }
 
@@ -308,12 +319,12 @@ void SolverBucket::solve()
                           iteration_count(), aerror, rerror);
                                                                      // and decide to loop or not...
 
-      if(convfile_)
+      if(convfile)
       {
         *(*(*system()).residualfunction()).vector() = (*std::dynamic_pointer_cast< dolfin::GenericVector >(residual_vector()));
-        if (convfile_)
+        if (convfile)
         {
-          (*convfile_).write_data();
+          (*convfile).write_data();
         }
       }
 
@@ -343,10 +354,16 @@ void SolverBucket::solve()
     tf_err("Unknown solver type.", "Type: %s", type_.c_str());
   }
 
+  (*system()).postprocess_values();
+
+  *(*(*system()).residualfunction()).vector() = (*std::dynamic_pointer_cast< dolfin::GenericVector >(residual_vector()));
+
   if (solved_)
   {
     *solved_ = true;
   }
+
+  return true;
 
 }
 
@@ -365,6 +382,8 @@ double SolverBucket::residual_norm()
   {                                                                  // apply bcs to residual (should we do this?!)
     (*(*bc)).apply(*res_, (*(*(*system_).iteratedfunction()).vector()));
   }
+
+  *(*(*system()).residualfunction()).vector() = (*std::dynamic_pointer_cast< dolfin::GenericVector >(residual_vector()));
 
   double norm  = (*res_).norm("l2");
   return norm;
@@ -388,21 +407,6 @@ void SolverBucket::resetcalculated()
 void SolverBucket::attach_form_coeffs()
 {
   (*(*system_).bucket()).attach_coeffs(forms_begin(), forms_end());
-}
-
-//*******************************************************************|************************************************************//
-// initialize any diagnostic output from the solver
-//*******************************************************************|************************************************************//
-void SolverBucket::initialize_diagnostics() const                    // doesn't allocate anything so can be const
-{
-  if (convfile_)
-  {
-    (*convfile_).write_header();
-  }
-  if (kspconvfile_)
-  {
-    (*kspconvfile_).write_header();
-  }
 }
 
 //*******************************************************************|************************************************************//
@@ -443,22 +447,6 @@ const int SolverBucket::iteration_count() const
 void SolverBucket::iteration_count(const int &it)
 {
   *iteration_count_ = it;
-}
-
-//*******************************************************************|************************************************************//
-// return a pointer to the convergence file
-//*******************************************************************|************************************************************//
-const ConvergenceFile_ptr SolverBucket::convergence_file() const
-{
-  return convfile_;
-}
-
-//*******************************************************************|************************************************************//
-// return a pointer to the ksp convergence file
-//*******************************************************************|************************************************************//
-const KSPConvergenceFile_ptr SolverBucket::ksp_convergence_file() const
-{
-  return kspconvfile_;
 }
 
 //*******************************************************************|************************************************************//
@@ -658,6 +646,231 @@ Mat SolverBucket::fetch_solversubmatrix(const std::string &name)
 }
 
 //*******************************************************************|************************************************************//
+// register a pointer to a systems solver in the solver bucket data maps
+//*******************************************************************|************************************************************//
+void SolverBucket::register_systemssolver(SystemsSolverBucket* solver, const std::string &name)
+{
+  p_SystemsSolverBucket_hash_it s_it = systemssolvers_.get<om_key_hash>().find(name);
+  if (s_it == systemssolvers_.end())
+  {
+    systemssolvers_.insert(om_item<const std::string, SystemsSolverBucket*>(name, solver));
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return a pointer to a systemssolver from the solver bucket data maps
+//*******************************************************************|************************************************************//
+SystemsSolverBucket* SolverBucket::fetch_systemssolver(const std::string &name)
+{
+  p_SystemsSolverBucket_hash_it s_it = systemssolvers_.get<om_key_hash>().find(name);                                  // check if this name already exists
+  if (s_it == systemssolvers_.get<om_key_hash>().end())
+  {
+    tf_err("SystemsSolverBucket does not exist in solver.", "SystemsSolverBucket name: %s, SolverBucket name: %s, SystemBucket name: %s",
+           name.c_str(), name_.c_str(), (*system_).name().c_str());
+  }
+  else
+  {
+    return (*s_it).second;                                           // if it does, return it
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the beginning of the systemssolvers_ map
+//*******************************************************************|************************************************************//
+p_SystemsSolverBucket_it SolverBucket::systemssolvers_begin()
+{
+  return systemssolvers_.get<om_key_seq>().begin();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the beginning of the systemssolvers_ map
+//*******************************************************************|************************************************************//
+p_SystemsSolverBucket_const_it SolverBucket::systemssolvers_begin() const
+{
+  return systemssolvers_.get<om_key_seq>().begin();
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the end of the systemssolvers_ map
+//*******************************************************************|************************************************************//
+p_SystemsSolverBucket_it SolverBucket::systemssolvers_end()
+{
+  return systemssolvers_.get<om_key_seq>().end();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the end of the systemssolvers_ map
+//*******************************************************************|************************************************************//
+p_SystemsSolverBucket_const_it SolverBucket::systemssolvers_end() const
+{
+  return systemssolvers_.get<om_key_seq>().end();
+}
+
+//*******************************************************************|************************************************************//
+// register a pointer to a convergence file in the solver bucket data maps
+//*******************************************************************|************************************************************//
+void SolverBucket::register_convergencefile(ConvergenceFile_ptr convfile, const std::string &name)
+{
+  ConvergenceFile_hash_it f_it = convergencefiles_.get<om_key_hash>().find(name);
+  if (f_it != convergencefiles_.get<om_key_hash>().end())
+  {
+    tf_err("ConvergenceFile already exists in solver.", "ConvergenceFile name: %s, SolverBucket name: %s, SystemBucket name: %s",
+           name.c_str(), name_.c_str(), (*system_).name().c_str());
+  }
+  else
+  {
+    convergencefiles_.insert(om_item<const std::string, ConvergenceFile_ptr>(name, convfile));
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return a pointer to the convergencefile for the current systems solver (if one exists)
+//*******************************************************************|************************************************************//
+ConvergenceFile_ptr SolverBucket::convergencefile()
+{
+  ConvergenceFile_hash_it f_it = convergencefiles_.get<om_key_hash>().find(current_systemssolver());  // check if this name already exists
+  if (f_it == convergencefiles_.get<om_key_hash>().end())
+  {
+    return NULL;
+  }
+  else
+  {
+    return (*f_it).second;                                           // if it does, return it
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return a pointer to a convergencefile from the solver bucket data maps
+//*******************************************************************|************************************************************//
+ConvergenceFile_ptr SolverBucket::fetch_convergencefile(const std::string &name)
+{
+  ConvergenceFile_hash_it f_it = convergencefiles_.get<om_key_hash>().find(name);                                  // check if this name already exists
+  if (f_it == convergencefiles_.get<om_key_hash>().end())
+  {
+    tf_err("ConvergenceFile does not exist in solver.", "ConvergenceFile name: %s, SolverBucket name: %s, SystemBucket name: %s",
+           name.c_str(), name_.c_str(), (*system_).name().c_str());
+  }
+  else
+  {
+    return (*f_it).second;                                           // if it does, return it
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the beginning of the convergencefiles_ map
+//*******************************************************************|************************************************************//
+ConvergenceFile_it SolverBucket::convergencefiles_begin()
+{
+  return convergencefiles_.get<om_key_seq>().begin();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the beginning of the convergencefiles_ map
+//*******************************************************************|************************************************************//
+ConvergenceFile_const_it SolverBucket::convergencefiles_begin() const
+{
+  return convergencefiles_.get<om_key_seq>().begin();
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the end of the convergencefiles_ map
+//*******************************************************************|************************************************************//
+ConvergenceFile_it SolverBucket::convergencefiles_end()
+{
+  return convergencefiles_.get<om_key_seq>().end();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the end of the convergencefiles_ map
+//*******************************************************************|************************************************************//
+ConvergenceFile_const_it SolverBucket::convergencefiles_end() const
+{
+  return convergencefiles_.get<om_key_seq>().end();
+}
+
+//*******************************************************************|************************************************************//
+// register a pointer to a ksp convergence file in the solver bucket data maps
+//*******************************************************************|************************************************************//
+void SolverBucket::register_kspconvergencefile(KSPConvergenceFile_ptr kspconvfile, const std::string &name)
+{
+  KSPConvergenceFile_hash_it f_it = kspconvergencefiles_.get<om_key_hash>().find(name);
+  if (f_it != kspconvergencefiles_.get<om_key_hash>().end())
+  {
+    tf_err("ConvergenceFile already exists in solver.", "ConvergenceFile name: %s, SolverBucket name: %s, SystemBucket name: %s",
+           name.c_str(), name_.c_str(), (*system_).name().c_str());
+  }
+  else
+  {
+    kspconvergencefiles_.insert(om_item<const std::string, KSPConvergenceFile_ptr>(name, kspconvfile));
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return a pointer to a ksp convergencefile from the solver bucket data maps
+//*******************************************************************|************************************************************//
+KSPConvergenceFile_ptr SolverBucket::fetch_kspconvergencefile(const std::string &name)
+{
+  KSPConvergenceFile_hash_it f_it = kspconvergencefiles_.get<om_key_hash>().find(name);                                  // check if this name already exists
+  if (f_it == kspconvergencefiles_.get<om_key_hash>().end())
+  {
+    tf_err("KSPConvergenceFile does not exist in solver.", "KSPConvergenceFile name: %s, SolverBucket name: %s, SystemBucket name: %s",
+           name.c_str(), name_.c_str(), (*system_).name().c_str());
+  }
+  else
+  {
+    return (*f_it).second;                                           // if it does, return it
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return a pointer to the kspconvergencefile for the current systems solver (if one exists)
+//*******************************************************************|************************************************************//
+KSPConvergenceFile_ptr SolverBucket::kspconvergencefile()
+{
+  KSPConvergenceFile_hash_it f_it = kspconvergencefiles_.get<om_key_hash>().find(current_systemssolver());  // check if this name already exists
+  if (f_it == kspconvergencefiles_.get<om_key_hash>().end())
+  {
+    return NULL;
+  }
+  else
+  {
+    return (*f_it).second;                                           // if it does, return it
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the beginning of the kspconvergencefiles_ map
+//*******************************************************************|************************************************************//
+KSPConvergenceFile_it SolverBucket::kspconvergencefiles_begin()
+{
+  return kspconvergencefiles_.get<om_key_seq>().begin();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the beginning of the kspconvergencefiles_ map
+//*******************************************************************|************************************************************//
+KSPConvergenceFile_const_it SolverBucket::kspconvergencefiles_begin() const
+{
+  return kspconvergencefiles_.get<om_key_seq>().begin();
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the end of the kspconvergencefiles_ map
+//*******************************************************************|************************************************************//
+KSPConvergenceFile_it SolverBucket::kspconvergencefiles_end()
+{
+  return kspconvergencefiles_.get<om_key_seq>().end();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the end of the kspconvergencefiles_ map
+//*******************************************************************|************************************************************//
+KSPConvergenceFile_const_it SolverBucket::kspconvergencefiles_end() const
+{
+  return kspconvergencefiles_.get<om_key_seq>().end();
+}
+
+//*******************************************************************|************************************************************//
 // return a string describing the contents of the solver bucket
 //*******************************************************************|************************************************************//
 const std::string SolverBucket::str(int indent) const
@@ -665,8 +878,6 @@ const std::string SolverBucket::str(int indent) const
   std::stringstream s;
   std::string indentation (indent*2, ' ');
   s << indentation << "SolverBucket " << name() << std::endl;
-  indent++;
-  s << forms_str(indent);
   return s.str();
 }
 

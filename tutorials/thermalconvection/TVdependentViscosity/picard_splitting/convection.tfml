@@ -79,21 +79,39 @@
       </tolerance>
     </steady_state>
   </timestepping>
-  <nonlinear_systems>
-    <relative_error>
-      <real_value rank="0">1.e-7</real_value>
-    </relative_error>
-    <absolute_error>
-      <real_value rank="0">1.e-11</real_value>
-    </absolute_error>
-    <max_iterations>
-      <integer_value rank="0">20</integer_value>
-    </max_iterations>
-    <monitors>
-      <convergence_file/>
-    </monitors>
-    <never_ignore_convergence_failures/>
-  </nonlinear_systems>
+  <solution_order>
+    <solve name="in_timeloop">
+      <solver name="nonlinear_systems">
+        <type name="nonlinear_systems_solver">
+          <relative_error>
+            <real_value rank="0">1.e-7</real_value>
+          </relative_error>
+          <absolute_error>
+            <real_value rank="0">1.e-11</real_value>
+          </absolute_error>
+          <max_iterations>
+            <integer_value rank="0">20</integer_value>
+          </max_iterations>
+          <monitors>
+            <convergence_file/>
+          </monitors>
+          <never_ignore_solver_failures/>
+          <solver name="Temperature::Solver">
+            <type name="nonlinear_solver">
+              <system name="Temperature"/>
+              <nonlinear_solver name="Solver"/>
+            </type>
+          </solver>
+          <solver name="Convection::Solver">
+            <type name="nonlinear_solver">
+              <system name="Convection"/>
+              <nonlinear_solver name="Solver"/>
+            </type>
+          </solver>
+        </type>
+      </solver>
+    </solve>
+  </solution_order>
   <global_parameters>
     <ufl>
       <string_value lines="20" type="code" language="python">theta = 0.5

@@ -94,16 +94,9 @@ namespace buckettools
 
     const std::vector<int> solve_locations() const;                  // return a std::vector indicating the solve locations of the solvers
 
-    const bool solved(const int &location) const;                    // return a boolean indicating if this system has been solved
-
-    const bool solved(const std::vector<int> &locations=
-                                          std::vector<int>()) const; // return a boolean indicating if this system has been solved
-
     //***************************************************************|***********************************************************//
     // Filling data
     //***************************************************************|***********************************************************//
-
-    void initialize_diagnostics() const;                             // initialize any diagnostic output from this system
 
     void initialize_forms();                                         // attach all fields and coefficients to forms and functionals
 

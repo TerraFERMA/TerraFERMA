@@ -22,6 +22,7 @@
 #include "PythonDetectors.h"
 #include "SpudBucket.h"
 #include "SpudSystemBucket.h"
+#include "SpudSystemsSolverBucket.h"
 #include "SpudBase.h"
 #include "BoostTypes.h"
 #include "BucketDolfinBase.h"
@@ -162,6 +163,11 @@ void SpudBucket::fill()
   }
   
   fill_detectors_();                                                 // put the detectors in the bucket
+
+  fill_systemssolvers_();                                            // fill in information about the systems solvers, this could
+                                                                     // have been done any time after the initial setup of the
+                                                                     // systems but must be done before the call to setup
+                                                                     // diagnostics
 
   fill_diagnostics_();                                               // this should be called last because it initializes the
                                                                      // diagnostic files, which must use a complete bucket
@@ -380,8 +386,6 @@ void SpudBucket::fill_timestepping_()
   
   timestep_count_.reset( new int );
   *timestep_count_ = 0;                                              // the number of timesteps taken
-  iteration_count_.reset( new int );
-  *iteration_count_ = 0;                                             // the number of iterations taken
 
   start_time_.reset( new double );
   buffer.str(""); buffer << "/timestepping/current_time";            // get the current time
@@ -390,34 +394,6 @@ void SpudBucket::fill_timestepping_()
 
   current_time_.reset( new double(start_time()) );                   // initialize the current (n+1) and
   old_time_.reset( new double(start_time()) );                       // old (n) times
-
-  if (Spud::have_option("/nonlinear_systems"))
-  {
-    rtol_ = new double;
-    buffer.str(""); buffer << "/nonlinear_systems/relative_error";
-    serr = Spud::get_option(buffer.str(), *rtol_); 
-    spud_err(buffer.str(), serr);
-  }
-  else
-  {
-    rtol_ = NULL;
-    maxits_ = 1;
-  }
-
-  buffer.str(""); buffer << "/nonlinear_systems/max_iterations";
-  serr = Spud::get_option(buffer.str(), maxits_, 1); 
-  spud_err(buffer.str(), serr);
-
-  buffer.str(""); buffer << "/nonlinear_systems/min_iterations";
-  serr = Spud::get_option(buffer.str(), minits_, 0);
-  spud_err(buffer.str(), serr);
-
-  buffer.str(""); buffer << "/nonlinear_systems/absolute_error";
-  serr = Spud::get_option(buffer.str(), atol_, 1.e-50); 
-  spud_err(buffer.str(), serr);
-
-  buffer.str(""); buffer << "/nonlinear_systems/ignore_all_convergence_failures";
-  ignore_failures_ = Spud::have_option(buffer.str());
 
   buffer.str(""); buffer << "/timestepping";
   if (Spud::have_option(buffer.str()))
@@ -1060,6 +1036,41 @@ void SpudBucket::fill_detectors_()
 }
 
 //*******************************************************************|************************************************************//
+// for each solve location check if the user has specified a solution order or not
+// if they have read he options, if not, default to using the flags under the solvers
+//*******************************************************************|************************************************************//
+void SpudBucket::fill_systemssolvers_()
+{
+  std::stringstream buffer;                                          // optionpath buffer
+
+  std::map<const int, std::string> solve_locations;
+  solve_locations[SOLVE_START]       = "at_start";
+  solve_locations[SOLVE_TIMELOOP]    = "in_timeloop";
+  solve_locations[SOLVE_DIAGNOSTICS] = "with_diagnostics";
+
+  std::map<const int, std::string>::const_iterator sl_it;
+  for (sl_it = solve_locations.begin(); sl_it != solve_locations.end(); sl_it++)
+  {
+    buffer.str(""); buffer << "/solution_order/solve::" << (*sl_it).second;
+    if (Spud::have_option(buffer.str()))                               // if the user has specified a solution order
+    {                                                                  // then use that
+      SpudSystemsSolverBucket_ptr solver( new SpudSystemsSolverBucket(buffer.str(), (*sl_it).first, this) );
+      (*solver).fill();
+
+      register_systemssolver(solver, (*sl_it).first);
+    }
+    else                                                               // otherwise, use a default version that
+    {                                                                  // just collects all solvers based on their
+      SystemsSolverBucket_ptr solver( new SystemsSolverBucket((*sl_it).first, this) );// individual solve location flags
+      (*solver).fill();
+
+      register_systemssolver(solver, (*sl_it).first);
+    }
+  }
+
+}
+
+//*******************************************************************|************************************************************//
 // initialize the data structures for diagnostic output
 //*******************************************************************|************************************************************//
 void SpudBucket::fill_diagnostics_()
@@ -1069,7 +1080,6 @@ void SpudBucket::fill_diagnostics_()
   statfile_.reset( new StatisticsFile(output_basename()+".stat", 
                            (*(*meshes_begin()).second).mpi_comm(),
                            this) );
-  (*statfile_).write_header();
 
   int npdets = Spud::option_count("/io/detectors/point");            // number of point detectors
   int nadets = Spud::option_count("/io/detectors/array");            // number of array detectors
@@ -1084,7 +1094,6 @@ void SpudBucket::fill_diagnostics_()
     detfile_.reset( new DetectorsFile(output_basename()+".det", 
                            (*(*meshes_begin()).second).mpi_comm(),
                            this) );
-    (*detfile_).write_header();
   }
 
   if ((Spud::option_count("/system/functional/include_in_steady_state")+
@@ -1093,22 +1102,22 @@ void SpudBucket::fill_diagnostics_()
     steadyfile_.reset( new SteadyStateFile(output_basename()+".steady",
                            (*(*meshes_begin()).second).mpi_comm(),
                            this) );
-    (*steadyfile_).write_header();
   }
 
-  if (Spud::have_option("/nonlinear_systems/monitors/convergence_file"))
+  for (SystemBucket_it s_it = systems_begin(); s_it != systems_end(); s_it++)
   {
-    convfile_.reset( new SystemsConvergenceFile(output_basename()+"_nonlinearsystems.conv",
-                                  (*(*meshes_begin()).second).mpi_comm(),
-                                  this) );
-    (*convfile_).write_header();
+    (*std::dynamic_pointer_cast< SpudSystemBucket >((*s_it).second)).initialize_diagnostics();
   }
 
-  for (SystemBucket_const_it s_it = systems_begin(); s_it != systems_end(); s_it++)
+  for (i_SystemsSolverBucket_it ss_it = systemssolvers_begin(); 
+                           ss_it != systemssolvers_end(); ss_it++)
   {
-    (*(*s_it).second).initialize_diagnostics();                      // initialize any diagnostic files in systems
+    SpudSystemsSolverBucket_ptr sss_ptr = std::dynamic_pointer_cast<SpudSystemsSolverBucket>((*ss_it).second);
+    if (sss_ptr)                                                     // only spud system solvers can have diagnostics
+    {
+      (*sss_ptr).initialize_diagnostics();
+    }
   }
-
 }
 
 //*******************************************************************|************************************************************//
