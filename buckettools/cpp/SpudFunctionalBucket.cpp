@@ -110,6 +110,9 @@ void SpudFunctionalBucket::fill()
 
   }
 
+  cellfunction_ = NULL;
+  facetfunction_ = NULL;
+
 }
 
 //*******************************************************************|************************************************************//
@@ -138,5 +141,21 @@ const bool SpudFunctionalBucket::include_in_statistics() const
 const bool SpudFunctionalBucket::include_in_steadystate() const
 {
   return Spud::have_option(optionpath()+"/include_in_steady_state");
+}
+
+//*******************************************************************|************************************************************//
+// return a boolean indicating if the named functional of this function bucket should have a cell function output
+//*******************************************************************|************************************************************//
+const bool SpudFunctionalBucket::output_cellfunction() const
+{
+  return Spud::have_option(optionpath()+"/output_cell_function");
+}
+
+//*******************************************************************|************************************************************//
+// return a boolean indicating if the named functional of this function bucket should have a facet function output
+//*******************************************************************|************************************************************//
+const bool SpudFunctionalBucket::output_facetfunction() const
+{
+  return Spud::have_option(optionpath()+"/output_facet_function");
 }
 

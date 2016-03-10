@@ -67,6 +67,12 @@ namespace buckettools
 
     double value(const bool& force=false);                           // calculate and return the value of the functional
 
+    dolfin::CellFunction<double> cellfunction(const bool& force=false) // calculate and return the value per cell of the functional
+              const;
+
+    dolfin::FacetFunction<double> facetfunction(const bool& force=false) // calculate and return the value per facet of the functional
+              const;
+
     double oldvalue() const
     { return oldvalue_; }
 
@@ -92,6 +98,8 @@ namespace buckettools
     // Output functions
     //***************************************************************|***********************************************************//
 
+    void output();                                                   // output mesh functions
+
     virtual const std::string str(const int indent=0) const;         // return an indented string describing the contents of this
                                                                      // functional
 
@@ -100,6 +108,12 @@ namespace buckettools
 
     virtual const bool include_in_steadystate() const;               // return a boolean indicating if this function is included in 
                                                                      // steady state output
+
+    virtual const bool output_cellfunction() const;                  // return a boolean indicating if the functional is to 
+                                                                     // be output as a cell function
+    
+    virtual const bool output_facetfunction() const;                 // return a boolean indicating if the functional is to 
+                                                                     // be output as a facet function
 
   //*****************************************************************|***********************************************************//
   // Protected functions
@@ -123,6 +137,9 @@ namespace buckettools
 
     double value_, oldvalue_;                                        // value and previous value
 
+    dolfin::CellFunction<double> *cellfunction_;                     // cell function for output
+
+    dolfin::FacetFunction<double> *facetfunction_;                   // facet function for output
 
   };
 

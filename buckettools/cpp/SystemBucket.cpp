@@ -821,6 +821,12 @@ void SystemBucket::output()
   {
     (*(*f_it).second).output();
   }
+
+  for (FunctionalBucket_it f_it = functionals_begin(); f_it != functionals_end(); 
+                                                              f_it++)
+  {
+    (*(*f_it).second).output();
+  }
 }
 
 //*******************************************************************|************************************************************//
