@@ -145,6 +145,8 @@ namespace buckettools
 
     const int checkpoint_count() const;                              // return the checkpoint count
 
+    const int visualization_count() const;                           // return the visualization count
+
     //***************************************************************|***********************************************************//
     // Mesh data access
     //***************************************************************|***********************************************************//
@@ -333,7 +335,7 @@ namespace buckettools
             timestepadapt_period_timesteps_,
             checkpoint_period_timesteps_;
 
-    int_ptr checkpoint_count_;                                       // the checkpoint count
+    int_ptr checkpoint_count_, visualization_count_;                 // various counters
 
     //***************************************************************|***********************************************************//
     // Pointers data
