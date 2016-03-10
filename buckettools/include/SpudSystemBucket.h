@@ -70,6 +70,8 @@ namespace buckettools
 
     void initialize_diagnostics() const;                             // initialize any diagnostic output from this system
 
+    std::vector< GenericFunction_ptr > collect_vis_functions() const;// output the diagnostics on this system
+
     //***************************************************************|***********************************************************//
     // Base data access
     //***************************************************************|***********************************************************//

@@ -19,6 +19,16 @@
     <output_base_name>
       <string_value lines="1">region_ids</string_value>
     </output_base_name>
+    <visualization>
+      <element name="P1">
+        <family>
+          <string_value lines="1">CG</string_value>
+        </family>
+        <degree>
+          <integer_value rank="0">1</integer_value>
+        </degree>
+      </element>
+    </visualization>
     <dump_periods/>
     <detectors>
       <point name="Lower">

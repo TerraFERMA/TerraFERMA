@@ -22,6 +22,7 @@
 #include "BoostTypes.h"
 #include "SolverBucket.h"
 #include "SystemBucket.h"
+#include "SystemsSolverBucket.h"
 #include "Bucket.h"
 #include "Logger.h"
 #include <dolfin.h>
@@ -152,6 +153,26 @@ bool SolverBucket::solve()
   {
 
 
+    File_ptr pvdfile;
+    FunctionSpace_ptr visfuncspace;
+    std::vector< GenericFunction_ptr > functions;
+    if(*visualizationmonitor_)
+    {
+      pvdfile.reset( new dolfin::File(visualization_basename()+"_picard.pvd", "compressed") );
+
+      Mesh_ptr sysmesh = (*system()).mesh();
+      visfuncspace = (*(*system()).bucket()).fetch_visfunctionspace(sysmesh);
+
+      for (FunctionBucket_const_it f_it = (*system()).fields_begin(); 
+                                   f_it != (*system()).fields_end(); 
+                                                            f_it++)
+      {
+        functions.push_back((*(*f_it).second).iteratedfunction());
+        functions.push_back((*(*f_it).second).residualfunction());
+      }
+
+    }
+
     assert(residual_);                                               // we need to assemble the residual again here as it may depend
                                                                      // on other systems that have been solved since the last call
     dolfin::Assembler assemblerres;
@@ -183,9 +204,13 @@ bool SolverBucket::solve()
                                     iteration_count(), aerror, rerror);
 
     ConvergenceFile_ptr convfile = convergencefile();
-    if(convfile)
+    if(*visualizationmonitor_ || convfile)
     {
       *(*(*system()).residualfunction()).vector() = (*std::dynamic_pointer_cast< dolfin::GenericVector >(residual_vector()));
+      if (*visualizationmonitor_)
+      {
+        (*pvdfile).write(functions, *visfuncspace, (double) iteration_count());
+      }
       if (convfile)
       {
         (*convfile).write_data();
@@ -319,8 +344,13 @@ bool SolverBucket::solve()
                           iteration_count(), aerror, rerror);
                                                                      // and decide to loop or not...
 
-      if(convfile)
+      if(*visualizationmonitor_ || convfile)
       {
+        *(*(*system()).residualfunction()).vector() = (*std::dynamic_pointer_cast< dolfin::GenericVector >(residual_vector()));
+        if (*visualizationmonitor_)
+        {
+          (*pvdfile).write(functions, *visfuncspace, (double) iteration_count());
+        }
         *(*(*system()).residualfunction()).vector() = (*std::dynamic_pointer_cast< dolfin::GenericVector >(residual_vector()));
         if (convfile)
         {
@@ -447,6 +477,44 @@ const int SolverBucket::iteration_count() const
 void SolverBucket::iteration_count(const int &it)
 {
   *iteration_count_ = it;
+}
+
+//*******************************************************************|************************************************************//
+// return true if we're using a visualization monitor
+//*******************************************************************|************************************************************//
+const bool SolverBucket::visualization_monitor() const
+{
+  return *visualizationmonitor_;
+}
+
+//*******************************************************************|************************************************************//
+// return true if we're using a ksp visualization monitor
+//*******************************************************************|************************************************************//
+const bool SolverBucket::kspvisualization_monitor() const
+{
+  return *kspvisualizationmonitor_;
+}
+
+//*******************************************************************|************************************************************//
+// return the basename for visualization monitors
+//*******************************************************************|************************************************************//
+std::string SolverBucket::visualization_basename()
+{
+  std::stringstream buffer;
+  buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
+                         << (*system()).name() << "_" 
+                         << name() << "_";
+  if (current_systemssolver_.length() > 0)
+  {
+    buffer << current_systemssolver_ << "_";
+  }
+  buffer << (*(*system()).bucket()).timestep_count();
+  if (current_systemssolver_.length() > 0)
+  {
+    SystemsSolverBucket* p_syssol = fetch_systemssolver(current_systemssolver_);
+    buffer << "_" << visualization_basename_iterations_(p_syssol);
+  }
+  return buffer.str();
 }
 
 //*******************************************************************|************************************************************//
@@ -1011,6 +1079,24 @@ void SolverBucket::ksp_check_convergence_(KSP &ksp, int indent)
 void SolverBucket::checkpoint()
 {
   checkpoint_options_();
+}
+
+//*******************************************************************|************************************************************//
+// a utility function to set the nonlinear systems iterations in the visualization basename
+//*******************************************************************|************************************************************//
+std::string SolverBucket::visualization_basename_iterations_(const SystemsSolverBucket* p_syssol)
+{
+  std::stringstream buffer;
+  buffer.str("");
+  if ((*p_syssol).systemssolver())
+  {
+    buffer << "_" << visualization_basename_iterations_((*p_syssol).systemssolver());
+  }
+  if ((*p_syssol).iterative())
+  {
+    buffer << (*p_syssol).iteration_count();
+  }
+  return buffer.str();
 }
 
 //*******************************************************************|************************************************************//

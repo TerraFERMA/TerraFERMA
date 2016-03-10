@@ -197,6 +197,23 @@ bool SystemsSolverBucket::solve()
   {
     aerror0 = residual_norm();
     log(INFO, "Entering nonlinear systems iteration.");
+
+    std::map< std::string, std::pair< File_ptr, std::vector< GenericFunction_ptr > > >::iterator v_it;
+    for (v_it = convvisfiles_.begin(); 
+         v_it != convvisfiles_.end(); v_it++)
+    {
+      std::stringstream buffer;
+      if (convvisfiles_.size()>1)                                          // allocate the pvd file with an appropriate name
+      {
+        buffer.str(""); buffer << (*bucket()).output_basename() << "_" << (*v_it).first << "_" << unique_name() << "_" << (*bucket()).timestep_count() << ".pvd";
+      }
+      else
+      {
+        buffer.str(""); buffer << (*bucket()).output_basename() << "_" << unique_name() << "_" << (*bucket()).timestep_count() << ".pvd";
+      }
+      (*v_it).second.first.reset( new dolfin::File(buffer.str(), "compressed") );
+    }
+
   }
 
   while (!complete_iterating_(aerror0))
@@ -557,6 +574,17 @@ bool SystemsSolverBucket::complete_iterating_(const double &aerror0)
     if(convfile_)
     {
       (*convfile_).write_data(aerror);
+    }
+
+    std::map< std::string, std::pair< File_ptr, std::vector< GenericFunction_ptr > > >::iterator v_it;
+    for (v_it = convvisfiles_.begin(); 
+         v_it != convvisfiles_.end(); v_it++)
+    {
+      FunctionSpace_ptr vis_fs = (*bucket()).fetch_visfunctionspace((*bucket()).fetch_mesh((*v_it).first));
+
+      (*(*v_it).second.first).write((*v_it).second.second,           // write data to the convergence visualization file(s)
+                                    *vis_fs, 
+                                    (double) iteration_count());
     }
 
     completed = ((rerror <= *rtol_ || 

@@ -752,23 +752,6 @@ ReferencePoint_const_it FunctionBucket::referencepoints_end() const
 }
 
 //*******************************************************************|************************************************************//
-// output the current contents of the function to a pvd file (if associated)
-//*******************************************************************|************************************************************//
-void FunctionBucket::output()
-{
-  if (pvdfile_)                                                      // check a pvd file is associated
-  {
-    *pvdfile_ << std::make_pair<const dolfin::Function*, double>(&(*std::dynamic_pointer_cast< dolfin::Function >(function())),
-                                                                 (*(*system()).bucket()).current_time());
-  }
-  if (respvdfile_)                                                   // check a residual pvd file is associated
-  {
-    *respvdfile_ << std::make_pair<const dolfin::Function*, double>(&(*std::dynamic_pointer_cast< dolfin::Function >(residualfunction())),
-                                   (*(*system()).bucket()).current_time());
-  }
-}
-
-//*******************************************************************|************************************************************//
 // include this function in visualization output
 // this is a virtual function and should be implemented in the derived options class
 //*******************************************************************|************************************************************//

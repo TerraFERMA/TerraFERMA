@@ -73,19 +73,6 @@ void SpudFunctionBucket::fill_field(const uint &index)
   allocate_field_();                                                 // allocate as a field
 
   fill_is_();                                                        // fill information about the component index sets
-
-  if(include_in_visualization())
-  {
-                                                                     // allocate a pvd file (field specific so could be moved)
-    pvdfile_.reset( new dolfin::File((*(*system_).bucket()).output_basename()+"_"+(*system_).name()+"_"+name()+".pvd", "compressed") );
-  }
-
-  if(include_residual_in_visualization())
-  {
-                                                                     // allocate a pvd file (field specific so could be moved)
-    respvdfile_.reset( new dolfin::File((*(*system_).bucket()).output_basename()+"_"+(*system_).name()+"_"+name()+"_residual.pvd", "compressed") );
-  }
-
 }
 
 //*******************************************************************|************************************************************//

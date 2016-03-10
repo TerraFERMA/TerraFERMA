@@ -159,6 +159,37 @@ void SpudSystemBucket::initialize_diagnostics() const                // doesn't 
 }
 
 //*******************************************************************|************************************************************//
+// return a vector of GenericFunctions that are to be included in the visualization file(s) from this system
+//*******************************************************************|************************************************************//
+std::vector< GenericFunction_ptr > SpudSystemBucket::collect_vis_functions() const
+{
+  std::vector< GenericFunction_ptr > functions;
+
+  for (FunctionBucket_const_it f_it = fields_begin(); f_it != fields_end();
+                                                              f_it++)
+  {
+    if ((*(*f_it).second).include_in_visualization())
+    {
+      functions.push_back( (*(*f_it).second).function() );
+    }
+    if ((*(*f_it).second).include_residual_in_visualization())
+    {
+      functions.push_back( (*(*f_it).second).residualfunction() );
+    }
+  }
+ 
+  for (FunctionBucket_const_it c_it = coeffs_begin(); c_it != coeffs_end(); c_it++)
+  {
+    if ((*(*c_it).second).include_in_visualization())
+    {
+      functions.push_back( (*(*c_it).second).function() );
+    }
+  }
+
+  return functions;
+}
+
+//*******************************************************************|************************************************************//
 // return a string describing the contents of the spud system
 //*******************************************************************|************************************************************//
 const std::string SpudSystemBucket::str(int indent) const
@@ -240,7 +271,8 @@ void SpudSystemBucket::fill_systemfunction_()
   buffer.str(""); buffer << name() << "::Residual";
   (*residualfunction_).rename( buffer.str(), buffer.str() );
 
-  if (Spud::option_count(optionpath()+"/nonlinear_solver/type::SNES/monitors/convergence_file")>0)
+  if ((Spud::option_count(optionpath()+"/nonlinear_solver/type::SNES/monitors/visualization")+
+       Spud::option_count(optionpath()+"/nonlinear_solver/type::SNES/monitors/convergence_file"))>0)
   {
     snesupdatefunction_.reset( new dolfin::Function(functionspace_) );
     buffer.str(""); buffer << name() << "::SNESUpdateFunction";

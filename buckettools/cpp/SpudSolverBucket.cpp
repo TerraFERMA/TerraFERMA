@@ -306,8 +306,10 @@ void SpudSolverBucket::initialize()
       petsc_err(perr);
     }
 
-    if (Spud::have_option(optionpath()+"/type/monitors/convergence_file"))
+    if (Spud::have_option(optionpath()+"/type/monitors/visualization")||
+        Spud::have_option(optionpath()+"/type/monitors/convergence_file"))
     {
+      *visualizationmonitor_ = Spud::have_option(optionpath()+"/type/monitors/visualization"); 
       snesmctx_.solver = this;
       perr = SNESMonitorSet(snes_, SNESCustomMonitor,                // set a custom snes monitor
                                             &snesmctx_, PETSC_NULL); 
@@ -338,6 +340,8 @@ void SpudSolverBucket::initialize()
 
     perr = KSPCreate((*(*system_).mesh()).mpi_comm(), &ksp_); 
     petsc_err(perr);                                                   // create a ksp object from the variable in the solverbucket
+
+    *visualizationmonitor_ = Spud::have_option(optionpath()+"/type/monitors/visualization"); 
 
     if (bilinearpc_)
     {                                                                // if there's a pc associated
@@ -615,6 +619,12 @@ void SpudSolverBucket::fill_base_()
 
   iteration_count_.reset( new int );
   *iteration_count_ = 0;
+
+  visualizationmonitor_.reset( new bool );
+  *visualizationmonitor_ = false;
+
+  kspvisualizationmonitor_.reset( new bool );
+  *kspvisualizationmonitor_ = false;
 
   buffer.str(""); buffer << optionpath() << 
                                 "/type/monitors/norms";
@@ -998,8 +1008,10 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
       petsc_err(perr);
     }
 
-    if (Spud::have_option(optionpath+"/iterative_method/monitors/convergence_file"))
+    if (Spud::have_option(optionpath+"/iterative_method/monitors/visualization")||
+        Spud::have_option(optionpath+"/iterative_method/monitors/convergence_file"))
     {
+      *kspvisualizationmonitor_ = Spud::have_option(optionpath+"/iterative_method/monitors/visualization"); 
       kspmctx_.solver = this;
       perr = KSPMonitorSet(ksp, KSPCustomMonitor, 
                                              &kspmctx_, PETSC_NULL); 

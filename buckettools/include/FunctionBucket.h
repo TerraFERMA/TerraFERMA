@@ -262,8 +262,6 @@ namespace buckettools
     // Output functions
     //***************************************************************|***********************************************************//
 
-    void output();                                                   // output diagnostics about this function
-
     virtual const bool include_in_visualization() const;             // return a boolean indicating if this function is included in 
                                                                      // visualization output
 
@@ -326,8 +324,6 @@ namespace buckettools
 
     Form_ptr constantfunctional_;                                    // a functional that can be used to set a constant function
     
-    File_ptr pvdfile_, respvdfile_;                                  // (boost shared) pointer to a pvd file output for this function
-
     double_ptr change_;                                              // change in the function in a norm
 
     bool_ptr change_calculated_;                                     // indicate if the change has been recalculated recently

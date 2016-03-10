@@ -76,6 +76,8 @@ if not args.dry:
   bucket.write_cppexpressions()
   # write a cpp header file to wrap the namespaces of the corresponding cpp
   bucket.write_systemexpressions_cpp()
+  # write a cpp header file to wrap the namespaces of the visualization functionspace ufc
+  bucket.write_visualization_cpp()
 
 if args.list is not None:
   namespaces = bucket.list_namespaces()

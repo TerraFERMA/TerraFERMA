@@ -22,6 +22,16 @@
     <output_base_name>
       <string_value lines="1">projection</string_value>
     </output_base_name>
+    <visualization>
+      <element name="P2">
+        <family>
+          <string_value lines="1">CG</string_value>
+        </family>
+        <degree>
+          <integer_value rank="0">2</integer_value>
+        </degree>
+      </element>
+    </visualization>
     <dump_periods/>
     <detectors/>
   </io>
@@ -163,6 +173,7 @@
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics/>
       </diagnostics>
     </coefficient>
@@ -180,6 +191,7 @@
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics/>
       </diagnostics>
     </coefficient>
@@ -197,6 +209,7 @@
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics/>
       </diagnostics>
     </coefficient>
@@ -227,6 +240,7 @@ def val(x):
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics/>
       </diagnostics>
     </coefficient>
@@ -266,6 +280,7 @@ r = r1 + r2 + r3</string_value>
         <monitors>
           <view_snes/>
           <residual/>
+          <visualization/>
         </monitors>
         <linear_solver>
           <iterative_method name="preonly"/>
@@ -608,6 +623,7 @@ r = r1 + r2 + r3</string_value>
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics/>
       </diagnostics>
     </coefficient>
@@ -625,6 +641,7 @@ r = r1 + r2 + r3</string_value>
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics/>
       </diagnostics>
     </coefficient>
@@ -652,6 +669,7 @@ r = r1 + r2 + r3</string_value>
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics/>
       </diagnostics>
     </coefficient>

@@ -96,6 +96,49 @@ void SpudSystemsSolverBucket::initialize_diagnostics()
       (*sss_ptr).initialize_diagnostics();
     }
   }
+
+  buffer.str(""); buffer << l_optionpath << "/monitors/visualization";
+  if (Spud::have_option(buffer.str()))
+  {
+    for (Mesh_const_it m_it = (*bucket()).meshes_begin(); m_it != (*bucket()).meshes_end(); m_it++)
+    {
+      std::vector<GenericFunction_ptr> functions;
+      std::vector<SolverBucket_ptr>::const_iterator s_it;
+      for (s_it = residualsolvers_.begin(); s_it != residualsolvers_.end(); s_it++)
+      {
+        if ((*(**s_it).system()).mesh() == (*m_it).second)
+        {
+            
+          for (FunctionBucket_const_it f_it = (*(**s_it).system()).fields_begin(); 
+                                       f_it != (*(**s_it).system()).fields_end();
+                                       f_it++)
+          {
+            functions.push_back( (*(*f_it).second).function() );      // all fields and residuals get output in this debugging output
+            functions.push_back( (*(*f_it).second).residualfunction() ); // regardless of whether they're included in standard output
+          }
+
+          for (FunctionBucket_const_it c_it = (*(**s_it).system()).coeffs_begin(); 
+                                       c_it != (*(**s_it).system()).coeffs_end();
+                                       c_it++)
+          {
+            if ((*(*c_it).second).include_in_visualization())         // including coefficients here is just a niceity but some
+            {                                                         // coefficients aren't suitable for visualization so
+              functions.push_back( (*(*c_it).second).function() );    // only output them if we've asked for them in the normal
+            }                                                         // output
+          }
+
+        }
+      }
+
+      if (functions.size()>0)                                        // if there were any functions to include, let's save this info
+      {
+        File_ptr pvd_file = NULL;
+        convvisfiles_[(*m_it).first] = std::make_pair(pvd_file, functions);// save to the data structure
+      }
+
+    }
+  }
+  
 }
 
 //*******************************************************************|************************************************************//
