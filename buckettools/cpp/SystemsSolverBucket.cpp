@@ -204,12 +204,17 @@ bool SystemsSolverBucket::solve()
       std::stringstream buffer;
       if (convvisfiles_.size()>1)                                          // allocate the pvd file with an appropriate name
       {
-        buffer.str(""); buffer << (*bucket()).output_basename() << "_" << (*v_it).first << "_" << unique_name() << "_" << (*bucket()).timestep_count() << ".pvd";
+        buffer.str(""); buffer << (*bucket()).output_basename() << "_" << (*v_it).first << "_" << unique_name() << "_" << (*bucket()).timestep_count();
       }
       else
       {
-        buffer.str(""); buffer << (*bucket()).output_basename() << "_" << unique_name() << "_" << (*bucket()).timestep_count() << ".pvd";
+        buffer.str(""); buffer << (*bucket()).output_basename() << "_" << unique_name() << "_" << (*bucket()).timestep_count();
       }
+      if (systemssolver())
+      {
+        buffer << (*systemssolver()).iterations_str();
+      }
+      buffer << "_systemssolver.pvd";
       (*v_it).second.first.reset( new dolfin::File(buffer.str(), "compressed") );
     }
 
@@ -348,6 +353,24 @@ std::string SystemsSolverBucket::unique_name() const
     parent_name = (*systemssolver()).unique_name()+"_";
   }
   return parent_name+name();
+}
+
+//*******************************************************************|************************************************************//
+// a utility function to set the nonlinear systems iterations in output file basenames
+//*******************************************************************|************************************************************//
+std::string SystemsSolverBucket::iterations_str() const
+{
+  std::stringstream buffer;
+  buffer.str("");
+  if (systemssolver())
+  {
+    buffer << (*systemssolver()).iterations_str();
+  }
+  if (iterative())
+  {
+    buffer << "_" << iteration_count();
+  }
+  return buffer.str();
 }
 
 //*******************************************************************|************************************************************//

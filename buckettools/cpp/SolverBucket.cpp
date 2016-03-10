@@ -512,7 +512,7 @@ std::string SolverBucket::visualization_basename()
   if (current_systemssolver_.length() > 0)
   {
     SystemsSolverBucket* p_syssol = fetch_systemssolver(current_systemssolver_);
-    buffer << "_" << visualization_basename_iterations_(p_syssol);
+    buffer << (*p_syssol).iterations_str();
   }
   return buffer.str();
 }
@@ -1079,24 +1079,6 @@ void SolverBucket::ksp_check_convergence_(KSP &ksp, int indent)
 void SolverBucket::checkpoint()
 {
   checkpoint_options_();
-}
-
-//*******************************************************************|************************************************************//
-// a utility function to set the nonlinear systems iterations in the visualization basename
-//*******************************************************************|************************************************************//
-std::string SolverBucket::visualization_basename_iterations_(const SystemsSolverBucket* p_syssol)
-{
-  std::stringstream buffer;
-  buffer.str("");
-  if ((*p_syssol).systemssolver())
-  {
-    buffer << "_" << visualization_basename_iterations_((*p_syssol).systemssolver());
-  }
-  if ((*p_syssol).iterative())
-  {
-    buffer << (*p_syssol).iteration_count();
-  }
-  return buffer.str();
 }
 
 //*******************************************************************|************************************************************//

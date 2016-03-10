@@ -334,8 +334,6 @@ namespace buckettools
 
     virtual void checkpoint_options_();                              // checkpoint the options system for the solverbucket
 
-    std::string visualization_basename_iterations_(const SystemsSolverBucket* p_syssol);//utility function to get the iterations as a visualization basename
-
   //*****************************************************************|***********************************************************//
   // Private functions
   //*****************************************************************|***********************************************************//
