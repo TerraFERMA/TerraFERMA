@@ -150,8 +150,7 @@ void SystemsSolverBucket::fill_solverlists_()
      SystemsSolverBucket_ptr ss_ptr = std::dynamic_pointer_cast<SystemsSolverBucket>((*s_it).second);
      if (ss_ptr)
      {
-       (*ss_ptr).fill_solverlists_();                            // fill the residual solvers list of sub systems solvers
-       const std::vector<SolverBucket_ptr>& tmpresidualsolvers = (*ss_ptr).residualsolvers();// then retrieve it for ourselves
+       const std::vector<SolverBucket_ptr>& tmpresidualsolvers = (*ss_ptr).residualsolvers();
        std::vector<SolverBucket_ptr>::const_iterator ts_it;
        for (ts_it = tmpresidualsolvers.begin(); ts_it != tmpresidualsolvers.end(); ts_it++)
        {                                                             // check we don't have a solver from this system already
