@@ -519,6 +519,36 @@ element_options_scalar_user =
      )
   )
 
+element_options_scalar_lagrange_visualization =
+  (
+     (
+       ## Options describing piecewise linear continuous Lagrange finite element.
+       element element {
+         attribute name { "P1" },
+         p1_element,
+         comment
+       }|
+       ## Options describing piecewise quadratic continuous Lagrange finite element.
+       element element {
+         attribute name { "P2" },
+         p2_element,
+         comment
+       }|
+       ## Options describing piecewise linear discontinuous Lagrange finite element.
+       element element {
+         attribute name { "P1DG" },
+         p1dg_element,
+         comment
+       }|
+       ## Options describing piecewise quadratic discontinuous Lagrange finite element.
+       element element {
+         attribute name { "P2DG" },
+         p2dg_element,
+         comment
+       }
+     )
+  )
+
 element_options_scalar_lagrange =
   (
      (

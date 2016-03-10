@@ -121,6 +121,12 @@ namespace buckettools
 
     void iteration_count(const int &it);                             // set the number of iterations taken
 
+    const bool visualization_monitor() const;                        // return true if we're using a visualization monitor
+    
+    const bool kspvisualization_monitor() const;                     // return true if we're using a visualization monitor
+
+    std::string visualization_basename();                            // return a basename for any visualization monitors
+    
     const bool monitor_norms() const                                 // return true if norms should be monitored in nonlinear iterations
     { return monitornorms_; }
 
@@ -297,6 +303,8 @@ namespace buckettools
 
     CustomMonitorCtx snesmctx_, kspmctx_;                            // monitor contexts
 
+    bool_ptr visualizationmonitor_, kspvisualizationmonitor_;        // visualization monitors
+
     bool monitornorms_;                                              // monitor the norms in nonlinear iterations
 
     int solve_location_;                                             // when this solver will be applied
@@ -326,6 +334,7 @@ namespace buckettools
 
     virtual void checkpoint_options_();                              // checkpoint the options system for the solverbucket
 
+    std::string visualization_basename_iterations_(const SystemsSolverBucket* p_syssol);//utility function to get the iterations as a visualization basename
 
   //*****************************************************************|***********************************************************//
   // Private functions

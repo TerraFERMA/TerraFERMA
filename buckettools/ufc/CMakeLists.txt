@@ -74,12 +74,13 @@ file(STRINGS ${PROJECT_BINARY_DIR}/cpp_filenames.txt CPP_FILENAMES)
 
 # generate a library - really the main point of this whole process
 add_library(buckettools_ufc SHARED
-            ${PROJECT_BINARY_DIR}/SystemFunctionalsWrapper.cpp ${PROJECT_BINARY_DIR}/SystemSolversWrapper.cpp ${PROJECT_BINARY_DIR}/SystemExpressionsWrapper.cpp
+            ${PROJECT_BINARY_DIR}/SystemFunctionalsWrapper.cpp ${PROJECT_BINARY_DIR}/SystemSolversWrapper.cpp ${PROJECT_BINARY_DIR}/SystemExpressionsWrapper.cpp ${PROJECT_BINARY_DIR}/VisualizationWrapper.cpp 
             ${CPP_FILENAMES})
 # tell cmake that this file doesn't exist until build time
 set_source_files_properties(${PROJECT_BINARY_DIR}/SystemFunctionalsWrapper.cpp PROPERTIES GENERATED 1)
 set_source_files_properties(${PROJECT_BINARY_DIR}/SystemSolversWrapper.cpp PROPERTIES GENERATED 1)
 set_source_files_properties(${PROJECT_BINARY_DIR}/SystemExpressionsWrapper.cpp PROPERTIES GENERATED 1)
+set_source_files_properties(${PROJECT_BINARY_DIR}/VisualizationWrapper.cpp PROPERTIES GENERATED 1)
 set_source_files_properties(${CPP_FILENAMES} PROPERTIES GENERATED 1)
 # the project depends on this target
 add_dependencies(buckettools_ufc genwrappers)

@@ -199,6 +199,10 @@ namespace buckettools
 
     SystemsConvergenceFile_ptr convfile_;                            // nonlinear systems convergence file
 
+    std::map< std::string,
+              std::pair< File_ptr,
+                         std::vector< GenericFunction_ptr > > >
+                                                      convvisfiles_; // pointer to nonlinear systems convergence visualization file(s)
 
     //***************************************************************|***********************************************************//
     // Pointers data
