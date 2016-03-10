@@ -115,6 +115,8 @@ namespace buckettools
 
     std::string unique_name() const;
 
+    std::string iterations_str() const;                              //utility function to get the iterations as string
+
     //***************************************************************|***********************************************************//
     // Sub solver data access
     //***************************************************************|***********************************************************//
