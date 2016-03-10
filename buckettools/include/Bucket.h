@@ -258,6 +258,9 @@ namespace buckettools
     
     SystemsSolverBucket_ptr fetch_systemssolver(const int &location);// fetch a systemssolver set with the given name
 
+    const SystemsSolverBucket_ptr fetch_systemssolver(const int &location)
+                                                           const;    // fetch a systemssolver set with the given name
+
     i_SystemsSolverBucket_it systemssolvers_begin();                 // return an iterator to the beginning of the systemssolvers
 
     i_SystemsSolverBucket_const_it systemssolvers_begin() const;     // return a constant iterator to the beginning of the systemssolvers
