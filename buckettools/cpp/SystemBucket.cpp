@@ -816,12 +816,6 @@ std::vector< const dolfin::DirichletBC* >::const_iterator SystemBucket::bcs_end(
 //*******************************************************************|************************************************************//
 void SystemBucket::output()
 {
-  for (FunctionBucket_it f_it = fields_begin(); f_it != fields_end(); 
-                                                              f_it++)
-  {
-    (*(*f_it).second).output();
-  }
-
   for (FunctionalBucket_it f_it = functionals_begin(); f_it != functionals_end(); 
                                                               f_it++)
   {

@@ -997,6 +997,11 @@ void Bucket::output(const int &location)
                              (*((*v_it).second).first), 
                              current_time());
     }
+    for (SystemBucket_it s_it = systems_begin(); s_it != systems_end();// loop over the systems
+                                                               s_it++)
+    {
+      (*(*s_it).second).output();                                    // and output pvd files
+    }
     (*visualization_count_)++;
   }
 
