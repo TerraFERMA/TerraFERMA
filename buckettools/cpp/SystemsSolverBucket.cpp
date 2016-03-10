@@ -196,7 +196,7 @@ bool SystemsSolverBucket::solve()
   if (rtol_)
   {
     aerror0 = residual_norm();
-    log(INFO, "Entering nonlinear systems iteration.");
+    log(INFO, "Entering nonlinear systems iteration: %s", name().c_str());
   }
 
   while (!complete_iterating_(aerror0))
@@ -372,7 +372,7 @@ GenericSolverBucket_ptr SystemsSolverBucket::fetch_solver(const std::string &nam
 //*******************************************************************|************************************************************//
 const GenericSolverBucket_ptr SystemsSolverBucket::fetch_solver(const std::string &name) const
 {
-  GenericSolverBucket_hash_it s_it = solvers_.get<om_key_hash>().find(name);     // check if a solver with this name already exists
+  GenericSolverBucket_const_hash_it s_it = solvers_.get<om_key_hash>().find(name);     // check if a solver with this name already exists
   if (s_it == solvers_.get<om_key_hash>().end())
   {
     tf_err("GenericSolverBucket does not exist in systems solvers solver.", "SolverBucket name: %s, System name: %s", name.c_str(), name_.c_str());
@@ -551,8 +551,8 @@ bool SystemsSolverBucket::complete_iterating_(const double &aerror0)
       rerror = aerror/aerror0;
     }
 
-    log(INFO, "  %u Nonlinear Systems Residual Norm (absolute, relative) = %g, %g\n", 
-                                    iteration_count(), aerror, rerror);
+    log(INFO, "  %u Nonlinear Systems (%s) Residual Norm (absolute, relative) = %g, %g\n", 
+                                    iteration_count(), name().c_str(), aerror, rerror);
 
     if(convfile_)
     {
