@@ -80,6 +80,29 @@ libspud.set_option("/system::SNESProjection/nonlinear_solver::SimpleSolver/type:
                   </string>
                 </filenames>
               </required_output>
+              <dependencies>
+                <run name="Mesh">
+                  <input_file>
+                    <string_value lines="1" type="filename">square.geo</string_value>
+                  </input_file>
+                  <run_when name="input_changed_or_output_missing"/>
+                  <required_output>
+                    <filenames name="meshfiles">
+                      <python>
+                        <string_value lines="20" type="code" language="python">meshfiles = ["square"+ext for ext in [".xml"]]</string_value>
+                      </python>
+                    </filenames>
+                  </required_output>
+                  <commands>
+                    <command name="GMsh">
+                      <string_value lines="1">gmsh -2 square.geo -o square.msh</string_value>
+                    </command>
+                    <command name="Convert">
+                      <string_value lines="1">dolfin-convert square.msh square.xml</string_value>
+                    </command>
+                  </commands>
+                </run>
+              </dependencies>
               <variables>
                 <variable name="checkpoint_0">
                   <string_value lines="20" type="code" language="python">import libspud

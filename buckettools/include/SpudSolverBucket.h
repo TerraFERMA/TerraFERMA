@@ -129,28 +129,28 @@ namespace buckettools
 
     void fill_ksp_(const std::string &optionpath, KSP &ksp,          // fill the information about a child ksp
                    const std::string prefix, 
-                   const std::vector<uint>* parent_indices=NULL);
+                   const std::vector<std::size_t>* parent_indices=NULL);
 
     void fill_pc_(const std::string &optionpath, PC &pc,             // fill the information about a pc
                   const std::string prefix, 
-                  const uint &parent_offset, 
-                  const std::vector<uint>* parent_indices);
+                  const std::size_t &parent_offset, 
+                  const std::vector<std::size_t>* parent_indices);
 
     void fill_indices_values_by_field_(const std::string &optionpath,
-                                       std::vector<uint> &child_indices,
+                                       std::vector<std::size_t> &child_indices,
                                        PETScVector_ptr values=NULL,
-                                       const std::vector<uint>* parent_indices=NULL,
-                                       const std::vector<uint>* sibling_indices=NULL);
+                                       const std::vector<std::size_t>* parent_indices=NULL,
+                                       const std::vector<std::size_t>* sibling_indices=NULL);
 
     void fill_pc_fieldsplit_(const std::string &optionpath, PC &pc,  // fill the information about a fieldsplit pc
                              const std::string prefix, 
-                             const uint &parent_offset, 
-                             const std::vector<uint>* parent_indices);
+                             const std::size_t &parent_offset, 
+                             const std::vector<std::size_t>* parent_indices);
 
     void fill_nullspace_(const std::string &optionpath, 
                          MatNullSpace &SP,
-                         const uint &parent_offset, 
-                         const std::vector<uint>* parent_indices);   // fill a petsc null space object
+                         const std::size_t &parent_offset, 
+                         const std::vector<std::size_t>* parent_indices);   // fill a petsc null space object
 
     void fill_constraints_();                                        // fill constraints on snes vi
 

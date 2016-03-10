@@ -34,6 +34,7 @@
 #include "RegionsExpression.h"
 #include "SemiLagrangianExpression.h"
 #include "PointDetectors.h"
+#include "BucketDolfinBase.h"
 
 using namespace buckettools;
 
@@ -534,13 +535,13 @@ void SpudFunctionBucket::allocate_field_()
                    << "/type/rank/initial_condition::WholeMesh/file";
   if(Spud::have_option(buffer.str()))
   {
-    std::string icfilename;
-    serr = Spud::get_option(buffer.str(), icfilename);
+    std::string icfilebasename;
+    serr = Spud::get_option(buffer.str(), icfilebasename);
     spud_err(buffer.str(), serr);
     if (!(*system()).icfile())                                       // if there's no icfile_ associated with the system
     {
       assert(index()==0);
-      (*system()).icfile().reset( new dolfin::File(icfilename) );
+      (*system()).icfile().reset( new dolfin::File(xml_filename(icfilebasename)) );
     }
   }
   else
@@ -646,7 +647,7 @@ void SpudFunctionBucket::fill_bc_component_(const std::string &optionpath,
          for (std::vector<int>::const_iterator bcid = bcids.begin(); // loop over the boundary ids
                                             bcid < bcids.end(); bcid++)
          {                                                           // create a new bc on each boundary id for this subcomponent
-           DirichletBC_ptr bc(new dolfin::DirichletBC(*subfunctionspace, *bcexp, *(*system_).facetdomains(), *bcid));
+           DirichletBC_ptr bc(new dolfin::DirichletBC(*subfunctionspace, *bcexp, *bcid));
            namebuffer.str(""); namebuffer << bcname << "::" 
                                       << *subcompid << "::" << *bcid;// assemble a name incorporating the boundary id
            register_dirichletbc(bc, namebuffer.str());               // register the bc in the function bucket
@@ -659,7 +660,7 @@ void SpudFunctionBucket::fill_bc_component_(const std::string &optionpath,
       for (std::vector<int>::const_iterator bcid = bcids.begin();    // loop over the boundary ids
                                           bcid < bcids.end(); bcid++)
       {                                                              // create a bc on each boundary id for all components
-        DirichletBC_ptr bc(new dolfin::DirichletBC(*functionspace(), *bcexp, *(*system_).facetdomains(), *bcid));
+        DirichletBC_ptr bc(new dolfin::DirichletBC(*functionspace(), *bcexp, *bcid));
         namebuffer.str(""); namebuffer << bcname << "::" << *bcid;   // assemble a name for this bc incorporating the boundary id
         register_dirichletbc(bc, namebuffer.str());                  // register the bc in the function bucket
       }

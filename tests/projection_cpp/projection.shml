@@ -24,16 +24,13 @@
           <required_output>
             <filenames name="meshfiles">
               <python>
-                <string_value lines="20" type="code" language="python">meshfiles = ["square"+ext for ext in [".xml", "_facet_region.xml"]]</string_value>
+                <string_value lines="20" type="code" language="python">meshfiles = ["square"+ext for ext in [".xml"]]</string_value>
               </python>
             </filenames>
           </required_output>
           <commands>
             <command name="Convert">
               <string_value lines="1">dolfin-convert square.msh square.xml</string_value>
-            </command>
-            <command name="Remove">
-              <string_value lines="1">rm square_physical_region.xml</string_value>
             </command>
           </commands>
         </run>

@@ -15,6 +15,26 @@
         <string_value lines="1" type="filename">region_ids.tfml</string_value>
       </input_file>
       <run_when name="input_changed_or_output_missing"/>
+      <parameter_sweep>
+        <parameter name="nprocs">
+          <values>
+            <string_value lines="1">1 2 3</string_value>
+          </values>
+          <process_scale>
+            <integer_value shape="3" rank="1">1 2 3</integer_value>
+          </process_scale>
+        </parameter>
+        <parameter name="ghost_mode">
+          <values>
+            <string_value lines="1">none shared_facet shared_vertex</string_value>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+libspud.set_option_attribute("/global_parameters/dolfin/ghost_mode/name", ghost_mode)</string_value>
+            <single_build/>
+          </update>
+        </parameter>
+      </parameter_sweep>
       <dependencies>
         <run name="GMsh">
           <input_file>
@@ -24,7 +44,7 @@
           <required_output>
             <filenames name="meshfiles">
               <python>
-                <string_value lines="20" type="code" language="python">meshfiles = ["region_id"+ext for ext in [".xml", "_facet_region.xml", "_physical_region.xml"]]</string_value>
+                <string_value lines="20" type="code" language="python">meshfiles = ["region_id"+ext for ext in [".xml"]]</string_value>
               </python>
             </filenames>
           </required_output>
@@ -129,51 +149,51 @@ coeff_upper = det["Regions"]["Coefficient"]["Upper"]</string_value>
   <tests>
     <test name="field_min">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(field_min==32.0)</string_value>
+assert numpy.all(abs(numpy.array(field_min)-32.)/32. &lt; 1.e-12)</string_value>
     </test>
     <test name="field_max">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(field_max==35.0)</string_value>
+assert numpy.all(abs(numpy.array(field_max)-35.0)/35. &lt; 1.e-12)</string_value>
     </test>
     <test name="coeff_min">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(coeff_min==32.0)</string_value>
+assert numpy.all(abs(numpy.array(coeff_min)-32.0)/32. &lt; 1.e-12)</string_value>
     </test>
     <test name="coeff_max">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(coeff_max==35.0)</string_value>
+assert numpy.all(abs(numpy.array(coeff_max)-35.0)/35. &lt; 1.e-12)</string_value>
     </test>
     <test name="field_lower">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(field_lower==35.0)</string_value>
+assert numpy.all(abs(numpy.array(field_lower)-35.0)/35.&lt;1.e-12)</string_value>
     </test>
     <test name="field_lowermiddle">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(field_lowermiddle==34.0)</string_value>
+assert numpy.all(abs(numpy.array(field_lowermiddle)-34.0)/34. &lt; 1.e-12)</string_value>
     </test>
     <test name="field_uppermiddle">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(field_uppermiddle==33.0)</string_value>
+assert numpy.all(abs(numpy.array(field_uppermiddle)-33.0)/33. &lt; 1.e-12)</string_value>
     </test>
     <test name="field_upper">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(field_upper==32.0)</string_value>
+assert numpy.all(abs(numpy.array(field_upper)-32.0)/32. &lt; 1.e-12)</string_value>
     </test>
     <test name="coeff_lower">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(coeff_lower==35.0)</string_value>
+assert numpy.all(abs(numpy.array(coeff_lower)-35.0)/35. &lt; 1.e-12)</string_value>
     </test>
     <test name="coeff_lowermiddle">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(coeff_lowermiddle==34.0)</string_value>
+assert numpy.all(abs(numpy.array(coeff_lowermiddle)-34.0)/34. &lt; 1.e-12)</string_value>
     </test>
     <test name="coeff_uppermiddle">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(coeff_uppermiddle==33.0)</string_value>
+assert numpy.all(abs(numpy.array(coeff_uppermiddle)-33.0)/33. &lt; 1.e-12)</string_value>
     </test>
     <test name="coeff_upper">
       <string_value lines="20" type="code" language="python">import numpy
-assert numpy.all(coeff_upper==32.0)</string_value>
+assert numpy.all(abs(numpy.array(coeff_upper)-32.0)/32. &lt; 1.e-12)</string_value>
     </test>
   </tests>
 </harness_options>

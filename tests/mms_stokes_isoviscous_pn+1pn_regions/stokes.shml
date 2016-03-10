@@ -1,0 +1,408 @@
+<?xml version='1.0' encoding='utf-8'?>
+<harness_options>
+  <length>
+    <string_value lines="1">short</string_value>
+  </length>
+  <owner>
+    <string_value lines="1">cwilson</string_value>
+  </owner>
+  <description>
+    <string_value lines="1">A manufactured solution convergence test.</string_value>
+  </description>
+  <simulations>
+    <simulation name="StokesFieldSplit1">
+      <input_file>
+        <string_value lines="1" type="filename">stokes_fs1.tfml</string_value>
+      </input_file>
+      <run_when name="input_changed_or_output_missing"/>
+      <parameter_sweep>
+        <parameter name="ncells">
+          <values>
+            <string_value lines="1">2 4</string_value>
+          </values>
+        </parameter>
+        <parameter name="n">
+          <values>
+            <string_value lines="1">1</string_value>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+for s in xrange(libspud.option_count("/system")):
+  systempath = "/system["+`s`+"]"
+  for ftype in ["field", "coefficient"]:
+    for f in xrange(libspud.option_count(systempath+"/"+ftype)):
+      fieldpath = systempath+"/"+ftype+"["+`f`+"]"
+      fieldname = libspud.get_option(fieldpath+"/name")
+      if fieldname.endswith("Velocity"):
+        libspud.set_option(fieldpath+"/type[0]/rank[0]/element[0]/degree", int(n)+1)
+      elif fieldname.endswith("Pressure") or fieldname.endswith("Divergence"):
+        libspud.set_option(fieldpath+"/type[0]/rank[0]/element[0]/degree", int(n))</string_value>
+            <comment>Cannot be a single_build because these are compile time changes.</comment>
+          </update>
+        </parameter>
+        <parameter name="np">
+          <values>
+            <string_value lines="1">2 4</string_value>
+          </values>
+          <process_scale>
+            <integer_value shape="2" rank="1">2 4</integer_value>
+          </process_scale>
+        </parameter>
+        <parameter name="part">
+          <values>
+            <string_value lines="1">edges mixed</string_value>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+
+edges   = {3: [40,45,70,80], 2: [10,15,50,70], 1:[20,25,60,80]}
+halves  = {3: [4,25,45,80], 2: [3,4,15,25,40,45,70,80], 1: [2,4,20,25,35,45,60,80]}
+mixed   = {3: [50,30,35,60], 2: [40,45,70,80], 1: [2,4,20,25,35,45,60,80]}
+unknown = {}
+
+if part == "edges":
+  domains = edges
+elif part == "halves":
+  domains = halves
+elif part == "mixed":
+  domains = mixed
+else:
+  domains = unknown
+
+for k, v in domains.iteritems():
+  libspud.set_option("/geometry/mesh::Mesh/source::File/cell_destinations/process::"+`k`+"/region_ids", v)</string_value>
+            <single_build/>
+          </update>
+        </parameter>
+      </parameter_sweep>
+      <dependencies>
+        <run name="Mesh">
+          <input_file>
+            <string_value lines="1" type="filename">square_regions.geo</string_value>
+          </input_file>
+          <run_when name="input_changed_or_output_missing"/>
+          <parameter_sweep>
+            <parameter name="ncells">
+              <update>
+                <string_value lines="20" type="code" language="python">from string import Template as template
+input_file = template(input_file).safe_substitute({"ncells":ncells})</string_value>
+              </update>
+            </parameter>
+          </parameter_sweep>
+          <required_output>
+            <filenames name="meshfiles">
+              <string>
+                <string_value lines="1" type="filename">square_regions.xml</string_value>
+              </string>
+            </filenames>
+          </required_output>
+          <commands>
+            <command name="GMsh">
+              <string_value lines="1">gmsh -2 square_regions.geo</string_value>
+            </command>
+            <command name="Convert">
+              <string_value lines="1">dolfin-convert square_regions.msh square_regions.xml</string_value>
+            </command>
+          </commands>
+        </run>
+      </dependencies>
+      <variables>
+        <variable name="v_error_l2_fs1">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+from math import sqrt
+stat = parser("stokes.stat")
+v_error_l2_fs1 = sqrt(stat["Stokes"]["AbsoluteDifferenceVelocityL2NormSquared"]["functional_value"][-1])</string_value>
+        </variable>
+        <variable name="v_error_linf_fs1">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+from math import sqrt
+stat = parser("stokes.stat")
+v_error_linf_fs1 = max(stat["Stokes"]["AbsoluteDifferenceVelocity"]['max'][:,-1])</string_value>
+        </variable>
+        <variable name="p_error_l2_fs1">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+from math import sqrt
+stat = parser("stokes.stat")
+p_error_l2_fs1 = sqrt(stat["Stokes"]["AbsoluteDifferencePressureL2NormSquared"]["functional_value"][-1])</string_value>
+        </variable>
+        <variable name="p_error_linf_fs1">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+from math import sqrt
+stat = parser("stokes.stat")
+p_error_linf_fs1 = stat["Stokes"]["AbsoluteDifferencePressure"]["max"][-1]</string_value>
+        </variable>
+        <variable name="nlogs_fs1">
+          <string_value lines="20" type="code" language="python">import glob
+nlogs_fs1 = len(glob.glob("terraferma.log-?"))</string_value>
+        </variable>
+      </variables>
+    </simulation>
+    <simulation name="StokesFieldSplit3">
+      <input_file>
+        <string_value lines="1" type="filename">stokes_fs3.tfml</string_value>
+      </input_file>
+      <run_when name="input_changed_or_output_missing"/>
+      <parameter_sweep>
+        <parameter name="ncells">
+          <values>
+            <string_value lines="1">2 4</string_value>
+          </values>
+        </parameter>
+        <parameter name="n">
+          <values>
+            <string_value lines="1">1</string_value>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+for s in xrange(libspud.option_count("/system")):
+  systempath = "/system["+`s`+"]"
+  for ftype in ["field", "coefficient"]:
+    for f in xrange(libspud.option_count(systempath+"/"+ftype)):
+      fieldpath = systempath+"/"+ftype+"["+`f`+"]"
+      fieldname = libspud.get_option(fieldpath+"/name")
+      if fieldname.endswith("Velocity"):
+        libspud.set_option(fieldpath+"/type[0]/rank[0]/element[0]/degree", int(n)+1)
+      elif fieldname.endswith("Pressure") or fieldname.endswith("Divergence"):
+        libspud.set_option(fieldpath+"/type[0]/rank[0]/element[0]/degree", int(n))</string_value>
+            <comment>Cannot be a single_build because these are compile time changes.</comment>
+          </update>
+        </parameter>
+        <parameter name="np">
+          <values>
+            <string_value lines="1">2 4</string_value>
+          </values>
+          <process_scale>
+            <integer_value shape="2" rank="1">2 4</integer_value>
+          </process_scale>
+        </parameter>
+        <parameter name="part">
+          <values>
+            <string_value lines="1">edges halves</string_value>
+          </values>
+          <update>
+            <string_value lines="20" type="code" language="python">import libspud
+
+edges   = {3: [40,45,70,80], 2: [10,15,50,70], 1:[20,25,60,80]}
+halves  = {3: [4,25,45,80], 2: [3,4,15,25,40,45,70,80], 1: [2,4,20,25,35,45,60,80]}
+mixed   = {3: [50,30,35,60], 2: [40,45,70,80], 1: [2,4,20,25,35,45,60,80]}
+unknown = {}
+
+if part == "edges":
+  domains = edges
+elif part == "halves":
+  domains = halves
+elif part == "mixed":
+  domains = mixed
+else:
+  domains = unknown
+
+for k, v in domains.iteritems():
+  libspud.set_option("/geometry/mesh::Mesh/source::File/cell_destinations/process::"+`k`+"/region_ids", v)</string_value>
+            <single_build/>
+          </update>
+        </parameter>
+      </parameter_sweep>
+      <dependencies>
+        <run name="Mesh">
+          <input_file>
+            <string_value lines="1" type="filename">square_regions.geo</string_value>
+          </input_file>
+          <run_when name="input_changed_or_output_missing"/>
+          <parameter_sweep>
+            <parameter name="ncells">
+              <update>
+                <string_value lines="20" type="code" language="python">from string import Template as template
+input_file = template(input_file).safe_substitute({"ncells":ncells})</string_value>
+              </update>
+            </parameter>
+          </parameter_sweep>
+          <required_output>
+            <filenames name="meshfiles">
+              <string>
+                <string_value lines="1" type="filename">square_regions.xml</string_value>
+              </string>
+            </filenames>
+          </required_output>
+          <commands>
+            <command name="GMsh">
+              <string_value lines="1">gmsh -2 square_regions.geo</string_value>
+            </command>
+            <command name="Convert">
+              <string_value lines="1">dolfin-convert square_regions.msh square_regions.xml</string_value>
+            </command>
+          </commands>
+        </run>
+      </dependencies>
+      <variables>
+        <variable name="v_error_l2_fs3">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+from math import sqrt
+stat = parser("stokes.stat")
+v_error_l2_fs3 = sqrt(stat["Stokes"]["AbsoluteDifferenceVelocityL2NormSquared"]["functional_value"][-1])</string_value>
+        </variable>
+        <variable name="v_error_linf_fs3">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+from math import sqrt
+stat = parser("stokes.stat")
+v_error_linf_fs3 = max(stat["Stokes"]["AbsoluteDifferenceVelocity"]['max'][:,-1])</string_value>
+        </variable>
+        <variable name="p_error_l2_fs3">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+from math import sqrt
+stat = parser("stokes.stat")
+p_error_l2_fs3 = sqrt(stat["Stokes"]["AbsoluteDifferencePressureL2NormSquared"]["functional_value"][-1])</string_value>
+        </variable>
+        <variable name="p_error_linf_fs3">
+          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+from math import sqrt
+stat = parser("stokes.stat")
+p_error_linf_fs3 = stat["Stokes"]["AbsoluteDifferencePressure"]["max"][-1]</string_value>
+        </variable>
+        <variable name="nlogs_fs3">
+          <string_value lines="20" type="code" language="python">import glob
+nlogs_fs3 = len(glob.glob("terraferma.log-?"))</string_value>
+        </variable>
+      </variables>
+    </simulation>
+  </simulations>
+  <tests>
+    <test name="v_error_l2_fs1">
+      <string_value lines="20" type="code" language="python">import numpy
+nprocs = v_error_l2_fs1.parameters['np']
+parts  = v_error_l2_fs1.parameters['part']
+for n in v_error_l2_fs1.parameters['n']:
+  conv = []
+  print '***** n=',n
+  for part in parts:
+    for np in nprocs:
+      error_a = numpy.array(v_error_l2_fs1[{'n':n,'np':np,'part':part}])
+      conv_p = numpy.log2(error_a[:-1]/error_a[1:])
+      print 'np=',np,'part=',part,' err=',error_a,' p=',conv_p
+      conv.append(conv_p)    
+  conv = numpy.array(conv)
+  assert(numpy.all(conv &gt; int(n)+1.6))</string_value>
+    </test>
+    <test name="v_error_linf_fs1">
+      <string_value lines="20" type="code" language="python">import numpy
+nprocs = v_error_l2_fs1.parameters['np']
+parts  = v_error_l2_fs1.parameters['part']
+for n in v_error_l2_fs1.parameters['n']:
+  conv = []
+  print '***** n=',n
+  for part in parts:
+    for np in nprocs:
+      error_a = numpy.array(v_error_linf_fs1[{'n':n,'np':np,'part':part}])
+      conv_p = numpy.log2(error_a[:-1]/error_a[1:])
+      print 'np=',np,'part=',part,' err=',error_a,' p=',conv_p
+      conv.append(conv_p)
+  conv = numpy.array(conv)
+  assert(numpy.all(conv &gt; int(n)+1.5))</string_value>
+    </test>
+    <test name="p_error_l2_fs1">
+      <string_value lines="20" type="code" language="python">import numpy
+nprocs = v_error_l2_fs1.parameters['np']
+parts  = v_error_l2_fs1.parameters['part']
+for n in v_error_l2_fs1.parameters['n']:
+  conv = []
+  print '***** n=',n
+  for part in parts:
+    for np in nprocs:
+      error_a = numpy.array(p_error_l2_fs1[{'n':n,'np':np,'part':part}])
+      conv_p = numpy.log2(error_a[:-1]/error_a[1:])
+      print 'np=',np,'part=',part,' err=',error_a,' p=',conv_p
+      conv.append(conv_p)
+  conv = numpy.array(conv)
+  assert(numpy.all(conv &gt; int(n)+0.9))</string_value>
+    </test>
+    <test name="p_error_linf_fs1">
+      <string_value lines="20" type="code" language="python">import numpy
+nprocs = v_error_l2_fs1.parameters['np']
+parts  = v_error_l2_fs1.parameters['part']
+for n in v_error_l2_fs1.parameters['n']:
+  conv = []
+  print '***** n=',n
+  for part in parts:
+    for np in nprocs:
+      error_a = numpy.array(p_error_linf_fs1[{'n':n,'np':np,'part':part}])
+      conv_p = numpy.log2(error_a[:-1]/error_a[1:])
+      print 'np=',np,'part=',part,' err=',error_a,' p=',conv_p
+      conv.append(conv_p)
+  conv = numpy.array(conv)
+  assert(numpy.all(conv &gt; int(n)+0.5))</string_value>
+    </test>
+    <test name="nlogs_fs1">
+      <string_value lines="20" type="code" language="python">import itertools
+for n in nlogs_fs1.parameters['n']:
+  assert all([anp==int(np) for np in nlogs_fs1.parameters['np'] for anp in itertools.chain.from_iterable(nlogs_fs1[{'np':np, 'n': n}])])</string_value>
+    </test>
+    <test name="v_error_l2_fs3">
+      <string_value lines="20" type="code" language="python">import numpy
+nprocs = v_error_l2_fs3.parameters['np']
+parts  = v_error_l2_fs3.parameters['part']
+for n in v_error_l2_fs3.parameters['n']:
+  conv = []
+  print '***** n=',n
+  for part in parts:
+    for np in nprocs:
+      error_a = numpy.array(v_error_l2_fs3[{'n':n,'np':np,'part':part}])
+      conv_p = numpy.log2(error_a[:-1]/error_a[1:])
+      print 'np=',np,'part=',part,' err=',error_a,' p=',conv_p
+      conv.append(conv_p)    
+  conv = numpy.array(conv)
+  assert(numpy.all(conv &gt; int(n)+1.6))</string_value>
+    </test>
+    <test name="v_error_linf_fs3">
+      <string_value lines="20" type="code" language="python">import numpy
+nprocs = v_error_l2_fs3.parameters['np']
+parts  = v_error_l2_fs3.parameters['part']
+for n in v_error_l2_fs3.parameters['n']:
+  conv = []
+  print '***** n=',n
+  for part in parts:
+    for np in nprocs:
+      error_a = numpy.array(v_error_linf_fs3[{'n':n,'np':np,'part':part}])
+      conv_p = numpy.log2(error_a[:-1]/error_a[1:])
+      print 'np=',np,'part=',part,' err=',error_a,' p=',conv_p
+      conv.append(conv_p)
+  conv = numpy.array(conv)
+  assert(numpy.all(conv &gt; int(n)+1.5))</string_value>
+    </test>
+    <test name="p_error_l2_fs3">
+      <string_value lines="20" type="code" language="python">import numpy
+nprocs = v_error_l2_fs3.parameters['np']
+parts  = v_error_l2_fs3.parameters['part']
+for n in v_error_l2_fs3.parameters['n']:
+  conv = []
+  print '***** n=',n
+  for part in parts:
+    for np in nprocs:
+      error_a = numpy.array(p_error_l2_fs3[{'n':n,'np':np,'part':part}])
+      conv_p = numpy.log2(error_a[:-1]/error_a[1:])
+      print 'np=',np,'part=',part,' err=',error_a,' p=',conv_p
+      conv.append(conv_p)
+  conv = numpy.array(conv)
+  assert(numpy.all(conv &gt; int(n)+0.9))</string_value>
+    </test>
+    <test name="p_error_linf_fs3">
+      <string_value lines="20" type="code" language="python">import numpy
+nprocs = v_error_l2_fs3.parameters['np']
+parts  = v_error_l2_fs3.parameters['part']
+for n in v_error_l2_fs3.parameters['n']:
+  conv = []
+  print '***** n=',n
+  for part in parts:
+    for np in nprocs:
+      error_a = numpy.array(p_error_linf_fs3[{'n':n,'np':np,'part':part}])
+      conv_p = numpy.log2(error_a[:-1]/error_a[1:])
+      print 'np=',np,'part=',part,' err=',error_a,' p=',conv_p
+      conv.append(conv_p)
+  conv = numpy.array(conv)
+  assert(numpy.all(conv &gt; int(n)+0.5))</string_value>
+    </test>
+    <test name="nlogs_fs3">
+      <string_value lines="20" type="code" language="python">import itertools
+for n in nlogs_fs3.parameters['n']:
+  assert all([anp==int(np) for np in nlogs_fs3.parameters['np'] for anp in itertools.chain.from_iterable(nlogs_fs3[{'np':np, 'n': n}])])</string_value>
+    </test>
+  </tests>
+</harness_options>

@@ -846,8 +846,7 @@ void FunctionBucket::fill_is_()
     {
       for (int i = 0; i < lsize; i++)
       {
-        std::vector<uint> indices = functionspace_dofs(functionspace(), i);
-        restrict_indices(indices, functionspace());
+        std::vector<std::size_t> indices = local_functionspace_dofs(functionspace(), i);
         component_is_[i] = convert_vector_to_is((*mesh).mpi_comm(), 
                                                 indices);
       }
@@ -875,8 +874,7 @@ void FunctionBucket::fill_is_()
             }
           }
 
-          std::vector<uint> indices = functionspace_dofs(functionspace(), kf);
-          restrict_indices(indices, functionspace());
+          std::vector<std::size_t> indices = local_functionspace_dofs(functionspace(), kf);
           component_is_[k] = convert_vector_to_is((*mesh).mpi_comm(), 
                                                   indices);
         }
@@ -897,7 +895,7 @@ void FunctionBucket::fill_is_()
                                              true);
       for (int i = 0; i < lsize; i++)
       {
-        std::vector<uint> indices(nv);
+        std::vector<std::size_t> indices(nv);
         std::iota(indices.begin(), indices.end(), offset + i*(*mesh).num_vertices());
         component_is_[i] = convert_vector_to_is((*mesh).mpi_comm(), 
                                                 indices);

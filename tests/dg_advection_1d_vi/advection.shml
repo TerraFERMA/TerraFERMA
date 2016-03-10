@@ -15,13 +15,29 @@
         <string_value lines="1" type="filename">advection.tfml</string_value>
       </input_file>
       <run_when name="input_changed_or_output_missing"/>
-      <required_input>
-        <filenames name="meshxmls">
-          <python>
-            <string_value lines="20" type="code" language="python">meshxmls = ["interval"+ext for ext in [".xml", "_physical_region.xml", "_facet_region.xml"]]</string_value>
-          </python>
-        </filenames>
-      </required_input>
+      <dependencies>
+        <run name="Mesh">
+          <input_file>
+            <string_value lines="1" type="filename">interval.geo</string_value>
+          </input_file>
+          <run_when name="input_changed_or_output_missing"/>
+          <required_output>
+            <filenames name="meshfiles">
+              <string>
+                <string_value lines="1" type="filename">interval.xml</string_value>
+              </string>
+            </filenames>
+          </required_output>
+          <commands>
+            <command name="GMsh">
+              <string_value lines="1">gmsh -1 interval.geo</string_value>
+            </command>
+            <command name="Convert">
+              <string_value lines="1">dolfin-convert interval.msh interval.xml</string_value>
+            </command>
+          </commands>
+        </run>
+      </dependencies>
       <variables>
         <variable name="lower_bound">
           <string_value lines="20" type="code" language="python">from buckettools.statfile import parser

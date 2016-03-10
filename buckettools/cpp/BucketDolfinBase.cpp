@@ -20,7 +20,9 @@
 
 
 #include "BucketDolfinBase.h"
+#include "Logger.h"
 #include <dolfin.h>
+#include <fstream>
 
 using namespace buckettools;
 
@@ -37,5 +39,38 @@ Side::~Side()
 bool Side::inside(const dolfin::Array<double>& x, bool on_boundary) const
 {
   return (std::fabs(x[component_] - side_) < DOLFIN_EPS && on_boundary);
+}
+
+std::string buckettools::xml_filename(const std::string& basename)
+{
+  // This routine tests whether various extensions exist and returns a filename
+  // for an xml file with an appropriate extension
+
+  std::string filename;
+  std::ifstream file;
+  std::stringstream filenamestream;
+
+  std::vector<std::string> extensions = {"", ".gz", ".xml", ".xml.gz"};
+  std::vector<std::string>::const_iterator ext_it;
+  for (ext_it = extensions.begin(); ext_it != extensions.end(); ++ext_it)
+  {
+    filenamestream.str(""); filenamestream << basename << *ext_it;
+    file.open(filenamestream.str().c_str(), std::ifstream::in);
+    if (file)
+    {
+      file.close();
+      filename = filenamestream.str();
+      break;
+    }
+  }
+
+  if (ext_it == extensions.end())
+  {
+    tf_err("Could not find requested xml file.",
+           "%s, %s.gz, %s.xml or %s.xml.gz not found.", 
+           basename.c_str(), basename.c_str(), basename.c_str(), basename.c_str());
+  }
+
+  return filename;
 }
 

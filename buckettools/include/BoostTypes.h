@@ -169,11 +169,6 @@ namespace buckettools {
   typedef boost::multi_index::index<ordered_map<const std::string,Mesh_ptr>,om_key_seq>::type::iterator        Mesh_it;
   typedef boost::multi_index::index<ordered_map<const std::string,Mesh_ptr>,om_key_seq>::type::const_iterator  Mesh_const_it;
 
-  typedef boost::multi_index::index<ordered_map<const std::string,MeshFunction_size_t_ptr>,om_key_hash>::type::iterator       MeshFunction_size_t_hash_it;
-  typedef boost::multi_index::index<ordered_map<const std::string,MeshFunction_size_t_ptr>,om_key_hash>::type::const_iterator MeshFunction_size_t_const_hash_it;
-  typedef boost::multi_index::index<ordered_map<const std::string,MeshFunction_size_t_ptr>,om_key_seq>::type::iterator        MeshFunction_size_t_it;
-  typedef boost::multi_index::index<ordered_map<const std::string,MeshFunction_size_t_ptr>,om_key_seq>::type::const_iterator  MeshFunction_size_t_const_it;
-
   typedef boost::multi_index::index<ordered_map<const std::string,std::string>,om_key_hash>::type::iterator       string_hash_it;
   typedef boost::multi_index::index<ordered_map<const std::string,std::string>,om_key_hash>::type::const_iterator string_const_hash_it;
   typedef boost::multi_index::index<ordered_map<const std::string,std::string>,om_key_seq>::type::iterator        string_it;
