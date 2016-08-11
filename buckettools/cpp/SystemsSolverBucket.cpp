@@ -20,6 +20,7 @@
 
 
 #include "SystemsSolverBucket.h"
+#include "SignalHandler.h"
 #include "BoostTypes.h"
 #include "Bucket.h"
 #include "Logger.h"
@@ -581,6 +582,20 @@ bool SystemsSolverBucket::complete_iterating_(const double &aerror0)
   else
   {
     completed = iteration_count() >= maxits_;
+  }
+
+  if (!completed && (*bucket()).walltime_limit_ptr())
+  {
+    if ((*bucket()).elapsed_walltime() >= (*bucket()).walltime_limit())
+    {
+      tf_fail("Nonlinear systems failed to converge.", "Walltime limit reached.");
+    }
+  }
+
+  if ((*(*SignalHandler::instance()).return_handler(SIGINT)).received())
+  {
+    log(ERROR, "SIGINT received, terminating nonlinear systems iteration.");
+    completed = true;
   }
 
   return completed;
