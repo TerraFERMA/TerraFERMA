@@ -46,7 +46,7 @@ def updatepvtu(filename):
   if changed:
     tree.write(filename, encoding='utf-8', xml_declaration=True)
 
-def listvtusinpvd(filename):
+def listpvtusinpvd(filename):
   assert(filename[-4:]==".pvd")
   dirname = os.path.dirname(filename)
   tree = etree.parse(filename)
