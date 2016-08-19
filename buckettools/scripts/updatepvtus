@@ -23,7 +23,11 @@
 from lxml import etree
 
 def updatepvtu(filename):
-  tree = etree.parse(filename)
+  try:
+    tree = etree.parse(filename)
+  except etree.XMLSyntaxError:
+    print "WARNING: unable to parse file: ", filename
+    return
   changed = False
   cdata = tree.findall("//PCellData")
   for cd in cdata:
@@ -58,6 +62,7 @@ if __name__ == "__main__":
   import os
   import glob
   import sys
+  import string
 
   parser = argparse.ArgumentParser( \
                          description="""Update pvtus or (pvtus listed in) pvds.""")
