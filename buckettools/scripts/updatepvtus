@@ -1,0 +1,120 @@
+#!/usr/bin/env python
+
+# Copyright (C) 2013 Columbia University in the City of New York and others.
+#
+# Please see the AUTHORS file in the main source directory for a full list
+# of contributors.
+#
+# This file is part of TerraFERMA.
+#
+# TerraFERMA is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# TerraFERMA is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
+
+from lxml import etree
+
+def updatepvtu(filename):
+  tree = etree.parse(filename)
+  changed = False
+  cdata = tree.findall("//PCellData")
+  for cd in cdata:
+    toremove = []
+    for c in cd.iterchildren():
+      if c.attrib.get("Name", "undefined") in ["connectivity", "offsets", "types"]:
+        toremove.append(c)
+    if len(toremove) > 0: changed = True
+    for c in toremove:
+      c.getparent().remove(c)
+  if len(cdata) > 1:
+    changed = True
+    for ci, cd in enumerate(cdata):
+      if "Scalars" in cd.attrib or "Vectors" in cd.attrib or "Tensors" in cd.attrib: break
+    for i, cd in enumerate(cdata):
+      if i == ci: continue
+      for c in cd.iterchildren():
+        cdata[ci].append(c)
+      cd.getparent().remove(cd)
+  if changed:
+    tree.write(filename, encoding='utf-8', xml_declaration=True)
+
+def listvtusinpvd(filename):
+  assert(filename[-4:]==".pvd")
+  dirname = os.path.dirname(filename)
+  tree = etree.parse(filename)
+  pvtunames = [os.path.join(dirname, element.attrib['file']) for element in tree.getroot().iterdescendants(tag="DataSet") if element.attrib['file'].endswith('.pvtu')]
+  return pvtunames
+
+if __name__ == "__main__":
+  import argparse
+  import os
+  import glob
+  import sys
+
+  parser = argparse.ArgumentParser( \
+                         description="""Update pvtus or (pvtus listed in) pvds.""")
+  parser.add_argument('file', action='store', metavar='file', type=str, nargs='+',
+                      help='specify filename(s)')
+  parser.add_argument('-n', '--nprocs', action='store', type=int, dest='nprocs', required=False, default=1, 
+                      help='number of processes')
+  parser.add_argument('-r', '--recursive', metavar='depth', action='store', type=int, dest='recurse', nargs='?', default=None, 
+                      required=False, const=-1, help='recursively search the directory tree for files (if no depth is specified full recursion will be used)')
+  args = parser.parse_args()
+
+  filenames = []
+  for f in args.file:
+    
+    if os.path.isabs(f):
+      ffull = os.path.normpath(f)
+    else:
+      ffull = os.path.normpath(os.path.join(os.getcwd(), f))
+  
+    if args.recurse is None:
+
+      for filename in glob.glob(ffull):
+        ext = filename.split('.')[-1]
+        if ext == "pvd":
+          filenames += listpvtusinpvd(filename)
+        elif ext == "pvtu":
+          filenames.append(filename)
+        else:
+          print "Don't know how to deal with extension "+ext+".  Only know about pvds and pvtus."
+          sys.exit(1)
+
+    else:
+      
+      for dirname, dirnames, files in os.walk(os.path.dirname(ffull), topdown=True):
+        depth = string.count(dirname, os.path.sep) - string.count(os.path.dirname(ffull), os.path.sep)
+        for filename in glob.glob1(os.path.join(dirname, os.path.dirname(f)), os.path.split(f)[-1]):
+
+          ext = filename.split('.')[-1]
+          if ext == "pvd":
+            filenames += listpvtusinpvd(os.path.join(os.path.join(dirname, os.path.dirname(f)), filename))
+          elif ext == "pvtu":
+            filenames.append(os.path.join(os.path.join(dirname, os.path.dirname(f)), filename))
+          else:
+            print "Don't know how to deal with extension "+ext+".  Only know about pvds and pvtus."
+            sys.exit(1)
+        if depth == args.recurse:
+          dirnames[:] = []
+
+  if len(filenames)==0:
+    print "No matching files found."
+    sys.exit(1)
+
+  if args.nprocs==1:
+    map(updatepvtu, filenames)
+  else:
+    p = multiprocessing.Pool(args.nprocs)
+    p.map(updatepvtu, filenames)
+    p.close()
+    p.join()
+
