@@ -61,6 +61,9 @@ class SpudFunctionBucket(buckettools.functionbucket.FunctionBucket):
       self.enrichment_family = libspud.get_option(optionpath+"/type/rank/element/enrichment/element/family")
       self.enrichment_degree = libspud.get_option(optionpath+"/type/rank/element/enrichment/element/degree")
 
+    if libspud.have_option(optionpath+"/type/rank/element/quadrature_rule"):
+      self.quadrature_rule = libspud.get_option(optionpath+"/type/rank/element/quadrature_rule/name")
+
     # this should be restricted by the schema to Constant coefficients:
     if libspud.have_option(optionpath+"/type/rank/value/functional"):
       functional_optionpath = optionpath+"/type/rank/value/functional"

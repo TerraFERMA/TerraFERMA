@@ -38,6 +38,7 @@ class FunctionBucket:
     self.size = None
     self.enrichment_degree = None
     self.enrichment_family = None
+    self.quadrature_rule = None
     self.symbol = None
     self.symmetry = None
     self.type = None
@@ -103,6 +104,7 @@ class FunctionBucket:
     elif self.rank == "Tensor":
       if self.shape: ufl_line += ", shape=("+`self.shape[0]`+","+`self.shape[1]`+")"
       if self.symmetry: ufl_line += ", symmetry=True"
+    if self.quadrature_rule is not None: ufl_line += ", quad_scheme="+"\""+self.quadrature_rule+"\""
     ufl_line +=")\n"
     ufl.append(ufl_line)
     ufl.append("\n")
