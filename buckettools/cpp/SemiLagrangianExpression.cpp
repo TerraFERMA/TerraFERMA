@@ -181,7 +181,7 @@ void SemiLagrangianExpression::init()
     v_            = new dolfin::Array<double>(dim_);
     oldv_         = new dolfin::Array<double>(dim_);
     vstar_        = new dolfin::Array<double>(dim_);
-    cellcache_    = new dolfin::MeshFunction< point_map >(*mesh_, dim_);
+    cellcache_    = new dolfin::MeshFunction< point_map >(mesh_, dim_);
 
   }
 }
