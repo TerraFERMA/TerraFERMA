@@ -783,7 +783,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     {                                                                // using the dolfin reserved name for exterior facets
       file.close();
 
-      edgeids.reset(new dolfin::MeshFunction<std::size_t>(*mesh, filename.str()));
+      edgeids.reset(new dolfin::MeshFunction<std::size_t>(mesh, filename.str()));
     }
     else
     {
@@ -793,7 +793,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
       {                                                              // using the dolfin reserved name for exterior facets
         file.close();
 
-        edgeids.reset(new dolfin::MeshFunction<std::size_t>(*mesh, filename.str()));
+        edgeids.reset(new dolfin::MeshFunction<std::size_t>(mesh, filename.str()));
       }
     }
 
@@ -803,7 +803,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     {                                                                // using the dolfin reserved name for cell domains
       file.close();
 
-      cellids.reset(new dolfin::MeshFunction<std::size_t>(*mesh, filename.str()));
+      cellids.reset(new dolfin::MeshFunction<std::size_t>(mesh, filename.str()));
     }
     else
     {
@@ -813,7 +813,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
       {                                                                // using the dolfin reserved name for cell domains
         file.close();
 
-        cellids.reset(new dolfin::MeshFunction<std::size_t>(*mesh, filename.str()));
+        cellids.reset(new dolfin::MeshFunction<std::size_t>(mesh, filename.str()));
       }
     }
 
@@ -830,7 +830,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     Side left(0, 0.0);
     Side right(0, 1.0);
 
-    edgeids.reset(new dolfin::MeshFunction<std::size_t>(*mesh, 0, 0));
+    edgeids.reset(new dolfin::MeshFunction<std::size_t>(mesh, 0, 0));
     left.mark(*edgeids, 1);
     right.mark(*edgeids, 2);
   }
@@ -856,7 +856,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     Side left(0, leftx);
     Side right(0, rightx);
 
-    edgeids.reset(new dolfin::MeshFunction<std::size_t>(*mesh, 0, 0));
+    edgeids.reset(new dolfin::MeshFunction<std::size_t>(mesh, 0, 0));
     left.mark(*edgeids, 1);
     right.mark(*edgeids, 2);
   }
@@ -879,7 +879,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     Side bottom(1, 0.0);
     Side top(1, 1.0);
 
-    edgeids.reset(new dolfin::MeshFunction<std::size_t>(*mesh, 1, 0));
+    edgeids.reset(new dolfin::MeshFunction<std::size_t>(mesh, 1, 0));
     left.mark(*edgeids, 1);
     right.mark(*edgeids, 2);
     bottom.mark(*edgeids, 3);
@@ -917,7 +917,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     Side bottom(1, lowerleft[1]);
     Side top(1, upperright[1]);
 
-    edgeids.reset(new dolfin::MeshFunction<std::size_t>(*mesh, 1, 0));
+    edgeids.reset(new dolfin::MeshFunction<std::size_t>(mesh, 1, 0));
     left.mark(*edgeids, 1);
     right.mark(*edgeids, 2);
     bottom.mark(*edgeids, 3);
@@ -941,7 +941,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     Side back(1, 0.0);
     Side front(1, 1.0);
 
-    edgeids.reset(new dolfin::MeshFunction<std::size_t>(*mesh, 2, 0));
+    edgeids.reset(new dolfin::MeshFunction<std::size_t>(mesh, 2, 0));
     left.mark(*edgeids, 1);
     right.mark(*edgeids, 2);
     bottom.mark(*edgeids, 3);
@@ -981,7 +981,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     Side back(1, lowerbackleft[1]);
     Side front(1, upperfrontright[1]);
 
-    edgeids.reset(new dolfin::MeshFunction<std::size_t>(*mesh, 2, 0));
+    edgeids.reset(new dolfin::MeshFunction<std::size_t>(mesh, 2, 0));
     left.mark(*edgeids, 1);
     right.mark(*edgeids, 2);
     bottom.mark(*edgeids, 3);
