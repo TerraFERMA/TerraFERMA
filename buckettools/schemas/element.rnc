@@ -19,6 +19,7 @@
 # along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
 include "spud_base.rnc"
+include "ufl.rnc"
 
 generic_element_family = 
   (
@@ -514,6 +515,7 @@ element_options_scalar_user =
          attribute name { "UserDefined" },
          generic_element,
          enrichment_options,
+         quadrature_rule?,
          comment
        }
      )
@@ -573,6 +575,7 @@ element_options_scalar_not_lagrange =
        element element {
          attribute name { "Quadrature" },
          quadrature_element,
+         quadrature_rule,
          comment
        }
      )
@@ -587,6 +590,7 @@ element_options_vector =
          generic_vector_element,
          vector_element_options,
          enrichment_options,
+         quadrature_rule?,
          comment
        }|
        ## Options describing piecewise linear continuous Lagrange finite element for a vector.
@@ -640,6 +644,7 @@ element_options_vector =
        element element {
          attribute name { "RT2" },
          rt2_element,
+         enrichment_options,
          comment
        }|
        ## Options describing first degree discontinuous Raviart-Thomas element for a vector.
@@ -710,6 +715,7 @@ element_options_vector =
          attribute name { "Quadrature" },
          quadrature_element,
          vector_element_options,
+         quadrature_rule,
          comment
        }
      )
@@ -724,6 +730,7 @@ element_options_tensor =
          generic_element,
          tensor_element_options,
          enrichment_options,
+         quadrature_rule?,
          comment
        }|
        ## Options describing piecewise linear continuous Lagrange finite element for a tensor.
@@ -778,6 +785,7 @@ element_options_tensor =
          attribute name { "Quadrature" },
          quadrature_element,
          tensor_element_options,
+         quadrature_rule,
          comment
        }
      )
