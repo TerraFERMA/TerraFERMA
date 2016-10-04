@@ -120,6 +120,12 @@ picard =
     ## Options to give extra information for each iteration of the
     ## Picard solve. Some of those may really slow down your computation!
     element monitors {
+       ## Output pvd visualization of the solution and residual at each iteration.
+       ## 
+       ## WARNING: This will produce a lot of output so should only be used for debugging purposes!
+       element visualization {
+          empty
+       }?,
        ## Output a diagnostic file detailing the convergence of this solver.
        element convergence_file { 
          comment
@@ -323,6 +329,12 @@ snes =
        ## Plot a graph of the solution with each iteration.
        element solution_graph {
          comment
+       }?,
+       ## Output pvd visualization of the solution and residual at each iteration.
+       ## 
+       ## WARNING: This will produce a lot of output so should only be used for debugging purposes!
+       element visualization {
+         empty
        }?,
        ## Output a diagnostic file detailing the convergence of this solver.
        element convergence_file { 
@@ -1560,6 +1572,12 @@ iterative_monitors_base =
 
 iterative_monitors_vis = 
   (
+    ## Output pvd visualization of the solution and residual at each iteration.
+    ## 
+    ## WARNING: This will produce a lot of output so should only be used for debugging purposes!
+    element visualization {
+      empty
+    }?,
     ## Output a diagnostic file detailing the convergence of this solver.
     element convergence_file { 
       comment

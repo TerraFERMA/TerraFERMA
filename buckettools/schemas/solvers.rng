@@ -149,6 +149,14 @@ Defaults to 1.e-50.</a:documentation>
       <a:documentation>Options to give extra information for each iteration of the
 Picard solve. Some of those may really slow down your computation!</a:documentation>
       <optional>
+        <element name="visualization">
+          <a:documentation>Output pvd visualization of the solution and residual at each iteration.
+
+WARNING: This will produce a lot of output so should only be used for debugging purposes!</a:documentation>
+          <empty/>
+        </element>
+      </optional>
+      <optional>
         <element name="convergence_file">
           <a:documentation>Output a diagnostic file detailing the convergence of this solver.</a:documentation>
           <ref name="comment"/>
@@ -410,6 +418,14 @@ the SNES solve. Some of those may really slow down your computation!</a:document
         <element name="solution_graph">
           <a:documentation>Plot a graph of the solution with each iteration.</a:documentation>
           <ref name="comment"/>
+        </element>
+      </optional>
+      <optional>
+        <element name="visualization">
+          <a:documentation>Output pvd visualization of the solution and residual at each iteration.
+
+WARNING: This will produce a lot of output so should only be used for debugging purposes!</a:documentation>
+          <empty/>
         </element>
       </optional>
       <optional>
@@ -1733,6 +1749,14 @@ has been linked with the X library and with PETSc &lt;= 3.4.</a:documentation>
     </optional>
   </define>
   <define name="iterative_monitors_vis">
+    <optional>
+      <element name="visualization">
+        <a:documentation>Output pvd visualization of the solution and residual at each iteration.
+
+WARNING: This will produce a lot of output so should only be used for debugging purposes!</a:documentation>
+        <empty/>
+      </element>
+    </optional>
     <optional>
       <element name="convergence_file">
         <a:documentation>Output a diagnostic file detailing the convergence of this solver.</a:documentation>

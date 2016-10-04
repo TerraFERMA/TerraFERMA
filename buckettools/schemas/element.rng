@@ -527,6 +527,42 @@ Importantly, this is the degree of the resulting form not the function itself!</
       <ref name="comment"/>
     </element>
   </define>
+  <define name="element_options_scalar_lagrange_visualization">
+    <choice>
+      <element name="element">
+        <a:documentation>Options describing piecewise linear continuous Lagrange finite element.</a:documentation>
+        <attribute name="name">
+          <value>P1</value>
+        </attribute>
+        <ref name="p1_element"/>
+        <ref name="comment"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing piecewise quadratic continuous Lagrange finite element.</a:documentation>
+        <attribute name="name">
+          <value>P2</value>
+        </attribute>
+        <ref name="p2_element"/>
+        <ref name="comment"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing piecewise linear discontinuous Lagrange finite element.</a:documentation>
+        <attribute name="name">
+          <value>P1DG</value>
+        </attribute>
+        <ref name="p1dg_element"/>
+        <ref name="comment"/>
+      </element>
+      <element name="element">
+        <a:documentation>Options describing piecewise quadratic discontinuous Lagrange finite element.</a:documentation>
+        <attribute name="name">
+          <value>P2DG</value>
+        </attribute>
+        <ref name="p2dg_element"/>
+        <ref name="comment"/>
+      </element>
+    </choice>
+  </define>
   <define name="element_options_scalar_lagrange">
     <choice>
       <element name="element">

@@ -142,6 +142,32 @@ void SolverBucket::solve()
   {
 
 
+    File_ptr pvdfile;
+    FunctionSpace_ptr visfuncspace;
+    std::vector< GenericFunction_ptr > functions;
+    if(*visualizationmonitor_)
+    {
+      std::stringstream buffer;
+      buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
+                             << (*system()).name() << "_" 
+                             << name() << "_" 
+                             << (*(*system()).bucket()).timestep_count() << "_" 
+                             << (*(*system()).bucket()).iteration_count() << "_picard.pvd";
+      pvdfile.reset( new dolfin::File(buffer.str(), "compressed") );
+
+      Mesh_ptr sysmesh = (*system()).mesh();
+      visfuncspace = (*(*system()).bucket()).fetch_visfunctionspace(sysmesh);
+
+      for (FunctionBucket_const_it f_it = (*system()).fields_begin(); 
+                                   f_it != (*system()).fields_end(); 
+                                                            f_it++)
+      {
+        functions.push_back((*(*f_it).second).iteratedfunction());
+        functions.push_back((*(*f_it).second).residualfunction());
+      }
+
+    }
+
     assert(residual_);                                               // we need to assemble the residual again here as it may depend
                                                                      // on other systems that have been solved since the last call
     dolfin::Assembler assemblerres;
@@ -172,9 +198,13 @@ void SolverBucket::solve()
     log(INFO, "  %u Picard Residual Norm (absolute, relative) = %g, %g\n", 
                                     iteration_count(), aerror, rerror);
 
-    if(convfile_)
+    if(*visualizationmonitor_ || convfile_)
     {
       *(*(*system()).residualfunction()).vector() = (*std::dynamic_pointer_cast< dolfin::GenericVector >(residual_vector()));
+      if (*visualizationmonitor_)
+      {
+        (*pvdfile).write(functions, *visfuncspace, (double) iteration_count());
+      }
       if (convfile_)
       {
         (*convfile_).write_data();
@@ -308,9 +338,13 @@ void SolverBucket::solve()
                           iteration_count(), aerror, rerror);
                                                                      // and decide to loop or not...
 
-      if(convfile_)
+      if(*visualizationmonitor_ || convfile_)
       {
         *(*(*system()).residualfunction()).vector() = (*std::dynamic_pointer_cast< dolfin::GenericVector >(residual_vector()));
+        if (*visualizationmonitor_)
+        {
+          (*pvdfile).write(functions, *visfuncspace, (double) iteration_count());
+        }
         if (convfile_)
         {
           (*convfile_).write_data();
@@ -447,6 +481,21 @@ void SolverBucket::iteration_count(const int &it)
 }
 
 //*******************************************************************|************************************************************//
+// return true if we're using a visualization monitor
+//*******************************************************************|************************************************************//
+const bool SolverBucket::visualization_monitor() const
+{
+  return *visualizationmonitor_;
+}
+
+//*******************************************************************|************************************************************//
+// return true if we're using a ksp visualization monitor
+//*******************************************************************|************************************************************//
+const bool SolverBucket::kspvisualization_monitor() const
+{
+  return *kspvisualizationmonitor_;
+}
+
 // return a pointer to the convergence file
 //*******************************************************************|************************************************************//
 const ConvergenceFile_ptr SolverBucket::convergence_file() const
