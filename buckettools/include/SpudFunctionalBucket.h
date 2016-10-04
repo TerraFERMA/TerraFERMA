@@ -79,6 +79,12 @@ namespace buckettools
     const bool include_in_steadystate() const;                       // return a boolean indicating if this function is to 
                                                                      // be included in steadystate output
     
+    const bool output_cellfunction() const;                          // return a boolean indicating if the functional is to 
+                                                                     // be output as a cell function
+    
+    const bool output_facetfunction() const;                         // return a boolean indicating if the functional is to 
+                                                                     // be output as a facet function
+    
   //*****************************************************************|***********************************************************//
   // Private functions
   //*****************************************************************|***********************************************************//

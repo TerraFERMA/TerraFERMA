@@ -783,6 +783,18 @@ std::vector< std::shared_ptr<const dolfin::DirichletBC> >::const_iterator System
 }
 
 //*******************************************************************|************************************************************//
+// loop over the fields outputting pvd diagnostics for all the fields in this system
+//*******************************************************************|************************************************************//
+void SystemBucket::output()
+{
+  for (FunctionalBucket_it f_it = functionals_begin(); f_it != functionals_end(); 
+                                                              f_it++)
+  {
+    (*(*f_it).second).output();
+  }
+}
+
+//*******************************************************************|************************************************************//
 // return a boolean indicating if this system has fields to be included in visualization output
 //*******************************************************************|************************************************************//
 const bool SystemBucket::include_in_visualization() const

@@ -467,6 +467,15 @@ const int Bucket::checkpoint_count() const
 }
 
 //*******************************************************************|************************************************************//
+// return the visualization count
+//*******************************************************************|************************************************************//
+const int Bucket::visualization_count() const
+{
+  assert(visualization_count_);
+  return *visualization_count_;
+}
+
+//*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a dolfin mesh in the bucket data maps
 //*******************************************************************|************************************************************//
 void Bucket::register_mesh(Mesh_ptr mesh, const std::string &name)
@@ -949,6 +958,12 @@ void Bucket::output(const int &location)
                              (*((*v_it).second).first), 
                              current_time());
     }
+    for (SystemBucket_it s_it = systems_begin(); s_it != systems_end();// loop over the systems
+                                                               s_it++)
+    {
+      (*(*s_it).second).output();                                    // and output pvd files
+    }
+    (*visualization_count_)++;
   }
 
 }
