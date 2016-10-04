@@ -769,14 +769,14 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
       mesh.reset(new dolfin::Mesh());
       uint nprocs = dolfin::MPI::size((*mesh).mpi_comm());
 
-      dolfin::LocalMeshData local_mesh_data(filename);
-      const std::vector<std::size_t>& global_cell_indices = local_mesh_data.global_cell_indices;
-      std::vector<std::size_t> cell_destinations(global_cell_indices.size(), 0);
+      dolfin::LocalMeshData local_mesh_data(filename, (*mesh).mpi_comm());
+      const std::vector<std::int64_t>& global_cell_indices = local_mesh_data.topology.global_cell_indices;
+      std::vector<int> cell_destinations(global_cell_indices.size(), 0);
       for (std::size_t i = 0; i < global_cell_indices.size(); ++i)
       {
-        std::size_t global_index = global_cell_indices[i];
+        std::int64_t global_index = global_cell_indices[i];
         std::size_t region_id = tmp_cell_markers.at(global_index);
-        for (std::size_t p = nprocs-1; p > 0; p--)
+        for (int p = nprocs-1; p > 0; p--)
         {
           const std::vector<int>& region_ids = process_region_ids.at(p);
           std::vector<int>::const_iterator region_it = 
@@ -788,9 +788,18 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
           }
         }
       }
-      local_mesh_data.cell_partition = cell_destinations;
+      local_mesh_data.topology.cell_partition = cell_destinations;
 
-      dolfin::MeshPartitioning::build_distributed_mesh(*mesh, local_mesh_data);
+      std::string ghost_mode = "none";
+      buffer.str(""); buffer << "/global_parameters/dolfin/ghost_mode";
+      if (Spud::have_option(buffer.str()))
+      {
+        buffer << "/name";
+        serr = Spud::get_option(buffer.str(), ghost_mode);
+        spud_err(buffer.str(), serr);
+      }
+
+      dolfin::MeshPartitioning::build_distributed_mesh(*mesh, local_mesh_data, ghost_mode);
     }
     else
     {

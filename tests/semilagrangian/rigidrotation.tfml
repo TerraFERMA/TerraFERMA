@@ -125,6 +125,7 @@ def val(x):
             <degree>
               <integer_value rank="0">4</integer_value>
             </degree>
+            <quadrature_rule name="canonical"/>
           </element>
           <value type="value" name="WholeMesh">
             <internal rank="0">
@@ -243,6 +244,9 @@ def val(x,t):
             <string_value lines="1">J</string_value>
           </ufl_symbol>
         </form>
+        <quadrature_degree>
+          <integer_value rank="0">4</integer_value>
+        </quadrature_degree>
         <quadrature_rule name="canonical"/>
         <snes_type name="ls">
           <ls_type name="cubic"/>
