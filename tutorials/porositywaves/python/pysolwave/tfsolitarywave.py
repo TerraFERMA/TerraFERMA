@@ -105,9 +105,10 @@ class TFSolitaryWave:
         p_degree = libspud.get_option(path+p_name+"/type/rank/element/degree")
         f_family = libspud.get_option(path+f_name+"/type/rank/element/family")
         f_degree = libspud.get_option(path+f_name+"/type/rank/element/degree")        
-        Vp = df.FunctionSpace(mesh,p_family,p_degree)
-        Vf = df.FunctionSpace(mesh,f_family,f_degree)
-        self.functionspace = Vp*Vf
+        pe = df.FiniteElement(p_family, df.triangle, p_degree)
+        ve = df.FiniteElement(f_family, df.triangle, f_degree)
+        e = pe*ve
+        self.functionspace = df.FunctionSpace(mesh, e)
                 
     def getr(self,x):
         """ return radial position with respect to wave origin x0
