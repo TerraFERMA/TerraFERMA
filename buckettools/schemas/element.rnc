@@ -481,20 +481,23 @@ tensor_element_options =
 
 enrichment_options = 
   (
+    ## Options to enrich the element with another element (normally a bubble function).
     element enrichment {
-      element_options_enrichment
+      element_options_enrichment,
+      comment
     }?
   )
 
 element_options_enrichment =
   (
     (
+       ## Options describing a user defined finite element enrichment.
        element element {
          attribute name { "UserDefined" },
          generic_enrichment_element,
          comment
        }|
-       ## Options describing a
+       ## Options describing cubic bubble element.
        element element {
          attribute name { "B3" },
          b3_element,
