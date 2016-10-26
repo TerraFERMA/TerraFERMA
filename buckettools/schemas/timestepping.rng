@@ -228,6 +228,7 @@ timestep. Some of those may really slow down your computation!</a:documentation>
             <ref name="comment"/>
           </element>
         </optional>
+        <ref name="comment"/>
       </element>
       <choice>
         <element name="never_ignore_convergence_failures">
