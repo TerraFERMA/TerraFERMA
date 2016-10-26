@@ -181,9 +181,10 @@ Defaults to every timestep if unselected.</a:documentation>
 1: master entities
 
 0: all other entities</a:documentation>
-            <empty/>
+            <ref name="comment"/>
           </element>
         </optional>
+        <ref name="comment"/>
       </element>
     </optional>
   </define>

@@ -104,7 +104,9 @@ Use the automatically available name "Mesh."</a:documentation>
           </attribute>
           <ref name="periodic_bc"/>
         </element>
+        <ref name="comment"/>
       </element>
+      <ref name="comment"/>
     </element>
   </define>
   <define name="periodic_bc">
@@ -132,6 +134,7 @@ The return value must have the same size as the geometric dimension.</a:document
       </attribute>
       <ref name="python_code"/>
     </element>
+    <ref name="comment"/>
   </define>
   <define name="functional_options">
     <element name="functional">

@@ -172,8 +172,9 @@ debugging_options =
       ##
       ## 0: all other entities
       element periodic_boundaries {
-        empty
-      }?
+        comment
+      }?,
+      comment
     }?
   )
 
