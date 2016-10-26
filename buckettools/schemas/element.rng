@@ -481,13 +481,16 @@ Importantly, this is the degree of the resulting form not the function itself!</
   <define name="enrichment_options">
     <optional>
       <element name="enrichment">
+        <a:documentation>Options to enrich the element with another element (normally a bubble function).</a:documentation>
         <ref name="element_options_enrichment"/>
+        <ref name="comment"/>
       </element>
     </optional>
   </define>
   <define name="element_options_enrichment">
     <choice>
       <element name="element">
+        <a:documentation>Options describing a user defined finite element enrichment.</a:documentation>
         <attribute name="name">
           <value>UserDefined</value>
         </attribute>
@@ -495,7 +498,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         <ref name="comment"/>
       </element>
       <element name="element">
-        <a:documentation>Options describing a</a:documentation>
+        <a:documentation>Options describing cubic bubble element.</a:documentation>
         <attribute name="name">
           <value>B3</value>
         </attribute>

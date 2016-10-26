@@ -106,6 +106,7 @@ Any system, field or coefficient ufl symbols defined in this options file may be
               </element>
             </choice>
           </optional>
+          <ref name="comment"/>
         </element>
       </optional>
       <ref name="comment"/>
