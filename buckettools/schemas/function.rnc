@@ -1459,9 +1459,6 @@ prescribed_scalar_time |= prescribed_scalar_constant
 prescribed_scalar_time_w_internal = prescribed_scalar_internal
 prescribed_scalar_time_w_internal |= prescribed_scalar_time
 
-prescribed_scalar_w_internal_reference = prescribed_scalar_internal_reference
-prescribed_scalar_w_internal_reference |= prescribed_scalar
-
 prescribed_vector = prescribed_vector_cpp
 prescribed_vector |= prescribed_vector_python
 prescribed_vector |= prescribed_vector_constant
