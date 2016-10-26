@@ -202,7 +202,8 @@ nonlinear =
           ## Output a diagnostic file detailing the convergence of the nonlinear system iterations.
           element convergence_file { 
             comment
-          }?
+          }?,
+          comment
         },
         (
           (
