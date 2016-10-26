@@ -1762,12 +1762,6 @@ and the functionspace must be identical to the original system's functionspace.<
   <define name="prescribed_scalar_time_w_internal" combine="choice">
     <ref name="prescribed_scalar_time"/>
   </define>
-  <define name="prescribed_scalar_w_internal_reference">
-    <ref name="prescribed_scalar_internal_reference"/>
-  </define>
-  <define name="prescribed_scalar_w_internal_reference" combine="choice">
-    <ref name="prescribed_scalar"/>
-  </define>
   <define name="prescribed_vector">
     <ref name="prescribed_vector_cpp"/>
   </define>
