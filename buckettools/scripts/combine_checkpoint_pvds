@@ -1,0 +1,88 @@
+#!/usr/bin/env python
+
+# Copyright (C) 2013 Columbia University in the City of New York and others.
+#
+# Please see the AUTHORS file in the main source directory for a full list
+# of contributors.
+#
+# This file is part of TerraFERMA.
+#
+# TerraFERMA is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# TerraFERMA is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
+
+import glob
+import os
+import sys
+import argparse
+import string
+import shutil
+from lxml import etree
+import copy
+
+parser = argparse.ArgumentParser( \
+                       description="""Combines checkpoint pvds.""")
+parser.add_argument('file', action='store', metavar='file', type=str,
+                    help='specify a pvd filename')
+parser.add_argument('-r', '--recursive', metavar='depth', action='store', type=int, dest='recurse', nargs='?', default=None, 
+                    required=False, const=-1, 
+                    help='recursively search the directory tree for files (if no depth is specified full recursion will be used)')
+args = parser.parse_args()
+
+
+filenames = []
+f = args.file
+basename, ext = os.path.splitext(os.path.split(f)[-1])
+if os.path.isabs(f):
+  dirname = os.path.dirname(f)
+else:
+  dirname = os.curdir
+dirname = os.path.normpath(dirname)
+
+for root, dirnames, files in os.walk(dirname, topdown=True):
+  depth = string.count(root, os.path.sep) - string.count(dirname, os.path.sep)
+  for filename in glob.glob1(root, basename+"*_checkpoint"+ext):
+    basename1, ext1 = os.path.splitext(filename)
+    if ext1 == ".pvd":
+      filenames.append(os.path.join(root, filename))
+    else:
+      print "Don't know how to deal with extension "+ext1+".  Only know about pvds."
+      sys.exit(1)
+  if depth == args.recurse or args.recurse is None:
+    dirnames[:] = []
+
+filenames.sort(key=lambda x: string.count(x, "_checkpoint"))
+
+def vtusinpvd(filename):
+  assert(os.path.splitext(filename)[-1]==".pvd")
+  dirname = os.path.dirname(filename)
+  tree = etree.parse(filename)
+  vtus = [element for element in tree.getroot().iterdescendants(tag="DataSet")]
+  for vtu in vtus: vtu.attrib["file"]=os.path.join(os.path.relpath(dirname, os.path.dirname(f)), vtu.attrib["file"])
+  vtus.sort(key=lambda element: float(element.attrib['timestep']))
+  return vtus
+
+basetree = etree.parse(f)
+collection = basetree.find("//Collection")
+
+for filename in filenames:
+  vtus = vtusinpvd(filename)
+  for element in collection.iterdescendants(tag="DataSet"):
+    if element.attrib["timestep"] >= vtus[0].attrib["timestep"]:
+      collection.remove(element)
+  for vtu in vtus:
+    collection.append(vtu)
+
+basetree.write(os.path.join(os.path.dirname(f), basename+"_combined_checkpoints"+ext), encoding='utf-8', xml_declaration=True)
+
+
+
