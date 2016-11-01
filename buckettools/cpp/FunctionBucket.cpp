@@ -622,34 +622,34 @@ void FunctionBucket::attach_form_coeffs()
 //*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a bc expression in the function bucket data maps
 //*******************************************************************|************************************************************//
-void FunctionBucket::register_bcexpression(Expression_ptr bcexpression, const std::string &name)
+void FunctionBucket::register_bcfunction(GenericFunction_ptr bcfunction, const std::string &name)
 {
-  Expression_it e_it = bcexpressions_.find(name);                    // check if the name already exists
-  if (e_it != bcexpressions_.end())
+  GenericFunction_it g_it = bcfunctions_.find(name);                      // check if the name already exists
+  if (g_it != bcfunctions_.end())
   {
-    tf_err("BCExpression already exists in function.", "BCExpression name: %s, Function name: %s, System name: %s", 
+    tf_err("BCFunction already exists in function.", "BCExpression name: %s, Function name: %s, System name: %s", 
            name.c_str(), name_.c_str(), (*system_).name().c_str());
   }
   else
   {
-    bcexpressions_[name] = bcexpression;                             // if not, then insert the expression pointer into the maps
+    bcfunctions_[name] = bcfunction;                                 // if not, then insert the expression pointer into the maps
   }
 }
 
 //*******************************************************************|************************************************************//
 // return a (boost shared) pointer to a bc expression form from the function bucket data maps
 //*******************************************************************|************************************************************//
-Expression_ptr FunctionBucket::fetch_bcexpression(const std::string &name)
+GenericFunction_ptr FunctionBucket::fetch_bcfunction(const std::string &name)
 {
-  Expression_it e_it = bcexpressions_.find(name);                    // check if the name already exists
-  if (e_it == bcexpressions_.end())
+  GenericFunction_it g_it = bcfunctions_.find(name);                    // check if the name already exists
+  if (g_it == bcfunctions_.end())
   {
-    tf_err("BCExpression does not exist in function.", "BCExpression name: %s, Function name: %s, System name: %s", 
+    tf_err("BCFunction does not exist in function.", "BCExpression name: %s, Function name: %s, System name: %s", 
            name.c_str(), name_.c_str(), (*system_).name().c_str());
   }
   else
   {
-    return (*e_it).second;                                           // if it does, return it
+    return (*g_it).second;                                           // if it does, return it
   }
 }
 

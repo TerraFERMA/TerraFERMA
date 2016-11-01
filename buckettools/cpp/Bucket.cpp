@@ -33,7 +33,7 @@
 using namespace buckettools;
 
 time_t Bucket::start_walltime_ = time(NULL);                         // initialize global static variable
-boost::timer Bucket::timer_;                                         // start timing the simulation
+boost::timer::cpu_timer Bucket::timer_;                                         // start timing the simulation
 
 //*******************************************************************|************************************************************//
 // default constructor
