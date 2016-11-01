@@ -61,6 +61,8 @@ namespace buckettools
 
     void allocate_coeff_function();                                  // allocate the coefficient functions
 
+    void allocate_bcs();                                             // allocate the bcs
+
     void initialize_fields_and_coefficient_expressions();            // initialize the expressions that fields and coefficients use
 
     void initialize_coefficient_functions();                         // initialize the coefficients functions

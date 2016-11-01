@@ -153,7 +153,7 @@ Picard solve. Some of those may really slow down your computation!</a:documentat
           <a:documentation>Output pvd visualization of the solution and residual at each iteration.
 
 WARNING: This will produce a lot of output so should only be used for debugging purposes!</a:documentation>
-          <empty/>
+          <ref name="comment"/>
         </element>
       </optional>
       <optional>
@@ -425,7 +425,7 @@ the SNES solve. Some of those may really slow down your computation!</a:document
           <a:documentation>Output pvd visualization of the solution and residual at each iteration.
 
 WARNING: This will produce a lot of output so should only be used for debugging purposes!</a:documentation>
-          <empty/>
+          <ref name="comment"/>
         </element>
       </optional>
       <optional>
@@ -1737,7 +1737,7 @@ PETSc has to do extra computations.</a:documentation>
       <element name="preconditioned_residual_graph">
         <a:documentation>Draws a graph over the convergence of the preconditioned residual
 during the solve. This option only works for systems where PETSc
-has been linked with the X library.</a:documentation>
+has been linked with the X library and with PETSc &lt;= 3.4.</a:documentation>
         <ref name="comment"/>
       </element>
     </optional>
@@ -1754,7 +1754,7 @@ has been linked with the X library.</a:documentation>
         <a:documentation>Output pvd visualization of the solution and residual at each iteration.
 
 WARNING: This will produce a lot of output so should only be used for debugging purposes!</a:documentation>
-        <empty/>
+        <ref name="comment"/>
       </element>
     </optional>
     <optional>

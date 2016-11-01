@@ -148,9 +148,12 @@ boost::unordered_set<uint> buckettools::cell_dofs_values(const FunctionSpace_ptr
   std::shared_ptr<const dolfin::GenericDofMap> dofmap = (*functionspace).dofmap();
   const_Mesh_ptr mesh = (*functionspace).mesh();
 
+  assert((*functionspace).element());
+  std::shared_ptr<const dolfin::FiniteElement> element = (*functionspace).element();
+
   const uint gdim = (*mesh).geometry().dim();                        // set up data for expression evaluation
   boost::multi_array<double, 2> coordinates(boost::extents[(*dofmap).max_cell_dimension()][gdim]);
-  std::vector<double> vertex_coordinates;
+  std::vector<double> dof_coordinates;
   dolfin::Array<double> x(gdim);
 
   uint value_size = 1;
@@ -190,18 +193,17 @@ boost::unordered_set<uint> buckettools::cell_dofs_values(const FunctionSpace_ptr
       }
     }
 
-    std::vector<dolfin::la_index> tmp_dof_vec = (*dofmap).cell_dofs((*cell).index());
+    dolfin::ArrayView<const dolfin::la_index> tmp_dof_vec = (*dofmap).cell_dofs((*cell).index());
     std::vector<dolfin::la_index> dof_vec;
-    for (std::vector<dolfin::la_index>::const_iterator dof_it = tmp_dof_vec.begin();
-                              dof_it != tmp_dof_vec.end(); dof_it++)
+    for (std::size_t i = 0; i < tmp_dof_vec.size(); i++)
     {
-      dof_vec.push_back((*dofmap).local_to_global_index(*dof_it));
+      dof_vec.push_back((*dofmap).local_to_global_index(tmp_dof_vec[i]));
     }
 
     if(value_exp)
     {
-      (*cell).get_vertex_coordinates(vertex_coordinates);
-      (*dofmap).tabulate_coordinates(coordinates, vertex_coordinates, *cell);
+      (*cell).get_coordinate_dofs(dof_coordinates);
+      (*element).tabulate_dof_coordinates(coordinates, dof_coordinates, *cell);
     }
 
     for (uint i = 0; i < dof_vec.size(); i++)                        // loop over the cell dof
@@ -249,9 +251,12 @@ boost::unordered_set<uint> buckettools::facet_dofs_values(const FunctionSpace_pt
   std::shared_ptr<const dolfin::GenericDofMap> dofmap = (*functionspace).dofmap();
   const_Mesh_ptr mesh = (*functionspace).mesh();
 
+  assert((*functionspace).element());
+  std::shared_ptr<const dolfin::FiniteElement> element = (*functionspace).element();
+
   const uint gdim = (*mesh).geometry().dim();
   boost::multi_array<double, 2> coordinates(boost::extents[(*dofmap).max_cell_dimension()][gdim]);
-  std::vector<double> vertex_coordinates;
+  std::vector<double> dof_coordinates;
   dolfin::Array<double> x(gdim);
 
   uint value_size = 1;
@@ -293,21 +298,20 @@ boost::unordered_set<uint> buckettools::facet_dofs_values(const FunctionSpace_pt
 
         const std::size_t facet_number = cell.index(*facet);         // get the local index of the facet w.r.t. the cell
 
-        std::vector<dolfin::la_index> tmp_cell_dof_vec = (*dofmap).cell_dofs(cell.index());// get the cell dof (potentially for all components)
+        dolfin::ArrayView<const dolfin::la_index> tmp_cell_dof_vec = (*dofmap).cell_dofs(cell.index());// get the cell dof (potentially for all components)
         std::vector<dolfin::la_index> cell_dof_vec;
-        for (std::vector<dolfin::la_index>::const_iterator dof_it = tmp_cell_dof_vec.begin();
-                                  dof_it != tmp_cell_dof_vec.end(); dof_it++)
+        for (std::size_t i = 0; i < tmp_cell_dof_vec.size(); i++)
         {
-          cell_dof_vec.push_back((*dofmap).local_to_global_index(*dof_it));
+          cell_dof_vec.push_back((*dofmap).local_to_global_index(tmp_cell_dof_vec[i]));
         }
-        
+
         std::vector<std::size_t> facet_dof_vec((*dofmap).num_facet_dofs(), 0);
         (*dofmap).tabulate_facet_dofs(facet_dof_vec, facet_number);
 
         if (value_exp)
         {
-          cell.get_vertex_coordinates(vertex_coordinates);
-          (*dofmap).tabulate_coordinates(coordinates, vertex_coordinates, cell);
+          cell.get_coordinate_dofs(dof_coordinates);
+          (*element).tabulate_dof_coordinates(coordinates, dof_coordinates, cell);
         }
 
         for (uint i = 0; i < facet_dof_vec.size(); i++)              // loop over facet dof

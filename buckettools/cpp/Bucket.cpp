@@ -33,7 +33,7 @@
 using namespace buckettools;
 
 time_t Bucket::start_walltime_ = time(NULL);                         // initialize global static variable
-boost::timer Bucket::timer_;                                         // start timing the simulation
+boost::timer::cpu_timer Bucket::timer_;                                         // start timing the simulation
 
 //*******************************************************************|************************************************************//
 // default constructor
@@ -1384,8 +1384,9 @@ void Bucket::solve_at_start_()
   if(solved)
   {
     update_timedependent();
-    output(OUTPUT_START);
     update();
+    output(OUTPUT_START);                                            // this is output here to show the state of variables right
+                                                                     // before the timeloop
   }
 }
 

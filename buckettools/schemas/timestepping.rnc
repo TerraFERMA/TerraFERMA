@@ -189,7 +189,7 @@ nonlinear_systems_tolerances =
         ## 
         ## WARNING: This will produce a lot of output so should only be used for debugging purposes!
         element visualization {
-          empty
+          comment
         }?,
         ## Output a diagnostic file detailing the convergence of the nonlinear system iterations.
         element convergence_file { 
