@@ -1147,8 +1147,9 @@ void Bucket::solve_at_start_()
   if(systems_solved)
   {
     update_timedependent();
-    output(OUTPUT_START);
     update();
+    output(OUTPUT_START);                                            // this is output here to show the state of variables right
+                                                                     // before the timeloop
   }
 }
 
