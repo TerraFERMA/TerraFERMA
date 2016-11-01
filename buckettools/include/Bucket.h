@@ -30,7 +30,7 @@
 #include "SolverBucket.h"
 #include "DetectorsFile.h"
 #include <dolfin.h>
-#include <boost/timer.hpp>
+#include <boost/timer/timer.hpp>
 
 namespace buckettools
 {
@@ -144,7 +144,7 @@ namespace buckettools
     { return &start_walltime_; }
 
     static const double elapsed_walltime()                           // return the elapsed wall time
-    { return dolfin::MPI::max(MPI_COMM_WORLD, timer_.elapsed()); }
+    { return dolfin::MPI::max(MPI_COMM_WORLD, static_cast<double>(timer_.elapsed().wall)*1.e-9); }
 
     const int checkpoint_count() const;                              // return the checkpoint count
 
@@ -392,7 +392,7 @@ namespace buckettools
 
     static time_t start_walltime_;                                   // the start time                                    
 
-    static boost::timer timer_;                                      // timer from the start of the simulation (init)
+    static boost::timer::cpu_timer timer_;                           // timer from the start of the simulation (init)
     
     //***************************************************************|***********************************************************//
     // Pointers data (continued)

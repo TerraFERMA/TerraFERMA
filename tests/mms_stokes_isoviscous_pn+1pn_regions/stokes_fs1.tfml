@@ -365,13 +365,14 @@ dolfin::MeshFunction&lt;std::map&lt;dolfin::Point, std::size_t, lt_point&gt; &gt
                 <string_value lines="20" type="code" language="cpp">const Mesh_ptr m_ptr = system()-&gt;mesh();
 const std::size_t tdim = m_ptr-&gt;topology().dim();
 
-cell_dof_map.init(*m_ptr, tdim);
+cell_dof_map.init(m_ptr, tdim);
 
 const std::size_t gdim = m_ptr-&gt;geometry().dim();
 
 const GenericFunction_ptr gf_ptr = system()-&gt;fetch_field("Pressure")-&gt;genericfunction_ptr(time());
 const Function_ptr f_ptr = std::dynamic_pointer_cast&lt;dolfin::Function&gt;(gf_ptr);
 const std::shared_ptr&lt;const dolfin::GenericDofMap&gt; dofmap = f_ptr-&gt;function_space()-&gt;dofmap();
+std::shared_ptr&lt;const dolfin::FiniteElement&gt; element = f_ptr-&gt;function_space()-&gt;element();
 
 const std::pair&lt;std::size_t, std::size_t&gt; range = dofmap-&gt;ownership_range();
 const std::size_t local = range.second - range.first;
@@ -380,20 +381,20 @@ const std::size_t this_process = dolfin::MPI::rank(m_ptr-&gt;mpi_comm());
 
 // Loop over cells and tabulate dofs
 boost::multi_array&lt;double, 2&gt; coordinates;
-std::vector&lt;double&gt; vertex_coordinates;
+std::vector&lt;double&gt; dof_coordinates;
 std::vector&lt;double&gt; point_coordinates(gdim);
 
 for (dolfin::CellIterator cell(*m_ptr); !cell.end(); ++cell)
 {
-  cell-&gt;get_vertex_coordinates(vertex_coordinates);
+  cell-&gt;get_coordinate_dofs(dof_coordinates);
 
   std::map&lt;dolfin::Point, std::size_t, lt_point&gt;&amp; points = cell_dof_map[cell-&gt;index()];
 
   // Get local-to-global map
-  const std::vector&lt;dolfin::la_index&gt;&amp; dofs = dofmap-&gt;cell_dofs(cell-&gt;index());
+  dolfin::ArrayView&lt;const dolfin::la_index&gt; dofs = dofmap-&gt;cell_dofs(cell-&gt;index());
 
   // Tabulate dof coordinates on cell
-  dofmap-&gt;tabulate_coordinates(coordinates, vertex_coordinates, *cell);
+  element-&gt;tabulate_dof_coordinates(coordinates, dof_coordinates, *cell);
 
   // Copy dof coordinates into vector
   for (std::size_t i = 0; i &lt; dofs.size(); ++i)
@@ -464,13 +465,14 @@ dolfin::MeshFunction&lt;std::map&lt;dolfin::Point, std::size_t, lt_point&gt; &gt
                 <string_value lines="20" type="code" language="cpp">const Mesh_ptr m_ptr = system()-&gt;mesh();
 const std::size_t tdim = m_ptr-&gt;topology().dim();
 
-cell_dof_map.init(*m_ptr, tdim);
+cell_dof_map.init(m_ptr, tdim);
 
 const std::size_t gdim = m_ptr-&gt;geometry().dim();
 
 const GenericFunction_ptr gf_ptr = system()-&gt;fetch_field("Velocity")-&gt;genericfunction_ptr(time());
 const Function_ptr f_ptr = std::dynamic_pointer_cast&lt;dolfin::Function&gt;(gf_ptr);
 const std::shared_ptr&lt;const dolfin::GenericDofMap&gt; dofmap = (*f_ptr-&gt;function_space())[0]-&gt;dofmap();
+std::shared_ptr&lt;const dolfin::FiniteElement&gt; element = f_ptr-&gt;function_space()-&gt;element();
 
 const std::pair&lt;std::size_t, std::size_t&gt; range = dofmap-&gt;ownership_range();
 const std::size_t local = range.second - range.first;
@@ -479,20 +481,20 @@ const std::size_t this_process = dolfin::MPI::rank(m_ptr-&gt;mpi_comm());
 
 // Loop over cells and tabulate dofs
 boost::multi_array&lt;double, 2&gt; coordinates;
-std::vector&lt;double&gt; vertex_coordinates;
+std::vector&lt;double&gt; dof_coordinates;
 std::vector&lt;double&gt; point_coordinates(gdim);
 
 for (dolfin::CellIterator cell(*m_ptr); !cell.end(); ++cell)
 {
-  cell-&gt;get_vertex_coordinates(vertex_coordinates);
+  cell-&gt;get_coordinate_dofs(dof_coordinates);
 
   std::map&lt;dolfin::Point, std::size_t, lt_point&gt;&amp; points = cell_dof_map[cell-&gt;index()];
 
   // Get local-to-global map
-  const std::vector&lt;dolfin::la_index&gt;&amp; dofs = dofmap-&gt;cell_dofs(cell-&gt;index());
+  dolfin::ArrayView&lt;const dolfin::la_index&gt; dofs = dofmap-&gt;cell_dofs(cell-&gt;index());
 
   // Tabulate dof coordinates on cell
-  dofmap-&gt;tabulate_coordinates(coordinates, vertex_coordinates, *cell);
+  element-&gt;tabulate_dof_coordinates(coordinates, dof_coordinates, *cell);
 
   // Copy dof coordinates into vector
   for (std::size_t i = 0; i &lt; dofs.size(); ++i)
@@ -563,13 +565,14 @@ dolfin::MeshFunction&lt;std::map&lt;dolfin::Point, std::size_t, lt_point&gt; &gt
                 <string_value lines="20" type="code" language="cpp">const Mesh_ptr m_ptr = system()-&gt;mesh();
 const std::size_t tdim = m_ptr-&gt;topology().dim();
 
-cell_dof_map.init(*m_ptr, tdim);
+cell_dof_map.init(m_ptr, tdim);
 
 const std::size_t gdim = m_ptr-&gt;geometry().dim();
 
 const GenericFunction_ptr gf_ptr = system()-&gt;fetch_field("Velocity")-&gt;genericfunction_ptr(time());
 const Function_ptr f_ptr = std::dynamic_pointer_cast&lt;dolfin::Function&gt;(gf_ptr);
 const std::shared_ptr&lt;const dolfin::GenericDofMap&gt; dofmap = (*f_ptr-&gt;function_space())[1]-&gt;dofmap();
+std::shared_ptr&lt;const dolfin::FiniteElement&gt; element = f_ptr-&gt;function_space()-&gt;element();
 
 const std::pair&lt;std::size_t, std::size_t&gt; range = dofmap-&gt;ownership_range();
 const std::size_t local = range.second - range.first;
@@ -578,20 +581,20 @@ const std::size_t this_process = dolfin::MPI::rank(m_ptr-&gt;mpi_comm());
 
 // Loop over cells and tabulate dofs
 boost::multi_array&lt;double, 2&gt; coordinates;
-std::vector&lt;double&gt; vertex_coordinates;
+std::vector&lt;double&gt; dof_coordinates;
 std::vector&lt;double&gt; point_coordinates(gdim);
 
 for (dolfin::CellIterator cell(*m_ptr); !cell.end(); ++cell)
 {
-  cell-&gt;get_vertex_coordinates(vertex_coordinates);
+  cell-&gt;get_coordinate_dofs(dof_coordinates);
 
   std::map&lt;dolfin::Point, std::size_t, lt_point&gt;&amp; points = cell_dof_map[cell-&gt;index()];
 
   // Get local-to-global map
-  const std::vector&lt;dolfin::la_index&gt;&amp; dofs = dofmap-&gt;cell_dofs(cell-&gt;index());
+  dolfin::ArrayView&lt;const dolfin::la_index&gt; dofs = dofmap-&gt;cell_dofs(cell-&gt;index());
 
   // Tabulate dof coordinates on cell
-  dofmap-&gt;tabulate_coordinates(coordinates, vertex_coordinates, *cell);
+  element-&gt;tabulate_dof_coordinates(coordinates, dof_coordinates, *cell);
 
   // Copy dof coordinates into vector
   for (std::size_t i = 0; i &lt; dofs.size(); ++i)

@@ -100,7 +100,8 @@ mesh_options =
              element region_ids {
                integer_vector
              }
-           }+
+           }+,
+           comment
          }?,
          comment
        }|

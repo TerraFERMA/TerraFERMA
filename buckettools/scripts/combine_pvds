@@ -1,0 +1,70 @@
+#!/usr/bin/env python
+
+# Copyright (C) 2013 Columbia University in the City of New York and others.
+#
+# Please see the AUTHORS file in the main source directory for a full list
+# of contributors.
+#
+# This file is part of TerraFERMA.
+#
+# TerraFERMA is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# TerraFERMA is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
+
+import glob
+import os
+import sys
+import argparse
+import string
+import shutil
+from lxml import etree
+import copy
+
+parser = argparse.ArgumentParser( \
+                       description="""Combines pvds.""")
+parser.add_argument('filename', action='store', metavar='filename', type=str, nargs='+',
+                    help='specify filenames')
+parser.add_argument('-o', '--outputfilename', metavar='outputfilename', action='store', type=str, dest='outputfilename', default="combined_pvds.pvd", required=False,
+                    help='specify the output pvd filename (defaults to combined_pvds.pvd)')
+args = parser.parse_args()
+
+outputfilename = args.outputfilename
+if not outputfilename.endswith(".pvd"):
+  outputfilename = outputfilename+".pvd"
+
+def vtusinpvd(filename, latesttime):
+  assert(os.path.splitext(filename)[-1]==".pvd")
+  dirname = os.path.dirname(filename)
+  tree = etree.parse(filename)
+  vtus = [element for element in tree.getroot().iterdescendants(tag="DataSet")]
+  for vtu in vtus: 
+    vtu.attrib["file"]=os.path.join(os.path.join(dirname, vtu.attrib["file"]))
+    vtu.attrib["timestep"]=str(latesttime+float(vtu.attrib["timestep"]))
+  sortedvtus = sorted(vtus, key=lambda element: float(element.attrib['timestep']))
+  return sortedvtus
+
+basetree = etree.parse(args.filename[0])
+collection = basetree.find("//Collection")
+for element in collection.iterdescendants(tag="DataSet"):
+  collection.remove(element)
+
+latesttime = 0.0
+for filename in args.filename:
+  vtus = vtusinpvd(filename, latesttime)
+  for vtu in vtus[1:]:
+    collection.append(vtu)
+    latesttime = float(vtu.attrib["timestep"])
+
+basetree.write(outputfilename, encoding='utf-8', xml_declaration=True)
+
+
+

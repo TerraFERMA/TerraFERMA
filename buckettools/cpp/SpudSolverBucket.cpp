@@ -292,8 +292,19 @@ void SpudSolverBucket::initialize()
                                         << "/type/monitors/residual";
     if (Spud::have_option(buffer.str()))
     {
+      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 7
       perr = SNESMonitorSet(snes_, SNESMonitorDefault,               // set a snes residual monitor
                                             PETSC_NULL, PETSC_NULL); 
+      #else
+      PetscViewerAndFormat *vf;
+      PetscViewer       viewer;
+      perr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)snes_),&viewer);
+      petsc_err(perr);
+      perr = PetscViewerAndFormatCreate(viewer,PETSC_VIEWER_DEFAULT,&vf);
+      petsc_err(perr);
+      perr = SNESMonitorSet(snes_, (PetscErrorCode (*)(SNES,PetscInt,PetscReal,void*))SNESMonitorDefault,               // set a snes residual monitor
+                                            vf, (PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy); 
+      #endif
       petsc_err(perr);
     }
 
@@ -301,8 +312,19 @@ void SpudSolverBucket::initialize()
                                   << "/type/monitors/solution_graph";
     if (Spud::have_option(buffer.str()))
     {
+      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 7
       perr = SNESMonitorSet(snes_, SNESMonitorSolution,              // set a snes solution monitor (graph)
                                             PETSC_NULL, PETSC_NULL); 
+      #else
+      PetscViewerAndFormat *vf;
+      PetscViewer       viewer;
+      perr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)snes_),&viewer);
+      petsc_err(perr);
+      perr = PetscViewerAndFormatCreate(viewer,PETSC_VIEWER_DEFAULT,&vf);
+      petsc_err(perr);
+      perr = SNESMonitorSet(snes_, (PetscErrorCode (*)(SNES,PetscInt,PetscReal,void*))SNESMonitorSolution,               // set a snes residual monitor
+                                            vf, (PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy); 
+      #endif
       petsc_err(perr);
     }
 
@@ -984,8 +1006,19 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
                 "/iterative_method/monitors/preconditioned_residual";// monitor the preconditioned residual
     if (Spud::have_option(buffer.str()))
     {
+      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 7
       perr = KSPMonitorSet(ksp, KSPMonitorDefault, 
                                             PETSC_NULL, PETSC_NULL); 
+      #else
+      PetscViewerAndFormat *vf;
+      PetscViewer       viewer;
+      perr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)ksp),&viewer);
+      petsc_err(perr);
+      perr = PetscViewerAndFormatCreate(viewer,PETSC_VIEWER_DEFAULT,&vf);
+      petsc_err(perr);
+      perr = KSPMonitorSet(ksp, (PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*))KSPMonitorDefault,
+                                            vf, (PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy); 
+      #endif
       petsc_err(perr);
     }
 
@@ -993,8 +1026,19 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
                           "/iterative_method/monitors/true_residual";// monitor the true residual (more expensive)
     if (Spud::have_option(buffer.str()))
     {
+      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 7
       perr = KSPMonitorSet(ksp, KSPMonitorTrueResidualNorm, 
                                             PETSC_NULL, PETSC_NULL); 
+      #else
+      PetscViewerAndFormat *vf;
+      PetscViewer       viewer;
+      perr = PetscViewerASCIIGetStdout(PetscObjectComm((PetscObject)ksp),&viewer);
+      petsc_err(perr);
+      perr = PetscViewerAndFormatCreate(viewer,PETSC_VIEWER_DEFAULT,&vf);
+      petsc_err(perr);
+      perr = KSPMonitorSet(ksp, (PetscErrorCode (*)(KSP,PetscInt,PetscReal,void*))KSPMonitorTrueResidualNorm,
+                                            vf, (PetscErrorCode (*)(void**))PetscViewerAndFormatDestroy); 
+      #endif
       petsc_err(perr);
     }
 
@@ -1002,7 +1046,9 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
           "/iterative_method/monitors/preconditioned_residual_graph";// plot a graph of the preconditioned residual
     if (Spud::have_option(buffer.str()))
     {
-      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 3
+      #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 4
+      tf_err("Preconditioned residual graph not available", "Not supported with PETSc > 3.4.");
+      #elif PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 3
       perr = KSPMonitorSet(ksp, KSPMonitorLGResidualNorm, 
                                              PETSC_NULL, PETSC_NULL); 
       #else
@@ -1039,7 +1085,20 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
     MatNullSpace SP;                                                 // create a set of nullspaces in a null space object
     fill_nullspace_(buffer.str(), SP, parent_offset, parent_indices);
 
+    Mat mat;
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
+    perr = KSPGetOperators(ksp, &mat, PETSC_NULL, PETSC_NULL);
+    #else
+    perr = KSPGetOperators(ksp, &mat, PETSC_NULL);
+    #endif
+    petsc_err(perr);
+
+    perr = MatSetNullSpace(mat, SP); petsc_err(perr);
+
+    #if PETSC_VERSION_MAJOR < 4 && PETSC_VERSION_MINOR < 6
     perr = KSPSetNullSpace(ksp, SP); petsc_err(perr);                  // attach it to the ksp
+    #endif
+
     #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 1
     perr = MatNullSpaceDestroy(&SP); petsc_err(perr);                  // destroy the null space object, necessary?
     #else
@@ -1719,6 +1778,8 @@ void SpudSolverBucket::fill_nullspace_(const std::string &optionpath, MatNullSpa
     #endif
 
   }
+
+  orthonormalize_petsc_vecs_(vecs, nnulls-rhsnnulls);
 
   perr = MatNullSpaceCreate((*(*system_).mesh()).mpi_comm(), 
                             PETSC_FALSE, nnulls-rhsnnulls, vecs, &SP); 

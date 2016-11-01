@@ -31,7 +31,6 @@
 #include "VisualizationWrapper.h"
 #include "Logger.h"
 #include <dolfin.h>
-#include <dolfin/io/XMLLocalMeshSAX.h>
 #include <dolfin/mesh/MeshPartitioning.h>
 #include <spud>
 
@@ -120,6 +119,13 @@ void SpudBucket::fill()
   }                                                                  // we couldn't do this before because we might not have had
                                                                      // the right functionspace available
   
+  for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *fourth* time, this time filling
+                                  sys_it != systems_end(); sys_it++) // in the data for the bcs
+  {                                                                  // 
+    (*std::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).allocate_bcs();
+  }                                                                  // we couldn't do this before now because we allow reference
+                                                                     // bcs so everything had to be allocated
+  
   fill_uflsymbols_();                                                // now all the functions in the systems are complete we can 
                                                                      // register them in the bucket so it's easy to attach them
                                                                      // to the forms and functionals
@@ -128,13 +134,13 @@ void SpudBucket::fill()
                                                                      // this can also be done now because all relevant pointers should be
                                                                      // allocated
 
-  for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *fourth* time, attaching the
+  for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *fifth* time, attaching the
                                   sys_it != systems_end(); sys_it++) // coefficients to the forms and functionals
   {
     (*(*sys_it).second).initialize_forms();
   }
   
-  for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *fifth* time, initializing
+  for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *sixth* time, initializing
                                   sys_it != systems_end(); sys_it++) // the values of any expressions, functionals or functions
   {                                                                  // used by fields or coefficients
     (*std::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).initialize_fields_and_coefficient_expressions();
@@ -149,14 +155,14 @@ void SpudBucket::fill()
                                                                      // just deal with them by evaluating coefficient functions 
                                                                      // in the order the user specified followed by fields last.
 
-  for (SystemBucket_it sys_it = systems_begin();          // loop over the systems for a *sixth* time, initializing
-                       sys_it != systems_end(); sys_it++) // the values of any coefficient functions
+  for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *seventh* time, initializing
+                       sys_it != systems_end(); sys_it++)            // the values of any coefficient functions
   {                                                                  
     (*std::dynamic_pointer_cast< SpudSystemBucket >((*sys_it).second)).initialize_coefficient_functions();
   }
   
-  for (SystemBucket_it sys_it = systems_begin();          // loop over the systems for a *seventh* time, initializing
-                       sys_it != systems_end(); sys_it++) // the values of the fields
+  for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *eighth* time, initializing
+                       sys_it != systems_end(); sys_it++)            // the values of the fields
   {
     (*(*sys_it).second).evaluate_initial_fields();
   }
@@ -735,17 +741,15 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
 
       mesh.reset(new dolfin::Mesh());
       uint nprocs = dolfin::MPI::size((*mesh).mpi_comm());
-      dolfin::LocalMeshData local_mesh_data((*mesh).mpi_comm());
-      dolfin::XMLLocalMeshSAX xml_object((*mesh).mpi_comm(), local_mesh_data, filename);
-      xml_object.read();
-      
-      const std::vector<std::size_t>& global_cell_indices = local_mesh_data.global_cell_indices;
-      std::vector<std::size_t> cell_destinations(global_cell_indices.size(), 0);
+
+      dolfin::LocalMeshData local_mesh_data(filename, (*mesh).mpi_comm());
+      const std::vector<std::int64_t>& global_cell_indices = local_mesh_data.topology.global_cell_indices;
+      std::vector<int> cell_destinations(global_cell_indices.size(), 0);
       for (std::size_t i = 0; i < global_cell_indices.size(); ++i)
       {
-        std::size_t global_index = global_cell_indices[i];
+        std::int64_t global_index = global_cell_indices[i];
         std::size_t region_id = tmp_cell_markers.at(global_index);
-        for (std::size_t p = nprocs-1; p > 0; p--)
+        for (int p = nprocs-1; p > 0; p--)
         {
           const std::vector<int>& region_ids = process_region_ids.at(p);
           std::vector<int>::const_iterator region_it = 
@@ -757,9 +761,18 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
           }
         }
       }
-      local_mesh_data.cell_partition = cell_destinations;
+      local_mesh_data.topology.cell_partition = cell_destinations;
 
-      dolfin::MeshPartitioning::build_distributed_mesh(*mesh, local_mesh_data);
+      std::string ghost_mode = "none";
+      buffer.str(""); buffer << "/global_parameters/dolfin/ghost_mode";
+      if (Spud::have_option(buffer.str()))
+      {
+        buffer << "/name";
+        serr = Spud::get_option(buffer.str(), ghost_mode);
+        spud_err(buffer.str(), serr);
+      }
+
+      dolfin::MeshPartitioning::build_distributed_mesh(*mesh, local_mesh_data, ghost_mode);
     }
     else
     {
@@ -880,8 +893,9 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     serr = Spud::get_option(buffer.str(), diagonal); 
     spud_err(buffer.str(), serr);
     
-    mesh.reset(new dolfin::RectangleMesh(lowerleft[0], lowerleft[1], 
-                                    upperright[0], upperright[1], 
+    const dolfin::Point lowerleftpoint(2, lowerleft.data());
+    const dolfin::Point upperrightpoint(2, upperright.data());
+    mesh.reset(new dolfin::RectangleMesh(lowerleftpoint, upperrightpoint, 
                                     cells[0], cells[1], diagonal));
 
     Side left(0, lowerleft[0]);
@@ -954,12 +968,10 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     serr = Spud::get_option(buffer.str(), cells); 
     spud_err(buffer.str(), serr);
     
-    mesh.reset( new dolfin::BoxMesh(lowerbackleft[0], 
-                                lowerbackleft[1], 
-                                lowerbackleft[2],
-                                upperfrontright[0], 
-                                upperfrontright[1], 
-                                upperfrontright[2], 
+    const dolfin::Point lowerbackleftpoint(3, lowerbackleft.data());
+    const dolfin::Point upperfrontrightpoint(3, upperfrontright.data());
+    mesh.reset( new dolfin::BoxMesh(lowerbackleftpoint, 
+                                upperfrontrightpoint, 
                                 cells[0], cells[1], cells[2]) );
 
     Side left(0, lowerbackleft[0]);

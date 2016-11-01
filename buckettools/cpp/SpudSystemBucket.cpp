@@ -97,6 +97,23 @@ void SpudSystemBucket::allocate_coeff_function()
 }
 
 //*******************************************************************|************************************************************//
+// allocate bcs
+//*******************************************************************|************************************************************//
+void SpudSystemBucket::allocate_bcs()
+{
+
+  for (FunctionBucket_it f_it = fields_begin(); f_it != fields_end();
+                                                              f_it++)
+  {
+    (*(std::dynamic_pointer_cast< SpudFunctionBucket >((*f_it).second))).allocate_bcs();
+  } 
+
+  fill_bcs_();                                                       // fill in data about the bcs relative to the system (includes
+                                                                     // periodic)
+
+}
+
+//*******************************************************************|************************************************************//
 // attach coefficients to forms and functionals
 //*******************************************************************|************************************************************//
 void SpudSystemBucket::initialize_fields_and_coefficient_expressions()
@@ -340,7 +357,7 @@ void SpudSystemBucket::fill_fields_()
     {
                                                                      // insert the field's initial condition expression into a 
                                                                      // temporary system map:
-      size_t_Expression_it e_it = icexpressions.find(component);       // check if this component already exists
+      size_t_Expression_it e_it = icexpressions.find(component);     // check if this component already exists
       if (e_it != icexpressions.end())
       {
         tf_err("IC expression with given component number already exists in inexpressions map.", "Component: %d", component);
@@ -349,15 +366,15 @@ void SpudSystemBucket::fill_fields_()
       {
         icexpressions[component] = (*field).icexpression();          // if it doesn't, insert it into the map
       }
-
-      component += (*(*field).icexpression()).value_size();          // increment the component count by the size of this field
-                                                                     // (i.e. no. of scalar components)
     }
+
+    component += (*field).size();                                    // increment the component count by the size of this field
+                                                                     // (i.e. no. of scalar components)
   }
 
   if (!icexpressions.empty())
   {
-    collect_ics_(component, icexpressions);        // collect all the ics together into a new initial condition expression
+    collect_ics_(component, icexpressions);                          // collect all the ics together into a new initial condition expression
   }
 
 }
@@ -454,13 +471,13 @@ void SpudSystemBucket::fill_bcs_()
           b_it = (*(*f_it).second).dirichletbcs_begin(); 
           b_it != (*(*f_it).second).dirichletbcs_end(); b_it++)
     {
-      bcs_.push_back(&(*(*b_it).second));                   // add the bcs to a std vector
+      bcs_.push_back((*b_it).second);                   // add the bcs to a std vector
     }
     for (ReferencePoint_const_it                                    // loop over all the points
           p_it = (*(*f_it).second).referencepoints_begin(); 
           p_it != (*(*f_it).second).referencepoints_end(); p_it++)
     {
-      bcs_.push_back(&(*(*p_it).second));                    // add the point to a std vector
+      bcs_.push_back((*p_it).second);                    // add the point to a std vector
     }
   }
 
