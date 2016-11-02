@@ -27,6 +27,7 @@ import argparse
 import string
 import shutil
 from lxml import etree
+import buckettools.base as base
 
 parser = argparse.ArgumentParser( \
                        description="""Updates tfml files so they pass validation.""")
@@ -138,6 +139,107 @@ def update_nonlinear_systems_location():
           solname = etree.SubElement(sreftype, "nonlinear_solver", attrib={"name":solver.attrib["name"]})
     changed = True
 
+def update_quadrature_elements():
+  global changed
+
+  elements = tree.findall("//element")
+  quad_elements = {}
+  # loop over all elements in the tfml
+  for element in elements:
+    if element.find("family/string_value").text == "Quadrature":
+      # select the symbol and degree of the Quadrature elements
+      symbol = element.getparent().getparent().getparent().find("ufl_symbol/string_value").text
+      degree = element.find("degree/integer_value").text
+      quad_elements[symbol] = {"degree": degree, "element": element, "solvers": []}
+      # store data and include a list for the solvers that use this symbol
+
+  # get the global parameters
+  global_parameters = tree.find("//global_parameters/ufl/string_value")
+  if global_parameters is not None: 
+    global_parameters = global_parameters.text
+  else:
+    global_parameters = ""
+
+  # get all the nonlinear_solvers (don't care what type)
+  solvers = {solver:[] for solver in tree.findall("//nonlinear_solver/type")}
+  # loop over the solvers
+  for solver, elements in solvers.iteritems():
+    # build up all the ufl text
+    preamble = solver.find("preamble/string_value")
+    # NOTE: this logic is not perfect... it assumes that if a ufl_symbol appears anywhere (including in global parameters) then it
+    # must be used in the solver - this isn't actually necessarily true!
+    ufl_text = global_parameters
+    if preamble is not None: ufl_text += "\n"+preamble.text
+    forms = solver.findall("form/string_value")
+    for form in forms: ufl_text += "\n"+form.text
+    # extract the ufl symbols from the ufl - also not foolproof
+    solver_symbols = base.form_symbols(ufl_text)
+    for symbol, element in quad_elements.iteritems():
+      # check if any of the symbols using quadrature functions (including derivatives of the base ufl symbol)
+      for suffix in base.function_uflsymbol_suffixes():
+        if symbol+suffix in solver_symbols:
+          # build a map from the solver -> element and from the element -> solver
+          elements.append(element)
+          element["solvers"].append(solver)
+ 
+  def solver_name(solver, rule=False): 
+    name = solver.getparent().getparent().attrib["name"]+"::"+\
+           solver.getparent().attrib["name"]
+    if rule: name+="(rule="+solver.find("quadrature_rule").attrib["name"]+")"
+    return name
+
+  def function_name(element, degree=False):
+     name = element["element"].getparent().getparent().getparent().getparent().attrib["name"]\
+            +"::"+element["element"].getparent().getparent().getparent().attrib["name"]
+     if degree: name+="(degree="+element["degree"]+")"
+     return name
+
+  functions_changed = []
+  # loop over all the quadrature elements giving them a quadrature_rule (if they don't already have one) based on their solvers
+  for element in quad_elements.itervalues():
+    if element["element"].find("quadrature_rule") is None:
+      solver_quad_rules = [solver.find("quadrature_rule").attrib["name"] for solver in element["solvers"]]
+      quad_rule = solver_quad_rules[0]
+      if len(solver_quad_rules) == 0: 
+        print "WARNING: no solvers found using %s, applying \"default\" quadrature rule."%(quad_rule, function_name(element))
+        quad_rule = "default"
+      if len(set(solver_quad_rules)) != 1:  # check for non-matching entries
+        print "WARNING: multiple quadrature_rules used in solvers. Applying %s to %s,"%(quad_rule, function_name(element))
+        print "         which is used in solvers: "+\
+              "\n                                   ".join([solver_name(solver,True) for solver in element["solvers"]])
+        functions_changed.append(function_name(element))
+      rule = etree.SubElement(element["element"], "quadrature_rule", attrib={"name": quad_rule})
+      changed = True
+
+  solvers_changed = []
+  # loop over all the solvers giving them quadrature_degrees (if they don't already have one) based on their Quadrature elements
+  for solver, elements in solvers.iteritems():
+    if solver.find("quadrature_degree") is None:
+      quad_degrees = [element["degree"] for element in elements]
+      if len(quad_degrees) == 0: continue  # can happen and it's fine
+      if len(set(quad_degrees)) != 1:
+        print "WARNING: multiple quadrature degrees used in functions referenced by solver %s, not applying any restriction."%(solver_name(solver),)
+        print "         Functions referenced: "+\
+              "\n                               ".join([function_name(element, True)])
+        solvers_changed.append(solver_name(solver))
+        continue
+      degree = etree.SubElement(solver, "quadrature_degree")
+      degree_value = etree.SubElement(degree, "integer_value", attrib={"rank":"0"})
+      degree_value.text = quad_degrees[0]
+      changed = True
+
+  if len(functions_changed) > 0:
+    print "Summary: Changing the quadrature_rule in the functions: "+\
+          "\n                                                        ".join(functions_changed)
+    print "         These changes may not be backwards compatible (or work!)."
+    print "         Check these changes to your input and, if it builds and runs, your output carefully."
+  if len(solvers_changed) > 0:
+    print "WARNING: Changing the quadrature_degree in the solvers: "+\
+          "\n                                                        ".join(solvers_changed)
+    print "         These changes may not be necessary or backwards compatible (or work!)."
+    print "         Check these changes to your input and, if it builds and runs, your output carefully."
+
+
 for filename in filenames:
   print 'Updating: '+filename
   tree = etree.parse(filename)
@@ -147,6 +249,7 @@ for filename in filenames:
   update_solve_location()
   update_functional_location()
   update_nonlinear_systems_location()
+  update_quadrature_elements()
   if changed:
     backupfilename = os.path.join(os.path.split(filename)[0], os.path.split(filename)[-1].split('.')[0]+'.tfml.bak')
     shutil.copy2(filename, backupfilename)

@@ -62,7 +62,7 @@ PetscErrorCode buckettools::FormFunction(SNES snes, Vec x, Vec f,
   }
 
   Function_ptr iteratedfunction = (*system).iteratedfunction();      // collect the iterated system bucket function
-  const std::vector< const dolfin::DirichletBC* >& bcs = 
+  const std::vector< std::shared_ptr<const dolfin::DirichletBC> >& bcs = 
                                          (*system).bcs();   // get the vector of bcs
   dolfin::PETScVector rhs(f), iteratedvec(x);
 
@@ -174,7 +174,7 @@ PetscErrorCode buckettools::FormJacobian(SNES snes, Vec x, Mat A,
   }
 
   Function_ptr iteratedfunction = (*system).iteratedfunction();      // collect the iterated system bucket function
-  const std::vector< const dolfin::DirichletBC* >& bcs = 
+  const std::vector< std::shared_ptr<const dolfin::DirichletBC> >& bcs = 
                                          (*system).bcs();   // get the vector of bcs
   dolfin::PETScVector iteratedvec(x);
   #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
@@ -380,9 +380,15 @@ PetscErrorCode buckettools::KSPNullSpaceMonitor(KSP ksp, int it,
 
     PetscErrorCode perr;                                             // petsc error code
 
-    MatNullSpace sp;
+    Mat mat;
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR < 5
+    perr = KSPGetOperators(ksp, &mat, PETSC_NULL, PETSC_NULL);
+    #else
+    perr = KSPGetOperators(ksp, &mat, PETSC_NULL);
+    #endif
 
-    perr = KSPGetNullSpace(ksp, &sp); CHKERRQ(perr);
+    MatNullSpace sp;
+    perr = MatGetNullSpace(mat, &sp); CHKERRQ(perr);
 
     if (sp)
     {

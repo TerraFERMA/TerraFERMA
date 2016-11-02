@@ -22,6 +22,7 @@
     along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
   -->
   <include href="spud_base.rng"/>
+  <include href="ufl.rng"/>
   <define name="generic_element_family">
     <element name="family">
       <a:documentation>Element family:
@@ -480,13 +481,16 @@ Importantly, this is the degree of the resulting form not the function itself!</
   <define name="enrichment_options">
     <optional>
       <element name="enrichment">
+        <a:documentation>Options to enrich the element with another element (normally a bubble function).</a:documentation>
         <ref name="element_options_enrichment"/>
+        <ref name="comment"/>
       </element>
     </optional>
   </define>
   <define name="element_options_enrichment">
     <choice>
       <element name="element">
+        <a:documentation>Options describing a user defined finite element enrichment.</a:documentation>
         <attribute name="name">
           <value>UserDefined</value>
         </attribute>
@@ -494,7 +498,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         <ref name="comment"/>
       </element>
       <element name="element">
-        <a:documentation>Options describing a</a:documentation>
+        <a:documentation>Options describing cubic bubble element.</a:documentation>
         <attribute name="name">
           <value>B3</value>
         </attribute>
@@ -520,6 +524,9 @@ Importantly, this is the degree of the resulting form not the function itself!</
       </attribute>
       <ref name="generic_element"/>
       <ref name="enrichment_options"/>
+      <optional>
+        <ref name="quadrature_rule"/>
+      </optional>
       <ref name="comment"/>
     </element>
   </define>
@@ -588,6 +595,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
           <value>Quadrature</value>
         </attribute>
         <ref name="quadrature_element"/>
+        <ref name="quadrature_rule"/>
         <ref name="comment"/>
       </element>
     </choice>
@@ -602,6 +610,9 @@ Importantly, this is the degree of the resulting form not the function itself!</
         <ref name="generic_vector_element"/>
         <ref name="vector_element_options"/>
         <ref name="enrichment_options"/>
+        <optional>
+          <ref name="quadrature_rule"/>
+        </optional>
         <ref name="comment"/>
       </element>
       <element name="element">
@@ -669,6 +680,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
           <value>RT2</value>
         </attribute>
         <ref name="rt2_element"/>
+        <ref name="enrichment_options"/>
         <ref name="comment"/>
       </element>
       <element name="element">
@@ -759,6 +771,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="quadrature_element"/>
         <ref name="vector_element_options"/>
+        <ref name="quadrature_rule"/>
         <ref name="comment"/>
       </element>
     </choice>
@@ -773,6 +786,9 @@ Importantly, this is the degree of the resulting form not the function itself!</
         <ref name="generic_element"/>
         <ref name="tensor_element_options"/>
         <ref name="enrichment_options"/>
+        <optional>
+          <ref name="quadrature_rule"/>
+        </optional>
         <ref name="comment"/>
       </element>
       <element name="element">
@@ -841,6 +857,7 @@ Importantly, this is the degree of the resulting form not the function itself!</
         </attribute>
         <ref name="quadrature_element"/>
         <ref name="tensor_element_options"/>
+        <ref name="quadrature_rule"/>
         <ref name="comment"/>
       </element>
     </choice>

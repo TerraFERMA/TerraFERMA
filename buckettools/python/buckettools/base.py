@@ -111,7 +111,7 @@ def ffc(namespace, quadrature_rule, quadrature_degree):
     qdin = headertext.find("\n", qdi, -1)
     if (qdi != -1) and (qdin != -1):
       qd_old = headertext[qdi:qdin].split(" ")[-1]
-      qd_new = "'"+`quadrature_degree`+"'" if quadrature_degree is not None else "'auto'"
+      qd_new = `quadrature_degree` if quadrature_degree is not None else "-1"
       rebuild = rebuild or qd_new != qd_old
     else: # if we don't know what the old quadrature degree was we always want to (re)build
       rebuild = True

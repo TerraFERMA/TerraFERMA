@@ -175,9 +175,9 @@ Functions require a functionspace, which will be defined on the same mesh as the
       <value>0</value>
     </attribute>
     <ref name="element_options_scalar"/>
-    <oneOrMore>
+    <zeroOrMore>
       <ref name="initial_condition_scalar"/>
-    </oneOrMore>
+    </zeroOrMore>
     <zeroOrMore>
       <ref name="boundary_condition_scalar"/>
     </zeroOrMore>
@@ -197,9 +197,9 @@ Functions require a functionspace, which will be defined on the same mesh as the
       <value>1</value>
     </attribute>
     <ref name="element_options_vector"/>
-    <oneOrMore>
+    <zeroOrMore>
       <ref name="initial_condition_vector"/>
-    </oneOrMore>
+    </zeroOrMore>
     <zeroOrMore>
       <ref name="boundary_condition_vector"/>
     </zeroOrMore>
@@ -219,9 +219,9 @@ Functions require a functionspace, which will be defined on the same mesh as the
       <value>2</value>
     </attribute>
     <ref name="element_options_tensor"/>
-    <oneOrMore>
+    <zeroOrMore>
       <ref name="initial_condition_tensor"/>
-    </oneOrMore>
+    </zeroOrMore>
     <zeroOrMore>
       <ref name="boundary_condition_tensor"/>
     </zeroOrMore>
@@ -427,7 +427,12 @@ of functions is included.</a:documentation>
   <define name="initial_condition_scalar">
     <choice>
       <element name="initial_condition">
-        <a:documentation>Options for the description of the initial condition over the whole domain</a:documentation>
+        <a:documentation>Options for the description of the initial condition over the whole domain
+
+If unspecified the initial value will be set to 0.
+
+NOTE: this initial condition will be interpolated onto the dofs.  Some elements do not support this so you should instead
+solve the system at the start of the simulation to set the initial condition.</a:documentation>
         <attribute name="name">
           <value>WholeMesh</value>
         </attribute>
@@ -438,7 +443,12 @@ of functions is included.</a:documentation>
         <ref name="comment"/>
       </element>
       <element name="initial_condition">
-        <a:documentation>Options for the description of the initial condition over a subset of the whole domain</a:documentation>
+        <a:documentation>Options for the description of the initial condition over a subset of the whole domain
+
+If unspecified the initial value will be set to 0.
+
+NOTE: this initial condition will be interpolated onto the dofs.  Some elements do not support this so you should instead
+solve the system at the start of the simulation to set the initial condition.</a:documentation>
         <attribute name="name">
           <data type="string"/>
         </attribute>
@@ -537,7 +547,7 @@ of functions is included.</a:documentation>
           <attribute name="type">
             <value>boundary_condition</value>
           </attribute>
-          <ref name="prescribed_scalar"/>
+          <ref name="prescribed_scalar_w_internal_reference"/>
           <ref name="comment"/>
         </element>
         <ref name="comment"/>
@@ -570,7 +580,7 @@ of functions is included.</a:documentation>
               <attribute name="type">
                 <value>boundary_condition</value>
               </attribute>
-              <ref name="prescribed_vector"/>
+              <ref name="prescribed_vector_w_internal_reference"/>
               <ref name="comment"/>
             </element>
             <ref name="comment"/>
@@ -592,7 +602,7 @@ of functions is included.</a:documentation>
               <attribute name="type">
                 <value>boundary_condition</value>
               </attribute>
-              <ref name="prescribed_scalar"/>
+              <ref name="prescribed_scalar_w_internal_reference"/>
               <ref name="comment"/>
             </element>
             <ref name="comment"/>
@@ -627,7 +637,7 @@ of functions is included.</a:documentation>
               <attribute name="type">
                 <value>boundary_condition</value>
               </attribute>
-              <ref name="prescribed_tensor"/>
+              <ref name="prescribed_tensor_w_internal_reference"/>
               <ref name="comment"/>
             </element>
             <ref name="comment"/>
@@ -649,7 +659,7 @@ of functions is included.</a:documentation>
               <attribute name="type">
                 <value>boundary_condition</value>
               </attribute>
-              <ref name="prescribed_scalar"/>
+              <ref name="prescribed_scalar_w_internal_reference"/>
               <ref name="comment"/>
             </element>
             <ref name="comment"/>
@@ -1469,7 +1479,7 @@ the start of the simtulation).</a:documentation>
       <ref name="prescribed_cpp_time"/>
     </element>
   </define>
-  <define name="prescribed_internal">
+  <define name="prescribed_internal_semilagrangian">
     <element name="algorithm">
       <a:documentation>A semilagrangian lookup algorithm</a:documentation>
       <attribute name="name">
@@ -1574,6 +1584,105 @@ Assumed to be the current system if left unspecified.</a:documentation>
       <ref name="comment"/>
     </element>
   </define>
+  <define name="prescribed_scalar_internal_semilagrangian">
+    <element name="internal">
+      <a:documentation>A scalar described by an internal derived dolfin expression.</a:documentation>
+      <attribute name="rank">
+        <value>0</value>
+      </attribute>
+      <ref name="prescribed_internal_semilagrangian"/>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="prescribed_vector_internal_semilagrangian">
+    <element name="internal">
+      <a:documentation>A vector described by an internal derived dolfin expression.</a:documentation>
+      <attribute name="rank">
+        <value>1</value>
+      </attribute>
+      <ref name="prescribed_internal_semilagrangian"/>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="prescribed_tensor_internal_semilagrangian">
+    <element name="internal">
+      <a:documentation>A tensor described by an internal derived dolfin expression.</a:documentation>
+      <attribute name="rank">
+        <value>2</value>
+      </attribute>
+      <ref name="prescribed_internal_semilagrangian"/>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="prescribed_internal_reference">
+    <element name="algorithm">
+      <a:documentation>An algorithm that allows the user to reference a field or coefficient of the same rank.</a:documentation>
+      <attribute name="name">
+        <value>Reference</value>
+      </attribute>
+      <optional>
+        <element name="system">
+          <a:documentation>The system where the function is to be found.
+Assumed to be the current system if left unspecified.</a:documentation>
+          <attribute name="name">
+            <data type="string"/>
+          </attribute>
+          <ref name="comment"/>
+        </element>
+      </optional>
+      <choice>
+        <element name="field">
+          <a:documentation>The field name.</a:documentation>
+          <attribute name="name">
+            <data type="string"/>
+          </attribute>
+          <ref name="comment"/>
+        </element>
+        <element name="coefficient">
+          <a:documentation>The coefficient name.</a:documentation>
+          <attribute name="name">
+            <data type="string"/>
+          </attribute>
+          <ref name="comment"/>
+        </element>
+      </choice>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="prescribed_scalar_internal_reference">
+    <element name="internal">
+      <a:documentation>A scalar described by an internal derived dolfin expression.</a:documentation>
+      <attribute name="rank">
+        <value>0</value>
+      </attribute>
+      <ref name="prescribed_internal_reference"/>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="prescribed_vector_internal_reference">
+    <element name="internal">
+      <a:documentation>A vector described by an internal derived dolfin expression.</a:documentation>
+      <attribute name="rank">
+        <value>1</value>
+      </attribute>
+      <ref name="prescribed_internal_reference"/>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="prescribed_tensor_internal_reference">
+    <element name="internal">
+      <a:documentation>A tensor described by an internal derived dolfin expression.</a:documentation>
+      <attribute name="rank">
+        <value>2</value>
+      </attribute>
+      <ref name="prescribed_internal_reference"/>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <!-- prescribed_internal = prescribed_internal_reference   # not yet ready for this! -->
+  <define name="prescribed_internal">
+    <ref name="prescribed_internal_semilagrangian"/>
+  </define>
   <define name="prescribed_scalar_internal">
     <element name="internal">
       <a:documentation>A scalar described by an internal derived dolfin expression.</a:documentation>
@@ -1620,6 +1729,12 @@ and the functionspace must be identical to the original system's functionspace.<
   <define name="prescribed_scalar" combine="choice">
     <ref name="prescribed_scalar_constant"/>
   </define>
+  <define name="prescribed_scalar_w_internal_reference">
+    <ref name="prescribed_scalar_internal_reference"/>
+  </define>
+  <define name="prescribed_scalar_w_internal_reference" combine="choice">
+    <ref name="prescribed_scalar"/>
+  </define>
   <define name="prescribed_scalar_w_internal">
     <ref name="prescribed_scalar_internal"/>
   </define>
@@ -1656,6 +1771,12 @@ and the functionspace must be identical to the original system's functionspace.<
   <define name="prescribed_vector" combine="choice">
     <ref name="prescribed_vector_constant"/>
   </define>
+  <define name="prescribed_vector_w_internal_reference">
+    <ref name="prescribed_vector_internal_reference"/>
+  </define>
+  <define name="prescribed_vector_w_internal_reference" combine="choice">
+    <ref name="prescribed_vector"/>
+  </define>
   <define name="prescribed_vector_w_internal">
     <ref name="prescribed_vector_internal"/>
   </define>
@@ -1691,6 +1812,12 @@ and the functionspace must be identical to the original system's functionspace.<
   </define>
   <define name="prescribed_tensor" combine="choice">
     <ref name="prescribed_tensor_constant"/>
+  </define>
+  <define name="prescribed_tensor_w_internal_reference">
+    <ref name="prescribed_tensor_internal_reference"/>
+  </define>
+  <define name="prescribed_tensor_w_internal_reference" combine="choice">
+    <ref name="prescribed_tensor"/>
   </define>
   <define name="prescribed_tensor_w_internal">
     <ref name="prescribed_tensor_internal"/>
