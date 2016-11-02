@@ -132,6 +132,9 @@ namespace buckettools
 
     const double walltime_limit() const;                             // return the walltime limit
 
+    const double_ptr walltime_limit_ptr() const                      // return the walltime limit as a pointer
+    { return walltime_limit_; }
+
     const double timestep() const;                                   // return the timestep (as a double)
 
     const std::string output_basename() const                        // return the output base name
@@ -242,6 +245,9 @@ namespace buckettools
                                   const int &location);
     
     SystemsSolverBucket_ptr fetch_systemssolver(const int &location);// fetch a systemssolver set with the given name
+
+    const SystemsSolverBucket_ptr fetch_systemssolver(const int &location)
+                                                           const;    // fetch a systemssolver set with the given name
 
     i_SystemsSolverBucket_it systemssolvers_begin();                 // return an iterator to the beginning of the systemssolvers
 

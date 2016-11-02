@@ -108,6 +108,8 @@ void SpudBucket::fill()
     fill_systems_(buffer.str());
   }
 
+  fill_systemssolvers_();                                            // fill in information about the systems solvers
+
   for (SystemBucket_it sys_it = systems_begin();                     // loop over the systems for a *third* time, this time filling
                                   sys_it != systems_end(); sys_it++) // in the data for the coefficient functions contained within
   {                                                                  // them
@@ -170,11 +172,6 @@ void SpudBucket::fill()
   }
   
   fill_detectors_();                                                 // put the detectors in the bucket
-
-  fill_systemssolvers_();                                            // fill in information about the systems solvers, this could
-                                                                     // have been done any time after the initial setup of the
-                                                                     // systems but must be done before the call to setup
-                                                                     // diagnostics
 
   fill_diagnostics_();                                               // this should be called last because it initializes the
                                                                      // diagnostic files, which must use a complete bucket
