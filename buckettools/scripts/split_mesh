@@ -96,7 +96,7 @@ split_mesh, split_facetsubdomain = splitmesh(mesh, facetsubdomain, split_facet_i
 split_meshfile_out = dolfin.File(basename+"_split.xml")
 split_meshfile_out << split_mesh
 if extension[-3:]==".gz":
-  subprocess.call(['gzip', '-vf', basename+"_split_facet_region.xml"])
+  subprocess.call(['gzip', '-vf', basename+"_split.xml"])
 
 split_facetfile_out = dolfin.File(basename+"_split_facet_region.xml")
 split_facetfile_out << split_facetsubdomain

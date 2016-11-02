@@ -82,8 +82,10 @@ boundary_condition_system =
           attribute name {"Periodic"},
           attribute type {"boundary_condition"},
           periodic_bc
-        }
-      }
+        },
+        comment
+      },
+      comment
     }
   )
 
@@ -110,7 +112,8 @@ periodic_bc =
     element coordinate_map {
       attribute rank { "1" },
       python_code
-    }
+    },
+    comment
   )
 
 functional_options = 
