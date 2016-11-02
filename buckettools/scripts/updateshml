@@ -160,7 +160,7 @@ def update_functional_names(path):
                   continue
     element.text = "\n".join(lines)
 
-def update_convergence_filenames(path):
+def update_convergence_filenames():
   global changed
   # grab any variables or tests that the user might have extracted data from the conv files in
   elements = tree.findall("//simulation/variables/variable/string_value")+tree.findall("/tests/test/string_value")
@@ -188,6 +188,14 @@ def update_convergence_filenames(path):
             lines[i] = line.replace(ext[2], ext[3])
             continue
     element.text = "\n".join(lines)
+  # grab all the parameter updates
+  elements = tree.findall("//simulation/parameter_sweep/parameter/update/string_value")
+  # loop over all the updates
+  for element in elements:
+    if "/nonlinear_systems" in element.text:
+      newtext = element.text.replace("/nonlinear_systems", "/solution_order/solve::in_timeloop/solver::nonlinear_systems/type::nonlinear_systems_solver")
+      element.text = newtext
+      changed = True
 
 for filename in filenames:
   print 'Updating: '+filename
@@ -199,7 +207,7 @@ for filename in filenames:
   update_string_value("//parameter/values")
   update_string_value("//run/commands/command")
   update_functional_names(os.path.split(filename)[0])
-  update_convergence_filenames(os.path.split(filename)[0])
+  update_convergence_filenames()
   if changed:
     backupfilename = os.path.join(os.path.split(filename)[0], os.path.split(filename)[-1].split('.')[0]+'.shml.bak')
     shutil.copy2(filename, backupfilename)

@@ -20,6 +20,7 @@
 
 
 #include "SystemsSolverBucket.h"
+#include "SignalHandler.h"
 #include "BoostTypes.h"
 #include "Bucket.h"
 #include "Logger.h"
@@ -150,8 +151,7 @@ void SystemsSolverBucket::fill_solverlists_()
      SystemsSolverBucket_ptr ss_ptr = std::dynamic_pointer_cast<SystemsSolverBucket>((*s_it).second);
      if (ss_ptr)
      {
-       (*ss_ptr).fill_solverlists_();                            // fill the residual solvers list of sub systems solvers
-       const std::vector<SolverBucket_ptr>& tmpresidualsolvers = (*ss_ptr).residualsolvers();// then retrieve it for ourselves
+       const std::vector<SolverBucket_ptr>& tmpresidualsolvers = (*ss_ptr).residualsolvers();
        std::vector<SolverBucket_ptr>::const_iterator ts_it;
        for (ts_it = tmpresidualsolvers.begin(); ts_it != tmpresidualsolvers.end(); ts_it++)
        {                                                             // check we don't have a solver from this system already
@@ -196,7 +196,7 @@ bool SystemsSolverBucket::solve()
   if (rtol_)
   {
     aerror0 = residual_norm();
-    log(INFO, "Entering nonlinear systems iteration.");
+    log(INFO, "Entering nonlinear systems iteration: %s", name().c_str());
   }
 
   while (!complete_iterating_(aerror0))
@@ -372,7 +372,7 @@ GenericSolverBucket_ptr SystemsSolverBucket::fetch_solver(const std::string &nam
 //*******************************************************************|************************************************************//
 const GenericSolverBucket_ptr SystemsSolverBucket::fetch_solver(const std::string &name) const
 {
-  GenericSolverBucket_hash_it s_it = solvers_.get<om_key_hash>().find(name);     // check if a solver with this name already exists
+  GenericSolverBucket_const_hash_it s_it = solvers_.get<om_key_hash>().find(name);     // check if a solver with this name already exists
   if (s_it == solvers_.get<om_key_hash>().end())
   {
     tf_err("GenericSolverBucket does not exist in systems solvers solver.", "SolverBucket name: %s, System name: %s", name.c_str(), name_.c_str());
@@ -551,8 +551,8 @@ bool SystemsSolverBucket::complete_iterating_(const double &aerror0)
       rerror = aerror/aerror0;
     }
 
-    log(INFO, "  %u Nonlinear Systems Residual Norm (absolute, relative) = %g, %g\n", 
-                                    iteration_count(), aerror, rerror);
+    log(INFO, "  %u Nonlinear Systems (%s) Residual Norm (absolute, relative) = %g, %g\n", 
+                                    iteration_count(), name().c_str(), aerror, rerror);
 
     if(convfile_)
     {
@@ -582,6 +582,20 @@ bool SystemsSolverBucket::complete_iterating_(const double &aerror0)
   else
   {
     completed = iteration_count() >= maxits_;
+  }
+
+  if (!completed && (*bucket()).walltime_limit_ptr())
+  {
+    if ((*bucket()).elapsed_walltime() >= (*bucket()).walltime_limit())
+    {
+      tf_fail("Nonlinear systems failed to converge.", "Walltime limit reached.");
+    }
+  }
+
+  if ((*(*SignalHandler::instance()).return_handler(SIGINT)).received())
+  {
+    log(ERROR, "SIGINT received, terminating nonlinear systems iteration.");
+    completed = true;
   }
 
   return completed;

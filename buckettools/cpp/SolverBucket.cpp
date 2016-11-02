@@ -134,8 +134,8 @@ bool SolverBucket::solve()
   *iteration_count_ = 0;                                             // an iteration counter
 
   if (type()=="SNES")                                                // this is a petsc snes solver - FIXME: switch to an enumerated type
-  {
-    for(std::vector< const dolfin::DirichletBC* >::const_iterator    // loop over the collected vector of system bcs
+  {                                                                  // loop over the collected vector of system bcs
+    for(std::vector< std::shared_ptr<const dolfin::DirichletBC> >::const_iterator    
                       bc = (*system_).bcs_begin(); 
                       bc != (*system_).bcs_end(); bc++)
     {
@@ -156,7 +156,7 @@ bool SolverBucket::solve()
                                                                      // on other systems that have been solved since the last call
     dolfin::Assembler assemblerres;
     assemblerres.assemble(*res_, *residual_);                        // assemble the residual
-    for(std::vector< const dolfin::DirichletBC* >::const_iterator bc = 
+    for(std::vector< std::shared_ptr<const dolfin::DirichletBC> >::const_iterator bc = 
                           (*system_).bcs_begin(); 
                           bc != (*system_).bcs_end(); bc++)
     {                                                                // apply bcs to residuall (should we do this?!)
@@ -306,7 +306,7 @@ bool SolverBucket::solve()
 
       assert(residual_);
       assemblerres.assemble(*res_, *residual_);                      // assemble the residual
-      for(std::vector< const dolfin::DirichletBC* >::const_iterator bc = 
+      for(std::vector< std::shared_ptr<const dolfin::DirichletBC> >::const_iterator bc = 
                              (*system_).bcs_begin(); 
                              bc != (*system_).bcs_end(); bc++)
       {                                                              // apply bcs to residual (should we do this?!)
@@ -376,7 +376,7 @@ double SolverBucket::residual_norm()
   dolfin::Assembler assembler;
 
   assembler.assemble(*res_, *residual_);
-  for(std::vector< const dolfin::DirichletBC* >::const_iterator bc = 
+  for(std::vector< std::shared_ptr<const dolfin::DirichletBC> >::const_iterator bc = 
                         (*system_).bcs_begin(); 
                         bc != (*system_).bcs_end(); bc++)
   {                                                                  // apply bcs to residual (should we do this?!)
@@ -423,6 +423,7 @@ void SolverBucket::create_nullspace()
     {
       vecs[i] = (*(nullspacevectors_[i])).vec();
     }
+    orthonormalize_petsc_vecs_(vecs, nnulls);
     perr = MatNullSpaceCreate((*(nullspacevectors_[0])).mpi_comm(), 
                               PETSC_FALSE, nnulls, vecs, &sp_); 
     petsc_err(perr);
@@ -1011,6 +1012,27 @@ void SolverBucket::ksp_check_convergence_(KSP &ksp, int indent)
 void SolverBucket::checkpoint()
 {
   checkpoint_options_();
+}
+
+//*******************************************************************|************************************************************//
+// orthonormalize an array of petsc Vecs
+//*******************************************************************|************************************************************//
+void SolverBucket::orthonormalize_petsc_vecs_(Vec vecs[], PetscInt n)
+{
+  PetscErrorCode perr;                                               // petsc error code
+  PetscScalar *dots;
+  perr = PetscMalloc1(n-1,&dots); petsc_err(perr);
+  perr = VecNormalize(vecs[0], PETSC_NULL); petsc_err(perr);
+  for (PetscInt i=1; i<n; i++) 
+  {
+    perr = VecMDot(vecs[i],i,vecs,dots); petsc_err(perr);
+    for (PetscInt j=0; j<i; j++) 
+    {
+      dots[j] = -dots[j];
+    }
+    perr = VecMAXPY(vecs[i],i,dots,vecs); petsc_err(perr);
+    perr = VecNormalize(vecs[i], PETSC_NULL); petsc_err(perr);
+  }
 }
 
 //*******************************************************************|************************************************************//

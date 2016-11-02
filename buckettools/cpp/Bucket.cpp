@@ -33,7 +33,7 @@
 using namespace buckettools;
 
 time_t Bucket::start_walltime_ = time(NULL);                         // initialize global static variable
-boost::timer Bucket::timer_;                                         // start timing the simulation
+boost::timer::cpu_timer Bucket::timer_;                                         // start timing the simulation
 
 //*******************************************************************|************************************************************//
 // default constructor
@@ -927,7 +927,23 @@ SystemsSolverBucket_ptr Bucket::fetch_systemssolver(const int &location)
   i_SystemsSolverBucket_hash_it s_it = systemssolvers_.get<om_key_hash>().find(location);// check if this systemssolver exists in the systemssolvers_ map
   if (s_it == systemssolvers_.get<om_key_hash>().end())
   {
-    tf_err("SystemsSolver not exist in bucket.", "SystemsSolver location: %d", location);
+    tf_err("SystemsSolver does not exist in bucket.", "SystemsSolver location: %d", location);
+  }
+  else
+  {
+    return (*s_it).second;                                           // if it does, return a (boost shared) pointer to it
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return a (boost shared) pointer to a systemssolver set from the bucket data maps
+//*******************************************************************|************************************************************//
+const SystemsSolverBucket_ptr Bucket::fetch_systemssolver(const int &location) const
+{
+  i_SystemsSolverBucket_const_hash_it s_it = systemssolvers_.get<om_key_hash>().find(location);// check if this systemssolver exists in the systemssolvers_ map
+  if (s_it == systemssolvers_.get<om_key_hash>().end())
+  {
+    tf_err("SystemsSolver does not exist in bucket.", "SystemsSolver location: %d", location);
   }
   else
   {
@@ -1312,8 +1328,9 @@ void Bucket::solve_at_start_()
   if(solved)
   {
     update_timedependent();
-    output(OUTPUT_START);
     update();
+    output(OUTPUT_START);                                            // this is output here to show the state of variables right
+                                                                     // before the timeloop
   }
 }
 
