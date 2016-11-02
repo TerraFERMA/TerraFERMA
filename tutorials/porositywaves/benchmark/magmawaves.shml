@@ -7,8 +7,8 @@
     <string_value lines="1">mspieg</string_value>
   </owner>
   <tags>
-    <string_value lines="1">testable</string_value>
-    <comment>identify which tutorials have asserts in their tests so can be tested in the buildbots</comment>
+    <string_value lines="1">testable not:branch:dolfin-master not:branch:dolfin-fenics-project-master</string_value>
+    <comment>testable = identify which tutorials have asserts in their tests so can be tested in the buildbots</comment>
   </tags>
   <description>
     <string_value lines="1">Simpson solitary wave benchmark.</string_value>

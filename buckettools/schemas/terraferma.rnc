@@ -87,7 +87,8 @@ global_parameters =
              attribute name {"shared_vertex"},
              comment
            }
-         )?
+         )?,
+         comment
        }?,
        comment
      }
