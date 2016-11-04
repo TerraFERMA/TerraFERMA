@@ -384,7 +384,7 @@ option blocks from other models.
 A fully worked out \texttt{tfml} file for the benchmark problem 
 can be found in
 \texttt{\$TF\_HOME/share/terraferma/tutorials/porositywaves/benchmark/magmawaves.tfml},
-along with an accompanying testharness file \texttt{magmawaves.shml}
+along with an accompanying simulationharness file \texttt{magmawaves.shml}
 for testing.  A typical solution is shown in Figure \ref{fig:solitarywavebcs}.
 
 To build this model in \TF{} from scratch, do the following
@@ -443,7 +443,7 @@ $ diamond magmawaves.tfml &
     \item Set  \texttt{field} name to \texttt{CourantNumber}
     \item Set \texttt{requested\_maximum\_value} to 0.25 (which is
       appropriated for a $c=5$ wave and we will change this through
-      the testharness as well).
+      the simulationharness as well).
     \item Activate \texttt{adapt\_period} and set to 2.0 (this won't actually try
       to re-adapt through the run giving a constant time-step)      
     \end{itemize}
@@ -541,7 +541,7 @@ def val(x):
   return f
 \end{lstlisting}
 \textbf{CAUTION:} if you copy the text from the pdf into diamond, be
-very careful to maintain indentation and be aware that copy/paste may
+very careful to maintain indentation and be aware that copy/paste 
 from this tutorial may introduce non-ascii characters into diamond
 which will cause an error (In particular, the double quotes
 \texttt{``} need to be edited to simple ascii ones.
@@ -549,7 +549,7 @@ which will cause an error (In particular, the double quotes
 The source code for \texttt{tfsolitarywave.py} can be found in
 \texttt{\$TF\_HOME/share/terraferma/tutorials/porositywaves/python/pysolwave/tfsolitarywave.py}. In
 particular it assumes a number of default parameters and locations to
-be present in the \texttt{.tfml} file.  It's full syntax is
+be present in the \texttt{.tfml} file.  The full syntax is
 \begin{lstlisting}[style=Python]
 class TFSolitaryWave:
     """ class for calculating and evaluating solitary wave profiles
@@ -561,7 +561,8 @@ class TFSolitaryWave:
        c_name='c',n_name='n',m_name='m',d_name='d',N_name='N',
        h_squared_name='h_squared',x0_name='x0'):
         
-     """read the tfml_file and use libspud to populate the internal parameters
+     
+     #read the tfml_file and use libspud to populate the internal parameters
 
         c: wavespeed
         n: permeability exponent
@@ -571,7 +572,7 @@ class TFSolitaryWave:
         x0: coordinate wave peak
         h_squared:  the size of the system in compaction lengths
                           squared (h/delta)**2
-        """
+
 \end{lstlisting}
 Thus the default is to look for the system named \texttt{magma}, for
 fields and coefficients with names \texttt{Pressure},
@@ -579,13 +580,20 @@ fields and coefficients with names \texttt{Pressure},
 changes in these names just need to be passed to
 \texttt{TFSolitaryWave}.  Here however, we will just set up a set of
 coefficients with the appropriate names.
-        \item Set the upper Dirichlet boundary condition $\phi=1$.
-    \begin{itemize}
-    \item Activate a new boundary condition, name it \texttt{top} and unfold
-    \item Set \texttt{boundary\_ids} to 4 (upper boundary)
-    \item Set \texttt{sub\_components (All)}$\rightarrow$\texttt{type
-        (Dirichlet)}$\rightarrow$\texttt{constant} to 1.
-    \end{itemize}
+\item \textbf{Boundary Conditions on Porosity:} Note, because the
+  porosity uses a discontinuous element, setting the constant
+  Dirichlet Boundary condition $\phi=1$ here will have no effect
+  because, according to Dolfin, the boundary of a discontinuous
+  element is not well defined.  The  boundary condition $\phi=1$ and 
+  constant separation flux on the upper boundary is set  as a Neumann condition in
+  the weak form.
+        % \item Set the upper Dirichlet boundary condition $\phi=1$.
+    % \begin{itemize}
+    % \item Activate a new boundary condition, name it \texttt{top} and unfold
+    % \item Set \texttt{boundary\_ids} to 4 (upper boundary)
+    % \item Set \texttt{sub\_components (All)}$\rightarrow$\texttt{type
+    %     (Dirichlet)}$\rightarrow$\texttt{constant} to 1.
+    % \end{itemize}
   \item Unfold \texttt{diagnostics} and activate
       \texttt{include\_in\_visualization} and \texttt{include\_in\_statistics}
 
@@ -638,7 +646,7 @@ coefficients with the appropriate names.
       non ascii characters into the ufl (in this case the \texttt{'}
       single quote character,  \texttt{'}).  This will need to be
       replaced in the ufl in diamond.
-    \item Set the Jacobian \texttt{J}.  Copy the \texttt{ufl}
+    \item Set the Jacobian \texttt{J} using  the \texttt{ufl}
       \begin{lstlisting}[style=UFL]
         J = derivative(F, us_i, us_a)
       \end{lstlisting}
@@ -789,7 +797,7 @@ The extra \texttt{-a} argument adds a copy of magmawaves.tfml to the
 build directory which will be necessary for \texttt{TFSolitaryWave} to
 work.  If everything is working you should generate a set of images of a
 stationary solitary wave.  To go further, you should look at the
-testharness file \texttt{magmawaves.shml} in the tutorials directory
+simulationharness file \texttt{magmawaves.shml} in the tutorials directory
 that runs this problem over a range of mesh resolutions and time-steps
 and reinvokes \texttt{TFSolitaryWave} to calculate velocity and phase
 errors against the exact solutions and produces an output .tex table
@@ -843,8 +851,8 @@ For example, Figure \ref{fig:1dto2d} demonstrates the instability of a
 1-D wave into a set of 2-D solitary waves plus background radiation.
 A fully worked out example for this problem can be found in
 \texttt{\$TF\_HOME/share/terraferma/tutorials/porositywaves/1dto2d/magmawaves.tfml}
-along with a testharness file.  These models take some time to run so
-the included testharness file runs this problem in parallel on two
+along with a simulationharness file.  These models take some time to run so
+the included simulationharness file runs this problem in parallel on two
 processors.  If you have more or less cores, it is easy to change this
 by adjusting the \texttt{number\_processes} tab in
 \texttt{magmawaves.shml}.
@@ -936,7 +944,7 @@ waves will grow, breaking the solution.
 In addition to exploring the stability of 1-D waves in 2 dimensions,
 we can easily extend the problem to 3-dimensions (although the problem
 becomes considerably more expensive and requires significant parallel
-resources).  An example model with testharness file can be found in
+resources).  An example model with simulationharness file can be found in
 \texttt{\$TF\_HOME/share/terraferma/tutorials/porositywaves/1dto3d/magmawaves.tfml}
 and solutions are shown on the cover page of this manual for a problem
 with $n=3$, $m=1$ in 3-D in a domain
@@ -1039,7 +1047,7 @@ def val(x):
 \end{itemize}
 
 Again, these time-dependent problems can take some time to run so the
-example testharness file assumes two processors and runs in parallel.
+example simulationharness file assumes two processors and runs in parallel.
 It is straightforward to modify this file to explore other wave
 combinations and different initial positions.  Have fun.
 
