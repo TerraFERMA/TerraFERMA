@@ -19,8 +19,8 @@
 // along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
 
-#ifndef __PYTHON_INSTANCE_H
-#define __PYTHON_INSTANCE_H
+#ifndef __GLOBAL_PYTHON_INSTANCE_H
+#define __GLOBAL_PYTHON_INSTANCE_H
 
 #include "Python.h"
 #include <string>
@@ -28,12 +28,11 @@
 namespace buckettools
 {
   //*****************************************************************|************************************************************//
-  // PythonInstance class:
+  // GlobalPythonInstance class:
   //
-  // The PythonInstance class wraps python functionality so that it is accessible from C++
-  // NOTE: This assumes a function name val is available and runs that and only that!
+  // The GlobalPythonInstance class wraps global python dictionary so it can be shared between PythonInstances
   //*****************************************************************|************************************************************//
-  class PythonInstance
+  class GlobalPythonInstance
   {
 
   //*****************************************************************|***********************************************************//
@@ -42,29 +41,15 @@ namespace buckettools
 
   public:                                                            // available to everyone
 
-    //***************************************************************|***********************************************************//
-    // Constructors and destructors
-    //***************************************************************|***********************************************************//
+    static GlobalPythonInstance* instance();                         // entry point - no public constructor in a singleton class
 
-    PythonInstance(const std::string &function);                     // specific constructor (takes a string with the python function)
-    
-    ~PythonInstance();                                               // default destructor
-    
-    //***************************************************************|***********************************************************//
-    // Base data access
-    //***************************************************************|***********************************************************//
+    void run(const std::string &function);
 
-    const std::string function() const                               // return a constant string containing the function
-    { return function_; }
-    
-    //***************************************************************|***********************************************************//
-    // Functions used to run the model
-    //***************************************************************|***********************************************************//
+    PyObject* main()
+    { return pMain_; }
 
-    PyObject* call(PyObject *pArgs) const;                           // run the function contained in this python instance
-
-    const int number_arguments() const                               // return the number of arguments expected by this pythoninstance
-    { return nargs_; }
+    PyObject* globals()
+    { return pGlobals_; }
 
   //*****************************************************************|***********************************************************//
   // Private functions
@@ -73,15 +58,22 @@ namespace buckettools
   private:
 
     //***************************************************************|***********************************************************//
+    // Constructors and destructors
+    //***************************************************************|***********************************************************//
+
+    GlobalPythonInstance();                                          // specific constructor
+
+    ~GlobalPythonInstance();                                         // default destructor
+    
+
+    //***************************************************************|***********************************************************//
     // Base data
     //***************************************************************|***********************************************************//
 
-    const std::string function_;                                     // the python function string
+    PyObject *pMain_, *pGlobals_;                                    // python objects used to run the function (and cacheable between calls)
 
-    PyObject *pLocals_, *pCode_, *pFunc_;                            // python objects used to run the function (and cacheable between calls)
+    static GlobalPythonInstance *instance_;
 
-    int nargs_;                                                      // the number of arguments this python function takes
-    
     //***************************************************************|***********************************************************//
     // Initialization
     //***************************************************************|***********************************************************//
@@ -93,6 +85,7 @@ namespace buckettools
     //***************************************************************|***********************************************************//
 
     void clean_();                                                   // clean the python instance
+    
     
   };
 }
