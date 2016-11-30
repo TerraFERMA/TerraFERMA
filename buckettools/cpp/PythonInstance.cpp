@@ -19,6 +19,7 @@
 // along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
 
+#include "GlobalPythonInstance.h"
 #include "Python.h"
 #include "PythonInstance.h"
 #include "Logger.h"
@@ -57,17 +58,13 @@ PyObject* PythonInstance::call(PyObject *pArgs) const
 //*******************************************************************|************************************************************//
 void PythonInstance::init_()
 {
-  if(!Py_IsInitialized())
-  {
-    Py_Initialize();                                                 // if python isn't initialized, do it now
-  }
   
-  pMain_ = PyImport_AddModule("__main__");                           // set up a main module
-  pGlobals_ = PyModule_GetDict(pMain_);                              // set up the globals dictionary
+  PyObject *pGlobals;
+  pGlobals = (*GlobalPythonInstance::instance()).globals();
   pLocals_ = PyDict_New();                                           // set up the locals dictionary
   
   pCode_ = PyRun_String((char*)function_.c_str(), Py_file_input,     // run the function string 
-                                              pGlobals_, pLocals_);
+                                              pGlobals, pLocals_);
   
   if (PyErr_Occurred()){                                             // check for errors in getting the function
     PyErr_Print();
@@ -81,7 +78,7 @@ void PythonInstance::init_()
                << "_nargs = len(inspect.getargspec(val).args)" 
                << std::endl;
   PyObject* tmppCode = PyRun_String(pythonbuffer.str().c_str(),      // run the python commands
-                                Py_file_input, pGlobals_, pLocals_); 
+                                Py_file_input, pGlobals, pLocals_); 
   PyObject* pnArgs = PyDict_GetItemString(pLocals_, "_nargs");       // retrieve the result, _nargs
   nargs_ = PyInt_AsLong(pnArgs);                                     // recast it as an integer
   
@@ -99,10 +96,5 @@ void PythonInstance::clean_()
 {
   Py_DECREF(pLocals_);                                               // decrease the reference count on the locals
   Py_DECREF(pCode_);                                                 // and the code
-  
-  if(Py_IsInitialized())                                             // if python is initialized then collect (safe for multiple
-  {                                                                  // python instances?)
-    PyGC_Collect();
-  }
 }
 
