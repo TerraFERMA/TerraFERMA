@@ -73,6 +73,14 @@ Any system, field or coefficient ufl symbols defined in this options file may be
         </element>
       </optional>
       <optional>
+        <element name="python">
+          <a:documentation>global python  
+
+Allows objects to be set in the global python dictionary accessible from within all other python routines.</a:documentation>
+          <ref name="python_code"/>
+        </element>
+      </optional>
+      <optional>
         <element name="dolfin">
           <a:documentation>global dolfin parameters</a:documentation>
           <optional>

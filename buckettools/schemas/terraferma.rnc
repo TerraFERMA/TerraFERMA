@@ -65,6 +65,12 @@ global_parameters =
        element ufl {
          python_code 
        }?,
+       ## global python  
+       ##
+       ## Allows objects to be set in the global python dictionary accessible from within all other python routines.
+       element python {
+         python_code
+       }?,
        ## global dolfin parameters
        element dolfin {
          ## Allow extrapolation in function interpolation.
