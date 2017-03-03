@@ -159,7 +159,11 @@ required_file =
            element string {
               filename
            }|
-           ## Enter python code to evaluate a (or a list of) filename(s).
+           ## Enter python code to evaluate a (or a list or dictionary of) filename(s).
+           ##
+           ## If returning a dictionary then the key:value pairs represent the current filename (key) and the filename
+           ## to which the file will be copied (value) in the run directory.  Lists and single strings maintain the 
+           ## same name when copied.
            ##
            ## The variable containing the filename(s) MUST share a name with 
            ## the filenames parent element above. 
@@ -324,6 +328,13 @@ dependencies =
 checkpoint =
    (
       ## Options for updating and restarting simulations from checkpoint.
+      ##
+      ## This option gives some very basic functionality for restarting options from a checkpoint using the --run-from-checkpoint 
+      ## command line option.
+      ##
+      ## NOTE that any parameters changed must not require a rebuild for this to work.
+      ##
+      ## For more complicated restarting and rebuilding options, describe the checkpoint as a separate simulation.
       element checkpoint {
          ## A parameter definition.
          ##
@@ -353,7 +364,7 @@ checkpoint =
                python_code
             },
             comment
-         }+,
+         }*,
          comment
       }
    )
@@ -613,6 +624,7 @@ dependency_simulation =
          required_input?,
          required_output?,
          dependencies?,
+         checkpoint?,
          variables?,
          comment
       }
