@@ -184,7 +184,11 @@ All filenames must have a unique name.</a:documentation>
           <ref name="filename"/>
         </element>
         <element name="python">
-          <a:documentation>Enter python code to evaluate a (or a list of) filename(s).
+          <a:documentation>Enter python code to evaluate a (or a list or dictionary of) filename(s).
+
+If returning a dictionary then the key:value pairs represent the current filename (key) and the filename
+to which the file will be copied (value) in the run directory.  Lists and single strings maintain the 
+same name when copied.
 
 The variable containing the filename(s) MUST share a name with 
 the filenames parent element above. 
@@ -364,8 +368,15 @@ Defaults to 1 if not specified.</a:documentation>
   </define>
   <define name="checkpoint">
     <element name="checkpoint">
-      <a:documentation>Options for updating and restarting simulations from checkpoint.</a:documentation>
-      <oneOrMore>
+      <a:documentation>Options for updating and restarting simulations from checkpoint.
+
+This option gives some very basic functionality for restarting options from a checkpoint using the --run-from-checkpoint 
+command line option.
+
+NOTE that any parameters changed must not require a rebuild for this to work.
+
+For more complicated restarting and rebuilding options, describe the checkpoint as a separate simulation.</a:documentation>
+      <zeroOrMore>
         <element name="parameter">
           <a:documentation>A parameter definition.
 
@@ -397,7 +408,7 @@ appropriately within the code.</a:documentation>
           </element>
           <ref name="comment"/>
         </element>
-      </oneOrMore>
+      </zeroOrMore>
       <ref name="comment"/>
     </element>
   </define>
@@ -727,6 +738,9 @@ e.g. perhaps a gmsh run</a:documentation>
       </optional>
       <optional>
         <ref name="dependencies"/>
+      </optional>
+      <optional>
+        <ref name="checkpoint"/>
       </optional>
       <optional>
         <ref name="variables"/>

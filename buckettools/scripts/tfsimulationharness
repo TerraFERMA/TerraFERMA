@@ -70,6 +70,8 @@ if __name__ == "__main__":
   parser.add_argument('-r', '--recursive', metavar='depth', action='store', type=int, dest='recurse', nargs='?', default=None, 
                       required=False, const=-1, 
                       help='recursively search the directory tree for files (if no depth is specified full recursion will be used)')
+  parser.add_argument('-d', '--depth', action='store', type=int, dest='level', metavar='level', required=False, default=None, 
+                      help='dependency depth/level to select')
   parser.add_argument("-l", "--length", action='store', metavar='length', default=[], nargs='+', 
                       help="length(s) of problem (if unspecified will run all lengths)")
   parser.add_argument("-p", "--parallelism", action='store', metavar='parallelism', type=str, default='any', 
@@ -88,6 +90,9 @@ if __name__ == "__main__":
                       help="build the simulations")
   parser.add_argument("--run", action='store_const', dest='run', const=True, default=False, required=False,
                       help="run the simulations")
+  parser.add_argument("--run-from-checkpoint", action='store', dest='checkpoint', metavar='checkpoint index', type=int,
+                      default=None, required=False, nargs='?', const=-1,
+                      help="if possible run the simulations from the specified checkpoint (defaults to -1, the last checkpoint). By default this will attempt to run all simulations from checkpoint.  Combine with -d to select a specific dependency level to run.")
   parser.add_argument("--just-run", action='store_const', dest='justrun', const=True, default=False, required=False,
                       help="only run the simulations (do not reconfigure or rebuild)")
   parser.add_argument("--test", action='store_const', dest='test', const=True, default=False, required=False,
@@ -98,8 +103,12 @@ if __name__ == "__main__":
                       help="only list the simulations")
   parser.add_argument("--list-input", action='store_const', dest='listinput', const=True, default=False, required=False,
                       help="list the input to the simulations")
+  parser.add_argument("--list-runs", action='store_const', dest='listruns', const=True, default=False, required=False,
+                      help="list the simulations and runs described")
   parser.add_argument("--clean", action='store_const', dest='clean', const=True, default=False, required=False,
                       help="removes the run (and build) directories from previous simulation runs")
+  parser.add_argument("--clean-checkpoints", action='store_const', dest='checkpointclean', const=True, default=False, required=False,
+                      help="removes all checkpoint directories from previous simulation runs")
   parser.add_argument("--parameters", action='store', metavar='name value', default=None, nargs='+', required=False, dest='params', type=str,
                       help="allows users to crudely override parameters in shmls")
   parser.add_argument('-f', '--force', action='store_const', dest='force', const=True, default=False, 
@@ -178,41 +187,67 @@ if __name__ == "__main__":
 
   if args.clean:
     try:
-      batch.clean()
+      batch.clean(level=args.level)
     except:
       print "Error while cleaning simulations, exiting with error."
       sys.exit(1)
 
+  if args.checkpointclean:
+    try:
+      batch.checkpointclean(level=args.level)
+    except:
+      print "Error while cleaning checkpointed simulations, exiting with error."
+      sys.exit(1)
+
   if args.listinput:
-    inputlist = batch.listinput()
+    inputlist = batch.listinput(level=args.level)
     inputlist += filenames
     for requiredinput in inputlist:
       print os.path.relpath(requiredinput, curdir)
+
+  def print_runs(runs, level):
+    print "**depth: "+`level`
+    for run in runs:
+      print "  "*(level+1)+run.name+": "+run.filename+run.ext+" ("+os.path.relpath(run.rundirectory,curdir)+")" 
+    
+  if args.listruns:
+    if args.level is not None:
+      runs = batch.simulationselector(batch.runs, level=args.level)
+      print_runs(runs, args.level)
+    else: 
+      level = 0
+      while 1==1:
+        runs = batch.simulationselector(batch.runs, level=level)
+        if len(runs) > 0:
+          print_runs(runs, level)
+          level += 1
+        else:
+          break
 
   if args.justlist:
     for filename in filenames:
       print os.path.relpath(filename, curdir)
   elif args.generate or args.configure or args.build or args.run or args.test:
     try:
-      batch.writeoptions()
+      batch.writeoptions(level=args.level)
     except simulations.SimulationsErrorWriteOptions:
       print "Error while writing options, exiting with error."
       sys.exit(1)
     if args.configure or args.build or args.run or args.test:
       try:
-        batch.configure(force=args.force)
+        batch.configure(level=args.level, force=args.force)
       except simulations.SimulationsErrorConfigure:
         print "Error while configuring simulations, exiting with error."
         sys.exit(1)
       if args.build or args.run or args.test:
         try: 
-          batch.build(force=args.force)
+          batch.build(level=args.level, force=args.force)
         except simulations.SimulationsErrorBuild:
           print "Error while building simulations, exiting with error."
           sys.exit(1)
         if args.run or args.test:
           try:
-            batch.run(force=args.force)
+            batch.run(level=args.level, force=args.force)
           except (simulations.SimulationsErrorRun, simulations.SimulationsErrorWriteOptions, \
                   simulations.SimulationsErrorConfigure, simulations.SimulationsErrorBuild):
             print "Error while running simulations, exiting with error."
@@ -228,7 +263,7 @@ if __name__ == "__main__":
               sys.exit(1)
   elif args.justrun:
     try:
-      batch.run(force=args.force)
+      batch.run(level=args.level, force=args.force)
     except simulations.SimulationsErrorRun:
       print "Error while running simulations, exiting with error."
       sys.exit(1)
@@ -241,4 +276,12 @@ if __name__ == "__main__":
     except simulations.SimulationsErrorTest:
       print "Error while testing simulations, exiting with error."
       sys.exit(1)
+  elif args.checkpoint is not None:
+    try:
+      batch.checkpointrun(index=args.checkpoint, level=args.level)
+    except simulations.SimulationsErrorRun:
+      print "Error while running simulations from checkpoint, exiting with error."
+      sys.exit(1)
+
+
 

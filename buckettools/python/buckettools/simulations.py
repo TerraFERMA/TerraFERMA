@@ -262,6 +262,8 @@ class Run:
 
     filename = os.path.basename(path)
     self.filename, self.ext = os.path.splitext(filename)
+    self.inputfilename = self.filename
+    self.inputext = self.ext
     self.spudfile = False
     if "spudfile" in self.optionsdict:
       self.spudfile = self.optionsdict["spudfile"]
@@ -310,15 +312,18 @@ class Run:
 
     # if the input options file is an the output of a dependency then we have to
     # defer generating, configuring and building until runtime
-    filepaths = [os.path.dirname(depoutput)  \
-                 for depoutput in self.getdependencyrequiredoutput() \
-                 if self.filename+self.ext == os.path.basename(depoutput)]
+    filepaths = [depoutput_k  \
+                 for depoutput_k, depoutput_v in self.getdependencyrequiredoutput().items() \
+                 if self.filename+self.ext == os.path.basename(depoutput_v)]
     self.deferred = len(filepaths)>0
     if self.deferred:
-      if os.path.isabs(filepaths[0]):
-        self.runinputdirectory = os.path.normpath(filepaths[0])
+      filepath = filepaths[0]
+      dirname = os.path.dirname(filepath)
+      self.inputfilename, self.inputext = os.path.splitext(os.path.basename(filepath))
+      if os.path.isabs(dirname):
+        self.runinputdirectory = os.path.normpath(dirname)
       else:
-        self.runinputdirectory = os.path.normpath(os.path.join(currentdirectory, filepaths[0]))
+        self.runinputdirectory = os.path.normpath(os.path.join(currentdirectory, dirname))
 
   def writeoptions(self):
 
@@ -328,14 +333,14 @@ class Run:
       pass
       
     if self.spudfile:
-      threadlibspud.load_options(os.path.join(self.runinputdirectory, self.filename+self.ext))
+      threadlibspud.load_options(os.path.join(self.runinputdirectory, self.inputfilename+self.inputext))
 
       self.updateoptions()
 
       libspud.write_options(os.path.join(self.rundirectory, self.filename+self.ext))
       threadlibspud.clear_options()
     else:
-      inputfile = open(os.path.join(self.runinputdirectory, self.filename+self.ext))
+      inputfile = open(os.path.join(self.runinputdirectory, self.inputfilename+self.inputext))
       inputstr = inputfile.read()
       inputfile.close()
       
@@ -351,15 +356,22 @@ class Run:
     os.chdir(self.basedirectory)
     sys.path.append(self.basedirectory)
     valuesdict = self.getvaluesdict(valuesdict=valuesdict, prefix=prefix)
-    for update in self.optionsdict[prefix+"updates"].itervalues():
+    for paramname, update in self.optionsdict[prefix+"updates"].iteritems():
       if update is not None:
-        exec update in valuesdict
+        try:
+          exec update in valuesdict
+        except libspud.SpudNewKeyWarning, e:
+          self.log("ERROR: spud raised a new key warning:")
+          self.log("%s"%e)
+          self.log("on parameter: %s"%paramname)
+          self.log("with update:\n %s"%update) 
+          raise SimulationsErrorWriteOptions
     sys.path.remove(self.basedirectory)
     os.chdir(self.currentdirectory)
 
   def getvaluesdict(self, valuesdict=None, prefix=""):
     if valuesdict is None: valuesdict={}
-    valuesdict["input_filename"] = os.path.join(self.runinputdirectory, self.filename+self.ext)
+    valuesdict["input_filename"] = os.path.join(self.runinputdirectory, self.inputfilename+self.inputext)
     valuesdict["_self"] = self
     for k,v in self.optionsdict[prefix+"values"].iteritems():
       if k in valuesdict:
@@ -377,7 +389,7 @@ class Run:
   def resolvepythonrequiredfiles(self, required_files_python, dirname=None):
      '''Get a list of files from the supplied list of filenames and python code.'''
 
-     required_files = []
+     required_files = {}
      for filename_name, filename_code in required_files_python:
        var = Variable(filename_name, filename_code)
        varsdict = self.getvaluesdict()
@@ -387,18 +399,22 @@ class Run:
        filenames = varsdict[filename_name]
        # we accept either a string or a list of filenames from python
        if isinstance(filenames, str):
-         required_files.append(filenames)
+         required_files[filenames] = filenames
+       elif isinstance(filenames, list):
+         required_files.update({filename : filename for filename in filenames})
+       elif isinstance(filenames, dict):
+         required_files.update(filenames)
        else:
-         required_files += filenames
+         print "Unknown format of required input supplied."
+         raise SimulationsErrorInitialization
+         
 
      # if dirname has been supplied then make the filenames relative to it
      if dirname is not None:
-       for f in xrange(len(required_files)):
-         filename = required_files[f]
-         if os.path.isabs(filename):
-           required_files[f] = os.path.normpath(filename)
-         else:
-           required_files[f] = os.path.normpath(os.path.join(dirname, filename))
+       new_required_files = {(os.path.normpath(filename_k) if os.path.isabs(filename_k) 
+                              else os.path.normpath(os.path.join(dirname, filename_k))):filename_v
+                              for filename_k, filename_v in required_files.items()}
+       required_files = new_required_files
 
      # return the required files
      return required_files
@@ -435,22 +451,22 @@ class Run:
 
         input_changed = False
         if self.optionsdict["run_when"]["input_changed"]:
-          for filepath in requiredinput:
+          for filepath_k, filepath_v in requiredinput.iteritems():
             try:
-              checksum = hashlib.md5(open(os.path.join(dirname, os.path.basename(filepath))).read()).hexdigest()
+              checksum = hashlib.md5(open(os.path.join(dirname, os.path.basename(filepath_v))).read()).hexdigest()
             except:
               checksum = None
             try:
-              input_changed = input_changed or checksum != hashlib.md5(open(filepath).read()).hexdigest()
+              input_changed = input_changed or checksum != hashlib.md5(open(filepath_k).read()).hexdigest()
             except IOError:
-              self.log("WARNING: Unable to open %s"%(filepath))
+              self.log("WARNING: Unable to open %s"%(filepath_k))
               input_changed = True
 
         output_missing = False
         if self.optionsdict["run_when"]["output_missing"]:
-          for filepath in requiredoutput:
+          for filepath_k, filename_v in requiredoutput.iteritems():
             try:
-              output_file = open(os.path.join(dirname, filepath))
+              output_file = open(os.path.join(dirname, filepath_k))
               output_file.close()
             except IOError:
               output_missing = True
@@ -459,16 +475,16 @@ class Run:
         if output_missing or input_changed or force or self.optionsdict["run_when"]["always"]:
           self.log("  running in directory %s"%(os.path.relpath(dirname, self.currentdirectory)))
           # file has changed or a recompilation is necessary
-          for filepath in requiredoutput:
+          for filepath_k, filepath_v in requiredoutput.iteritems():
             try:
-              os.remove(os.path.join(dirname, filepath))
+              os.remove(os.path.join(dirname, filepath_k))
             except OSError:
               pass
-          for filepath in requiredinput:
+          for filepath_k, filepath_v in requiredinput.iteritems():
             try:
-              shutil.copy(filepath, os.path.join(dirname, os.path.basename(filepath)))
+              shutil.copy(filepath_k, os.path.join(dirname, os.path.basename(filepath_v)))
             except IOError:
-              self.log("WARNING: required input (%s) not found, continuing anyway."%(filepath))
+              self.log("WARNING: required input (%s) not found, continuing anyway."%(filepath_k))
           
           env = copy.deepcopy(os.environ)
           try:
@@ -491,17 +507,28 @@ class Run:
             logf.close()
             errf.close()
           
-          self.log("  finished in directory %s:"%(os.path.relpath(dirname, self.currentdirectory)))
+          self.log("  finished in directory: %s"%(os.path.relpath(dirname, self.currentdirectory)))
 
       self.alreadyrun = True
     self.lock.release()
     if error: raise SimulationsErrorRun
+
+  def checkpointrun(self, index=-1):
+    self.run()
 
   def clean(self):
     try:
       shutil.rmtree(os.path.join(self.basedirectory, self.filename+self.ext+".run"))
     except OSError:
       pass
+
+  def checkpointclean(self):
+    for r in xrange(self.nruns):
+      dirname = os.path.join(self.rundirectory, "run_"+`r`.zfill(len(`self.nruns`)), "checkpoint")
+      try:
+        shutil.rmtree(dirname)
+      except OSError:
+        pass
 
   def evaluatevariables(self):
     '''Evaluate the variables for this simulation and its dependencies.'''
@@ -588,22 +615,25 @@ class Run:
     return suboptionsdict
 
   def getrequiredoutput(self, run):
-    requiredoutput = []
-    if "output" in self.optionsdict: requiredoutput += self.optionsdict["output"]
+    requiredoutput = {}
+    if "output" in self.optionsdict:
+      outputfiles = self.optionsdict["output"]
+      for outputfile in outputfiles: requiredoutput[outputfile] = outputfile
     if "output_python" in self.optionsdict:
-      requiredoutput += self.resolvepythonrequiredfiles(self.optionsdict["output_python"])
+      requiredoutput.update(self.resolvepythonrequiredfiles(self.optionsdict["output_python"]))
     return requiredoutput
  
   def getdependencyrequiredoutput(self, run=0):
-    requiredoutput = []
+    requiredoutput = {}
     for dependency in self.dependencies:
       if self.nruns == dependency.nruns: 
         rundir = "run_"+`run`.zfill(len(`self.nruns`))
       else:
         rundir = "run_"+`0`.zfill(len(`dependency.nruns`))
-      requiredoutput += [os.path.join(dependency.rundirectory, rundir, output) \
-                                           for output in dependency.getrequiredoutput(run)]
-      requiredoutput += dependency.getdependencyrequiredoutput(run)
+      dependencyoutput = dependency.getrequiredoutput(run)
+      for filename_k, filename_v in dependencyoutput.items():
+        requiredoutput[os.path.join(dependency.rundirectory, rundir, filename_k)] = filename_v
+      requiredoutput.update(dependency.getdependencyrequiredoutput(run))
     return requiredoutput
 
   def listinput(self):
@@ -613,27 +643,28 @@ class Run:
       requiredinput += self.optionsdict["input"]
     if "input_python" in self.optionsdict:
       requiredinput += \
-         self.resolvepythonrequiredfiles(self.optionsdict["input_python"], dirname=self.batchdirectory)
+         self.resolvepythonrequiredfiles(self.optionsdict["input_python"], dirname=self.batchdirectory).keys()
     return requiredinput
 
   def getrequiredinput(self, run):
-    requiredinput = [os.path.join(self.rundirectory, self.filename+self.ext)]
+    input_filename = os.path.join(self.rundirectory, self.filename+self.ext)
+    requiredinput = {input_filename:input_filename}
     # get any input specified in the optionsdict
     if "input" in self.optionsdict: 
       for filepath in self.optionsdict["input"]:
-        # filter out any filenames that have already been added (i.e. make sure our latest input file is used)
-        if os.path.basename(filepath) not in [os.path.basename(inputpath) for inputpath in requiredinput]:
-          requiredinput.append(filepath)
+        # filter out any filenames that have already had their destination filename added (i.e. make sure our latest input file is used)
+        if os.path.basename(filepath) not in [os.path.basename(inputpath) for inputpath in requiredinput.values()]:
+          requiredinput[filepath] = filepath
     if "input_python" in self.optionsdict:
-      for filepath in self.resolvepythonrequiredfiles(self.optionsdict["input_python"], dirname=self.batchdirectory):
+      for filepath_k, filepath_v in self.resolvepythonrequiredfiles(self.optionsdict["input_python"], dirname=self.batchdirectory).iteritems():
         # filter out any filenames that have already been added (i.e. make sure our latest input file is used)
-        if os.path.basename(filepath) not in [os.path.basename(inputpath) for inputpath in requiredinput]:
-          requiredinput.append(filepath)
+        if os.path.basename(filepath_v) not in [os.path.basename(inputpath) for inputpath in requiredinput.values()]:
+          requiredinput[filepath_k] = filepath_v
     # get any output from dependencies
-    for filepath in self.getdependencyrequiredoutput(run):
+    for filepath_k, filepath_v in self.getdependencyrequiredoutput(run).iteritems():
       # filter out any filenames that have already been added (highest dependencies take priority over lower ones)
-      if os.path.basename(filepath) not in [os.path.basename(inputpath) for inputpath in requiredinput]:
-        requiredinput.append(filepath)
+      if os.path.basename(filepath_v) not in [os.path.basename(inputpath) for inputpath in requiredinput.values()]:
+        requiredinput[filepath_k] = filepath_v
     return requiredinput
 
   def getcommands(self):
@@ -655,7 +686,7 @@ class Simulation(Run):
 
   def writeoptions(self):
     
-    threadlibspud.load_options(os.path.join(self.runinputdirectory, self.filename+self.ext))
+    threadlibspud.load_options(os.path.join(self.runinputdirectory, self.inputfilename+self.inputext))
     
     self.updateoptions()
     
@@ -679,7 +710,7 @@ class Simulation(Run):
     threadlibspud.load_options(os.path.join(basedir, basefile))
     self.updateoptions(prefix="checkpoint_")
     try:
-      os.makedirs(self.rundirectory)
+      os.makedirs(os.path.join(basedir, "checkpoint"))
     except OSError:
       pass
     libspud.write_options(os.path.join(basedir, "checkpoint", basefile))
@@ -727,24 +758,24 @@ class Simulation(Run):
     requiredinput = self.getrequiredinput(0)
 
     input_changed = False
-    for filepath in requiredinput:
+    for filepath_k, filepath_v in requiredinput.iteritems():
       try:
-        checksum = hashlib.md5(open(os.path.join(dirname, os.path.basename(filepath))).read()).hexdigest()
+        checksum = hashlib.md5(open(os.path.join(dirname, os.path.basename(filepath_v))).read()).hexdigest()
       except:
         checksum = None
       try:
-        input_changed = input_changed or checksum != hashlib.md5(open(filepath).read()).hexdigest()
+        input_changed = input_changed or checksum != hashlib.md5(open(filepath_k).read()).hexdigest()
       except IOError:
-        self.log("WARNING: Unable to open %s"%(filepath))
+        self.log("WARNING: Unable to open %s"%(filepath_k))
         input_changed = True
 
     if input_changed or force:
       # file has changed or a recompilation is necessary
-      for filepath in requiredinput:
+      for filepath_k, filepath_v in requiredinput.iteritems():
         try:
-          shutil.copy(filepath, os.path.join(dirname, os.path.basename(filepath)))
+          shutil.copy(filepath_k, os.path.join(dirname, os.path.basename(filepath_v)))
         except IOError:
-          self.log("WARNING: required input (%s) not found, continuing anyway."%(filepath))
+          self.log("WARNING: required input (%s) not found, continuing anyway."%(filepath_k))
 
     env = copy.deepcopy(os.environ)
     try:
@@ -766,39 +797,47 @@ class Simulation(Run):
     except OSError:
       pass
 
-  def checkpointrun(self):
-
-    if len(self.optionsdict["checkpoint_values"])==0: return
+  def numbercheckpoints(self, includes_checkpoint_files=False, run=0):
+    """Helper function to return the checkpoint directory and number of checkpoints."""
     
-    for r in xrange(self.nruns):
-      dirname = os.path.join(self.rundirectory, "run_"+`r`.zfill(len(`self.nruns`)))
-
-      for root, dirnames, files in os.walk(dirname, topdown=True):
-        depth = string.count(root, os.path.sep) - string.count(dirname, os.path.sep) + 1
-        if "checkpoint" in dirnames:
-          # there is a checkpoint directory beneath the current directory
-          dirnames[:] = ["checkpoint"]
+    dirname = os.path.join(self.rundirectory, "run_"+`run`.zfill(len(`self.nruns`)))
+    depth = 0
+    for root, dirnames, files in os.walk(dirname, topdown=True):
+      depth = string.count(root, os.path.sep) - string.count(dirname, os.path.sep) + 1
+      if "checkpoint" in dirnames:
+        # there is a checkpoint directory beneath the current directory
+        dirnames[:] = ["checkpoint"]
+        if includes_checkpoint_files:
           files = glob.glob1(os.path.join(root, "checkpoint"), "*"+self.ext)
-          files = [f for f in files if "_checkpoint"*(depth+1) in f]
+          files = [f for f in files if self.filename+"_checkpoint"*(depth+1) in f and f.split(self.ext)[0].split("_")[-1].isdigit()]
           if len(files)==0: dirnames[:] = [] # but it contains no appropriate checkpoint files so don't descend
-        else:
-          # there is no checkpoint directory beneath the current directory
-          dirnames[:] = []
+      else:
+        # there is no checkpoint directory beneath the current directory
+        dirnames[:] = []
 
-      basedir = root
+    return depth-1
+
+  def checkpointrun(self, index=-1):
+
+    for r in xrange(self.nruns):
+
+      dirname = os.path.join(self.rundirectory, "run_"+`r`.zfill(len(`self.nruns`)))
+      depth = self.numbercheckpoints(includes_checkpoint_files=True, run=r)
+      checkpointdir = os.path.join("", *(["checkpoint"]*depth))
+      basedir = os.path.join(dirname, checkpointdir)
 
       self.log("checking in directory %s"%(os.path.relpath(basedir, self.currentdirectory)))
 
       files = glob.glob1(basedir, "*"+self.ext)
-      files = [f for f in files if "_checkpoint"*depth in f]
+      files = [f for f in files if self.filename+"_checkpoint"*(depth+1) in f and f.split(self.ext)[0].split("_")[-1].isdigit()]
       files = sorted(files, key=lambda f: int(f.split(self.ext)[0].split("_")[-1]))
 
       if len(files)==0: continue
       
-      basefile = files[-1]
+      basefile = files[index]
 
-      requiredinput = self.getrequiredcheckpointinput(basedir, basefile)
-      commands = self.getcheckpointcommands(basefile)
+      requiredinput = self.getrequiredcheckpointinput(basedir, basefile, r)
+      commands = self.getcommands(basefile=basefile)
 
       dirname = os.path.join(basedir, "checkpoint")
       try:
@@ -820,7 +859,24 @@ class Simulation(Run):
       
       self.log("  finished in directory %s"%(os.path.relpath(dirname, self.currentdirectory)))
 
-  def getcheckpointcommands(self, basefile):
+  def getrequiredcheckpointinput(self, basedir, basefile, run):
+    # get the standard required input for this simulation
+    requiredinput = self.getrequiredinput(run)
+    threadlibspud.load_options(os.path.join(basedir, basefile))
+    for s in xrange(libspud.option_count("/system")):
+      filename = libspud.get_option("/system["+`s`+"]/field/type/rank/initial_condition/file")
+      # for checkpoints we assume that the checkpointed file is the one we want so 
+      # we clean the requiredinput list of any references to it as a value (if any exist)
+      popkeys = []
+      for inputpath_k, inputpath_v in requiredinput.iteritems():
+        if filename == os.path.basename(inputpath_v): popkeys.append(inputpath_k)
+      for popkey in popkeys: requiredinput.pop(popkey)
+      requiredinput[os.path.join(basedir, filename)] = filename
+    threadlibspud.clear_options()
+    return requiredinput
+
+  def getcommands(self, basefile=None):
+    if basefile is None: basefile = self.filename+self.ext
     nprocs = self.getnprocs()
     valgrind_opts = self.optionsdict["valgrind"]
     commands = [[]]
@@ -829,17 +885,6 @@ class Simulation(Run):
     if valgrind_opts is not None:
       commands[0] += ["valgrind"]+valgrind_opts
     commands[0] += [os.path.join(self.builddirectory, "build", self.filename), "-vINFO", "-l", basefile]
-    return commands
-
-  def getcommands(self):
-    nprocs = self.getnprocs()
-    valgrind_opts = self.optionsdict["valgrind"]
-    commands = [[]]
-    if nprocs > 1:
-      commands[0] += ["mpiexec", "-np", `nprocs`]
-    if valgrind_opts is not None:
-      commands[0] += ["valgrind"]+valgrind_opts
-    commands[0] += [os.path.join(self.builddirectory, "build", self.filename), "-vINFO", "-l", self.filename+self.ext]
     return commands
 
   def getnprocs(self):
@@ -1070,7 +1115,7 @@ class SimulationBatch:
         error = ex_type, ex_value, ''.join(traceback.format_tb(tb))
     queue.put(error)
 
-  def configure(self, level=-1, dlevel=0, types=None, force=False):
+  def configure(self, level=None, dlevel=0, types=None, force=False):
     threadlist=[]
     self.threadbuilds = ThreadIterator(self.simulationselector(self.builds, level=level, dlevel=dlevel, types=types))
     for i in xrange(self.nthreads):
@@ -1097,7 +1142,7 @@ class SimulationBatch:
         error = ex_type, ex_value, ''.join(traceback.format_tb(tb))
     queue.put(error)
 
-  def build(self, level=-1, dlevel=0, types=None, force=False):
+  def build(self, level=None, dlevel=0, types=None, force=False):
     threadlist=[]
     self.threadbuilds = ThreadIterator(self.simulationselector(self.builds, level=level, dlevel=dlevel, types=types))
     for i in xrange(self.nthreads):
@@ -1124,7 +1169,7 @@ class SimulationBatch:
         error = ex_type, ex_value, ''.join(traceback.format_tb(tb))
     queue.put(error)
 
-  def run(self, level=-1, dlevel=0, types=None, force=False):
+  def run(self, level=None, dlevel=0, types=None, force=False):
     threadlist=[]
     self.threadruns = ThreadIterator(self.simulationselector(self.runs, level=level, dlevel=dlevel, types=types))
     for i in xrange(self.nthreads):
@@ -1148,22 +1193,22 @@ class SimulationBatch:
       self.build(level=level, dlevel=dlevel, types=types, force=force)
       self.run(level=level, dlevel=dlevel, types=types, force=force)
 
-  def threadcheckpointrun(self, queue):
+  def threadcheckpointrun(self, queue, index=-1):
     error = None
     for simulation in self.threadruns: 
       try:
-        simulation.checkpointrun()
+        simulation.checkpointrun(index=index)
       except:
         ex_type, ex_value, tb = sys.exc_info()
         error = ex_type, ex_value, ''.join(traceback.format_tb(tb))
     queue.put(error)
 
-  def checkpointrun(self, level=-1, types=None):
+  def checkpointrun(self, index=-1, level=None, types=None):
     threadlist=[]
     self.threadruns = ThreadIterator(self.simulationselector(self.runs, level=level, types=types))
     for i in xrange(self.nthreads):
       queue = Queue.Queue()
-      threadlist.append([threading.Thread(target=self.threadcheckpointrun), queue])
+      threadlist.append([threading.Thread(target=self.threadcheckpointrun, args=[queue], kwargs={'index':index}), queue])
       threadlist[-1][0].start()
     for t in threadlist:
       '''Wait until all threads finish'''
@@ -1175,13 +1220,13 @@ class SimulationBatch:
         message = '%s (in thread)\n%s' % (ex_value.message, tb_str)
         raise ex_type(message) 
 
-  def listinput(self, level=-1, dlevel=0, types=None):
+  def listinput(self, level=None, dlevel=0, types=None):
     runs = self.simulationselector(self.runs, level=level, dlevel=dlevel, types=types)[::-1]
     inputlist = set()
     for simulation in runs: inputlist.update(set(simulation.listinput()))
     return list(inputlist)
 
-  def writeoptions(self, level=-1, dlevel=0, types=None):
+  def writeoptions(self, level=None, dlevel=0, types=None):
     runs = self.simulationselector(self.runs, level=level, dlevel=dlevel, types=types)[::-1]
     for simulation in runs: simulation.writeoptions()  # not thread safe so don't thread it!
 
@@ -1195,7 +1240,7 @@ class SimulationBatch:
         error = ex_type, ex_value, ''.join(traceback.format_tb(tb))
     queue.put(error)
 
-  def clean(self, level=-1, types=None):
+  def clean(self, level=None, types=None):
     threadlist=[]
     self.threadruns = ThreadIterator(self.simulationselector(self.runs, level=level, types=types))
     for i in xrange(self.nthreads):
@@ -1212,7 +1257,34 @@ class SimulationBatch:
         message = '%s (in thread)\n%s' % (ex_value.message, tb_str)
         raise ex_type(message) 
 
-  def evaluatevariables(self, level=-1, dlevel=None, types=None):
+  def threadcheckpointclean(self, queue):
+    error = None
+    for simulation in self.threadruns: 
+      try:
+        simulation.checkpointclean()
+      except:
+        ex_type, ex_value, tb = sys.exc_info()
+        error = ex_type, ex_value, ''.join(traceback.format_tb(tb))
+    queue.put(error)
+
+  def checkpointclean(self, level=None, types=None):
+    threadlist=[]
+    self.threadruns = ThreadIterator(self.simulationselector(self.runs, level=level, types=types))
+    for i in xrange(self.nthreads):
+      queue = Queue.Queue()
+      threadlist.append([threading.Thread(target=self.threadcheckpointclean, args=[queue]), queue])
+      threadlist[-1][0].start()
+    for t in threadlist:
+      # wait until all threads finish
+      t[0].join() 
+    for t in threadlist:
+      error = t[1].get()
+      if error is not None:
+        ex_type, ex_value, tb_str = error
+        message = '%s (in thread)\n%s' % (ex_value.message, tb_str)
+        raise ex_type(message) 
+
+  def evaluatevariables(self, level=None, dlevel=None, types=None):
     self.log("Assigning variables:")
     runs = self.simulationselector(self.runs, level=level, dlevel=dlevel, types=types)[::-1]
     varsdict = {}
@@ -1330,10 +1402,10 @@ class SimulationBatch:
     if self.logprefix is not None: string = self.logprefix+": "+string
     print string
 
-  def simulationselector(self, simdict, level=-1, dlevel=None, types=None):
+  def simulationselector(self, simdict, level=None, dlevel=None, types=None):
     return [value['simulation'] \
             for value in sorted(simdict.values(), key=lambda value: value['level']) \
-            if value['level'] >= level and \
+            if (level is None or value['level'] == level) and \
                (dlevel is None or value['dlevel'] == dlevel) and \
                (types is None or isinstance(value['simulation'], tuple(types)))]
 
@@ -1687,9 +1759,15 @@ class SimulationHarnessBatch(SimulationBatch):
                           checkpoint_builds,  \
                           checkpoint_procscales = self.getparameters(optionpath+"/checkpoint")
        # don't do anything with checkpoint_builds or checkpoint_procscales
-       if len(checkpoint_values) > 0:
-         options[path]["checkpoint_values"]  = checkpoint_values
-         options[path]["checkpoint_updates"] = checkpoint_updates
+       # but make sure we only have single values and take them out of list form
+       for k, v in checkpoint_values.iteritems():
+         if len(v) > 1:
+           self.log("ERROR: cannot have more than one value for checkpoint parameters.")
+           self.log("parameter: %(parameter_name)s"%{"parameter_name": k})
+           raise SimulationsErrorInitialization
+         checkpoint_values[k] = v[0]
+       options[path]["checkpoint_values"]  = checkpoint_values
+       options[path]["checkpoint_updates"] = checkpoint_updates
      options[path]["input"]         = required_input
      options[path]["input_python"]  = required_input_python
      options[path]["output"]        = required_output
