@@ -172,7 +172,7 @@ class Bucket:
     # loop over all the meshes we recorded information about in case they have different cells
     for meshname, meshcell in self.meshes.iteritems():
       self.write_visualization_ufl(meshname, meshcell, suffix=".temp")
-      ffc(self.visualization_namespace(meshname), 'default', None)
+      ffc(self.visualization_namespace(meshname), 'quadrature', 'default', None)
 
   def write_systemfunctionals_cpp(self):
     """Write a cpp header file describing all the ufc namespaces in the bucket."""

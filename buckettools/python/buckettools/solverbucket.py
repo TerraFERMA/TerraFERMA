@@ -34,6 +34,7 @@ class SolverBucket:
     self.form_names = None
     self.form_ranks = None
     self.system = None
+    self.form_representation = None
     self.quadrature_degree = None
     self.quadrature_rule = None
 
@@ -80,7 +81,7 @@ class SolverBucket:
   def write_ufc(self):
     """Write the system of forms to a ufl file."""
     self.write_ufl(suffix=".temp")
-    ffc(self.namespace(), self.quadrature_rule, self.quadrature_degree)
+    ffc(self.namespace(), self.form_representation, self.quadrature_rule, self.quadrature_degree)
     
   def functionspace_cpp_no_if(self):
     cpp = []
