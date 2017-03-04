@@ -130,6 +130,7 @@ r = rv</string_value>
             <string_value lines="1">res</string_value>
           </ufl_symbol>
         </form>
+        <form_representation name="quadrature"/>
         <quadrature_degree>
           <integer_value rank="0">4</integer_value>
         </quadrature_degree>
@@ -296,6 +297,7 @@ r = rsv + rsp</string_value>
             <string_value lines="1">res</string_value>
           </ufl_symbol>
         </form>
+        <form_representation name="quadrature"/>
         <quadrature_degree>
           <integer_value rank="0">4</integer_value>
         </quadrature_degree>

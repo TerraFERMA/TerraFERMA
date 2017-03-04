@@ -89,7 +89,7 @@ def forms_symbols(forms):
     symbols += form_symbols(form)
   return symbols
 
-def ffc(namespace, quadrature_rule, quadrature_degree):
+def ffc(namespace, form_representation, quadrature_rule, quadrature_degree):
   uflfilename = namespace+".ufl"
 
   try:
@@ -125,13 +125,22 @@ def ffc(namespace, quadrature_rule, quadrature_degree):
     else: # if we don't know what the old quadrature rule was we always want to (re)build
       rebuild = True
     
+    fri  = headertext.find("representation")
+    frin = headertext.find("\n", fri, -1)
+    if (fri != -1) and (frin != -1):
+      fr_old = headertext[fri:frin].split(" ")[-1]
+      fr_new = "'"+form_representation+"'" 
+      rebuild = rebuild or fr_new != fr_old
+    else: # if we don't know what the old representation was we always want to (re)build
+      rebuild = True
+    
   else:   # if we don't have a header file we always want to (re)build
     rebuild = True
 
   if rebuild:
     # files and/or quadrature degree have changed
     shutil.copy(uflfilename+".temp", uflfilename)
-    command = ["ffc", "-l", "dolfin", "-O", "-r", "quadrature"]
+    command = ["ffc", "-l", "dolfin", "-O", "-r", form_representation]
     if quadrature_degree is not None:
       command += ["-fquadrature_degree="+`quadrature_degree`]
     command += ["-fsplit"]

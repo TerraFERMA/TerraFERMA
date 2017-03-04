@@ -964,6 +964,7 @@ prescribed_scalar_functional =
         attribute rank { "0" },
         python_code,
         functional_ufl_symbol,
+        form_representation,
         quadrature_degree,
         quadrature_rule
       }
