@@ -42,6 +42,8 @@ class SpudSolverBucket(buckettools.solverbucket.SolverBucket):
     prefix = system.name+"_"+self.name+"_"
     self.fill_solverforms(newoptionpath, prefix=prefix)
     
+    self.form_representation = libspud.get_option(newoptionpath+"/form_representation/name")
+
     if libspud.have_option(newoptionpath+"/quadrature_degree"):
       self.quadrature_degree = libspud.get_option(newoptionpath+"/quadrature_degree")
 

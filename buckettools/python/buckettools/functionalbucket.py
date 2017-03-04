@@ -30,6 +30,7 @@ class FunctionalBucket:
     self.system = None
     self.name = None
     self.symbol = None
+    self.form_representation = None
     self.quadrature_degree = None
     self.quadrature_rule = None
   
@@ -130,7 +131,7 @@ class FunctionalBucket:
   def write_ufc(self):
     """Write the functional to a ufl file."""
     self.write_ufl(suffix=".temp")
-    ffc(self.namespace(), self.quadrature_rule, self.quadrature_degree)
+    ffc(self.namespace(), self.form_representation, self.quadrature_rule, self.quadrature_degree)
 
   def namespace(self):
     name = self.system.name+self.name

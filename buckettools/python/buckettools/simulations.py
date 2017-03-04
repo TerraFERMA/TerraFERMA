@@ -433,7 +433,7 @@ class Run:
     
     for dependency in self.dependencies: dependency.run(force=force)
 
-    self.log("checking in directory %s"%(os.path.relpath(self.rundirectory, self.currentdirectory)))
+    self.log("checking in directory: %s"%(os.path.relpath(self.rundirectory, self.currentdirectory)))
     if not self.alreadyrun and (not self.optionsdict["run_when"]["never"] or force):
       commands = self.getcommands()
 
@@ -473,7 +473,7 @@ class Run:
           if len(requiredoutput)==0: output_missing=True # don't know what output is needed so we have to force
           
         if output_missing or input_changed or force or self.optionsdict["run_when"]["always"]:
-          self.log("  running in directory %s"%(os.path.relpath(dirname, self.currentdirectory)))
+          self.log("  running in directory: %s"%(os.path.relpath(dirname, self.currentdirectory)))
           # file has changed or a recompilation is necessary
           for filepath_k, filepath_v in requiredoutput.iteritems():
             try:
@@ -826,15 +826,17 @@ class Simulation(Run):
       checkpointdir = os.path.join("", *(["checkpoint"]*depth))
       basedir = os.path.join(dirname, checkpointdir)
 
-      self.log("checking in directory %s"%(os.path.relpath(basedir, self.currentdirectory)))
+      self.log("checking for checkpoints in directory: %s"%(os.path.relpath(basedir, self.currentdirectory)))
 
       files = glob.glob1(basedir, "*"+self.ext)
       files = [f for f in files if self.filename+"_checkpoint"*(depth+1) in f and f.split(self.ext)[0].split("_")[-1].isdigit()]
       files = sorted(files, key=lambda f: int(f.split(self.ext)[0].split("_")[-1]))
 
-      if len(files)==0: continue
-      
-      basefile = files[index]
+      try:
+        basefile = files[index]
+      except IndexError:
+        self.log("  requested checkpoint file not found in directory: %s"%(os.path.relpath(basedir, self.currentdirectory)))
+        continue
 
       requiredinput = self.getrequiredcheckpointinput(basedir, basefile, r)
       commands = self.getcommands(basefile=basefile)
@@ -845,7 +847,7 @@ class Simulation(Run):
       except OSError:
         pass
         
-      self.log("  running in directory %s"%(os.path.relpath(dirname, self.currentdirectory)))
+      self.log("  running from checkpoint in directory: %s"%(os.path.relpath(dirname, self.currentdirectory)))
       for filepath in requiredinput:
         shutil.copy(filepath, os.path.join(dirname, os.path.basename(filepath)))
       self.writecheckpointoptions(basedir, basefile)
@@ -857,7 +859,7 @@ class Simulation(Run):
           self.log("ERROR Command %s returned %d in directory: %s"%(" ".join(command), retcode, dirname))
           raise SimulationsErrorRun
       
-      self.log("  finished in directory %s"%(os.path.relpath(dirname, self.currentdirectory)))
+      self.log("  finished running from checkpoint in directory: %s"%(os.path.relpath(dirname, self.currentdirectory)))
 
   def getrequiredcheckpointinput(self, basedir, basefile, run):
     # get the standard required input for this simulation
