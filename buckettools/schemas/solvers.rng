@@ -119,6 +119,7 @@ defined in the preamble, bilinear and linear forms above.</a:documentation>
       </ref>
       <ref name="form_ufl_symbol"/>
     </element>
+    <ref name="form_representation"/>
     <ref name="quadrature_degree"/>
     <ref name="quadrature_rule"/>
     <element name="relative_error">
@@ -235,6 +236,7 @@ If undefined the jacobian bilinear form above will be used to precondition itsel
         <ref name="ident_zeros"/>
       </element>
     </optional>
+    <ref name="form_representation"/>
     <ref name="quadrature_degree"/>
     <ref name="quadrature_rule"/>
     <choice>
