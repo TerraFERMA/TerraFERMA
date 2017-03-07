@@ -425,13 +425,14 @@ class Run:
   def build(self, force=False):
     return None
 
-  def run(self, force=False):
+  def run(self, force=False, rundependencies=True):
     
     self.lock.acquire()
 
     error = False
     
-    for dependency in self.dependencies: dependency.run(force=force)
+    if rundependencies: 
+      for dependency in self.dependencies: dependency.run(force=force)
 
     self.log("checking in directory: %s"%(os.path.relpath(self.rundirectory, self.currentdirectory)))
     if not self.alreadyrun and (not self.optionsdict["run_when"]["never"] or force):
@@ -514,7 +515,7 @@ class Run:
     if error: raise SimulationsErrorRun
 
   def checkpointrun(self, index=-1):
-    self.run()
+    pass
 
   def clean(self):
     try:
@@ -1161,11 +1162,11 @@ class SimulationBatch:
         message = '%s (in thread)\n%s' % (ex_value.message, tb_str)
         raise ex_type(message) 
 
-  def threadrun(self, queue, force=False):
+  def threadrun(self, queue, force=False, rundependencies=True):
     error = None
     for simulation in self.threadruns: 
       try:
-        simulation.run(force=force)
+        simulation.run(force=force, rundependencies=rundependencies)
       except:
         ex_type, ex_value, tb = sys.exc_info()
         error = ex_type, ex_value, ''.join(traceback.format_tb(tb))
@@ -1176,7 +1177,7 @@ class SimulationBatch:
     self.threadruns = ThreadIterator(self.simulationselector(self.runs, level=level, dlevel=dlevel, types=types))
     for i in xrange(self.nthreads):
       queue = Queue.Queue()
-      threadlist.append([threading.Thread(target=self.threadrun, args=[queue], kwargs={'force':force}), queue])
+      threadlist.append([threading.Thread(target=self.threadrun, args=[queue], kwargs={'force':force, 'rundependencies':level==None}), queue])
       threadlist[-1][0].start()
     for t in threadlist:
       # wait until all threads finish
@@ -1189,7 +1190,8 @@ class SimulationBatch:
         raise ex_type(message) 
 
     dlevel += 1
-    if len(self.simulationselector(self.runs, level=level, dlevel=dlevel, types=types)) > 0:
+    # we request level=None here to make sure we recurse to all dlevels
+    if len(self.simulationselector(self.runs, level=None, dlevel=dlevel, types=types)) > 0:
       self.writeoptions(level=level, dlevel=dlevel, types=types)
       self.configure(level=level, dlevel=dlevel, types=types, force=force)
       self.build(level=level, dlevel=dlevel, types=types, force=force)
