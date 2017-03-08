@@ -798,39 +798,46 @@ class Simulation(Run):
     except OSError:
       pass
 
-  def numbercheckpoints(self, includes_checkpoint_files=False, run=0):
+  def numbercheckpoints(self, run=0):
     """Helper function to return the checkpoint directory and number of checkpoints."""
     
     dirname = os.path.join(self.rundirectory, "run_"+`run`.zfill(len(`self.nruns`)))
+
     depth = 0
     for root, dirnames, files in os.walk(dirname, topdown=True):
-      depth = string.count(root, os.path.sep) - string.count(dirname, os.path.sep) + 1
+      depth = string.count(root, os.path.sep) - string.count(dirname, os.path.sep)
       if "checkpoint" in dirnames:
         # there is a checkpoint directory beneath the current directory
         dirnames[:] = ["checkpoint"]
-        if includes_checkpoint_files:
-          files = glob.glob1(os.path.join(root, "checkpoint"), "*"+self.ext)
-          files = [f for f in files if self.filename+"_checkpoint"*(depth+1) in f and f.split(self.ext)[0].split("_")[-1].isdigit()]
-          if len(files)==0: dirnames[:] = [] # but it contains no appropriate checkpoint files so don't descend
       else:
         # there is no checkpoint directory beneath the current directory
         dirnames[:] = []
 
-    return depth-1
+    return depth
 
   def checkpointrun(self, index=-1):
 
     for r in xrange(self.nruns):
 
       dirname = os.path.join(self.rundirectory, "run_"+`r`.zfill(len(`self.nruns`)))
-      depth = self.numbercheckpoints(includes_checkpoint_files=True, run=r)
+
+      self.log("checking for checkpoints in or beneath directory: %s"%(os.path.relpath(dirname, self.currentdirectory)))
+
+      try:
+        threadlibspud.load_options(os.path.join(dirname, self.filename+self.ext))
+        output_base_name = libspud.get_option("/io/output_base_name")
+        threadlibspud.clear_options()
+      except KeyError:
+        self.log("  unable to find output_base_name from base input file in directory: %s"%(os.path.relpath(dirname, self.currentdirectory)))
+        continue
+
+      depth = self.numbercheckpoints(run=r)
+
       checkpointdir = os.path.join("", *(["checkpoint"]*depth))
       basedir = os.path.join(dirname, checkpointdir)
 
-      self.log("checking for checkpoints in directory: %s"%(os.path.relpath(basedir, self.currentdirectory)))
-
       files = glob.glob1(basedir, "*"+self.ext)
-      files = [f for f in files if self.filename+"_checkpoint"*(depth+1) in f and f.split(self.ext)[0].split("_")[-1].isdigit()]
+      files = [f for f in files if output_base_name+"_checkpoint"*(depth+1) in f and f.split(self.ext)[0].split("_")[-1].isdigit()]
       files = sorted(files, key=lambda f: int(f.split(self.ext)[0].split("_")[-1]))
 
       try:
