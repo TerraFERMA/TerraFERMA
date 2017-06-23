@@ -66,6 +66,10 @@ class SimulationsErrorTest(Exception):
   def __init__(self, msg = "Error while testing simulations."):
     self.message = msg
 
+class TestOrVariableException(Exception):
+  def __init__(self, msg = "Error while evaluating test or variable."):
+    self.message = msg
+
 ####################################################################################
 
 class ThreadIterator(list):
@@ -104,14 +108,20 @@ class Test(TestOrVariable):
         tmpdict = copy.deepcopy(varsdict) # don't let the test code modify the variables
         try:
           exec self.code in tmpdict
-          return True
         except AssertionError:
           # in case of an AssertionError, we assume the test has just failed
           return False
         except:
-          # tell us what else went wrong:
-          traceback.print_exc()
-          return False
+          message = "Test computation raised an exception."+os.linesep
+          message += "-" * 80 + os.linesep
+          for (lineno, line) in enumerate(self.code.splitlines()):
+            message + "%4d  %s" % (lineno+1, line) + os.linesep
+          message += "-" * 80 + os.linesep
+          message += traceback.format_exc()
+          message += "-" * 80
+          raise TestOrVariableException(msg=message)
+        else:
+          return True
 
 ####################################################################################
 
@@ -119,22 +129,24 @@ class Variable(TestOrVariable):
     """A variable definition for use in tests"""
     def run(self, varsdict):
         try:
-            exec self.code in varsdict
+          exec self.code in varsdict
         except:
-            print "Variable computation raised an exception"
-            print "-" * 80
-            for (lineno, line) in enumerate(self.code.split('\n')):
-              print "%3d  %s" % (lineno+1, line)
-            print "-" * 80
-            traceback.print_exc()
-            print "-" * 80
-            raise Exception
-
-        if self.name not in varsdict.keys():
-            print "self.name == ", self.name
-            print "varsdict.keys() == ", varsdict.keys()
-            print "self.name not found: does the variable define the right name?"
-            raise Exception
+          message = "Variable computation raised an exception."+os.linesep
+          message += "-" * 80 + os.linesep
+          for (lineno, line) in enumerate(self.code.splitlines()):
+            message += "%4d  %s" % (lineno+1, line) + os.linesep
+          message += "-" * 80 + os.linesep
+          message += traceback.format_exc()
+          message += "-" * 80 + os.linesep
+          raise TestOrVariableException(msg=message)
+        else:
+          if self.name not in varsdict.keys():
+            message = "Variable (%s) not defined by computation."%(self.name)+os.linesep
+            message += "-" * 80 + os.linesep
+            for (lineno, line) in enumerate(self.code.splitlines()):
+              message += "%4d  %s" % (lineno+1, line) + os.linesep
+            message += "-" * 80 + os.linesep
+            raise TestOrVariableException(msg=message)
 
 ####################################################################################
 
@@ -364,7 +376,7 @@ class Run:
           self.log("ERROR: spud raised a new key warning:")
           self.log("%s"%e)
           self.log("on parameter: %s"%paramname)
-          self.log("with update:\n %s"%update) 
+          self.log("with update:"+os.linesep+" %s"%update) 
           raise SimulationsErrorWriteOptions
     sys.path.remove(self.basedirectory)
     os.chdir(self.currentdirectory)
@@ -394,7 +406,12 @@ class Run:
        var = Variable(filename_name, filename_code)
        varsdict = self.getvaluesdict()
        os.chdir(self.batchdirectory)
-       var.run(varsdict)
+       try:
+         var.run(varsdict)
+       except TestOrVariableException as exc:
+         self.log("ERROR: error while evaluating filename(s) %s."%(filename_name))
+         self.log(exc.message)
+         sys.exit(1)
        os.chdir(self.currentdirectory)
        filenames = varsdict[filename_name]
        # we accept either a string or a list of filenames from python
@@ -405,7 +422,7 @@ class Run:
        elif isinstance(filenames, dict):
          required_files.update(filenames)
        else:
-         print "Unknown format of required input supplied."
+         self.log("ERROR: Unknown format of required input supplied.")
          raise SimulationsErrorInitialization
          
 
@@ -425,15 +442,16 @@ class Run:
   def build(self, force=False):
     return None
 
-  def run(self, force=False):
+  def run(self, force=False, rundependencies=True):
     
     self.lock.acquire()
 
     error = False
     
-    for dependency in self.dependencies: dependency.run(force=force)
+    if rundependencies: 
+      for dependency in self.dependencies: dependency.run(force=force)
 
-    self.log("checking in directory: %s"%(os.path.relpath(self.rundirectory, self.currentdirectory)))
+    self.log("Checking in directory: %s"%(os.path.relpath(self.rundirectory, self.currentdirectory)))
     if not self.alreadyrun and (not self.optionsdict["run_when"]["never"] or force):
       commands = self.getcommands()
 
@@ -473,7 +491,7 @@ class Run:
           if len(requiredoutput)==0: output_missing=True # don't know what output is needed so we have to force
           
         if output_missing or input_changed or force or self.optionsdict["run_when"]["always"]:
-          self.log("  running in directory: %s"%(os.path.relpath(dirname, self.currentdirectory)))
+          self.log("  Running in directory: %s"%(os.path.relpath(dirname, self.currentdirectory)))
           # file has changed or a recompilation is necessary
           for filepath_k, filepath_v in requiredoutput.iteritems():
             try:
@@ -496,31 +514,44 @@ class Run:
           for i in xrange(len(commands)):
             command = commands[i]
             tcommand = [template(c).safe_substitute(valuesdict) for c in command]
-            logf = file(os.path.join(dirname, '_'+self.filename+self.ext+'.'+`i`+'.log'), 'w')
-            errf = file(os.path.join(dirname, '_'+self.filename+self.ext+'.'+`i`+'.err'), 'w')
-            p = subprocess.Popen(tcommand, cwd=dirname, stdout=logf, stderr=errf, env=env)
-            retcode = p.wait()
-            if retcode!=0:
-              self.log("ERROR: Command %s returned %d in directory: %s"%(" ".join(tcommand), retcode, dirname))
-              error = True
-              break
-            logf.close()
-            errf.close()
+            logf = '_'+self.filename+self.ext+'.'+`i`+'.log'
+            retvalue = self.runcommand(tcommand, dirname, logfilename=logf)
+            error = retvalue != 0
+            if error: break
           
-          self.log("  finished in directory: %s"%(os.path.relpath(dirname, self.currentdirectory)))
+          if error:
+            # There's been an error, append failed output
+            for filepath_k, filename_v in requiredoutput.iteritems():
+              if os.path.isfile(os.path.join(dirname, filepath_k)):
+                shutil.move(os.path.join(dirname, filepath_k), os.path.join(dirname, filepath_k+".fail"))
+          else:
+            # Cleanup previous errors (if any)
+            for filepath_k, filename_v in requiredoutput.iteritems():
+              if os.path.isfile(os.path.join(dirname, filepath_k+".fail")):
+                os.remove(os.path.join(dirname, filepath_k+".fail"))
+
+          self.log("  Finished in directory: %s"%(os.path.relpath(dirname, self.currentdirectory)))
 
       self.alreadyrun = True
+
     self.lock.release()
+
     if error: raise SimulationsErrorRun
 
   def checkpointrun(self, index=-1):
-    self.run()
+    pass
 
-  def clean(self):
+  def cleanbuild(self):
+    pass
+
+  def cleanrun(self):
     try:
       shutil.rmtree(os.path.join(self.basedirectory, self.filename+self.ext+".run"))
     except OSError:
       pass
+
+  def clean(self):
+    self.cleanrun()
 
   def checkpointclean(self):
     for r in xrange(self.nruns):
@@ -553,8 +584,9 @@ class Run:
         # try running the variable assignment
         try:
           var.run(tmpdict)
-        except:
+        except TestOrVariableException as exc:
           self.log("ERROR: failure while calculating variable %s." % (str(var.name)))
+          self.log(exc.message)
           error = True
           continue
 
@@ -572,8 +604,10 @@ class Run:
     return varsdict
 
   def log(self, string):
-    if self.logprefix is not None: string = self.logprefix+": "+string
-    print string
+    for line in string.splitlines():
+      if self.logprefix is not None: line = self.logprefix+": "+line
+      sys.stdout.write(line+os.linesep)
+    sys.stdout.flush()
 
   def getrundirectory(self):
     '''Return the run directory for this simulation.'''
@@ -646,31 +680,76 @@ class Run:
          self.resolvepythonrequiredfiles(self.optionsdict["input_python"], dirname=self.batchdirectory).keys()
     return requiredinput
 
-  def getrequiredinput(self, run):
+  def getrequiredinput(self, run, build=False):
     input_filename = os.path.join(self.rundirectory, self.filename+self.ext)
     requiredinput = {input_filename:input_filename}
+    inputkey = "input"
+    if build: inputkey = "build_input"
     # get any input specified in the optionsdict
-    if "input" in self.optionsdict: 
-      for filepath in self.optionsdict["input"]:
+    if inputkey in self.optionsdict: 
+      for filepath in self.optionsdict[inputkey]:
         # filter out any filenames that have already had their destination filename added (i.e. make sure our latest input file is used)
         if os.path.basename(filepath) not in [os.path.basename(inputpath) for inputpath in requiredinput.values()]:
           requiredinput[filepath] = filepath
-    if "input_python" in self.optionsdict:
-      for filepath_k, filepath_v in self.resolvepythonrequiredfiles(self.optionsdict["input_python"], dirname=self.batchdirectory).iteritems():
+    if inputkey+"_python" in self.optionsdict:
+      for filepath_k, filepath_v in self.resolvepythonrequiredfiles(self.optionsdict[inputkey+"_python"], dirname=self.batchdirectory).iteritems():
         # filter out any filenames that have already been added (i.e. make sure our latest input file is used)
         if os.path.basename(filepath_v) not in [os.path.basename(inputpath) for inputpath in requiredinput.values()]:
           requiredinput[filepath_k] = filepath_v
-    # get any output from dependencies
-    for filepath_k, filepath_v in self.getdependencyrequiredoutput(run).iteritems():
-      # filter out any filenames that have already been added (highest dependencies take priority over lower ones)
-      if os.path.basename(filepath_v) not in [os.path.basename(inputpath) for inputpath in requiredinput.values()]:
-        requiredinput[filepath_k] = filepath_v
+    if not build:
+      # get any output from dependencies
+      for filepath_k, filepath_v in self.getdependencyrequiredoutput(run).iteritems():
+        # filter out any filenames that have already been added (highest dependencies take priority over lower ones)
+        if os.path.basename(filepath_v) not in [os.path.basename(inputpath) for inputpath in requiredinput.values()]:
+          requiredinput[filepath_k] = filepath_v
     return requiredinput
 
   def getcommands(self):
     commands = []
     if "run" in self.optionsdict: commands = self.optionsdict["run"]
     return commands
+
+  def runcommand(self, command, dirname, verbose=False, exception=None, logfilename=None, env=None):
+    """Run a command through subprocess"""
+    # start the command
+    try:
+      p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=dirname, env=env)
+    except Exception as exc:
+      self.log("  ERROR: %s raised an exception before running:"%(os.path.split(command[0])[-1]))
+      self.log("         %s"%str(exc))
+      self.log("         in directory: %s"%(dirname))
+      self.log("         using command: %s"%(" ".join(command)))
+      if exception is not None:
+        raise exception
+      else:
+        return 1
+    output = ""
+    # open a log
+    if logfilename is not None:
+      logfile = open(os.path.join(dirname, logfilename), "w")
+    else:
+      logfile = None
+    # continually iterate over the lines of stdout and pipe them to the logs
+    for line in iter(p.stdout.readline, ""):
+      if verbose: self.log(" "*2+line)
+      if logfile is not None: logfile.write(line)
+      output += line
+    if logfile is not None: logfile.close() # close the logfile
+    retcode = p.wait()
+    # if we've got a non-zero return code report the error and raise an exception or return a failure code
+    if retcode:
+      self.log("  ERROR: %s returned: %d"%(os.path.split(command[0])[-1], retcode))
+      self.log("         in directory: %s"%(dirname))
+      self.log("         using command: %s"%(" ".join(command)))
+      for line in output.splitlines():
+        self.log(" "*2 + line + os.linesep)
+      if exception is not None: 
+        raise exception
+      else:
+        return 1
+    else:
+      # otherwise return a success signal
+      return 0
 
 ################################################################################################
 
@@ -732,30 +811,24 @@ class Simulation(Run):
       pass
 
     # run twice as cmake seems to modify flags on second run
+    self.log("Configuring in directory: %s"%(os.path.relpath(dirname, self.currentdirectory)))
+    command = ["cmake", \
+                        "-DOPTIONSFILE="+os.path.join(self.builddirectory, self.filename+self.ext), \
+                        "-DCMAKE_BUILD_TYPE=RelWithDebInfo", \
+                        "-DLOGLEVEL=INFO", \
+                        "-DEXECUTABLE="+self.filename, \
+                        os.path.join(self.tfdirectory,os.curdir)]
     for i in xrange(2):
-      p = subprocess.Popen(["cmake", \
-                            "-DOPTIONSFILE="+os.path.join(self.builddirectory, self.filename+self.ext), \
-                            "-DCMAKE_BUILD_TYPE=RelWithDebInfo", \
-                            "-DLOGLEVEL=INFO", \
-                            "-DEXECUTABLE="+self.filename, \
-                            os.path.join(self.tfdirectory,os.curdir)],
-                            cwd=dirname)
-      retcode = p.wait()
-      if retcode!=0:
-        self.log("ERROR: cmake returned %d in directory: %s"%(retcode, dirname))
-        raise SimulationsErrorConfigure
+      self.runcommand(command, dirname, exception=SimulationsErrorConfigure, logfilename="cmake."+`i`+".log")
 
   def build(self, force=False):
 
     dirname = os.path.join(self.builddirectory, "build")
     if force:
-      p = subprocess.Popen(["make", "clean"], cwd=dirname)
-      retcode = p.wait()
-      if retcode!=0:
-        self.log("ERROR: make clean returned %d in directory: %s"%(retcode, dirname))
-        raise SimulationsErrorBuild
+      command = ["make", "clean"]
+      self.runcommand(command, dirname, exception=SimulationsErrorBuild)
 
-    requiredinput = self.getrequiredinput(0)
+    requiredinput = self.getrequiredinput(0, build=True)
 
     input_changed = False
     for filepath_k, filepath_v in requiredinput.iteritems():
@@ -783,59 +856,66 @@ class Simulation(Run):
     except KeyError:
       env["PYTHONPATH"] = dirname
 
-    p = subprocess.Popen(["make"], cwd=dirname, env=env)
-    retcode = p.wait()
-    if retcode!=0:
-      self.log("ERROR make returned %d in directory: %s"%(retcode, dirname))
-      raise SimulationsErrorBuild
+    self.log("Building in directory: %s"%(os.path.relpath(dirname, self.currentdirectory)))
+    command = ["make"]
+    self.runcommand(command, dirname, exception=SimulationsErrorBuild, logfilename="make.log", verbose=True)
 
-  def clean(self):
-    Run.clean(self)
-
+  def cleanbuild(self):
     try:
       shutil.rmtree(os.path.join(self.basedirectory, self.filename+self.ext+".build"))
     except OSError:
       pass
 
-  def numbercheckpoints(self, includes_checkpoint_files=False, run=0):
+  def clean(self):
+    Run.clean(self)
+    self.cleanbuild()
+
+  def numbercheckpoints(self, run=0):
     """Helper function to return the checkpoint directory and number of checkpoints."""
     
     dirname = os.path.join(self.rundirectory, "run_"+`run`.zfill(len(`self.nruns`)))
+
     depth = 0
     for root, dirnames, files in os.walk(dirname, topdown=True):
-      depth = string.count(root, os.path.sep) - string.count(dirname, os.path.sep) + 1
+      depth = string.count(root, os.path.sep) - string.count(dirname, os.path.sep)
       if "checkpoint" in dirnames:
         # there is a checkpoint directory beneath the current directory
         dirnames[:] = ["checkpoint"]
-        if includes_checkpoint_files:
-          files = glob.glob1(os.path.join(root, "checkpoint"), "*"+self.ext)
-          files = [f for f in files if self.filename+"_checkpoint"*(depth+1) in f and f.split(self.ext)[0].split("_")[-1].isdigit()]
-          if len(files)==0: dirnames[:] = [] # but it contains no appropriate checkpoint files so don't descend
       else:
         # there is no checkpoint directory beneath the current directory
         dirnames[:] = []
 
-    return depth-1
+    return depth
 
   def checkpointrun(self, index=-1):
 
     for r in xrange(self.nruns):
 
       dirname = os.path.join(self.rundirectory, "run_"+`r`.zfill(len(`self.nruns`)))
-      depth = self.numbercheckpoints(includes_checkpoint_files=True, run=r)
+
+      self.log("Checking for checkpoints in or beneath directory: %s"%(os.path.relpath(dirname, self.currentdirectory)))
+
+      try:
+        threadlibspud.load_options(os.path.join(dirname, self.filename+self.ext))
+        output_base_name = libspud.get_option("/io/output_base_name")
+        threadlibspud.clear_options()
+      except KeyError:
+        self.log("  Unable to find output_base_name from base input file in directory: %s"%(os.path.relpath(dirname, self.currentdirectory)))
+        continue
+
+      depth = self.numbercheckpoints(run=r)
+
       checkpointdir = os.path.join("", *(["checkpoint"]*depth))
       basedir = os.path.join(dirname, checkpointdir)
 
-      self.log("checking for checkpoints in directory: %s"%(os.path.relpath(basedir, self.currentdirectory)))
-
       files = glob.glob1(basedir, "*"+self.ext)
-      files = [f for f in files if self.filename+"_checkpoint"*(depth+1) in f and f.split(self.ext)[0].split("_")[-1].isdigit()]
+      files = [f for f in files if output_base_name+"_checkpoint"*(depth+1) in f and f.split(self.ext)[0].split("_")[-1].isdigit()]
       files = sorted(files, key=lambda f: int(f.split(self.ext)[0].split("_")[-1]))
 
       try:
         basefile = files[index]
       except IndexError:
-        self.log("  requested checkpoint file not found in directory: %s"%(os.path.relpath(basedir, self.currentdirectory)))
+        self.log("  Requested checkpoint file not found in directory: %s"%(os.path.relpath(basedir, self.currentdirectory)))
         continue
 
       requiredinput = self.getrequiredcheckpointinput(basedir, basefile, r)
@@ -847,19 +927,16 @@ class Simulation(Run):
       except OSError:
         pass
         
-      self.log("  running from checkpoint in directory: %s"%(os.path.relpath(dirname, self.currentdirectory)))
+      self.log("  Running from checkpoint in directory: %s"%(os.path.relpath(dirname, self.currentdirectory)))
       for filepath in requiredinput:
         shutil.copy(filepath, os.path.join(dirname, os.path.basename(filepath)))
       self.writecheckpointoptions(basedir, basefile)
       
-      for command in commands:
-        p = subprocess.Popen(command, cwd=dirname)
-        retcode = p.wait()
-        if retcode!=0:
-          self.log("ERROR Command %s returned %d in directory: %s"%(" ".join(command), retcode, dirname))
-          raise SimulationsErrorRun
+      for i, command in enumerate(commands):
+        logf = '_'+self.filename+self.ext+'_checkpoint.'+`i`+'.log'
+        self.runcommand(command, dirname, exception=SimulationsErrorRun, logfilename=logf)
       
-      self.log("  finished running from checkpoint in directory: %s"%(os.path.relpath(dirname, self.currentdirectory)))
+      self.log("  Finished running from checkpoint in directory: %s"%(os.path.relpath(dirname, self.currentdirectory)))
 
   def getrequiredcheckpointinput(self, basedir, basefile, run):
     # get the standard required input for this simulation
@@ -1131,7 +1208,7 @@ class SimulationBatch:
       error = t[1].get()
       if error is not None:
         ex_type, ex_value, tb_str = error
-        message = '%s (in thread)\n%s' % (ex_value.message, tb_str)
+        message = '%s (in thread)%s%s' % (ex_value.message, os.linesep, tb_str)
         raise ex_type(message) 
 
   def threadbuild(self, queue, force=False):
@@ -1158,14 +1235,14 @@ class SimulationBatch:
       error = t[1].get()
       if error is not None:
         ex_type, ex_value, tb_str = error
-        message = '%s (in thread)\n%s' % (ex_value.message, tb_str)
+        message = '%s (in thread)%s%s' % (ex_value.message, os.linesep, tb_str)
         raise ex_type(message) 
 
-  def threadrun(self, queue, force=False):
+  def threadrun(self, queue, force=False, rundependencies=True):
     error = None
     for simulation in self.threadruns: 
       try:
-        simulation.run(force=force)
+        simulation.run(force=force, rundependencies=rundependencies)
       except:
         ex_type, ex_value, tb = sys.exc_info()
         error = ex_type, ex_value, ''.join(traceback.format_tb(tb))
@@ -1176,7 +1253,7 @@ class SimulationBatch:
     self.threadruns = ThreadIterator(self.simulationselector(self.runs, level=level, dlevel=dlevel, types=types))
     for i in xrange(self.nthreads):
       queue = Queue.Queue()
-      threadlist.append([threading.Thread(target=self.threadrun, args=[queue], kwargs={'force':force}), queue])
+      threadlist.append([threading.Thread(target=self.threadrun, args=[queue], kwargs={'force':force, 'rundependencies':level==None}), queue])
       threadlist[-1][0].start()
     for t in threadlist:
       # wait until all threads finish
@@ -1185,11 +1262,12 @@ class SimulationBatch:
       error = t[1].get()
       if error is not None:
         ex_type, ex_value, tb_str = error
-        message = '%s (in thread)\n%s' % (ex_value.message, tb_str)
+        message = '%s (in thread)%s%s' % (ex_value.message, os.linesep, tb_str)
         raise ex_type(message) 
 
     dlevel += 1
-    if len(self.simulationselector(self.runs, level=level, dlevel=dlevel, types=types)) > 0:
+    # we request level=None here to make sure we recurse to all dlevels
+    if len(self.simulationselector(self.runs, level=None, dlevel=dlevel, types=types)) > 0:
       self.writeoptions(level=level, dlevel=dlevel, types=types)
       self.configure(level=level, dlevel=dlevel, types=types, force=force)
       self.build(level=level, dlevel=dlevel, types=types, force=force)
@@ -1219,7 +1297,7 @@ class SimulationBatch:
       error = t[1].get()
       if error is not None:
         ex_type, ex_value, tb_str = error
-        message = '%s (in thread)\n%s' % (ex_value.message, tb_str)
+        message = '%s (in thread)%s%s' % (ex_value.message, os.linesep, tb_str)
         raise ex_type(message) 
 
   def listinput(self, level=None, dlevel=0, types=None):
@@ -1231,6 +1309,60 @@ class SimulationBatch:
   def writeoptions(self, level=None, dlevel=0, types=None):
     runs = self.simulationselector(self.runs, level=level, dlevel=dlevel, types=types)[::-1]
     for simulation in runs: simulation.writeoptions()  # not thread safe so don't thread it!
+
+  def threadcleanrun(self, queue):
+    error = None
+    for simulation in self.threadruns: 
+      try:
+        simulation.cleanrun()
+      except:
+        ex_type, ex_value, tb = sys.exc_info()
+        error = ex_type, ex_value, ''.join(traceback.format_tb(tb))
+    queue.put(error)
+
+  def cleanrun(self, level=None, types=None):
+    threadlist=[]
+    self.threadruns = ThreadIterator(self.simulationselector(self.runs, level=level, types=types))
+    for i in xrange(self.nthreads):
+      queue = Queue.Queue()
+      threadlist.append([threading.Thread(target=self.threadcleanrun, args=[queue]), queue])
+      threadlist[-1][0].start()
+    for t in threadlist:
+      # wait until all threads finish
+      t[0].join() 
+    for t in threadlist:
+      error = t[1].get()
+      if error is not None:
+        ex_type, ex_value, tb_str = error
+        message = '%s (in thread)%s%s' % (ex_value.message, os.linesep, tb_str)
+        raise ex_type(message) 
+
+  def threadcleanbuild(self, queue):
+    error = None
+    for simulation in self.threadruns: 
+      try:
+        simulation.cleanbuild()
+      except:
+        ex_type, ex_value, tb = sys.exc_info()
+        error = ex_type, ex_value, ''.join(traceback.format_tb(tb))
+    queue.put(error)
+
+  def cleanbuild(self, level=None, types=None):
+    threadlist=[]
+    self.threadruns = ThreadIterator(self.simulationselector(self.runs, level=level, types=types))
+    for i in xrange(self.nthreads):
+      queue = Queue.Queue()
+      threadlist.append([threading.Thread(target=self.threadcleanbuild, args=[queue]), queue])
+      threadlist[-1][0].start()
+    for t in threadlist:
+      # wait until all threads finish
+      t[0].join() 
+    for t in threadlist:
+      error = t[1].get()
+      if error is not None:
+        ex_type, ex_value, tb_str = error
+        message = '%s (in thread)%s%s' % (ex_value.message, os.linesep, tb_str)
+        raise ex_type(message) 
 
   def threadclean(self, queue):
     error = None
@@ -1256,7 +1388,7 @@ class SimulationBatch:
       error = t[1].get()
       if error is not None:
         ex_type, ex_value, tb_str = error
-        message = '%s (in thread)\n%s' % (ex_value.message, tb_str)
+        message = '%s (in thread)%s%s' % (ex_value.message, os.linesep, tb_str)
         raise ex_type(message) 
 
   def threadcheckpointclean(self, queue):
@@ -1283,7 +1415,7 @@ class SimulationBatch:
       error = t[1].get()
       if error is not None:
         ex_type, ex_value, tb_str = error
-        message = '%s (in thread)\n%s' % (ex_value.message, tb_str)
+        message = '%s (in thread)%s%s' % (ex_value.message, os.linesep, tb_str)
         raise ex_type(message) 
 
   def evaluatevariables(self, level=None, dlevel=None, types=None):
@@ -1361,16 +1493,20 @@ class SimulationBatch:
     for test in self.tests:
       self.log("Running %s:" % test.name)
       # run the test
-      status = test.run(varsdict)
-      if status == True:
-        self.log("success.")
-        teststatus.append('P')
-      elif status == False:
+      try:
+        status = test.run(varsdict)
+      except TestOrVariableException as exc:
+        self.log("ERROR: Evaluation of %s test raised an exception."%(str(test.name)))
+        self.log(exc.message)
         self.log("failure.")
         teststatus.append('F')
       else:
-        self.log("failure (info == %s)." % status)
-        teststatus.append('F')
+        if status:
+          self.log("success.")
+          teststatus.append('P')
+        else:
+          self.log("failure.")
+          teststatus.append('F')
     # change the directory back to the current directory
     os.chdir(self.currentdirectory)
 
@@ -1401,8 +1537,10 @@ class SimulationBatch:
       raise SimulationsErrorTest
 
   def log(self, string):
-    if self.logprefix is not None: string = self.logprefix+": "+string
-    print string
+    for line in string.splitlines():
+      if self.logprefix is not None: line = self.logprefix+": "+line
+      sys.stdout.write(line+os.linesep)
+    sys.stdout.flush()
 
   def simulationselector(self, simdict, level=None, dlevel=None, types=None):
     return [value['simulation'] \
@@ -1511,11 +1649,12 @@ class SimulationHarnessBatch(SimulationBatch):
     
     # if there were failures then summarize the failures
     if failcount > 0:
-       print
-       print "Summary of test problems with failures:"
+       sys.stdout.write(os.linesep)
+       sys.stdout.write("Summary of test problems with failures:"+os.linesep)
        for group in failinggroups:
-          print group[0]+':', group[1]
-       print
+          sys.stdout.write(group[0]+': '+group[1]+os.linesep)
+       sys.stdout.write(os.linesep)
+       sys.stdout.flush()
     
     # report the overall number of passes and failures
     if passcount + failcount > 0:
@@ -1526,18 +1665,29 @@ class SimulationHarnessBatch(SimulationBatch):
     if varerror: raise SimulationsErrorVariable
     if failcount > 0: raise SimulationsErrorTest
 
-  def getrequiredfiles(self, optionpath, dirname=None):
+  def getrequiredfiles(self, optionpath, dirname=None, build=False):
      '''Get a list of the required files listed under the optionpath.  Run python scripts in dirname if supplied.'''
 
      # regex to split up filename lists
-     # accept comma, semicolon or space delimiters
-     r = re.compile(r'(?:[^,; ])+')
+     # accept comma, semicolon, space or newline delimiters
+     # NODE                     EXPLANATION
+     # --------------------------------------------------------------------------------
+     #   (?:                      group, but do not capture (1 or more times
+     #                            (matching the most amount possible)):
+     # --------------------------------------------------------------------------------
+     #     [^,; \n]                 any character except: ',', ';', ' ',
+     #                              '\n' (newline)
+     # --------------------------------------------------------------------------------
+     #   )+                       end of grouping
+     # - from http://rick.measham.id.au/paste/explain.pl
+     r = re.compile(r'(?:[^,; '+os.linesep+'])+')
 
      required_files = []
      required_files_python = []
      # loop over the filenames
      for f in xrange(libspud.option_count(optionpath+"/filenames")):
        filename_optionpath = optionpath+"/filenames["+`f`+"]"
+       if build and not libspud.have_option(filename_optionpath+"/required_at_build"): continue
        # try getting the files as a string
        try:
          filenames = libspud.get_option(filename_optionpath+"/string")
@@ -1590,7 +1740,7 @@ class SimulationHarnessBatch(SimulationBatch):
         Test that the parameters are available in the parent if parent_parameters present.'''
 
      # regular expression to split up values string into a list
-     # the list may be comma(,), semicolon(;), or space ( ) delimited
+     # the list may be comma(,), semicolon(;), space ( ) or newline (\n) delimited
      # if the list is of bracketed items (e.g. tuples) then any delimiters within 
      # the brackets are preserved
      # brackets may be (), [] or {}
@@ -1599,8 +1749,8 @@ class SimulationHarnessBatch(SimulationBatch):
      #  (?:                      group, but do not capture (1 or more times
      #                           (matching the most amount possible)):
      #--------------------------------------------------------------------------------
-     #    [^,; ([{]                any character except: ',', ';', ' ',
-     #                             '(', '[', '{'
+     #    [^,; \n([{]              any character except: ',', ';', ' ',
+     #                             '\n' (newline), '(', '[', '{'
      #--------------------------------------------------------------------------------
      #   |                        OR
      #--------------------------------------------------------------------------------
@@ -1634,7 +1784,7 @@ class SimulationHarnessBatch(SimulationBatch):
      #--------------------------------------------------------------------------------
      #  )+                       end of grouping
      # - from http://rick.measham.id.au/paste/explain.pl
-     r = re.compile(r'(?:[^,; ([{]|\([^)]*\)|\[[^]]*\]|\{[^}]*\})+')
+     r = re.compile(r'(?:[^,; '+os.linesep+'([{]|\([^)]*\)|\[[^]]*\]|\{[^}]*\})+')
     
      # set up ordered dictionaries to remember the order in which parameters are specified
      parameter_values    = collections.OrderedDict()
@@ -1718,6 +1868,8 @@ class SimulationHarnessBatch(SimulationBatch):
      # and establish if run has successfully completed
      required_input, required_input_python  = \
                         self.getrequiredfiles(optionpath+"/required_input", dirname)
+     required_build_input, required_build_input_python  = \
+                        self.getrequiredfiles(optionpath+"/required_input", dirname, build=True)
      required_output, required_output_python = \
                         self.getrequiredfiles(optionpath+"/required_output")
 
@@ -1770,11 +1922,13 @@ class SimulationHarnessBatch(SimulationBatch):
          checkpoint_values[k] = v[0]
        options[path]["checkpoint_values"]  = checkpoint_values
        options[path]["checkpoint_updates"] = checkpoint_updates
-     options[path]["input"]         = required_input
-     options[path]["input_python"]  = required_input_python
-     options[path]["output"]        = required_output
-     options[path]["output_python"] = required_output_python
-     options[path]["values"]        = parameter_values
+     options[path]["input"]              = required_input
+     options[path]["input_python"]       = required_input_python
+     options[path]["build_input"]        = required_build_input
+     options[path]["build_input_python"] = required_build_input_python
+     options[path]["output"]             = required_output
+     options[path]["output_python"]      = required_output_python
+     options[path]["values"]             = parameter_values
      options[path]["updates"]       = parameter_updates
      options[path]["builds"]        = parameter_builds
      options[path]["procscales"]    = parameter_procscales # not needed for runs but easier to keep in as dummy

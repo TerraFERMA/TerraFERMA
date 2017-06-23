@@ -147,6 +147,35 @@ run_input_file =
       }
    )
 
+filenames = 
+   (
+      (
+        ## Enter one or multiple filenames as a comma, semicolon, space or newline separated list.
+        element string {
+           filename
+        }|
+        ## Enter python code to evaluate a (or a list or dictionary of) filename(s).
+        ##
+        ## If returning a dictionary then the key:value pairs represent the current filename (key) and the filename
+        ## to which the file will be copied (value) in the run directory.  Lists and single strings maintain the 
+        ## same name when copied.
+        ##
+        ## The variable containing the filename(s) MUST share a name with 
+        ## the filenames parent element above. 
+        ##
+        ## The values of all the parameters for this simulation will be available to this code using 
+        ## the names given to the parameters above.  They will be formatted as strings and should be converted 
+        ## appropriately within the code.
+        ##
+        ## Additionally, the full path to the input file is available as input_filename.
+        ##
+        ## For more advanced usage the Run or Simulation class object is available as _self.
+        element python {
+           python_code
+        }
+      )
+   )
+
 required_file =
    (
       ## Enter filenames, either as a string or returned from python code.
@@ -154,31 +183,23 @@ required_file =
       ## All filenames must have a unique name.
       element filenames {
          attribute name { xsd:string },
-         (
-           ## Enter one or multiple filenames as a comma, semicolon or space separated list.
-           element string {
-              filename
-           }|
-           ## Enter python code to evaluate a (or a list or dictionary of) filename(s).
-           ##
-           ## If returning a dictionary then the key:value pairs represent the current filename (key) and the filename
-           ## to which the file will be copied (value) in the run directory.  Lists and single strings maintain the 
-           ## same name when copied.
-           ##
-           ## The variable containing the filename(s) MUST share a name with 
-           ## the filenames parent element above. 
-           ##
-           ## The values of all the parameters for this simulation will be available to this code using 
-           ## the names given to the parameters above.  They will be formatted as strings and should be converted 
-           ## appropriately within the code.
-           ##
-           ## Additionally, the full path to the input file is available as input_filename.
-           ##
-           ## For more advanced usage the Run or Simulation class object is available as _self.
-           element python {
-              python_code
-           }
-         ),
+         filenames,
+         comment
+      }
+   )
+
+required_file_build =
+   (
+      ## Enter filenames, either as a string or returned from python code.
+      ##
+      ## All filenames must have a unique name.
+      element filenames {
+         attribute name { xsd:string },
+         filenames,
+         ## Turn this option on if these files are required in the build directory at build time.
+         element required_at_build {
+           comment
+         }?,
          comment
       }
    )
@@ -190,7 +211,7 @@ required_input =
       ## All required_output from dependency simulations/runs are automatically 
       ## assumed to be required as input so need not be entered here.
       element required_input {
-         required_file+,
+         required_file_build+,
          comment
       }
    )
@@ -221,7 +242,7 @@ simulation_parameters =
          ## python code describing how the parameter should be updated.
          element parameter {
             attribute name { xsd:string },
-            ## A comma, semicolon or space separated list of the parameter values.
+            ## A comma, semicolon, space or newline separated list of the parameter values.
             ##
             ## The values are input as a string to allow them to be used to uniquely create a folder structure.
             ## The update python code before should convert them to appropriate types within the input file.
@@ -279,7 +300,7 @@ run_parameters =
          ## python code describing how the parameter should be updated.
          element parameter {
             attribute name { xsd:string },
-            ## A comma, semicolon or space separated list of the parameter values.
+            ## A comma, semicolon, space or newline separated list of the parameter values.
             ##
             ## The values are input as a string to allow them to be used to uniquely create a folder structure.
             ## The update python code before should convert them to appropriate types within the input file.
