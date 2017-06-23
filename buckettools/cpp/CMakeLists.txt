@@ -102,7 +102,7 @@ add_library(buckettools_cpp SHARED
                             FunctionBucket.cpp SpudFunctionBucket.cpp
                             SolverBucket.cpp SpudSolverBucket.cpp 
                             FunctionalBucket.cpp SpudFunctionalBucket.cpp
-                            SpudBase.cpp MPIBase.cpp PythonExpression.cpp PythonInstance.cpp
+                            SpudBase.cpp MPIBase.cpp PythonExpression.cpp PythonInstance.cpp GlobalPythonInstance.cpp
                             InitialConditionExpression.cpp RegionsExpression.cpp SemiLagrangianExpression.cpp
                             GenericDetectors.cpp PointDetectors.cpp PythonDetectors.cpp
                             DiagnosticsFile.cpp StatisticsFile.cpp SteadyStateFile.cpp

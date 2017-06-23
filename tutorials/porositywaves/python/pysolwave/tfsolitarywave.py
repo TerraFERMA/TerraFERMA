@@ -105,8 +105,8 @@ class TFSolitaryWave:
         p_degree = libspud.get_option(path+p_name+"/type/rank/element/degree")
         f_family = libspud.get_option(path+f_name+"/type/rank/element/family")
         f_degree = libspud.get_option(path+f_name+"/type/rank/element/degree")        
-        pe = df.FiniteElement(p_family, df.triangle, p_degree)
-        ve = df.FiniteElement(f_family, df.triangle, f_degree)
+        pe = df.FiniteElement(p_family, mesh.ufl_cell(), p_degree)
+        ve = df.FiniteElement(f_family, mesh.ufl_cell(), f_degree)
         e = pe*ve
         self.functionspace = df.FunctionSpace(mesh, e)
 

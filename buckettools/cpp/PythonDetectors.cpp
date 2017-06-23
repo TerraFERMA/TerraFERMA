@@ -73,7 +73,7 @@ void PythonDetectors::init_()
   pResult = pyinst_.call(pArgs);                                     // run the python function through the python instance
   
   if (PyErr_Occurred()){                                             // check for errors evaluating user code
-    PyErr_Print();
+    pyinst_.print_error();
     tf_err("In PythonDetectors::init_ evaluating pResult.", "Python error occurred.");
   }
 
@@ -82,7 +82,7 @@ void PythonDetectors::init_()
   assert(size()>0);
     
   if (PyErr_Occurred()){                                             // check for errors evaluating user code
-    PyErr_Print();
+    pyinst_.print_error();
     tf_err("In PythonDetectors::init_ evaluating length of pResult.", "Python error occurred.");
   }
     
@@ -100,7 +100,7 @@ void PythonDetectors::init_()
       (*point)[j] = PyFloat_AsDouble(px);                            // convert from python to double
       
       if (PyErr_Occurred()){                                         // check for errors in conversion
-        PyErr_Print();
+        pyinst_.print_error();
         tf_err("In PythonDetectors::init_ evaluating values.", "Python error occurred.");
       }
       
