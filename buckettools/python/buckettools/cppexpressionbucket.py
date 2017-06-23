@@ -48,7 +48,7 @@ class CppExpressionBucket:
 
     cpp.append("#ifndef __"+self.namespace().upper()+"_H"+os.linesep)
     cpp.append("#define __"+self.namespace().upper()+"_H"+os.linesep)
-    cpp.append(""+os.linesep)
+    cpp.append(os.linesep)
     cpp.append("#include \"Bucket.h\""+os.linesep)
     cpp.append("#include \"SystemBucket.h\""+os.linesep)
     cpp.append("#include \"BoostTypes.h\""+os.linesep)
