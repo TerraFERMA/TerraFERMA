@@ -108,7 +108,7 @@ v-&gt;eval(v_values, x, cell);
 double valmin = std::abs(*std::min_element(&amp;v_values.data()[0], &amp;v_values.data()[v_values.size()]));
 double valmax = std::abs(*std::max_element(&amp;v_values.data()[0], &amp;v_values.data()[v_values.size()]));
 double val = std::max(valmin, valmax);
-values[0] = (val*bucket()-&gt;timestep())/dcell.diameter();</string_value>
+values[0] = (val*bucket()-&gt;timestep())/2./dcell.circumradius();</string_value>
               </eval>
             </cpp>
           </value>
@@ -123,6 +123,7 @@ values[0] = (val*bucket()-&gt;timestep())/dcell.diameter();</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
+      <form_representation name="quadrature"/>
       <quadrature_rule name="default"/>
       <include_in_statistics/>
     </functional>

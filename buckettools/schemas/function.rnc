@@ -147,7 +147,7 @@ scalar_field_function_options =
   (
     attribute rank { "0" },
     element_options_scalar,
-    initial_condition_scalar+,
+    initial_condition_scalar*,
     boundary_condition_scalar*,
     reference_point_scalar?,
     zero_point_scalar?,
@@ -159,7 +159,7 @@ vector_field_function_options =
   (
     attribute rank { "1" },
     element_options_vector,
-    initial_condition_vector+,
+    initial_condition_vector*,
     boundary_condition_vector*,
     reference_point_tensor*,
     zero_point_tensor*,
@@ -171,7 +171,7 @@ tensor_field_function_options =
   (
     attribute rank { "2" },
     element_options_tensor,
-    initial_condition_tensor+,
+    initial_condition_tensor*,
     boundary_condition_tensor*,
     reference_point_tensor*,
     zero_point_tensor*,
@@ -341,6 +341,11 @@ coeff_diagnostics_options =
 initial_condition_scalar = 
   (
     ## Options for the description of the initial condition over the whole domain
+    ##
+    ## If unspecified the initial value will be set to 0.
+    ##
+    ## NOTE: this initial condition will be interpolated onto the dofs.  Some elements do not support this so you should instead
+    ## solve the system at the start of the simulation to set the initial condition.
     element initial_condition {
       attribute name {"WholeMesh"},
       attribute type {"initial_condition"},
@@ -348,6 +353,11 @@ initial_condition_scalar =
       comment
     }|
     ## Options for the description of the initial condition over a subset of the whole domain
+    ##
+    ## If unspecified the initial value will be set to 0.
+    ##
+    ## NOTE: this initial condition will be interpolated onto the dofs.  Some elements do not support this so you should instead
+    ## solve the system at the start of the simulation to set the initial condition.
     element initial_condition {
       attribute name { xsd:string },
       attribute type {"initial_condition"},
@@ -420,7 +430,7 @@ boundary_condition_scalar =
         element type {
           attribute name {"Dirichlet"},
           attribute type {"boundary_condition"},
-          prescribed_scalar,
+          prescribed_scalar_w_internal_reference,
           comment
         },
         comment
@@ -446,7 +456,7 @@ boundary_condition_vector =
           element type {
             attribute name {"Dirichlet"},
             attribute type {"boundary_condition"},
-            prescribed_vector,
+            prescribed_vector_w_internal_reference,
             comment
           },
           comment
@@ -462,7 +472,7 @@ boundary_condition_vector =
           element type {
             attribute name {"Dirichlet"},
             attribute type {"boundary_condition"},
-            prescribed_scalar,
+            prescribed_scalar_w_internal_reference,
             comment
           },
           comment
@@ -489,7 +499,7 @@ boundary_condition_tensor =
           element type {
             attribute name {"Dirichlet"},
             attribute type {"boundary_condition"},
-            prescribed_tensor,
+            prescribed_tensor_w_internal_reference,
             comment
           },
           comment
@@ -505,7 +515,7 @@ boundary_condition_tensor =
           element type {
             attribute name {"Dirichlet"},
             attribute type {"boundary_condition"},
-            prescribed_scalar,
+            prescribed_scalar_w_internal_reference,
             comment
           },
           comment
@@ -954,6 +964,7 @@ prescribed_scalar_functional =
         attribute rank { "0" },
         python_code,
         functional_ufl_symbol,
+        form_representation,
         quadrature_degree,
         quadrature_rule
       }
@@ -1218,7 +1229,7 @@ prescribed_tensor_cpp_time =
     }
   )
 
-prescribed_internal = 
+prescribed_internal_semilagrangian = 
   (
     (
       ## A semilagrangian lookup algorithm
@@ -1301,6 +1312,100 @@ prescribed_internal =
     )
   )
 
+prescribed_scalar_internal_semilagrangian =
+  (
+    ## A scalar described by an internal derived dolfin expression.
+    element internal {
+      attribute rank { "0" },
+      prescribed_internal_semilagrangian,
+      comment
+    }
+  )
+
+prescribed_vector_internal_semilagrangian =
+  (
+    ## A vector described by an internal derived dolfin expression.
+    element internal {
+      attribute rank { "1" },
+      prescribed_internal_semilagrangian,
+      comment
+    }
+  )
+
+prescribed_tensor_internal_semilagrangian =
+  (
+    ## A tensor described by an internal derived dolfin expression.
+    element internal {
+      attribute rank { "2" },
+      prescribed_internal_semilagrangian,
+      comment
+    }
+  )
+
+
+prescribed_internal_reference = 
+  (
+    (
+      ## An algorithm that allows the user to reference a field or coefficient of the same rank.
+      element algorithm {
+        attribute name { "Reference" },
+        ## The system where the function is to be found.
+        ## Assumed to be the current system if left unspecified.
+        element system {
+          attribute name { xsd:string },
+          comment
+        }?,
+        (
+          ## The field name.
+          element field {
+            attribute name { xsd:string },
+            comment
+          }|
+          ## The coefficient name.
+          element coefficient {
+            attribute name { xsd:string },
+            comment
+          }
+        ),
+        comment
+      }
+    )
+  )
+
+prescribed_scalar_internal_reference =
+  (
+    ## A scalar described by an internal derived dolfin expression.
+    element internal {
+      attribute rank { "0" },
+      prescribed_internal_reference,
+      comment
+    }
+  )
+
+prescribed_vector_internal_reference =
+  (
+    ## A vector described by an internal derived dolfin expression.
+    element internal {
+      attribute rank { "1" },
+      prescribed_internal_reference,
+      comment
+    }
+  )
+
+prescribed_tensor_internal_reference =
+  (
+    ## A tensor described by an internal derived dolfin expression.
+    element internal {
+      attribute rank { "2" },
+      prescribed_internal_reference,
+      comment
+    }
+  )
+
+
+#prescribed_internal = prescribed_internal_reference   # not yet ready for this!
+prescribed_internal = prescribed_internal_semilagrangian
+
 prescribed_scalar_internal =
   (
     ## A scalar described by an internal derived dolfin expression.
@@ -1344,6 +1449,9 @@ prescribed_scalar = prescribed_scalar_cpp
 prescribed_scalar |= prescribed_scalar_python
 prescribed_scalar |= prescribed_scalar_constant
 
+prescribed_scalar_w_internal_reference = prescribed_scalar_internal_reference
+prescribed_scalar_w_internal_reference |= prescribed_scalar
+
 prescribed_scalar_w_internal = prescribed_scalar_internal
 prescribed_scalar_w_internal |= prescribed_scalar
 
@@ -1361,6 +1469,9 @@ prescribed_vector = prescribed_vector_cpp
 prescribed_vector |= prescribed_vector_python
 prescribed_vector |= prescribed_vector_constant
 
+prescribed_vector_w_internal_reference = prescribed_vector_internal_reference
+prescribed_vector_w_internal_reference |= prescribed_vector
+
 prescribed_vector_w_internal = prescribed_vector_internal
 prescribed_vector_w_internal |= prescribed_vector
 
@@ -1377,6 +1488,9 @@ prescribed_vector_time_w_internal |= prescribed_vector_time
 prescribed_tensor = prescribed_tensor_cpp
 prescribed_tensor |= prescribed_tensor_python
 prescribed_tensor |= prescribed_tensor_constant
+
+prescribed_tensor_w_internal_reference = prescribed_tensor_internal_reference
+prescribed_tensor_w_internal_reference |= prescribed_tensor
 
 prescribed_tensor_w_internal = prescribed_tensor_internal
 prescribed_tensor_w_internal |= prescribed_tensor

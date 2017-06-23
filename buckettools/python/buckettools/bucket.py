@@ -179,39 +179,39 @@ class Bucket:
     cpp = []
 
     include_cpp = []
-    include_cpp.append("\n")
-    include_cpp.append("#include \"SystemFunctionalsWrapper.h\"\n")
-    include_cpp.append("#include \"BoostTypes.h\"\n")
-    include_cpp.append("#include \"Logger.h\"\n")
-    include_cpp.append("#include <dolfin.h>\n")
+    include_cpp.append(""+os.linesep)
+    include_cpp.append("#include \"SystemFunctionalsWrapper.h\""+os.linesep)
+    include_cpp.append("#include \"BoostTypes.h\""+os.linesep)
+    include_cpp.append("#include \"Logger.h\""+os.linesep)
+    include_cpp.append("#include <dolfin.h>"+os.linesep)
 
     functionalcoefficientspace_cpp         = []
-    functionalcoefficientspace_cpp.append("  // A function to return a functionspace (for a coefficient) from a system given a mesh, a functionalname and a uflsymbol.\n")
-    functionalcoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace_from_functional(const std::string &systemname, const std::string &functionalname, const std::string &uflsymbol, \n")
-    functionalcoefficientspace_cpp.append("                                                               Mesh_ptr mesh, PythonPeriodicMap_ptr periodicmap, MeshFunction_size_t_ptr facetdomains, \n")
-    functionalcoefficientspace_cpp.append("                                                               const std::vector<std::size_t> &masterids, const std::vector<std::size_t> &slaveids)\n")
-    functionalcoefficientspace_cpp.append("  {\n")
-    functionalcoefficientspace_cpp.append("    FunctionSpace_ptr coefficientspace;\n")
+    functionalcoefficientspace_cpp.append("  // A function to return a functionspace (for a coefficient) from a system given a mesh, a functionalname and a uflsymbol."+os.linesep)
+    functionalcoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace_from_functional(const std::string &systemname, const std::string &functionalname, const std::string &uflsymbol, "+os.linesep)
+    functionalcoefficientspace_cpp.append("                                                               Mesh_ptr mesh, PythonPeriodicMap_ptr periodicmap, MeshFunction_size_t_ptr facetdomains, "+os.linesep)
+    functionalcoefficientspace_cpp.append("                                                               const std::vector<std::size_t> &masterids, const std::vector<std::size_t> &slaveids)"+os.linesep)
+    functionalcoefficientspace_cpp.append("  {"+os.linesep)
+    functionalcoefficientspace_cpp.append("    FunctionSpace_ptr coefficientspace;"+os.linesep)
 
     constantfunctionalcoefficientspace_cpp         = []
-    constantfunctionalcoefficientspace_cpp.append("  // A function to return a functionspace (for a coefficient) from a system given a mesh, a coefficientname and a uflsymbol.\n")
-    constantfunctionalcoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace_from_constant_functional(const std::string &systemname, const std::string &coefficientname, const std::string &uflsymbol, \n")
-    constantfunctionalcoefficientspace_cpp.append("                                                               Mesh_ptr mesh, PythonPeriodicMap_ptr periodicmap, MeshFunction_size_t_ptr facetdomains, \n")
-    constantfunctionalcoefficientspace_cpp.append("                                                               const std::vector<std::size_t> &masterids, const std::vector<std::size_t> &slaveids)\n")
-    constantfunctionalcoefficientspace_cpp.append("  {\n")
-    constantfunctionalcoefficientspace_cpp.append("    FunctionSpace_ptr coefficientspace;\n")
+    constantfunctionalcoefficientspace_cpp.append("  // A function to return a functionspace (for a coefficient) from a system given a mesh, a coefficientname and a uflsymbol."+os.linesep)
+    constantfunctionalcoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace_from_constant_functional(const std::string &systemname, const std::string &coefficientname, const std::string &uflsymbol, "+os.linesep)
+    constantfunctionalcoefficientspace_cpp.append("                                                               Mesh_ptr mesh, PythonPeriodicMap_ptr periodicmap, MeshFunction_size_t_ptr facetdomains, "+os.linesep)
+    constantfunctionalcoefficientspace_cpp.append("                                                               const std::vector<std::size_t> &masterids, const std::vector<std::size_t> &slaveids)"+os.linesep)
+    constantfunctionalcoefficientspace_cpp.append("  {"+os.linesep)
+    constantfunctionalcoefficientspace_cpp.append("    FunctionSpace_ptr coefficientspace;"+os.linesep)
 
     functional_cpp            = []
-    functional_cpp.append("  // A function to return a functional from a system-function set given a mesh and a functionalname.\n")
-    functional_cpp.append("  Form_ptr ufc_fetch_functional(const std::string &systemname, const std::string &functionalname, Mesh_ptr mesh)\n")
-    functional_cpp.append("  {\n")
-    functional_cpp.append("    Form_ptr functional;\n")
+    functional_cpp.append("  // A function to return a functional from a system-function set given a mesh and a functionalname."+os.linesep)
+    functional_cpp.append("  Form_ptr ufc_fetch_functional(const std::string &systemname, const std::string &functionalname, Mesh_ptr mesh)"+os.linesep)
+    functional_cpp.append("  {"+os.linesep)
+    functional_cpp.append("    Form_ptr functional;"+os.linesep)
 
     constantfunctional_cpp            = []
-    constantfunctional_cpp.append("  // A function to return a functional for a constant from a system-function set given a mesh.\n")
-    constantfunctional_cpp.append("  Form_ptr ufc_fetch_constant_functional(const std::string &systemname, const std::string &coefficientname, Mesh_ptr mesh)\n")
-    constantfunctional_cpp.append("  {\n")
-    constantfunctional_cpp.append("    Form_ptr functional;\n")
+    constantfunctional_cpp.append("  // A function to return a functional for a constant from a system-function set given a mesh."+os.linesep)
+    constantfunctional_cpp.append("  Form_ptr ufc_fetch_constant_functional(const std::string &systemname, const std::string &coefficientname, Mesh_ptr mesh)"+os.linesep)
+    constantfunctional_cpp.append("  {"+os.linesep)
+    constantfunctional_cpp.append("    Form_ptr functional;"+os.linesep)
 
     s = 0
     for system in self.systems:
@@ -222,48 +222,48 @@ class Bucket:
       constantfunctional_cpp += system.constantfunctional_cpp(index=s)
       s += 1
 
-    functionalcoefficientspace_cpp.append("    else\n")
-    functionalcoefficientspace_cpp.append("    {\n")
-    functionalcoefficientspace_cpp.append("      tf_err(\"Unknown systemname in ufc_fetch_coefficientspace_from_functional\", \"System name: %s\", systemname.c_str());\n")
-    functionalcoefficientspace_cpp.append("    }\n")
-    functionalcoefficientspace_cpp.append("    return coefficientspace;\n")
-    functionalcoefficientspace_cpp.append("  }\n")
+    functionalcoefficientspace_cpp.append("    else"+os.linesep)
+    functionalcoefficientspace_cpp.append("    {"+os.linesep)
+    functionalcoefficientspace_cpp.append("      tf_err(\"Unknown systemname in ufc_fetch_coefficientspace_from_functional\", \"System name: %s\", systemname.c_str());"+os.linesep)
+    functionalcoefficientspace_cpp.append("    }"+os.linesep)
+    functionalcoefficientspace_cpp.append("    return coefficientspace;"+os.linesep)
+    functionalcoefficientspace_cpp.append("  }"+os.linesep)
 
-    constantfunctionalcoefficientspace_cpp.append("    else\n")
-    constantfunctionalcoefficientspace_cpp.append("    {\n")
-    constantfunctionalcoefficientspace_cpp.append("      tf_err(\"Unknown systemname in ufc_fetch_coefficientspace_from_constant_functional\", \"System name: %s\", systemname.c_str());\n")
-    constantfunctionalcoefficientspace_cpp.append("    }\n")
-    constantfunctionalcoefficientspace_cpp.append("    return coefficientspace;\n")
-    constantfunctionalcoefficientspace_cpp.append("  }\n")
+    constantfunctionalcoefficientspace_cpp.append("    else"+os.linesep)
+    constantfunctionalcoefficientspace_cpp.append("    {"+os.linesep)
+    constantfunctionalcoefficientspace_cpp.append("      tf_err(\"Unknown systemname in ufc_fetch_coefficientspace_from_constant_functional\", \"System name: %s\", systemname.c_str());"+os.linesep)
+    constantfunctionalcoefficientspace_cpp.append("    }"+os.linesep)
+    constantfunctionalcoefficientspace_cpp.append("    return coefficientspace;"+os.linesep)
+    constantfunctionalcoefficientspace_cpp.append("  }"+os.linesep)
 
-    functional_cpp.append("    else\n")
-    functional_cpp.append("    {\n")
-    functional_cpp.append("      tf_err(\"Unknown systemname in ufc_fetch_functional\", \"System name: %s\", systemname.c_str());\n")
-    functional_cpp.append("    }\n")
-    functional_cpp.append("    return functional;\n")
-    functional_cpp.append("  }\n")
+    functional_cpp.append("    else"+os.linesep)
+    functional_cpp.append("    {"+os.linesep)
+    functional_cpp.append("      tf_err(\"Unknown systemname in ufc_fetch_functional\", \"System name: %s\", systemname.c_str());"+os.linesep)
+    functional_cpp.append("    }"+os.linesep)
+    functional_cpp.append("    return functional;"+os.linesep)
+    functional_cpp.append("  }"+os.linesep)
 
-    constantfunctional_cpp.append("    else\n")
-    constantfunctional_cpp.append("    {\n")
-    constantfunctional_cpp.append("      tf_err(\"Unknown systemname in ufc_fetch_constant_functional\", \"System name: %s\", systemname.c_str());\n")
-    constantfunctional_cpp.append("    }\n")
-    constantfunctional_cpp.append("    return functional;\n")
-    constantfunctional_cpp.append("  }\n")
+    constantfunctional_cpp.append("    else"+os.linesep)
+    constantfunctional_cpp.append("    {"+os.linesep)
+    constantfunctional_cpp.append("      tf_err(\"Unknown systemname in ufc_fetch_constant_functional\", \"System name: %s\", systemname.c_str());"+os.linesep)
+    constantfunctional_cpp.append("    }"+os.linesep)
+    constantfunctional_cpp.append("    return functional;"+os.linesep)
+    constantfunctional_cpp.append("  }"+os.linesep)
 
     cpp += include_cpp
-    cpp.append("\n")
-    cpp.append("namespace buckettools\n")
-    cpp.append("{\n")
+    cpp.append(os.linesep)
+    cpp.append("namespace buckettools"+os.linesep)
+    cpp.append("{"+os.linesep)
     cpp += functionalcoefficientspace_cpp
-    cpp.append("\n")
+    cpp.append(os.linesep)
     cpp += constantfunctionalcoefficientspace_cpp
-    cpp.append("\n")
+    cpp.append(os.linesep)
     cpp += functional_cpp
-    cpp.append("\n")
+    cpp.append(os.linesep)
     cpp += constantfunctional_cpp
-    cpp.append("\n")
-    cpp.append("}\n")
-    cpp.append("\n")
+    cpp.append(os.linesep)
+    cpp.append("}"+os.linesep)
+    cpp.append(os.linesep)
 
     filename = "SystemFunctionalsWrapper.cpp"
     filehandle = file(filename+".temp", 'w')
@@ -283,43 +283,43 @@ class Bucket:
     """Write a cpp header file describing all the ufc namespaces in the bucket."""
     cpp = []
 
-    cpp.append("\n")
-    cpp.append("#include \"SystemSolversWrapper.h\"\n")
-    cpp.append("#include \"BoostTypes.h\"\n")
-    cpp.append("#include \"Logger.h\"\n")
-    cpp.append("#include <dolfin.h>\n")
+    cpp.append(os.linesep)
+    cpp.append("#include \"SystemSolversWrapper.h\""+os.linesep)
+    cpp.append("#include \"BoostTypes.h\""+os.linesep)
+    cpp.append("#include \"Logger.h\""+os.linesep)
+    cpp.append("#include <dolfin.h>"+os.linesep)
 
     include_cpp = []
 
     functionspace_cpp         = []
-    functionspace_cpp.append("  // A function to return a functionspace from a system given a mesh (defaults to first solver in system as they should all be the same).\n")
+    functionspace_cpp.append("  // A function to return a functionspace from a system given a mesh (defaults to first solver in system as they should all be the same)."+os.linesep)
     functionspace_cpp.append("  FunctionSpace_ptr ufc_fetch_functionspace(const std::string &systemname, ")
-    functionspace_cpp.append("                                            Mesh_ptr mesh, PythonPeriodicMap_ptr periodicmap, MeshFunction_size_t_ptr facetdomains, \n")
-    functionspace_cpp.append("                                            const std::vector<std::size_t> &masterids, const std::vector<std::size_t> &slaveids)\n")
-    functionspace_cpp.append("  {\n")
-    functionspace_cpp.append("    FunctionSpace_ptr functionspace;\n")
+    functionspace_cpp.append("                                            Mesh_ptr mesh, PythonPeriodicMap_ptr periodicmap, MeshFunction_size_t_ptr facetdomains, "+os.linesep)
+    functionspace_cpp.append("                                            const std::vector<std::size_t> &masterids, const std::vector<std::size_t> &slaveids)"+os.linesep)
+    functionspace_cpp.append("  {"+os.linesep)
+    functionspace_cpp.append("    FunctionSpace_ptr functionspace;"+os.linesep)
 
     solverfunctionspace_cpp         = []
-    solverfunctionspace_cpp.append("  // A function to return a functionspace from a system given a mesh and a solvername.\n")
-    solverfunctionspace_cpp.append("  FunctionSpace_ptr ufc_fetch_functionspace(const std::string &systemname, const std::string &solvername, \n")
-    solverfunctionspace_cpp.append("                                            Mesh_ptr mesh, PythonPeriodicMap_ptr periodicmap, MeshFunction_size_t_ptr facetdomains, \n")
-    solverfunctionspace_cpp.append("                                            const std::vector<std::size_t> &masterids, const std::vector<std::size_t> &slaveids)\n")
-    solverfunctionspace_cpp.append("  {\n")
-    solverfunctionspace_cpp.append("    FunctionSpace_ptr functionspace;\n")
+    solverfunctionspace_cpp.append("  // A function to return a functionspace from a system given a mesh and a solvername."+os.linesep)
+    solverfunctionspace_cpp.append("  FunctionSpace_ptr ufc_fetch_functionspace(const std::string &systemname, const std::string &solvername, "+os.linesep)
+    solverfunctionspace_cpp.append("                                            Mesh_ptr mesh, PythonPeriodicMap_ptr periodicmap, MeshFunction_size_t_ptr facetdomains, "+os.linesep)
+    solverfunctionspace_cpp.append("                                            const std::vector<std::size_t> &masterids, const std::vector<std::size_t> &slaveids)"+os.linesep)
+    solverfunctionspace_cpp.append("  {"+os.linesep)
+    solverfunctionspace_cpp.append("    FunctionSpace_ptr functionspace;"+os.linesep)
 
     solvercoefficientspace_cpp         = []
-    solvercoefficientspace_cpp.append("  // A function to return a functionspace (for a coefficient) from a system given a mesh, a solvername and a uflsymbol.\n")
-    solvercoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace_from_solver(const std::string &systemname, const std::string &solvername, const std::string &uflsymbol, \n")
-    solvercoefficientspace_cpp.append("                                                           Mesh_ptr mesh, PythonPeriodicMap_ptr periodicmap, MeshFunction_size_t_ptr facetdomains, \n")
-    solvercoefficientspace_cpp.append("                                                           const std::vector<std::size_t> &masterids, const std::vector<std::size_t> &slaveids)\n")
-    solvercoefficientspace_cpp.append("  {\n")
-    solvercoefficientspace_cpp.append("    FunctionSpace_ptr coefficientspace;\n")
+    solvercoefficientspace_cpp.append("  // A function to return a functionspace (for a coefficient) from a system given a mesh, a solvername and a uflsymbol."+os.linesep)
+    solvercoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace_from_solver(const std::string &systemname, const std::string &solvername, const std::string &uflsymbol, "+os.linesep)
+    solvercoefficientspace_cpp.append("                                                           Mesh_ptr mesh, PythonPeriodicMap_ptr periodicmap, MeshFunction_size_t_ptr facetdomains, "+os.linesep)
+    solvercoefficientspace_cpp.append("                                                           const std::vector<std::size_t> &masterids, const std::vector<std::size_t> &slaveids)"+os.linesep)
+    solvercoefficientspace_cpp.append("  {"+os.linesep)
+    solvercoefficientspace_cpp.append("    FunctionSpace_ptr coefficientspace;"+os.linesep)
 
     form_cpp = []
-    form_cpp.append("  // A function to return a form for a solver from a system given a functionspace, a solvername, a solvertype and a formname.\n")
-    form_cpp.append("  Form_ptr ufc_fetch_form(const std::string &systemname, const std::string &solvername, const std::string &solvertype, const std::string &formname, const FunctionSpace_ptr functionspace)\n")
-    form_cpp.append("  {\n")
-    form_cpp.append("    Form_ptr form;\n")
+    form_cpp.append("  // A function to return a form for a solver from a system given a functionspace, a solvername, a solvertype and a formname."+os.linesep)
+    form_cpp.append("  Form_ptr ufc_fetch_form(const std::string &systemname, const std::string &solvername, const std::string &solvertype, const std::string &formname, const FunctionSpace_ptr functionspace)"+os.linesep)
+    form_cpp.append("  {"+os.linesep)
+    form_cpp.append("    Form_ptr form;"+os.linesep)
  
     s = 0
     for system in self.systems:
@@ -330,48 +330,48 @@ class Bucket:
       form_cpp += system.form_cpp(index=s)
       s += 1
 
-    functionspace_cpp.append("    else\n")
-    functionspace_cpp.append("    {\n")
-    functionspace_cpp.append("      tf_err(\"Unknown systemname in ufc_fetch_functionspace\", \"System name: %s\", systemname.c_str());\n")
-    functionspace_cpp.append("    }\n")
-    functionspace_cpp.append("    return functionspace;\n")
-    functionspace_cpp.append("  }\n")
+    functionspace_cpp.append("    else"+os.linesep)
+    functionspace_cpp.append("    {"+os.linesep)
+    functionspace_cpp.append("      tf_err(\"Unknown systemname in ufc_fetch_functionspace\", \"System name: %s\", systemname.c_str());"+os.linesep)
+    functionspace_cpp.append("    }"+os.linesep)
+    functionspace_cpp.append("    return functionspace;"+os.linesep)
+    functionspace_cpp.append("  }"+os.linesep)
 
-    solverfunctionspace_cpp.append("    else\n")
-    solverfunctionspace_cpp.append("    {\n")
-    solverfunctionspace_cpp.append("      tf_err(\"Unknown systemname in ufc_fetch_functionspace\", \"System name: %s\", systemname.c_str());\n")
-    solverfunctionspace_cpp.append("    }\n")
-    solverfunctionspace_cpp.append("    return functionspace;\n")
-    solverfunctionspace_cpp.append("  }\n")
+    solverfunctionspace_cpp.append("    else"+os.linesep)
+    solverfunctionspace_cpp.append("    {"+os.linesep)
+    solverfunctionspace_cpp.append("      tf_err(\"Unknown systemname in ufc_fetch_functionspace\", \"System name: %s\", systemname.c_str());"+os.linesep)
+    solverfunctionspace_cpp.append("    }"+os.linesep)
+    solverfunctionspace_cpp.append("    return functionspace;"+os.linesep)
+    solverfunctionspace_cpp.append("  }"+os.linesep)
 
-    solvercoefficientspace_cpp.append("    else\n")
-    solvercoefficientspace_cpp.append("    {\n")
-    solvercoefficientspace_cpp.append("      tf_err(\"Unknown systemname in ufc_fetch_coefficientspace_from_solver\", \"System name: %s\", systemname.c_str());\n")
-    solvercoefficientspace_cpp.append("    }\n")
-    solvercoefficientspace_cpp.append("    return coefficientspace;\n")
-    solvercoefficientspace_cpp.append("  }\n")
+    solvercoefficientspace_cpp.append("    else"+os.linesep)
+    solvercoefficientspace_cpp.append("    {"+os.linesep)
+    solvercoefficientspace_cpp.append("      tf_err(\"Unknown systemname in ufc_fetch_coefficientspace_from_solver\", \"System name: %s\", systemname.c_str());"+os.linesep)
+    solvercoefficientspace_cpp.append("    }"+os.linesep)
+    solvercoefficientspace_cpp.append("    return coefficientspace;"+os.linesep)
+    solvercoefficientspace_cpp.append("  }"+os.linesep)
 
-    form_cpp.append("    else\n")
-    form_cpp.append("    {\n")
-    form_cpp.append("      tf_err(\"Unknown systemname in ufc_fetch_form\", \"System name: %s\", systemname.c_str());\n")
-    form_cpp.append("    }\n")
-    form_cpp.append("    return form;\n")
-    form_cpp.append("  }\n")
+    form_cpp.append("    else"+os.linesep)
+    form_cpp.append("    {"+os.linesep)
+    form_cpp.append("      tf_err(\"Unknown systemname in ufc_fetch_form\", \"System name: %s\", systemname.c_str());"+os.linesep)
+    form_cpp.append("    }"+os.linesep)
+    form_cpp.append("    return form;"+os.linesep)
+    form_cpp.append("  }"+os.linesep)
 
     cpp += include_cpp
-    cpp.append("\n")
-    cpp.append("namespace buckettools\n")
-    cpp.append("{\n")
+    cpp.append(os.linesep)
+    cpp.append("namespace buckettools"+os.linesep)
+    cpp.append("{"+os.linesep)
     cpp += functionspace_cpp
-    cpp.append("\n")
+    cpp.append(os.linesep)
     cpp += solverfunctionspace_cpp
-    cpp.append("\n")
+    cpp.append(os.linesep)
     cpp += solvercoefficientspace_cpp
-    cpp.append("\n")
+    cpp.append(os.linesep)
     cpp += form_cpp
-    cpp.append("\n")
-    cpp.append("}\n")
-    cpp.append("\n")
+    cpp.append(os.linesep)
+    cpp.append("}"+os.linesep)
+    cpp.append(os.linesep)
 
     filename = "SystemSolversWrapper.cpp"
     filehandle = file(filename+".temp", 'w')
@@ -453,18 +453,18 @@ class Bucket:
     cpp = []
 
     include_cpp = []
-    include_cpp.append("\n")
+    include_cpp.append(os.linesep)
 
     cppexpression_cpp = []
-    cppexpression_cpp.append("  // A function to return an expression for a coefficient from a system given a systemname and a functionname (and its size, shape and private members bucket, system and time.\n")
-    cppexpression_cpp.append("  Expression_ptr cpp_fetch_expression(const std::string &systemname, const std::string &functionname, const std::string &expressiontype, const std::string &expressionname, const std::size_t &size, const std::vector<std::size_t> &shape, const Bucket *bucket, const SystemBucket *system, const double_ptr time)\n")
-    cppexpression_cpp.append("  {\n")
-    cppexpression_cpp.append("    Expression_ptr expression;\n")
+    cppexpression_cpp.append("  // A function to return an expression for a coefficient from a system given a systemname and a functionname (and its size, shape and private members bucket, system and time."+os.linesep)
+    cppexpression_cpp.append("  Expression_ptr cpp_fetch_expression(const std::string &systemname, const std::string &functionname, const std::string &expressiontype, const std::string &expressionname, const std::size_t &size, const std::vector<std::size_t> &shape, const Bucket *bucket, const SystemBucket *system, const double_ptr time)"+os.linesep)
+    cppexpression_cpp.append("  {"+os.linesep)
+    cppexpression_cpp.append("    Expression_ptr expression;"+os.linesep)
  
     cppexpression_init = []
-    cppexpression_init.append("  // A function to initialize an expression for a cpp expression given a systemname and a functionname (and a boost shared pointer to the expression to initialize.\n")
-    cppexpression_init.append("  void cpp_init_expression(Expression_ptr expression, const std::string &systemname, const std::string &functionname, const std::string &expressiontype, const std::string &expressionname)\n")
-    cppexpression_init.append("  {\n")
+    cppexpression_init.append("  // A function to initialize an expression for a cpp expression given a systemname and a functionname (and a boost shared pointer to the expression to initialize."+os.linesep)
+    cppexpression_init.append("  void cpp_init_expression(Expression_ptr expression, const std::string &systemname, const std::string &functionname, const std::string &expressiontype, const std::string &expressionname)"+os.linesep)
+    cppexpression_init.append("  {"+os.linesep)
  
     s = 0
     for system in self.systems:
@@ -473,34 +473,34 @@ class Bucket:
       cppexpression_init += system.cppexpression_init(index=s)
       s += 1
 
-    include_cpp.append("#include \"SystemExpressionsWrapper.h\"\n")
-    include_cpp.append("#include \"BoostTypes.h\"\n")
-    include_cpp.append("#include \"Logger.h\"\n")
-    include_cpp.append("#include <dolfin.h>\n")
+    include_cpp.append("#include \"SystemExpressionsWrapper.h\""+os.linesep)
+    include_cpp.append("#include \"BoostTypes.h\""+os.linesep)
+    include_cpp.append("#include \"Logger.h\""+os.linesep)
+    include_cpp.append("#include <dolfin.h>"+os.linesep)
 
-    cppexpression_cpp.append("    else\n")
-    cppexpression_cpp.append("    {\n")
-    cppexpression_cpp.append("      tf_err(\"Unknown systemname in cpp_fetch_expression\", \"System name: %s\", systemname.c_str());\n")
-    cppexpression_cpp.append("    }\n")
-    cppexpression_cpp.append("    return expression;\n")
-    cppexpression_cpp.append("  }\n")
+    cppexpression_cpp.append("    else"+os.linesep)
+    cppexpression_cpp.append("    {"+os.linesep)
+    cppexpression_cpp.append("      tf_err(\"Unknown systemname in cpp_fetch_expression\", \"System name: %s\", systemname.c_str());"+os.linesep)
+    cppexpression_cpp.append("    }"+os.linesep)
+    cppexpression_cpp.append("    return expression;"+os.linesep)
+    cppexpression_cpp.append("  }"+os.linesep)
 
-    cppexpression_init.append("    else\n")
-    cppexpression_init.append("    {\n")
-    cppexpression_init.append("      tf_err(\"Unknown systemname in cpp_init_expression\", \"System name: %s\", systemname.c_str());\n")
-    cppexpression_init.append("    }\n")
-    cppexpression_init.append("  }\n")
+    cppexpression_init.append("    else"+os.linesep)
+    cppexpression_init.append("    {"+os.linesep)
+    cppexpression_init.append("      tf_err(\"Unknown systemname in cpp_init_expression\", \"System name: %s\", systemname.c_str());"+os.linesep)
+    cppexpression_init.append("    }"+os.linesep)
+    cppexpression_init.append("  }"+os.linesep)
 
     cpp += include_cpp
-    cpp.append("\n")
-    cpp.append("namespace buckettools\n")
-    cpp.append("{\n")
+    cpp.append(os.linesep)
+    cpp.append("namespace buckettools"+os.linesep)
+    cpp.append("{"+os.linesep)
     cpp += cppexpression_cpp
-    cpp.append("\n")
+    cpp.append(os.linesep)
     cpp += cppexpression_init
-    cpp.append("\n")
-    cpp.append("}\n")
-    cpp.append("\n")
+    cpp.append(os.linesep)
+    cpp.append("}"+os.linesep)
+    cpp.append(os.linesep)
 
     filename = "SystemExpressionsWrapper.cpp"
     filehandle = file(filename+".temp", 'w')

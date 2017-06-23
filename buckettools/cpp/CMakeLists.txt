@@ -28,15 +28,15 @@ project(BUCKETTOOLS_CPP)
 file(
     WRITE ${PROJECT_BINARY_DIR}/builddefs.h.in
 "
-#define __GIT_SHA__                   @GIT_SHA@\n
-#define __BUCKETTOOLS_VERSION_MAJOR__ \"@BUCKETTOOLS_VERSION_MAJOR@\"\n
-#define __BUCKETTOOLS_VERSION_MINOR__ \"@BUCKETTOOLS_VERSION_MINOR@\"\n
-#define __BUCKETTOOLS_VERSION_MICRO__ \"@BUCKETTOOLS_VERSION_MICRO@\"\n
-#define __BUCKETTOOLS_VERSION__       \"@BUCKETTOOLS_VERSION@\"\n
-#define __TERRAFERMA_VERSION_MAJOR__  \"@TERRAFERMA_VERSION_MAJOR@\"\n
-#define __TERRAFERMA_VERSION_MINOR__  \"@TERRAFERMA_VERSION_MINOR@\"\n
-#define __TERRAFERMA_VERSION_MICRO__  \"@TERRAFERMA_VERSION_MICRO@\"\n
-#define __TERRAFERMA_VERSION__        \"@TERRAFERMA_VERSION@\"\n
+#define __GIT_SHA__                   \${GIT_SHA}\n
+#define __BUCKETTOOLS_VERSION_MAJOR__ \"${BUCKETTOOLS_VERSION_MAJOR}\"\n
+#define __BUCKETTOOLS_VERSION_MINOR__ \"${BUCKETTOOLS_VERSION_MINOR}\"\n
+#define __BUCKETTOOLS_VERSION_MICRO__ \"${BUCKETTOOLS_VERSION_MICRO}\"\n
+#define __BUCKETTOOLS_VERSION__       \"${BUCKETTOOLS_VERSION}\"\n
+#define __TERRAFERMA_VERSION_MAJOR__  \"${TERRAFERMA_VERSION_MAJOR}\"\n
+#define __TERRAFERMA_VERSION_MINOR__  \"${TERRAFERMA_VERSION_MINOR}\"\n
+#define __TERRAFERMA_VERSION_MICRO__  \"${TERRAFERMA_VERSION_MICRO}\"\n
+#define __TERRAFERMA_VERSION__        \"${TERRAFERMA_VERSION}\"\n
 "
     )
 
@@ -62,7 +62,7 @@ file(
     else(HAVE_GIT)
         set(GIT_SHA git_not_found)
     endif(HAVE_GIT)
-    configure_file(\${SRC} \${DST} @ONLY)
+    configure_file(\${SRC} \${DST})
     "
     )
 
@@ -102,7 +102,7 @@ add_library(buckettools_cpp SHARED
                             FunctionBucket.cpp SpudFunctionBucket.cpp
                             SolverBucket.cpp SpudSolverBucket.cpp 
                             FunctionalBucket.cpp SpudFunctionalBucket.cpp
-                            SpudBase.cpp MPIBase.cpp PythonExpression.cpp PythonInstance.cpp
+                            SpudBase.cpp MPIBase.cpp PythonExpression.cpp PythonInstance.cpp GlobalPythonInstance.cpp
                             InitialConditionExpression.cpp RegionsExpression.cpp SemiLagrangianExpression.cpp
                             GenericDetectors.cpp PointDetectors.cpp PythonDetectors.cpp
                             DiagnosticsFile.cpp StatisticsFile.cpp SteadyStateFile.cpp

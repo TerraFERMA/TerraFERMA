@@ -165,9 +165,12 @@ std::unordered_set<std::size_t> buckettools::cell_dofs_values(const FunctionSpac
   std::shared_ptr<const dolfin::GenericDofMap> dofmap = (*functionspace).dofmap();
   const_Mesh_ptr mesh = (*functionspace).mesh();
 
+  assert((*functionspace).element());
+  std::shared_ptr<const dolfin::FiniteElement> element = (*functionspace).element();
+
   const std::size_t gdim = (*mesh).geometry().dim();                        // set up data for expression evaluation
   boost::multi_array<double, 2> coordinates(boost::extents[(*dofmap).max_cell_dimension()][gdim]);
-  std::vector<double> vertex_coordinates;
+  std::vector<double> dof_coordinates;
   dolfin::Array<double> x(gdim);
 
   std::size_t value_size = 1;
@@ -207,18 +210,17 @@ std::unordered_set<std::size_t> buckettools::cell_dofs_values(const FunctionSpac
       }
     }
 
-    std::vector<dolfin::la_index> tmp_dof_vec = (*dofmap).cell_dofs((*cell).index());
+    dolfin::ArrayView<const dolfin::la_index> tmp_dof_vec = (*dofmap).cell_dofs((*cell).index());
     std::vector<dolfin::la_index> dof_vec;
-    for (std::vector<dolfin::la_index>::const_iterator dof_it = tmp_dof_vec.begin();
-                              dof_it != tmp_dof_vec.end(); dof_it++)
+    for (std::size_t i = 0; i < tmp_dof_vec.size(); i++)
     {
-      dof_vec.push_back((*dofmap).local_to_global_index(*dof_it));
+      dof_vec.push_back((*dofmap).local_to_global_index(tmp_dof_vec[i]));
     }
 
     if(value_exp)
     {
-      (*cell).get_vertex_coordinates(vertex_coordinates);
-      (*dofmap).tabulate_coordinates(coordinates, vertex_coordinates, *cell);
+      (*cell).get_coordinate_dofs(dof_coordinates);
+      (*element).tabulate_dof_coordinates(coordinates, dof_coordinates, *cell);
     }
 
     for (std::size_t i = 0; i < dof_vec.size(); i++)                        // loop over the cell dof
@@ -266,9 +268,12 @@ std::unordered_set<std::size_t> buckettools::facet_dofs_values(const FunctionSpa
   std::shared_ptr<const dolfin::GenericDofMap> dofmap = (*functionspace).dofmap();
   const_Mesh_ptr mesh = (*functionspace).mesh();
 
+  assert((*functionspace).element());
+  std::shared_ptr<const dolfin::FiniteElement> element = (*functionspace).element();
+
   const std::size_t gdim = (*mesh).geometry().dim();
   boost::multi_array<double, 2> coordinates(boost::extents[(*dofmap).max_cell_dimension()][gdim]);
-  std::vector<double> vertex_coordinates;
+  std::vector<double> dof_coordinates;
   dolfin::Array<double> x(gdim);
 
   std::size_t value_size = 1;
@@ -310,21 +315,20 @@ std::unordered_set<std::size_t> buckettools::facet_dofs_values(const FunctionSpa
 
         const std::size_t facet_number = cell.index(*facet);         // get the local index of the facet w.r.t. the cell
 
-        std::vector<dolfin::la_index> tmp_cell_dof_vec = (*dofmap).cell_dofs(cell.index());// get the cell dof (potentially for all components)
+        dolfin::ArrayView<const dolfin::la_index> tmp_cell_dof_vec = (*dofmap).cell_dofs(cell.index());// get the cell dof (potentially for all components)
         std::vector<dolfin::la_index> cell_dof_vec;
-        for (std::vector<dolfin::la_index>::const_iterator dof_it = tmp_cell_dof_vec.begin();
-                                  dof_it != tmp_cell_dof_vec.end(); dof_it++)
+        for (std::size_t i = 0; i < tmp_cell_dof_vec.size(); i++)
         {
-          cell_dof_vec.push_back((*dofmap).local_to_global_index(*dof_it));
+          cell_dof_vec.push_back((*dofmap).local_to_global_index(tmp_cell_dof_vec[i]));
         }
-        
+
         std::vector<std::size_t> facet_dof_vec((*dofmap).num_facet_dofs(), 0);
         (*dofmap).tabulate_facet_dofs(facet_dof_vec, facet_number);
 
         if (value_exp)
         {
-          cell.get_vertex_coordinates(vertex_coordinates);
-          (*dofmap).tabulate_coordinates(coordinates, vertex_coordinates, cell);
+          cell.get_coordinate_dofs(dof_coordinates);
+          (*element).tabulate_dof_coordinates(coordinates, dof_coordinates, cell);
         }
 
         for (std::size_t i = 0; i < facet_dof_vec.size(); i++)              // loop over facet dof
@@ -369,7 +373,7 @@ void buckettools::restrict_indices(std::vector<std::size_t> &indices,
   std::pair<std::size_t, std::size_t> ownership_range =              // the parallel ownership range of the system functionspace
           (*(*functionspace).dofmap()).ownership_range();
 
-  const std::size_t dofmap_block_size = (*(*functionspace).dofmap()).block_size;
+  const int dofmap_block_size = (*(*functionspace).dofmap()).block_size();
   const std::vector<std::size_t> ghost_global_dofs = 
               (*(*functionspace).dofmap()).local_to_global_unowned();
 
@@ -431,36 +435,32 @@ void buckettools::restrict_indices(std::vector<std::size_t> &indices,
                                                                      // also occur in the sibling indices
     std::vector<std::size_t> tmp_indices;
 
-    std::size_t c_size = indices.size();
-    std::size_t c_ind = 0;
+    std::vector<std::size_t>::const_iterator c_it = indices.begin(),
+                                      s_it = (*sibling_indices).begin();
     bool overlap = false;
-    for(std::vector<std::size_t>::const_iterator                            // loop over the sibling indices
-                                   s_it = (*sibling_indices).begin();
-                                   s_it != (*sibling_indices).end();
-                                   s_it++)
+    while ((c_it != indices.end()) && (s_it != (*sibling_indices).end()))
     {
-      while(indices[c_ind] != *s_it)                                 // indices are sorted, so sibling_indices should be too
-      {                                                              // search indices until the current sibling index is found
-        tmp_indices.push_back(indices[c_ind]);                       // include indices that aren't in the sibling
-        c_ind++;
-        if (c_ind == c_size)                                         // or we reach the end of the indices...
-        {
-          break;
-        }
+      if (*c_it < *s_it)
+      {
+        tmp_indices.push_back(*c_it);
+        c_it++;
       }
-      if (c_ind == c_size)                                           // we've reached the end of the indices so nothing more
-      {                                                              // to do
-        break;
+      else if (*s_it < *c_it)
+      {
+        s_it++;
       }
-      else                                                           // we haven't reached the end of the indices but found
-      {                                                              // a sibling index to ignore... give a warning
+      else                                                           // indices[c_ind] == (*sibling_indices)[s_ind]
+      {
+        c_it++;
+        s_it++;
         overlap = true;
       }
-      c_ind++;                                                       // indices shouldn't be repeated so increment the too
     }
-    for (std::size_t i = c_ind; i < c_size; i++)
+
+    while (c_it != indices.end())                                    // insert any remaining indices beyond the siblings
     {
-      tmp_indices.push_back(indices[i]);                             // insert any remaining indices beyond the siblings
+      tmp_indices.push_back(*c_it);
+      c_it++;
     }
 
     if(overlap)
@@ -478,43 +478,32 @@ void buckettools::restrict_indices(std::vector<std::size_t> &indices,
                                                                      // not occur in the parent indices 
     std::vector<std::size_t> tmp_indices;
 
-    std::size_t p_size = (*parent_indices).size();
-    std::size_t p_ind = 0;
-    std::size_t p_reset = 0;
+    std::vector<std::size_t>::const_iterator c_it = indices.begin(),
+                                      p_it = (*parent_indices).begin();
     bool extra = false;
-    for (std::vector<std::size_t>::const_iterator                           // loop over the indices
-                                        c_it = indices.begin(); 
-                                        c_it != indices.end(); 
-                                        c_it++)
+    while ((c_it != indices.end()) && (p_it != (*parent_indices).end()))
     {
-      if (p_ind == p_size)                                           // we've reach the end
+      if (*c_it < *p_it)
       {
-        if (c_it == indices.begin())                                 // if we're here on the first iteration then the parent_indices
-        {                                                            // were empty so throw a warning as we're ditching all the children
-          extra = true;
-        }
-        break;                                                       // get out of here
+        c_it++;                                                      // dropping
+        extra = true;
       }
-      while ((*parent_indices)[p_ind] != *c_it)                      // indices is sorted, so parent_indices should be too...
-      {                                                              // search parent_indices until the current index is found
-        p_ind++;
-        if (p_ind == p_size)                                         // or we reach the end of the parent_indices...
-        {                                                            // and prepare to throw a warning
-          extra = true;
-          break;
-        }
-      }
-      if (p_ind == p_size)
+      else if (*p_it < *c_it)
       {
-        p_ind = p_reset;
+        p_it++;
       }
-      else
+      else                                                           // *c_it == *p_it
       {
-        tmp_indices.push_back(*c_it);                                // include indices that are in the parent
-        p_ind++;                                                     // indices shouldn't be repeated so increment the parent too
-        p_reset = p_ind;                                             // this is where the next failed search should continue from
+        tmp_indices.push_back(*c_it);
+        c_it++;
+        p_it++;
       }
-    } 
+    }
+
+    if (c_it != indices.end())
+    {
+      extra = true;                                                  // dropping trailing
+    }
 
     if(extra)
     {                                                                // indices were ignored... give a warning
