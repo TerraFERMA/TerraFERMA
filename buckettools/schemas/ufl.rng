@@ -138,6 +138,31 @@ If unselected ffc will automatically determine the degree for the form.</a:docum
       </element>
     </optional>
   </define>
+  <define name="form_representation">
+    <choice>
+      <element name="form_representation">
+        <a:documentation>The representation that will be used when generating the forms.</a:documentation>
+        <attribute name="name">
+          <value>quadrature</value>
+        </attribute>
+        <ref name="comment"/>
+      </element>
+      <element name="form_representation">
+        <a:documentation>The representation that will be used when generating the forms.</a:documentation>
+        <attribute name="name">
+          <value>uflacs</value>
+        </attribute>
+        <ref name="comment"/>
+      </element>
+      <element name="form_representation">
+        <a:documentation>The representation that will be used when generating the forms.</a:documentation>
+        <attribute name="name">
+          <value>tensor</value>
+        </attribute>
+        <ref name="comment"/>
+      </element>
+    </choice>
+  </define>
   <define name="quadrature_rule">
     <choice>
       <element name="quadrature_rule">

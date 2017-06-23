@@ -105,9 +105,18 @@ class TFSolitaryWave:
         p_degree = libspud.get_option(path+p_name+"/type/rank/element/degree")
         f_family = libspud.get_option(path+f_name+"/type/rank/element/family")
         f_degree = libspud.get_option(path+f_name+"/type/rank/element/degree")        
-        Vp = df.FunctionSpace(mesh,p_family,p_degree)
-        Vf = df.FunctionSpace(mesh,f_family,f_degree)
-        self.functionspace = Vp*Vf
+        pe = df.FiniteElement(p_family, mesh.ufl_cell(), p_degree)
+        ve = df.FiniteElement(f_family, mesh.ufl_cell(), f_degree)
+        e = pe*ve
+        self.functionspace = df.FunctionSpace(mesh, e)
+
+        #work out the order of the fields
+        for i in xrange(libspud.option_count("/system::"+system_name+"/field")):
+          name = libspud.get_option("/system::"+system_name+"/field["+`i`+"]/name")
+          if name == f_name:
+            self.f_index = i
+          if name == p_name:
+            self.p_index = i
                 
     def getr(self,x):
         """ return radial position with respect to wave origin x0
@@ -177,7 +186,8 @@ class TFSolitaryWave:
         
         # load function and extract porosity
         u = df.Function(self.functionspace,xml_file)
-        p, f = u.split(deepcopy = True)
+        fields = u.split(deepcopy = True)
+        f = fields[self.f_index]
         
         
         #initialize Error Object

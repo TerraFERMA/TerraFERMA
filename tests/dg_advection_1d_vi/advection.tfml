@@ -46,7 +46,11 @@
       </coefficient>
     </timestep>
   </timestepping>
-  <global_parameters/>
+  <global_parameters>
+    <dolfin>
+      <ghost_mode name="shared_facet"/>
+    </dolfin>
+  </global_parameters>
   <system name="System">
     <mesh name="Mesh"/>
     <ufl_symbol name="global">
@@ -76,7 +80,7 @@
           </initial_condition>
           <initial_condition type="initial_condition" name="Right">
             <region_ids>
-              <integer_value shape="1" rank="1">2</integer_value>
+              <integer_value shape="2" rank="1">2 3</integer_value>
             </region_ids>
             <constant>
               <real_value rank="0">0.0</real_value>
@@ -88,6 +92,80 @@
         <include_in_visualization/>
         <include_in_statistics/>
         <include_residual_in_visualization/>
+      </diagnostics>
+    </field>
+    <field name="Field2">
+      <ufl_symbol name="global">
+        <string_value lines="1">f2</string_value>
+      </ufl_symbol>
+      <type name="Function">
+        <rank name="Scalar" rank="0">
+          <element name="P1DG">
+            <family>
+              <string_value lines="1">DG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">1</integer_value>
+            </degree>
+          </element>
+          <initial_condition type="initial_condition" name="Left">
+            <region_ids>
+              <integer_value shape="2" rank="1">1 2</integer_value>
+            </region_ids>
+            <constant>
+              <real_value rank="0">0.0</real_value>
+            </constant>
+          </initial_condition>
+          <initial_condition type="initial_condition" name="Right">
+            <region_ids>
+              <integer_value shape="1" rank="1">3</integer_value>
+            </region_ids>
+            <constant>
+              <real_value rank="0">2.0</real_value>
+            </constant>
+          </initial_condition>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_visualization/>
+        <include_in_statistics/>
+      </diagnostics>
+    </field>
+    <field name="Field3">
+      <ufl_symbol name="global">
+        <string_value lines="1">f3</string_value>
+      </ufl_symbol>
+      <type name="Function">
+        <rank name="Scalar" rank="0">
+          <element name="P1DG">
+            <family>
+              <string_value lines="1">DG</string_value>
+            </family>
+            <degree>
+              <integer_value rank="0">1</integer_value>
+            </degree>
+          </element>
+          <initial_condition type="initial_condition" name="Middle">
+            <region_ids>
+              <integer_value shape="1" rank="1">2</integer_value>
+            </region_ids>
+            <constant>
+              <real_value rank="0">0.0</real_value>
+            </constant>
+          </initial_condition>
+          <initial_condition type="initial_condition" name="LeftAndRight">
+            <region_ids>
+              <integer_value shape="2" rank="1">1 3</integer_value>
+            </region_ids>
+            <constant>
+              <real_value rank="0">3.0</real_value>
+            </constant>
+          </initial_condition>
+        </rank>
+      </type>
+      <diagnostics>
+        <include_in_visualization/>
+        <include_in_statistics/>
       </diagnostics>
     </field>
     <coefficient name="Velocity">
@@ -142,21 +220,46 @@
         <form name="Residual" rank="0">
           <string_value lines="20" type="code" language="python">n = FacetNormal(f_e.cell())
 vnabs = (dot(v, n) + abs(dot(v, n)))/2.0
+mvnabs = (dot(-v, n) + abs(dot(-v, n)))/2.0
 vn = dot(v,n)
 
 theta_av = (theta('+') + theta('-'))/2.0
 dt_av = (dt('+') + dt('-'))/2.0
 
-r_m = f_t*f_i*dx(1) + f_t*f_i*dx(2) - f_t*f_n*dx(1) - f_t*f_n*dx(2)
+r1_m = f_t*(f_i - f_n)*dx
 
-r_a = - dt*theta*dot(grad(f_t), v*f_i)*dx(1) - dt*theta*dot(grad(f_t), v*f_i)*dx(2) - dt*(1.0-theta)*dot(grad(f_t), v*f_n)*dx(1) - dt*(1.0-theta)*dot(grad(f_t), v*f_n)*dx(2)
+r1_a = - dt*dot(grad(f_t), v*(theta*f_i + (1.0-theta)*f_n))*dx
 
-r_fS =  dt_av*theta_av*(dot(vnabs('+')*f_i('+') - vnabs('-')*f_i('-'), jump(f_t))*dS) + dt_av*(1.0-theta_av)*(dot(vnabs('+')*f_n('+') - vnabs('-')*f_n('-'), jump(f_t))*dS)
+r1_fS =  dt_av*theta_av*(dot(vnabs('+')*f_i('+') - vnabs('-')*f_i('-'), jump(f_t))*dS) + dt_av*(1.0-theta_av)*(dot(vnabs('+')*f_n('+') - vnabs('-')*f_n('-'), jump(f_t))*dS)
 
-r_fs1 =  dt*dot(vn*f_t, fin)*ds(1)
-r_fs2 =  dt*theta*dot(vn*f_t, f_i)*ds(2) + dt*(1.0-theta)*dot(vn*f_t, f_n)*ds(2)
+r1_fs1 =  dt*dot(vn*f_t, fin)*ds(1)
+r1_fs2 =  dt*theta*dot(vn*f_t, f_i)*ds(2) + dt*(1.0-theta)*dot(vn*f_t, f_n)*ds(2)
 
-r = r_m + r_a + r_fS + r_fs1 + r_fs2</string_value>
+r1 = r1_m + r1_a + r1_fS + r1_fs1 + r1_fs2
+
+r2_m = f2_t*(f2_i - f2_n)*dx
+
+r2_a = - dt*dot(grad(f2_t), -v*(theta*f2_i + (1.0-theta)*f2_n))*dx
+
+r2_fS =  dt_av*theta_av*(dot(mvnabs('+')*f2_i('+') - mvnabs('-')*f2_i('-'), jump(f2_t))*dS) + dt_av*(1.0-theta_av)*(dot(mvnabs('+')*f2_n('+') - mvnabs('-')*f2_n('-'), jump(f2_t))*dS)
+
+r2_fs1 =  dt*theta*dot(-vn*f2_t, f2_i)*ds(1) + dt*(1.0-theta)*dot(-vn*f2_t, f2_n)*ds(1)
+r2_fs2 =  dt*dot(-vn*f2_t, 2.*fin)*ds(2)
+
+r2 = r2_m + r2_a + r2_fS + r2_fs1 + r2_fs2
+
+r3_m = f3_t*(f3_i - f3_n)*dx
+
+r3_a = - dt*dot(grad(f3_t), v*(theta*f3_i + (1.0-theta)*f3_n))*dx
+
+r3_fS =  dt_av*theta_av*(dot(vnabs('+')*f3_i('+') - vnabs('-')*f3_i('-'), jump(f3_t))*dS) + dt_av*(1.0-theta_av)*(dot(vnabs('+')*f3_n('+') - vnabs('-')*f3_n('-'), jump(f3_t))*dS)
+
+r3_fs1 =  dt*dot(vn*f3_t, 3.*fin)*ds(1)
+r3_fs2 =  dt*theta*dot(vn*f3_t, f3_i)*ds(2) + dt*(1.0-theta)*dot(vn*f3_t, f3_n)*ds(2)
+
+r3 = r3_m + r3_a + r3_fS + r3_fs1 + r3_fs2
+
+r = r1 + r2 + r3</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">r</string_value>
           </ufl_symbol>
@@ -167,6 +270,7 @@ r = r_m + r_a + r_fS + r_fs1 + r_fs2</string_value>
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
+        <form_representation name="quadrature"/>
         <quadrature_rule name="default"/>
         <snes_type name="vi">
           <constraints>
@@ -177,10 +281,31 @@ r = r_m + r_a + r_fS + r_fs1 + r_fs2</string_value>
   return 1.0</string_value>
                 </python>
               </field>
+              <field name="Field2">
+                <constant>
+                  <real_value rank="0">2.0</real_value>
+                </constant>
+              </field>
+              <field name="Field3">
+                <constant>
+                  <real_value rank="0">3.0</real_value>
+                </constant>
+              </field>
               <monitors/>
             </upper_bound>
             <lower_bound>
               <field name="Field">
+                <constant>
+                  <real_value rank="0">0.0</real_value>
+                </constant>
+              </field>
+              <field name="Field2">
+                <python>
+                  <string_value lines="20" type="code" language="python">def val(x):
+  return 0.0</string_value>
+                </python>
+              </field>
+              <field name="Field3">
                 <constant>
                   <real_value rank="0">0.0</real_value>
                 </constant>
@@ -202,8 +327,49 @@ r = r_m + r_a + r_fS + r_fs1 + r_fs2</string_value>
         </monitors>
         <linear_solver>
           <iterative_method name="preonly"/>
-          <preconditioner name="lu">
-            <factorization_package name="umfpack"/>
+          <preconditioner name="fieldsplit">
+            <composite_type name="additive"/>
+            <fieldsplit name="Field">
+              <field name="Field"/>
+              <monitors/>
+              <linear_solver>
+                <iterative_method name="preonly"/>
+                <preconditioner name="lu">
+                  <factorization_package name="mumps"/>
+                </preconditioner>
+              </linear_solver>
+            </fieldsplit>
+            <fieldsplit name="OtherFields">
+              <field name="Field2"/>
+              <field name="Field3"/>
+              <monitors/>
+              <linear_solver>
+                <iterative_method name="preonly"/>
+                <preconditioner name="fieldsplit">
+                  <composite_type name="additive"/>
+                  <fieldsplit name="Field2">
+                    <field name="Field2"/>
+                    <monitors/>
+                    <linear_solver>
+                      <iterative_method name="preonly"/>
+                      <preconditioner name="lu">
+                        <factorization_package name="mumps"/>
+                      </preconditioner>
+                    </linear_solver>
+                  </fieldsplit>
+                  <fieldsplit name="Field3">
+                    <field name="Field3"/>
+                    <monitors/>
+                    <linear_solver>
+                      <iterative_method name="preonly"/>
+                      <preconditioner name="lu">
+                        <factorization_package name="mumps"/>
+                      </preconditioner>
+                    </linear_solver>
+                  </fieldsplit>
+                </preconditioner>
+              </linear_solver>
+            </fieldsplit>
           </preconditioner>
         </linear_solver>
         <never_ignore_solver_failures/>

@@ -71,6 +71,8 @@ namespace buckettools
 
     void allocate_coeff_function();                                  // allocate this function assuming it's a coefficient function
 
+    void allocate_bcs();                                             // allocate the bcs assuming it's a field
+
     void initialize_field();                                         // initialize the expressions associated with a field
 
     void initialize_coeff_expression();                              // initialize the expressions associated with a field
@@ -158,6 +160,17 @@ namespace buckettools
                                       const std::string &expressionname,
                                       const double_ptr time,
                                       bool *time_dependent);         // allocate an expression based on an optionpath
+
+    GenericFunction_ptr take_function_reference_(
+                                      const std::string &optionpath,
+                                      const std::string &expressionname,
+                                      const double_ptr time);        // take a reference to a function based on an optionpath
+
+    GenericFunction_ptr take_function_reference_(
+                                      const std::string &optionpath,
+                                      const std::string &expressionname,
+                                      const double_ptr time,
+                                      bool *time_dependent);         // take a reference to a function based on an optionpath
 
     void initialize_expression_over_regions_(
                                       Expression_ptr expression,

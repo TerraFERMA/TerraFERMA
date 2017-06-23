@@ -57,7 +57,15 @@
       </coefficient>
     </timestep>
   </timestepping>
-  <global_parameters/>
+  <global_parameters>
+    <python>
+      <string_value lines="20" type="code" language="python">from math import sin,cos,pi,sqrt,exp
+from numpy import array
+omega = 2.*pi
+x_rot = array([0.5,0.5])
+x0_init = array([0.5,0.7])</string_value>
+    </python>
+  </global_parameters>
   <system name="Advection">
     <mesh name="Mesh"/>
     <ufl_symbol name="global">
@@ -79,10 +87,7 @@
           </element>
           <initial_condition type="initial_condition" name="WholeMesh">
             <python rank="0">
-              <string_value lines="20" type="code" language="python">from math import exp
-from numpy import array
-
-def phi0(x,x0):
+              <string_value lines="20" type="code" language="python">def phi0(x,x0):
   global exp,array
   A=2.
   sigma = .1
@@ -115,6 +120,7 @@ def val(x):
             <degree>
               <integer_value rank="0">4</integer_value>
             </degree>
+            <quadrature_rule name="canonical"/>
           </element>
           <value type="value" name="WholeMesh">
             <internal rank="0">
@@ -151,10 +157,7 @@ def val(x):
           </element>
           <value type="value" name="WholeMesh">
             <python rank="1">
-              <string_value lines="20" type="code" language="python">from math import pi
-omega = 2.*pi
-
-def val(x):
+              <string_value lines="20" type="code" language="python">def val(x):
   global omega
   u = (x[1] - 0.5)*omega
   w = -(x[0] - 0.5)*omega
@@ -196,12 +199,7 @@ def val(x):
           </element>
           <value type="value" name="WholeMesh">
             <python rank="0">
-              <string_value lines="20" type="code" language="python">from math import sin,cos,pi,sqrt
-from numpy import array
-x_rot = array([0.5,0.5])
-x0_init = array([0.5,0.7])
-
-def val(x,t):
+              <string_value lines="20" type="code" language="python">def val(x,t):
   global sin,cos,pi,sqrt,x_rot,x0_init,phi0,array
   # calculate rotation
   theta = 2.*pi*t
@@ -233,6 +231,10 @@ def val(x,t):
             <string_value lines="1">J</string_value>
           </ufl_symbol>
         </form>
+        <form_representation name="quadrature"/>
+        <quadrature_degree>
+          <integer_value rank="0">4</integer_value>
+        </quadrature_degree>
         <quadrature_rule name="canonical"/>
         <snes_type name="ls">
           <ls_type name="cubic"/>
@@ -274,6 +276,7 @@ def val(x,t):
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
+      <form_representation name="quadrature"/>
       <quadrature_rule name="default"/>
       <include_in_statistics/>
     </functional>
@@ -282,6 +285,7 @@ def val(x,t):
       <ufl_symbol name="functional">
         <string_value lines="1">err2</string_value>
       </ufl_symbol>
+      <form_representation name="quadrature"/>
       <quadrature_rule name="default"/>
       <include_in_statistics/>
     </functional>

@@ -130,8 +130,8 @@ void SpudFunctionBucket::allocate_coeff_function()
     functionspace_ =                                                 // grab the functionspace for this coefficient from the bucket
           (*(*system_).bucket()).fetch_coefficientspace(uflsymbol());// data maps
 
-    function_.reset( new dolfin::Function(*functionspace_) );        // allocate the function on this functionspace
-    oldfunction_.reset( new dolfin::Function(*functionspace_) );     // allocate the old function on this functionspace
+    function_.reset( new dolfin::Function(functionspace_) );        // allocate the function on this functionspace
+    oldfunction_.reset( new dolfin::Function(functionspace_) );     // allocate the old function on this functionspace
     iteratedfunction_ = function_;                                   // just point this at the function
 
                                                                      // can't initialize this yet (it may depend on other
@@ -151,6 +151,44 @@ void SpudFunctionBucket::allocate_coeff_function()
 
   }
 
+}
+
+//*******************************************************************|************************************************************//
+// allocate bcs
+//*******************************************************************|************************************************************//
+void SpudFunctionBucket::allocate_bcs()
+{
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud error code
+
+  buffer.str(""); buffer << optionpath()                             // find out how many strong bcs there are (weak bcs handled in
+                                << "/type/rank/boundary_condition";  // forms)
+  int nbcs = Spud::option_count(buffer.str());
+  if (nbcs > 0)                                                      // if we have any...
+  {
+    for (uint i = 0; i < nbcs; i++)                                  // loop over the bcs
+    {
+      buffer.str(""); buffer << optionpath()
+                    << "/type/rank/boundary_condition[" << i << "]";
+      fill_bc_(buffer.str());                                        // and fill in details about the bc
+    }
+  }
+
+                                                                     // NOTE: this isn't strictly necessary here but we do it
+                                                                     // for consistency as these are basically bcs too
+  buffer.str(""); buffer << optionpath()                             // find out how many reference points bcs there are
+                                << "/type/rank/reference_point";
+  int nrpoints = Spud::option_count(buffer.str());
+  if (nrpoints > 0)                                                  // if we have any...
+  {
+    for (uint i = 0; i < nrpoints; i++)                              // loop over the points
+    {
+      buffer.str(""); buffer << optionpath()
+                    << "/type/rank/reference_point[" << i << "]";
+      fill_reference_point_(buffer.str());                           // and fill in details about the reference point
+    }
+  }
+    
 }
 
 //*******************************************************************|************************************************************//
@@ -176,7 +214,10 @@ void SpudFunctionBucket::initialize_field()
   {
     buffer.str(""); buffer << optionpath()                           // find out how many initial conditions we have
                                     << "/type/rank/initial_condition";
-    initialize_expression_over_regions_(icexpression_, buffer.str());// intialize the expression
+    if(Spud::have_option(buffer.str()))
+    {
+      initialize_expression_over_regions_(icexpression_, buffer.str());// intialize the expression
+    }
   }
   
 }
@@ -491,32 +532,6 @@ void SpudFunctionBucket::allocate_field_()
     (*snesupdatefunction_).rename(buffer.str(), buffer.str());
   }
 
-  buffer.str(""); buffer << optionpath()                             // find out how many strong bcs there are (weak bcs handled in
-                                << "/type/rank/boundary_condition";  // forms)
-  int nbcs = Spud::option_count(buffer.str());
-  if (nbcs > 0)                                                      // if we have any...
-  {
-    for (uint i = 0; i < nbcs; i++)                                  // loop over the bcs
-    {
-      buffer.str(""); buffer << optionpath()
-                    << "/type/rank/boundary_condition[" << i << "]";
-      fill_bc_(buffer.str());                                        // and fill in details about the bc
-    }
-  }
-    
-  buffer.str(""); buffer << optionpath()                             // find out how many reference points bcs there are
-                                << "/type/rank/reference_point";
-  int nrpoints = Spud::option_count(buffer.str());
-  if (nrpoints > 0)                                                  // if we have any...
-  {
-    for (uint i = 0; i < nrpoints; i++)                              // loop over the points
-    {
-      buffer.str(""); buffer << optionpath()
-                    << "/type/rank/reference_point[" << i << "]";
-      fill_reference_point_(buffer.str());                           // and fill in details about the reference point
-    }
-  }
-    
   zeropoints_.resize(size());
   buffer.str(""); buffer << optionpath()                             // find out how many zero points bcs there are
                                 << "/type/rank/zero_point";
@@ -548,8 +563,11 @@ void SpudFunctionBucket::allocate_field_()
   {
     buffer.str(""); buffer << optionpath()                           // find out how many initial conditions we have
                                    << "/type/rank/initial_condition";
-    icexpression_ = allocate_expression_over_regions_(buffer.str(), 
+    if(Spud::have_option(buffer.str()))
+    {
+      icexpression_ = allocate_expression_over_regions_(buffer.str(), 
                             (*(*system_).bucket()).start_time_ptr());// allocate the expression
+    }
   }
 
   lower_cap_.resize(size());
@@ -623,11 +641,18 @@ void SpudFunctionBucket::fill_bc_component_(const std::string &optionpath,
   {
     namebuffer.str(""); namebuffer << bcname << compname;              // assemble a name for the bc expression
     buffer.str(""); buffer << optionpath << "/type::Dirichlet";      // initialize an expression describing the function
-    Expression_ptr bcexp = allocate_expression_(buffer.str(), 
+    GenericFunction_ptr bcfunc = allocate_expression_(buffer.str(), 
                      namebuffer.str(), 
                      (*(*system_).bucket()).current_time_ptr());     // on this boundary condition, assuming it is of type
+    if (!bcfunc)                                                     // if nothing was returned then it's probably a 
+    {                                                                // reference, which we handle separately
+      bcfunc = take_function_reference_(buffer.str(), 
+                    namebuffer.str(), 
+                    (*(*system_).bucket()).current_time_ptr());
+    }
+    assert(bcfunc);
 
-    register_bcexpression(bcexp, namebuffer.str());                  // register the expression in the function bucket maps
+    register_bcfunction(bcfunc, namebuffer.str());                  // register the expression in the function bucket maps
        
     buffer.str(""); buffer << optionpath << "/components";           // do we have any components (i.e. could be scalar)?
     if (Spud::have_option(buffer.str()))
@@ -647,7 +672,7 @@ void SpudFunctionBucket::fill_bc_component_(const std::string &optionpath,
          for (std::vector<int>::const_iterator bcid = bcids.begin(); // loop over the boundary ids
                                             bcid < bcids.end(); bcid++)
          {                                                           // create a new bc on each boundary id for this subcomponent
-           DirichletBC_ptr bc(new dolfin::DirichletBC(*subfunctionspace, *bcexp, *bcid));
+           DirichletBC_ptr bc(new dolfin::DirichletBC(subfunctionspace, bcfunc, *bcid));
            namebuffer.str(""); namebuffer << bcname << "::" 
                                       << *subcompid << "::" << *bcid;// assemble a name incorporating the boundary id
            register_dirichletbc(bc, namebuffer.str());               // register the bc in the function bucket
@@ -660,7 +685,7 @@ void SpudFunctionBucket::fill_bc_component_(const std::string &optionpath,
       for (std::vector<int>::const_iterator bcid = bcids.begin();    // loop over the boundary ids
                                           bcid < bcids.end(); bcid++)
       {                                                              // create a bc on each boundary id for all components
-        DirichletBC_ptr bc(new dolfin::DirichletBC(*functionspace(), *bcexp, *bcid));
+        DirichletBC_ptr bc(new dolfin::DirichletBC(functionspace(), bcfunc, *bcid));
         namebuffer.str(""); namebuffer << bcname << "::" << *bcid;   // assemble a name for this bc incorporating the boundary id
         register_dirichletbc(bc, namebuffer.str());                  // register the bc in the function bucket
       }
@@ -692,23 +717,23 @@ void SpudFunctionBucket::fill_reference_point_(const std::string &optionpath)
   serr = Spud::get_option(buffer.str(), coord);
   spud_err(buffer.str(), serr);
   
-  Constant_ptr value( new dolfin::Constant(0.0) );                    // works because we should always be scalar below
+  Constant_ptr value( new dolfin::Constant(0.0) );                   // works because we should always be scalar below
 
   const uint num_sub_elements = (*(*functionspace()).element()).num_sub_elements();
   if (num_sub_elements>0)
   {
     std::vector<int> subcompids;
     buffer.str(""); buffer << optionpath 
-                           << "/sub_components/components";            // do subcomponents exist?
+                           << "/sub_components/components";          // do subcomponents exist?
     if (Spud::have_option(buffer.str()))
     {
-      serr = Spud::get_option(buffer.str(), subcompids);               // get a list of the subcomponents 
+      serr = Spud::get_option(buffer.str(), subcompids);             // get a list of the subcomponents 
       spud_err(buffer.str(), serr);
     }
     else
     {
-      subcompids.resize(size());                                       // we do this to ensure we're applying
-      std::iota(subcompids.begin(), subcompids.end(), 0);              // ref point to scalar functionspace
+      subcompids.resize(size());                                     // we do this to ensure we're applying
+      std::iota(subcompids.begin(), subcompids.end(), 0);            // ref point to scalar functionspace
     }
       
     for (std::vector<int>::const_iterator subcompid =                // loop over those subcomponents
@@ -904,10 +929,11 @@ void SpudFunctionBucket::initialize_bc_component_(const std::string &optionpath,
     spud_err(buffer.str(), serr);
     namebuffer.str(""); namebuffer << bcname << compname;            // assemble a name for the bc expression
 
-    Expression_ptr bcexpression = fetch_bcexpression(namebuffer.str());// fetch the bc expression in the function bucket maps
+    GenericFunction_ptr bcfunction = fetch_bcfunction(namebuffer.str());// fetch the bc expression in the function bucket maps
+    Expression_ptr bcexp = std::dynamic_pointer_cast<dolfin::Expression>(bcfunction);
     buffer.str(""); buffer << optionpath << "/type::Dirichlet";      // initialize the expression describing the bc component
                                                                      // (assuming it is of type Dirichlet)
-    initialize_expression_(bcexpression, buffer.str(), 
+    initialize_expression_(bcexp, buffer.str(), 
                            namebuffer.str());
 
   }
@@ -1419,7 +1445,7 @@ Expression_ptr SpudFunctionBucket::allocate_expression_(
       }
 
     }
-    else
+    else if (algoname != "Reference")
     {
       tf_err("Unknown algorithm name in allocate_expression_.", "Algorithm: %s", algoname.c_str());
     }
@@ -1431,6 +1457,109 @@ Expression_ptr SpudFunctionBucket::allocate_expression_(
   }
   
   return expression;                                                 // return the allocated expression
+  
+}
+
+//*******************************************************************|************************************************************//
+// take a reference to a function from an optionpath assuming the buckettools schema
+//*******************************************************************|************************************************************//
+GenericFunction_ptr SpudFunctionBucket::take_function_reference_(
+                                       const std::string &optionpath,
+                                       const std::string &expressionname,
+                                       const double_ptr time)
+{
+  return take_function_reference_(optionpath, expressionname, time, NULL);
+}
+
+//*******************************************************************|************************************************************//
+// take a reference to a function from an optionpath assuming the buckettools schema
+//*******************************************************************|************************************************************//
+GenericFunction_ptr SpudFunctionBucket::take_function_reference_(
+                                       const std::string &optionpath,
+                                       const std::string &expressionname,
+                                       const double_ptr time,
+                                       bool *time_dependent)
+{
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud option error
+  GenericFunction_ptr function;                                      // declare the pointer that will be returned
+  
+  std::stringstream intbuffer;                                       // some string assembly streams
+  intbuffer.str("");   intbuffer   << optionpath << "/internal";     // for an internal expression
+  
+  if (Spud::have_option(intbuffer.str()))
+  {
+
+    std::string algoname;
+    buffer.str(""); buffer << intbuffer.str() << "/algorithm/name";  // work out which internal algorithm we're using
+    serr = Spud::get_option(buffer.str(), algoname);
+    spud_err(buffer.str(), serr);
+
+    if (algoname == "Reference")
+    {
+
+      std::string systemname, functionname;
+
+      buffer.str(""); buffer << intbuffer.str() 
+                        << "/algorithm/system/name";
+      serr = Spud::get_option(buffer.str(), systemname, (*system()).name());
+      spud_err(buffer.str(), serr);
+
+      SystemBucket_ptr functionsystem = (*(*system()).bucket()).fetch_system(systemname);
+      FunctionBucket_ptr functionbucket;
+
+      buffer.str(""); buffer << intbuffer.str() 
+                        << "/algorithm/field";
+      if (Spud::have_option(buffer.str()))
+      {
+        buffer << "/name";
+        serr = Spud::get_option(buffer.str(), functionname);
+        spud_err(buffer.str(), serr);
+
+        functionbucket = (*functionsystem).fetch_field(functionname);
+      }
+      else
+      {
+        buffer.str(""); buffer << intbuffer.str() 
+                        << "/algorithm/coefficient/name";
+        serr = Spud::get_option(buffer.str(), functionname);
+        spud_err(buffer.str(), serr);
+
+        functionbucket = (*functionsystem).fetch_coeff(functionname);
+      }
+
+                                                                     // rank of an internal function isn't in the default spud base
+                                                                     // language so have added it... but it comes out as a string 
+                                                                     // of course!
+      std::string rankstring;                                        // bit of a hack
+      buffer.str(""); buffer << intbuffer.str() << "/rank";
+      serr = Spud::get_option(buffer.str(), rankstring); 
+      spud_err(buffer.str(), serr);
+
+      
+      int rank;
+      rank = atoi(rankstring.c_str());
+
+      const std::size_t functionrank = (*functionbucket).rank();
+
+      if (functionrank != rank)
+      {
+        tf_err("Rank of referenced function does not match rank of referee.", 
+               "Reference rank: %d, Referee rank: %d", 
+               functionrank, rank);
+      }
+
+      function = (*functionbucket).genericfunction_ptr(time);
+
+      if (time_dependent)                                            // clearly this could be a time-dependent function but it is
+      {                                                              // not the responsibility of this functionbucket to update
+        *time_dependent = false;                                     // it if it is so we record it as not being time-dependent!
+      }
+
+    }
+  }
+  
+  return function;                                                    // return the function reference
   
 }
 
@@ -1553,7 +1682,7 @@ void SpudFunctionBucket::initialize_expression_(
     {
       (*std::dynamic_pointer_cast< SemiLagrangianExpression >(expression)).init();
     }
-    else
+    else if (algoname != "Reference")
     {
       tf_err("Unknown algorithm name in initialize_expression_.", "Algorithm: %s", algoname.c_str());
     }
