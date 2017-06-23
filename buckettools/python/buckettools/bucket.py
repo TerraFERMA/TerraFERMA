@@ -134,16 +134,16 @@ class Bucket:
     ufl.append(declaration_comment("Element", "Function", "VisualizationOnMesh"+meshname))
     ufl.append("vis_e = FiniteElement(\""+self.viselementfamily+"\", " \
                +meshcell+", " \
-               +`self.viselementdegree`+")\n")
-    ufl.append("\n")
+               +`self.viselementdegree`+")"+os.linesep)
+    ufl.append(os.linesep)
     ufl.append(declaration_comment("Test space", "Function", "VisualizationOnMesh"+meshname))
     ufl.append(testfunction_ufl("vis"))
     ufl.append(declaration_comment("Trial space", "Function", "VisualizationOnMesh"+meshname))
     ufl.append(trialfunction_ufl("vis"))
     ufl.append(declaration_comment("Form", "form", "Bilinear"))
-    ufl.append("a = vis_t*vis_a*dx\n")
-    ufl.append("forms = [a]\n")
-    ufl.append("\n")
+    ufl.append("a = vis_t*vis_a*dx"+os.linesep)
+    ufl.append("forms = [a]"+os.linesep)
+    ufl.append(os.linesep)
     ufl.append(produced_comment())
     
     return ufl
@@ -383,48 +383,48 @@ class Bucket:
     """Write a cpp header file describing all the ufc namespaces used for visualization in the bucket."""
     cpp = []
 
-    cpp.append("\n")
-    cpp.append("#include \"VisualizationWrapper.h\"\n")
-    cpp.append("#include \"BoostTypes.h\"\n")
-    cpp.append("#include <dolfin.h>\n")
+    cpp.append(os.linesep)
+    cpp.append("#include \"VisualizationWrapper.h\""+os.linesep)
+    cpp.append("#include \"BoostTypes.h\""+os.linesep)
+    cpp.append("#include <dolfin.h>"+os.linesep)
 
     include_cpp = []
 
     functionspace_cpp         = []
-    functionspace_cpp.append("  // A function to return a functionspace for visualization given a mesh and a mesh name.\n")
-    functionspace_cpp.append("  FunctionSpace_ptr ufc_fetch_visualization_functionspace(const std::string &meshname, Mesh_ptr mesh)\n")
-    functionspace_cpp.append("  {\n")
-    functionspace_cpp.append("    FunctionSpace_ptr functionspace;\n")
+    functionspace_cpp.append("  // A function to return a functionspace for visualization given a mesh and a mesh name."+os.linesep)
+    functionspace_cpp.append("  FunctionSpace_ptr ufc_fetch_visualization_functionspace(const std::string &meshname, Mesh_ptr mesh)"+os.linesep)
+    functionspace_cpp.append("  {"+os.linesep)
+    functionspace_cpp.append("    FunctionSpace_ptr functionspace;"+os.linesep)
 
     s = 0
     for meshname in self.meshes.iterkeys():
-      include_cpp.append("#include \""+self.visualization_namespace(meshname)+".h\"\n")
+      include_cpp.append("#include \""+self.visualization_namespace(meshname)+".h\""+os.linesep)
       
       if s == 0:
-        functionspace_cpp.append("    if (meshname ==  \""+meshname+"\")\n")
+        functionspace_cpp.append("    if (meshname ==  \""+meshname+"\")"+os.linesep)
       else:
-        functionspace_cpp.append("    else if (meshname ==  \""+meshname+"\")\n")
-      functionspace_cpp.append("    {\n")
-      functionspace_cpp.append("      functionspace.reset( new "+self.visualization_namespace(meshname)+"::FunctionSpace(mesh) );\n")
-      functionspace_cpp.append("    }\n")
+        functionspace_cpp.append("    else if (meshname ==  \""+meshname+"\")"+os.linesep)
+      functionspace_cpp.append("    {"+os.linesep)
+      functionspace_cpp.append("      functionspace.reset( new "+self.visualization_namespace(meshname)+"::FunctionSpace(mesh) );"+os.linesep)
+      functionspace_cpp.append("    }"+os.linesep)
       
       s += 1
 
-    functionspace_cpp.append("    else\n")
-    functionspace_cpp.append("    {\n")
-    functionspace_cpp.append("      dolfin::error(\"Unknown meshname in ufc_fetch_visualization_functionspace\");\n")
-    functionspace_cpp.append("    }\n")
-    functionspace_cpp.append("    return functionspace;\n")
-    functionspace_cpp.append("  }\n")
+    functionspace_cpp.append("    else"+os.linesep)
+    functionspace_cpp.append("    {"+os.linesep)
+    functionspace_cpp.append("      dolfin::error(\"Unknown meshname in ufc_fetch_visualization_functionspace\");"+os.linesep)
+    functionspace_cpp.append("    }"+os.linesep)
+    functionspace_cpp.append("    return functionspace;"+os.linesep)
+    functionspace_cpp.append("  }"+os.linesep)
 
     cpp += include_cpp
-    cpp.append("\n")
-    cpp.append("namespace buckettools\n")
-    cpp.append("{\n")
+    cpp.append(os.linesep)
+    cpp.append("namespace buckettools"+os.linesep)
+    cpp.append("{"+os.linesep)
     cpp += functionspace_cpp
-    cpp.append("\n")
-    cpp.append("}\n")
-    cpp.append("\n")
+    cpp.append(os.linesep)
+    cpp.append("}"+os.linesep)
+    cpp.append(os.linesep)
 
     filename = "VisualizationWrapper.cpp"
     filehandle = file(filename+".temp", 'w')
