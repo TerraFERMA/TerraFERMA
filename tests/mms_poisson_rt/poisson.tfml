@@ -311,6 +311,7 @@ r = ru + rq</string_value>
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
+        <form_representation name="quadrature"/>
         <quadrature_rule name="default"/>
         <snes_type name="ls">
           <ls_type name="cubic"/>
@@ -344,6 +345,7 @@ r = ru + rq</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">e2</string_value>
       </ufl_symbol>
+      <form_representation name="quadrature"/>
       <quadrature_rule name="default"/>
       <include_in_statistics/>
     </functional>
@@ -352,6 +354,7 @@ r = ru + rq</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
+      <form_representation name="quadrature"/>
       <quadrature_rule name="default"/>
       <include_in_statistics/>
     </functional>
@@ -360,6 +363,7 @@ r = ru + rq</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
+      <form_representation name="quadrature"/>
       <quadrature_rule name="default"/>
       <include_in_statistics/>
     </functional>

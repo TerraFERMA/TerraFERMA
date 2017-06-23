@@ -23,6 +23,7 @@ import subprocess
 import hashlib
 import shutil
 import sys
+import os
 
 class FunctionBucket:
   """A class that stores all the information necessary to write the ufl for a function (field or coefficient).
@@ -38,6 +39,7 @@ class FunctionBucket:
     self.size = None
     self.enrichment_degree = None
     self.enrichment_family = None
+    self.quadrature_rule = None
     self.symbol = None
     self.symmetry = None
     self.type = None
@@ -49,11 +51,11 @@ class FunctionBucket:
   def constant_ufl(self, suffix=""):
     """Returns a ufl string declaring a constant coefficient on a cell."""
     if self.rank == "Scalar":
-      return self.symbol+suffix+" = Constant("+self.system.cell+")\n"
+      return self.symbol+suffix+" = Constant("+self.system.cell+")"+os.linesep
     elif self.rank == "Vector":
-      return self.symbol+suffix+" = VectorConstant("+self.system.cell+")\n"
+      return self.symbol+suffix+" = VectorConstant("+self.system.cell+")"+os.linesep
     elif self.rank == "Tensor":
-      return self.symbol+suffix+" = TensorConstant("+self.system.cell+")\n"
+      return self.symbol+suffix+" = TensorConstant("+self.system.cell+")"+os.linesep
     print self.rank
     print "Unknown rank."
     sys.exit(1)
@@ -63,8 +65,8 @@ class FunctionBucket:
     if self.enrichment_degree is not None and self.enrichment_family is not None:
       ufl = self.sub_element_ufl(index=0)
       ufl += self.sub_element_ufl(family=self.enrichment_family, degree=self.enrichment_degree, index=1)
-      ufl.append(self.symbol+"_e = "+self.symbol+"_e0 + "+self.symbol+"_e1\n")
-      ufl.append("\n")
+      ufl.append(self.symbol+"_e = "+self.symbol+"_e0 + "+self.symbol+"_e1"+os.linesep)
+      ufl.append(os.linesep)
     else:
       ufl = self.sub_element_ufl()
     return ufl
@@ -103,50 +105,48 @@ class FunctionBucket:
     elif self.rank == "Tensor":
       if self.shape: ufl_line += ", shape=("+`self.shape[0]`+","+`self.shape[1]`+")"
       if self.symmetry: ufl_line += ", symmetry=True"
-    ufl_line +=")\n"
+    if self.quadrature_rule is not None: ufl_line += ", quad_scheme="+"\""+self.quadrature_rule+"\""
+    ufl_line +=")"+os.linesep
     ufl.append(ufl_line)
-    ufl.append("\n")
+    ufl.append(os.linesep)
     return ufl
 
   def solvercoefficientspace_cpp(self, solvername, index=0, suffix=""):
     cpp = [] 
     if index == 0:
-      cpp.append("        if (uflsymbol ==  \""+self.symbol+"\")\n")
+      cpp.append("        if (uflsymbol ==  \""+self.symbol+"\")"+os.linesep)
     else:
-      cpp.append("        else if (uflsymbol ==  \""+self.symbol+"\")\n")
-    cpp.append("        {\n")
-    cpp.append("          coefficientspace.reset(new "+self.system.name+solvername+"::CoefficientSpace_"+self.symbol+suffix+"(mesh));\n")
-    cpp.append("        }\n")
+      cpp.append("        else if (uflsymbol ==  \""+self.symbol+"\")"+os.linesep)
+    cpp.append("        {"+os.linesep)
+    cpp.append("          coefficientspace.reset(new "+self.system.name+solvername+"::CoefficientSpace_"+self.symbol+suffix+"(mesh));"+os.linesep)
+    cpp.append("        }"+os.linesep)
     return cpp
-
-  def namespace(self):
-    return self.system.name+self.name
 
   def cppexpression_cpp(self, index=0):
     """Write an array of cpp strings describing the namespace of the cpp expressions under this function."""
     cpp = []
     if index == 0:
-      cpp.append("      if (functionname == \""+self.name+"\")\n")
+      cpp.append("      if (functionname == \""+self.name+"\")"+os.linesep)
     else:
-      cpp.append("      else if (functionname ==  \""+self.name+"\")\n")
-    cpp.append("      {\n")
-    cpp.append("        if (expressiontype == \"initial_condition\")\n")
-    cpp.append("        {\n")
+      cpp.append("      else if (functionname ==  \""+self.name+"\")"+os.linesep)
+    cpp.append("      {"+os.linesep)
+    cpp.append("        if (expressiontype == \"initial_condition\")"+os.linesep)
+    cpp.append("        {"+os.linesep)
     cpp += self.cppexpressiontype_cpp("initial_condition")
-    cpp.append("        }\n")
-    cpp.append("        else if (expressiontype == \"boundary_condition\")\n")
-    cpp.append("        {\n")
+    cpp.append("        }"+os.linesep)
+    cpp.append("        else if (expressiontype == \"boundary_condition\")"+os.linesep)
+    cpp.append("        {"+os.linesep)
     cpp += self.cppexpressiontype_cpp("boundary_condition")
-    cpp.append("        }\n")
-    cpp.append("        else if (expressiontype == \"value\")\n")
-    cpp.append("        {\n")
+    cpp.append("        }"+os.linesep)
+    cpp.append("        else if (expressiontype == \"value\")"+os.linesep)
+    cpp.append("        {"+os.linesep)
     cpp += self.cppexpressiontype_cpp("value")
-    cpp.append("        }\n")
-    cpp.append("        else\n")
-    cpp.append("        {\n")
-    cpp.append("          tf_err(\"Unknown expressiontype in cpp_fetch_expression.\", \"Expression type: %s\", expressiontype.c_str());\n")
-    cpp.append("        }\n")
-    cpp.append("      }\n")
+    cpp.append("        }"+os.linesep)
+    cpp.append("        else"+os.linesep)
+    cpp.append("        {"+os.linesep)
+    cpp.append("          tf_err(\"Unknown expressiontype in cpp_fetch_expression.\", \"Expression type: %s\", expressiontype.c_str());"+os.linesep)
+    cpp.append("        }"+os.linesep)
+    cpp.append("      }"+os.linesep)
     return cpp
 
   def cppexpressiontype_cpp(self, basetype):
@@ -159,12 +159,12 @@ class FunctionBucket:
         cpp += self.cpp[e].cppexpression_cpp(index=expressions_found)
         expressions_found += 1
     if expressions_found==0:
-      cpp.append("          tf_err(\"Unknown expressionname in cpp_fetch_expression.\", \"Expression name: %s\", functionname.c_str());\n")
+      cpp.append("          tf_err(\"Unknown expressionname in cpp_fetch_expression.\", \"Expression name: %s\", functionname.c_str());"+os.linesep)
     else:
-      cpp.append("          else\n")
-      cpp.append("          {\n")
-      cpp.append("            tf_err(\"Unknown expressionname in cpp_fetch_expression.\", \"Expression name: %s\", functionname.c_str());\n")
-      cpp.append("          }\n")
+      cpp.append("          else"+os.linesep)
+      cpp.append("          {"+os.linesep)
+      cpp.append("            tf_err(\"Unknown expressionname in cpp_fetch_expression.\", \"Expression name: %s\", functionname.c_str());"+os.linesep)
+      cpp.append("          }"+os.linesep)
 
     return cpp
 
@@ -172,27 +172,27 @@ class FunctionBucket:
     """Write an array of cpp strings recasting an expression into the namespace of a cpp expression under this function."""
     cpp = []
     if index == 0:
-      cpp.append("      if (functionname == \""+self.name+"\")\n")
+      cpp.append("      if (functionname == \""+self.name+"\")"+os.linesep)
     else:
-      cpp.append("      else if (functionname ==  \""+self.name+"\")\n")
-    cpp.append("      {\n")
-    cpp.append("        if (expressiontype == \"initial_condition\")\n")
-    cpp.append("        {\n")
+      cpp.append("      else if (functionname ==  \""+self.name+"\")"+os.linesep)
+    cpp.append("      {"+os.linesep)
+    cpp.append("        if (expressiontype == \"initial_condition\")"+os.linesep)
+    cpp.append("        {"+os.linesep)
     cpp += self.cppexpressiontype_init("initial_condition")
-    cpp.append("        }\n")
-    cpp.append("        else if (expressiontype == \"boundary_condition\")\n")
-    cpp.append("        {\n")
+    cpp.append("        }"+os.linesep)
+    cpp.append("        else if (expressiontype == \"boundary_condition\")"+os.linesep)
+    cpp.append("        {"+os.linesep)
     cpp += self.cppexpressiontype_init("boundary_condition")
-    cpp.append("        }\n")
-    cpp.append("        else if (expressiontype == \"value\")\n")
-    cpp.append("        {\n")
+    cpp.append("        }"+os.linesep)
+    cpp.append("        else if (expressiontype == \"value\")"+os.linesep)
+    cpp.append("        {"+os.linesep)
     cpp += self.cppexpressiontype_init("value")
-    cpp.append("        }\n")
-    cpp.append("        else\n")
-    cpp.append("        {\n")
-    cpp.append("          tf_err(\"Unknown expressiontype in cpp_init_expression.\", \"Expression type: %s\", expressiontype.c_str());\n")
-    cpp.append("        }\n")
-    cpp.append("      }\n")
+    cpp.append("        }"+os.linesep)
+    cpp.append("        else"+os.linesep)
+    cpp.append("        {"+os.linesep)
+    cpp.append("          tf_err(\"Unknown expressiontype in cpp_init_expression.\", \"Expression type: %s\", expressiontype.c_str());"+os.linesep)
+    cpp.append("        }"+os.linesep)
+    cpp.append("      }"+os.linesep)
     return cpp
 
   def cppexpressiontype_init(self, basetype):
@@ -205,11 +205,11 @@ class FunctionBucket:
         cpp += self.cpp[e].cppexpression_init(index=expressions_found)
         expressions_found += 1
     if expressions_found==0:
-      cpp.append("          tf_err(\"Unknown expressionname in cpp_fetch_expression.\", \"Expression name: %s\", functionname.c_str());\n")
+      cpp.append("          tf_err(\"Unknown expressionname in cpp_fetch_expression.\", \"Expression name: %s\", functionname.c_str());"+os.linesep)
     else:
-      cpp.append("          else\n")
-      cpp.append("          {\n")
-      cpp.append("            tf_err(\"Unknown expressionname in cpp_fetch_expression.\", \"Expression name: %s\", functionname.c_str());\n")
-      cpp.append("          }\n")
+      cpp.append("          else"+os.linesep)
+      cpp.append("          {"+os.linesep)
+      cpp.append("            tf_err(\"Unknown expressionname in cpp_fetch_expression.\", \"Expression name: %s\", functionname.c_str());"+os.linesep)
+      cpp.append("          }"+os.linesep)
 
     return cpp

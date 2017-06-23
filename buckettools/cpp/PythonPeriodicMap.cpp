@@ -64,7 +64,7 @@ void PythonPeriodicMap::map(const dolfin::Array<double>& x,
   PyTuple_SetItem(pArgs, 0, pPos);                                   // set the input argument to the coordinates
   
   if (PyErr_Occurred()){                                             // error check - in setting arguments
-    PyErr_Print();
+    pyinst_.print_error();
     dolfin::error("In PythonPeriodicMap::map setting pArgs");
   }
   
@@ -77,7 +77,7 @@ void PythonPeriodicMap::map(const dolfin::Array<double>& x,
   pResult = pyinst_.call(pArgs);                                     // call the python function (through the bucket python instance)
   
   if (PyErr_Occurred()){                                             // error check - in running user defined function
-    PyErr_Print();
+    pyinst_.print_error();
     dolfin::error("In PythonPeriodicMap::map evaluating pResult");
   }
     
@@ -89,7 +89,7 @@ void PythonPeriodicMap::map(const dolfin::Array<double>& x,
       y[i] = PyFloat_AsDouble(px);                                   // convert it to a float
       
       if (PyErr_Occurred()){                                         // check for errors in conversion
-        PyErr_Print();
+        pyinst_.print_error();
         dolfin::error("In PythonPeriodicMap::map evaluating values");
       }
       
@@ -101,7 +101,7 @@ void PythonPeriodicMap::map(const dolfin::Array<double>& x,
     y[0] = PyFloat_AsDouble(pResult);                                // just convert a single value
     
     if (PyErr_Occurred()){                                           // check for errors in conversion
-      PyErr_Print();
+      pyinst_.print_error();
       dolfin::error("In PythonPeriodicMap::map evaluating values");
     }
   }

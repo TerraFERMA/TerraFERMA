@@ -80,6 +80,7 @@ The return value must have length &gt; 0 and each entry must be of the same dime
     <element name="visualization">
       <a:documentation>Options to control the functionspace that the visualization output is interpolated to.</a:documentation>
       <ref name="element_options_scalar_lagrange_visualization"/>
+      <ref name="comment"/>
     </element>
     <element name="dump_periods">
       <a:documentation>Options to control the period between dumps of diagnostic data.
@@ -186,9 +187,10 @@ Defaults to every timestep if unselected.</a:documentation>
 1: master entities
 
 0: all other entities</a:documentation>
-            <empty/>
+            <ref name="comment"/>
           </element>
         </optional>
+        <ref name="comment"/>
       </element>
     </optional>
   </define>

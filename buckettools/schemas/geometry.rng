@@ -127,6 +127,7 @@ Repeated region ids will be assigned to the highest rank process.</a:documentati
                 </element>
               </element>
             </oneOrMore>
+            <ref name="comment"/>
           </element>
         </optional>
         <ref name="comment"/>

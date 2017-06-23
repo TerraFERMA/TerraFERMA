@@ -66,6 +66,8 @@ namespace buckettools
     const int number_arguments() const                               // return the number of arguments expected by this pythoninstance
     { return nargs_; }
 
+    void print_error() const;                                        // prints an error to the error stream
+
   //*****************************************************************|***********************************************************//
   // Private functions
   //*****************************************************************|***********************************************************//
@@ -78,7 +80,7 @@ namespace buckettools
 
     const std::string function_;                                     // the python function string
 
-    PyObject *pMain_, *pGlobals_, *pLocals_, *pCode_, *pFunc_;       // python objects used to run the function (and cacheable between calls)
+    PyObject *pLocals_, *pCode_, *pFunc_;                            // python objects used to run the function (and cacheable between calls)
 
     int nargs_;                                                      // the number of arguments this python function takes
     
