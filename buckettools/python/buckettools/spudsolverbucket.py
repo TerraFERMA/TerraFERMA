@@ -20,6 +20,7 @@
 
 import libspud
 import buckettools.solverbucket
+import os
 
 class SpudSolverBucket(buckettools.solverbucket.SolverBucket):
   """A class that stores all the information necessary to write the ufl for a system of forms (i.e. linear or bilinear) associated with a solver 
@@ -32,7 +33,7 @@ class SpudSolverBucket(buckettools.solverbucket.SolverBucket):
     self.type = libspud.get_option(newoptionpath+"/name")
      
     if libspud.have_option(newoptionpath+"/preamble"):
-      self.preamble = libspud.get_option(newoptionpath+"/preamble")+"\n"
+      self.preamble = libspud.get_option(newoptionpath+"/preamble")+os.linesep
 
     self.form_names = []
     self.forms = []
@@ -55,8 +56,8 @@ class SpudSolverBucket(buckettools.solverbucket.SolverBucket):
     for i in range(libspud.option_count(optionpath+"/form")):
       form_optionpath = optionpath+"/form["+`i`+"]"
       self.form_names.append(prefix+libspud.get_option(form_optionpath+"/name"))
-      self.forms.append(libspud.get_option(form_optionpath)+"\n")
-      self.form_symbols.append(libspud.get_option(form_optionpath+"/ufl_symbol").split("\n")[0])
+      self.forms.append(libspud.get_option(form_optionpath)+os.linesep)
+      self.form_symbols.append(libspud.get_option(form_optionpath+"/ufl_symbol").split(os.linesep)[0])
       self.form_ranks.append(int(libspud.get_option(form_optionpath+"/rank")))
 
   def fill_solverforms(self, optionpath, prefix=""):
