@@ -78,7 +78,8 @@ diagnostic_output_options =
   (
     ## Options to control the functionspace that the visualization output is interpolated to.
     element visualization {
-      element_options_scalar_lagrange_visualization
+      element_options_scalar_lagrange_visualization,
+      comment
     },
     ## Options to control the period between dumps of diagnostic data.
     ##

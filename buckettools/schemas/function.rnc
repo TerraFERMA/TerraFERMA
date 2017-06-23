@@ -322,7 +322,7 @@ coeff_diagnostics_options =
       ## Include this coefficient in the visualization output file 
       ## (at the dof of the visualization element).
       element include_in_visualization {
-        empty
+        comment
       }?,
       ## Include this coefficient in the statistics output file.
       ## The minimum and maximum (evaluated at the vertices of the mesh) 

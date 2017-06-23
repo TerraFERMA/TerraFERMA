@@ -411,7 +411,7 @@ The minimum and maximum of functions is included.</a:documentation>
         <element name="include_in_visualization">
           <a:documentation>Include this coefficient in the visualization output file 
 (at the dof of the visualization element).</a:documentation>
-          <empty/>
+          <ref name="comment"/>
         </element>
       </optional>
       <optional>
