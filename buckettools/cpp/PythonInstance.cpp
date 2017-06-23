@@ -54,6 +54,26 @@ PyObject* PythonInstance::call(PyObject *pArgs) const
 }
 
 //*******************************************************************|************************************************************//
+// print an error message
+//*******************************************************************|************************************************************//
+void PythonInstance::print_error() const
+{
+  log(ERROR, "Python computation raised an exception.");
+  unsigned int lineno = 0;
+  std::istringstream functionss(function_);
+  std::stringstream functionstream; functionstream.str("");
+  functionstream << std::string(80, '-') << std::endl;
+  std::string line;
+  while (std::getline(functionss, line)) 
+  {
+    functionstream << std::setw(4) << ++lineno << "  " << line << std::endl;
+  }
+  functionstream << std::string(80, '-');
+  log(ERROR, functionstream.str().c_str());
+  PyErr_Print();
+}
+
+//*******************************************************************|************************************************************//
 // initialize the python objects contained in the python instance
 //*******************************************************************|************************************************************//
 void PythonInstance::init_()
@@ -67,7 +87,7 @@ void PythonInstance::init_()
                                               pGlobals, pLocals_);
   
   if (PyErr_Occurred()){                                             // check for errors in getting the function
-    PyErr_Print();
+    print_error();
     tf_err("In PythonInstance::init_ evaluating pCode_.", "Python error occurred.");
   }
 
@@ -83,7 +103,7 @@ void PythonInstance::init_()
   nargs_ = PyInt_AsLong(pnArgs);                                     // recast it as an integer
   
   if (PyErr_Occurred()){                                             // check for errors in getting the function
-    PyErr_Print();
+    print_error();
     tf_err("In PythonInstance::init_ evaluating nargs_.", "Python error occurred.");
   }
   
