@@ -107,6 +107,10 @@ if __name__ == "__main__":
                       help="list the simulations and runs described")
   parser.add_argument("--clean", action='store_const', dest='clean', const=True, default=False, required=False,
                       help="removes the run (and build) directories from previous simulation runs")
+  parser.add_argument("--clean-runs", action='store_const', dest='cleanrun', const=True, default=False, required=False,
+                      help="removes the run directories from previous simulation runs")
+  parser.add_argument("--clean-builds", action='store_const', dest='cleanbuild', const=True, default=False, required=False,
+                      help="removes the build directories from previous simulation builds")
   parser.add_argument("--clean-checkpoints", action='store_const', dest='checkpointclean', const=True, default=False, required=False,
                       help="removes all checkpoint directories from previous simulation runs")
   parser.add_argument("--parameters", action='store', metavar='name value', default=None, nargs='+', required=False, dest='params', type=str,
@@ -184,6 +188,20 @@ if __name__ == "__main__":
   except simulations.SimulationsErrorInitialization:
     print "Error while initializing the simulations."
     sys.exit(1)
+
+  if args.cleanrun:
+    try:
+      batch.cleanrun(level=args.level)
+    except:
+      print "Error while cleaning simulations (runs), exiting with error."
+      sys.exit(1)
+
+  if args.cleanbuild:
+    try:
+      batch.cleanbuild(level=args.level)
+    except:
+      print "Error while cleaning simulations (builds), exiting with error."
+      sys.exit(1)
 
   if args.clean:
     try:

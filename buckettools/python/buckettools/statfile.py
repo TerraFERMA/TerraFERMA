@@ -144,7 +144,7 @@ class creator(dict):
           output = output + "  " + str(v)
       else:
         output = output + "  " + str(stat_v)
-    output = output + "\n"  
+    output = output+os.linesep  
     try:
           f.write(output)
     finally:
