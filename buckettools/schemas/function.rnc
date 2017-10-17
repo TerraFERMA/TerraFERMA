@@ -1127,7 +1127,7 @@ prescribed_cpp =
     ## For example, to extract a boost shared pointer to a generic function for a coefficient called 
     ## "ExampleCoefficient", we should have declared in the members section above:
     ##
-    ##     std::shared_pointer< dolfin::GenericFunction > examplecoeff;
+    ##     std::shared_ptr< dolfin::GenericFunction > examplecoeff;
     ##
     ## or (utilizing the typedefs available to us through BoostTypes.h:
     ##
