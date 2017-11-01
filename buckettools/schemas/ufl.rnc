@@ -136,6 +136,27 @@ quadrature_degree =
     }?
   )
 
+form_representation =
+  (
+    (
+      ## The representation that will be used when generating the forms.
+      element form_representation {
+        attribute name { "quadrature" },
+        comment
+      }|
+      ## The representation that will be used when generating the forms.
+      element form_representation {
+        attribute name { "uflacs" },
+        comment
+      }|
+      ## The representation that will be used when generating the forms.
+      element form_representation {
+        attribute name { "tensor" },
+        comment
+      }
+    )
+  )
+
 quadrature_rule =
   (
     (

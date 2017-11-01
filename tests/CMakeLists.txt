@@ -129,7 +129,41 @@ file(
   set( ENV{THREADS} 1 )
 endif()
 
-set( TEST_COMMAND tfsimulationharness --test -l short -n \$ENV{THREADS} -e ${EXCLUDE_TAGS} -r -- *.shml )
+set( TEST_COMMAND tfsimulationharness --run -l short -n \$ENV{THREADS} -e ${EXCLUDE_TAGS} -r -- *.shml )
+
+execute_process(
+     COMMAND echo Running: \${TEST_COMMAND}
+     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
+     )
+
+execute_process(
+    COMMAND \${TEST_COMMAND}
+    RESULT_VARIABLE RETCODE
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
+    )
+
+if (NOT RETCODE EQUAL 0)
+  message(FATAL_ERROR \"Command returned \${RETCODE}\")
+endif()
+
+set( TEST_COMMAND tfsimulationharness --run-from-checkpoint -l short -n \$ENV{THREADS} -e ${EXCLUDE_TAGS} -t run_from_checkpoint -r -- *.shml )
+
+execute_process(
+     COMMAND echo Running: \${TEST_COMMAND}
+     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
+     )
+
+execute_process(
+    COMMAND \${TEST_COMMAND}
+    RESULT_VARIABLE RETCODE
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
+    )
+
+if (NOT RETCODE EQUAL 0)
+  message(FATAL_ERROR \"Command returned \${RETCODE}\")
+endif()
+
+set( TEST_COMMAND tfsimulationharness --just-test -l short -n \$ENV{THREADS} -e ${EXCLUDE_TAGS} -r -- *.shml )
 
 execute_process(
      COMMAND echo Running: \${TEST_COMMAND}
