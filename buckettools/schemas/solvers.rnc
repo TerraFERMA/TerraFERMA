@@ -95,6 +95,7 @@ picard =
       python_code,
       form_ufl_symbol
     },
+    form_representation,
     quadrature_degree,
     quadrature_rule,
     ## The relative error allowed to remain in the vector l2 norm of the nonlinear solver residual (defined above) upon termination
@@ -191,6 +192,7 @@ snes =
       form_ufl_symbol,
       ident_zeros
     }?,
+    form_representation,
     quadrature_degree,
     quadrature_rule,
     (

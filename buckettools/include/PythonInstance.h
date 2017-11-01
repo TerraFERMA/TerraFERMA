@@ -66,6 +66,8 @@ namespace buckettools
     const int number_arguments() const                               // return the number of arguments expected by this pythoninstance
     { return nargs_; }
 
+    void print_error() const;                                        // prints an error to the error stream
+
   //*****************************************************************|***********************************************************//
   // Private functions
   //*****************************************************************|***********************************************************//

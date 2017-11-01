@@ -435,36 +435,32 @@ void buckettools::restrict_indices(std::vector<std::size_t> &indices,
                                                                      // also occur in the sibling indices
     std::vector<std::size_t> tmp_indices;
 
-    std::size_t c_size = indices.size();
-    std::size_t c_ind = 0;
+    std::vector<std::size_t>::const_iterator c_it = indices.begin(),
+                                      s_it = (*sibling_indices).begin();
     bool overlap = false;
-    for(std::vector<std::size_t>::const_iterator                            // loop over the sibling indices
-                                   s_it = (*sibling_indices).begin();
-                                   s_it != (*sibling_indices).end();
-                                   s_it++)
+    while ((c_it != indices.end()) && (s_it != (*sibling_indices).end()))
     {
-      while(indices[c_ind] != *s_it)                                 // indices are sorted, so sibling_indices should be too
-      {                                                              // search indices until the current sibling index is found
-        tmp_indices.push_back(indices[c_ind]);                       // include indices that aren't in the sibling
-        c_ind++;
-        if (c_ind == c_size)                                         // or we reach the end of the indices...
-        {
-          break;
-        }
+      if (*c_it < *s_it)
+      {
+        tmp_indices.push_back(*c_it);
+        c_it++;
       }
-      if (c_ind == c_size)                                           // we've reached the end of the indices so nothing more
-      {                                                              // to do
-        break;
+      else if (*s_it < *c_it)
+      {
+        s_it++;
       }
-      else                                                           // we haven't reached the end of the indices but found
-      {                                                              // a sibling index to ignore... give a warning
+      else                                                           // indices[c_ind] == (*sibling_indices)[s_ind]
+      {
+        c_it++;
+        s_it++;
         overlap = true;
       }
-      c_ind++;                                                       // indices shouldn't be repeated so increment the too
     }
-    for (std::size_t i = c_ind; i < c_size; i++)
+
+    while (c_it != indices.end())                                    // insert any remaining indices beyond the siblings
     {
-      tmp_indices.push_back(indices[i]);                             // insert any remaining indices beyond the siblings
+      tmp_indices.push_back(*c_it);
+      c_it++;
     }
 
     if(overlap)
@@ -482,43 +478,32 @@ void buckettools::restrict_indices(std::vector<std::size_t> &indices,
                                                                      // not occur in the parent indices 
     std::vector<std::size_t> tmp_indices;
 
-    std::size_t p_size = (*parent_indices).size();
-    std::size_t p_ind = 0;
-    std::size_t p_reset = 0;
+    std::vector<std::size_t>::const_iterator c_it = indices.begin(),
+                                      p_it = (*parent_indices).begin();
     bool extra = false;
-    for (std::vector<std::size_t>::const_iterator                           // loop over the indices
-                                        c_it = indices.begin(); 
-                                        c_it != indices.end(); 
-                                        c_it++)
+    while ((c_it != indices.end()) && (p_it != (*parent_indices).end()))
     {
-      if (p_ind == p_size)                                           // we've reach the end
+      if (*c_it < *p_it)
       {
-        if (c_it == indices.begin())                                 // if we're here on the first iteration then the parent_indices
-        {                                                            // were empty so throw a warning as we're ditching all the children
-          extra = true;
-        }
-        break;                                                       // get out of here
+        c_it++;                                                      // dropping
+        extra = true;
       }
-      while ((*parent_indices)[p_ind] != *c_it)                      // indices is sorted, so parent_indices should be too...
-      {                                                              // search parent_indices until the current index is found
-        p_ind++;
-        if (p_ind == p_size)                                         // or we reach the end of the parent_indices...
-        {                                                            // and prepare to throw a warning
-          extra = true;
-          break;
-        }
-      }
-      if (p_ind == p_size)
+      else if (*p_it < *c_it)
       {
-        p_ind = p_reset;
+        p_it++;
       }
-      else
+      else                                                           // *c_it == *p_it
       {
-        tmp_indices.push_back(*c_it);                                // include indices that are in the parent
-        p_ind++;                                                     // indices shouldn't be repeated so increment the parent too
-        p_reset = p_ind;                                             // this is where the next failed search should continue from
+        tmp_indices.push_back(*c_it);
+        c_it++;
+        p_it++;
       }
-    } 
+    }
+
+    if (c_it != indices.end())
+    {
+      extra = true;                                                  // dropping trailing
+    }
 
     if(extra)
     {                                                                // indices were ignored... give a warning

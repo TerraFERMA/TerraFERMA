@@ -349,11 +349,11 @@ namespace buckettools
 
     ordered_map<const std::string, Mesh_ptr> meshes_;                // a map from mesh names to (boost shared) pointers to meshes
 
-    ordered_map<const std::string, SystemBucket_ptr> systems_;       // a map from system names to (boost shared) pointers to systems
-
-    ordered_map<const std::string, GenericDetectors_ptr> detectors_; // a map from detector set name to (boost shared) pointers to detectors
-
     std::map< Mesh_ptr, FunctionSpace_ptr > visfunctionspaces_;      // pointers to visualization functionspaces
+
+    ordered_map<const std::string, SystemBucket_ptr> systems_;             // a map from system names to (boost shared) pointers to systems
+
+    ordered_map<const std::string, GenericDetectors_ptr> detectors_;        // a map from detector set name to (boost shared) pointers to detectors
 
     ordered_map<const int, SystemsSolverBucket_ptr > systemssolvers_;// a map to the system solvers
 

@@ -51,6 +51,18 @@ void GlobalPythonInstance::run(const std::string &function)
                                               pGlobals_, pGlobals_);
   
   if (PyErr_Occurred()){                                             // check for errors in getting the function
+    log(ERROR, "Global python computation raised an exception.");
+    unsigned int lineno = 0;
+    std::istringstream functionss(function);
+    std::stringstream functionstream; functionstream.str("");
+    functionstream << std::string(80, '-') << std::endl;
+    std::string line;
+    while (std::getline(functionss, line)) 
+    {
+      functionstream << std::setw(4) << ++lineno << "  " << line << std::endl;
+    }
+    functionstream << std::string(80, '-');
+    log(ERROR, functionstream.str().c_str());
     PyErr_Print();
     tf_err("In GlobalPythonInstance::run evaluating pCode.", "Python error occurred.");
   }
