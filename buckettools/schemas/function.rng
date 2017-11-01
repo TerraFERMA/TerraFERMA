@@ -1212,6 +1212,7 @@ If specifying multiple value caps (perhaps on different components) their names 
       </attribute>
       <ref name="python_code"/>
       <ref name="functional_ufl_symbol"/>
+      <ref name="form_representation"/>
       <ref name="quadrature_degree"/>
       <ref name="quadrature_rule"/>
     </element>

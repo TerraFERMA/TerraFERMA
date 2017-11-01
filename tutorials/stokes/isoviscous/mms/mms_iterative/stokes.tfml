@@ -226,6 +226,7 @@ Jpc = Jpcv + Jpcp</string_value>
             <string_value lines="1">Jpc</string_value>
           </ufl_symbol>
         </form>
+        <form_representation name="quadrature"/>
         <quadrature_degree>
           <integer_value rank="0">3</integer_value>
         </quadrature_degree>
@@ -358,6 +359,7 @@ Jpc = Jpcv + Jpcp</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
+      <form_representation name="quadrature"/>
       <quadrature_rule name="default"/>
       <include_in_statistics/>
     </functional>
@@ -366,6 +368,7 @@ Jpc = Jpcv + Jpcp</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">errv</string_value>
       </ufl_symbol>
+      <form_representation name="quadrature"/>
       <quadrature_rule name="default"/>
       <include_in_statistics/>
     </functional>
@@ -374,6 +377,7 @@ Jpc = Jpcv + Jpcp</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
+      <form_representation name="quadrature"/>
       <quadrature_rule name="default"/>
       <include_in_statistics/>
     </functional>
@@ -382,6 +386,7 @@ Jpc = Jpcv + Jpcp</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">errp</string_value>
       </ufl_symbol>
+      <form_representation name="quadrature"/>
       <quadrature_rule name="default"/>
       <include_in_statistics/>
     </functional>
@@ -390,6 +395,7 @@ Jpc = Jpcv + Jpcp</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">intp2</string_value>
       </ufl_symbol>
+      <form_representation name="quadrature"/>
       <quadrature_rule name="default"/>
       <include_in_statistics/>
     </functional>
