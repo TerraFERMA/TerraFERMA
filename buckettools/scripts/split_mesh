@@ -33,12 +33,12 @@ import numpy
 from buckettools.mesh import writemesh, splitmesh
 import sys
 import subprocess
+import functools
 
 parser = argparse.ArgumentParser( \
-                       description="""This takes a dolfin .xml mesh file (assuming """ +\
-                       """_physical_region.xml and _facet_region.xml are also """ +\
-                       """available) and splits it along the given list of facet region """ + \
-                       """id(s).""")
+                       description="""This takes a dolfin .xml mesh file """ +\
+                       """and splits it along the given list of facet region """ + \
+                       """id(s).  Produces a mesh in a file with the base name appended by _split.""")
 parser.add_argument('filename', metavar='filename', type=str,
                     help='specify the name of the dolfin .xml or .xml.gz file')
 parser.add_argument('-s', '--split', action='store', metavar='split_ids', dest='split', type=int, nargs='+', required=True,
@@ -48,12 +48,15 @@ parser.add_argument('-n', '--newids', action='store', metavar='new_ids', dest='n
                          'if provided it must be the same length as the specified split ids, if left unspecified the new ids '+
                          'will be the same as the old ids multiplied by 100')
 parser.add_argument('-c', '--centroid_function', action='store', metavar='centroid_func', dest='centroid_func', type=str, required=True,
-                    help='name of file that contains a the definition of a python centroid_func(centroid) function '+
+                    help='name of file that contains a the definition of a python centroid_function(centroid) function '+
                          'which returns a boolean indicating if the cell with that centroid contains a split facet '+
                          '(returns True) or the original facet (returns False)')
 parser.add_argument('-p', '--preserve', action='store', metavar='preserve_ids', dest='preserve', type=int, nargs='+', default=[],
                     help='specify the facet ids that are to be preserved - '+
                          'vertices connected to these facets will not be split even if they also belong to facets specified by -s')
+parser.add_argument("--kwargs", action='store', metavar='name value', default=None, nargs='+', required=False, dest='kwargs', type=str,
+                    help='optional keyword arguments to the centroid_function (note these will be strings so should '+
+                         'be handled appropriately in the function)')
 try:
   argcomplete.autocomplete(parser)
 except NameError:
@@ -69,7 +72,18 @@ if args.filename[-4:]!=".xml" and args.filename[-7:]!=".xml.gz":
     parser.print_help()
     sys.exit(1)
 
+kwargs = {}
+if args.kwargs is not None:
+  for i in xrange(0, len(args.kwargs), 2):
+    if args.kwargs[i] in kwargs:
+      if type(kwargs[args.kwargs[i]]) is not list:
+        kwargs[args.kwargs[i]] = [kwargs[args.kwargs[i]]]
+      kwargs[args.kwargs[i]].append(args.kwargs[i+1])
+    else:
+      kwargs[args.kwargs[i]] = args.kwargs[i+1]
+
 exec file(args.centroid_func)
+partial_centroid_function = functools.partial(centroid_function, **kwargs)
 
 # organize the filename
 fullname = args.filename
@@ -91,7 +105,7 @@ mesh.init()
 cellsubdomain = dolfin.MeshFunction("size_t", mesh, basename+"_physical_region"+extension)
 facetsubdomain = dolfin.MeshFunction("size_t", mesh, basename+"_facet_region"+extension)
 
-split_mesh, split_facetsubdomain = splitmesh(mesh, facetsubdomain, split_facet_ids, centroid_function, preserve_facet_ids=preserve_facet_ids, new_facet_ids=new_facet_ids)
+split_mesh, split_facetsubdomain = splitmesh(mesh, facetsubdomain, split_facet_ids, partial_centroid_function, preserve_facet_ids=preserve_facet_ids, new_facet_ids=new_facet_ids)
 
 split_meshfile_out = dolfin.File(basename+"_split.xml")
 split_meshfile_out << split_mesh

@@ -284,6 +284,7 @@
               <ufl_symbol name="functional">
                 <string_value lines="1">int</string_value>
               </ufl_symbol>
+              <form_representation name="quadrature"/>
               <quadrature_rule name="default"/>
             </functional>
           </value>
@@ -305,6 +306,7 @@
               <ufl_symbol name="functional">
                 <string_value lines="1">int</string_value>
               </ufl_symbol>
+              <form_representation name="quadrature"/>
               <quadrature_rule name="default"/>
             </functional>
           </value>
@@ -342,6 +344,7 @@ r = rv + rp + rT</string_value>
             <string_value lines="1">aPC</string_value>
           </ufl_symbol>
         </form>
+        <form_representation name="quadrature"/>
         <quadrature_rule name="default"/>
         <snes_type name="ls">
           <ls_type name="cubic"/>
@@ -475,6 +478,7 @@ r = rv + rp + rT</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
+      <form_representation name="quadrature"/>
       <quadrature_rule name="default"/>
       <include_in_statistics/>
       <include_in_steady_state/>
@@ -484,6 +488,7 @@ r = rv + rp + rT</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
+      <form_representation name="quadrature"/>
       <quadrature_rule name="default"/>
       <include_in_statistics/>
       <include_in_steady_state/>
@@ -493,6 +498,7 @@ r = rv + rp + rT</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
+      <form_representation name="quadrature"/>
       <quadrature_rule name="default"/>
       <include_in_statistics/>
       <include_in_steady_state/>
@@ -502,6 +508,7 @@ r = rv + rp + rT</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
+      <form_representation name="quadrature"/>
       <quadrature_rule name="default"/>
       <include_in_statistics/>
       <include_in_steady_state/>
@@ -511,6 +518,7 @@ r = rv + rp + rT</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
+      <form_representation name="quadrature"/>
       <quadrature_rule name="default"/>
       <include_in_statistics/>
       <include_in_steady_state/>
@@ -570,6 +578,7 @@ r = rv + rp + rT</string_value>
             <string_value lines="1">res</string_value>
           </ufl_symbol>
         </form>
+        <form_representation name="quadrature"/>
         <quadrature_rule name="default"/>
         <relative_error>
           <real_value rank="0">1.e-6</real_value>
@@ -659,6 +668,7 @@ r = c_t*c_a*dx - c_t('+')*vout('+')*dt('+')*dS - c_t('-')*vout('-')*dt('-')*dS -
             <string_value lines="1">res</string_value>
           </ufl_symbol>
         </form>
+        <form_representation name="quadrature"/>
         <quadrature_rule name="default"/>
         <relative_error>
           <real_value rank="0">1.e-6</real_value>

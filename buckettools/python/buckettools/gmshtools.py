@@ -25,6 +25,7 @@ from scipy import integrate as integ
 from scipy import optimize as opt
 from math import sqrt
 import sys
+import os
 
 class GeoFile:
   def __init__(self):
@@ -42,7 +43,7 @@ class GeoFile:
     if comment:
       line += " "+self.comment(comment)
     else:
-      line += "\n"
+      line += os.linesep
     self.lines.append(line)
 
   def addcurve(self, curve, comment=None):
@@ -59,7 +60,7 @@ class GeoFile:
     if comment:
       line += " "+self.comment(comment)
     else:
-      line += "\n"
+      line += os.linesep
     self.lines.append(line)
 
   def addinterpcurve(self, interpcurve, comment=None):
@@ -75,13 +76,13 @@ class GeoFile:
     line = "Line Loop("+`self.cindex`+") = {"
     for c in range(len(surface.curves)-1):
       line += `surface.directions[c]*surface.curves[c].eid`+", "
-    line += `surface.directions[-1]*surface.curves[-1].eid`+"};\n"
+    line += `surface.directions[-1]*surface.curves[-1].eid`+"};"+os.linesep
     self.lines.append(line)
     line = "Plane Surface("+`surface.eid`+") = {"+`self.cindex`+"};"
     if comment:
       line += " "+self.comment(comment)
     else:
-      line += "\n"
+      line += os.linesep
     self.lines.append(line)
     self.cindex += 1
 
@@ -89,21 +90,21 @@ class GeoFile:
     line = "Physical Point("+`pid`+") = {"
     for p in range(len(points)-1):
       line += `points[p].eid`+", "
-    line += `points[-1].eid`+"};\n"
+    line += `points[-1].eid`+"};"+os.linesep
     self.lines.append(line)
 
   def addphysicalline(self, pid, curves):
     line = "Physical Line("+`pid`+") = {"
     for c in range(len(curves)-1):
       line += `curves[c].eid`+", "
-    line += `curves[-1].eid`+"};\n"
+    line += `curves[-1].eid`+"};"+os.linesep
     self.lines.append(line)
 
   def addphysicalsurface(self, pid, surfaces):
     line = "Physical Surface("+`pid`+") = {"
     for s in range(len(surfaces)-1):
       line += `surfaces[s].eid`+", "
-    line += `surfaces[-1].eid`+"};\n"
+    line += `surfaces[-1].eid`+"};"+os.linesep
     self.lines.append(line)
 
   def addembed(self, surface, items):
@@ -111,7 +112,7 @@ class GeoFile:
     for i in range(len(items)-1):
       assert(items[i].type==items[0].type)
       line += `items[i].eid`+", "
-    line += `items[-1].eid`+"} In Surface {"+`surface.eid`+"};\n"
+    line += `items[-1].eid`+"} In Surface {"+`surface.eid`+"};"+os.linesep
     self.lines.append(line) 
 
   def addtransfinitecurve(self, curves, n):
@@ -121,7 +122,7 @@ class GeoFile:
     line = "Transfinite Line {"
     for c in range(len(curves)-1):
       line += `curves[c].eid`+", "
-    line += `curves[-1].eid`+"} = "+`n`+";\n"
+    line += `curves[-1].eid`+"} = "+`n`+";"+os.linesep
     self.lines.append(line)
 
   def addtransfinitesurface(self, surface, corners, direction):
@@ -130,14 +131,14 @@ class GeoFile:
     line = "Transfinite Surface {"+`surface.eid`+"} = {"
     for c in range(len(corners)-1):
       line += `corners[c].eid`+", "
-    line += `corners[-1].eid`+"} "+direction+";\n"
+    line += `corners[-1].eid`+"} "+direction+";"+os.linesep
     self.lines.append(line)
 
   def linebreak(self):
-    self.lines.append("\n")
+    self.lines.append(os.linesep)
 
   def comment(self, string):
-    return "// "+string+"\n"
+    return "// "+string+os.linesep
 
   def produced_comment(self):
     self.lines.append(self.comment("Produced by: "+" ".join(sys.argv)))

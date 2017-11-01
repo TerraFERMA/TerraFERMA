@@ -23,6 +23,7 @@ import subprocess
 import hashlib
 import shutil
 import sys
+import os
 
 class CppExpressionBucket:
   """A class that stores all the information necessary to write the cpp for a user defined expression."""
@@ -45,114 +46,114 @@ class CppExpressionBucket:
     """Write the cpp expression to an array of cpp header strings."""
     cpp = []
 
-    cpp.append("#ifndef __"+self.namespace().upper()+"_H\n")
-    cpp.append("#define __"+self.namespace().upper()+"_H\n")
-    cpp.append("\n")
-    cpp.append("#include \"Bucket.h\"\n")
-    cpp.append("#include \"SystemBucket.h\"\n")
-    cpp.append("#include \"BoostTypes.h\"\n")
-    cpp.append("#include \"Logger.h\"\n")
-    cpp.append("#include <dolfin.h>\n")
+    cpp.append("#ifndef __"+self.namespace().upper()+"_H"+os.linesep)
+    cpp.append("#define __"+self.namespace().upper()+"_H"+os.linesep)
+    cpp.append(os.linesep)
+    cpp.append("#include \"Bucket.h\""+os.linesep)
+    cpp.append("#include \"SystemBucket.h\""+os.linesep)
+    cpp.append("#include \"BoostTypes.h\""+os.linesep)
+    cpp.append("#include \"Logger.h\""+os.linesep)
+    cpp.append("#include <dolfin.h>"+os.linesep)
     if self.include:
-      for line in self.include.split("\n"):
-        cpp.append(line+"\n")
-    cpp.append("\n")
+      for line in self.include.split(os.linesep):
+        cpp.append(line+os.linesep)
+    cpp.append(os.linesep)
 
-    cpp.append("namespace buckettools\n")
-    cpp.append("{\n")
-    cpp.append("  //*****************************************************************|************************************************************//\n")
-    cpp.append("  // "+self.namespace()+" class:\n")
-    cpp.append("  //\n")
-    cpp.append("  // The "+self.namespace()+" class describes a derived dolfin Expression class that overloads\n")
-    cpp.append("  // the eval function using a user defined data.\n")
-    cpp.append("  //*****************************************************************|************************************************************//\n")
-    cpp.append("  class "+self.namespace()+" : public dolfin::Expression\n")
-    cpp.append("  {\n")
-    cpp.append("  \n")
-    cpp.append("  //*****************************************************************|***********************************************************//\n")
-    cpp.append("  // Publicly available functions\n")
-    cpp.append("  //*****************************************************************|***********************************************************//\n")
-    cpp.append("  \n")
-    cpp.append("  public:                                                            // available to everyone\n")
-    cpp.append("  \n")
+    cpp.append("namespace buckettools"+os.linesep)
+    cpp.append("{"+os.linesep)
+    cpp.append("  //*****************************************************************|************************************************************//"+os.linesep)
+    cpp.append("  // "+self.namespace()+" class:"+os.linesep)
+    cpp.append("  //"+os.linesep)
+    cpp.append("  // The "+self.namespace()+" class describes a derived dolfin Expression class that overloads"+os.linesep)
+    cpp.append("  // the eval function using a user defined data."+os.linesep)
+    cpp.append("  //*****************************************************************|************************************************************//"+os.linesep)
+    cpp.append("  class "+self.namespace()+" : public dolfin::Expression"+os.linesep)
+    cpp.append("  {"+os.linesep)
+    cpp.append("  "+os.linesep)
+    cpp.append("  //*****************************************************************|***********************************************************//"+os.linesep)
+    cpp.append("  // Publicly available functions"+os.linesep)
+    cpp.append("  //*****************************************************************|***********************************************************//"+os.linesep)
+    cpp.append("  "+os.linesep)
+    cpp.append("  public:                                                            // available to everyone"+os.linesep)
+    cpp.append("  "+os.linesep)
     if self.rank == "Scalar":
-      cpp.append("    "+self.namespace()+"(const Bucket *bucket, const SystemBucket *system, const double_ptr time) : dolfin::Expression(), bucket_(bucket), system_(system), time_(time), initialized_(false)\n")
+      cpp.append("    "+self.namespace()+"(const Bucket *bucket, const SystemBucket *system, const double_ptr time) : dolfin::Expression(), bucket_(bucket), system_(system), time_(time), initialized_(false)"+os.linesep)
     elif self.rank == "Vector":
-      cpp.append("    "+self.namespace()+"(const std::size_t &dim, const Bucket *bucket, const SystemBucket *system, const double_ptr time) : dolfin::Expression(dim), bucket_(bucket), system_(system), time_(time), initialized_(false)\n")
+      cpp.append("    "+self.namespace()+"(const std::size_t &dim, const Bucket *bucket, const SystemBucket *system, const double_ptr time) : dolfin::Expression(dim), bucket_(bucket), system_(system), time_(time), initialized_(false)"+os.linesep)
     elif self.rank == "Tensor":
-      cpp.append("    "+self.namespace()+"(const std::vector<std::size_t> &value_shape, const Bucket *bucket, const SystemBucket *system, const double_ptr time) : dolfin::Expression(value_shape), bucket_(bucket), system_(system), time_(time), initialized_(false)\n")
+      cpp.append("    "+self.namespace()+"(const std::vector<std::size_t> &value_shape, const Bucket *bucket, const SystemBucket *system, const double_ptr time) : dolfin::Expression(value_shape), bucket_(bucket), system_(system), time_(time), initialized_(false)"+os.linesep)
     else:
       print self.rank
       print "Unknown rank."
       sys.exit(1)
-    cpp.append("    {\n")
-    cpp.append("                                                                     // do nothing\n")
-    cpp.append("    }\n")
-    cpp.append("    \n")
-    cpp.append("    void eval(dolfin::Array<double>& values, const dolfin::Array<double>& x) const\n")
-    cpp.append("    {\n")
-    cpp.append("      \n")
-    cpp.append("      tf_err(\"Buckettools C++ expressions must be called using the eval(values, x, cell) interface.\", \"Cannot use eval(values, x) interface.\");\n")
-    cpp.append("      \n")
-    cpp.append("    }\n")
-    cpp.append("    \n")
-    cpp.append("    void eval(dolfin::Array<double>& values, const dolfin::Array<double>& x, const ufc::cell &cell) const\n")
-    cpp.append("    {\n")
-    cpp.append("      \n")
-    for line in self.evalfunc.split("\n"):
-      cpp.append("      "+line+"\n")
-    cpp.append("    }\n")
-    cpp.append("    \n")
-    cpp.append("    void init()\n")
-    cpp.append("    {\n")
-    cpp.append("      if (!initialized_)\n")
-    cpp.append("      {\n")
-    cpp.append("        initialized_ = true;\n")
-    cpp.append("        \n")
-    for line in self.initfunc.split("\n"):
-      cpp.append("        "+line+"\n")
-    cpp.append("      }\n")
-    cpp.append("    }\n")
-    cpp.append("  \n")
-    cpp.append("  //*****************************************************************|***********************************************************//\n")
-    cpp.append("  // Private functions\n")
-    cpp.append("  //*****************************************************************|***********************************************************//\n")
-    cpp.append("  \n")
-    cpp.append("  private:                                                           // only available to this class\n")
-    cpp.append("    \n")
-    cpp.append("    const Bucket* bucket() const\n")
-    cpp.append("    {\n")
-    cpp.append("      return bucket_;\n")
-    cpp.append("    }\n")
-    cpp.append("    \n")
-    cpp.append("    const SystemBucket* system() const\n")
-    cpp.append("    {\n")
-    cpp.append("      return system_;\n")
-    cpp.append("    }\n")
-    cpp.append("    \n")
-    cpp.append("    const double_ptr time() const\n")
-    cpp.append("    {\n")
-    cpp.append("      return time_;\n")
-    cpp.append("    }\n")
-    cpp.append("    \n")
-    cpp.append("    const Bucket *bucket_;\n")
-    cpp.append("    \n")
-    cpp.append("    const SystemBucket *system_;\n")
-    cpp.append("    \n")
-    cpp.append("    const double_ptr time_;\n")
-    cpp.append("    \n")
-    cpp.append("    bool initialized_;\n")
-    cpp.append("    \n")
-    for line in self.members.split("\n"):
-      cpp.append("    "+line+"\n")
-    cpp.append("  \n")
-    cpp.append("  };\n")
-    cpp.append("  \n")
-    cpp.append("}\n")
+    cpp.append("    {"+os.linesep)
+    cpp.append("                                                                     // do nothing"+os.linesep)
+    cpp.append("    }"+os.linesep)
+    cpp.append("    "+os.linesep)
+    cpp.append("    void eval(dolfin::Array<double>& values, const dolfin::Array<double>& x) const"+os.linesep)
+    cpp.append("    {"+os.linesep)
+    cpp.append("      "+os.linesep)
+    cpp.append("      tf_err(\"Buckettools C++ expressions must be called using the eval(values, x, cell) interface.\", \"Cannot use eval(values, x) interface.\");"+os.linesep)
+    cpp.append("      "+os.linesep)
+    cpp.append("    }"+os.linesep)
+    cpp.append("    "+os.linesep)
+    cpp.append("    void eval(dolfin::Array<double>& values, const dolfin::Array<double>& x, const ufc::cell &cell) const"+os.linesep)
+    cpp.append("    {"+os.linesep)
+    cpp.append("      "+os.linesep)
+    for line in self.evalfunc.split(os.linesep):
+      cpp.append("      "+line+os.linesep)
+    cpp.append("    }"+os.linesep)
+    cpp.append("    "+os.linesep)
+    cpp.append("    void init()"+os.linesep)
+    cpp.append("    {"+os.linesep)
+    cpp.append("      if (!initialized_)"+os.linesep)
+    cpp.append("      {"+os.linesep)
+    cpp.append("        initialized_ = true;"+os.linesep)
+    cpp.append("        "+os.linesep)
+    for line in self.initfunc.split(os.linesep):
+      cpp.append("        "+line+os.linesep)
+    cpp.append("      }"+os.linesep)
+    cpp.append("    }"+os.linesep)
+    cpp.append("  "+os.linesep)
+    cpp.append("  //*****************************************************************|***********************************************************//"+os.linesep)
+    cpp.append("  // Private functions"+os.linesep)
+    cpp.append("  //*****************************************************************|***********************************************************//"+os.linesep)
+    cpp.append("  "+os.linesep)
+    cpp.append("  private:                                                           // only available to this class"+os.linesep)
+    cpp.append("    "+os.linesep)
+    cpp.append("    const Bucket* bucket() const"+os.linesep)
+    cpp.append("    {"+os.linesep)
+    cpp.append("      return bucket_;"+os.linesep)
+    cpp.append("    }"+os.linesep)
+    cpp.append("    "+os.linesep)
+    cpp.append("    const SystemBucket* system() const"+os.linesep)
+    cpp.append("    {"+os.linesep)
+    cpp.append("      return system_;"+os.linesep)
+    cpp.append("    }"+os.linesep)
+    cpp.append("    "+os.linesep)
+    cpp.append("    const double_ptr time() const"+os.linesep)
+    cpp.append("    {"+os.linesep)
+    cpp.append("      return time_;"+os.linesep)
+    cpp.append("    }"+os.linesep)
+    cpp.append("    "+os.linesep)
+    cpp.append("    const Bucket *bucket_;"+os.linesep)
+    cpp.append("    "+os.linesep)
+    cpp.append("    const SystemBucket *system_;"+os.linesep)
+    cpp.append("    "+os.linesep)
+    cpp.append("    const double_ptr time_;"+os.linesep)
+    cpp.append("    "+os.linesep)
+    cpp.append("    bool initialized_;"+os.linesep)
+    cpp.append("    "+os.linesep)
+    for line in self.members.split(os.linesep):
+      cpp.append("    "+line+os.linesep)
+    cpp.append("  "+os.linesep)
+    cpp.append("  };"+os.linesep)
+    cpp.append("  "+os.linesep)
+    cpp.append("}"+os.linesep)
 
-    cpp.append("\n")
-    cpp.append("#endif\n")
-    cpp.append("\n")
+    cpp.append(os.linesep)
+    cpp.append("#endif"+os.linesep)
+    cpp.append(os.linesep)
 
     return cpp
 
@@ -186,21 +187,21 @@ class CppExpressionBucket:
     cpp = []
     
     if index == 0:
-      cpp.append("          if (expressionname == \""+self.name+"\")\n")
+      cpp.append("          if (expressionname == \""+self.name+"\")"+os.linesep)
     else:
-      cpp.append("          else if (expressionname ==  \""+self.name+"\")\n")
-    cpp.append("          {\n")
+      cpp.append("          else if (expressionname ==  \""+self.name+"\")"+os.linesep)
+    cpp.append("          {"+os.linesep)
     if self.rank == "Scalar":
-      cpp.append("            expression.reset(new "+self.namespace()+"(bucket, system, time));\n")
+      cpp.append("            expression.reset(new "+self.namespace()+"(bucket, system, time));"+os.linesep)
     elif self.rank == "Vector":
-      cpp.append("            expression.reset(new "+self.namespace()+"(size, bucket, system, time));\n")
+      cpp.append("            expression.reset(new "+self.namespace()+"(size, bucket, system, time));"+os.linesep)
     elif self.rank == "Tensor":
-      cpp.append("            expression.reset(new "+self.namespace()+"(shape, bucket, system, time));\n")
+      cpp.append("            expression.reset(new "+self.namespace()+"(shape, bucket, system, time));"+os.linesep)
     else:
       print self.rank
       print "Unknown rank."
       sys.exit(1)
-    cpp.append("          }\n")
+    cpp.append("          }"+os.linesep)
     
     return cpp
 
@@ -209,12 +210,12 @@ class CppExpressionBucket:
     cpp = []
     
     if index == 0:
-      cpp.append("          if (expressionname == \""+self.name+"\")\n")
+      cpp.append("          if (expressionname == \""+self.name+"\")"+os.linesep)
     else:
-      cpp.append("          else if (expressionname ==  \""+self.name+"\")\n")
-    cpp.append("          {\n")
-    cpp.append("            (*std::dynamic_pointer_cast< "+self.namespace()+" >(expression)).init();\n")
-    cpp.append("          }\n")
+      cpp.append("          else if (expressionname ==  \""+self.name+"\")"+os.linesep)
+    cpp.append("          {"+os.linesep)
+    cpp.append("            (*std::dynamic_pointer_cast< "+self.namespace()+" >(expression)).init();"+os.linesep)
+    cpp.append("          }"+os.linesep)
     
     return cpp
 

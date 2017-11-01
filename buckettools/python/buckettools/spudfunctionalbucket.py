@@ -20,6 +20,7 @@
 
 import libspud
 import buckettools.functionalbucket
+import os
 
 class SpudFunctionalBucket(buckettools.functionalbucket.FunctionalBucket):
   """A class that stores all the information necessary to write the ufl for a functional (i.e. scalar valued returning ufl) 
@@ -34,10 +35,11 @@ class SpudFunctionalBucket(buckettools.functionalbucket.FunctionalBucket):
         self.name = ""
       else:
         self.name = function.name
-    self.symbol   = libspud.get_option(optionpath+"/ufl_symbol").split("\n")[0]
-    self.form     = libspud.get_option(optionpath)+"\n"
+    self.symbol   = libspud.get_option(optionpath+"/ufl_symbol").split(os.linesep)[0]
+    self.form     = libspud.get_option(optionpath)+os.linesep
     self.system   = system
     self.function = function
+    self.form_representation = libspud.get_option(optionpath+"/form_representation/name")
     if libspud.have_option(optionpath+"/quadrature_degree"):
       self.quadrature_degree = libspud.get_option(optionpath+"/quadrature_degree")
     self.quadrature_rule = libspud.get_option(optionpath+"/quadrature_rule/name")
