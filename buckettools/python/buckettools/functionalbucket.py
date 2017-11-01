@@ -20,6 +20,7 @@
 
 from buckettools.base import *
 import sys
+import os
 
 class FunctionalBucket:
   """A class that stores all the information necessary to write the ufl for a functional (i.e. scalar valued returning ufl)."""
@@ -30,8 +31,10 @@ class FunctionalBucket:
     self.system = None
     self.name = None
     self.symbol = None
+    self.form_representation = None
     self.quadrature_degree = None
     self.quadrature_rule = None
+    self.function = None
   
   def ufl(self):
     """Write the functional to an array of ufl strings."""
@@ -39,13 +42,13 @@ class FunctionalBucket:
     for field in self.system.fields:
       ufl += field.element_ufl()
     ufl += self.system.element_ufl()
-    ufl.append("\n")
+    ufl.append(os.linesep)
     ufl += self.system.function_ufl()
-    ufl.append("\n")
+    ufl.append(os.linesep)
     ufl += self.system.iterate_ufl()
-    ufl.append("\n")
+    ufl.append(os.linesep)
     ufl += self.system.old_ufl()
-    ufl.append("\n")
+    ufl.append(os.linesep)
     for coeff in self.system.coeffs:
       if coeff.type=="Constant":
         ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
@@ -56,11 +59,11 @@ class FunctionalBucket:
         ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
         for suffix in function_uflsymbol_suffixes():
           ufl.append(coefficient_ufl(coeff.symbol, suffix=suffix))
-      ufl.append("\n")
-    ufl.append("\n")
+      ufl.append(os.linesep)
+    ufl.append(os.linesep)
     # special_coeffs are only added for this system *not the other systems*
     ufl.append(comment("Declaring special coefficients, such as the timestep."))
-    ufl.append("\n")
+    ufl.append(os.linesep)
     for coeff in self.system.special_coeffs:
       if coeff.type == "Constant":
         ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
@@ -74,22 +77,22 @@ class FunctionalBucket:
         ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
         for suffix in function_uflsymbol_suffixes():
           ufl.append(coefficient_ufl(coeff.symbol, suffix=suffix))
-    ufl.append("\n")
+    ufl.append(os.linesep)
     ufl.append(comment("Finished declaring functions for this system, start on other systems."))
-    ufl.append("\n")
+    ufl.append(os.linesep)
     for system in self.system.bucket.systems:
       if system.name == self.system.name: continue
       ufl.append(declaration_comment("Function elements", "System", system.name))
       for field in system.fields:
         ufl += field.element_ufl()
       ufl += system.element_ufl()
-      ufl.append("\n")
+      ufl.append(os.linesep)
       ufl += system.function_ufl()
-      ufl.append("\n")
+      ufl.append(os.linesep)
       ufl += system.iterate_ufl()
-      ufl.append("\n")
+      ufl.append(os.linesep)
       ufl += system.old_ufl()
-      ufl.append("\n")
+      ufl.append(os.linesep)
       for coeff in system.coeffs:
         if coeff.type == "Constant":
           ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
@@ -100,19 +103,19 @@ class FunctionalBucket:
           ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
           for suffix in function_uflsymbol_suffixes():
             ufl.append(coefficient_ufl(coeff.symbol, suffix=suffix))
-    ufl.append("\n")
+    ufl.append(os.linesep)
     ufl.append(comment("Finished declaring functions for all other systems, start on forms."))
-    ufl.append("\n")
+    ufl.append(os.linesep)
     if self.system.bucket.parameters:
       ufl.append(comment("Global preamble"))
-      ufl.append(self.system.bucket.parameters+"\n")
-    ufl.append("\n")
+      ufl.append(self.system.bucket.parameters+os.linesep)
+    ufl.append(os.linesep)
     ufl.append(declaration_comment("Form", "form", self.name))
     ufl.append(self.form)
-    ufl.append("\n")
+    ufl.append(os.linesep)
     ufl.append(comment("Declare potentially non-default form names to be accessible"))
     ufl.append(forms_ufl([self.symbol]))
-    ufl.append("\n")
+    ufl.append(os.linesep)
     ufl.append(produced_comment())
 
     return ufl
@@ -130,7 +133,7 @@ class FunctionalBucket:
   def write_ufc(self):
     """Write the functional to a ufl file."""
     self.write_ufl(suffix=".temp")
-    ffc(self.namespace(), self.quadrature_rule, self.quadrature_degree)
+    ffc(self.namespace(), self.form_representation, self.quadrature_rule, self.quadrature_degree)
 
   def namespace(self):
     name = self.system.name+self.name
@@ -140,23 +143,23 @@ class FunctionalBucket:
   def cpp(self, index=0):
     cpp = []
     if index == 0:
-      cpp.append("        if (functionalname ==  \""+self.name+"\")\n")
+      cpp.append("        if (functionalname ==  \""+self.name+"\")"+os.linesep)
     else:
-      cpp.append("        else if (functionalname ==  \""+self.name+"\")\n")
-    cpp.append("        {\n")
-    cpp.append("          functional.reset(new "+self.namespace()+"::Form_"+self.symbol+"(mesh));\n")
-    cpp.append("        }\n")
+      cpp.append("        else if (functionalname ==  \""+self.name+"\")"+os.linesep)
+    cpp.append("        {"+os.linesep)
+    cpp.append("          functional.reset(new "+self.namespace()+"::Form_"+self.symbol+"(mesh));"+os.linesep)
+    cpp.append("        }"+os.linesep)
     return cpp
 
   def coefficientspace_cpp(self, coeff, index=0, suffix=""):
     cpp = [] 
     if index == 0:
-      cpp.append("          if (uflsymbol ==  \""+coeff.symbol+"\")\n")
+      cpp.append("          if (uflsymbol ==  \""+coeff.symbol+"\")"+os.linesep)
     else:
-      cpp.append("          else if (uflsymbol ==  \""+coeff.symbol+"\")\n")
-    cpp.append("          {\n")
-    cpp.append("            coefficientspace.reset(new "+self.namespace()+"::CoefficientSpace_"+coeff.symbol+suffix+"(mesh));\n")
-    cpp.append("          }\n")
+      cpp.append("          else if (uflsymbol ==  \""+coeff.symbol+"\")"+os.linesep)
+    cpp.append("          {"+os.linesep)
+    cpp.append("            coefficientspace.reset(new "+self.namespace()+"::CoefficientSpace_"+coeff.symbol+suffix+"(mesh));"+os.linesep)
+    cpp.append("          }"+os.linesep)
     return cpp
 
   def repeated_uflsymbol_check(self):
