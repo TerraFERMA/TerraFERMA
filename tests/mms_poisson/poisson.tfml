@@ -25,7 +25,11 @@
     <dump_periods/>
     <detectors/>
   </io>
-  <global_parameters/>
+  <global_parameters>
+    <python>
+      <string_value lines="20" type="code" language="python">from math import exp</string_value>
+    </python>
+  </global_parameters>
   <system name="Poisson">
     <mesh name="Mesh"/>
     <ufl_symbol name="global">
@@ -57,8 +61,7 @@
             <sub_components name="All">
               <type type="boundary_condition" name="Dirichlet">
                 <python rank="0">
-                  <string_value lines="20" type="code" language="python">from math import exp
-def val(x):
+                  <string_value lines="20" type="code" language="python">def val(x):
   global exp
   return exp(x[0] + x[1]/2.)</string_value>
                 </python>
@@ -89,8 +92,7 @@ def val(x):
           </element>
           <value type="value" name="WholeMesh">
             <python rank="0">
-              <string_value lines="20" type="code" language="python">from math import exp
-def val(x):
+              <string_value lines="20" type="code" language="python">def val(x):
   global exp
   return -5./4.*exp(x[0] + x[1]/2.)</string_value>
             </python>
@@ -115,8 +117,7 @@ def val(x):
           </element>
           <value type="value" name="WholeMesh">
             <python rank="1">
-              <string_value lines="20" type="code" language="python">from math import exp
-def val(x):
+              <string_value lines="20" type="code" language="python">def val(x):
   global exp
   return [exp(x[0] + x[1]/2.), 0.5*exp(x[0] + x[1]/2.)]</string_value>
             </python>
@@ -141,8 +142,7 @@ def val(x):
           </element>
           <value type="value" name="WholeMesh">
             <python rank="0">
-              <string_value lines="20" type="code" language="python">from math import exp
-def val(x):
+              <string_value lines="20" type="code" language="python">def val(x):
   global exp
   return exp(x[0] + x[1]/2.)</string_value>
             </python>
@@ -202,6 +202,7 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
             <string_value lines="1">J</string_value>
           </ufl_symbol>
         </form>
+        <form_representation name="quadrature"/>
         <quadrature_rule name="default"/>
         <snes_type name="ls">
           <ls_type name="cubic"/>
@@ -235,6 +236,7 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">e2</string_value>
       </ufl_symbol>
+      <form_representation name="quadrature"/>
       <quadrature_rule name="default"/>
       <include_in_statistics/>
     </functional>
@@ -243,6 +245,7 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
+      <form_representation name="quadrature"/>
       <quadrature_rule name="default"/>
       <include_in_statistics/>
     </functional>
@@ -251,6 +254,7 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
+      <form_representation name="quadrature"/>
       <quadrature_rule name="default"/>
       <include_in_statistics/>
     </functional>

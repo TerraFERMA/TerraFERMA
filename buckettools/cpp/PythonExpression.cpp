@@ -129,7 +129,7 @@ void PythonExpression::eval(dolfin::Array<double>& values,
   }
   
   if (PyErr_Occurred()){                                             // error check - in setting arguments
-    PyErr_Print();
+    pyinst_.print_error();
     tf_err("In PythonExpression::eval setting pResult.", "Python error occurred.");
   }
   
@@ -142,7 +142,7 @@ void PythonExpression::eval(dolfin::Array<double>& values,
   pResult = pyinst_.call(pArgs);                                     // call the python function (through the bucket python instance)
   
   if (PyErr_Occurred()){                                             // error check - in running user defined function
-    PyErr_Print();
+    pyinst_.print_error();
     tf_err("In PythonExpression::eval evaluating pResult.", "Python error occurred.");
   }
     
@@ -163,7 +163,7 @@ void PythonExpression::eval(dolfin::Array<double>& values,
           values[i*dim1 + j] = PyFloat_AsDouble(pxx);
 
           if (PyErr_Occurred()) {
-            PyErr_Print();
+            pyinst_.print_error();
             tf_err("In PythonExpression::eval evaluating tensor values.", "Python error occurred.");
           }
 
@@ -175,7 +175,7 @@ void PythonExpression::eval(dolfin::Array<double>& values,
         values[i] = PyFloat_AsDouble(px);                            // convert it to a float
         
         if (PyErr_Occurred()){                                       // check for errors in conversion
-          PyErr_Print();
+          pyinst_.print_error();
           tf_err("In PythonExpression::eval evaluating vector values.", "Python error occurred.");
         }
       }
@@ -188,7 +188,7 @@ void PythonExpression::eval(dolfin::Array<double>& values,
     values[0] = PyFloat_AsDouble(pResult);                           // just convert a single value
     
     if (PyErr_Occurred()){                                           // check for errors in conversion
-      PyErr_Print();
+      pyinst_.print_error();
       tf_err("In PythonExpression::eval evaluating scalar values.", "Python error occurred.");
     }
   }

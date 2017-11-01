@@ -19,6 +19,7 @@
 // along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
 
+#include "GlobalPythonInstance.h"
 #include "PythonDetectors.h"
 #include "SpudBucket.h"
 #include "SpudSystemBucket.h"
@@ -75,7 +76,7 @@ void SpudBucket::fill()
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud error code
   
-  fill_dolfinparameters_();
+  fill_globalparameters_();
 
   buffer.str(""); buffer << optionpath() << "/geometry/dimension";   // geometry dimension set in the bucket to pass it down to all
   serr = Spud::get_option(buffer.str(), dimension_);                 // systems (we assume this is the length of things that do
@@ -355,12 +356,21 @@ const std::string SpudBucket::detectors_str(const int &indent) const
 }
 
 //*******************************************************************|************************************************************//
-// read the dolfin parameters set in the schema
+// read the global parameters set in the schema
 //*******************************************************************|************************************************************//
-void SpudBucket::fill_dolfinparameters_() const
+void SpudBucket::fill_globalparameters_() const
 {
   std::stringstream buffer;
   Spud::OptionError serr;
+
+  buffer.str(""); buffer << "/global_parameters/python";
+  if (Spud::have_option(buffer.str()))
+  {
+    std::string function;
+    serr = Spud::get_option(buffer.str(), function);
+    spud_err(buffer.str(), serr);
+    (*GlobalPythonInstance::instance()).run(function);
+  }
 
   buffer.str(""); buffer << "/global_parameters/dolfin/allow_extrapolation";
   if (Spud::have_option(buffer.str()))
