@@ -372,11 +372,17 @@ class Run:
       if update is not None:
         try:
           exec update in valuesdict
-        except libspud.SpudNewKeyWarning, e:
+        except libspud.SpudNewKeyWarning as e:
           self.log("ERROR: spud raised a new key warning:")
           self.log("%s"%e)
           self.log("on parameter: %s"%paramname)
-          self.log("with update:"+os.linesep+" %s"%update) 
+          self.log("with update:"+os.linesep+"%s"%update) 
+          raise SimulationsErrorWriteOptions
+        except Exception as e:
+          self.log("ERROR: evaluating parameters raised an exception:")
+          self.log("%s"%e)
+          self.log("on parameter: %s"%paramname)
+          self.log("with update:"+os.linesep+"%s"%update) 
           raise SimulationsErrorWriteOptions
     sys.path.remove(self.basedirectory)
     os.chdir(self.currentdirectory)
