@@ -1343,7 +1343,10 @@ The expression will automatically include:
     #include "BoostTypes.h"
     #include "Bucket.h"
     #include "SystemBucket.h"
-    #include &amp;lt;dolfin.h&amp;gt;</a:documentation>
+    #include &amp;lt;dolfin.h&amp;gt;
+
+If the files are in a non-default location be sure to include the path
+to them in the environment variable CPLUS_INCLUDE_PATH.</a:documentation>
         <ref name="cpp_code"/>
       </element>
     </optional>

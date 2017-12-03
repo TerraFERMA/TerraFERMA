@@ -1090,6 +1090,9 @@ prescribed_cpp =
     ##     #include "Bucket.h"
     ##     #include "SystemBucket.h"
     ##     #include &lt;dolfin.h&gt;
+    ##
+    ## If the files are in a non-default location be sure to include the path
+    ## to them in the environment variable CPLUS_INCLUDE_PATH.
     element include {
       cpp_code
     }?,

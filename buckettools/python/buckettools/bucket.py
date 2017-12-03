@@ -29,6 +29,7 @@ class Bucket:
     """Define the expected members of the bucket class - only one really."""
     self.parameters = None
     self.systems = None
+    self.cpplibraries = None
 
   def write_ufc(self):
     """Write all ufl files described by the bucket."""
@@ -53,6 +54,13 @@ class Bucket:
       for functional in system.functionals:
         namespaces.append(functional.namespace())
     return namespaces
+
+  def list_cpplibraries(self):
+    """Return a list of the cpp libraries."""
+    if self.cpplibraries is not None:
+      return self.cpplibraries
+    else:
+      return []
 
   def list_globaluflsymbols(self):
     """Return a list of global ufl_symbols."""
