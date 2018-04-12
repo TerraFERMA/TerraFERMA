@@ -380,6 +380,242 @@ class Spline(Curve):
       splines.append(Spline(newpoints, name=name, pid=self.pid))
     return splines
 
+class InterpolatedCubicSpline:
+  def __init__(self, points, name=None, pids=None, bctype='natural'):
+    self.type = "InterpolatedCubicSpline"
+    self.bctype=bctype
+    self.points = [point for point in points]
+    self.controlpoints = [point for point in points]
+    self.controlpoints.sort(key=lambda point: point.x)
+    self.controlx = numpy.asarray([cp.x for cp in self.controlpoints])
+    self.controly = numpy.asarray([cp.y for cp in self.controlpoints])
+    self.cs = interp.CubicSpline(self.controlx, self.controly, bc_type=self.bctype)
+    self.name = name
+    if pids: 
+      assert(len(self.pids)==len(self.points)-1)
+      self.pids = pids
+    else:
+      self.pids = [None for i in range(len(self.points)-1)]
+    self.x = None
+    self.y = None
+    self.u = None
+    self.interpu = None
+    self.interpcurves = None
+    self.length = None
+    self.update()
+
+  def __call__(self, delu, x0=0.0, der=0):
+    # NOTE: this returns [x, dy/dx] when der=1...
+    x = self.delu2x(delu, x0=x0)
+    return [x, float(self.cs(x, nu=der))]
+
+  def x2delu(self, x, x0=0.0):
+    """Convert from Delta x to Delta u:
+       u = \int_{x0}^{x} sqrt(1 + (dy(x')/dx')**2) dx'
+       x0 is the lower bound of integration - provide to get an incremental u"""
+    return integ.quad(lambda xp: self.du(xp), x0, x)[0]/self.length
+
+  def delu2x(self, delu, x0=0.0):
+    """Convert from u to x:
+       u(x) = \int_{x0}^x sqrt(1 + (dy(x')/dx')**2) dx'
+       x0 is the lower bound of integration."""
+    return opt.fsolve(lambda x: self.x2delu(x, x0=x0)-delu, x0, fprime=lambda x: [self.du(x)])[0]
+
+  def du(self, x):
+    return sqrt(1.+float(self.cs(x, nu=1))**2)
+
+  def update(self):
+    self.x = numpy.array([self.points[i].x for i in range(len(self.points))])
+    isort = numpy.argsort(self.x)
+    points = numpy.asarray(self.points)[isort]
+    self.points = points.tolist()
+    pids = numpy.asarray(self.pids)[[i for i in isort if i != (len(isort)-1)]]
+    self.pids = pids.tolist()
+    self.x = numpy.array([self.points[i].x for i in range(len(self.points))])
+    self.y = numpy.array([self.points[i].y for i in range(len(self.points))])
+    self.length = 1.0 # must set this to one first to get the next line correct
+    self.length = self.x2delu(self.x[-1])
+    u = numpy.asarray([0.0])
+    u = numpy.append(u, [self.x2delu(self.x[i], x0=self.x[i-1]) for i in xrange(1,len(self.x))])
+    self.u = numpy.cumsum(u)
+  
+  def updateinterp(self):
+    self.interpu = []
+    self.interpcurves = []
+    for p in range(len(self.points)-1):
+      pid = self.pids[p]
+      lengthfraction = self.u[p+1]-self.u[p]
+      res0 = self.points[p].res/self.length/lengthfraction
+      res1 = self.points[p+1].res/self.length/lengthfraction
+      t = 0.0
+      ts = [t]
+      while t < 1.0:
+        t = ts[-1] + (1.0 - t)*res0 + t*res1
+        ts.append(t)
+      ts = numpy.array(ts)/ts[-1]
+      ls = (ts[1:]-ts[:-1])*lengthfraction*self.length
+      res = [max(ls[i], ls[i+1]) for i in range(len(ls)-1)]
+      point = self.points[p]
+      self.interpu.append(self.u[p])
+      for i in range(1,len(ts)-1):
+        t = ts[i]
+        self.interpu.append(self.u[p] + t*lengthfraction)
+        npoint = Point(self(t*lengthfraction, x0=self.points[p].x), res=res[i-1])
+        self.interpcurves.append(Line([point, npoint], pid))
+        point = npoint
+      npoint = self.points[p+1]
+      self.interpcurves.append(Line([point, npoint], pid))
+    self.interpu.append(self.u[p+1])
+    self.interpu = numpy.asarray(self.interpu)
+
+  def copyinterp(self, spline):
+    assert(len(self.points)==len(spline.points))
+    self.interpu = []
+    self.interpcurves = []
+    for p in range(len(self.points)-1):
+      pid = self.pids[p]
+      lengthfraction = self.u[p+1]-self.u[p]
+      splinelengthfraction = spline.u[p+1]-spline.u[p]
+      lengthratio = lengthfraction/splinelengthfraction
+      splinepoint0 = spline.points[p]
+      splinepoint1 = spline.points[p+1]
+      splineus = spline.interpusinterval(splinepoint0, splinepoint1)
+      splinecurves = spline.interpcurvesinterval(splinepoint0, splinepoint1)
+      assert(len(splineus)==len(splinecurves)+1)
+      point = self.points[p]
+      self.interpu.append(self.u[p])
+      for i in range(1, len(splineus)-1):
+        self.interpu.append(self.u[p] + (splineus[i]-spline.u[p])*lengthratio)
+        npoint = Point(self((splineus[i]-spline.u[p])*lengthratio, x0=self.points[p].x), \
+                       res=splinecurves[i-1].points[1].res*lengthratio)
+        self.interpcurves.append(Line([point,npoint], pid))
+        point = npoint
+      npoint = self.points[p+1]
+      self.interpcurves.append(Line([point, npoint], pid))
+    self.interpu.append(self.u[p+1])
+    self.interpu = numpy.asarray(self.interpu)
+
+  def intersecty(self, yint):
+    return [self.cs.solve(yint)[0], yint]
+      
+  def intersectx(self, xint):
+    return [xint, float(self.cs(xint))]
+
+  def interpcurveindex(self, u):
+    loc = abs(self.interpu - u).argmin()
+    if loc == 0: 
+      loc0 = loc
+    elif loc == len(self.interpu)-1: 
+      loc0 = loc-1
+    else:
+      if self.interpu[loc] < u: 
+        loc0 = loc
+      else: 
+        loc0 = loc-1
+    return loc0
+
+  def unittangentx(self, x):
+    der = self.cs(x, nu=1)
+    vec = numpy.array([1.0, der])
+    vec = vec/sqrt(sum(vec**2))
+    return vec
+
+  def translatenormal(self, dist):
+    for p in range(len(self.points)):
+      der = float(self.cs(self.points[p].x, nu=1))
+      vec = numpy.array([-der, 1.0])
+      vec = vec/sqrt(sum(vec**2))
+      self.points[p].x += dist*vec[0]
+      self.points[p].y += dist*vec[1]
+    self.update()
+
+  def croppoint(self, pind, coord):
+    for i in range(len(pind)-1):
+      p = self.points.pop(pind[i])
+    self.points[pind[-1]].x = coord[0]
+    self.points[pind[-1]].y = coord[1]
+    self.update()
+
+  def crop(self, left=None, bottom=None, right=None, top=None):
+    if left is not None:
+      out = numpy.where(self.x < left)[0]
+      if (len(out)>0):
+        coord = self.intersectx(left)
+        self.croppoint(out, coord)
+    if right is not None:
+      out = numpy.where(self.x > right)[0]
+      if (len(out)>0):
+        coord = self.intersectx(right)
+        self.croppoint(out, coord)
+    if bottom is not None:
+      out = numpy.where(self.y < bottom)[0]
+      if (len(out)>0):
+        coord = self.intersecty(bottom)
+        self.croppoint(out, coord)
+    if top is not None:
+      out = numpy.where(self.y > top)[0]
+      if (len(out)>0):
+        coord = self.intersecty(top)
+        self.croppoint(out, coord)
+
+  def translatenormalandcrop(self, dist):
+    left = self.x.min()
+    right = self.x.max()
+    bottom = self.y.min()
+    top = self.y.max()
+    self.translatenormal(dist)
+    self.crop(left=left, bottom=bottom, right=right, top=top)
+
+  def findpointx(self, xint):
+    ind = numpy.where(self.x==xint)[0]
+    if (len(ind)==0): 
+      return None
+    else:
+      return self.points[ind[0]]
+  
+  def findpointy(self, yint):
+    ind = numpy.where(self.y==yint)[0]
+    if (len(ind)==0): 
+      return None
+    else:
+      return self.points[ind[0]]
+  
+  def findpoint(self, name):
+    for p in self.points:
+      if p.name == name: return p
+    return None
+
+  def findpointindex(self, name):
+    for p in range(len(self.points)):
+      if self.points[p].name == name: return p
+    return None
+
+  def interpcurvesinterval(self, point0, point1):
+    for l0 in range(len(self.interpcurves)):
+      if self.interpcurves[l0].points[0] == point0: break
+
+    for l1 in range(l0, len(self.interpcurves)):
+      if self.interpcurves[l1].points[1] == point1: break
+
+    return self.interpcurves[l0:l1+1]
+
+  def interpusinterval(self, point0, point1):
+    for l0 in range(len(self.interpcurves)):
+      if self.interpcurves[l0].points[0] == point0: break
+
+    for l1 in range(l0, len(self.interpcurves)):
+      if self.interpcurves[l1].points[1] == point1: break
+
+    return self.interpu[l0:l1+2]
+
+  def appendpoint(self, p, pid=None):
+    self.points.append(p)
+    self.pids.append(pid)
+    self.update()
+
+  def cleareid(self):
+    for curve in self.interpcurves: curve.cleareid()
+
 class InterpolatedSciPySpline:
   def __init__(self, points, name=None, pids=None):
     self.type = "InterpolatedSciPySpline"
@@ -499,8 +735,8 @@ class InterpolatedSciPySpline:
     t = tck[0]
     c0 = numpy.concatenate( (tck[1][0], numpy.array([0]*(len(t)-len(tck[1][0])), dtype=tck[1][0].dtype)))
     c1 = numpy.concatenate( (tck[1][1], numpy.array([0]*(len(t)-len(tck[1][1])), dtype=tck[1][1].dtype)))
-    z0, m0,ierr = interp.fitpack.dfitpack.sproot(t, c0)
-    z1, m1,ierr = interp.fitpack.dfitpack.sproot(t, c1)
+    z0, m0,ierr = interp.fitpack2.dfitpack.sproot(t, c0)
+    z1, m1,ierr = interp.fitpack2.dfitpack.sproot(t, c1)
     return [z0[:m0], z1[:m1]]
       
   def intersecty(self, yint):
@@ -514,7 +750,7 @@ class InterpolatedSciPySpline:
     tck[1][1] = tck[1][1]-yint
     t = tck[0]
     c = numpy.concatenate( (tck[1][1], numpy.array([0]*(len(t)-len(tck[1][1])), dtype=tck[1][1].dtype)))
-    z,m,ierr = interp.fitpack.dfitpack.sproot(t, c)
+    z,m,ierr = interp.fitpack2.dfitpack.sproot(t, c)
     return z[:m]
       
   def intersectx(self, xint):
@@ -528,7 +764,7 @@ class InterpolatedSciPySpline:
     tck[1][0] = tck[1][0]-xint
     t = tck[0]
     c = numpy.concatenate( (tck[1][0], numpy.array([0]*(len(t)-len(tck[1][0])), dtype=tck[1][0].dtype)))
-    z,m,ierr = interp.fitpack.dfitpack.sproot(t, c)
+    z,m,ierr = interp.fitpack2.dfitpack.sproot(t, c)
     return z[:m]
 
   def uxymindist(self, x, y):
