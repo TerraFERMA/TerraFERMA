@@ -495,8 +495,8 @@ class InterpolatedCubicSpline:
     self.interpu.append(self.u[p+1])
     self.interpu = numpy.asarray(self.interpu)
 
-  def intersecty(self, yint):
-    return [self.cs.solve(yint)[0], yint]
+  def intersecty(self, yint, extrapolate=False):
+    return [self.cs.solve(yint, extrapolate=extrapolate)[0], yint]
       
   def intersectx(self, xint):
     return [xint, float(self.cs(xint))]
