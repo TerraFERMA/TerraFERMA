@@ -187,8 +187,8 @@ const_PETScVector_ptr FunctionBucket::basevector(const std::string &function_typ
                                            values.size(),
                                            true);
 
-    PETScVector_ptr tv( new dolfin::PETScVector() );
-    (*tv).init((*mesh).mpi_comm(), std::make_pair(offset, offset+values.size()));
+    PETScVector_ptr tv( new dolfin::PETScVector((*mesh).mpi_comm()) );
+    (*tv).init(std::make_pair(offset, offset+values.size()));
     (*tv).set_local(values);
     fv = std::const_pointer_cast<const dolfin::PETScVector>(tv);
   }
@@ -223,14 +223,17 @@ dolfin::PETScVector FunctionBucket::vector(const std::string &function_type, con
   }
 
   IS is = components_is(components);
+      perr = ISView(is, 
+                PETSC_VIEWER_STDOUT_((*mesh).mpi_comm()));
+      petsc_err(perr);                                                   // isview?
   PetscInt size;
   perr = ISGetLocalSize(is, &size);
   std::size_t offset = 
               dolfin::MPI::global_offset((*mesh).mpi_comm(),
                                          size, true);
 
-  dolfin::PETScVector sv;
-  sv.init((*mesh).mpi_comm(), std::make_pair(offset, offset+size));
+  dolfin::PETScVector sv((*mesh).mpi_comm());
+  sv.init(std::make_pair(offset, offset+size));
 
   VecScatter scatter;
   perr = VecScatterCreate((*fv).vec(), is, 

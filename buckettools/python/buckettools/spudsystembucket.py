@@ -40,7 +40,7 @@ class SpudSystemBucket(buckettools.systembucket.SystemBucket):
 
     self.fields = []
     for j in range(libspud.option_count(optionpath+"/field")):
-      field_optionpath = optionpath+"/field["+`j`+"]"
+      field_optionpath = optionpath+"/field["+repr(j)+"]"
       field = buckettools.spud.SpudFunctionBucket()
       # get all the information about this field from the options dictionary
       field.fill(field_optionpath, self, j)
@@ -51,7 +51,7 @@ class SpudSystemBucket(buckettools.systembucket.SystemBucket):
 
     self.coeffs = []
     for j in range(libspud.option_count(optionpath+"/coefficient")):
-      coeff_optionpath = optionpath+"/coefficient["+`j`+"]"
+      coeff_optionpath = optionpath+"/coefficient["+repr(j)+"]"
       coeff = buckettools.spud.SpudFunctionBucket()
       # get all the information about this coefficient from the options dictionary
       coeff.fill(coeff_optionpath, self, j)
@@ -73,7 +73,7 @@ class SpudSystemBucket(buckettools.systembucket.SystemBucket):
     
     self.solvers = []
     for j in range(libspud.option_count(optionpath+"/nonlinear_solver")):
-      solver_optionpath = optionpath+"/nonlinear_solver["+`j`+"]"
+      solver_optionpath = optionpath+"/nonlinear_solver["+repr(j)+"]"
       solver = buckettools.spud.SpudSolverBucket()
       # get all the information about this nonlinear solver from the options dictionary
       solver.fill(solver_optionpath, self)
@@ -84,7 +84,7 @@ class SpudSystemBucket(buckettools.systembucket.SystemBucket):
 
     self.functionals = []
     for j in range(libspud.option_count(optionpath+"/functional")):
-      functional_optionpath = optionpath+"/functional["+`j`+"]"
+      functional_optionpath = optionpath+"/functional["+repr(j)+"]"
       functional = buckettools.spud.SpudFunctionalBucket()
       # get all the information about this functional from the options dictionary
       functional.fill(functional_optionpath, self)

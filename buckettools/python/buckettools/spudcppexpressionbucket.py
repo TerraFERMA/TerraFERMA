@@ -45,8 +45,8 @@ class SpudCppExpressionBucket(buckettools.cppexpressionbucket.CppExpressionBucke
     elif self.basetype=="boundary_condition":
       self.nametype = "BC"
     else:
-      print self.basetype
-      print "Unknown type."
+      print(self.basetype)
+      print("Unknown type.")
       sys.exit(1)
 
     rank          = libspud.get_option(optionpath+"/cpp/rank")
@@ -57,8 +57,8 @@ class SpudCppExpressionBucket(buckettools.cppexpressionbucket.CppExpressionBucke
     elif rank=="2":
       self.rank = "Tensor"
     else:
-      print rank
-      print "Unknown rank."
+      print(rank)
+      print("Unknown rank.")
       sys.exit(1)
       
 

@@ -34,7 +34,7 @@ class SpudBucket(buckettools.bucket.Bucket):
 
     # loop over the systems in the options tree
     for i in range(libspud.option_count("/system")):
-      system_optionpath = "/system["+`i`+"]"
+      system_optionpath = "/system["+repr(i)+"]"
       system = buckettools.spud.SpudSystemBucket()
       # get all the information about this system from the options dictionary
       system.fill(system_optionpath, self)

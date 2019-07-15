@@ -56,7 +56,7 @@ A Picard iteration.</a:documentation>
       <element name="preamble">
         <a:documentation>ufl code preamble to the forms defined below.  
 Any system, field or coefficient ufl symbols defined in this options file may be used in this preamble.</a:documentation>
-        <ref name="python_code"/>
+        <ref name="python3_code"/>
       </element>
     </optional>
     <element name="form">
@@ -69,7 +69,7 @@ defined in the preamble above.</a:documentation>
       <attribute name="rank">
         <value>1</value>
       </attribute>
-      <ref name="python_code"/>
+      <ref name="python3_code"/>
       <ref name="form_ufl_symbol"/>
       <ref name="ident_zeros"/>
     </element>
@@ -86,7 +86,7 @@ If undefined the bilinear form above will be used to precondition itself.</a:doc
         <attribute name="rank">
           <value>1</value>
         </attribute>
-        <ref name="python_code"/>
+        <ref name="python3_code"/>
         <ref name="form_ufl_symbol"/>
         <ref name="ident_zeros"/>
       </element>
@@ -101,7 +101,7 @@ defined in the preamble and bilinear forms above.</a:documentation>
       <attribute name="rank">
         <value>0</value>
       </attribute>
-      <ref name="python_code"/>
+      <ref name="python3_code"/>
       <ref name="form_ufl_symbol"/>
     </element>
     <element name="form">
@@ -114,7 +114,7 @@ defined in the preamble, bilinear and linear forms above.</a:documentation>
       <attribute name="rank">
         <value>0</value>
       </attribute>
-      <ref name="python_code">
+      <ref name="python3_code">
         <a:documentation>ufl code describing a form.</a:documentation>
       </ref>
       <ref name="form_ufl_symbol"/>
@@ -188,7 +188,7 @@ Picard solve. Some of those may really slow down your computation!</a:documentat
       <element name="preamble">
         <a:documentation>ufl code preamble to the forms defined below.  
 Any system, field or coefficient ufl symbols defined in this options file may be used in this preamble.</a:documentation>
-        <ref name="python_code"/>
+        <ref name="python3_code"/>
       </element>
     </optional>
     <element name="form">
@@ -201,7 +201,7 @@ defined in the preamble above.</a:documentation>
       <attribute name="rank">
         <value>0</value>
       </attribute>
-      <ref name="python_code"/>
+      <ref name="python3_code"/>
       <ref name="form_ufl_symbol"/>
     </element>
     <element name="form">
@@ -214,7 +214,7 @@ defined in the preamble and residual linear form above.</a:documentation>
       <attribute name="rank">
         <value>1</value>
       </attribute>
-      <ref name="python_code"/>
+      <ref name="python3_code"/>
       <ref name="form_ufl_symbol"/>
       <ref name="ident_zeros"/>
     </element>
@@ -231,7 +231,7 @@ If undefined the jacobian bilinear form above will be used to precondition itsel
         <attribute name="rank">
           <value>1</value>
         </attribute>
-        <ref name="python_code"/>
+        <ref name="python3_code"/>
         <ref name="form_ufl_symbol"/>
         <ref name="ident_zeros"/>
       </element>
@@ -527,7 +527,7 @@ or:
 The return value must have the same length as the number of components described above for this field.
 
 The resulting null space will be normalized automatically.</a:documentation>
-          <ref name="python_code"/>
+          <ref name="python3_code"/>
         </element>
       </choice>
       <ref name="comment"/>
@@ -563,7 +563,7 @@ or:
        return [..., ...] # Return value array
 
 The return value must have the same length as the number of components described above for this field.</a:documentation>
-          <ref name="python_code"/>
+          <ref name="python3_code"/>
         </element>
       </choice>
       <ref name="comment"/>
@@ -1523,7 +1523,7 @@ defined in the preamble and bilinear form from this nonlinear_solver above.</a:d
               <attribute name="rank">
                 <value>1</value>
               </attribute>
-              <ref name="python_code"/>
+              <ref name="python3_code"/>
               <ref name="form_ufl_symbol"/>
               <ref name="ident_zeros"/>
             </element>

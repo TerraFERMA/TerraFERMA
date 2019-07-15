@@ -131,9 +131,9 @@ SubDomain_ptr ReferencePoint::subdomain_(const std::vector<double> &coord, const
     cell.get_coordinate_dofs(dof_coordinates);
     (*element).tabulate_dof_coordinates(coordinates, dof_coordinates, cell);
 
-    dolfin::ArrayView<const dolfin::la_index> tmp_cell_dofs = dofmap.cell_dofs(cellid);
-    std::vector<dolfin::la_index> cell_dofs;
-    for (std::size_t i = 0; i < tmp_cell_dofs.size(); i++)
+    Eigen::Map<const Eigen::Array<dolfin::la_index, Eigen::Dynamic, 1>> tmp_cell_dofs = dofmap.cell_dofs(cellid);
+    std::vector<std::size_t> cell_dofs;
+    for (Eigen::Index i = 0; i < tmp_cell_dofs.size(); i++)
     {
       cell_dofs.push_back(dofmap.local_to_global_index(tmp_cell_dofs[i]));
     }

@@ -144,7 +144,7 @@ class GeoFile:
     self.lines.append(self.comment("Produced by: "+" ".join(sys.argv)))
 
   def write(self, filename):
-    f = file(filename, 'w')
+    f = open(filename, 'w')
     f.writelines(self.lines)
     f.close()
 

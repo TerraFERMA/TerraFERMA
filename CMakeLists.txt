@@ -18,15 +18,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
-# Require CMake 2.8
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 
 # Set verbose output while testing CMake
 #set(CMAKE_VERBOSE_MAKEFILE 1)
 
 project(TERRAFERMA)
 set(TERRAFERMA_VERSION_RELEASE "1")
-set(TERRAFERMA_VERSION_MAJOR   "1")
+set(TERRAFERMA_VERSION_MAJOR   "2")
 set(TERRAFERMA_VERSION_MINOR   "0")
 set(TERRAFERMA_VERSION_PATCH   "0")
 set(TERRAFERMA_VERSION_SHORT "${TERRAFERMA_VERSION_MAJOR}.${TERRAFERMA_VERSION_MINOR}.${TERRAFERMA_VERSION_PATCH}")
@@ -35,15 +34,26 @@ if(NOT ${TERRAFERMA_VERSION_RELEASE})
   set(TERRAFERMA_VERSION "${TERRAFERMA_VERSION}+")
 endif()
 
-# Check for some compiler flags
-include(CheckCXXCompilerFlag)
-CHECK_CXX_COMPILER_FLAG(-std=c++11 HAVE_STD_CPP11)
-if (HAVE_STD_CPP11)
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-else()
-  CHECK_CXX_COMPILER_FLAG(-std=c++0x HAVE_STD_CPP0x)
-  if (HAVE_STD_CPP0x)
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+#------------------------------------------------------------------------------
+# Require and use C++11
+
+# Use C++11
+set(CMAKE_CXX_STANDARD 11)
+
+# Require C++11
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Do not enable compler-specific extensions
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+#------------------------------------------------------------------------------
+# Check compiler version
+
+# Check for GCC version - earlier versions have insuffcient C++11
+# support, or bugs.
+if (CMAKE_COMPILER_IS_GNUCXX)
+  if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8.3)
+    message(FATAL_ERROR "GCC version must be at least 4.8.3 (for sufficient C++11  support and to avoid some compiler bugs). You have version ${CMAKE_CXX_COMPILER_VERSION}")
   endif()
 endif()
 
@@ -113,12 +123,6 @@ if(HAVE_GIT)
 else(HAVE_GIT)
     set(GIT_BRANCH "")
 endif(HAVE_GIT)
-
-set(CMAKE_MODULE_PATH "${BUCKETTOOLS_DIR}/cmake/modules")
-find_package(PETSc)
-if(NOT ${PETSc_FOUND})
-  message(FATAL_ERROR "Could not find PETSc.")
-endif(NOT ${PETSc_FOUND})
 
 set(EXCLUDE_TAGS "not:branch:${GIT_BRANCH} not:petsc:${PETSC_VERSION} not:petsc:${PETSC_VERSION_MAJOR}.${PETSC_VERSION_MINOR}")
 

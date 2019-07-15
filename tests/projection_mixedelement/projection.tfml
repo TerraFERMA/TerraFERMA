@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -216,12 +216,13 @@
           </element>
           <value type="value" name="WholeMesh">
             <python rank="0">
-              <string_value lines="20" type="code" language="python">dummy = 5
+              <string_value lines="20" type="code" language="python3">dummy = 5
 dummy += 1
 
 def val(x):
   global dummy
-  return dummy</string_value>
+  return dummy
+</string_value>
             </python>
           </value>
         </rank>
@@ -233,18 +234,20 @@ def val(x):
     <nonlinear_solver name="SimpleSolver">
       <type name="SNES">
         <form name="Residual" rank="0">
-          <string_value lines="20" type="code" language="python">r1 = ss1_t*(ss1_i-fs1)*dx
+          <string_value lines="20" type="code" language="python3">r1 = ss1_t*(ss1_i-fs1)*dx
 r20 = ss2_t[0]*(ss2_i[0]-fs2[0])*dx
 r21 = ss2_t[1]*(ss2_i[1]-fs2[1])*dx
 r2 = r20 + r21
 r3 = inner(ss3_t, ss3_i-fs3)*dx
-r = r1 + r2 + r3</string_value>
+r = r1 + r2 + r3
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">r</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
-          <string_value lines="20" type="code" language="python">a = derivative(r, us_i)</string_value>
+          <string_value lines="20" type="code" language="python3">a = derivative(r, us_i)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
@@ -424,7 +427,8 @@ r = r1 + r2 + r3</string_value>
       <solve name="in_timeloop"/>
     </nonlinear_solver>
     <functional name="Field1Integral">
-      <string_value lines="20" type="code" language="python">int = ss1*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = ss1*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -433,7 +437,8 @@ r = r1 + r2 + r3</string_value>
       <include_in_statistics/>
     </functional>
     <functional name="Field2Integral0">
-      <string_value lines="20" type="code" language="python">int = ss2[0]*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = ss2[0]*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -442,7 +447,8 @@ r = r1 + r2 + r3</string_value>
       <include_in_statistics/>
     </functional>
     <functional name="Field2Integral1">
-      <string_value lines="20" type="code" language="python">int = ss2[1]*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = ss2[1]*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -451,7 +457,8 @@ r = r1 + r2 + r3</string_value>
       <include_in_statistics/>
     </functional>
     <functional name="Field3Integral00">
-      <string_value lines="20" type="code" language="python">int = ss3[0,0]*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = ss3[0,0]*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -460,7 +467,8 @@ r = r1 + r2 + r3</string_value>
       <include_in_statistics/>
     </functional>
     <functional name="Field3Integral11">
-      <string_value lines="20" type="code" language="python">int = ss3[1,1]*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = ss3[1,1]*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -469,7 +477,8 @@ r = r1 + r2 + r3</string_value>
       <include_in_statistics/>
     </functional>
     <functional name="Field3Integral01">
-      <string_value lines="20" type="code" language="python">int = ss3[0,1]*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = ss3[0,1]*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -478,7 +487,8 @@ r = r1 + r2 + r3</string_value>
       <include_in_statistics/>
     </functional>
     <functional name="Field3Integral10">
-      <string_value lines="20" type="code" language="python">int = ss3[1,0]*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = ss3[1,0]*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -487,7 +497,8 @@ r = r1 + r2 + r3</string_value>
       <include_in_statistics/>
     </functional>
     <functional name="Source1Integral">
-      <string_value lines="20" type="code" language="python">int = fs1*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = fs1*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -496,7 +507,8 @@ r = r1 + r2 + r3</string_value>
       <include_in_statistics/>
     </functional>
     <functional name="Source2Integral0">
-      <string_value lines="20" type="code" language="python">int = fs2[0]*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = fs2[0]*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -505,7 +517,8 @@ r = r1 + r2 + r3</string_value>
       <include_in_statistics/>
     </functional>
     <functional name="Source2Integral1">
-      <string_value lines="20" type="code" language="python">int = fs2[1]*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = fs2[1]*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -514,7 +527,8 @@ r = r1 + r2 + r3</string_value>
       <include_in_statistics/>
     </functional>
     <functional name="Source3Integral00">
-      <string_value lines="20" type="code" language="python">int = fs3[0,0]*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = fs3[0,0]*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -523,7 +537,8 @@ r = r1 + r2 + r3</string_value>
       <include_in_statistics/>
     </functional>
     <functional name="Source3Integral11">
-      <string_value lines="20" type="code" language="python">int = fs3[1,1]*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = fs3[1,1]*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -532,7 +547,8 @@ r = r1 + r2 + r3</string_value>
       <include_in_statistics/>
     </functional>
     <functional name="Source3Integral01">
-      <string_value lines="20" type="code" language="python">int = fs3[0,1]*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = fs3[0,1]*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -541,7 +557,8 @@ r = r1 + r2 + r3</string_value>
       <include_in_statistics/>
     </functional>
     <functional name="Source3Integral10">
-      <string_value lines="20" type="code" language="python">int = fs3[1,0]*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = fs3[1,0]*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -659,9 +676,10 @@ r = r1 + r2 + r3</string_value>
           </element>
           <value type="value" name="WholeMesh">
             <python rank="0">
-              <string_value lines="20" type="code" language="python">def val(X):
+              <string_value lines="20" type="code" language="python3">def val(X):
   global dummy
-  return dummy</string_value>
+  return dummy
+</string_value>
             </python>
           </value>
         </rank>
@@ -673,26 +691,30 @@ r = r1 + r2 + r3</string_value>
     <nonlinear_solver name="SimpleSolver">
       <type name="Picard">
         <preamble>
-          <string_value lines="20" type="code" language="python">F1 = sp1_t*(sp1_a-fp1)*dx
+          <string_value lines="20" type="code" language="python3">F1 = sp1_t*(sp1_a-fp1)*dx
 F20 = sp2_t[0]*(sp2_a[0]-fp2[0])*dx
 F21 = sp2_t[1]*(sp2_a[1]-fp2[1])*dx
 F2 = F20 + F21
-F = F1 + F2</string_value>
+F = F1 + F2
+</string_value>
         </preamble>
         <form name="Bilinear" rank="1">
-          <string_value lines="20" type="code" language="python">a = lhs(F)</string_value>
+          <string_value lines="20" type="code" language="python3">a = lhs(F)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
         <form name="Linear" rank="0">
-          <string_value lines="20" type="code" language="python">L = rhs(F)</string_value>
+          <string_value lines="20" type="code" language="python3">L = rhs(F)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">L</string_value>
           </ufl_symbol>
         </form>
         <form name="Residual" rank="0">
-          <string_value lines="20" type="code" language="python">r = action(a, up_i) - L</string_value>
+          <string_value lines="20" type="code" language="python3">r = action(a, up_i) - L
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">r</string_value>
           </ufl_symbol>
@@ -777,7 +799,8 @@ F = F1 + F2</string_value>
       <solve name="in_timeloop"/>
     </nonlinear_solver>
     <functional name="Field1Integral">
-      <string_value lines="20" type="code" language="python">int = sp1*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = sp1*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -786,7 +809,8 @@ F = F1 + F2</string_value>
       <include_in_statistics/>
     </functional>
     <functional name="Field2Integral0">
-      <string_value lines="20" type="code" language="python">int = sp2[0]*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = sp2[0]*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -795,7 +819,8 @@ F = F1 + F2</string_value>
       <include_in_statistics/>
     </functional>
     <functional name="Field2Integral1">
-      <string_value lines="20" type="code" language="python">int = sp2[1]*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = sp2[1]*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -804,7 +829,8 @@ F = F1 + F2</string_value>
       <include_in_statistics/>
     </functional>
     <functional name="Source1Integral">
-      <string_value lines="20" type="code" language="python">int = sp1*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = sp1*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -813,7 +839,8 @@ F = F1 + F2</string_value>
       <include_in_statistics/>
     </functional>
     <functional name="Source2Integral0">
-      <string_value lines="20" type="code" language="python">int = sp2[0]*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = sp2[0]*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -822,7 +849,8 @@ F = F1 + F2</string_value>
       <include_in_statistics/>
     </functional>
     <functional name="Source2Integral1">
-      <string_value lines="20" type="code" language="python">int = sp2[1]*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = sp2[1]*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>

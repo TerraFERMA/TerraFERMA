@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -70,12 +70,13 @@
             <sub_components name="All">
               <type type="boundary_condition" name="Dirichlet">
                 <python rank="1">
-                  <string_value lines="20" type="code" language="python">def val(x):
+                  <string_value lines="20" type="code" language="python3">def val(x):
   from math import erf
   l = 0.05
   vx = erf(x[0]/l)
   vy = 0.
-  return [ vx, vy]</string_value>
+  return [ vx, vy]
+</string_value>
                 </python>
               </type>
             </sub_components>
@@ -87,14 +88,15 @@
             <sub_components name="All">
               <type type="boundary_condition" name="Dirichlet">
                 <python rank="1">
-                  <string_value lines="20" type="code" language="python">def val(x):
+                  <string_value lines="20" type="code" language="python3">def val(x):
    from math import atan2, pi
    X = x[0]
    Z = 1. - x[1] 
    R = X*X + Z*Z
    vx= 2./pi*(atan2(X,Z)-X*Z/R)
    vz =2./pi*Z*Z/R
-   return [vx,vz]</string_value>
+   return [vx,vz]
+</string_value>
                 </python>
               </type>
             </sub_components>
@@ -106,14 +108,15 @@
             <sub_components name="All">
               <type type="boundary_condition" name="Dirichlet">
                 <python rank="1">
-                  <string_value lines="20" type="code" language="python">def val(x):
+                  <string_value lines="20" type="code" language="python3">def val(x):
    from math import atan2, pi
    X = x[0]
    Z = 1. - x[1] 
    R = X*X + Z*Z
    vx= 2./pi*(atan2(X,Z)-X*Z/R)
    vz =2./pi*Z*Z/R
-   return [vx,vz]</string_value>
+   return [vx,vz]
+</string_value>
                 </python>
               </type>
             </sub_components>
@@ -161,7 +164,7 @@
     <nonlinear_solver name="Solver">
       <type name="SNES">
         <form name="Residual" rank="0">
-          <string_value lines="20" type="code" language="python"># L_on_h is scaled suction length scale on box height
+          <string_value lines="20" type="code" language="python3"># L_on_h is scaled suction length scale on box height
 L_on_h = 1./6.
 
 # scaled viscosity term
@@ -170,13 +173,15 @@ eta = L_on_h**2
 rv = (inner(sym(grad(v_t)), 2.*eta*sym(grad(v_i))) - div(v_t)*p_i)*dx
 rp = p_t*div(v_i)*dx
 
-r = rv + rp</string_value>
+r = rv + rp
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">r</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
-          <string_value lines="20" type="code" language="python">a = derivative(r, us_i, us_a)</string_value>
+          <string_value lines="20" type="code" language="python3">a = derivative(r, us_i, us_a)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
@@ -210,7 +215,8 @@ r = rv + rp</string_value>
       <solve name="at_start"/>
     </nonlinear_solver>
     <functional name="VelocityL2NormSquared">
-      <string_value lines="20" type="code" language="python">int = inner(v,v)*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = inner(v,v)*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -219,7 +225,8 @@ r = rv + rp</string_value>
       <include_in_statistics/>
     </functional>
     <functional name="PressureIntegral">
-      <string_value lines="20" type="code" language="python">int = p*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = p*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -262,22 +269,26 @@ r = rv + rp</string_value>
     <nonlinear_solver name="Solver">
       <type name="Picard">
         <preamble>
-          <string_value lines="20" type="code" language="python">r = (d_t*d_a - d_t*div(v_i))*dx</string_value>
+          <string_value lines="20" type="code" language="python3">r = (d_t*d_a - d_t*div(v_i))*dx
+</string_value>
         </preamble>
         <form name="Bilinear" rank="1">
-          <string_value lines="20" type="code" language="python">a = lhs(r)</string_value>
+          <string_value lines="20" type="code" language="python3">a = lhs(r)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
         <form name="Linear" rank="0">
-          <string_value lines="20" type="code" language="python">L = rhs(r)</string_value>
+          <string_value lines="20" type="code" language="python3">L = rhs(r)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">L</string_value>
           </ufl_symbol>
         </form>
         <form name="Residual" rank="0">
-          <string_value lines="20" type="code" language="python">res = action(a, ud_i) - L</string_value>
+          <string_value lines="20" type="code" language="python3">res = action(a, ud_i) - L
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">res</string_value>
           </ufl_symbol>

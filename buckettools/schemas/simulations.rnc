@@ -80,7 +80,7 @@ start =
             ## The test should end with an assert statement which will determine if the test passes or fails.
             element test {
                attribute name { xsd:string },
-               python_code
+               python3_code
             }+,
             comment
          }?,
@@ -171,7 +171,7 @@ filenames =
         ##
         ## For more advanced usage the Run or Simulation class object is available as _self.
         element python {
-           python_code
+           python3_code
         }
       )
    )
@@ -262,7 +262,7 @@ simulation_parameters =
             ##
             ## For more advanced usage the Run or Simulation class object is available as _self.
             element update {
-               python_code,
+               python3_code,
                ## Turn this option on if updating this parameter does not require a rebuild.  
                ## 
                ## If you are unsure about this it is best to leave this option turned off.
@@ -322,7 +322,7 @@ run_parameters =
             ##
             ## For more advanced usage the Run or Simulation class object is available as _self.
             element update {
-               python_code
+               python3_code
             }?,
             comment
          }*,
@@ -382,7 +382,7 @@ checkpoint =
             ## the names given to the parameters above.  They will be formatted as strings and should be converted 
             ## appropriately within the code.
             element update {
-               python_code
+               python3_code
             },
             comment
          }*,
@@ -407,7 +407,7 @@ variables =
          ## For more advanced usage the Run or Simulation class object is available as _self.
          element variable {
             attribute name { xsd:string },
-            python_code
+            python3_code
          }+,
          comment
       }
@@ -531,7 +531,7 @@ run_dependency_parameters =
             ##
             ## For more advanced usage the Run or Simulation class object is available as _self.
             element update {
-               python_code
+               python3_code
             }?,
             comment
          }*,
@@ -573,7 +573,7 @@ simulation_dependency_parameters =
             ##
             ## For more advanced usage the Run or Simulation class object is available as _self.
             element update {
-               python_code,
+               python3_code,
                ## Turn this option on if updating this parameter does not require a rebuild.  
                ## 
                ## If you are unsure about this it is best to leave this option turned off.

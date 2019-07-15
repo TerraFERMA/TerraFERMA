@@ -10,14 +10,14 @@
     <string_value lines="1">Convection</string_value>
   </description>
   <simulations>
-    <simulation name="Subduction">
+    <simulation name="Convection">
       <input_file>
-        <string_value lines="1" type="filename">rbconvection.tfml</string_value>
+        <string_value type="filename" lines="1">rbconvection.tfml</string_value>
       </input_file>
       <run_when name="input_changed_or_output_missing"/>
       <variables>
         <variable name="v2_rms">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value type="code" language="python" lines="20">from buckettools.statfile import parser
 from math import sqrt
 
 
@@ -27,7 +27,7 @@ stat = parser("rbconvection.stat")
 v2_rms = sqrt(stat["Stokes2"]["VelocityL2Norm"]["functional_value"][-1])</string_value>
         </variable>
         <variable name="nu2">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value type="code" language="python" lines="20">from buckettools.statfile import parser
 
 
 
@@ -36,7 +36,7 @@ stat = parser("rbconvection.stat")
 nu2 = -1.0*(stat["Temperature2"]["TemperatureTopSurfaceIntegral"]["functional_value"][-1])</string_value>
         </variable>
         <variable name="nu3">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value type="code" language="python" lines="20">from buckettools.statfile import parser
 
 
 
@@ -45,7 +45,7 @@ stat = parser("rbconvection.stat")
 nu3 = -1.0*(stat["Temperature3"]["TemperatureTopSurfaceIntegral"]["functional_value"][-1])</string_value>
         </variable>
         <variable name="v_rms">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value type="code" language="python" lines="20">from buckettools.statfile import parser
 from math import sqrt
 
 
@@ -55,7 +55,7 @@ stat = parser("rbconvection.stat")
 v_rms = sqrt(stat["Stokes"]["VelocityL2Norm"]["functional_value"][-1])</string_value>
         </variable>
         <variable name="v3_rms">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value type="code" language="python" lines="20">from buckettools.statfile import parser
 from math import sqrt
 
 
@@ -65,7 +65,7 @@ stat = parser("rbconvection.stat")
 v3_rms = sqrt(stat["Stokes3"]["VelocityL2Norm"]["functional_value"][-1])</string_value>
         </variable>
         <variable name="nu">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value type="code" language="python" lines="20">from buckettools.statfile import parser
 
 
 
@@ -78,22 +78,22 @@ nu = -1.0*(stat["Temperature"]["TemperatureTopSurfaceIntegral"]["functional_valu
   </simulations>
   <tests>
     <test name="v2_rms">
-      <string_value lines="20" type="code" language="python">assert abs(v2_rms - 42.865) &lt; 0.01</string_value>
+      <string_value type="code" language="python" lines="20">assert abs(v2_rms - 42.865) &lt; 0.01</string_value>
     </test>
     <test name="nu2">
-      <string_value lines="20" type="code" language="python">assert abs(nu2 - 4.9) &lt; 0.05</string_value>
+      <string_value type="code" language="python" lines="20">assert abs(nu2 - 4.9) &lt; 0.05</string_value>
     </test>
     <test name="nu3">
-      <string_value lines="20" type="code" language="python">assert abs(nu3 - 4.9) &lt; 0.05</string_value>
+      <string_value type="code" language="python" lines="20">assert abs(nu3 - 4.9) &lt; 0.05</string_value>
     </test>
     <test name="v_rms">
-      <string_value lines="20" type="code" language="python">assert abs(v_rms - 42.865) &lt; 0.01</string_value>
+      <string_value type="code" language="python" lines="20">assert abs(v_rms - 42.865) &lt; 0.01</string_value>
     </test>
     <test name="v3_rms">
-      <string_value lines="20" type="code" language="python">assert abs(v3_rms - 42.865) &lt; 0.01</string_value>
+      <string_value type="code" language="python" lines="20">assert abs(v3_rms - 42.865) &lt; 0.01</string_value>
     </test>
     <test name="nu">
-      <string_value lines="20" type="code" language="python">assert abs(nu - 4.9) &lt; 0.05</string_value>
+      <string_value type="code" language="python" lines="20">assert abs(nu - 4.9) &lt; 0.05</string_value>
     </test>
   </tests>
 </harness_options>

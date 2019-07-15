@@ -22,11 +22,11 @@ import os
 import subprocess
 import sys
 import hashlib
+import gzip
 import shutil
 import threading
-import Queue
+from queue import Queue
 import copy
-import string
 import glob
 import re
 import collections
@@ -81,7 +81,7 @@ class ThreadIterator(list):
   def __iter__(self):
     return self
 
-  def next(self):
+  def __next__(self):
     self.lock.acquire()
     if len(self.list)>0:
       ans=self.list.pop()
@@ -107,7 +107,7 @@ class Test(TestOrVariable):
     def run(self, varsdict):
         tmpdict = copy.deepcopy(varsdict) # don't let the test code modify the variables
         try:
-          exec self.code in tmpdict
+          exec(self.code, tmpdict)
         except AssertionError:
           # in case of an AssertionError, we assume the test has just failed
           return False
@@ -129,7 +129,7 @@ class Variable(TestOrVariable):
     """A variable definition for use in tests"""
     def run(self, varsdict):
         try:
-          exec self.code in varsdict
+          exec(self.code, varsdict)
         except:
           message = "Variable computation raised an exception."+os.linesep
           message += "-" * 80 + os.linesep
@@ -140,7 +140,7 @@ class Variable(TestOrVariable):
           message += "-" * 80 + os.linesep
           raise TestOrVariableException(msg=message)
         else:
-          if self.name not in varsdict.keys():
+          if self.name not in list(varsdict.keys()):
             message = "Variable (%s) not defined by computation."%(self.name)+os.linesep
             message += "-" * 80 + os.linesep
             for (lineno, line) in enumerate(self.code.splitlines()):
@@ -167,7 +167,7 @@ class NestedList(list):
     # if the parameters have been provided in an ordered dictionary then
     # we respect that order, otherwise we sort the keys alphabetically:
     if isinstance(self.parameters, collections.OrderedDict):
-      self.sortedkeys = self.parameters.keys()
+      self.sortedkeys = list(self.parameters.keys())
     else:
       self.sortedkeys = sorted(self.parameters.keys())
 
@@ -210,7 +210,7 @@ class NestedList(list):
             pass
       else:
         # if it hasn't been specifically mentioned then we take all values at that level
-        indicies = range(len(paramvals))
+        indicies = list(range(len(paramvals)))
       # for the current key record the indicies we want to fetch
       indexdict[key] = indicies
     # return the full indexdict
@@ -306,13 +306,13 @@ class Run:
     self.dependents = dependents
     self.lock=threading.Lock()
 
-    self.variables = [Variable(name, code) for name, code in self.optionsdict["variables"].iteritems()]
+    self.variables = [Variable(name, code) for name, code in self.optionsdict["variables"].items()]
 
     self.alreadyrun = False
 
     self.dependencies = []
     if "dependencies" in self.optionsdict:
-       for dependencypath, depoptionsdict in self.optionsdict["dependencies"].iteritems():
+       for dependencypath, depoptionsdict in self.optionsdict["dependencies"].items():
          dependencyoptions = self.getdependencyoptions(depoptionsdict["procscales"])
          depoptionsdict["values"] = dependencyoptions["values"]
          depoptionsdict["procscales"] = dependencyoptions["procscales"]
@@ -325,7 +325,7 @@ class Run:
     # if the input options file is an the output of a dependency then we have to
     # defer generating, configuring and building until runtime
     filepaths = [depoutput_k  \
-                 for depoutput_k, depoutput_v in self.getdependencyrequiredoutput().items() \
+                 for depoutput_k, depoutput_v in list(self.getdependencyrequiredoutput().items()) \
                  if self.filename+self.ext == os.path.basename(depoutput_v)]
     self.deferred = len(filepaths)>0
     if self.deferred:
@@ -368,10 +368,10 @@ class Run:
     os.chdir(self.basedirectory)
     sys.path.append(self.basedirectory)
     valuesdict = self.getvaluesdict(valuesdict=valuesdict, prefix=prefix)
-    for paramname, update in self.optionsdict[prefix+"updates"].iteritems():
+    for paramname, update in self.optionsdict[prefix+"updates"].items():
       if update is not None:
         try:
-          exec update in valuesdict
+          exec(update, valuesdict)
         except libspud.SpudNewKeyWarning as e:
           self.log("ERROR: spud raised a new key warning:")
           self.log("%s"%e)
@@ -391,7 +391,7 @@ class Run:
     if valuesdict is None: valuesdict={}
     valuesdict["input_filename"] = os.path.join(self.runinputdirectory, self.inputfilename+self.inputext)
     valuesdict["_self"] = self
-    for k,v in self.optionsdict[prefix+"values"].iteritems():
+    for k,v in self.optionsdict[prefix+"values"].items():
       if k in valuesdict:
         self.log("ERROR: in getvaluesdict, %s multiply defined"%(k))
         if k=="input_file":
@@ -436,7 +436,7 @@ class Run:
      if dirname is not None:
        new_required_files = {(os.path.normpath(filename_k) if os.path.isabs(filename_k) 
                               else os.path.normpath(os.path.join(dirname, filename_k))):filename_v
-                              for filename_k, filename_v in required_files.items()}
+                              for filename_k, filename_v in list(required_files.items())}
        required_files = new_required_files
 
      # return the required files
@@ -463,11 +463,11 @@ class Run:
 
       valuesdict=self.getvaluesdict()
 
-      for r in xrange(self.nruns):
+      for r in range(self.nruns):
         requiredinput = self.getrequiredinput(r)
         requiredoutput = self.getrequiredoutput(r)
 
-        dirname = os.path.join(self.rundirectory, "run_"+`r`.zfill(len(`self.nruns`)))
+        dirname = os.path.join(self.rundirectory, "run_"+repr(r).zfill(len(repr(self.nruns))))
         try:
           os.makedirs(dirname)
         except OSError:
@@ -475,20 +475,28 @@ class Run:
 
         input_changed = False
         if self.optionsdict["run_when"]["input_changed"]:
-          for filepath_k, filepath_v in requiredinput.iteritems():
+          for filepath_k, filepath_v in requiredinput.items():
             try:
-              checksum = hashlib.md5(open(os.path.join(dirname, os.path.basename(filepath_v))).read()).hexdigest()
+              try:
+                fh = open(os.path.join(dirname, os.path.basename(filepath_v))).read()
+              except UnicodeDecodeError:
+                fh = gzip.open(os.path.join(dirname, os.path.basename(filepath_v)), 'rt', encoding='utf-8').read()
+              checksum = hashlib.md5(fh.encode('utf-8')).hexdigest()
             except:
               checksum = None
             try:
-              input_changed = input_changed or checksum != hashlib.md5(open(filepath_k).read()).hexdigest()
+              try:
+                fh = open(filepath_k).read()
+              except UnicodeDecodeError:
+                fh = gzip.open(filepath_k, 'rt', encoding='utf-8').read()
+              input_changed = input_changed or checksum != hashlib.md5(fh.encode('utf-8')).hexdigest()
             except IOError:
               self.log("WARNING: Unable to open %s"%(filepath_k))
               input_changed = True
 
         output_missing = False
         if self.optionsdict["run_when"]["output_missing"]:
-          for filepath_k, filename_v in requiredoutput.iteritems():
+          for filepath_k, filename_v in requiredoutput.items():
             try:
               output_file = open(os.path.join(dirname, filepath_k))
               output_file.close()
@@ -499,12 +507,12 @@ class Run:
         if output_missing or input_changed or force or self.optionsdict["run_when"]["always"]:
           self.log("  Running in directory: %s"%(os.path.relpath(dirname, self.currentdirectory)))
           # file has changed or a recompilation is necessary
-          for filepath_k, filepath_v in requiredoutput.iteritems():
+          for filepath_k, filepath_v in requiredoutput.items():
             try:
               os.remove(os.path.join(dirname, filepath_k))
             except OSError:
               pass
-          for filepath_k, filepath_v in requiredinput.iteritems():
+          for filepath_k, filepath_v in requiredinput.items():
             try:
               shutil.copy(filepath_k, os.path.join(dirname, os.path.basename(filepath_v)))
             except IOError:
@@ -517,22 +525,22 @@ class Run:
             env["PYTHONPATH"] = dirname
           env["PWD"] = dirname
 
-          for i in xrange(len(commands)):
+          for i in range(len(commands)):
             command = commands[i]
             tcommand = [template(c).safe_substitute(valuesdict) for c in command]
-            logf = '_'+self.filename+self.ext+'.'+`i`+'.log'
+            logf = '_'+self.filename+self.ext+'.'+repr(i)+'.log'
             retvalue = self.runcommand(tcommand, dirname, logfilename=logf)
             error = retvalue != 0
             if error: break
           
           if error:
             # There's been an error, append failed output
-            for filepath_k, filename_v in requiredoutput.iteritems():
+            for filepath_k, filename_v in requiredoutput.items():
               if os.path.isfile(os.path.join(dirname, filepath_k)):
                 shutil.move(os.path.join(dirname, filepath_k), os.path.join(dirname, filepath_k+".fail"))
           else:
             # Cleanup previous errors (if any)
-            for filepath_k, filename_v in requiredoutput.iteritems():
+            for filepath_k, filename_v in requiredoutput.items():
               if os.path.isfile(os.path.join(dirname, filepath_k+".fail")):
                 os.remove(os.path.join(dirname, filepath_k+".fail"))
 
@@ -560,8 +568,8 @@ class Run:
     self.cleanrun()
 
   def checkpointclean(self):
-    for r in xrange(self.nruns):
-      dirname = os.path.join(self.rundirectory, "run_"+`r`.zfill(len(`self.nruns`)), "checkpoint")
+    for r in range(self.nruns):
+      dirname = os.path.join(self.rundirectory, "run_"+repr(r).zfill(len(repr(self.nruns))), "checkpoint")
       try:
         shutil.rmtree(dirname)
       except OSError:
@@ -574,9 +582,9 @@ class Run:
     # set up the variables dictionary
     varsdict = {}
     # loop over all the runs
-    for r in xrange(self.nruns):
+    for r in range(self.nruns):
       # change to the run directory to run the python variable assignment
-      dirname = os.path.join(self.rundirectory, "run_"+`r`.zfill(len(`self.nruns`)))
+      dirname = os.path.join(self.rundirectory, "run_"+repr(r).zfill(len(repr(self.nruns))))
       try:
         os.chdir(dirname)
       except OSError:
@@ -623,7 +631,7 @@ class Run:
 
     # preserve the order of an ordered dictionary or use alphabetical
     if isinstance(self.optionsdict["values"], collections.OrderedDict):
-      sorteditems = self.optionsdict["values"].items()
+      sorteditems = list(self.optionsdict["values"].items())
     else:
       sorteditems = sorted(self.optionsdict["values"].items())
 
@@ -637,7 +645,7 @@ class Run:
   def getdependencyoptions(self, procscales):
     suboptionsdict = {"values" : collections.OrderedDict(), "procscales" : collections.OrderedDict(), 
                       "value_indices" : collections.OrderedDict(), "value_lengths" : collections.OrderedDict() }
-    for option, procscalelist in procscales.iteritems(): 
+    for option, procscalelist in procscales.items(): 
       suboptionsdict["values"][option] = self.optionsdict["values"][option]
       suboptionsdict["value_indices"][option] = self.optionsdict["value_indices"][option]
       suboptionsdict["value_lengths"][option] = self.optionsdict["value_lengths"][option]
@@ -667,11 +675,11 @@ class Run:
     requiredoutput = {}
     for dependency in self.dependencies:
       if self.nruns == dependency.nruns: 
-        rundir = "run_"+`run`.zfill(len(`self.nruns`))
+        rundir = "run_"+repr(run).zfill(len(repr(self.nruns)))
       else:
-        rundir = "run_"+`0`.zfill(len(`dependency.nruns`))
+        rundir = "run_"+repr(0).zfill(len(repr(dependency.nruns)))
       dependencyoutput = dependency.getrequiredoutput(run)
-      for filename_k, filename_v in dependencyoutput.items():
+      for filename_k, filename_v in list(dependencyoutput.items()):
         requiredoutput[os.path.join(dependency.rundirectory, rundir, filename_k)] = filename_v
       requiredoutput.update(dependency.getdependencyrequiredoutput(run))
     return requiredoutput
@@ -683,7 +691,7 @@ class Run:
       requiredinput += self.optionsdict["input"]
     if "input_python" in self.optionsdict:
       requiredinput += \
-         self.resolvepythonrequiredfiles(self.optionsdict["input_python"], dirname=self.batchdirectory).keys()
+         list(self.resolvepythonrequiredfiles(self.optionsdict["input_python"], dirname=self.batchdirectory).keys())
     return requiredinput
 
   def getrequiredinput(self, run, build=False):
@@ -695,18 +703,18 @@ class Run:
     if inputkey in self.optionsdict: 
       for filepath in self.optionsdict[inputkey]:
         # filter out any filenames that have already had their destination filename added (i.e. make sure our latest input file is used)
-        if os.path.basename(filepath) not in [os.path.basename(inputpath) for inputpath in requiredinput.values()]:
+        if os.path.basename(filepath) not in [os.path.basename(inputpath) for inputpath in list(requiredinput.values())]:
           requiredinput[filepath] = filepath
     if inputkey+"_python" in self.optionsdict:
-      for filepath_k, filepath_v in self.resolvepythonrequiredfiles(self.optionsdict[inputkey+"_python"], dirname=self.batchdirectory).iteritems():
+      for filepath_k, filepath_v in self.resolvepythonrequiredfiles(self.optionsdict[inputkey+"_python"], dirname=self.batchdirectory).items():
         # filter out any filenames that have already been added (i.e. make sure our latest input file is used)
-        if os.path.basename(filepath_v) not in [os.path.basename(inputpath) for inputpath in requiredinput.values()]:
+        if os.path.basename(filepath_v) not in [os.path.basename(inputpath) for inputpath in list(requiredinput.values())]:
           requiredinput[filepath_k] = filepath_v
     if not build:
       # get any output from dependencies
-      for filepath_k, filepath_v in self.getdependencyrequiredoutput(run).iteritems():
+      for filepath_k, filepath_v in self.getdependencyrequiredoutput(run).items():
         # filter out any filenames that have already been added (highest dependencies take priority over lower ones)
-        if os.path.basename(filepath_v) not in [os.path.basename(inputpath) for inputpath in requiredinput.values()]:
+        if os.path.basename(filepath_v) not in [os.path.basename(inputpath) for inputpath in list(requiredinput.values())]:
           requiredinput[filepath_k] = filepath_v
     return requiredinput
 
@@ -729,17 +737,17 @@ class Run:
         raise exception
       else:
         return 1
-    output = ""
+    output = bytearray()
     # open a log
     if logfilename is not None:
       logfile = open(os.path.join(dirname, logfilename), "w")
     else:
       logfile = None
     # continually iterate over the lines of stdout and pipe them to the logs
-    for line in iter(p.stdout.readline, ""):
-      if verbose: self.log(" "*2+line)
-      if logfile is not None: logfile.write(line)
-      output += line
+    for line in iter(p.stdout.readline, b''):
+      if verbose: self.log(" "*2+line.decode())
+      if logfile is not None: logfile.write(line.decode())
+      output.extend(line)
     if logfile is not None: logfile.close() # close the logfile
     retcode = p.wait()
     # if we've got a non-zero return code report the error and raise an exception or return a failure code
@@ -747,7 +755,7 @@ class Run:
       self.log("  ERROR: %s returned: %d"%(os.path.split(command[0])[-1], retcode))
       self.log("         in directory: %s"%(dirname))
       self.log("         using command: %s"%(" ".join(command)))
-      for line in output.splitlines():
+      for line in output.decode().splitlines():
         self.log(" "*2 + line + os.linesep)
       if exception is not None: 
         raise exception
@@ -824,8 +832,9 @@ class Simulation(Run):
                         "-DLOGLEVEL=INFO", \
                         "-DEXECUTABLE="+self.filename, \
                         os.path.join(self.tfdirectory,os.curdir)]
-    for i in xrange(2):
-      self.runcommand(command, dirname, exception=SimulationsErrorConfigure, logfilename="cmake."+`i`+".log")
+    for i in range(2):
+      #import ipdb; ipdb.set_trace()
+      self.runcommand(command, dirname, exception=SimulationsErrorConfigure, logfilename="cmake."+repr(i)+".log")
 
   def build(self, force=False):
 
@@ -837,20 +846,28 @@ class Simulation(Run):
     requiredinput = self.getrequiredinput(0, build=True)
 
     input_changed = False
-    for filepath_k, filepath_v in requiredinput.iteritems():
+    for filepath_k, filepath_v in requiredinput.items():
       try:
-        checksum = hashlib.md5(open(os.path.join(dirname, os.path.basename(filepath_v))).read()).hexdigest()
+        try:
+          fh = open(os.path.join(dirname, os.path.basename(filepath_v))).read()
+        except UnicodeDecodeError:
+          fh = gzip.open(os.path.join(dirname, os.path.basename(filepath_v)), 'rt', encoding='utf-8').read()
+        checksum = hashlib.md5(fh.encode('utf-8')).hexdigest()
       except:
         checksum = None
       try:
-        input_changed = input_changed or checksum != hashlib.md5(open(filepath_k).read()).hexdigest()
+        try:
+          fh = open(filepath_k).read()
+        except UnicodeDecodeError:
+          fh = gzip.open(filepath_k, 'rt', encoding='utf-8').read()
+        input_changed = input_changed or checksum != hashlib.md5(fh.encode('utf-8')).hexdigest()
       except IOError:
         self.log("WARNING: Unable to open %s"%(filepath_k))
         input_changed = True
 
     if input_changed or force:
       # file has changed or a recompilation is necessary
-      for filepath_k, filepath_v in requiredinput.iteritems():
+      for filepath_k, filepath_v in requiredinput.items():
         try:
           shutil.copy(filepath_k, os.path.join(dirname, os.path.basename(filepath_v)))
         except IOError:
@@ -879,11 +896,11 @@ class Simulation(Run):
   def numbercheckpoints(self, run=0):
     """Helper function to return the checkpoint directory and number of checkpoints."""
     
-    dirname = os.path.join(self.rundirectory, "run_"+`run`.zfill(len(`self.nruns`)))
+    dirname = os.path.join(self.rundirectory, "run_"+repr(run).zfill(len(repr(self.nruns))))
 
     depth = 0
     for root, dirnames, files in os.walk(dirname, topdown=True):
-      depth = string.count(root, os.path.sep) - string.count(dirname, os.path.sep)
+      depth = root.count(os.path.sep) - dirname.count(os.path.sep)
       if "checkpoint" in dirnames:
         # there is a checkpoint directory beneath the current directory
         dirnames[:] = ["checkpoint"]
@@ -895,9 +912,9 @@ class Simulation(Run):
 
   def checkpointrun(self, index=-1):
 
-    for r in xrange(self.nruns):
+    for r in range(self.nruns):
 
-      dirname = os.path.join(self.rundirectory, "run_"+`r`.zfill(len(`self.nruns`)))
+      dirname = os.path.join(self.rundirectory, "run_"+repr(r).zfill(len(repr(self.nruns))))
 
       self.log("Checking for checkpoints in or beneath directory: %s"%(os.path.relpath(dirname, self.currentdirectory)))
 
@@ -939,7 +956,7 @@ class Simulation(Run):
       self.writecheckpointoptions(basedir, basefile)
       
       for i, command in enumerate(commands):
-        logf = '_'+self.filename+self.ext+'_checkpoint.'+`i`+'.log'
+        logf = '_'+self.filename+self.ext+'_checkpoint.'+repr(i)+'.log'
         self.runcommand(command, dirname, exception=SimulationsErrorRun, logfilename=logf)
       
       self.log("  Finished running from checkpoint in directory: %s"%(os.path.relpath(dirname, self.currentdirectory)))
@@ -948,12 +965,12 @@ class Simulation(Run):
     # get the standard required input for this simulation
     requiredinput = self.getrequiredinput(run)
     threadlibspud.load_options(os.path.join(basedir, basefile))
-    for s in xrange(libspud.option_count("/system")):
-      filename = libspud.get_option("/system["+`s`+"]/field/type/rank/initial_condition/file")
+    for s in range(libspud.option_count("/system")):
+      filename = libspud.get_option("/system["+repr(s)+"]/field/type/rank/initial_condition/file")
       # for checkpoints we assume that the checkpointed file is the one we want so 
       # we clean the requiredinput list of any references to it as a value (if any exist)
       popkeys = []
-      for inputpath_k, inputpath_v in requiredinput.iteritems():
+      for inputpath_k, inputpath_v in requiredinput.items():
         if filename == os.path.basename(inputpath_v): popkeys.append(inputpath_k)
       for popkey in popkeys: requiredinput.pop(popkey)
       requiredinput[os.path.join(basedir, filename)] = filename
@@ -966,7 +983,7 @@ class Simulation(Run):
     valgrind_opts = self.optionsdict["valgrind"]
     commands = [[]]
     if nprocs > 1:
-      commands[0] += ["mpiexec", "-np", `nprocs`]
+      commands[0] += ["mpiexec", "-np", repr(nprocs)]
     if valgrind_opts is not None:
       commands[0] += ["valgrind"]+valgrind_opts
     commands[0] += [os.path.join(self.builddirectory, "build", self.filename), "-vINFO", "-l", basefile]
@@ -974,7 +991,7 @@ class Simulation(Run):
 
   def getnprocs(self):
     # take the base number of processes and scale it with all the values requested for the current parameters
-    nprocs = reduce(operator.mul, self.optionsdict["procscales"].values(), self.optionsdict["nprocs"])
+    nprocs = reduce(operator.mul, list(self.optionsdict["procscales"].values()), self.optionsdict["nprocs"])
     return nprocs
 
   def getbuilddirectory(self):
@@ -985,7 +1002,7 @@ class Simulation(Run):
 
     # decide the order (preserve what exists if ordered dictionary or use alphabetical)
     if isinstance(self.optionsdict["values"], collections.OrderedDict):
-      sorteditems = self.optionsdict["values"].items()
+      sorteditems = list(self.optionsdict["values"].items())
     else:
       sorteditems = sorted(self.optionsdict["values"].items())
 
@@ -1016,7 +1033,7 @@ class SimulationBatch:
     # set up the list of simulations/runs in this batch
     self.simulations = []
     # loop over all simulation paths and their global options dictionaries
-    for simulationpath, simoptionsdict in self.globaloptionsdict.iteritems():
+    for simulationpath, simoptionsdict in self.globaloptionsdict.items():
       # set up a list to contain the options dictionaries for each parameter set
       slicedoptionslist = []
       self.sliceoptionsdict(slicedoptionslist, simoptionsdict) # slice the global options dictionary parameter values
@@ -1040,7 +1057,7 @@ class SimulationBatch:
     self.threadruns = []
     self.threadbuilds = []
 
-    self.tests = [Test(name, code) for name, code in tests.iteritems()]
+    self.tests = [Test(name, code) for name, code in tests.items()]
 
   def sliceoptionsdict(self, slicedoptionslist, diroptionsdict, optionsdict=None, i=0):
     '''Recursively slice the global options dictionary into a list of simulation optionsdictionaries 
@@ -1060,13 +1077,13 @@ class SimulationBatch:
 
       # fetch the next sorted valitem
       if isinstance(diroptionsdict["values"], collections.OrderedDict):
-        valitem = diroptionsdict["values"].items()[i]
+        valitem = list(diroptionsdict["values"].items())[i]
       else:
         valitem = sorted(diroptionsdict["values"].items())[i]
 
       # fetch the next sorted procitem
       if isinstance(diroptionsdict["procscales"], collections.OrderedDict):
-        procitem = diroptionsdict["procscales"].items()[i]
+        procitem = list(diroptionsdict["procscales"].items())[i]
       else:
         procitem = sorted(diroptionsdict["procscales"].items())[i]
 
@@ -1080,7 +1097,7 @@ class SimulationBatch:
 
       optionsdict["value_lengths"][valitem[0]] = len(valitem[1])
       # loop over the values provided in the list associated with valitem
-      for j in xrange(len(valitem[1])):
+      for j in range(len(valitem[1])):
         # remember the index
         optionsdict["value_indices"][valitem[0]] = j
         # set the optionsdict to one of the values
@@ -1115,7 +1132,7 @@ class SimulationBatch:
         oldsimvar = oldsimvar.union(set([(var.name, var.code) for var in tmpsim.variables]))
         oldsim['simulation'].variables = [Variable(var[0], var[1]) for var in oldsimvar]
         # join the run when tests of the old and new simulations
-        for k,v in oldsim['simulation'].optionsdict['run_when'].iteritems():
+        for k,v in oldsim['simulation'].optionsdict['run_when'].items():
           if k in ["never"]:
             oldsim['simulation'].optionsdict['run_when'][k] = v and tmpsim.optionsdict['run_when'][k]
           else:
@@ -1136,7 +1153,7 @@ class SimulationBatch:
 
     # set up a dictionary of the builds (empty if there are no builddirectories)
     self.builds = {}
-    for run in self.runs.itervalues():
+    for run in self.runs.values():
       if hasattr(run['simulation'], "builddirectory"):
         # this uses the builddirectory as the uniqueness identifier for simulations
         # all other information is copied from the runs dictionary
@@ -1149,7 +1166,7 @@ class SimulationBatch:
     # set up the deferred level counter (0 is not deferred but any dependent of a deferred simulation must also be deferred)
     dlevel = 0
     # loop over the dependencies
-    for s in xrange(len(simulation.dependencies)):
+    for s in range(len(simulation.dependencies)):
       # if the dependency rundirectory is already in the runs dictionary then we need to delete it and check its (d)level
       if simulation.dependencies[s].rundirectory in self.runs:
         # get the previous definition
@@ -1163,7 +1180,7 @@ class SimulationBatch:
         oldsimvar = oldsimvar.union(set([(var.name, var.code) for var in tmpsim.variables]))
         oldsim['simulation'].variables = [Variable(var[0], var[1]) for var in oldsimvar]
         # join the run when tests of the old and new simulations
-        for k,v in oldsim['simulation'].optionsdict['run_when'].iteritems():
+        for k,v in oldsim['simulation'].optionsdict['run_when'].items():
           if k in ["never"]:
             oldsim['simulation'].optionsdict['run_when'][k] = v and tmpsim.optionsdict['run_when'][k]
           else:
@@ -1203,8 +1220,8 @@ class SimulationBatch:
   def configure(self, level=None, dlevel=0, types=None, force=False):
     threadlist=[]
     self.threadbuilds = ThreadIterator(self.simulationselector(self.builds, level=level, dlevel=dlevel, types=types))
-    for i in xrange(self.nthreads):
-      queue = Queue.Queue()
+    for i in range(self.nthreads):
+      queue = Queue()
       threadlist.append([threading.Thread(target=self.threadconfigure, args=[queue], kwargs={'force':force}), queue])
       threadlist[-1][0].start()
     for t in threadlist:
@@ -1214,8 +1231,8 @@ class SimulationBatch:
       error = t[1].get()
       if error is not None:
         ex_type, ex_value, tb_str = error
-        message = '%s (in thread)%s%s' % (ex_value.message, os.linesep, tb_str)
-        raise ex_type(message) 
+        message = '%s (in thread)%s%s' % (str(ex_value), os.linesep, tb_str)
+        raise Exception(message) 
 
   def threadbuild(self, queue, force=False):
     error = None
@@ -1230,8 +1247,8 @@ class SimulationBatch:
   def build(self, level=None, dlevel=0, types=None, force=False):
     threadlist=[]
     self.threadbuilds = ThreadIterator(self.simulationselector(self.builds, level=level, dlevel=dlevel, types=types))
-    for i in xrange(self.nthreads):
-      queue = Queue.Queue()
+    for i in range(self.nthreads):
+      queue = Queue()
       threadlist.append([threading.Thread(target=self.threadbuild, args=[queue], kwargs={'force':force}), queue]) 
       threadlist[-1][0].start()
     for t in threadlist:
@@ -1241,8 +1258,8 @@ class SimulationBatch:
       error = t[1].get()
       if error is not None:
         ex_type, ex_value, tb_str = error
-        message = '%s (in thread)%s%s' % (ex_value.message, os.linesep, tb_str)
-        raise ex_type(message) 
+        message = '%s (in thread)%s%s' % (str(ex_value), os.linesep, tb_str)
+        raise Exception(message) 
 
   def threadrun(self, queue, force=False, rundependencies=True):
     error = None
@@ -1257,8 +1274,8 @@ class SimulationBatch:
   def run(self, level=None, dlevel=0, types=None, force=False):
     threadlist=[]
     self.threadruns = ThreadIterator(self.simulationselector(self.runs, level=level, dlevel=dlevel, types=types))
-    for i in xrange(self.nthreads):
-      queue = Queue.Queue()
+    for i in range(self.nthreads):
+      queue = Queue()
       threadlist.append([threading.Thread(target=self.threadrun, args=[queue], kwargs={'force':force, 'rundependencies':level==None}), queue])
       threadlist[-1][0].start()
     for t in threadlist:
@@ -1268,8 +1285,8 @@ class SimulationBatch:
       error = t[1].get()
       if error is not None:
         ex_type, ex_value, tb_str = error
-        message = '%s (in thread)%s%s' % (ex_value.message, os.linesep, tb_str)
-        raise ex_type(message) 
+        message = '%s (in thread)%s%s' % (str(ex_value), os.linesep, tb_str)
+        raise Exception(message) 
 
     dlevel += 1
     # we request level=None here to make sure we recurse to all dlevels
@@ -1292,8 +1309,8 @@ class SimulationBatch:
   def checkpointrun(self, index=-1, level=None, types=None):
     threadlist=[]
     self.threadruns = ThreadIterator(self.simulationselector(self.runs, level=level, types=types))
-    for i in xrange(self.nthreads):
-      queue = Queue.Queue()
+    for i in range(self.nthreads):
+      queue = Queue()
       threadlist.append([threading.Thread(target=self.threadcheckpointrun, args=[queue], kwargs={'index':index}), queue])
       threadlist[-1][0].start()
     for t in threadlist:
@@ -1303,8 +1320,8 @@ class SimulationBatch:
       error = t[1].get()
       if error is not None:
         ex_type, ex_value, tb_str = error
-        message = '%s (in thread)%s%s' % (ex_value.message, os.linesep, tb_str)
-        raise ex_type(message) 
+        message = '%s (in thread)%s%s' % (str(ex_value), os.linesep, tb_str)
+        raise Exception(message) 
 
   def listinput(self, level=None, dlevel=0, types=None):
     runs = self.simulationselector(self.runs, level=level, dlevel=dlevel, types=types)[::-1]
@@ -1329,8 +1346,8 @@ class SimulationBatch:
   def cleanrun(self, level=None, types=None):
     threadlist=[]
     self.threadruns = ThreadIterator(self.simulationselector(self.runs, level=level, types=types))
-    for i in xrange(self.nthreads):
-      queue = Queue.Queue()
+    for i in range(self.nthreads):
+      queue = Queue()
       threadlist.append([threading.Thread(target=self.threadcleanrun, args=[queue]), queue])
       threadlist[-1][0].start()
     for t in threadlist:
@@ -1340,8 +1357,8 @@ class SimulationBatch:
       error = t[1].get()
       if error is not None:
         ex_type, ex_value, tb_str = error
-        message = '%s (in thread)%s%s' % (ex_value.message, os.linesep, tb_str)
-        raise ex_type(message) 
+        message = '%s (in thread)%s%s' % (str(ex_value), os.linesep, tb_str)
+        raise Exception(message) 
 
   def threadcleanbuild(self, queue):
     error = None
@@ -1356,8 +1373,8 @@ class SimulationBatch:
   def cleanbuild(self, level=None, types=None):
     threadlist=[]
     self.threadruns = ThreadIterator(self.simulationselector(self.runs, level=level, types=types))
-    for i in xrange(self.nthreads):
-      queue = Queue.Queue()
+    for i in range(self.nthreads):
+      queue = Queue()
       threadlist.append([threading.Thread(target=self.threadcleanbuild, args=[queue]), queue])
       threadlist[-1][0].start()
     for t in threadlist:
@@ -1367,8 +1384,8 @@ class SimulationBatch:
       error = t[1].get()
       if error is not None:
         ex_type, ex_value, tb_str = error
-        message = '%s (in thread)%s%s' % (ex_value.message, os.linesep, tb_str)
-        raise ex_type(message) 
+        message = '%s (in thread)%s%s' % (str(ex_value), os.linesep, tb_str)
+        raise Exception(message) 
 
   def threadclean(self, queue):
     error = None
@@ -1383,8 +1400,8 @@ class SimulationBatch:
   def clean(self, level=None, types=None):
     threadlist=[]
     self.threadruns = ThreadIterator(self.simulationselector(self.runs, level=level, types=types))
-    for i in xrange(self.nthreads):
-      queue = Queue.Queue()
+    for i in range(self.nthreads):
+      queue = Queue()
       threadlist.append([threading.Thread(target=self.threadclean, args=[queue]), queue])
       threadlist[-1][0].start()
     for t in threadlist:
@@ -1394,8 +1411,8 @@ class SimulationBatch:
       error = t[1].get()
       if error is not None:
         ex_type, ex_value, tb_str = error
-        message = '%s (in thread)%s%s' % (ex_value.message, os.linesep, tb_str)
-        raise ex_type(message) 
+        message = '%s (in thread)%s%s' % (str(ex_value), os.linesep, tb_str)
+        raise Exception(message) 
 
   def threadcheckpointclean(self, queue):
     error = None
@@ -1410,8 +1427,8 @@ class SimulationBatch:
   def checkpointclean(self, level=None, types=None):
     threadlist=[]
     self.threadruns = ThreadIterator(self.simulationselector(self.runs, level=level, types=types))
-    for i in xrange(self.nthreads):
-      queue = Queue.Queue()
+    for i in range(self.nthreads):
+      queue = Queue()
       threadlist.append([threading.Thread(target=self.threadcheckpointclean, args=[queue]), queue])
       threadlist[-1][0].start()
     for t in threadlist:
@@ -1421,8 +1438,8 @@ class SimulationBatch:
       error = t[1].get()
       if error is not None:
         ex_type, ex_value, tb_str = error
-        message = '%s (in thread)%s%s' % (ex_value.message, os.linesep, tb_str)
-        raise ex_type(message) 
+        message = '%s (in thread)%s%s' % (str(ex_value), os.linesep, tb_str)
+        raise Exception(message) 
 
   def evaluatevariables(self, level=None, dlevel=None, types=None):
     self.log("Assigning variables:")
@@ -1437,7 +1454,7 @@ class SimulationBatch:
         varerror = True
         continue
 
-      for name, value in simvarsdict.iteritems():
+      for name, value in simvarsdict.items():
         # if we're not doing a parameter sweep then the values dictionary should be empty and we only accept
         # unique definitions of variable names
         if len(simulation.optionsdict["values"]) == 0:
@@ -1550,7 +1567,7 @@ class SimulationBatch:
 
   def simulationselector(self, simdict, level=None, dlevel=None, types=None):
     return [value['simulation'] \
-            for value in sorted(simdict.values(), key=lambda value: value['level']) \
+            for value in sorted(list(simdict.values()), key=lambda value: value['level']) \
             if (level is None or value['level'] == level) and \
                (dlevel is None or value['dlevel'] == dlevel) and \
                (types is None or isinstance(value['simulation'], tuple(types)))]
@@ -1593,13 +1610,13 @@ class SimulationHarnessBatch(SimulationBatch):
       # the harnessfile should be a .shml libspud compatible file
       libspud.load_options(harnessfile)
       # loop over the simulations
-      for d in xrange(libspud.option_count("/simulations/simulation")):
-        simulation_optionpath = "/simulations/simulation["+`d`+"]"
+      for d in range(libspud.option_count("/simulations/simulation")):
+        simulation_optionpath = "/simulations/simulation["+repr(d)+"]"
         harnessfileoptionsdict.update(self.getoptions(simulation_optionpath, dirname))
 
       # loop over any runs
-      for d in xrange(libspud.option_count("/simulations/run")):
-        run_optionpath = "/simulations/run["+`d`+"]"
+      for d in range(libspud.option_count("/simulations/run")):
+        run_optionpath = "/simulations/run["+repr(d)+"]"
         harnessfileoptionsdict.update(self.getoptions(run_optionpath, dirname, run=True))
 
       # fetch the tests that are included in this harness file
@@ -1691,8 +1708,8 @@ class SimulationHarnessBatch(SimulationBatch):
      required_files = []
      required_files_python = []
      # loop over the filenames
-     for f in xrange(libspud.option_count(optionpath+"/filenames")):
-       filename_optionpath = optionpath+"/filenames["+`f`+"]"
+     for f in range(libspud.option_count(optionpath+"/filenames")):
+       filename_optionpath = optionpath+"/filenames["+repr(f)+"]"
        if build and not libspud.have_option(filename_optionpath+"/required_at_build"): continue
        # try getting the files as a string
        try:
@@ -1708,7 +1725,7 @@ class SimulationHarnessBatch(SimulationBatch):
          
      # if dirname has been supplied then make the filenames relative to it
      if dirname is not None:
-       for f in xrange(len(required_files)):
+       for f in range(len(required_files)):
          filename = required_files[f]
          if os.path.isabs(filename):
            required_files[f] = os.path.normpath(filename)
@@ -1720,23 +1737,23 @@ class SimulationHarnessBatch(SimulationBatch):
 
   def getcommands(self, optionpath):
      commands = []
-     for c in xrange(libspud.option_count(optionpath+"/command")):
-       command_optionpath = optionpath+"/command["+`c`+"]"
+     for c in range(libspud.option_count(optionpath+"/command")):
+       command_optionpath = optionpath+"/command["+repr(c)+"]"
        commands.append(libspud.get_option(command_optionpath).split())
      return commands
 
   def getvariables(self, optionpath):
      variables  = collections.OrderedDict()
-     for v in xrange(libspud.option_count(optionpath+"/variable")):
-       variable_optionpath = optionpath+"/variable["+`v`+"]"
+     for v in range(libspud.option_count(optionpath+"/variable")):
+       variable_optionpath = optionpath+"/variable["+repr(v)+"]"
        variable_name = libspud.get_option(variable_optionpath+"/name")
        variables[variable_name] = libspud.get_option(variable_optionpath)
      return variables
 
   def gettests(self, optionpath):
      tests  = collections.OrderedDict()
-     for t in xrange(libspud.option_count(optionpath+"/test")):
-       test_optionpath = optionpath+"/test["+`t`+"]"
+     for t in range(libspud.option_count(optionpath+"/test")):
+       test_optionpath = optionpath+"/test["+repr(t)+"]"
        test_name = libspud.get_option(test_optionpath+"/name")
        tests[test_name] = libspud.get_option(test_optionpath)
      return tests
@@ -1798,8 +1815,8 @@ class SimulationHarnessBatch(SimulationBatch):
      parameter_builds    = collections.OrderedDict()
      parameter_procscales = collections.OrderedDict()
      # loop over all the parameters
-     for p in xrange(libspud.option_count(optionpath+"/parameter")):
-       parameter_optionpath = optionpath+"/parameter["+`p`+"]"
+     for p in range(libspud.option_count(optionpath+"/parameter")):
+       parameter_optionpath = optionpath+"/parameter["+repr(p)+"]"
        parameter_name = libspud.get_option(parameter_optionpath+"/name")
        
        # throw an error if the parameter is not in the parent list (if present)
@@ -1821,7 +1838,7 @@ class SimulationHarnessBatch(SimulationBatch):
          try:
            parameter_procscales[parameter_name] = libspud.get_option(parameter_optionpath+"/process_scale")
          except libspud.SpudKeyError:
-           parameter_procscales[parameter_name] = [1 for v in xrange(len(parameter_values[parameter_name]))]
+           parameter_procscales[parameter_name] = [1 for v in range(len(parameter_values[parameter_name]))]
        else:
          # insert nothing if we haven't specified any values
          # try to get a list of the process scales (not necessarily specified so except failure)
@@ -1844,12 +1861,12 @@ class SimulationHarnessBatch(SimulationBatch):
   def getdependencies(self, optionpath, dirname, parent_parameters):
      dependencies_options = {}
 
-     for d in xrange(libspud.option_count(optionpath+"/simulation")):
-        simulation_optionpath = optionpath+"/simulation["+`d`+"]"
+     for d in range(libspud.option_count(optionpath+"/simulation")):
+        simulation_optionpath = optionpath+"/simulation["+repr(d)+"]"
         dependencies_options.update(self.getoptions(simulation_optionpath, dirname, parent_parameters))
      
-     for d in xrange(libspud.option_count(optionpath+"/run")):
-        run_optionpath = optionpath+"/run["+`d`+"]"
+     for d in range(libspud.option_count(optionpath+"/run")):
+        run_optionpath = optionpath+"/run["+repr(d)+"]"
         dependencies_options.update(self.getoptions(run_optionpath, dirname, parent_parameters, run=True))
      
      return dependencies_options
@@ -1920,7 +1937,7 @@ class SimulationHarnessBatch(SimulationBatch):
                           checkpoint_procscales = self.getparameters(optionpath+"/checkpoint")
        # don't do anything with checkpoint_builds or checkpoint_procscales
        # but make sure we only have single values and take them out of list form
-       for k, v in checkpoint_values.iteritems():
+       for k, v in checkpoint_values.items():
          if len(v) > 1:
            self.log("ERROR: cannot have more than one value for checkpoint parameters.")
            self.log("parameter: %(parameter_name)s"%{"parameter_name": k})
@@ -1944,7 +1961,7 @@ class SimulationHarnessBatch(SimulationBatch):
      if libspud.have_option(optionpath+"/dependencies"):
        options[path]["dependencies"] = \
                            self.getdependencies(optionpath+"/dependencies", dirname, \
-                                                parameter_updates.keys())
+                                                list(parameter_updates.keys()))
 
      return options
 

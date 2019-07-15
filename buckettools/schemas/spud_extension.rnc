@@ -78,4 +78,17 @@ cpp_code =
    comment
   )
 
+# python3_code is just a long string
+python3_code =
+   (
+      element string_value{
+         attribute type { "code" },
+         attribute language { "python3" },
+         # Lines is a hint to the gui about the size of the text box.
+         # It is not an enforced limit on string length.
+         attribute lines { "20" },
+         xsd:string
+      },
+      comment
+   )
 

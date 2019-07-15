@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <harness_options>
   <length>
     <string_value lines="1">short</string_value>
@@ -18,55 +18,62 @@
       <required_input>
         <filenames name="meshfiles">
           <python>
-            <string_value lines="20" type="code" language="python">meshfiles = ["subduction"+ext for ext in [".xml.gz", "_facet_region.xml.gz", "_physical_region.xml.gz"]]</string_value>
+            <string_value lines="20" type="code" language="python3">meshfiles = ["subduction"+ext for ext in [".xml.gz", "_facet_region.xml.gz", "_physical_region.xml.gz"]]
+</string_value>
           </python>
         </filenames>
       </required_input>
       <variables>
         <variable name="T_11_11">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 
 
 det = parser("subduction.det")
 
-T_11_11 = det["Solid"]["Temperature"]["SlabPoint"][0,-1]-273.</string_value>
+T_11_11 = det["Solid"]["Temperature"]["SlabPoint"][0,-1]-273.
+</string_value>
         </variable>
         <variable name="T_wedge">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 from math import sqrt
 
 
 
 det = parser("subduction.det")
 
-T_wedge = sqrt(sum((det["Solid"]["Temperature"]["Wedge"][:,-1]-273.)**2)/78.)</string_value>
+T_wedge = sqrt(sum((det["Solid"]["Temperature"]["Wedge"][:,-1]-273.)**2)/78.)
+</string_value>
         </variable>
         <variable name="T_slab">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 from math import sqrt
 
 
 
 det = parser("subduction.det")
 
-T_slab = sqrt(sum((det["Solid"]["Temperature"]["Slab"][:,-1]-273.)**2)/36.)</string_value>
+T_slab = sqrt(sum((det["Solid"]["Temperature"]["Slab"][:,-1]-273.)**2)/36.)
+</string_value>
         </variable>
       </variables>
     </simulation>
   </simulations>
   <tests>
     <test name="T_11_11">
-      <string_value lines="20" type="code" language="python">from numpy import array, abs
-assert abs(array(T_11_11) - 386.77) &lt; 1.0</string_value>
+      <string_value lines="20" type="code" language="python3">from numpy import array, abs
+assert abs(array(T_11_11) - 386.77) &lt; 1.0
+</string_value>
     </test>
     <test name="T_wedge">
-      <string_value lines="20" type="code" language="python">from numpy import array, abs
-assert abs(array(T_wedge) - 854.42) &lt; 1.0</string_value>
+      <string_value lines="20" type="code" language="python3">from numpy import array, abs
+assert abs(array(T_wedge) - 854.42) &lt; 1.0
+</string_value>
     </test>
     <test name="T_slab">
-      <string_value lines="20" type="code" language="python">from numpy import array, abs
-assert abs(array(T_slab) - 503.99) &lt; 1.0</string_value>
+      <string_value lines="20" type="code" language="python3">from numpy import array, abs
+assert abs(array(T_slab) - 503.99) &lt; 1.0
+</string_value>
     </test>
   </tests>
 </harness_options>

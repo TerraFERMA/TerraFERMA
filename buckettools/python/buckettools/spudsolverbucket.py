@@ -54,7 +54,7 @@ class SpudSolverBucket(buckettools.solverbucket.SolverBucket):
 
   def fill_subforms(self, optionpath, prefix=""):
     for i in range(libspud.option_count(optionpath+"/form")):
-      form_optionpath = optionpath+"/form["+`i`+"]"
+      form_optionpath = optionpath+"/form["+repr(i)+"]"
       self.form_names.append(prefix+libspud.get_option(form_optionpath+"/name"))
       self.forms.append(libspud.get_option(form_optionpath)+os.linesep)
       self.form_symbols.append(libspud.get_option(form_optionpath+"/ufl_symbol").split(os.linesep)[0])
@@ -70,7 +70,7 @@ class SpudSolverBucket(buckettools.solverbucket.SolverBucket):
     pc_optionpath = optionpath+"/preconditioner"
     if (libspud.have_option(fs_optionpath)):
       for i in range(libspud.option_count(fs_optionpath)):
-        newoptionpath = fs_optionpath+"["+`i`+"]"
+        newoptionpath = fs_optionpath+"["+repr(i)+"]"
         name = libspud.get_option(newoptionpath+"/name")
         self.fill_solverforms(newoptionpath+"/linear_solver/preconditioner", prefix=prefix+name+"_")
     elif (libspud.have_option(ls_optionpath)):

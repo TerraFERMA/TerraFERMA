@@ -1104,7 +1104,7 @@ void SpudSolverBucket::fill_pc_(const std::string &optionpath, PC &pc,
     serr = Spud::get_option(buffer.str(), factorization_package); 
     spud_err(buffer.str(), serr);
 
-    perr = PCFactorSetMatSolverPackage(pc, 
+    perr = PCFactorSetMatSolverType(pc, 
                                       factorization_package.c_str()); 
     petsc_err(perr);
 
@@ -1420,7 +1420,7 @@ void SpudSolverBucket::fill_pc_fieldsplit_(const std::string &optionpath,
       solverindexsets_[prefix+"SchurPC"] = is;
 
       Mat submatrix;
-      perr = MatGetSubMatrix((*solvermatrices_[prefix+"SchurPC"]).mat(), is, is, MAT_INITIAL_MATRIX, &submatrix);
+      perr = MatCreateSubMatrix((*solvermatrices_[prefix+"SchurPC"]).mat(), is, is, MAT_INITIAL_MATRIX, &submatrix);
       petsc_err(perr);
 
       solversubmatrices_[prefix+"SchurPC"] = submatrix;
