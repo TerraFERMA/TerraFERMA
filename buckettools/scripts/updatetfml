@@ -28,6 +28,7 @@ import string
 import shutil
 from lxml import etree
 import buckettools.base as base
+import re
 
 parser = argparse.ArgumentParser( \
                        description="""Updates tfml files so they pass validation.""")
@@ -140,11 +141,14 @@ def update_quadrature_elements():
     # NOTE: this logic is not perfect... it assumes that if a ufl_symbol appears anywhere (including in global parameters) then it
     # must be used in the solver - this isn't actually necessarily true!
     ufl_text = global_parameters
-    if preamble is not None: ufl_text += "\n"+preamble.text
+    if preamble is not None: ufl_text += os.linesep+preamble.text
     forms = solver.findall("form/string_value")
-    for form in forms: ufl_text += "\n"+form.text
+    for form in forms: ufl_text += os.linesep+form.text
     # extract the ufl symbols from the ufl - also not foolproof
-    solver_symbols = base.form_symbols(ufl_text)
+    solver_symbols = [symbol for line in ufl_text.split(os.linesep) \
+                             if not line.lstrip().startswith("#") \
+                             for symbol in re.findall(r"\b\w+?\b", line, re.I) 
+                             if symbol not in base.ufl_reserved()]
     for symbol, element in quad_elements.iteritems():
       # check if any of the symbols using quadrature functions (including derivatives of the base ufl symbol)
       for suffix in base.function_uflsymbol_suffixes():
@@ -177,7 +181,7 @@ def update_quadrature_elements():
       if len(set(solver_quad_rules)) != 1:  # check for non-matching entries
         print "WARNING: multiple quadrature_rules used in solvers. Applying %s to %s,"%(quad_rule, function_name(element))
         print "         which is used in solvers: "+\
-              "\n                                   ".join([solver_name(solver,True) for solver in element["solvers"]])
+              (os.linesep+"                                   ").join([solver_name(solver,True) for solver in element["solvers"]])
         functions_changed.append(function_name(element))
       rule = etree.SubElement(element["element"], "quadrature_rule", attrib={"name": quad_rule})
       changed = True
@@ -191,7 +195,7 @@ def update_quadrature_elements():
       if len(set(quad_degrees)) != 1:
         print "WARNING: multiple quadrature degrees used in functions referenced by solver %s, not applying any restriction."%(solver_name(solver),)
         print "         Functions referenced: "+\
-              "\n                               ".join([function_name(element, True)])
+              (os.linesep+"                               ").join([function_name(element, True)])
         solvers_changed.append(solver_name(solver))
         continue
       degree = etree.SubElement(solver, "quadrature_degree")
@@ -201,12 +205,12 @@ def update_quadrature_elements():
 
   if len(functions_changed) > 0:
     print "Summary: Changing the quadrature_rule in the functions: "+\
-          "\n                                                        ".join(functions_changed)
+          (os.linesep+"                                                        ").join(functions_changed)
     print "         These changes may not be backwards compatible (or work!)."
     print "         Check these changes to your input and, if it builds and runs, your output carefully."
   if len(solvers_changed) > 0:
     print "WARNING: Changing the quadrature_degree in the solvers: "+\
-          "\n                                                        ".join(solvers_changed)
+          (os.linesep+"                                                        ").join(solvers_changed)
     print "         These changes may not be necessary or backwards compatible (or work!)."
     print "         Check these changes to your input and, if it builds and runs, your output carefully."
 
