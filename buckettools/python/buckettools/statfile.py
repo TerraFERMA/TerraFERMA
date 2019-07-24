@@ -48,7 +48,6 @@
 # along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
 import array
-import exceptions
 import os
 import re
 import numpy
@@ -78,7 +77,7 @@ class creator(dict):
 
   def add_constant(self, constant):
     if self.initialised:
-      print "Constant can only be added before the the first write() call"
+      print("Constant can only be added before the the first write() call")
       return
     self.constants.update(constant)
 
@@ -92,7 +91,7 @@ class creator(dict):
       doc.appendChild(header)
       self.header = [] # We save the header for verification before every write_stat
       # Write the constants
-      for const_k, const_v in self.constants.items():
+      for const_k, const_v in list(self.constants.items()):
         const_element = doc.createElement("constant")
         const_element.setAttribute("name", str(const_k))
         const_element.setAttribute("type", "string")
@@ -100,7 +99,7 @@ class creator(dict):
         header.appendChild(const_element)
       # Create the stat elements
       column = 1
-      for stat_k, stat_v in self.items():
+      for stat_k, stat_v in list(self.items()):
         stat_element = doc.createElement("field")
         stat_element.setAttribute("column", str(column))
         if len(stat_k) == 2:
@@ -111,7 +110,7 @@ class creator(dict):
           stat_element.setAttribute("name", stat_k[1])
           stat_element.setAttribute("statistic", stat_k[2])
         else:
-          print "Element ", stat_k, " must have length 2 or 3"
+          print("Element ", stat_k, " must have length 2 or 3")
           exit()
         if isinstance(stat_v, (list, numpy.ndarray)):
           stat_element.setAttribute("components", str(len(stat_v)))
@@ -132,9 +131,9 @@ class creator(dict):
     f = open (self.filename, "a")
     # Check that the dictionary and the header are consistent 
     if set(self) != set(self.header):
-      print "Error: Columns may not change after initialisation of the stat file."
-      print "Columns you are trying to write: ", self
-      print "Columns in the header: ", self.header
+      print("Error: Columns may not change after initialisation of the stat file.")
+      print("Columns you are trying to write: ", self)
+      print("Columns in the header: ", self.header)
       exit()
     output = ""
     for stat_k in self.header:
@@ -166,7 +165,7 @@ for example:
     
       assert(subsample > 0)
 
-      statfile=file(filename, "r")
+      statfile=open(filename, "r")
       header_re=re.compile(r"</header>")
       xml="" # xml header.
 
@@ -187,11 +186,11 @@ for example:
       self.constants = {}
       for ele in constantEles:
         name = ele.getAttribute("name")
-        type = ele.getAttribute("type")
+        vtype = ele.getAttribute("type")
         value = ele.getAttribute("value")
         self.constants[name] = value
         if name == "format":
-          assert(type == "string")
+          assert(vtype == "string")
           if value == "binary":
             binaryFormat = True
        
@@ -206,10 +205,10 @@ for example:
       if binaryFormat:           
         for ele in constantEles:
           name = ele.getAttribute("name")
-          type = ele.getAttribute("type")
+          vtype = ele.getAttribute("type")
           value = ele.getAttribute("value")
           if name == "real_size":
-            assert(type == "integer")            
+            assert(vtype == "integer")            
             real_size = int(value)            
             if real_size == 4:
               realFormat = 'f'
@@ -218,15 +217,15 @@ for example:
             else:
               raise Exception("Unexpected real size: " + str(real_size))
           elif name == "integer_size":
-            assert(type == "integer")            
+            assert(vtype == "integer")            
             integer_size = int(value)            
             if not integer_size == 4:
               raise Exception("Unexpected integer size: " + str(integer_size))
        
-        nOutput = (os.path.getsize(filename + ".dat") / (nColumns * real_size)) / subsample
+        nOutput = int( (os.path.getsize(filename + ".dat") / (nColumns * real_size)) / subsample)
         
         columns = numpy.empty((nColumns, nOutput))
-        statDatFile = file(filename + ".dat", "rb")   
+        statDatFile = open(filename + ".dat", "rb")   
         index = 0     
         while True:
           values = array.array(realFormat)
@@ -251,10 +250,10 @@ for example:
         columns = [[] for i in range(nColumns)]
         lineNo = 0
         for line in statfile:
-          entries = map(float, line.split())
+          entries = list(map(float, line.split()))
           # Ignore non-sampled lines
           if len(entries) == len(columns) and (lineNo % subsample) == 0:
-            map(list.append, columns, entries)
+            list(map(list.append, columns, entries))
           elif len(entries) != len(columns):
             raise Exception("Incomplete line %d: expected %d, but got %d columns" % (lineNo, len(columns), len(entries)))
           lineNo = lineNo + 1
@@ -268,13 +267,13 @@ for example:
         components=field.getAttribute("components")
 
         if system:
-          if not self.has_key(system):
+          if system not in self:
             self[system]={}
           current_dict=self[system]
         else:
           current_dict=self
 
-        if not current_dict.has_key(name):
+        if name not in current_dict:
           current_dict[name]={}
 
         if components:

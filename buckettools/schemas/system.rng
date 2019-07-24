@@ -142,7 +142,7 @@ The return value must have the same size as the geometric dimension.</a:document
       <attribute name="name">
         <data type="string"/>
       </attribute>
-      <ref name="python_code"/>
+      <ref name="python3_code"/>
       <ref name="functional_ufl_symbol"/>
       <ref name="form_representation"/>
       <ref name="quadrature_degree"/>

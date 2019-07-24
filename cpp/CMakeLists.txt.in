@@ -30,7 +30,7 @@ project(TERRAFERMA)
 set(REQUIRED_TERRAFERMA_VERSION "@TERRAFERMA_VERSION_SHORT@")
 
 # Set CMake behavior
-cmake_policy(SET CMP0004 OLD)
+cmake_policy(SET CMP0004 NEW)
 
 # Default build type (can be overridden by user)
 set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING
@@ -65,6 +65,7 @@ endif(NOT EXISTS ${OPTIONSFILE})
 
 # Get DOLFIN configuration data (DOLFINConfig.cmake must be in CMAKE_CONFIG_PATH)
 find_package(DOLFIN ${BUCKETTOOLS_DOLFIN_VERSION_STR} EXACT REQUIRED)
+include(${DOLFIN_USE_FILE})
 
 # include the buckettools include directory and the binary directory (for the systemswrapper)
 include_directories(${PROJECT_BINARY_DIR})
@@ -86,16 +87,12 @@ if (APPLE)
   endif()
 endif()
 
-# Need to get VTK config because VTK uses advanced VTK features which
-# mean it's not enough to just link to the DOLFIN target. See
-# http://www.vtk.org/pipermail/vtk-developers/2013-October/014402.html
-find_package(VTK HINTS ${VTK_DIR} $ENV{VTK_DIR} NO_MODULE QUIET)
-
 add_subdirectory(${BUCKETTOOLS_SHARED_DIRS}/buckettools/ufc "buckettools_ufc")
 
 add_executable(${EXECUTABLE} ${PROJECT_SOURCE_DIR}/main.cpp)
 
-target_link_libraries(${EXECUTABLE} ${BUCKETTOOLS_LIBRARIES} buckettools_ufc)
+message(INFO "BUCKETTOOLS_LIBRARIES: ${BUCKETTOOLS_LIBRARIES}")
+target_link_libraries(${EXECUTABLE} dolfin buckettools_cpp buckettools_ufc)
 
 add_custom_target(
   run

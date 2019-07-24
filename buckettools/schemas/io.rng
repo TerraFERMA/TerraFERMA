@@ -66,7 +66,7 @@ Functions should be of the form:
        return # Return value
 
 The return value must have length &gt; 0 and each entry must be of the same dimension as the mesh.</a:documentation>
-              <ref name="python_code"/>
+              <ref name="python3_code"/>
             </element>
             <ref name="comment"/>
           </element>

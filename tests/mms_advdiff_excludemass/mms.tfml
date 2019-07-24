@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -24,7 +24,8 @@
   </io>
   <global_parameters>
     <ufl>
-      <string_value lines="20" type="code" language="python">nu = 0.7</string_value>
+      <string_value lines="20" type="code" language="python3">nu = 0.7
+</string_value>
     </ufl>
   </global_parameters>
   <system name="MMS">
@@ -94,7 +95,7 @@
           </element>
           <value type="value" name="WholeMesh">
             <python rank="1">
-              <string_value lines="20" type="code" language="python">def val(XX):
+              <string_value lines="20" type="code" language="python3">def val(XX):
    from math import sin,cos
    x = XX[0];
    y = XX[1];
@@ -102,7 +103,8 @@
    y2 = y*y;
    u = sin(5*(x2+y2));
    v = cos(3*(x2-y2));
-   return (u, v)</string_value>
+   return (u, v)
+</string_value>
             </python>
           </value>
         </rank>
@@ -125,14 +127,15 @@
           </element>
           <value type="value" name="WholeMesh">
             <python rank="0">
-              <string_value lines="20" type="code" language="python">def val(XX):
+              <string_value lines="20" type="code" language="python3">def val(XX):
    from math import sin,cos,sqrt
    omega = 0.0;
    t = 0.0;
    x = XX[0];
    y = XX[1];
    u = sin(25*x*y + omega*t) - 2*y/(sqrt(x));
-   return u</string_value>
+   return u
+</string_value>
             </python>
           </value>
         </rank>
@@ -155,7 +158,7 @@
           </element>
           <value type="value" name="WholeMesh">
             <python rank="1">
-              <string_value lines="20" type="code" language="python">def val(XX):
+              <string_value lines="20" type="code" language="python3">def val(XX):
    from math import sin,cos,sqrt
    omega = 0.0;
    t = 0.0;
@@ -167,7 +170,8 @@
    x1p5 = x*sqrt(x)
    u = 25*y*cos(25*x*y + omega*t) + y/x1p5;
    v = 25*x*cos(25*x*y + omega*t) - 2/sqrt(x);
-   return (u, v)</string_value>
+   return (u, v)
+</string_value>
               <comment>u = sin(25*x*y + omega*t) - 2*y/(sqrt(x));</comment>
             </python>
           </value>
@@ -191,7 +195,7 @@
           </element>
           <value type="value" name="WholeMesh">
             <python rank="0">
-              <string_value lines="20" type="code" language="python">def val(XX):
+              <string_value lines="20" type="code" language="python3">def val(XX):
    from math import sin,cos,sqrt
    nu = 0.7;
    omega = 0.0;
@@ -206,7 +210,8 @@
    x1p5 = xp5*x;
    x2p5 = x1p5*x;
    S = adv*((25*y*cos(25*x*y + omega*t) + y/x1p5)*sin(5*(y2 + x2)) + beta*(sin(25*x*y + omega*t) - 2*y/xp5)*(10*x*cos(5*(y2 + x2)) + 6*y*sin(3*(x2 - y2))) + (25*x*cos(25*x*y + omega*t) - 2/xp5)*cos(3*(x2 - y2))) - nu*(-625*y2*sin(25*x*y + omega*t) - 625*x2*sin(25*x*y + omega*t) - 3*y/(2*x2p5)) + omega*cos(25*x*y + omega*t);
-   return S</string_value>
+   return S
+</string_value>
               <comment>T(x,y,t,nu,adv,beta,omega) = sin(25*x*y + omega*t) - 2*y/(sqrt(x))&#13;
 T_t = diff(T,t)&#13;
 T_x = diff(T,x)&#13;
@@ -269,13 +274,15 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
     <nonlinear_solver name="Solver">
       <type name="SNES">
         <form name="Residual" rank="0">
-          <string_value lines="20" type="code" language="python">r = (t_t*inner(v_i, grad(t_i)) + nu*inner(grad(t_t), grad(t_i)) - t_t*s)*dx - t_t*nu*g[0]*ds(8) - t_t*nu*g[1]*ds(9)</string_value>
+          <string_value lines="20" type="code" language="python3">r = (t_t*inner(v_i, grad(t_i)) + nu*inner(grad(t_t), grad(t_i)) - t_t*s)*dx - t_t*nu*g[0]*ds(8) - t_t*nu*g[1]*ds(9)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">r</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
-          <string_value lines="20" type="code" language="python">a = derivative(r, ut_i, ut_a)</string_value>
+          <string_value lines="20" type="code" language="python3">a = derivative(r, ut_i, ut_a)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
@@ -304,7 +311,8 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
       <solve name="in_timeloop"/>
     </nonlinear_solver>
     <functional name="AbsoluteDifferenceIntegral">
-      <string_value lines="20" type="code" language="python">int = d*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = d*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -313,7 +321,8 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
       <include_in_statistics/>
     </functional>
     <functional name="AbsoluteDifferenceL2NormSquared">
-      <string_value lines="20" type="code" language="python">int = d*d*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = d*d*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>

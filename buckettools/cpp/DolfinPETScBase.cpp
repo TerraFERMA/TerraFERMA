@@ -193,9 +193,9 @@ boost::unordered_set<uint> buckettools::cell_dofs_values(const FunctionSpace_ptr
       }
     }
 
-    dolfin::ArrayView<const dolfin::la_index> tmp_dof_vec = (*dofmap).cell_dofs((*cell).index());
-    std::vector<dolfin::la_index> dof_vec;
-    for (std::size_t i = 0; i < tmp_dof_vec.size(); i++)
+    Eigen::Map<const Eigen::Array<dolfin::la_index, Eigen::Dynamic, 1>> tmp_dof_vec = (*dofmap).cell_dofs((*cell).index());
+    std::vector<std::size_t> dof_vec;
+    for (Eigen::Index i = 0; i < tmp_dof_vec.size(); i++)
     {
       dof_vec.push_back((*dofmap).local_to_global_index(tmp_dof_vec[i]));
     }
@@ -298,9 +298,9 @@ boost::unordered_set<uint> buckettools::facet_dofs_values(const FunctionSpace_pt
 
         const std::size_t facet_number = cell.index(*facet);         // get the local index of the facet w.r.t. the cell
 
-        dolfin::ArrayView<const dolfin::la_index> tmp_cell_dof_vec = (*dofmap).cell_dofs(cell.index());// get the cell dof (potentially for all components)
-        std::vector<dolfin::la_index> cell_dof_vec;
-        for (std::size_t i = 0; i < tmp_cell_dof_vec.size(); i++)
+        Eigen::Map<const Eigen::Array<dolfin::la_index, Eigen::Dynamic, 1>> tmp_cell_dof_vec = (*dofmap).cell_dofs(cell.index());
+        std::vector<std::size_t> cell_dof_vec;
+        for (Eigen::Index i = 0; i < tmp_cell_dof_vec.size(); i++)
         {
           cell_dof_vec.push_back((*dofmap).local_to_global_index(tmp_cell_dof_vec[i]));
         }

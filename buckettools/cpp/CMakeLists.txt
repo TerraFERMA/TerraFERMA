@@ -114,7 +114,7 @@ set_source_files_properties(builddefs.h PROPERTIES GENERATED 1)
 # the project depends on this target
 add_dependencies(buckettools_cpp builddefs)
 # link to other libraries
-target_link_libraries(buckettools_cpp ${BUCKETTOOLS_TARGET_LINK_LIBRARIES})
+target_link_libraries(buckettools_cpp dolfin ${BUCKETTOOLS_TARGET_LINK_LIBRARIES})
 # set the library version
 set_target_properties(buckettools_cpp PROPERTIES 
                       VERSION   ${BUCKETTOOLS_VERSION_SHORT}

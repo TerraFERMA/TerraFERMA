@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <harness_options>
   <length>
     <string_value lines="1">short</string_value>
@@ -21,8 +21,9 @@
             <string_value lines="1">10 20 40</string_value>
           </values>
           <update>
-            <string_value lines="20" type="code" language="python">import libspud
-libspud.set_option("/geometry/mesh::Mesh/source::UnitSquare/number_cells", [int(ncells), int(ncells)])</string_value>
+            <string_value lines="20" type="code" language="python3">import libspud
+libspud.set_option("/geometry/mesh::Mesh/source::UnitSquare/number_cells", [int(ncells), int(ncells)])
+</string_value>
             <single_build/>
           </update>
         </parameter>
@@ -31,71 +32,78 @@ libspud.set_option("/geometry/mesh::Mesh/source::UnitSquare/number_cells", [int(
             <string_value lines="1">1 2</string_value>
           </values>
           <update>
-            <string_value lines="20" type="code" language="python">import libspud
-for s in xrange(libspud.option_count("/system")):
-  systempath = "/system["+`s`+"]"
+            <string_value lines="20" type="code" language="python3">import libspud
+for s in range(libspud.option_count("/system")):
+  systempath = "/system["+repr(s)+"]"
   for ftype in ["field", "coefficient"]:
-    for f in xrange(libspud.option_count(systempath+"/"+ftype)):
-      fieldpath = systempath+"/"+ftype+"["+`f`+"]"
+    for f in range(libspud.option_count(systempath+"/"+ftype)):
+      fieldpath = systempath+"/"+ftype+"["+repr(f)+"]"
       fieldname = libspud.get_option(fieldpath+"/name")
       if fieldname.endswith("Gradient"):
         libspud.set_option(fieldpath+"/type[0]/rank[0]/element[0]/degree", int(n))
       elif fieldname.endswith("Field"):
-        libspud.set_option(fieldpath+"/type[0]/rank[0]/element[0]/degree", int(n)-1)</string_value>
+        libspud.set_option(fieldpath+"/type[0]/rank[0]/element[0]/degree", int(n)-1)
+</string_value>
             <comment>Cannot be a single_build because these are compile time changes.</comment>
           </update>
         </parameter>
       </parameter_sweep>
       <variables>
         <variable name="error_l2">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 from math import sqrt
 stat = parser("poisson.stat")
-error_l2 = sqrt(stat["Poisson"]["AbsoluteDifferenceL2NormSquared"]["functional_value"][-1])</string_value>
+error_l2 = sqrt(stat["Poisson"]["AbsoluteDifferenceL2NormSquared"]["functional_value"][-1])
+</string_value>
         </variable>
         <variable name="error_linf">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 from math import sqrt
 stat = parser("poisson.stat")
-error_linf = stat["Poisson"]["AbsoluteDifference"]["max"][-1]</string_value>
+error_linf = stat["Poisson"]["AbsoluteDifference"]["max"][-1]
+</string_value>
         </variable>
       </variables>
     </simulation>
   </simulations>
   <tests>
     <test name="error_l2_p1">
-      <string_value lines="20" type="code" language="python">import numpy
-print error_l2
-print error_l2[{'n':['1']}]
+      <string_value lines="20" type="code" language="python3">import numpy
+print(error_l2)
+print(error_l2[{'n':['1']}])
 error_l2_a = numpy.array(error_l2[{'n':['1']}])
 conv_l2 = numpy.log2(error_l2_a[:-1]/error_l2_a[1:])
-print conv_l2
-assert(numpy.all(conv_l2 &gt; 0.9))</string_value>
+print(conv_l2)
+assert(numpy.all(conv_l2 &gt; 0.9))
+</string_value>
     </test>
     <test name="error_linf_p1">
-      <string_value lines="20" type="code" language="python">import numpy
-print error_linf[{'n':['1']}]
+      <string_value lines="20" type="code" language="python3">import numpy
+print(error_linf[{'n':['1']}])
 error_linf_a = numpy.array(error_linf[{'n':['1']}])
 conv_linf = numpy.log2(error_linf_a[:-1]/error_linf_a[1:])
-print conv_linf
-assert(numpy.all(conv_linf &gt; 0.9))</string_value>
+print(conv_linf)
+assert(numpy.all(conv_linf &gt; 0.9))
+</string_value>
     </test>
     <test name="error_l2_p2">
-      <string_value lines="20" type="code" language="python">import numpy
-print error_l2
-print error_l2[{'n':['2']}]
+      <string_value lines="20" type="code" language="python3">import numpy
+print(error_l2)
+print(error_l2[{'n':['2']}])
 error_l2_a = numpy.array(error_l2[{'n':['2']}])
 conv_l2 = numpy.log2(error_l2_a[:-1]/error_l2_a[1:])
-print conv_l2
-assert(numpy.all(conv_l2 &gt; 1.9))</string_value>
+print(conv_l2)
+assert(numpy.all(conv_l2 &gt; 1.9))
+</string_value>
     </test>
     <test name="error_linf_p2">
-      <string_value lines="20" type="code" language="python">import numpy
-print error_linf[{'n':['2']}]
+      <string_value lines="20" type="code" language="python3">import numpy
+print(error_linf[{'n':['2']}])
 error_linf_a = numpy.array(error_linf[{'n':['2']}])
 conv_linf = numpy.log2(error_linf_a[:-1]/error_linf_a[1:])
-print conv_linf
-assert(numpy.all(conv_linf &gt; 1.8))</string_value>
+print(conv_linf)
+assert(numpy.all(conv_linf &gt; 1.8))
+</string_value>
     </test>
   </tests>
 </harness_options>

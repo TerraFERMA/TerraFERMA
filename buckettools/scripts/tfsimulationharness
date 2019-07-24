@@ -126,7 +126,7 @@ if __name__ == "__main__":
 
   params = {}
   if args.params is not None:
-    for i in xrange(0, len(args.params), 2):
+    for i in range(0, len(args.params), 2):
       if args.params[i] in params:
         params[args.params[i]].append(args.params[i+1])
       else:
@@ -147,38 +147,38 @@ if __name__ == "__main__":
         if ext == "shml":
           filenames.add(filename)
         else:
-          print "Don't know how to deal with extension "+ext+".  Only know about shmls."
+          print("Don't know how to deal with extension "+ext+".  Only know about shmls.")
           sys.exit(1)
 
     else:
       
       for dirname, dirnames, files in os.walk(os.path.dirname(ffull), topdown=True):
-        depth = string.count(dirname, os.path.sep) - string.count(os.path.dirname(ffull), os.path.sep)
+        depth = dirname.count(os.path.sep) - os.path.dirname(ffull).count(os.path.sep)
         for filename in glob.glob1(os.path.join(dirname, os.path.dirname(f)), os.path.split(f)[-1]):
           ext = filename.split('.')[-1]
           if ext == "shml":
             filenames.add(os.path.join(os.path.join(dirname, os.path.dirname(f)), filename))
           else:
-            print "Don't know how to deal with extension "+ext+".  Only know about shmls."
+            print("Don't know how to deal with extension "+ext+".  Only know about shmls.")
             sys.exit(1)
         if depth == args.recurse:
           dirnames[:] = []
 
   if len(filenames)==0:
-    print "No matching files found."
+    print("No matching files found.")
     sys.exit(1)
 
   partial_filter_simulations = functools.partial(filter_simulations, 
                                                  length=args.length, parallelism=args.parallelism, 
                                                  owner=args.owner, tags=args.tags, exclude=args.exclude)
-  filenames = filter(partial_filter_simulations, filenames)
+  filenames = list(filter(partial_filter_simulations, filenames))
 
   curdir = os.getcwd()
 
   try:
     import buckettools.simulations as simulations
   except ImportError:
-    print "Error while importing buckettools simulations.  PYTHONPATH set correctly?"
+    print("Error while importing buckettools simulations.  PYTHONPATH set correctly?")
     sys.exit(1)
 
   try:
@@ -186,47 +186,47 @@ if __name__ == "__main__":
                                                os.environ["TF_CMAKE_PATH"], nthreads=args.nthreads,
                                                parameters=params)
   except simulations.SimulationsErrorInitialization:
-    print "Error while initializing the simulations."
+    print("Error while initializing the simulations.")
     sys.exit(1)
 
   if args.cleanrun:
     try:
       batch.cleanrun(level=args.level)
     except:
-      print "Error while cleaning simulations (runs), exiting with error."
+      print("Error while cleaning simulations (runs), exiting with error.")
       sys.exit(1)
 
   if args.cleanbuild:
     try:
       batch.cleanbuild(level=args.level)
     except:
-      print "Error while cleaning simulations (builds), exiting with error."
+      print("Error while cleaning simulations (builds), exiting with error.")
       sys.exit(1)
 
   if args.clean:
     try:
       batch.clean(level=args.level)
     except:
-      print "Error while cleaning simulations, exiting with error."
+      print("Error while cleaning simulations, exiting with error.")
       sys.exit(1)
 
   if args.checkpointclean:
     try:
       batch.checkpointclean(level=args.level)
     except:
-      print "Error while cleaning checkpointed simulations, exiting with error."
+      print("Error while cleaning checkpointed simulations, exiting with error.")
       sys.exit(1)
 
   if args.listinput:
     inputlist = batch.listinput(level=args.level)
     inputlist += filenames
     for requiredinput in inputlist:
-      print os.path.relpath(requiredinput, curdir)
+      print(os.path.relpath(requiredinput, curdir))
 
   def print_runs(runs, level):
-    print "**depth: "+`level`
+    print("**depth: "+repr(level))
     for run in runs:
-      print "  "*(level+1)+run.name+": "+run.filename+run.ext+" ("+os.path.relpath(run.rundirectory,curdir)+")" 
+      print("  "*(level+1)+run.name+": "+run.filename+run.ext+" ("+os.path.relpath(run.rundirectory,curdir)+")") 
     
   if args.listruns:
     if args.level is not None:
@@ -244,61 +244,61 @@ if __name__ == "__main__":
 
   if args.justlist:
     for filename in filenames:
-      print os.path.relpath(filename, curdir)
+      print(os.path.relpath(filename, curdir))
   elif args.generate or args.configure or args.build or args.run or args.test:
     try:
       batch.writeoptions(level=args.level)
     except simulations.SimulationsErrorWriteOptions:
-      print "Error while writing options, exiting with error."
+      print("Error while writing options, exiting with error.")
       sys.exit(1)
     if args.configure or args.build or args.run or args.test:
       try:
         batch.configure(level=args.level, force=args.force)
       except simulations.SimulationsErrorConfigure:
-        print "Error while configuring simulations, exiting with error."
+        print("Error while configuring simulations, exiting with error.")
         sys.exit(1)
       if args.build or args.run or args.test:
         try: 
           batch.build(level=args.level, force=args.force)
         except simulations.SimulationsErrorBuild:
-          print "Error while building simulations, exiting with error."
+          print("Error while building simulations, exiting with error.")
           sys.exit(1)
         if args.run or args.test:
           try:
             batch.run(level=args.level, force=args.force)
           except (simulations.SimulationsErrorRun, simulations.SimulationsErrorWriteOptions, \
                   simulations.SimulationsErrorConfigure, simulations.SimulationsErrorBuild):
-            print "Error while running simulations, exiting with error."
+            print("Error while running simulations, exiting with error.")
             sys.exit(1)
           if args.test:
             try:
               batch.test(force=args.force)
             except simulations.SimulationsErrorVariable:
-              print "Error while assigning variables, exiting with error."
+              print("Error while assigning variables, exiting with error.")
               sys.exit(1)
             except simulations.SimulationsErrorTest:
-              print "Error while testing simulations, exiting with error."
+              print("Error while testing simulations, exiting with error.")
               sys.exit(1)
   elif args.justrun:
     try:
       batch.run(level=args.level, force=args.force)
     except simulations.SimulationsErrorRun:
-      print "Error while running simulations, exiting with error."
+      print("Error while running simulations, exiting with error.")
       sys.exit(1)
   elif args.justtest:
     try:
       batch.test(force=args.force)
     except simulations.SimulationsErrorVariable:
-      print "Error while assigning variables, exiting with error."
+      print("Error while assigning variables, exiting with error.")
       sys.exit(1)
     except simulations.SimulationsErrorTest:
-      print "Error while testing simulations, exiting with error."
+      print("Error while testing simulations, exiting with error.")
       sys.exit(1)
   elif args.checkpoint is not None:
     try:
       batch.checkpointrun(index=args.checkpoint, level=args.level)
     except simulations.SimulationsErrorRun:
-      print "Error while running simulations from checkpoint, exiting with error."
+      print("Error while running simulations from checkpoint, exiting with error.")
       sys.exit(1)
 
 

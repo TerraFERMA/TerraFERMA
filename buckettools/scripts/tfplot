@@ -96,7 +96,7 @@ try:
   import buckettools.diagnostics.gui as gui
   import buckettools.diagnostics.plotting as plotting
 except ImportError:
-  print "Error while importing buckettools diagnostics.  PYTHONPATH set correctly?"
+  print("Error while importing buckettools diagnostics.  PYTHONPATH set correctly?")
   sys.exit(1)
 
 if not args.verbose:
@@ -165,7 +165,7 @@ class StatplotWindow(gtk.Window):
         try:
           stats.append(tools.Stat(filename))
           break
-        except TypeError, ValueError:
+        except TypeError as ValueError:
           # We opened the stat when it was being written to
           time.sleep(0.2)
           failcount = failcount + 1
