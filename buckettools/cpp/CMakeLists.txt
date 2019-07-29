@@ -84,15 +84,9 @@ include_directories(SYSTEM ${BUCKETTOOLS_DEP_INCLUDE_DIRECTORIES})
 add_definitions(${BUCKETTOOLS_CXX_DEFINITIONS})
 set(CMAKE_CXX_FLAGS "${BUCKETTOOLS_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
 
-# Add Mac specific loader flags
+# Add Mac specific rpath flags
 if (APPLE)
-  set(CMAKE_SHARED_LINKER_FLAGS "-Wl,-undefined,dynamic_lookup" CACHE STRING "should only be set if macosx" FORCE)
-  # Set a consistent MACOSX_RPATH default across all CMake versions.
-  # When CMake 2.8.12 is required, change this default to 1.
-  # When CMake 3.0.0 is required, remove this block (see CMP0042).
-  if (NOT DEFINED CMAKE_MACOSX_RPATH)
-    set(CMAKE_MACOSX_RPATH 0)
-  endif()
+  SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 endif()
 
 # generate a library - really the main point of this whole process
