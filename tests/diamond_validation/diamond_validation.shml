@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <harness_options>
   <length>
     <string_value lines="1">short</string_value>
@@ -11,7 +11,7 @@
   </description>
   <tests>
     <test name="Validate">
-      <string_value type="code" language="python" lines="20">import sys
+      <string_value type="code" language="python3" lines="20">import sys
 import glob
 import os
 import string
@@ -66,7 +66,7 @@ class DiamondValidator:
         extdict[extension] = config.schemata[extension][1][alias]
     
     schemadict = {}
-    for k,v in extdict.items():
+    for k,v in list(extdict.items()):
       schemadict[k] = schema.Schema(v)
 
     if extension is not None:
@@ -127,10 +127,11 @@ if len(failures)&gt;0:
     print(filename)
   print("*****\n")
 
-print("diamond_validation: validation passes: " + str(passes))
-print("diamond_validation: validation failures: " + str(len(failures)))
+print(("diamond_validation: validation passes: " + str(passes)))
+print(("diamond_validation: validation failures: " + str(len(failures))))
 
-assert len(failures) == 0</string_value>
+assert len(failures) == 0
+</string_value>
     </test>
   </tests>
 </harness_options>
