@@ -7,7 +7,7 @@
     <string_value lines="1">cwilson</string_value>
   </owner>
   <tags>
-    <string_value lines="1">not:branch:fenics-2019.1.0</string_value>
+    <string_value lines="1">not:branch:fenics-2019.1.0 not:branch:periodic-2019.1.0</string_value>
   </tags>
   <description>
     <string_value lines="1">A test of snes vi with dg advection.</string_value>
