@@ -352,15 +352,26 @@ class Run:
       libspud.write_options(os.path.join(self.rundirectory, self.filename+self.ext))
       threadlibspud.clear_options()
     else:
-      inputfile = open(os.path.join(self.runinputdirectory, self.inputfilename+self.inputext))
-      inputstr = inputfile.read()
+      inputfilepath = os.path.join(self.runinputdirectory, self.inputfilename+self.inputext)
+      gz = False
+      try:
+        inputfile = open(inputfilepath)
+        inputstr = inputfile.read()
+      except UnicodeDecodeError:
+        inputfile = gzip.open(inputfilepath, 'rt', encoding='utf-8')
+        inputstr = inputfile.read()
+        gz = True
       inputfile.close()
       
       valuesdict = {"input_file":inputstr}
       self.updateoptions(valuesdict=valuesdict)
 
       inputstr = valuesdict["input_file"]
-      outputfile = open(os.path.join(self.rundirectory, self.filename+self.ext), 'w')
+      outputfilename = os.path.join(self.rundirectory, self.filename+self.ext)
+      if gz:
+        outputfile = gzip.open(outputfilename, 'wt')
+      else:
+        outputfile = open(outputfilename, 'w')
       outputfile.write(inputstr)
       outputfile.close()
 
