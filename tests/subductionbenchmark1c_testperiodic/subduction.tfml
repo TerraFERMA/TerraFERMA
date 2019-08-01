@@ -27,11 +27,11 @@
       <array name="Wedge">
         <python>
           <string_value type="code" language="python3" lines="20">def val():
-  import numpy as np
-  coords = [(1., 1.), (2., 2.)]
-#  for i in arange(54.0,120.0+6.0, 6.0):
-#    for j in arange(-54.0, -i-6.0, -6.0):
-#      coords.append([i,j])
+  from numpy import arange
+  coords = []
+  for i in arange(54.0,120.0+6.0, 6.0):
+    for j in arange(-54.0, -i-6.0, -6.0):
+      coords.append([i,j])
   return coords
 </string_value>
         </python>
@@ -39,10 +39,10 @@
       <array name="Slab">
         <python>
           <string_value type="code" language="python3" lines="20">def val():
-#  from numpy import arange
-  coords = [(3., 3.), (4.,4.)]
-#  for i in arange(0.0,210.0+6.0, 6.0):
-#    coords.append([i,-i])
+  from numpy import arange
+  coords = []
+  for i in arange(0.0,210.0+6.0, 6.0):
+    coords.append([i,-i])
   return coords
 </string_value>
         </python>
