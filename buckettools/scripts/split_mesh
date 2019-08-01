@@ -74,7 +74,7 @@ if args.filename[-4:]!=".xml" and args.filename[-7:]!=".xml.gz":
 
 kwargs = {}
 if args.kwargs is not None:
-  for i in xrange(0, len(args.kwargs), 2):
+  for i in range(0, len(args.kwargs), 2):
     if args.kwargs[i] in kwargs:
       if type(kwargs[args.kwargs[i]]) is not list:
         kwargs[args.kwargs[i]] = [kwargs[args.kwargs[i]]]
@@ -82,7 +82,7 @@ if args.kwargs is not None:
     else:
       kwargs[args.kwargs[i]] = args.kwargs[i+1]
 
-exec file(args.centroid_func)
+exec(open(args.centroid_func).read())
 partial_centroid_function = functools.partial(centroid_function, **kwargs)
 
 # organize the filename

@@ -18,7 +18,7 @@ def makemesh(vertex_coordinates, cells):
     elif tdim == 3:
         shape = "tetrahedron"
     else:
-        print "Error: unknown cell shape"
+        print("Error: unknown cell shape")
         return
 
     # make sure cell vertex indices are 0 offset (C style) rather than 1 offset (Fortran style)
@@ -32,13 +32,13 @@ def makemesh(vertex_coordinates, cells):
 
     # add vertices
     for i in range(num_vertices):
-        p = dolfin.Point(gdim,vertex_coordinates[i,:])
+        p = dolfin.Point(vertex_coordinates[i,:])
         M.add_vertex(i,p)
 
     # add cells
     for i in range(num_cells):
         #c = STLVectorUInt(cells[i,:])
-        M.add_cell(i, cells[i,0], cells[i,1], cells[i,2])
+        M.add_cell(i, [cells[i,0], cells[i,1], cells[i,2]])
 
     # finish up and order
     M.close()
@@ -62,7 +62,7 @@ def writemesh(filename, vertex_coordinates, cells):
             f=dolfin.File(filename)
             f << mesh
         else:
-            print "Error: %s does not appear to be an xml file" % filename
+            print("Error: %s does not appear to be an xml file" % filename)
 
     return mesh
 
@@ -97,7 +97,7 @@ def splitmesh(mesh, facetsubdomain, split_facet_ids, centroid_function, preserve
   # set up a map from the index of the old vertex to the index of the new, duplicated vertex
   new_coords_map = []
   for ind in new_coords_ind:
-    print "Splitting vertex at ", split_coords[ind]
+    print("Splitting vertex at ", split_coords[ind])
     # duplicate the coordinates of the vertex
     split_coords = numpy.concatenate((split_coords, numpy.array([split_coords[ind]])), axis=0)
     # map from the old vertex to the new one
@@ -106,7 +106,7 @@ def splitmesh(mesh, facetsubdomain, split_facet_ids, centroid_function, preserve
   # turn the list into a map
   new_coords_map = dict(new_coords_map)
   # and invert the map so that you can jump from the new vertex index to the old
-  old_coords_map = dict((v,k) for k, v in new_coords_map.iteritems())
+  old_coords_map = dict((v,k) for k, v in new_coords_map.items())
 
   # keep track of which cells we've visited
   visited = numpy.zeros(mesh.num_cells(), numpy.int)
@@ -189,7 +189,7 @@ def splitmesh(mesh, facetsubdomain, split_facet_ids, centroid_function, preserve
                     newid = new_facet_ids[numpy.where([fid==facetsubdomain[int(facet)] for fid in split_facet_ids])[0][0]]
                   else:
                     # user hasn't supplied new ids
-                    newid = int(`facetsubdomain[int(facet)]`+'00')
+                    newid = int(repr(facetsubdomain[int(facet)])+'00')
                   split_facetsubdomain[int(split_facet)] = newid
               # the neighbour wasn't itself split
               else:
@@ -197,9 +197,9 @@ def splitmesh(mesh, facetsubdomain, split_facet_ids, centroid_function, preserve
                 neigh = split_neigh
                 # but if it's in the vertices this means we're at the end of the split
                 if (neigh in vertices):
-                  print 'found final split facet, vertex, split_vertex, neigh ', vertex, split_vertex, neigh, \
+                  print('found final split facet, vertex, split_vertex, neigh ', vertex, split_vertex, neigh, \
                                                                                 mesh.coordinates()[vertex], \
-                                                                                mesh.coordinates()[neigh]
+                                                                                mesh.coordinates()[neigh])
                   # if this was an id that we were splitting, give it a new facet id
                   if facetsubdomain[int(facet)] in split_facet_ids:
                     if new_facet_ids:
@@ -208,12 +208,12 @@ def splitmesh(mesh, facetsubdomain, split_facet_ids, centroid_function, preserve
                       newid = new_facet_ids[numpy.where([fid==facetsubdomain[int(facet)] for fid in split_facet_ids])[0][0]]
                     else:
                       # user hasn't supplied new ids
-                      newid = int(`facetsubdomain[int(facet)]`+'00')
-                    print '  providing new id', newid
+                      newid = int(repr(facetsubdomain[int(facet)])+'00')
+                    print('  providing new id', newid)
                     split_facetsubdomain[int(split_facet)] = newid
                   # otherwise give it the same old facet id
                   else:
-                    print '  using old id'
+                    print('  using old id')
                     split_facetsubdomain[int(split_facet)] = facetsubdomain[int(facet)]
 
   return split_mesh, split_facetsubdomain
