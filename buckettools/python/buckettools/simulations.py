@@ -844,7 +844,6 @@ class Simulation(Run):
                         "-DEXECUTABLE="+self.filename, \
                         os.path.join(self.tfdirectory,os.curdir)]
     for i in range(2):
-      #import ipdb; ipdb.set_trace()
       self.runcommand(command, dirname, exception=SimulationsErrorConfigure, logfilename="cmake."+repr(i)+".log")
 
   def build(self, force=False):
@@ -992,9 +991,11 @@ class Simulation(Run):
     if basefile is None: basefile = self.filename+self.ext
     nprocs = self.getnprocs()
     valgrind_opts = self.optionsdict["valgrind"]
+    mpi_opts = []
+    if "mpi" in self.optionsdict: mpi_opts = [opt.strip() for opt in self.optionsdict["mpi"]]
     commands = [[]]
     if nprocs > 1:
-      commands[0] += ["mpiexec", "-np", repr(nprocs)]
+      commands[0] += ["mpiexec"]+mpi_opts+["-np", repr(nprocs)]
     if valgrind_opts is not None:
       commands[0] += ["valgrind"]+valgrind_opts
     commands[0] += [os.path.join(self.builddirectory, "build", self.filename), "-vINFO", "-l", basefile]
@@ -1589,7 +1590,7 @@ class SimulationHarnessBatch(SimulationBatch):
   '''A derived SimulationBatch that takes in a list of spud based harnessfiles and sets up
      subgroups of SimulationBatches based on them.'''
 
-  def __init__(self, harnessfiles, filename, currentdirectory, tfdirectory, nthreads=1, parameters={}):
+  def __init__(self, harnessfiles, filename, currentdirectory, tfdirectory, nthreads=1, parameters={}, extraoptions={}):
     '''Initialize a SimulationHarnessBatch.'''
 
     # record the current directory from where the script calling this is being run
@@ -1623,12 +1624,12 @@ class SimulationHarnessBatch(SimulationBatch):
       # loop over the simulations
       for d in range(libspud.option_count("/simulations/simulation")):
         simulation_optionpath = "/simulations/simulation["+repr(d)+"]"
-        harnessfileoptionsdict.update(self.getoptions(simulation_optionpath, dirname))
+        harnessfileoptionsdict.update(self.getoptions(simulation_optionpath, dirname, extraoptions=extraoptions))
 
       # loop over any runs
       for d in range(libspud.option_count("/simulations/run")):
         run_optionpath = "/simulations/run["+repr(d)+"]"
-        harnessfileoptionsdict.update(self.getoptions(run_optionpath, dirname, run=True))
+        harnessfileoptionsdict.update(self.getoptions(run_optionpath, dirname, run=True, extraoptions=extraoptions))
 
       # fetch the tests that are included in this harness file
       tests = self.gettests("/tests")
@@ -1882,7 +1883,7 @@ class SimulationHarnessBatch(SimulationBatch):
      
      return dependencies_options
 
-  def getoptions(self, optionpath, dirname, parent_parameters=None, run=False):
+  def getoptions(self, optionpath, dirname, parent_parameters=None, run=False, extraoptions={}):
      options = {}
      name = libspud.get_option(optionpath+"/name")
 
@@ -1921,6 +1922,7 @@ class SimulationHarnessBatch(SimulationBatch):
      variables = self.getvariables(optionpath+"/variables")
 
      options[path] = {}
+     options[path].update(extraoptions)
      options[path]["name"]      = name
      options[path]["run_when"] = {                                                         \
                                              "input_changed"  : run_when.find("input_changed")  != -1, \
