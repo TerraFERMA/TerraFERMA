@@ -86,7 +86,9 @@ set(CMAKE_CXX_FLAGS "${BUCKETTOOLS_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
 
 # Add Mac specific rpath flags
 if (APPLE)
-  SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+  set(CMAKE_SHARED_LINKER_FLAGS "-Wl,-undefined,dynamic_lookup" 
+      CACHE STRING "Use dynamic lookup for undefined symbols." FORCE)
+  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 endif()
 
 # generate a library - really the main point of this whole process
