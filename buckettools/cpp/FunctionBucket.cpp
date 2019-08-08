@@ -223,9 +223,6 @@ dolfin::PETScVector FunctionBucket::vector(const std::string &function_type, con
   }
 
   IS is = components_is(components);
-      perr = ISView(is, 
-                PETSC_VIEWER_STDOUT_((*mesh).mpi_comm()));
-      petsc_err(perr);                                                   // isview?
   PetscInt size;
   perr = ISGetLocalSize(is, &size);
   std::size_t offset = 
