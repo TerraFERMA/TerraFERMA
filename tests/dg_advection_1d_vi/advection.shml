@@ -45,7 +45,7 @@
           </required_output>
           <commands>
             <command name="GMsh">
-              <string_value lines="1">gmsh -1 interval.geo</string_value>
+              <string_value lines="1">gmsh -1 -format msh2 interval.geo</string_value>
             </command>
             <command name="Convert">
               <string_value lines="1">dolfin-convert interval.msh interval.xml</string_value>

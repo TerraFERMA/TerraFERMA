@@ -489,18 +489,18 @@ class Run:
           for filepath_k, filepath_v in requiredinput.items():
             try:
               try:
-                fh = open(os.path.join(dirname, os.path.basename(filepath_v))).read()
+                fh = open(os.path.join(dirname, os.path.basename(filepath_v)), 'rb').read()
               except UnicodeDecodeError:
-                fh = gzip.open(os.path.join(dirname, os.path.basename(filepath_v)), 'rt', encoding='utf-8').read()
-              checksum = hashlib.md5(fh.encode('utf-8')).hexdigest()
+                fh = gzip.open(os.path.join(dirname, os.path.basename(filepath_v)), 'rb').read()
+              checksum = hashlib.md5(fh).hexdigest()
             except:
               checksum = None
             try:
               try:
-                fh = open(filepath_k).read()
+                fh = open(filepath_k, 'rb').read()
               except UnicodeDecodeError:
-                fh = gzip.open(filepath_k, 'rt', encoding='utf-8').read()
-              input_changed = input_changed or checksum != hashlib.md5(fh.encode('utf-8')).hexdigest()
+                fh = gzip.open(filepath_k, 'rb').read()
+              input_changed = input_changed or checksum != hashlib.md5(fh).hexdigest()
             except IOError:
               self.log("WARNING: Unable to open %s"%(filepath_k))
               input_changed = True

@@ -731,68 +731,31 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     
     std::stringstream filename;
 
-    filename.str(""); filename << basename << ".xml";
-    file.open(filename.str().c_str(), std::ifstream::in);
-    if (file)
-    {
-      file.close();
-      mesh.reset(new dolfin::Mesh(filename.str()));
-    }
-    else
-    {
-      filename.str(""); filename << basename << ".xml.gz";
-      file.open(filename.str().c_str(), std::ifstream::in);
-      if (file)
-      {
-        file.close();
-        mesh.reset(new dolfin::Mesh(filename.str()));
-      }
-      else
-      {
-        tf_err("Could not find requested mesh.", 
-               "%s.xml or %s.xml.gz not found.", basename.c_str(), basename.c_str());
-      }
-    }
+    filename.str(""); filename << basename << ".xdmf";
+    mesh.reset(new dolfin::Mesh());
+    dolfin::XDMFFile(filename.str()).read(*mesh);
     (*mesh).init();                                                  // initialize the mesh (maps between dimensions etc.)
 
-    filename.str(""); filename << basename << "_facet_region.xml";   // check if the edge subdomain mesh function file exists
+    filename.str(""); filename << basename << "_facet_ids.xdmf";     // check if the facet ids file exists
     file.open(filename.str().c_str(), std::ifstream::in);
     if (file)                                                        // if it does then attach it to the dolfin MeshData structure 
     {                                                                // using the dolfin reserved name for exterior facets
       file.close();
 
-      edgeids.reset(new dolfin::MeshFunction<std::size_t>(mesh, filename.str()));
-    }
-    else
-    {
-      filename.str(""); filename << basename << "_facet_region.xml.gz";// check if the edge subdomain mesh function file exists
-      file.open(filename.str().c_str(), std::ifstream::in);
-      if (file)                                                      // if it does then attach it to the dolfin MeshData structure 
-      {                                                              // using the dolfin reserved name for exterior facets
-        file.close();
-
-        edgeids.reset(new dolfin::MeshFunction<std::size_t>(mesh, filename.str()));
-      }
+      dolfin::MeshValueCollection<std::size_t> edgeidsmvc(mesh, (*mesh).topology().dim()-1);
+      dolfin::XDMFFile(filename.str()).read(edgeidsmvc, "facet_ids");
+      edgeids.reset(new dolfin::MeshFunction<std::size_t>(mesh, edgeidsmvc));
     }
 
-    filename.str(""); filename << basename << "_physical_region.xml";// check if the region subdomain mesh function file exists
+    filename.str(""); filename << basename << "_cell_ids.xdmf";      // check if the cell ids file exists
     file.open(filename.str().c_str(), std::ifstream::in);
     if (file)                                                        // if it does then attach it to the dolfin MeshData structure 
     {                                                                // using the dolfin reserved name for cell domains
       file.close();
 
-      cellids.reset(new dolfin::MeshFunction<std::size_t>(mesh, filename.str()));
-    }
-    else
-    {
-      filename.str(""); filename << basename << "_physical_region.xml.gz";// check if the region subdomain mesh function file exists
-      file.open(filename.str().c_str(), std::ifstream::in);
-      if (file)                                                        // if it does then attach it to the dolfin MeshData structure 
-      {                                                                // using the dolfin reserved name for cell domains
-        file.close();
-
-        cellids.reset(new dolfin::MeshFunction<std::size_t>(mesh, filename.str()));
-      }
+      dolfin::MeshValueCollection<std::size_t> cellidsmvc(mesh, (*mesh).topology().dim());
+      dolfin::XDMFFile(filename.str()).read(cellidsmvc, "cell_ids");
+      cellids.reset(new dolfin::MeshFunction<std::size_t>(mesh, cellidsmvc));
     }
 
   }

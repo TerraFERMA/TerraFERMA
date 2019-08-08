@@ -56,7 +56,7 @@ input_file = template(input_file).safe_substitute({"nhpoints":npoints,"nvpoints"
           <required_output>
             <filenames name="meshfiles">
               <python>
-                <string_value lines="20" type="code" language="python3">meshfiles = ["mesh"+ext for ext in [".xml", "_facet_region.xml", "_physical_region.xml"]]
+                <string_value lines="20" type="code" language="python3">meshfiles = ["mesh"+ext for ext in [".h5", "_facet_ids.h5", "_cell_ids.h5", ".xdmf", "_facet_ids.xdmf", "_cell_ids.xdmf"]]
 </string_value>
               </python>
             </filenames>
@@ -66,7 +66,7 @@ input_file = template(input_file).safe_substitute({"nhpoints":npoints,"nvpoints"
               <string_value lines="1">gmsh -2 mesh.geo -o mesh.msh</string_value>
             </command>
             <command name="Convert">
-              <string_value lines="1">dolfin-convert mesh.msh mesh.xml</string_value>
+              <string_value lines="1">tfgmsh2xdmf mesh.msh mesh.xdmf</string_value>
             </command>
           </commands>
         </run>

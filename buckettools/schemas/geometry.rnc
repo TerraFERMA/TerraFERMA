@@ -61,13 +61,9 @@ mesh_options =
        ## Choose the source of this mesh as an externally generated mesh file.
        element source {
          attribute name { "File" },
-         ## Input the basename (i.e. without the .xml) of a DOLFIN format mesh. 
-         ## If mesh function files basename_facet_region.xml or basename_physical_region.xml
-         ## are found then these will also be automatically loaded and attached to the mesh
-         ## as boundary and cell ids respectively.
-         ## 
-         ## Note that if ids are attached to the mesh they must be used in the forms (dx 
-         ## and/or ds will not work without id information - dx(id) and/or ds(id))
+         ## Input the basename (i.e. basename.xdmf without the .xdmf) of a DOLFIN format mesh XDMF file. 
+         ## If mesh value collection files basename_facet_ids.xml and/or basename_cell_ids.xdmf are found
+         ## they will also be read and interpretted as boundary and cell ids.
          element file {
            filename
          },
