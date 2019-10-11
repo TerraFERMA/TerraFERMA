@@ -32,10 +32,10 @@ namespace buckettools
   // Various tools for converting between dolfin and petsc objects
   //*****************************************************************|************************************************************//
 
-  std::vector<uint> functionspace_dofs(const FunctionSpace_ptr functionspace,
-                                       const int &component);
+  std::vector<std::size_t> local_functionspace_dofs(const FunctionSpace_ptr functionspace,
+                                                    const int &component);
 
-  std::vector<uint> functionspace_dofs_values(const FunctionSpace_ptr functionspace,
+  std::vector<std::size_t> functionspace_dofs_values(const FunctionSpace_ptr functionspace,
                                               MeshFunction_size_t_ptr cellidmeshfunction=NULL,
                                               MeshFunction_size_t_ptr facetidmeshfunction=NULL,
                                               const std::vector<int>* components=NULL,
@@ -43,35 +43,35 @@ namespace buckettools
                                               const std::vector<int>* boundary_ids=NULL,
                                               PETScVector_ptr values=NULL, 
                                               const dolfin::Expression* value_exp=NULL, const double *value_const=NULL,
-                                              uint depth=0, uint exp_index=0);
+                                              std::size_t depth=0, std::size_t exp_index=0);
 
-  boost::unordered_set<uint> cell_dofs_values(const FunctionSpace_ptr functionspace,
+  std::unordered_set<std::size_t> cell_dofs_values(const FunctionSpace_ptr functionspace,
                                               MeshFunction_size_t_ptr cellidmeshfunction=NULL,
                                               const std::vector<int>* region_ids=NULL,
                                               PETScVector_ptr values=NULL, 
                                               const dolfin::Expression* value_exp=NULL, const double* value_const=NULL,
-                                              const uint &exp_index=0);
+                                              const std::size_t &exp_index=0);
 
-  boost::unordered_set<uint> facet_dofs_values(const FunctionSpace_ptr functionspace,
+  std::unordered_set<std::size_t> facet_dofs_values(const FunctionSpace_ptr functionspace,
                                                MeshFunction_size_t_ptr facetidmeshfunction=NULL,
                                                const std::vector<int>* boundary_ids=NULL,
                                                PETScVector_ptr values=NULL, 
                                                const dolfin::Expression* value_exp=NULL, const double* value_const=NULL,
-                                               const uint &exp_index=0);
+                                               const std::size_t &exp_index=0);
 
-  void restrict_indices(std::vector<uint> &indices, 
+  void restrict_indices(std::vector<std::size_t> &indices, 
                         const FunctionSpace_ptr functionspace,
-                        const std::vector<uint>* parent_indices=NULL, 
-                        const std::vector<uint>* sibling_indices=NULL);
+                        const std::vector<std::size_t>* parent_indices=NULL, 
+                        const std::vector<std::size_t>* sibling_indices=NULL);
 
   void restrict_values(PETScVector_ptr values, 
                        PETScVector_ptr tmp_values,
-                       const std::vector<uint> &indices);
+                       const std::vector<std::size_t> &indices);
 
   IS convert_vector_to_is(const MPI_Comm &comm,
-                          const std::vector<uint> &indices,
-                          const uint &parent_offset=0, 
-                          const std::vector<uint>* parent_indices=NULL);
+                          const std::vector<std::size_t> &indices,
+                          const std::size_t &parent_offset=0, 
+                          const std::vector<std::size_t>* parent_indices=NULL);
 
 }
 

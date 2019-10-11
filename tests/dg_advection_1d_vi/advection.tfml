@@ -46,7 +46,11 @@
       </coefficient>
     </timestep>
   </timestepping>
-  <global_parameters/>
+  <global_parameters>
+    <dolfin>
+      <ghost_mode name="shared_facet"/>
+    </dolfin>
+  </global_parameters>
   <system name="System">
     <mesh name="Mesh"/>
     <ufl_symbol name="global">

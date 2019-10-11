@@ -38,7 +38,7 @@ facet_type = "vertex"
 if "tetra" in msh.cells:
   highest_dim = 3
   cell_type = "tetra"
-  facet_type = "triangle" #?
+  facet_type = "triangle"
 elif "triangle" in msh.cells:
   highest_dim = 2
   cell_type = "triangle"

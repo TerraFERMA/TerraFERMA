@@ -35,7 +35,11 @@
       </point>
     </detectors>
   </io>
-  <global_parameters/>
+  <global_parameters>
+    <dolfin>
+      <ghost_mode name="none"/>
+    </dolfin>
+  </global_parameters>
   <system name="Regions">
     <mesh name="Mesh"/>
     <ufl_symbol name="global">
