@@ -30,14 +30,27 @@ def filter_simulations(simulation, length=[], parallelism="any", owner=[], tags=
     ltags = libspud.get_option("/tags").split( )
   except libspud.SpudKeyError:
     ltags = []
-  try:
-    lnprocs = libspud.get_option("/number_processors")
-  except libspud.SpudKeyError:
-    lnprocs = 1
+  lmaxprocs = 1
+  if parallelism != "any":
+    for s in range(libspud.option_count("/simulations/simulation")):
+      s_optionpath = "/simulations/simulation["+repr(s)+"]"
+      try:
+        lnprocs = libspud.get_option(s_optionpath+"/number_processors")
+      except libspud.SpudKeyError:
+        lnprocs = 1
+      maxpscale = 1
+      for p in range(libspud.option_count(s_optionpath+"/parameter_sweep/parameter")):
+        p_optionpath = s_optionpath+"/parameter_sweep/parameter["+repr(p)+"]"
+        try:
+          pscales = libspud.get_option(p_optionpath+"/process_scale")
+        except libspud.SpudKeyError:
+          pscales = [1]
+        maxpscale = max(maxpscale, max(pscales))
+      lmaxprocs = max(lmaxprocs, maxpscale*lnprocs)
   libspud.clear_options()
   
             # any parallelism is allowed or only parallel or only serial
-  include = (((parallelism=="any") or (parallelism=="parallel" and lnprocs>1) or (parallelism=="serial" and lnprocs==1)) and \
+  include = (((parallelism=="any") or (parallelism=="parallel" and lmaxprocs>1) or (parallelism=="serial" and lmaxprocs==1)) and \
             # no length restrictions or the length is in the list
             (len(length)==0 or llength in length) and \
             # no owner restrictions or the simulation owner is in the list 
@@ -115,6 +128,8 @@ if __name__ == "__main__":
                       help="removes all checkpoint directories from previous simulation runs")
   parser.add_argument("--parameters", action='store', metavar='name value', default=None, nargs='+', required=False, dest='params', type=str,
                       help="allows users to crudely override parameters in shmls")
+  parser.add_argument("--mpi-options", action='store', metavar='option', default=None, nargs='+', required=False, dest='mpioptions', type=str,
+                      help="allows the specification of mpi options for simulations run in parallel NOTE: options starting with a dash need to be quoted and prefixed with a space")
   parser.add_argument('-f', '--force', action='store_const', dest='force', const=True, default=False, 
                       required=False,
                       help='force rebuild(s)')
@@ -131,6 +146,10 @@ if __name__ == "__main__":
         params[args.params[i]].append(args.params[i+1])
       else:
         params[args.params[i]] = [args.params[i+1]]
+
+  extraoptions = {}
+  if args.mpioptions is not None:
+    extraoptions["mpi"] = args.mpioptions
 
   filenames = set()
   for f in args.filename:
@@ -184,7 +203,7 @@ if __name__ == "__main__":
   try:
     batch = simulations.SimulationHarnessBatch(filenames, os.path.realpath(__file__), curdir, \
                                                os.environ["TF_CMAKE_PATH"], nthreads=args.nthreads,
-                                               parameters=params)
+                                               parameters=params, extraoptions=extraoptions)
   except simulations.SimulationsErrorInitialization:
     print("Error while initializing the simulations.")
     sys.exit(1)

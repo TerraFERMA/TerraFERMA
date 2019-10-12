@@ -7,7 +7,7 @@
     <string_value lines="1">cwilson</string_value>
   </owner>
   <tags>
-    <string_value lines="1">not:branch:fenics-2019.1.0 not:branch:periodic-2019.1.0</string_value>
+    <string_value lines="1">not:petsc:3.11.3</string_value>
   </tags>
   <description>
     <string_value lines="1">A test of snes vi with dg advection.</string_value>
@@ -21,10 +21,10 @@
       <parameter_sweep>
         <parameter name="nprocs">
           <values>
-            <string_value lines="1">1</string_value>
+            <string_value lines="1">1 2 3</string_value>
           </values>
           <process_scale>
-            <integer_value rank="1" shape="1">1</integer_value>
+            <integer_value rank="1" shape="1">1 2 3</integer_value>
             <comment>higher number of processes requires the mvc_parallel branch</comment>
           </process_scale>
         </parameter>
@@ -38,7 +38,7 @@
           <required_output>
             <filenames name="meshfiles">
               <python>
-                <string_value type="code" language="python3" lines="20">meshfiles = ["interval"+ext for ext in [".xml", "_facet_region.xml", "_physical_region.xml"]]
+                <string_value type="code" language="python3" lines="20">meshfiles = ["interval"+ext for ext in [".xdmf", "_facet_ids.xdmf", "_cell_ids.xdmf", ".h5", "_facet_ids.h5", "_cell_ids.h5"]]
 </string_value>
               </python>
             </filenames>
@@ -48,7 +48,7 @@
               <string_value lines="1">gmsh -1 interval.geo</string_value>
             </command>
             <command name="Convert">
-              <string_value lines="1">dolfin-convert interval.msh interval.xml</string_value>
+              <string_value lines="1">tfgmsh2xdmf interval.msh interval.xdmf</string_value>
             </command>
           </commands>
         </run>

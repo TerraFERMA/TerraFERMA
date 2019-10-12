@@ -12,19 +12,40 @@
   <simulations>
     <simulation name="RegionIDs">
       <input_file>
-        <string_value lines="1" type="filename">region_ids.tfml</string_value>
+        <string_value type="filename" lines="1">region_ids.tfml</string_value>
       </input_file>
       <run_when name="input_changed_or_output_missing"/>
+      <parameter_sweep>
+        <parameter name="nprocs">
+          <values>
+            <string_value lines="1">1 2 3</string_value>
+          </values>
+          <process_scale>
+            <integer_value rank="1" shape="3">1 2 3</integer_value>
+          </process_scale>
+        </parameter>
+        <parameter name="ghost_mode">
+          <values>
+            <string_value lines="1">none shared_facet shared_vertex</string_value>
+          </values>
+          <update>
+            <string_value type="code" language="python3" lines="20">import libspud
+libspud.set_option_attribute("/global_parameters/dolfin/ghost_mode/name", ghost_mode)
+</string_value>
+            <single_build/>
+          </update>
+        </parameter>
+      </parameter_sweep>
       <dependencies>
         <run name="GMsh">
           <input_file>
-            <string_value lines="1" type="filename">region_id.geo</string_value>
+            <string_value type="filename" lines="1">region_id.geo</string_value>
           </input_file>
           <run_when name="input_changed_or_output_missing"/>
           <required_output>
             <filenames name="meshfiles">
               <python>
-                <string_value lines="20" type="code" language="python3">meshfiles = ["region_id"+ext for ext in [".xml", "_facet_region.xml", "_physical_region.xml"]]
+                <string_value type="code" language="python3" lines="20">meshfiles = ["region_id"+ext for ext in [".h5", "_facet_ids.h5", "_cell_ids.h5", ".xdmf", "_facet_ids.xdmf", "_cell_ids.xdmf"]]
 </string_value>
               </python>
             </filenames>
@@ -34,14 +55,14 @@
               <string_value lines="1">gmsh -2 region_id.geo -o region_id.msh</string_value>
             </command>
             <command name="Convert">
-              <string_value lines="1">dolfin-convert region_id.msh region_id.xml</string_value>
+              <string_value lines="1">tfgmsh2xdmf region_id.msh region_id.xdmf</string_value>
             </command>
           </commands>
         </run>
       </dependencies>
       <variables>
         <variable name="field_min">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 stat = parser("region_ids.stat")
 
@@ -49,7 +70,7 @@ field_min = stat["Regions"]["Field"]["min"]
 </string_value>
         </variable>
         <variable name="field_max">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 stat = parser("region_ids.stat")
 
@@ -57,7 +78,7 @@ field_max = stat["Regions"]["Field"]["max"]
 </string_value>
         </variable>
         <variable name="coeff_max">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 stat = parser("region_ids.stat")
 
@@ -65,7 +86,7 @@ coeff_max = stat["Regions"]["Coefficient"]["max"]
 </string_value>
         </variable>
         <variable name="coeff_min">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 stat = parser("region_ids.stat")
 
@@ -73,7 +94,7 @@ coeff_min = stat["Regions"]["Coefficient"]["min"]
 </string_value>
         </variable>
         <variable name="field_lower">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 det = parser("region_ids.det")
 
@@ -81,7 +102,7 @@ field_lower = det["Regions"]["Field"]["Lower"]
 </string_value>
         </variable>
         <variable name="field_lowermiddle">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 det = parser("region_ids.det")
 
@@ -89,7 +110,7 @@ field_lowermiddle = det["Regions"]["Field"]["LowerMiddle"]
 </string_value>
         </variable>
         <variable name="field_uppermiddle">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 det = parser("region_ids.det")
 
@@ -97,7 +118,7 @@ field_uppermiddle = det["Regions"]["Field"]["UpperMiddle"]
 </string_value>
         </variable>
         <variable name="field_upper">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 det = parser("region_ids.det")
 
@@ -105,7 +126,7 @@ field_upper = det["Regions"]["Field"]["Upper"]
 </string_value>
         </variable>
         <variable name="coeff_lower">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 det = parser("region_ids.det")
 
@@ -113,7 +134,7 @@ coeff_lower = det["Regions"]["Coefficient"]["Lower"]
 </string_value>
         </variable>
         <variable name="coeff_lowermiddle">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 det = parser("region_ids.det")
 
@@ -121,7 +142,7 @@ coeff_lowermiddle = det["Regions"]["Coefficient"]["LowerMiddle"]
 </string_value>
         </variable>
         <variable name="coeff_uppermiddle">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 det = parser("region_ids.det")
 
@@ -129,7 +150,7 @@ coeff_uppermiddle = det["Regions"]["Coefficient"]["UpperMiddle"]
 </string_value>
         </variable>
         <variable name="coeff_upper">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 det = parser("region_ids.det")
 
@@ -142,62 +163,62 @@ coeff_upper = det["Regions"]["Coefficient"]["Upper"]
   <tests>
     <test name="field_min">
       <string_value lines="20" type="code" language="python3">import numpy
-assert numpy.all(field_min==32.0)
+assert numpy.all(abs(numpy.array(field_min)-32.)/32. &lt; 1.e-12)
 </string_value>
     </test>
     <test name="field_max">
       <string_value lines="20" type="code" language="python3">import numpy
-assert numpy.all(field_max==35.0)
+assert numpy.all(abs(numpy.array(field_max)-35.0)/35. &lt; 1.e-12)
 </string_value>
     </test>
     <test name="coeff_min">
       <string_value lines="20" type="code" language="python3">import numpy
-assert numpy.all(coeff_min==32.0)
+assert numpy.all(abs(numpy.array(coeff_min)-32.0)/32. &lt; 1.e-12)
 </string_value>
     </test>
     <test name="coeff_max">
       <string_value lines="20" type="code" language="python3">import numpy
-assert numpy.all(coeff_max==35.0)
+assert numpy.all(abs(numpy.array(coeff_max)-35.0)/35. &lt; 1.e-12)
 </string_value>
     </test>
     <test name="field_lower">
       <string_value lines="20" type="code" language="python3">import numpy
-assert numpy.all(field_lower==35.0)
+assert numpy.all(abs(numpy.array(field_lower)-35.0)/35.&lt;1.e-12)
 </string_value>
     </test>
     <test name="field_lowermiddle">
       <string_value lines="20" type="code" language="python3">import numpy
-assert numpy.all(field_lowermiddle==34.0)
+assert numpy.all(abs(numpy.array(field_lowermiddle)-34.0)/34. &lt; 1.e-12)
 </string_value>
     </test>
     <test name="field_uppermiddle">
       <string_value lines="20" type="code" language="python3">import numpy
-assert numpy.all(field_uppermiddle==33.0)
+assert numpy.all(abs(numpy.array(field_uppermiddle)-33.0)/33. &lt; 1.e-12)
 </string_value>
     </test>
     <test name="field_upper">
       <string_value lines="20" type="code" language="python3">import numpy
-assert numpy.all(field_upper==32.0)
+assert numpy.all(abs(numpy.array(field_upper)-32.0)/32. &lt; 1.e-12)
 </string_value>
     </test>
     <test name="coeff_lower">
       <string_value lines="20" type="code" language="python3">import numpy
-assert numpy.all(coeff_lower==35.0)
+assert numpy.all(abs(numpy.array(coeff_lower)-35.0)/35. &lt; 1.e-12)
 </string_value>
     </test>
     <test name="coeff_lowermiddle">
       <string_value lines="20" type="code" language="python3">import numpy
-assert numpy.all(coeff_lowermiddle==34.0)
+assert numpy.all(abs(numpy.array(coeff_lowermiddle)-34.0)/34. &lt; 1.e-12)
 </string_value>
     </test>
     <test name="coeff_uppermiddle">
       <string_value lines="20" type="code" language="python3">import numpy
-assert numpy.all(coeff_uppermiddle==33.0)
+assert numpy.all(abs(numpy.array(coeff_uppermiddle)-33.0)/33. &lt; 1.e-12)
 </string_value>
     </test>
     <test name="coeff_upper">
       <string_value lines="20" type="code" language="python3">import numpy
-assert numpy.all(coeff_upper==32.0)
+assert numpy.all(abs(numpy.array(coeff_upper)-32.0)/32. &lt; 1.e-12)
 </string_value>
     </test>
   </tests>

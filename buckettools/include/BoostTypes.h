@@ -73,6 +73,7 @@ namespace buckettools {
   typedef std::shared_ptr< dolfin::Mesh >                         Mesh_ptr;
   typedef std::shared_ptr< const dolfin::Mesh >                   const_Mesh_ptr;
   typedef std::shared_ptr< dolfin::MeshFunction< std::size_t > >  MeshFunction_size_t_ptr;
+  typedef std::shared_ptr< dolfin::MeshValueCollection< std::size_t > >  MeshValueCollection_size_t_ptr;
   typedef std::shared_ptr< dolfin::FunctionSpace >                FunctionSpace_ptr;
   typedef std::shared_ptr< dolfin::Function >                     Function_ptr;
   typedef std::shared_ptr< const dolfin::Function >               const_Function_ptr;

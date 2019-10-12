@@ -124,7 +124,7 @@ else(HAVE_GIT)
     set(GIT_BRANCH "")
 endif(HAVE_GIT)
 
-set(EXCLUDE_TAGS "not:branch:${GIT_BRANCH} not:petsc:${PETSC_VERSION} not:petsc:${PETSC_VERSION_MAJOR}.${PETSC_VERSION_MINOR}")
+set(EXCLUDE_TAGS "not:branch:${GIT_BRANCH} not:petsc:${PETSC_VERSION}")
 
 add_subdirectory(tests)
 add_subdirectory(tutorials)

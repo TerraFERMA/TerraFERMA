@@ -91,7 +91,6 @@ add_subdirectory(${BUCKETTOOLS_SHARED_DIRS}/buckettools/ufc "buckettools_ufc")
 
 add_executable(${EXECUTABLE} ${PROJECT_SOURCE_DIR}/main.cpp)
 
-message(INFO "BUCKETTOOLS_LIBRARIES: ${BUCKETTOOLS_LIBRARIES}")
 target_link_libraries(${EXECUTABLE} dolfin buckettools_cpp buckettools_ufc)
 
 add_custom_target(

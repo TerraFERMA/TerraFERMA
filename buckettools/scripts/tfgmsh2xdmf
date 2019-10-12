@@ -1,0 +1,120 @@
+#!/usr/bin/env python
+
+# Copyright (C) 2013 Columbia University in the City of New York and others.
+#
+# Please see the AUTHORS file in the main source directory for a full list
+# of contributors.
+#
+# This file is part of TerraFERMA.
+#
+# TerraFERMA is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# TerraFERMA is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
+
+import meshio
+import sys
+import numpy as np
+import os
+#import dolfin
+#import itertools
+
+filename = sys.argv[1]
+basename, ext = os.path.splitext(filename)
+
+msh = meshio.read(filename)
+
+highest_dim = 1
+cell_type = "line"
+facet_type = "vertex"
+if "tetra" in msh.cells:
+  highest_dim = 3
+  cell_type = "tetra"
+  facet_type = "triangle"
+elif "triangle" in msh.cells:
+  highest_dim = 2
+  cell_type = "triangle"
+  facet_type = "line"
+
+# remove vertices not mentioned in cell_type cells
+orphaned_vertices = np.setdiff1d(np.arange(len(msh.points)), msh.cells[cell_type].flatten())
+vertices = np.delete(msh.points, orphaned_vertices, axis=0)[:,:highest_dim]
+
+# then adjust any cells pointing at now misindexed vertices
+
+def fix_orphaned_points(cells, orphaned_vertices):
+  cells_flat = cells.flatten()
+  diff = np.zeros(len(cells_flat), dtype=cells_flat.dtype)
+  for orphan in orphaned_vertices:
+    diff[np.argwhere(cells_flat > orphan)] += 1
+  cells_flat -= diff
+  return cells_flat.reshape(cells.shape)
+
+cells = fix_orphaned_points(msh.cells[cell_type], orphaned_vertices)
+
+meshio.write(basename+'.xdmf', meshio.Mesh(points=vertices, cells={cell_type:cells}))
+
+if cell_type in msh.cell_data and 'gmsh:physical' in msh.cell_data[cell_type]:
+  cell_regions = msh.cell_data[cell_type]['gmsh:physical']
+  if len(cell_regions) > 0:
+    meshio.write(basename+'_cell_ids.xdmf', meshio.Mesh(points=vertices, cells={cell_type:cells}, \
+                                                        cell_data={cell_type:{'cell_ids': cell_regions}}))
+
+# for facets first find facets to retain
+if facet_type in msh.cell_data and 'gmsh:physical' in msh.cell_data[facet_type]:
+  facet_inds = [np.all(np.isin(facet, orphaned_vertices, assume_unique=True, invert=True)) for facet in msh.cells[facet_type]]
+  facet_regions = msh.cell_data[facet_type]['gmsh:physical'][facet_inds]
+  if len(facet_regions) > 0:
+    # then reindex the remaining facets
+    facets = fix_orphaned_points(msh.cells[facet_type][facet_inds], orphaned_vertices)
+    meshio.write(basename+'_facet_ids.xdmf', meshio.Mesh(points=vertices, cells={facet_type:facets}, \
+                                                         cell_data={facet_type:{'facet_ids': facet_regions}}))
+
+
+#mesh = dolfin.Mesh()
+#mesh_editor = dolfin.MeshEditor()
+#mesh_editor.open(mesh, cell_type, highest_dim, highest_dim)
+#mesh_editor.init_vertices_global(len(vertices), len(vertices))
+#for i, vertex in enumerate(vertices):
+#  mesh_editor.add_vertex_global(i, i, vertex[:highest_dim])
+#mesh_editor.init_cells_global(len(msh.cells[cell_type]), len(msh.cells[cell_type]))
+#for i, cell in enumerate(cells):
+#  mesh_editor.add_cell(i, cell)
+#mesh_editor.close()
+#
+#mesh_domains = mesh.domains()
+#
+#cell_regions = msh.cell_data[cell_type]['gmsh:physical']
+#if len(cell_regions) > 0:
+#  cell_mvc = dolfin.MeshValueCollection('size_t', mesh, highest_dim)
+#  for cell, cell_region in enumerate(cell_regions):
+#    cell_mvc.set_value(cell, cell_region)
+#    mesh_domains.set_marker((cell, 0), cell_region)
+#
+#
+## for facets first find facets to retain
+#facet_inds = [np.all(np.isin(facet, orphaned_vertices, assume_unique=True, invert=True)) for facet in msh.cells[facet_type]]
+#facet_regions = msh.cell_data[facet_type]['gmsh:physical'][facet_inds]
+#if len(facet_regions) > 0:
+#  facet_mvc = dolfin.MeshValueCollection('size_t', mesh, highest_dim-1)
+#  # then reindex the remaining facets
+#  facets = fix_orphaned_points(msh.cells[facet_type][facet_inds], orphaned_vertices)
+#  facet_regions_by_node = {tuple(sorted(facets[i])) : facet_region \
+#                           for i, facet_region in enumerate(facet_regions)}
+#
+#  for cell, cell_vertices in enumerate(cells): 
+#    for i, facet_nodes in enumerate(itertools.combinations(sorted(cell_vertices, reverse=(highest_dim>1)), highest_dim)): 
+#      print(cell, facet_regions_by_node.get(tuple(sorted(facet_nodes)), 0), i)
+#      facet_mvc.set_value(cell, i, facet_regions_by_node.get(tuple(sorted(facet_nodes)), 0))
+#      mesh_domains.set_marker((cell, i),facet_regions_by_node.get(tuple(sorted(facet_nodes)), 0))
+#
+
+
