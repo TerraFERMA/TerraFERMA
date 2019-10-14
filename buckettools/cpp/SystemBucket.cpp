@@ -955,9 +955,8 @@ void SystemBucket::checkpoint(const double_ptr time)
 
     buffer.str(""); buffer << (*bucket()).output_basename() << "_" 
                            << name() << "_" 
-                           << (*bucket()).checkpoint_count() << ".xml";
-    dolfin::File sysfile(buffer.str());
-    sysfile << *function;
+                           << (*bucket()).checkpoint_count() << ".xdmf";
+    dolfin::XDMFFile((*mesh()).mpi_comm(), buffer.str()).write_checkpoint(*function, name(), (*bucket()).current_time());
 
   }
 

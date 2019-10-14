@@ -27,11 +27,11 @@
             <string_value lines="20" type="code" language="python3">import libspud
 
 # we just do the following to test tfsimulationharness functionality...
-libspud.set_option("/system::SNESProjection/field::Field1/type/rank/initial_condition/file", "projection_checkpoint_SNESProjection.xml")
-libspud.set_option("/system::SNESProjection/field::Field2/type/rank/initial_condition/file", "projection_checkpoint_SNESProjection.xml")
+libspud.set_option("/system::SNESProjection/field::Field1/type/rank/initial_condition/file", "projection_checkpoint_SNESProjection")
+libspud.set_option("/system::SNESProjection/field::Field2/type/rank/initial_condition/file", "projection_checkpoint_SNESProjection")
 
-libspud.set_option("/system::PicardProjection/field::Field1/type/rank/initial_condition/file", "projection_checkpoint_PicardProjection.xml")
-libspud.set_option("/system::PicardProjection/field::Field2/type/rank/initial_condition/file", "projection_checkpoint_PicardProjection.xml")
+libspud.set_option("/system::PicardProjection/field::Field1/type/rank/initial_condition/file", "projection_checkpoint_PicardProjection")
+libspud.set_option("/system::PicardProjection/field::Field2/type/rank/initial_condition/file", "projection_checkpoint_PicardProjection")
 </string_value>
             <single_build/>
           </update>
@@ -53,11 +53,11 @@ libspud.set_option("/system::PicardProjection/field::Field2/type/rank/initial_co
 libspud.set_option("/system::SNESProjection/nonlinear_solver::SimpleSolver/type::SNES/linear_solver/iterative_method::cg/max_iterations", 100)
 
 # we just do the following to test tfsimulationharness functionality...
-libspud.set_option("/system::SNESProjection/field::Field1/type/rank/initial_condition/file", "projection_SNESProjection.xml")
-libspud.set_option("/system::SNESProjection/field::Field2/type/rank/initial_condition/file", "projection_SNESProjection.xml")
+libspud.set_option("/system::SNESProjection/field::Field1/type/rank/initial_condition/file", "projection_SNESProjection")
+libspud.set_option("/system::SNESProjection/field::Field2/type/rank/initial_condition/file", "projection_SNESProjection")
 
-libspud.set_option("/system::PicardProjection/field::Field1/type/rank/initial_condition/file", "projection_PicardProjection.xml")
-libspud.set_option("/system::PicardProjection/field::Field2/type/rank/initial_condition/file", "projection_PicardProjection.xml")
+libspud.set_option("/system::PicardProjection/field::Field1/type/rank/initial_condition/file", "projection_PicardProjection")
+libspud.set_option("/system::PicardProjection/field::Field2/type/rank/initial_condition/file", "projection_PicardProjection")
 </string_value>
                 <single_build/>
               </update>
@@ -67,12 +67,14 @@ libspud.set_option("/system::PicardProjection/field::Field2/type/rank/initial_co
             </parameter>
           </parameter_sweep>
           <required_output>
-            <filenames name="xmls">
+            <filenames name="ics">
               <python>
-                <string_value lines="20" type="code" language="python3">xmls = \
+                <string_value lines="20" type="code" language="python3">ics = \
   {
-  "projection_checkpoint_PicardProjection_0.xml":"projection_checkpoint_PicardProjection.xml",
-  "projection_checkpoint_SNESProjection_0.xml":"projection_checkpoint_SNESProjection.xml"
+  "projection_checkpoint_PicardProjection_0.xdmf":"projection_checkpoint_PicardProjection.xdmf",
+  "projection_checkpoint_PicardProjection_0.h5":"projection_checkpoint_PicardProjection.h5",
+  "projection_checkpoint_SNESProjection_0.xdmf":"projection_checkpoint_SNESProjection.xdmf",
+  "projection_checkpoint_SNESProjection_0.h5":"projection_checkpoint_SNESProjection.h5"
   }
 </string_value>
               </python>
@@ -98,12 +100,14 @@ libspud.set_option("/system::PicardProjection/field::Field2/type/rank/initial_co
                 </parameter>
               </parameter_sweep>
               <required_output>
-                <filenames name="xmls">
+                <filenames name="ics">
                   <python>
-                    <string_value lines="20" type="code" language="python3">xmls = \
+                    <string_value lines="20" type="code" language="python3">ics = \
   { 
-  "projection_PicardProjection_0.xml":"projection_PicardProjection.xml",
-  "projection_SNESProjection_0.xml":"projection_SNESProjection.xml"
+  "projection_PicardProjection_0.xdmf":"projection_PicardProjection.xdmf",
+  "projection_PicardProjection_0.h5":"projection_PicardProjection.h5",
+  "projection_SNESProjection_0.xdmf":"projection_SNESProjection.xdmf",
+  "projection_SNESProjection_0.h5":"projection_SNESProjection.h5"
   }
 </string_value>
                   </python>

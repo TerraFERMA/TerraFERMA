@@ -1697,7 +1697,7 @@ void SpudFunctionBucket::checkpoint_options_()
 
   namebuffer.str(""); namebuffer << (*(*system()).bucket()).output_basename() << "_" 
                                  << (*system()).name() << "_" 
-                                 << (*(*system()).bucket()).checkpoint_count() << ".xml";
+                                 << (*(*system()).bucket()).checkpoint_count() << ".xdmf";
   buffer.str(""); buffer << optionpath()
                                   << "/type[0]/rank[0]/initial_condition";
   int nics = Spud::option_count(buffer.str());

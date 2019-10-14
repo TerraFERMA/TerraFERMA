@@ -766,7 +766,7 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
       else
       {
         tf_err("Could not find cell id xdmf file that is required for specified cell partitioning.",
-               "%s not found.", filename.str());
+               "%s not found.", filename.str().c_str());
 
       }
 
