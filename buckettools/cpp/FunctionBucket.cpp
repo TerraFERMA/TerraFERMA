@@ -423,6 +423,35 @@ const bool FunctionBucket::symmetric() const
   return symmetric;
 }
 
+
+//*******************************************************************|************************************************************//
+// apply the initial condition expression or file to this functionbucket
+//*******************************************************************|************************************************************//
+void FunctionBucket::apply_ic(const std::string &function_type)
+{
+  GenericFunction_ptr u = genericfunction_ptr(function_type);
+  
+  Function_ptr uf = std::dynamic_pointer_cast<dolfin::Function>(u);
+  if (uf)
+  {
+    std::shared_ptr<dolfin::Function> tmpfunction( new dolfin::Function(localfunctionspace()) );
+
+    if (icexpression_)
+    {
+      (*tmpfunction).interpolate(*icexpression_);
+    }
+    else
+    {
+      assert(!icfilename_.empty());
+      std::stringstream buffer;
+      buffer.str(""); buffer << icfilename_ << ".xdmf";
+      dolfin::XDMFFile((*(*system()).mesh()).mpi_comm(), buffer.str()).read_checkpoint(*tmpfunction, name());
+    }
+    (*tosystem_).assign(uf, tmpfunction);
+  }
+
+}
+
 //*******************************************************************|************************************************************//
 // refresh this functionbucket if it "needs" it
 //*******************************************************************|************************************************************//
@@ -911,9 +940,26 @@ void FunctionBucket::fill_is_()
 //*******************************************************************|************************************************************//
 // checkpoint the functionbucket
 //*******************************************************************|************************************************************//
-void FunctionBucket::checkpoint()
+void FunctionBucket::checkpoint(const double_ptr time)
 {
-  checkpoint_options_();
+  GenericFunction_ptr u = genericfunction_ptr(time);
+  
+  const_Function_ptr uf = std::dynamic_pointer_cast<const dolfin::Function>(u);
+  if (uf)
+  {
+    std::shared_ptr<dolfin::Function> tmpfunction( new dolfin::Function(localfunctionspace()) );
+    (*fromsystem_).assign(tmpfunction, uf);
+
+    std::stringstream buffer;
+    buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
+                           << (*system()).name() << "_" 
+                           << (*(*system()).bucket()).checkpoint_count() << ".xdmf";
+    dolfin::XDMFFile((*(*system()).mesh()).mpi_comm(), buffer.str()).write_checkpoint(*tmpfunction, name(),
+                                                                                      (*(*system()).bucket()).current_time(),
+                                                                                      dolfin::XDMFFile::default_encoding,
+                                                                                      index()!=0);
+    checkpoint_options_();
+  }
 }
 
 //*******************************************************************|************************************************************//

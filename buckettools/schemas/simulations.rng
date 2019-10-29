@@ -26,6 +26,7 @@
     always included when using with spud package:
   -->
   <include href="spud_base.rng"/>
+  <include href="spud_extension.rng"/>
   <start>
     <element name="harness_options">
       <a:documentation>The root node of the options dictionary for the TerraFERMA simulation harness.
@@ -104,7 +105,7 @@ The test should end with an assert statement which will determine if the test pa
               <attribute name="name">
                 <data type="string"/>
               </attribute>
-              <ref name="python_code"/>
+              <ref name="python3_code"/>
             </element>
           </oneOrMore>
           <ref name="comment"/>
@@ -173,7 +174,7 @@ the option spud_file below.</a:documentation>
   <define name="filenames">
     <choice>
       <element name="string">
-        <a:documentation>Enter one or multiple filenames as a comma, semicolon or space separated list.</a:documentation>
+        <a:documentation>Enter one or multiple filenames as a comma, semicolon, space or newline separated list.</a:documentation>
         <ref name="filename"/>
       </element>
       <element name="python">
@@ -193,7 +194,7 @@ appropriately within the code.
 Additionally, the full path to the input file is available as input_filename.
 
 For more advanced usage the Run or Simulation class object is available as _self.</a:documentation>
-        <ref name="python_code"/>
+        <ref name="python3_code"/>
       </element>
     </choice>
   </define>
@@ -268,7 +269,7 @@ python code describing how the parameter should be updated.</a:documentation>
             <data type="string"/>
           </attribute>
           <element name="values">
-            <a:documentation>A comma, semicolon or space separated list of the parameter values.
+            <a:documentation>A comma, semicolon, space or newline separated list of the parameter values.
 
 The values are input as a string to allow them to be used to uniquely create a folder structure.
 The update python code before should convert them to appropriate types within the input file.</a:documentation>
@@ -288,7 +289,7 @@ appropriately within the code.
 Additionally, the full path to the input file is available as input_filename.
 
 For more advanced usage the Run or Simulation class object is available as _self.</a:documentation>
-              <ref name="python_code"/>
+              <ref name="python3_code"/>
               <optional>
                 <element name="single_build">
                   <a:documentation>Turn this option on if updating this parameter does not require a rebuild.  
@@ -336,7 +337,7 @@ python code describing how the parameter should be updated.</a:documentation>
             <data type="string"/>
           </attribute>
           <element name="values">
-            <a:documentation>A comma, semicolon or space separated list of the parameter values.
+            <a:documentation>A comma, semicolon, space or newline separated list of the parameter values.
 
 The values are input as a string to allow them to be used to uniquely create a folder structure.
 The update python code before should convert them to appropriate types within the input file.</a:documentation>
@@ -358,7 +359,7 @@ the contents of the input file are available as a string as input_file.  The inp
 modified - it is what will be written back to file.
 
 For more advanced usage the Run or Simulation class object is available as _self.</a:documentation>
-              <ref name="python_code"/>
+              <ref name="python3_code"/>
             </element>
           </optional>
           <ref name="comment"/>
@@ -425,7 +426,7 @@ If no code is provided the parameter will not be modified at this level
 The values of all the parameters for this simulation will be available to this code using 
 the names given to the parameters above.  They will be formatted as strings and should be converted 
 appropriately within the code.</a:documentation>
-            <ref name="python_code"/>
+            <ref name="python3_code"/>
           </element>
           <ref name="comment"/>
         </element>
@@ -452,7 +453,7 @@ For more advanced usage the Run or Simulation class object is available as _self
           <attribute name="name">
             <data type="string"/>
           </attribute>
-          <ref name="python_code"/>
+          <ref name="python3_code"/>
         </element>
       </oneOrMore>
       <ref name="comment"/>
@@ -612,7 +613,7 @@ the contents of the input file are available as a string as input_file.  The inp
 modified - it is what will be written back to file.
 
 For more advanced usage the Run or Simulation class object is available as _self.</a:documentation>
-              <ref name="python_code"/>
+              <ref name="python3_code"/>
             </element>
           </optional>
           <ref name="comment"/>
@@ -660,7 +661,7 @@ appropriately within the code.
 Additionally, the full path to the input file is available as input_filename.
 
 For more advanced usage the Run or Simulation class object is available as _self.</a:documentation>
-              <ref name="python_code"/>
+              <ref name="python3_code"/>
               <optional>
                 <element name="single_build">
                   <a:documentation>Turn this option on if updating this parameter does not require a rebuild.  

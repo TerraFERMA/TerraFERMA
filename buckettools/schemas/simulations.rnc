@@ -21,6 +21,7 @@
 # ALL dependencies need to be specified here
 # always included when using with spud package:
 include "spud_base.rnc"
+include "spud_extension.rnc"
 
 start =
    (
