@@ -199,9 +199,6 @@ namespace buckettools
     const Expression_ptr icexpression() const                        // return a constant (std shared) pointer to the initial
     { return icexpression_; }                                        // condition expression for this function
 
-    const Function_ptr localfunction() const                         // return a constant (std shared) pointer to the temporary
-    { return localfunction_; }                                       // local function
-
     const std::string change_normtype() const                        // return the change norm type
     { return change_normtype_; }
 
@@ -325,8 +322,6 @@ namespace buckettools
     Expression_ptr icexpression_;                                    // (std shared) pointer to an expression describing the initial condition
 
     std::string icfilename_;                                         // filename of checkpoint
-
-    Function_ptr localfunction_;                                     // (std shared) pointer to a local temporary function (used for checkpointing etc.)
 
     std::vector< std::size_t > shape_;                               // shape of the function
 
