@@ -71,7 +71,7 @@ class FunctionalBucket:
           ufl.append(coeff.constant_ufl(suffix=suffix))
       else:
         if coeff.type == "Function":
-          print "coefficient functionspaces not output for special coefficient functions"
+          print("coefficient functionspaces not output for special coefficient functions")
           sys.exit(1)
         ufl += coeff.element_ufl()
         ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
@@ -126,7 +126,7 @@ class FunctionalBucket:
 
     filename   = self.namespace()+".ufl"
     if suffix: filename += suffix 
-    filehandle = file(filename, 'w')
+    filehandle = open(filename, 'w')
     filehandle.writelines(ufl)
     filehandle.close()
 
@@ -168,9 +168,9 @@ class FunctionalBucket:
     uflsymbols = self.system.bucket.list_globaluflsymbols()
     if self.symbol in uflsymbols:
       stat = 1
-      print "ERROR functional ufl_symbol %s from functional %s::%s repeated in global ufl_symbols! Change one of its instances."%(self.symbol, self.system.name, self.name)
+      print("ERROR functional ufl_symbol %s from functional %s::%s repeated in global ufl_symbols! Change one of its instances."%(self.symbol, self.system.name, self.name))
     repeated_auto_uflsymbols = set([s for s in uflsymbols for a in uflsymbol_suffixes() if s+a == self.symbol and a != ''])
     if len(repeated_auto_uflsymbols) > 0: stat = 1
-    for s in repeated_auto_uflsymbols: print "ERROR functional ufl_symbol %s from functional %s::%s matches ufl_symbol generated from global ufl_symbol %s! Change functional ufl_symbol %s to avoid reserved endings."%(self.symbol, self.system.name, self.name, s, self.symbol)
+    for s in repeated_auto_uflsymbols: print("ERROR functional ufl_symbol %s from functional %s::%s matches ufl_symbol generated from global ufl_symbol %s! Change functional ufl_symbol %s to avoid reserved endings."%(self.symbol, self.system.name, self.name, s, self.symbol))
     return stat
 

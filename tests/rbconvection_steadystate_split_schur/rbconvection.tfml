@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -124,24 +124,28 @@
     <nonlinear_solver name="Solver">
       <type name="Picard">
         <preamble>
-          <string_value lines="20" type="code" language="python">rT = (T_t*inner(v_i,grad(T_a)) + inner(grad(T_t),grad(T_a)) - T_t*f)*dx
+          <string_value lines="20" type="code" language="python3">rT = (T_t*inner(v_i,grad(T_a)) + inner(grad(T_t),grad(T_a)) - T_t*f)*dx
 
-r = rT</string_value>
+r = rT
+</string_value>
         </preamble>
         <form name="Bilinear" rank="1">
-          <string_value lines="20" type="code" language="python">a = lhs(r)</string_value>
+          <string_value lines="20" type="code" language="python3">a = lhs(r)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
         <form name="Linear" rank="0">
-          <string_value lines="20" type="code" language="python">L = rhs(r)</string_value>
+          <string_value lines="20" type="code" language="python3">L = rhs(r)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">L</string_value>
           </ufl_symbol>
         </form>
         <form name="Residual" rank="0">
-          <string_value lines="20" type="code" language="python">res = action(a, uT_i) - L</string_value>
+          <string_value lines="20" type="code" language="python3">res = action(a, uT_i) - L
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">res</string_value>
           </ufl_symbol>
@@ -170,7 +174,8 @@ r = rT</string_value>
       <solve name="in_timeloop"/>
     </nonlinear_solver>
     <functional name="TemperatureTopSurfaceIntegral">
-      <string_value lines="20" type="code" language="python">int = grad(T)[1]*ds(4)</string_value>
+      <string_value lines="20" type="code" language="python3">int = grad(T)[1]*ds(4)
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -299,27 +304,31 @@ r = rT</string_value>
     <nonlinear_solver name="Solver">
       <type name="Picard">
         <preamble>
-          <string_value lines="20" type="code" language="python">Ra = 1.e4
+          <string_value lines="20" type="code" language="python3">Ra = 1.e4
 
 rv = (inner(sym(grad(v_t)), 2*sym(grad(v_a))) - div(v_t)*p_a - Ra*T_i*v_t[1])*dx
 rp = p_t*div(v_a)*dx
 
-r = rv + rp</string_value>
+r = rv + rp
+</string_value>
         </preamble>
         <form name="Bilinear" rank="1">
-          <string_value lines="20" type="code" language="python">a = lhs(r)</string_value>
+          <string_value lines="20" type="code" language="python3">a = lhs(r)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
         <form name="Linear" rank="0">
-          <string_value lines="20" type="code" language="python">L = rhs(r)</string_value>
+          <string_value lines="20" type="code" language="python3">L = rhs(r)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">L</string_value>
           </ufl_symbol>
         </form>
         <form name="Residual" rank="0">
-          <string_value lines="20" type="code" language="python">res = action(a, us_i) - L</string_value>
+          <string_value lines="20" type="code" language="python3">res = action(a, us_i) - L
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">res</string_value>
           </ufl_symbol>
@@ -376,7 +385,7 @@ r = rv + rp</string_value>
               <linear_solver>
                 <iterative_method name="cg">
                   <relative_error>
-                    <real_value rank="0">1.e-10</real_value>
+                    <real_value rank="0">1e-6</real_value>
                   </relative_error>
                   <max_iterations>
                     <integer_value rank="0">1000</integer_value>
@@ -416,7 +425,8 @@ r = rv + rp</string_value>
       <solve name="in_timeloop"/>
     </nonlinear_solver>
     <functional name="VelocityL2Norm">
-      <string_value lines="20" type="code" language="python">int = inner(v,v)*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = inner(v,v)*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -483,24 +493,28 @@ r = rv + rp</string_value>
     <nonlinear_solver name="Solver">
       <type name="Picard">
         <preamble>
-          <string_value lines="20" type="code" language="python">rT = (T2_t*inner(v2_i,grad(T2_a)) + inner(grad(T2_t),grad(T2_a)) - T2_t*f)*dx
+          <string_value lines="20" type="code" language="python3">rT = (T2_t*inner(v2_i,grad(T2_a)) + inner(grad(T2_t),grad(T2_a)) - T2_t*f)*dx
 
-r = rT</string_value>
+r = rT
+</string_value>
         </preamble>
         <form name="Bilinear" rank="1">
-          <string_value lines="20" type="code" language="python">a = lhs(r)</string_value>
+          <string_value lines="20" type="code" language="python3">a = lhs(r)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
         <form name="Linear" rank="0">
-          <string_value lines="20" type="code" language="python">L = rhs(r)</string_value>
+          <string_value lines="20" type="code" language="python3">L = rhs(r)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">L</string_value>
           </ufl_symbol>
         </form>
         <form name="Residual" rank="0">
-          <string_value lines="20" type="code" language="python">res = action(a, uT2_i) - L</string_value>
+          <string_value lines="20" type="code" language="python3">res = action(a, uT2_i) - L
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">res</string_value>
           </ufl_symbol>
@@ -529,7 +543,8 @@ r = rT</string_value>
       <solve name="in_timeloop"/>
     </nonlinear_solver>
     <functional name="TemperatureTopSurfaceIntegral">
-      <string_value lines="20" type="code" language="python">int = grad(T2)[1]*ds(4)</string_value>
+      <string_value lines="20" type="code" language="python3">int = grad(T2)[1]*ds(4)
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -658,27 +673,31 @@ r = rT</string_value>
     <nonlinear_solver name="Solver">
       <type name="Picard">
         <preamble>
-          <string_value lines="20" type="code" language="python">Ra = 1.e4
+          <string_value lines="20" type="code" language="python3">Ra = 1.e4
 
 rv = (inner(sym(grad(v2_t)), 2*sym(grad(v2_a))) - div(v2_t)*p2_a - Ra*T2_i*v2_t[1])*dx
 rp = p2_t*div(v2_a)*dx
 
-r = rv + rp</string_value>
+r = rv + rp
+</string_value>
         </preamble>
         <form name="Bilinear" rank="1">
-          <string_value lines="20" type="code" language="python">a = lhs(r)</string_value>
+          <string_value lines="20" type="code" language="python3">a = lhs(r)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
         <form name="Linear" rank="0">
-          <string_value lines="20" type="code" language="python">L = rhs(r)</string_value>
+          <string_value lines="20" type="code" language="python3">L = rhs(r)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">L</string_value>
           </ufl_symbol>
         </form>
         <form name="Residual" rank="0">
-          <string_value lines="20" type="code" language="python">res = action(a, us2_i) - L</string_value>
+          <string_value lines="20" type="code" language="python3">res = action(a, us2_i) - L
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">res</string_value>
           </ufl_symbol>
@@ -775,7 +794,8 @@ r = rv + rp</string_value>
       <solve name="in_timeloop"/>
     </nonlinear_solver>
     <functional name="VelocityL2Norm">
-      <string_value lines="20" type="code" language="python">int = inner(v2,v2)*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = inner(v2,v2)*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -842,24 +862,28 @@ r = rv + rp</string_value>
     <nonlinear_solver name="Solver">
       <type name="Picard">
         <preamble>
-          <string_value lines="20" type="code" language="python">rT = (T3_t*inner(v3_i,grad(T3_a)) + inner(grad(T3_t),grad(T3_a)) - T3_t*f)*dx
+          <string_value lines="20" type="code" language="python3">rT = (T3_t*inner(v3_i,grad(T3_a)) + inner(grad(T3_t),grad(T3_a)) - T3_t*f)*dx
 
-r = rT</string_value>
+r = rT
+</string_value>
         </preamble>
         <form name="Bilinear" rank="1">
-          <string_value lines="20" type="code" language="python">a = lhs(r)</string_value>
+          <string_value lines="20" type="code" language="python3">a = lhs(r)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
         <form name="Linear" rank="0">
-          <string_value lines="20" type="code" language="python">L = rhs(r)</string_value>
+          <string_value lines="20" type="code" language="python3">L = rhs(r)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">L</string_value>
           </ufl_symbol>
         </form>
         <form name="Residual" rank="0">
-          <string_value lines="20" type="code" language="python">res = action(a, uT3_i) - L</string_value>
+          <string_value lines="20" type="code" language="python3">res = action(a, uT3_i) - L
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">res</string_value>
           </ufl_symbol>
@@ -888,7 +912,8 @@ r = rT</string_value>
       <solve name="in_timeloop"/>
     </nonlinear_solver>
     <functional name="TemperatureTopSurfaceIntegral">
-      <string_value lines="20" type="code" language="python">int = grad(T3)[1]*ds(4)</string_value>
+      <string_value lines="20" type="code" language="python3">int = grad(T3)[1]*ds(4)
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -1022,27 +1047,31 @@ r = rT</string_value>
     <nonlinear_solver name="Solver">
       <type name="Picard">
         <preamble>
-          <string_value lines="20" type="code" language="python">Ra = 1.e4
+          <string_value lines="20" type="code" language="python3">Ra = 1.e4
 
 rv = (inner(sym(grad(v3_t)), 2*sym(grad(v3_a))) - div(v3_t)*p3_a - Ra*T3_i*v3_t[1])*dx
 rp = p3_t*div(v3_a)*dx
 
-r = rv + rp</string_value>
+r = rv + rp
+</string_value>
         </preamble>
         <form name="Bilinear" rank="1">
-          <string_value lines="20" type="code" language="python">a = lhs(r)</string_value>
+          <string_value lines="20" type="code" language="python3">a = lhs(r)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
         <form name="Linear" rank="0">
-          <string_value lines="20" type="code" language="python">L = rhs(r)</string_value>
+          <string_value lines="20" type="code" language="python3">L = rhs(r)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">L</string_value>
           </ufl_symbol>
         </form>
         <form name="Residual" rank="0">
-          <string_value lines="20" type="code" language="python">res = action(a, us3_i) - L</string_value>
+          <string_value lines="20" type="code" language="python3">res = action(a, us3_i) - L
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">res</string_value>
           </ufl_symbol>
@@ -1083,7 +1112,8 @@ r = rv + rp</string_value>
               <factorization_type name="full"/>
               <schur_preconditioner name="user">
                 <form name="SchurPC" rank="1">
-                  <string_value lines="20" type="code" language="python">sPC = p3_t*p3_a*dx</string_value>
+                  <string_value lines="20" type="code" language="python3">sPC = p3_t*p3_a*dx
+</string_value>
                   <ufl_symbol name="solver">
                     <string_value lines="1">sPC</string_value>
                   </ufl_symbol>
@@ -1133,7 +1163,8 @@ r = rv + rp</string_value>
       <solve name="in_timeloop"/>
     </nonlinear_solver>
     <functional name="VelocityL2Norm">
-      <string_value lines="20" type="code" language="python">int = inner(v3,v3)*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = inner(v3,v3)*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>

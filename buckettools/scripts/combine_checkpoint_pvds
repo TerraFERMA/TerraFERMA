@@ -55,7 +55,7 @@ for root, dirnames, files in os.walk(dirname, topdown=True):
     if ext1 == ".pvd":
       filenames.append(os.path.join(root, filename))
     else:
-      print "Don't know how to deal with extension "+ext1+".  Only know about pvds."
+      print("Don't know how to deal with extension "+ext1+".  Only know about pvds.")
       sys.exit(1)
   if depth == args.recurse or args.recurse is None:
     dirnames[:] = []

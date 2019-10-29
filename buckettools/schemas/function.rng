@@ -1210,7 +1210,7 @@ If specifying multiple value caps (perhaps on different components) their names 
       <attribute name="rank">
         <value>0</value>
       </attribute>
-      <ref name="python_code"/>
+      <ref name="python3_code"/>
       <ref name="functional_ufl_symbol"/>
       <ref name="form_representation"/>
       <ref name="quadrature_degree"/>
@@ -1282,7 +1282,7 @@ The return value should be scalar.</a:documentation>
       <attribute name="rank">
         <value>0</value>
       </attribute>
-      <ref name="python_code"/>
+      <ref name="python3_code"/>
     </element>
   </define>
   <define name="prescribed_vector_python">
@@ -1307,7 +1307,7 @@ The return value must have the same size as the vector element.</a:documentation
       <attribute name="rank">
         <value>1</value>
       </attribute>
-      <ref name="python_code"/>
+      <ref name="python3_code"/>
     </element>
   </define>
   <define name="prescribed_tensor_python">
@@ -1332,7 +1332,7 @@ The return value must have the same shape as the tensor element.</a:documentatio
       <attribute name="rank">
         <value>2</value>
       </attribute>
-      <ref name="python_code"/>
+      <ref name="python3_code"/>
     </element>
   </define>
   <define name="prescribed_cpp">

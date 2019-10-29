@@ -312,11 +312,6 @@ void SpudSystemBucket::fill_fields_()
 {
   std::stringstream buffer;                                          // optionpath buffer
 
-                                                                     // prepare the system initial condition expression:
-  uint component = 0;                                               // initialize a counter for the scalar components of this
-                                                                     // system
-  std::map< std::size_t, Expression_ptr > icexpressions;             // set up a map from scalar component to initial condition expression
-
   buffer.str("");  buffer << optionpath() << "/field";               // find out how many fields we have
   int nfields = Spud::option_count(buffer.str());
   for (uint i = 0; i < nfields; i++)                                 // loop over the fields in the options dictionary
@@ -328,29 +323,6 @@ void SpudSystemBucket::fill_fields_()
     SpudFunctionBucket_ptr field(new SpudFunctionBucket( buffer.str(), this ));
     (*field).fill_field(i);                                          // fill in this field (providing its index in the system)
     register_field(field, (*field).name());                          // register this field in the system bucket
-                                  
-    if ((*field).icexpression())
-    {
-                                                                     // insert the field's initial condition expression into a 
-                                                                     // temporary system map:
-      size_t_Expression_it e_it = icexpressions.find(component);     // check if this component already exists
-      if (e_it != icexpressions.end())
-      {
-        tf_err("IC expression with given component number already exists in inexpressions map.", "Component: %d", component);
-      }
-      else
-      {
-        icexpressions[component] = (*field).icexpression();          // if it doesn't, insert it into the map
-      }
-    }
-
-    component += (*field).size();                                    // increment the component count by the size of this field
-                                                                     // (i.e. no. of scalar components)
-  }
-
-  if (!icexpressions.empty())
-  {
-    collect_ics_(component, icexpressions);                          // collect all the ics together into a new initial condition expression
   }
 
 }

@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -202,10 +202,11 @@
           </element>
           <value type="value" name="WholeMesh">
             <python rank="0">
-              <string_value lines="20" type="code" language="python">from math import exp
+              <string_value lines="20" type="code" language="python3">from math import exp
 def val(x):
   global exp
-  return -5./4.*exp(x[0] + x[1]/2.)</string_value>
+  return -5./4.*exp(x[0] + x[1]/2.)
+</string_value>
             </python>
           </value>
         </rank>
@@ -228,10 +229,11 @@ def val(x):
           </element>
           <value type="value" name="WholeMesh">
             <python rank="1">
-              <string_value lines="20" type="code" language="python">from math import exp
+              <string_value lines="20" type="code" language="python3">from math import exp
 def val(x):
   global exp
-  return [exp(x[0] + x[1]/2.), 0.5*exp(x[0] + x[1]/2.)]</string_value>
+  return [exp(x[0] + x[1]/2.), 0.5*exp(x[0] + x[1]/2.)]
+</string_value>
             </python>
           </value>
         </rank>
@@ -254,10 +256,11 @@ def val(x):
           </element>
           <value type="value" name="WholeMesh">
             <python rank="0">
-              <string_value lines="20" type="code" language="python">from math import exp
+              <string_value lines="20" type="code" language="python3">from math import exp
 def val(x):
   global exp
-  return exp(x[0] + x[1]/2.) - 1.</string_value>
+  return exp(x[0] + x[1]/2.) - 1.
+</string_value>
             </python>
           </value>
         </rank>
@@ -417,17 +420,19 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
     <nonlinear_solver name="SNES">
       <type name="SNES">
         <form name="Residual" rank="0">
-          <string_value lines="20" type="code" language="python">F1 = (inner(grad(u1_t),grad(u1_i)) - u1_t*f)*dx + u1_t*g[0]*ds(1) - u1_t*g[0]*ds(2) + u1_t*g[1]*ds(3) - u1_t*g[1]*ds(4)
+          <string_value lines="20" type="code" language="python3">F1 = (inner(grad(u1_t),grad(u1_i)) - u1_t*f)*dx + u1_t*g[0]*ds(1) - u1_t*g[0]*ds(2) + u1_t*g[1]*ds(3) - u1_t*g[1]*ds(4)
 F2 = (inner(grad(u2_t),grad(u2_i)) - u2_t*f)*dx + u2_t*g[0]*ds(1) - u2_t*g[0]*ds(2) + u2_t*g[1]*ds(3) - u2_t*g[1]*ds(4)
 F3 = (inner(grad(u3_t),grad(u3_i)) - u3_t*f)*dx + u3_t*g[0]*ds(1) - u3_t*g[0]*ds(2) + u3_t*g[1]*ds(3) - u3_t*g[1]*ds(4)
 F4 = (inner(grad(u4_t),grad(u4_i)) - u4_t*f)*dx + u4_t*g[0]*ds(1) - u4_t*g[0]*ds(2) + u4_t*g[1]*ds(3) - u4_t*g[1]*ds(4)
-F = F1 + F2 + F3 + F4</string_value>
+F = F1 + F2 + F3 + F4
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">F</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
-          <string_value lines="20" type="code" language="python">J = derivative(F,us_i,us_a)</string_value>
+          <string_value lines="20" type="code" language="python3">J = derivative(F,us_i,us_a)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">J</string_value>
           </ufl_symbol>
@@ -593,7 +598,8 @@ F = F1 + F2 + F3 + F4</string_value>
       <solve name="in_timeloop"/>
     </nonlinear_solver>
     <functional name="AbsoluteDifference1L2NormSquared">
-      <string_value lines="20" type="code" language="python">int = d1*d1*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = d1*d1*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -602,7 +608,8 @@ F = F1 + F2 + F3 + F4</string_value>
       <include_in_statistics/>
     </functional>
     <functional name="AbsoluteDifference2L2NormSquared">
-      <string_value lines="20" type="code" language="python">int = d2*d2*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = d2*d2*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -611,7 +618,8 @@ F = F1 + F2 + F3 + F4</string_value>
       <include_in_statistics/>
     </functional>
     <functional name="AbsoluteDifference3L2NormSquared">
-      <string_value lines="20" type="code" language="python">int = d3*d3*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = d3*d3*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -620,7 +628,8 @@ F = F1 + F2 + F3 + F4</string_value>
       <include_in_statistics/>
     </functional>
     <functional name="AbsoluteDifference4L2NormSquared">
-      <string_value lines="20" type="code" language="python">int = d4*d4*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = d4*d4*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>

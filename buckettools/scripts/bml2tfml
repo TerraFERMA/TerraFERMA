@@ -45,7 +45,7 @@ for f in args.file:
       if ext == "bml":
         filenames.append(os.path.join(os.curdir, filename))
       else:
-        print "Don't know how to deal with extension "+ext+".  Only know about bmls."
+        print("Don't know how to deal with extension "+ext+".  Only know about bmls.")
         sys.exit(1)
   else:
     
@@ -62,16 +62,16 @@ for f in args.file:
         if ext == "bml":
           filenames.append(os.path.join(os.path.join(root, os.path.dirname(f)), filename))
         else:
-          print "Don't know how to deal with extension "+ext+".  Only know about bmls."
+          print("Don't know how to deal with extension "+ext+".  Only know about bmls.")
           sys.exit(1)
       if depth == args.recurse:
         dirnames[:] = []
 
 for filename in filenames:
-  print 'Updating: '+filename
+  print('Updating: '+filename)
   newfilename = os.path.join(os.path.split(filename)[0], os.path.split(filename)[-1].split('.')[0]+'.tfml')
   tree = etree.parse(filename)
   tree.getroot().tag = 'terraferma_options'
   tree.write(newfilename)
-  print 'Writing: '+newfilename
+  print('Writing: '+newfilename)
 

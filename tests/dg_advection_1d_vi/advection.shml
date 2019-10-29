@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <harness_options>
   <length>
     <string_value lines="1">short</string_value>
@@ -6,22 +6,25 @@
   <owner>
     <string_value lines="1">cwilson</string_value>
   </owner>
+  <tags>
+    <string_value lines="1">not:petsc:3.11.3</string_value>
+  </tags>
   <description>
     <string_value lines="1">A test of snes vi with dg advection.</string_value>
   </description>
   <simulations>
     <simulation name="Advection">
       <input_file>
-        <string_value lines="1" type="filename">advection.tfml</string_value>
+        <string_value type="filename" lines="1">advection.tfml</string_value>
       </input_file>
       <run_when name="input_changed_or_output_missing"/>
       <parameter_sweep>
         <parameter name="nprocs">
           <values>
-            <string_value lines="1">1</string_value>
+            <string_value lines="1">1 2 3</string_value>
           </values>
           <process_scale>
-            <integer_value shape="1" rank="1">1</integer_value>
+            <integer_value rank="1" shape="1">1 2 3</integer_value>
             <comment>higher number of processes requires the mvc_parallel branch</comment>
           </process_scale>
         </parameter>
@@ -29,13 +32,14 @@
       <dependencies>
         <run name="Mesh">
           <input_file>
-            <string_value lines="1" type="filename">interval.geo</string_value>
+            <string_value type="filename" lines="1">interval.geo</string_value>
           </input_file>
           <run_when name="input_changed_or_output_missing"/>
           <required_output>
             <filenames name="meshfiles">
               <python>
-                <string_value type="code" lines="20" language="python">meshfiles = ["interval"+ext for ext in [".xml", "_facet_region.xml", "_physical_region.xml"]]</string_value>
+                <string_value type="code" language="python3" lines="20">meshfiles = ["interval"+ext for ext in [".xdmf", "_facet_ids.xdmf", "_cell_ids.xdmf", ".h5", "_facet_ids.h5", "_cell_ids.h5"]]
+</string_value>
               </python>
             </filenames>
           </required_output>
@@ -44,60 +48,67 @@
               <string_value lines="1">gmsh -1 interval.geo</string_value>
             </command>
             <command name="Convert">
-              <string_value lines="1">dolfin-convert interval.msh interval.xml</string_value>
+              <string_value lines="1">tfgmsh2xdmf interval.msh interval.xdmf</string_value>
             </command>
           </commands>
         </run>
       </dependencies>
       <variables>
         <variable name="lower_bound">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 stat = parser("advection.stat")
 
-lower_bound = stat["System"]["Field"]["min"]</string_value>
+lower_bound = stat["System"]["Field"]["min"]
+</string_value>
         </variable>
         <variable name="upper_bound">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 stat = parser("advection.stat")
 
-upper_bound = stat["System"]["Field"]["max"]</string_value>
+upper_bound = stat["System"]["Field"]["max"]
+</string_value>
         </variable>
         <variable name="lower_bound_2">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 stat = parser("advection.stat")
 
-lower_bound_2 = stat["System"]["Field2"]["min"]</string_value>
+lower_bound_2 = stat["System"]["Field2"]["min"]
+</string_value>
         </variable>
         <variable name="upper_bound_2">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 stat = parser("advection.stat")
 
-upper_bound_2 = stat["System"]["Field2"]["max"]</string_value>
+upper_bound_2 = stat["System"]["Field2"]["max"]
+</string_value>
         </variable>
         <variable name="lower_bound_3">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 stat = parser("advection.stat")
 
-lower_bound_3 = stat["System"]["Field3"]["min"]</string_value>
+lower_bound_3 = stat["System"]["Field3"]["min"]
+</string_value>
         </variable>
         <variable name="upper_bound_3">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 stat = parser("advection.stat")
 
-upper_bound_3 = stat["System"]["Field3"]["max"]</string_value>
+upper_bound_3 = stat["System"]["Field3"]["max"]
+</string_value>
         </variable>
         <variable name="elapsedtime">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 stat = parser("advection.stat")
 
-elapsedtime = stat["ElapsedTime"]["value"][-1]</string_value>
+elapsedtime = stat["ElapsedTime"]["value"][-1]
+</string_value>
         </variable>
         <variable name="contour_location">
           <string_value lines="20" type="code" language="python">import buckettools.vtktools as vtktools
@@ -215,38 +226,45 @@ contour_location_3 = np.array([points.GetPoint(i) for i in xrange(points.GetNumb
   </simulations>
   <tests>
     <test name="lower_bound">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 for np in lower_bound.parameters["nprocs"]:
-  assert numpy.all(lower_bound[{"nprocs":np}]&gt;=0.0)</string_value>
+  assert numpy.all(lower_bound[{"nprocs":np}]&gt;=0.0)
+</string_value>
     </test>
     <test name="upper_bound">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 for np in upper_bound.parameters["nprocs"]:
-  assert numpy.all(upper_bound[{"nprocs":np}]&lt;=1.0)</string_value>
+  assert numpy.all(upper_bound[{"nprocs":np}]&lt;=1.0)
+</string_value>
     </test>
     <test name="lower_bound_2">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 for np in lower_bound_2.parameters["nprocs"]:
-  assert numpy.all(lower_bound_2[{"nprocs":np}]&gt;=0.0)</string_value>
+  assert numpy.all(lower_bound_2[{"nprocs":np}]&gt;=0.0)
+</string_value>
     </test>
     <test name="upper_bound_2">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 for np in upper_bound_2.parameters["nprocs"]:
-  assert numpy.all(upper_bound_2[{"nprocs":np}]&lt;=2.0)</string_value>
+  assert numpy.all(upper_bound_2[{"nprocs":np}]&lt;=2.0)
+</string_value>
     </test>
     <test name="lower_bound_3">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 for np in lower_bound_3.parameters["nprocs"]:
-  assert numpy.all(lower_bound_3[{"nprocs":np}]&gt;=0.0)</string_value>
+  assert numpy.all(lower_bound_3[{"nprocs":np}]&gt;=0.0)
+</string_value>
     </test>
     <test name="upper_bound_3">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 for np in upper_bound_3.parameters["nprocs"]:
-  assert numpy.all(upper_bound_3[{"nprocs":np}]&lt;=3.0)</string_value>
+  assert numpy.all(upper_bound_3[{"nprocs":np}]&lt;=3.0)
+</string_value>
     </test>
     <test name="elapsedtime">
-      <string_value lines="20" type="code" language="python">for np in elapsedtime.parameters["nprocs"]:
-  assert(abs(elapsedtime[{"nprocs":np}]-2.0)&lt;1.e-6)</string_value>
+      <string_value type="code" language="python3" lines="20">for np in elapsedtime.parameters["nprocs"]:
+  assert(abs(elapsedtime[{"nprocs":np}]-2.0)&lt;1.e-6)
+</string_value>
     </test>
     <test name="contour_location">
       <string_value type="code" lines="20" language="python">for np in contour_location.parameters["nprocs"]:

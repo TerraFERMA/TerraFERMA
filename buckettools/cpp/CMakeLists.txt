@@ -84,15 +84,11 @@ include_directories(SYSTEM ${BUCKETTOOLS_DEP_INCLUDE_DIRECTORIES})
 add_definitions(${BUCKETTOOLS_CXX_DEFINITIONS})
 set(CMAKE_CXX_FLAGS "${BUCKETTOOLS_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
 
-# Add Mac specific loader flags
+# Add Mac specific rpath flags
 if (APPLE)
-  set(CMAKE_SHARED_LINKER_FLAGS "-Wl,-undefined,dynamic_lookup" CACHE STRING "should only be set if macosx" FORCE)
-  # Set a consistent MACOSX_RPATH default across all CMake versions.
-  # When CMake 2.8.12 is required, change this default to 1.
-  # When CMake 3.0.0 is required, remove this block (see CMP0042).
-  if (NOT DEFINED CMAKE_MACOSX_RPATH)
-    set(CMAKE_MACOSX_RPATH 0)
-  endif()
+  set(CMAKE_SHARED_LINKER_FLAGS "-Wl,-undefined,dynamic_lookup" 
+      CACHE STRING "Use dynamic lookup for undefined symbols." FORCE)
+  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 endif()
 
 # generate a library - really the main point of this whole process
@@ -103,7 +99,7 @@ add_library(buckettools_cpp SHARED
                             SolverBucket.cpp SpudSolverBucket.cpp 
                             FunctionalBucket.cpp SpudFunctionalBucket.cpp
                             SpudBase.cpp MPIBase.cpp PythonExpression.cpp PythonInstance.cpp GlobalPythonInstance.cpp
-                            InitialConditionExpression.cpp RegionsExpression.cpp SemiLagrangianExpression.cpp
+                            RegionsExpression.cpp SemiLagrangianExpression.cpp
                             GenericDetectors.cpp PointDetectors.cpp PythonDetectors.cpp
                             DiagnosticsFile.cpp StatisticsFile.cpp SteadyStateFile.cpp
                             DetectorsFile.cpp ConvergenceFile.cpp KSPConvergenceFile.cpp SystemsConvergenceFile.cpp
@@ -114,7 +110,7 @@ set_source_files_properties(builddefs.h PROPERTIES GENERATED 1)
 # the project depends on this target
 add_dependencies(buckettools_cpp builddefs)
 # link to other libraries
-target_link_libraries(buckettools_cpp ${BUCKETTOOLS_TARGET_LINK_LIBRARIES})
+target_link_libraries(buckettools_cpp dolfin ${BUCKETTOOLS_TARGET_LINK_LIBRARIES})
 # set the library version
 set_target_properties(buckettools_cpp PROPERTIES 
                       VERSION   ${BUCKETTOOLS_VERSION_SHORT}

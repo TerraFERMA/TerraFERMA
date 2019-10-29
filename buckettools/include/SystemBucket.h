@@ -149,15 +149,6 @@ namespace buckettools
     const Function_ptr snesupdatefunction() const                    // return a (boost shared) pointer to the snes update of the system
     { return snesupdatefunction_; }                                  // function
 
-    const Expression_ptr icexpression() const                        // return a constant (boost shared) pointer to the initial
-    { return icexpression_; }                                        // condition expression for this system
-
-    const File_ptr icfile() const                                    // return a constant (boost shared) pointer to the initial
-    { return icfile_; }                                              // condition file for this system
-
-    File_ptr& icfile()                                                // return a (boost shared) pointer to the initial
-    { return icfile_; }                                              // condition file for this system
-
     Bucket* bucket()                                                 // return a pointer to the parent bucket
     { return bucket_; }
 
@@ -311,10 +302,6 @@ namespace buckettools
     // Filling data
     //***************************************************************|***********************************************************//
 
-    void collect_ics_(const uint &components,                        // collect the field initial conditions into an initial 
-                      const std::map< std::size_t, Expression_ptr >  // condition expression
-                                                  &icexpressions);
-
     void apply_ic_();                                                // apply the initial conditions to the system function
 
     void apply_bcs_();                                               // apply the Dirichlet bcs to the system function
@@ -337,10 +324,6 @@ namespace buckettools
 
     Function_ptr function_, oldfunction_, iteratedfunction_;         // (boost shared) pointers to the system functions at different
                                                                      // time levels (old, iterated - most up to date -, base)
-
-    Expression_ptr icexpression_;                                    // (boost shared) pointer to an expression describing the initial condition
-
-    File_ptr icfile_;                                                // (boost shared) pointer to a file containing a checkpointed ic
 
     Function_ptr changefunction_;                                    // (boost shared) pointer to the change between timesteps
 

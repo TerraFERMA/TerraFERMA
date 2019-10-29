@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <harness_options>
   <length>
     <string_value lines="1">short</string_value>
@@ -27,319 +27,364 @@
       </parameter_sweep>
       <variables>
         <variable name="timestep_count">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-timestep_count = stat["timestep"]["value"][-1]</string_value>
+timestep_count = stat["timestep"]["value"][-1]
+</string_value>
         </variable>
         <variable name="picard_field1_min">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-picard_field1_min = stat["PicardProjection"]["Field1"]["min"][-1]</string_value>
+picard_field1_min = stat["PicardProjection"]["Field1"]["min"][-1]
+</string_value>
         </variable>
         <variable name="picard_field1_max">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-picard_field1_max = stat["PicardProjection"]["Field1"]["max"][-1]</string_value>
+picard_field1_max = stat["PicardProjection"]["Field1"]["max"][-1]
+</string_value>
         </variable>
         <variable name="picard_field1_int">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-picard_field1_int = stat["PicardProjection"]["Field1Integral"]["functional_value"][-1]</string_value>
+picard_field1_int = stat["PicardProjection"]["Field1Integral"]["functional_value"][-1]
+</string_value>
         </variable>
         <variable name="picard_source1_int">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-picard_source1_int = stat["PicardProjection"]["Source1Integral"]["functional_value"][-1]</string_value>
+picard_source1_int = stat["PicardProjection"]["Source1Integral"]["functional_value"][-1]
+</string_value>
         </variable>
         <variable name="picard_field2_min_0">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-picard_field2_min_0 = stat["PicardProjection"]["Field2"]["max"][0][-1]</string_value>
+picard_field2_min_0 = stat["PicardProjection"]["Field2"]["max"][0][-1]
+</string_value>
         </variable>
         <variable name="picard_field2_max_0">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-picard_field2_max_0 = stat["PicardProjection"]["Field2"]["min"][0][-1]</string_value>
+picard_field2_max_0 = stat["PicardProjection"]["Field2"]["min"][0][-1]
+</string_value>
         </variable>
         <variable name="picard_field2_int_0">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-picard_field2_int_0 = stat["PicardProjection"]["Field2Integral0"]["functional_value"][-1]</string_value>
+picard_field2_int_0 = stat["PicardProjection"]["Field2Integral0"]["functional_value"][-1]
+</string_value>
         </variable>
         <variable name="picard_source2_int_0">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-picard_source2_int_0 = stat["PicardProjection"]["Source2Integral0"]["functional_value"][-1]</string_value>
+picard_source2_int_0 = stat["PicardProjection"]["Source2Integral0"]["functional_value"][-1]
+</string_value>
         </variable>
         <variable name="picard_field2_min_1">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-picard_field2_min_1 = stat["PicardProjection"]["Field2"]["max"][1][-1]</string_value>
+picard_field2_min_1 = stat["PicardProjection"]["Field2"]["max"][1][-1]
+</string_value>
         </variable>
         <variable name="picard_field2_max_1">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-picard_field2_max_1 = stat["PicardProjection"]["Field2"]["min"][1][-1]</string_value>
+picard_field2_max_1 = stat["PicardProjection"]["Field2"]["min"][1][-1]
+</string_value>
         </variable>
         <variable name="picard_field2_int_1">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-picard_field2_int_1 = stat["PicardProjection"]["Field2Integral1"]["functional_value"][-1]</string_value>
+picard_field2_int_1 = stat["PicardProjection"]["Field2Integral1"]["functional_value"][-1]
+</string_value>
         </variable>
         <variable name="picard_source2_int_1">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-picard_source2_int_1 = stat["PicardProjection"]["Source2Integral1"]["functional_value"][-1]</string_value>
+picard_source2_int_1 = stat["PicardProjection"]["Source2Integral1"]["functional_value"][-1]
+</string_value>
         </variable>
         <variable name="picard_dummy_max">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-picard_dummy_max = stat["PicardProjection"]["Dummy"]["max"]</string_value>
+picard_dummy_max = stat["PicardProjection"]["Dummy"]["max"]
+</string_value>
         </variable>
         <variable name="picard_dummy_min">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-picard_dummy_min = stat["PicardProjection"]["Dummy"]["min"]</string_value>
+picard_dummy_min = stat["PicardProjection"]["Dummy"]["min"]
+</string_value>
         </variable>
         <variable name="snes_field1_min">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_field1_min = stat["SNESProjection"]["Field1"]["min"][-1]</string_value>
+snes_field1_min = stat["SNESProjection"]["Field1"]["min"][-1]
+</string_value>
         </variable>
         <variable name="snes_field1_max">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_field1_max = stat["SNESProjection"]["Field1"]["max"][-1]</string_value>
+snes_field1_max = stat["SNESProjection"]["Field1"]["max"][-1]
+</string_value>
         </variable>
         <variable name="snes_field1_int">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_field1_int = stat["SNESProjection"]["Field1Integral"]["functional_value"][-1]</string_value>
+snes_field1_int = stat["SNESProjection"]["Field1Integral"]["functional_value"][-1]
+</string_value>
         </variable>
         <variable name="snes_source1_int">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_source1_int = stat["SNESProjection"]["Source1Integral"]["functional_value"][-1]</string_value>
+snes_source1_int = stat["SNESProjection"]["Source1Integral"]["functional_value"][-1]
+</string_value>
         </variable>
         <variable name="snes_field2_min_0">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_field2_min_0 = stat["SNESProjection"]["Field2"]["min"][0][-1]</string_value>
+snes_field2_min_0 = stat["SNESProjection"]["Field2"]["min"][0][-1]
+</string_value>
         </variable>
         <variable name="snes_field2_max_0">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_field2_max_0 = stat["SNESProjection"]["Field2"]["max"][0][-1]</string_value>
+snes_field2_max_0 = stat["SNESProjection"]["Field2"]["max"][0][-1]
+</string_value>
         </variable>
         <variable name="snes_field2_int_0">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_field2_int_0 = stat["SNESProjection"]["Field2Integral0"]["functional_value"][-1]</string_value>
+snes_field2_int_0 = stat["SNESProjection"]["Field2Integral0"]["functional_value"][-1]
+</string_value>
         </variable>
         <variable name="snes_source2_int_0">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_source2_int_0 = stat["SNESProjection"]["Source2Integral0"]["functional_value"][-1]</string_value>
+snes_source2_int_0 = stat["SNESProjection"]["Source2Integral0"]["functional_value"][-1]
+</string_value>
         </variable>
         <variable name="snes_field2_min_1">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_field2_min_1 = stat["SNESProjection"]["Field2"]["min"][1][-1]</string_value>
+snes_field2_min_1 = stat["SNESProjection"]["Field2"]["min"][1][-1]
+</string_value>
         </variable>
         <variable name="snes_field2_max_1">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_field2_max_1 = stat["SNESProjection"]["Field2"]["max"][1][-1]</string_value>
+snes_field2_max_1 = stat["SNESProjection"]["Field2"]["max"][1][-1]
+</string_value>
         </variable>
         <variable name="snes_field2_int_1">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_field2_int_1 = stat["SNESProjection"]["Field2Integral1"]["functional_value"][-1]</string_value>
+snes_field2_int_1 = stat["SNESProjection"]["Field2Integral1"]["functional_value"][-1]
+</string_value>
         </variable>
         <variable name="snes_source2_int_1">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_source2_int_1 = stat["SNESProjection"]["Source2Integral1"]["functional_value"][-1]</string_value>
+snes_source2_int_1 = stat["SNESProjection"]["Source2Integral1"]["functional_value"][-1]
+</string_value>
         </variable>
         <variable name="snes_dummy_max">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_dummy_max = stat["SNESProjection"]["Dummy"]["max"]</string_value>
+snes_dummy_max = stat["SNESProjection"]["Dummy"]["max"]
+</string_value>
         </variable>
         <variable name="snes_field3_min_00">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_field3_min_00 = stat["SNESProjection"]["Field3"]["max"][0][-1]</string_value>
+snes_field3_min_00 = stat["SNESProjection"]["Field3"]["max"][0][-1]
+</string_value>
         </variable>
         <variable name="snes_field3_max_00">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_field3_max_00 = stat["SNESProjection"]["Field3"]["min"][0][-1]</string_value>
+snes_field3_max_00 = stat["SNESProjection"]["Field3"]["min"][0][-1]
+</string_value>
         </variable>
         <variable name="snes_field3_int_00">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_field3_int_00 = stat["SNESProjection"]["Field3Integral00"]["functional_value"][-1]</string_value>
+snes_field3_int_00 = stat["SNESProjection"]["Field3Integral00"]["functional_value"][-1]
+</string_value>
         </variable>
         <variable name="snes_source3_int_00">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_source3_int_00 = stat["SNESProjection"]["Source3Integral00"]["functional_value"][-1]</string_value>
+snes_source3_int_00 = stat["SNESProjection"]["Source3Integral00"]["functional_value"][-1]
+</string_value>
         </variable>
         <variable name="snes_field3_min_01">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_field3_min_01 = stat["SNESProjection"]["Field3"]["max"][1][-1]</string_value>
+snes_field3_min_01 = stat["SNESProjection"]["Field3"]["max"][1][-1]
+</string_value>
         </variable>
         <variable name="snes_field3_max_01">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_field3_max_01 = stat["SNESProjection"]["Field3"]["min"][1][-1]</string_value>
+snes_field3_max_01 = stat["SNESProjection"]["Field3"]["min"][1][-1]
+</string_value>
         </variable>
         <variable name="snes_field3_int_01">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_field3_int_01 = stat["SNESProjection"]["Field3Integral01"]["functional_value"][-1]</string_value>
+snes_field3_int_01 = stat["SNESProjection"]["Field3Integral01"]["functional_value"][-1]
+</string_value>
         </variable>
         <variable name="snes_source3_int_01">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_source3_int_01 = stat["SNESProjection"]["Source3Integral01"]["functional_value"][-1]</string_value>
+snes_source3_int_01 = stat["SNESProjection"]["Source3Integral01"]["functional_value"][-1]
+</string_value>
         </variable>
         <variable name="snes_field3_min_10">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_field3_min_10 = stat["SNESProjection"]["Field3"]["max"][2][-1]</string_value>
+snes_field3_min_10 = stat["SNESProjection"]["Field3"]["max"][2][-1]
+</string_value>
         </variable>
         <variable name="snes_field3_max_10">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_field3_max_10 = stat["SNESProjection"]["Field3"]["min"][2][-1]</string_value>
+snes_field3_max_10 = stat["SNESProjection"]["Field3"]["min"][2][-1]
+</string_value>
         </variable>
         <variable name="snes_field3_int_10">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_field3_int_10 = stat["SNESProjection"]["Field3Integral10"]["functional_value"][-1]</string_value>
+snes_field3_int_10 = stat["SNESProjection"]["Field3Integral10"]["functional_value"][-1]
+</string_value>
         </variable>
         <variable name="snes_source3_int_10">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_source3_int_10 = stat["SNESProjection"]["Source3Integral10"]["functional_value"][-1]</string_value>
+snes_source3_int_10 = stat["SNESProjection"]["Source3Integral10"]["functional_value"][-1]
+</string_value>
         </variable>
         <variable name="snes_field3_min_11">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_field3_min_11 = stat["SNESProjection"]["Field3"]["max"][3][-1]</string_value>
+snes_field3_min_11 = stat["SNESProjection"]["Field3"]["max"][3][-1]
+</string_value>
         </variable>
         <variable name="snes_field3_max_11">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_field3_max_11 = stat["SNESProjection"]["Field3"]["min"][3][-1]</string_value>
+snes_field3_max_11 = stat["SNESProjection"]["Field3"]["min"][3][-1]
+</string_value>
         </variable>
         <variable name="snes_field3_int_11">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_field3_int_11 = stat["SNESProjection"]["Field3Integral11"]["functional_value"][-1]</string_value>
+snes_field3_int_11 = stat["SNESProjection"]["Field3Integral11"]["functional_value"][-1]
+</string_value>
         </variable>
         <variable name="snes_source3_int_11">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_source3_int_11 = stat["SNESProjection"]["Source3Integral11"]["functional_value"][-1]</string_value>
+snes_source3_int_11 = stat["SNESProjection"]["Source3Integral11"]["functional_value"][-1]
+</string_value>
         </variable>
         <variable name="snes_dummy_min">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 
 stat = parser("projection.stat")
 
-snes_dummy_min = stat["SNESProjection"]["Dummy"]["min"]</string_value>
+snes_dummy_min = stat["SNESProjection"]["Dummy"]["min"]
+</string_value>
         </variable>
         <variable name="picard_field1_vtu">
           <string_value lines="20" type="code" language="python">import buckettools.vtktools as vtktools
@@ -528,229 +573,274 @@ snes_field3_vtu_11 = vtu.GetField("SNESProjection::Field3")[:,1,1]</string_value
   </simulations>
   <tests>
     <test name="timestep_count">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(numpy.array(timestep_count)==10)</string_value>
+assert numpy.all(numpy.array(timestep_count)==10)
+</string_value>
     </test>
     <test name="picard_field1_min">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(picard_field1_min) - 1000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(picard_field1_min) - 1000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="picard_field1_max">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(picard_field1_max) - 1000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(picard_field1_max) - 1000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="picard_field1_int">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(picard_field1_int) - 1000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(picard_field1_int) - 1000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="picard_source1_int">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(picard_source1_int) - 1000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(picard_source1_int) - 1000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="picard_field2_min_0">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(picard_field2_min_0) - 2000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(picard_field2_min_0) - 2000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="picard_field2_max_0">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(picard_field2_max_0) - 2000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(picard_field2_max_0) - 2000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="picard_field2_int_0">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(picard_field2_int_0) - 2000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(picard_field2_int_0) - 2000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="picard_source2_int_0">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(picard_source2_int_0) - 2000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(picard_source2_int_0) - 2000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="picard_field2_min_1">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(picard_field2_min_1) - 3000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(picard_field2_min_1) - 3000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="picard_field2_max_1">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(picard_field2_max_1) - 3000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(picard_field2_max_1) - 3000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="picard_field2_int_1">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(picard_field2_int_1) - 3000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(picard_field2_int_1) - 3000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="picard_source2_int_1">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(picard_source2_int_1) - 3000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(picard_source2_int_1) - 3000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="picard_dummy_max">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(picard_dummy_max) - 6.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(picard_dummy_max) - 6.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="picard_dummy_min">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(picard_dummy_min) - 6.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(picard_dummy_min) - 6.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_field1_min">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(snes_field1_min) - 1000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_field1_min) - 1000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_field1_max">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(snes_field1_max) - 1000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_field1_max) - 1000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_field1_int">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(snes_field1_int) - 1000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_field1_int) - 1000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_source1_int">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(snes_source1_int) - 1000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_source1_int) - 1000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_field2_min_0">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(snes_field2_min_0) - 2000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_field2_min_0) - 2000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_field2_max_0">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(snes_field2_max_0) - 2000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_field2_max_0) - 2000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_field2_int_0">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(snes_field2_int_0) - 2000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_field2_int_0) - 2000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_source2_int_0">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(snes_source2_int_0) - 2000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_source2_int_0) - 2000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_field2_min_1">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(snes_field2_min_1) - 3000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_field2_min_1) - 3000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_field2_max_1">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(snes_field2_max_1) - 3000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_field2_max_1) - 3000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_field2_int_1">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(snes_field2_int_1) - 3000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_field2_int_1) - 3000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_source2_int_1">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(snes_source2_int_1) - 3000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_source2_int_1) - 3000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_field3_min_00">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(snes_field3_min_00) - 4000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_field3_min_00) - 4000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_field3_max_00">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(snes_field3_max_00) - 4000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_field3_max_00) - 4000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_field3_int_00">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(snes_field3_int_00) - 4000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_field3_int_00) - 4000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_source3_int_00">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(snes_source3_int_00) - 3000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_source3_int_00) - 3000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_field3_min_01">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(snes_field3_min_01) - 4250.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_field3_min_01) - 4250.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_field3_max_01">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(snes_field3_max_01) - 4250.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_field3_max_01) - 4250.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_field3_int_01">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(snes_field3_int_01) - 4250.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_field3_int_01) - 4250.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_source3_int_01">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(snes_source3_int_01) - 4250.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_source3_int_01) - 4250.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_field3_min_10">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(snes_field3_min_10) - 4750.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_field3_min_10) - 4750.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_field3_max_10">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(snes_field3_max_10) - 4750.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_field3_max_10) - 4750.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_field3_int_10">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(snes_field3_int_10) - 4750.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_field3_int_10) - 4750.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_source3_int_10">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(snes_source3_int_10) - 4750.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_source3_int_10) - 4750.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_field3_min_11">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(snes_field3_min_11) - 5000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_field3_min_11) - 5000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_field3_max_11">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(snes_field3_max_11) - 5000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_field3_max_11) - 5000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_field3_int_11">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(snes_field3_int_11) - 5000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_field3_int_11) - 5000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_source3_int_11">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(snes_source3_int_11) - 6000.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_source3_int_11) - 6000.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_dummy_max">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(snes_dummy_max) - 6.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_dummy_max) - 6.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_dummy_min">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 
-assert numpy.all(abs(numpy.array(snes_dummy_min) - 6.0) &lt; 1.e-7)</string_value>
+assert numpy.all(abs(numpy.array(snes_dummy_min) - 6.0) &lt; 1.e-7)
+</string_value>
     </test>
     <test name="snes_resfield2_vtu_1">
       <string_value lines="20" type="code" language="python">import numpy

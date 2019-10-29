@@ -151,6 +151,8 @@ namespace buckettools
                                                                      // NOTE: if this is a field of a mixed system functionspace,
                                                                      // this will return a subspace
 
+    const FunctionSpace_ptr localfunctionspace() const               // return a constant (std shared) pointer to the collapsed
+    { return localfunctionspace_; }                                  // functionspace
 
     const GenericFunction_ptr function() const                       // return a constant (std shared) pointer to the 
     { return function_; }                                            // function 
@@ -203,6 +205,8 @@ namespace buckettools
     //***************************************************************|***********************************************************//
     // Functions used to run the model
     //***************************************************************|***********************************************************//
+
+    void apply_ic(const std::string &function_type="old");           // apply the initial condition to the function
 
     void refresh(const bool force=false);                            // refresh this function bucket - this may call solvers so 
                                                                      // its not recommened to call loosely
@@ -280,7 +284,7 @@ namespace buckettools
     virtual const std::string str(int indent=0) const;               // return an indented string describing the contents 
                                                                      // of this function
 
-    void checkpoint();                                               // checkpoint the functionbucket
+    void checkpoint(const double_ptr time);                          // checkpoint the functionbucket
 
   //*****************************************************************|***********************************************************//
   // Protected functions
@@ -303,6 +307,7 @@ namespace buckettools
 
     FunctionSpace_ptr functionspace_;                                // the functionspace (may be a subspace) of this function (if it is
                                                                      // a field or a coefficient function)
+    FunctionSpace_ptr localfunctionspace_;                           // the collapsed functionspace of this function (if it is a field)
 
     GenericFunction_ptr function_, oldfunction_, iteratedfunction_;  // (std shared) pointers to different timelevel values of this function
 
@@ -313,6 +318,8 @@ namespace buckettools
     GenericFunction_ptr snesupdatefunction_;                         // (std shared) pointer to the snes update of the function (only fields that use snes monitors)
 
     Expression_ptr icexpression_;                                    // (std shared) pointer to an expression describing the initial condition
+
+    std::string icfilename_;                                         // filename of checkpoint
 
     std::vector< std::size_t > shape_;                               // shape of the function
 
@@ -333,6 +340,8 @@ namespace buckettools
     std::vector<double_ptr> lower_cap_, upper_cap_;                  // caps on a field
 
     std::vector<IS> component_is_;                                   // IS for components (into system vector!)
+
+    FunctionAssigner_ptr tosystem_, fromsystem_;                     // assigners to and from the system function (for fields)
 
     //***************************************************************|***********************************************************//
     // Pointers data

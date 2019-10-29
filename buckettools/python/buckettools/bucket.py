@@ -90,10 +90,10 @@ class Bucket:
     uflsymbols = self.list_globaluflsymbols()
     repeated_uflsymbols = set([s for s in uflsymbols if uflsymbols.count(s) > 1])
     if len(repeated_uflsymbols) > 0: stat = 1
-    for s in repeated_uflsymbols: print "ERROR global ufl_symbol %s repeated! Change one of its instances."%(s)
+    for s in repeated_uflsymbols: print("ERROR global ufl_symbol %s repeated! Change one of its instances."%(s))
     repeated_auto_uflsymbols = set([(s, s+a) for s in uflsymbols for a in uflsymbol_suffixes() if uflsymbols.count(s+a) >= 1 and a != ''])
     if len(repeated_auto_uflsymbols) > 0: stat = 1
-    for s in repeated_auto_uflsymbols: print "ERROR ufl_symbol generated from global ufl_symbol %s conflicts with global ufl_symbol %s! Change global ufl_symbol %s to avoid reserved endings."%(s[0], s[1], s[1])
+    for s in repeated_auto_uflsymbols: print("ERROR ufl_symbol generated from global ufl_symbol %s conflicts with global ufl_symbol %s! Change global ufl_symbol %s to avoid reserved endings."%(s[0], s[1], s[1]))
     for system in self.systems:
       for coeff in system.coeffs:
         if coeff.functional:
@@ -264,16 +264,16 @@ class Bucket:
     cpp.append(os.linesep)
 
     filename = "SystemFunctionalsWrapper.cpp"
-    filehandle = file(filename+".temp", 'w')
+    filehandle = open(filename+".temp", 'w')
     filehandle.writelines(cpp)
     filehandle.close()
 
     try:
-      checksum = hashlib.md5(open(filename).read()).hexdigest()
+      checksum = hashlib.md5(open(filename).read().encode('utf-8')).hexdigest()
     except:
       checksum = None
 
-    if checksum != hashlib.md5(open(filename+".temp").read()).hexdigest():
+    if checksum != hashlib.md5(open(filename+".temp").read().encode('utf-8')).hexdigest():
       # file has changed
       shutil.copy(filename+".temp", filename)
 
@@ -366,16 +366,16 @@ class Bucket:
     cpp.append(os.linesep)
 
     filename = "SystemSolversWrapper.cpp"
-    filehandle = file(filename+".temp", 'w')
+    filehandle = open(filename+".temp", 'w')
     filehandle.writelines(cpp)
     filehandle.close()
 
     try:
-      checksum = hashlib.md5(open(filename).read()).hexdigest()
+      checksum = hashlib.md5(open(filename).read().encode('utf-8')).hexdigest()
     except:
       checksum = None
 
-    if checksum != hashlib.md5(open(filename+".temp").read()).hexdigest():
+    if checksum != hashlib.md5(open(filename+".temp").read().encode('utf-8')).hexdigest():
       # file has changed
       shutil.copy(filename+".temp", filename)
 
@@ -496,16 +496,16 @@ class Bucket:
     cpp.append(os.linesep)
 
     filename = "SystemExpressionsWrapper.cpp"
-    filehandle = file(filename+".temp", 'w')
+    filehandle = open(filename+".temp", 'w')
     filehandle.writelines(cpp)
     filehandle.close()
 
     try:
-      checksum = hashlib.md5(open(filename).read()).hexdigest()
+      checksum = hashlib.md5(open(filename).read().encode('utf-8')).hexdigest()
     except:
       checksum = None
 
-    if checksum != hashlib.md5(open(filename+".temp").read()).hexdigest():
+    if checksum != hashlib.md5(open(filename+".temp").read().encode('utf-8')).hexdigest():
       # file has changed
       shutil.copy(filename+".temp", filename)
 

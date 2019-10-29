@@ -83,8 +83,8 @@ class CppExpressionBucket:
     elif self.rank == "Tensor":
       cpp.append("    "+self.namespace()+"(const std::vector<std::size_t> &value_shape, const Bucket *bucket, const SystemBucket *system, const double_ptr time) : dolfin::Expression(value_shape), bucket_(bucket), system_(system), time_(time), initialized_(false)"+os.linesep)
     else:
-      print self.rank
-      print "Unknown rank."
+      print(self.rank)
+      print("Unknown rank.")
       sys.exit(1)
     cpp.append("    {"+os.linesep)
     cpp.append("                                                                     // do nothing"+os.linesep)
@@ -163,7 +163,7 @@ class CppExpressionBucket:
 
     filename   = self.namespace()+".h"
     if suffix: filename += suffix 
-    filehandle = file(filename, 'w')
+    filehandle = open(filename, 'w')
     filehandle.writelines(cpp)
     filehandle.close()
 
@@ -174,11 +174,11 @@ class CppExpressionBucket:
     filename = self.namespace()+".h"
 
     try:
-      checksum = hashlib.md5(open(filename).read()).hexdigest()
+      checksum = hashlib.md5(open(filename).read().encode('utf-8')).hexdigest()
     except:
       checksum = None
 
-    if checksum != hashlib.md5(open(filename+".temp").read()).hexdigest():
+    if checksum != hashlib.md5(open(filename+".temp").read().encode('utf-8')).hexdigest():
       # files have changed
       shutil.copy(filename+".temp", filename)
 
@@ -198,8 +198,8 @@ class CppExpressionBucket:
     elif self.rank == "Tensor":
       cpp.append("            expression.reset(new "+self.namespace()+"(shape, bucket, system, time));"+os.linesep)
     else:
-      print self.rank
-      print "Unknown rank."
+      print(self.rank)
+      print("Unknown rank.")
       sys.exit(1)
     cpp.append("          }"+os.linesep)
     

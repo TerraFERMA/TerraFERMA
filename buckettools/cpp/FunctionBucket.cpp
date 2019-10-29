@@ -187,8 +187,8 @@ const_PETScVector_ptr FunctionBucket::basevector(const std::string &function_typ
                                            values.size(),
                                            true);
 
-    PETScVector_ptr tv( new dolfin::PETScVector() );
-    (*tv).init((*mesh).mpi_comm(), std::make_pair(offset, offset+values.size()));
+    PETScVector_ptr tv( new dolfin::PETScVector((*mesh).mpi_comm()) );
+    (*tv).init(std::make_pair(offset, offset+values.size()));
     (*tv).set_local(values);
     fv = std::const_pointer_cast<const dolfin::PETScVector>(tv);
   }
@@ -229,8 +229,8 @@ dolfin::PETScVector FunctionBucket::vector(const std::string &function_type, con
               dolfin::MPI::global_offset((*mesh).mpi_comm(),
                                          size, true);
 
-  dolfin::PETScVector sv;
-  sv.init((*mesh).mpi_comm(), std::make_pair(offset, offset+size));
+  dolfin::PETScVector sv((*mesh).mpi_comm());
+  sv.init(std::make_pair(offset, offset+size));
 
   VecScatter scatter;
   perr = VecScatterCreate((*fv).vec(), is, 
@@ -421,6 +421,35 @@ const bool FunctionBucket::symmetric() const
     symmetric = (*(*functionspace_).element()).num_sub_elements() != size();
   }
   return symmetric;
+}
+
+
+//*******************************************************************|************************************************************//
+// apply the initial condition expression or file to this functionbucket
+//*******************************************************************|************************************************************//
+void FunctionBucket::apply_ic(const std::string &function_type)
+{
+  GenericFunction_ptr u = genericfunction_ptr(function_type);
+  
+  Function_ptr uf = std::dynamic_pointer_cast<dolfin::Function>(u);
+  if (uf)
+  {
+    std::shared_ptr<dolfin::Function> tmpfunction( new dolfin::Function(localfunctionspace()) );
+
+    if (icexpression_)
+    {
+      (*tmpfunction).interpolate(*icexpression_);
+    }
+    else
+    {
+      assert(!icfilename_.empty());
+      std::stringstream buffer;
+      buffer.str(""); buffer << icfilename_ << ".xdmf";
+      dolfin::XDMFFile((*(*system()).mesh()).mpi_comm(), buffer.str()).read_checkpoint(*tmpfunction, name());
+    }
+    (*tosystem_).assign(uf, tmpfunction);
+  }
+
 }
 
 //*******************************************************************|************************************************************//
@@ -832,8 +861,7 @@ void FunctionBucket::fill_is_()
     {
       for (int i = 0; i < lsize; i++)
       {
-        std::vector<uint> indices = functionspace_dofs(functionspace(), i);
-        restrict_indices(indices, functionspace());
+        std::vector<std::size_t> indices = local_functionspace_dofs(functionspace(), i);
         component_is_[i] = convert_vector_to_is((*mesh).mpi_comm(), 
                                                 indices);
       }
@@ -861,8 +889,7 @@ void FunctionBucket::fill_is_()
             }
           }
 
-          std::vector<uint> indices = functionspace_dofs(functionspace(), kf);
-          restrict_indices(indices, functionspace());
+          std::vector<std::size_t> indices = local_functionspace_dofs(functionspace(), kf);
           component_is_[k] = convert_vector_to_is((*mesh).mpi_comm(), 
                                                   indices);
         }
@@ -883,7 +910,7 @@ void FunctionBucket::fill_is_()
                                              true);
       for (int i = 0; i < lsize; i++)
       {
-        std::vector<uint> indices(nv);
+        std::vector<std::size_t> indices(nv);
         std::iota(indices.begin(), indices.end(), offset + i*(*mesh).num_vertices());
         component_is_[i] = convert_vector_to_is((*mesh).mpi_comm(), 
                                                 indices);
@@ -896,9 +923,26 @@ void FunctionBucket::fill_is_()
 //*******************************************************************|************************************************************//
 // checkpoint the functionbucket
 //*******************************************************************|************************************************************//
-void FunctionBucket::checkpoint()
+void FunctionBucket::checkpoint(const double_ptr time)
 {
-  checkpoint_options_();
+  GenericFunction_ptr u = genericfunction_ptr(time);
+  
+  const_Function_ptr uf = std::dynamic_pointer_cast<const dolfin::Function>(u);
+  if (uf)
+  {
+    std::shared_ptr<dolfin::Function> tmpfunction( new dolfin::Function(localfunctionspace()) );
+    (*fromsystem_).assign(tmpfunction, uf);
+
+    std::stringstream buffer;
+    buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
+                           << (*system()).name() << "_" 
+                           << (*(*system()).bucket()).checkpoint_count() << ".xdmf";
+    dolfin::XDMFFile((*(*system()).mesh()).mpi_comm(), buffer.str()).write_checkpoint(*tmpfunction, name(),
+                                                                                      (*(*system()).bucket()).current_time(),
+                                                                                      dolfin::XDMFFile::default_encoding,
+                                                                                      index()!=0);
+    checkpoint_options_();
+  }
 }
 
 //*******************************************************************|************************************************************//

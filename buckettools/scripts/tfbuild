@@ -89,7 +89,7 @@ if __name__ == "__main__":
 
     # check for legal tfml filename
     if (not os.path.splitext(args.filename)[-1] == '.tfml'):
-        print 'Error:  invalid filename.tfml'
+        print('Error:  invalid filename.tfml')
         parser.print_help()
         sys.exit()
 
@@ -112,11 +112,11 @@ if __name__ == "__main__":
     # sort out any extra cmake options
     cmake_options = getExtraCmakeOptions(args)        
 
-    print "***************************"
-    print "Executable name =", executable
-    print "Auxiliary files =", auxfiles
-    print "Extra Cmake options =", cmake_options
-    print "***************************"
+    print("***************************")
+    print("Executable name =", executable)
+    print("Auxiliary files =", auxfiles)
+    print("Extra Cmake options =", cmake_options)
+    print("***************************")
     
     # make build_directory
     try:
@@ -146,7 +146,7 @@ if __name__ == "__main__":
     if cmake_path is None: raise Exception("Could not find TF_CMAKE_PATH in environment.")
 
     # run twice as cmake seems to modify flags on second run
-    for i in xrange(2):
+    for i in range(2):
       p = subprocess.Popen([cmake_prog,cmake_path,
                            "-DOPTIONSFILE="+tfmlfile,
                            "-DEXECUTABLE="+executable]+cmake_options, 

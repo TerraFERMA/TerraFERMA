@@ -63,13 +63,13 @@ global_parameters =
        ## global ufl code preamble to all forms defined below.  
        ## Any system, field or coefficient ufl symbols defined in this options file may be used in this ufl.
        element ufl {
-         python_code 
+         python3_code 
        }?,
        ## global python  
        ##
        ## Allows objects to be set in the global python dictionary accessible from within all other python routines.
        element python {
-         python_code
+         python3_code
        }?,
        ## global dolfin parameters
        element dolfin {

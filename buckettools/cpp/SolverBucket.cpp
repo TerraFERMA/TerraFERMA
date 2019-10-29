@@ -280,7 +280,7 @@ void SolverBucket::solve()
 
         IS is = solverindexsets_[(*f_it).first];
         Mat submatrix = solversubmatrices_[(*f_it).first];
-        perr = MatGetSubMatrix((*solvermatrix).mat(), is, is, MAT_REUSE_MATRIX, &submatrix);
+        perr = MatCreateSubMatrix((*solvermatrix).mat(), is, is, MAT_REUSE_MATRIX, &submatrix);
         petsc_err(perr);
 
       }

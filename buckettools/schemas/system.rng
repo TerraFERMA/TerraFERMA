@@ -82,7 +82,7 @@ Use the automatically available name "Mesh."</a:documentation>
       <attribute name="name">
         <data type="string"/>
       </attribute>
-      <ref name="python_code"/>
+      <ref name="python3_code"/>
       <ref name="functional_ufl_symbol"/>
       <ref name="form_representation"/>
       <ref name="quadrature_degree"/>

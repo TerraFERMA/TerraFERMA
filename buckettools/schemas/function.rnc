@@ -962,7 +962,7 @@ prescribed_scalar_functional =
       ## ufl code and symbol describing a functional.  This must return a single number, which is used to set a spatially constant coefficient value.
       element functional {
         attribute rank { "0" },
-        python_code,
+        python3_code,
         functional_ufl_symbol,
         form_representation,
         quadrature_degree,
@@ -1024,7 +1024,7 @@ prescribed_scalar_python =
     ## The return value should be scalar.
     element python {
       attribute rank { "0" },
-      python_code
+      python3_code
     }
   )
 
@@ -1050,7 +1050,7 @@ prescribed_vector_python =
     ## The return value must have the same size as the vector element.
     element python {
       attribute rank { "1" },
-      python_code
+      python3_code
     }
   )
 
@@ -1075,7 +1075,7 @@ prescribed_tensor_python =
     ## The return value must have the same shape as the tensor element.
     element python {
       attribute rank { "2" },
-      python_code
+      python3_code
     }
   )
 

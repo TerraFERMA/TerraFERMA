@@ -62,7 +62,7 @@ bucket.fill()
 
 stat = bucket.preprocess_checks()
 if stat != 0:
-  print "ERROR failed preprocessing checks!"
+  print("ERROR failed preprocessing checks!")
   sys.exit(1)
 
 if not args.dry:
