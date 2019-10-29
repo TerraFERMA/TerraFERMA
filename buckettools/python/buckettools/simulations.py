@@ -976,14 +976,15 @@ class Simulation(Run):
     requiredinput = self.getrequiredinput(run)
     threadlibspud.load_options(os.path.join(basedir, basefile))
     for s in range(libspud.option_count("/system")):
-      filename = libspud.get_option("/system["+repr(s)+"]/field/type/rank/initial_condition/file")
+      basename = libspud.get_option("/system["+repr(s)+"]/field/type/rank/initial_condition/file")
+      filenames = [basename+ext for ext in ['.xdmf', '.h5']]
       # for checkpoints we assume that the checkpointed file is the one we want so 
       # we clean the requiredinput list of any references to it as a value (if any exist)
       popkeys = []
       for inputpath_k, inputpath_v in requiredinput.items():
-        if filename == os.path.basename(inputpath_v): popkeys.append(inputpath_k)
+        if os.path.basename(inputpath_v) in filenames: popkeys.append(inputpath_k)
       for popkey in popkeys: requiredinput.pop(popkey)
-      requiredinput[os.path.join(basedir, filename)] = filename
+      for filename in filenames: requiredinput[os.path.join(basedir, filename)] = filename
     threadlibspud.clear_options()
     return requiredinput
 
