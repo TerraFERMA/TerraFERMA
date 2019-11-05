@@ -56,15 +56,15 @@ def MatplotlibSupport():
   return "matplotlib" in globals()
 
 if MatplotlibSupport():
-  matplotlib.use("Cairo")
+  matplotlib.use("GTK3Agg")
   try:
-    import matplotlib.backends.backend_gtk
+    import matplotlib.backends.backend_gtk3agg
   except:
-    debug.deprint("Warning: Failed to import matplotlib.backends.backend_gtk module")
+    debug.deprint("Warning: Failed to import matplotlib.backends.backend_gtk3 module")
   
 if not gui.GuiDisabledByEnvironment():
   try:
-    import gtk
+    from gi.repository import Gtk as gtk
   except:
     debug.deprint("Warning: Failed to import gtk module")
   try:
@@ -113,12 +113,12 @@ class Plot:
     Return a GTK widget for the current plot
     """
     
-    figureWidget = matplotlib.backends.backend_gtk.FigureCanvasGTK(self._figure)
+    figureWidget = matplotlib.backends.backend_gtk3agg.FigureCanvasGTK3Agg(self._figure)
     if withToolbar:    
       vBox = gtk.VBox()
-      toolbarWidget = matplotlib.backends.backend_gtk.NavigationToolbar2GTK(figureWidget, None)
-      vBox.pack_start(figureWidget)
-      vBox.pack_end(toolbarWidget, expand = False, fill = False)
+      toolbarWidget = matplotlib.backends.backend_gtk3.NavigationToolbar2GTK3(figureWidget, None)
+      vBox.pack_start(figureWidget, True, True, 0)
+      vBox.pack_end(toolbarWidget, expand = False, fill = False, padding = 0)
       return vBox
     else:
       return figureWidget
@@ -246,19 +246,19 @@ class LinePlot(ScatterPlot):
     for i in range(fields):
       colourNumber = 256 * 256 * 256 * i / fields
       
-      colourComp = str(hex(colourNumber % 256))[2:]
+      colourComp = str(hex(int(colourNumber) % 256))[2:]
       while len(colourComp) < 2:
         colourComp = "0" + colourComp
       colour = colourComp
       colourNumber /= 256
       
-      colourComp = str(hex(colourNumber % 256))[2:]
+      colourComp = str(hex(int(colourNumber) % 256))[2:]
       while len(colourComp) < 2:
         colourComp = "0" + colourComp
       colour = colourComp + colour
       colourNumber /= 256
       
-      colourComp = str(hex(colourNumber % 256))[2:]
+      colourComp = str(hex(int(colourNumber) % 256))[2:]
       while len(colourComp) < 2:
         colourComp = "0" + colourComp
       colour = "#" + colourComp + colour
@@ -302,7 +302,7 @@ class ContourPlot(Plot):
 class plottingUnittests(unittest.TestCase):
   def testPylabSupport(self):
     import matplotlib
-    import matplotlib.backends.backend_gtk
+    import matplotlib.backends.backend_gtk3
     import pylab
     
     self.assertTrue(MatplotlibSupport())

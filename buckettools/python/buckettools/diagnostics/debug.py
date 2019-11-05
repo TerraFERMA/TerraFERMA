@@ -116,18 +116,18 @@ class debugUnittests(unittest.TestCase):
   def testGetDebugLevel(self):
     global _debugLevel
     
-    self.assertEquals(GetDebugLevel(), _debugLevel)
+    self.assertEqual(GetDebugLevel(), _debugLevel)
     
     return
     
   def testSetDebugLevel(self):
     oldDebugLevel = GetDebugLevel()
     SetDebugLevel(-1)
-    self.assertEquals(GetDebugLevel(), 0)
+    self.assertEqual(GetDebugLevel(), 0)
     SetDebugLevel(1)
-    self.assertEquals(GetDebugLevel(), 1)
+    self.assertEqual(GetDebugLevel(), 1)
     SetDebugLevel(10)
-    self.assertEquals(GetDebugLevel(), 3)
+    self.assertEqual(GetDebugLevel(), 3)
     SetDebugLevel(oldDebugLevel)
     
     return

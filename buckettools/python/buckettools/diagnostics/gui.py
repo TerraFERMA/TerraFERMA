@@ -50,11 +50,11 @@ def GuiDisabledByEnvironment():
 
 if not GuiDisabledByEnvironment():
   try:
-    import gobject
+    from gi.repository import GObject as gobject
   except:
     debug.deprint("Warning: Failed to import gobject module")
   try:
-    import gtk
+    from gi.repository import Gtk as gtk
   except:
     debug.deprint("Warning: Failed to import gtk module")
   
@@ -111,7 +111,7 @@ def ComboBoxFromEntries(entries):
   Contruct a combo box from the list of entries
   """
 
-  comboBox = gtk.combo_box_new_text()
+  comboBox = gtk.ComboBoxText.new()
   for entry in entries:
     comboBox.append_text(entry)
   
@@ -143,8 +143,8 @@ def TableFromWidgetsArray(widgets, homogeneous = False):
   
 class guiUnittests(unittest.TestCase):
   def testGtkSupport(self):
-    import gobject
-    import gtk
+    from gi.repository import GObject as gobject
+    from gi.repository import Gtk as gtk
     
     return
     

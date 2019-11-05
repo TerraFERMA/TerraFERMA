@@ -609,7 +609,7 @@ def InterpolatedSSA(v, t, N_T, n, J = 1, t0 = None, t1 = None):
   
   lt = [t0 + i * dt for i in range(N_T)]
   lv = LinearlyInterpolateField(v, t, lt)
-  print lv, lt
+  print(lv, lt)
     
   return SSA(lv, n, J = J)
     
@@ -1053,39 +1053,39 @@ class calcUnittests(unittest.TestCase):
     return
 
   def testLinearlyInterpolate(self):
-    self.assertAlmostEquals(LinearlyInterpolate(0.0, 2.0, 0.6), 1.2)
+    self.assertAlmostEqual(LinearlyInterpolate(0.0, 2.0, 0.6), 1.2)
     
     return
     
   def testBilinearlyInterpolate(self):
-    self.assertAlmostEquals(BilinearlyInterpolate(0.0, 2.0, 0.0, 2.0, 0.6, 0.6), 1.2)
+    self.assertAlmostEqual(BilinearlyInterpolate(0.0, 2.0, 0.0, 2.0, 0.6, 0.6), 1.2)
     
     return
 
   def testSe(self):
     vals = [0.0, 1.0]
-    self.assertAlmostEquals(Se(vals), 1.0 / math.sqrt(2.0))
+    self.assertAlmostEqual(Se(vals), 1.0 / math.sqrt(2.0))
 
     return
 
   def testDeterminant(self):
-    self.assertAlmostEquals(DeterminantCE([[1.0, 0.0], [0.0, 2.0]]), 2.0)
-    self.assertAlmostEquals(DeterminantCE([[1.0, 2.0], [2.0, 4.0]]), 0.0)
-    self.assertAlmostEquals(DeterminantLU([[1.0, 0.0], [0.0, 2.0]]), 2.0)
-    self.assertAlmostEquals(DeterminantLU([[1.0, 2.0], [2.0, 4.0]]), 0.0)
-    self.assertAlmostEquals(DeterminantNumpy([[1.0, 0.0], [0.0, 2.0]]), 2.0)
-    self.assertAlmostEquals(DeterminantNumpy([[1.0, 2.0], [2.0, 4.0]]), 0.0)
+    self.assertAlmostEqual(DeterminantCE([[1.0, 0.0], [0.0, 2.0]]), 2.0)
+    self.assertAlmostEqual(DeterminantCE([[1.0, 2.0], [2.0, 4.0]]), 0.0)
+    self.assertAlmostEqual(DeterminantLU([[1.0, 0.0], [0.0, 2.0]]), 2.0)
+    self.assertAlmostEqual(DeterminantLU([[1.0, 2.0], [2.0, 4.0]]), 0.0)
+    self.assertAlmostEqual(DeterminantNumpy([[1.0, 0.0], [0.0, 2.0]]), 2.0)
+    self.assertAlmostEqual(DeterminantNumpy([[1.0, 2.0], [2.0, 4.0]]), 0.0)
     
     return
 
   def testEigendecomposition(self):
     w = Eigendecomposition(numpy.array([[1.0, 0.0], [0.0, 1.0]]), returnEigenvectors = False)
-    self.assertEquals(len(w), 2)
-    self.assertAlmostEquals(w[0], 1.0)
-    self.assertAlmostEquals(w[1], 1.0)
+    self.assertEqual(len(w), 2)
+    self.assertAlmostEqual(w[0], 1.0)
+    self.assertAlmostEqual(w[1], 1.0)
 
     w = Eigendecomposition(numpy.array([[1.0, 0.0], [0.0, 0.0]]), returnEigenvectors = False)
-    self.assertEquals(len(w), 2)
+    self.assertEqual(len(w), 2)
     self.assertTrue(AlmostEquals(w[0], 1.0) or AlmostEquals(w[1], 1.0))
     self.assertTrue(AlmostEquals(w[0], 0.0) or AlmostEquals(w[1], 0.0))
 
@@ -1093,55 +1093,55 @@ class calcUnittests(unittest.TestCase):
     
   def testNormalisedFft(self):
     fft = NormalisedFft([i for i in range(16)])
-    self.assertAlmostEquals(fft[0], 7.5)
+    self.assertAlmostEqual(fft[0], 7.5)
     
     fft = NormalisedFft([math.sin(2.0 * math.pi * (i / 4.0)) for i in range(16)])
-    self.assertAlmostEquals(fft[0], 0.0)
-    self.assertEquals(utils.IndexOfMax(fft), 4)
-    self.assertAlmostEquals(fft[4], 0.5)
+    self.assertAlmostEqual(fft[0], 0.0)
+    self.assertEqual(utils.IndexOfMax(fft), 4)
+    self.assertAlmostEqual(fft[4], 0.5)
 
     amp, phases = NormalisedFft([i for i in range(16)], returnPhases = True)
-    self.assertAlmostEquals(amp[0], 7.5)
+    self.assertAlmostEqual(amp[0], 7.5)
     
     amp, phases = NormalisedFft([math.cos(2.0 * math.pi * (i / 4.0)) for i in range(16)], returnPhases = True)
-    self.assertAlmostEquals(amp[0], 0.0)
-    self.assertEquals(utils.IndexOfMax(amp), 4)
-    self.assertAlmostEquals(phases[4], 0.0)
-    self.assertAlmostEquals(amp[4], 0.5)
+    self.assertAlmostEqual(amp[0], 0.0)
+    self.assertEqual(utils.IndexOfMax(amp), 4)
+    self.assertAlmostEqual(phases[4], 0.0)
+    self.assertAlmostEqual(amp[4], 0.5)
     
     for phase in [math.pi / float(i) for i in range(2, 5)]:
       amp, phases = NormalisedFft([math.cos(2.0 * math.pi * (i / 4.0) - phase) for i in range(16)], returnPhases = True)
-      self.assertAlmostEquals(amp[0], 0.0)
-      self.assertEquals(utils.IndexOfMax(amp), 4)
-      self.assertAlmostEquals(phases[4], -phase)
-      self.assertAlmostEquals(amp[4], 0.5)
+      self.assertAlmostEqual(amp[0], 0.0)
+      self.assertEqual(utils.IndexOfMax(amp), 4)
+      self.assertAlmostEqual(phases[4], -phase)
+      self.assertAlmostEqual(amp[4], 0.5)
     
     return
    
   def testUnwrappedPhases(self):
     phases = UnwrappedPhases([0.0, (3.0 / 4.0) * math.pi, (-3.0 / 4.0) * math.pi])
-    self.assertEquals(len(phases), 3)
-    self.assertAlmostEquals(phases[0], 0.0)
-    self.assertAlmostEquals(phases[1], (3.0 / 4.0) * math.pi)
-    self.assertAlmostEquals(phases[2], (5.0 / 4.0) * math.pi)
+    self.assertEqual(len(phases), 3)
+    self.assertAlmostEqual(phases[0], 0.0)
+    self.assertAlmostEqual(phases[1], (3.0 / 4.0) * math.pi)
+    self.assertAlmostEqual(phases[2], (5.0 / 4.0) * math.pi)
 
     phases = UnwrappedPhases([0.0, -(3.0 / 4.0) * math.pi, (3.0 / 4.0) * math.pi])
-    self.assertEquals(len(phases), 3)
-    self.assertAlmostEquals(phases[0], 0.0)
-    self.assertAlmostEquals(phases[1], -(3.0 / 4.0) * math.pi)
-    self.assertAlmostEquals(phases[2], -(5.0 / 4.0) * math.pi)
+    self.assertEqual(len(phases), 3)
+    self.assertAlmostEqual(phases[0], 0.0)
+    self.assertAlmostEqual(phases[1], -(3.0 / 4.0) * math.pi)
+    self.assertAlmostEqual(phases[2], -(5.0 / 4.0) * math.pi)
 
     phases = UnwrappedPhases([math.pi, (7.0 / 4.0) * math.pi, (1.0 / 4.0) * math.pi], min = 0.0)
-    self.assertEquals(len(phases), 3)
-    self.assertAlmostEquals(phases[0], math.pi)
-    self.assertAlmostEquals(phases[1], (7.0 / 4.0) * math.pi)
-    self.assertAlmostEquals(phases[2], (9.0 / 4.0) * math.pi)
+    self.assertEqual(len(phases), 3)
+    self.assertAlmostEqual(phases[0], math.pi)
+    self.assertAlmostEqual(phases[1], (7.0 / 4.0) * math.pi)
+    self.assertAlmostEqual(phases[2], (9.0 / 4.0) * math.pi)
 
     phases = UnwrappedPhases([math.pi, (1.0 / 4.0) * math.pi, (7.0 / 4.0) * math.pi], min = 0.0)
-    self.assertEquals(len(phases), 3)
-    self.assertAlmostEquals(phases[0], math.pi)
-    self.assertAlmostEquals(phases[1], (1.0 / 4.0) * math.pi)
-    self.assertAlmostEquals(phases[2], (-1.0 / 4.0) * math.pi)
+    self.assertEqual(len(phases), 3)
+    self.assertAlmostEqual(phases[0], math.pi)
+    self.assertAlmostEqual(phases[1], (1.0 / 4.0) * math.pi)
+    self.assertAlmostEqual(phases[2], (-1.0 / 4.0) * math.pi)
 
     return
 
@@ -1151,14 +1151,14 @@ class calcUnittests(unittest.TestCase):
     ls = NormalisedLombScargle(vals, times)
     omegas = [float(i) for i in range(11)]
     nfft = ls.Evaluate(omegas)
-    self.assertEquals(utils.IndexOfMax(nfft), 1)
+    self.assertEqual(utils.IndexOfMax(nfft), 1)
       
     times = [i / float(20) * 2.0 * math.pi for i in range(30)]
     vals = [math.sin(time) + 0.3 * math.sin(3.0 * time) + 0.7 * math.cos(5.0 * time) for time in times]
     ls = NormalisedLombScargle(vals, times)
     omegas = [float(i) for i in range(11)]
     nfft = ls.Evaluate(omegas)
-    self.assertEquals(utils.IndexOfMax(nfft), 1)
+    self.assertEqual(utils.IndexOfMax(nfft), 1)
       
     times = [i / float(20) * 2.0 * math.pi for i in range(20)]
     times += [0.1, 1.0, 2.0]
@@ -1167,15 +1167,15 @@ class calcUnittests(unittest.TestCase):
     ls = NormalisedLombScargle(vals, times)
     omegas = [float(i) for i in range(11)]
     nfft = ls.Evaluate(omegas)
-    self.assertEquals(utils.IndexOfMax(nfft), 1)
+    self.assertEqual(utils.IndexOfMax(nfft), 1)
     
     vals = [math.cos(2.0 * math.pi * (i / 4.0)) for i in range(16)]
     times = [2.0 * math.pi * i / float(len(vals)) for i in range(len(vals))]
     ls = NormalisedLombScargle(vals, times)
     omegas = [float(i) for i in range(11)]
     nfft = ls.Evaluate(omegas)
-    self.assertAlmostEquals(nfft[0], 0.0)
-    self.assertAlmostEquals(nfft[4], 0.5)
+    self.assertAlmostEqual(nfft[0], 0.0)
+    self.assertAlmostEqual(nfft[4], 0.5)
   
     return
     
@@ -1185,86 +1185,86 @@ class calcUnittests(unittest.TestCase):
     
     t, amp = DominantModeStructured(amps, dt)
     
-    self.assertAlmostEquals(t, 9.0, 0)
-    self.assertAlmostEquals(amp, 1.5, 1)
+    self.assertAlmostEqual(t, 9.0, 0)
+    self.assertAlmostEqual(amp, 1.5, 1)
     
     return
     
   def testIndexBinaryLboundSearch(self):
     values = [0.0, 1.0, 2.0]
-    self.assertEquals(IndexBinaryLboundSearch(-0.1, values, increasing = True), 0)
-    self.assertEquals(IndexBinaryLboundSearch(0.1, values, increasing = True), 0)
-    self.assertEquals(IndexBinaryLboundSearch(1.1, values, increasing = True), 1)
-    self.assertEquals(IndexBinaryLboundSearch(2.1, values, increasing = True), 2)
+    self.assertEqual(IndexBinaryLboundSearch(-0.1, values, increasing = True), 0)
+    self.assertEqual(IndexBinaryLboundSearch(0.1, values, increasing = True), 0)
+    self.assertEqual(IndexBinaryLboundSearch(1.1, values, increasing = True), 1)
+    self.assertEqual(IndexBinaryLboundSearch(2.1, values, increasing = True), 2)
 
     values = [0, 1, 2]
-    self.assertEquals(IndexBinaryLboundSearch(1, values, increasing = True), 1)
+    self.assertEqual(IndexBinaryLboundSearch(1, values, increasing = True), 1)
     
     values = [0.0, 1.0, 2.0]
-    self.assertEquals(IndexBinaryLboundSearch(-0.1, values), 0)
-    self.assertEquals(IndexBinaryLboundSearch(0.1, values), 0)
-    self.assertEquals(IndexBinaryLboundSearch(1.1, values), 1)
-    self.assertEquals(IndexBinaryLboundSearch(2.1, values), 2)
+    self.assertEqual(IndexBinaryLboundSearch(-0.1, values), 0)
+    self.assertEqual(IndexBinaryLboundSearch(0.1, values), 0)
+    self.assertEqual(IndexBinaryLboundSearch(1.1, values), 1)
+    self.assertEqual(IndexBinaryLboundSearch(2.1, values), 2)
 
     values = [0, 1, 2]
-    self.assertEquals(IndexBinaryLboundSearch(1, values), 1)
+    self.assertEqual(IndexBinaryLboundSearch(1, values), 1)
     
     values = [2.0, 1.0, 0.0]
-    self.assertEquals(IndexBinaryLboundSearch(-0.1, values, increasing = False), 2)
-    self.assertEquals(IndexBinaryLboundSearch(0.1, values, increasing = False), 2)
-    self.assertEquals(IndexBinaryLboundSearch(1.1, values, increasing = False), 1)
-    self.assertEquals(IndexBinaryLboundSearch(2.1, values, increasing = False), 0)
+    self.assertEqual(IndexBinaryLboundSearch(-0.1, values, increasing = False), 2)
+    self.assertEqual(IndexBinaryLboundSearch(0.1, values, increasing = False), 2)
+    self.assertEqual(IndexBinaryLboundSearch(1.1, values, increasing = False), 1)
+    self.assertEqual(IndexBinaryLboundSearch(2.1, values, increasing = False), 0)
 
     values = [2, 1, 0]
-    self.assertEquals(IndexBinaryLboundSearch(1, values, increasing = False), 1)
+    self.assertEqual(IndexBinaryLboundSearch(1, values, increasing = False), 1)
 
     return
 
   def testIndexBinaryUboundSearch(self):
     values = [0.0, 1.0, 2.0]
-    self.assertEquals(IndexBinaryUboundSearch(-0.1, values, increasing = True), 0)
-    self.assertEquals(IndexBinaryUboundSearch(0.1, values, increasing = True), 1)
-    self.assertEquals(IndexBinaryUboundSearch(1.1, values, increasing = True), 2)
-    self.assertEquals(IndexBinaryUboundSearch(2.1, values, increasing = True), 2)
+    self.assertEqual(IndexBinaryUboundSearch(-0.1, values, increasing = True), 0)
+    self.assertEqual(IndexBinaryUboundSearch(0.1, values, increasing = True), 1)
+    self.assertEqual(IndexBinaryUboundSearch(1.1, values, increasing = True), 2)
+    self.assertEqual(IndexBinaryUboundSearch(2.1, values, increasing = True), 2)
 
     values = [0, 1, 2]
-    self.assertEquals(IndexBinaryUboundSearch(1, values, increasing = True), 1)
+    self.assertEqual(IndexBinaryUboundSearch(1, values, increasing = True), 1)
     
     values = [0.0, 1.0, 2.0]
-    self.assertEquals(IndexBinaryUboundSearch(-0.1, values), 0)
-    self.assertEquals(IndexBinaryUboundSearch(0.1, values), 1)
-    self.assertEquals(IndexBinaryUboundSearch(1.1, values), 2)
-    self.assertEquals(IndexBinaryUboundSearch(2.1, values), 2)
+    self.assertEqual(IndexBinaryUboundSearch(-0.1, values), 0)
+    self.assertEqual(IndexBinaryUboundSearch(0.1, values), 1)
+    self.assertEqual(IndexBinaryUboundSearch(1.1, values), 2)
+    self.assertEqual(IndexBinaryUboundSearch(2.1, values), 2)
 
     values = [0, 1, 2]
-    self.assertEquals(IndexBinaryUboundSearch(1, values), 1)
+    self.assertEqual(IndexBinaryUboundSearch(1, values), 1)
     
     values = [2.0, 1.0, 0.0]
-    self.assertEquals(IndexBinaryUboundSearch(-0.1, values, increasing = False), 2)
-    self.assertEquals(IndexBinaryUboundSearch(0.1, values, increasing = False), 1)
-    self.assertEquals(IndexBinaryUboundSearch(1.1, values, increasing = False), 0)
-    self.assertEquals(IndexBinaryUboundSearch(2.1, values, increasing = False), 0)
+    self.assertEqual(IndexBinaryUboundSearch(-0.1, values, increasing = False), 2)
+    self.assertEqual(IndexBinaryUboundSearch(0.1, values, increasing = False), 1)
+    self.assertEqual(IndexBinaryUboundSearch(1.1, values, increasing = False), 0)
+    self.assertEqual(IndexBinaryUboundSearch(2.1, values, increasing = False), 0)
 
     values = [2, 1, 0]
-    self.assertEquals(IndexBinaryUboundSearch(1, values, increasing = False), 1)
+    self.assertEqual(IndexBinaryUboundSearch(1, values, increasing = False), 1)
 
     return
     
   def testLinearRegression(self):
     eq, r = LinearRegression([0.0, 1.0, 2.0], [2.0, 3.0, 4.0], returnR = True)
-    self.assertAlmostEquals(eq[0], 1.0)
-    self.assertAlmostEquals(eq[1], 2.0)
-    self.assertAlmostEquals(r, 1.0)
+    self.assertAlmostEqual(eq[0], 1.0)
+    self.assertAlmostEqual(eq[1], 2.0)
+    self.assertAlmostEqual(r, 1.0)
     
     return
 
   def testDeg2Rad(self):
-    self.assertAlmostEquals(Deg2Rad(90.0), math.pi / 2.0)
+    self.assertAlmostEqual(Deg2Rad(90.0), math.pi / 2.0)
     
     return
 
   def testRad2Deg(self):
-    self.assertAlmostEquals(Rad2Deg(math.pi / 2.0), 90.0)
+    self.assertAlmostEqual(Rad2Deg(math.pi / 2.0), 90.0)
     
     return
     
@@ -1304,14 +1304,14 @@ class calcUnittests(unittest.TestCase):
   def testHuge(self):
     self.assertTrue(isinstance(Huge(), int))
     self.assertFalse(isinstance(Huge() + 1, int))
-    self.assertTrue(isinstance(Huge() + 1, long))
+    self.assertTrue(isinstance(Huge() + 1, int))
     
     return
     
   def testInf(self):  
     self.assertTrue(isinstance(Inf(), float))
     self.assertTrue(Inf() > 0.0)
-    self.assertEquals(1.0 / Inf(), 0.0)
+    self.assertEqual(1.0 / Inf(), 0.0)
     
     return
     
@@ -1337,24 +1337,24 @@ class calcUnittests(unittest.TestCase):
     return
     
   def testMaxVal(self):
-    self.assertEquals(MaxVal([1, 2, 3, 4, 10, 6, 7, 8, 9]), 10)
+    self.assertEqual(MaxVal([1, 2, 3, 4, 10, 6, 7, 8, 9]), 10)
     
     return
     
   def testMinVal(self):
-    self.assertEquals(MinVal([1, 2, 3, 4, -10, 6, 7, 8, 9]), -10)
+    self.assertEqual(MinVal([1, 2, 3, 4, -10, 6, 7, 8, 9]), -10)
     
     return
     
   def testSumVal(self):
-    self.assertAlmostEquals(SumVal([]), 0.0)
-    self.assertAlmostEquals(SumVal([1.0, -1.0]), 0.0)
-    self.assertAlmostEquals(SumVal([1.0, 2.0]), 3.0)
+    self.assertAlmostEqual(SumVal([]), 0.0)
+    self.assertAlmostEqual(SumVal([1.0, -1.0]), 0.0)
+    self.assertAlmostEqual(SumVal([1.0, 2.0]), 3.0)
     
     return
     
   def testMeanVal(self):
-    self.assertAlmostEquals(MeanVal([0.0, 1.0]), 0.5)
+    self.assertAlmostEqual(MeanVal([0.0, 1.0]), 0.5)
     
     return
     
@@ -1368,33 +1368,33 @@ class calcUnittests(unittest.TestCase):
     
   def testRotatedVector(self):
     vec = RotatedVector([1.0, 0.0], math.pi / 4.0)
-    self.assertEquals(len(vec), 2)
-    self.assertAlmostEquals(vec[0], 1.0 / math.sqrt(2))
-    self.assertAlmostEquals(vec[1], 1.0 / math.sqrt(2))
+    self.assertEqual(len(vec), 2)
+    self.assertAlmostEqual(vec[0], 1.0 / math.sqrt(2))
+    self.assertAlmostEqual(vec[1], 1.0 / math.sqrt(2))
     
     vec = RotatedVector([1.0, 0.0, 0.0], math.pi / 4.0, axis = (0.0, 0.0, 1.0))
-    self.assertEquals(len(vec), 3)
-    self.assertAlmostEquals(vec[0], 1.0 / math.sqrt(2))
-    self.assertAlmostEquals(vec[1], 1.0 / math.sqrt(2))
-    self.assertAlmostEquals(vec[2], 0.0)
+    self.assertEqual(len(vec), 3)
+    self.assertAlmostEqual(vec[0], 1.0 / math.sqrt(2))
+    self.assertAlmostEqual(vec[1], 1.0 / math.sqrt(2))
+    self.assertAlmostEqual(vec[2], 0.0)
     
     vec = RotatedVector([1.0, 0.0, 0.0], math.pi / 4.0, axis = (0.0, 1.0, 0.0))
-    self.assertEquals(len(vec), 3)
-    self.assertAlmostEquals(vec[0], 1.0 / math.sqrt(2))
-    self.assertAlmostEquals(vec[1], 0.0)
-    self.assertAlmostEquals(vec[2], -1.0 / math.sqrt(2))
+    self.assertEqual(len(vec), 3)
+    self.assertAlmostEqual(vec[0], 1.0 / math.sqrt(2))
+    self.assertAlmostEqual(vec[1], 0.0)
+    self.assertAlmostEqual(vec[2], -1.0 / math.sqrt(2))
     
     vec = RotatedVector([1.0, 0.0, 0.0], math.pi / 4.0, axis = (1.0, 0.0, 0.0))
-    self.assertEquals(len(vec), 3)
-    self.assertAlmostEquals(vec[0], 1.0)
-    self.assertAlmostEquals(vec[1], 0.0)
-    self.assertAlmostEquals(vec[2], 0.0)
+    self.assertEqual(len(vec), 3)
+    self.assertAlmostEqual(vec[0], 1.0)
+    self.assertAlmostEqual(vec[1], 0.0)
+    self.assertAlmostEqual(vec[2], 0.0)
     
     vec = RotatedVector([0.0, 0.0, 1.0], math.pi / 4.0, axis = (1.0, 0.0, 0.0))
-    self.assertEquals(len(vec), 3)
-    self.assertAlmostEquals(vec[0], 0.0)
-    self.assertAlmostEquals(vec[1], -1.0 / math.sqrt(2))
-    self.assertAlmostEquals(vec[2], 1.0 / math.sqrt(2))
+    self.assertEqual(len(vec), 3)
+    self.assertAlmostEqual(vec[0], 0.0)
+    self.assertAlmostEqual(vec[1], -1.0 / math.sqrt(2))
+    self.assertAlmostEqual(vec[2], 1.0 / math.sqrt(2))
     
     return
     
@@ -1403,85 +1403,85 @@ class calcUnittests(unittest.TestCase):
     
   def testCartesianVectorsToCylindrical(self):
     data = CartesianVectorsToCylindrical([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]], [[1.0, 1.0, 0.0], [1.0, 1.0, 1.0]])
-    self.assertEquals(len(data), 2)
-    self.assertEquals(len(data[0]), 3)
-    self.assertEquals(len(data[1]), 3)
-    self.assertAlmostEquals(data[0][0], 1.0)
-    self.assertAlmostEquals(data[0][1], 1.0)
-    self.assertAlmostEquals(data[0][2], 0.0)
-    self.assertAlmostEquals(data[1][0], 1.0)
-    self.assertAlmostEquals(data[1][1], -1.0)
-    self.assertAlmostEquals(data[1][2], 1.0)
+    self.assertEqual(len(data), 2)
+    self.assertEqual(len(data[0]), 3)
+    self.assertEqual(len(data[1]), 3)
+    self.assertAlmostEqual(data[0][0], 1.0)
+    self.assertAlmostEqual(data[0][1], 1.0)
+    self.assertAlmostEqual(data[0][2], 0.0)
+    self.assertAlmostEqual(data[1][0], 1.0)
+    self.assertAlmostEqual(data[1][1], -1.0)
+    self.assertAlmostEqual(data[1][2], 1.0)
     
     return
   
   def testCylindricalVectorsToCartesian(self):
     data = CylindricalVectorsToCartesian([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]], [[1.0, 1.0, 0.0], [1.0, 1.0, 1.0]])
-    self.assertEquals(len(data), 2)
-    self.assertEquals(len(data[0]), 3)
-    self.assertEquals(len(data[1]), 3)
-    self.assertAlmostEquals(data[0][0], 1.0)
-    self.assertAlmostEquals(data[0][1], 1.0)
-    self.assertAlmostEquals(data[0][2], 0.0)
-    self.assertAlmostEquals(data[1][0], -1.0)
-    self.assertAlmostEquals(data[1][1], 1.0)
-    self.assertAlmostEquals(data[1][2], 1.0)
+    self.assertEqual(len(data), 2)
+    self.assertEqual(len(data[0]), 3)
+    self.assertEqual(len(data[1]), 3)
+    self.assertAlmostEqual(data[0][0], 1.0)
+    self.assertAlmostEqual(data[0][1], 1.0)
+    self.assertAlmostEqual(data[0][2], 0.0)
+    self.assertAlmostEqual(data[1][0], -1.0)
+    self.assertAlmostEqual(data[1][1], 1.0)
+    self.assertAlmostEqual(data[1][2], 1.0)
     
     return
     
   def testMaxima(self):
     maxima = Maxima([0.0, 1.0, 0.0])
-    self.assertEquals(len(maxima), 1)
-    self.assertEquals(maxima[0], 1)
+    self.assertEqual(len(maxima), 1)
+    self.assertEqual(maxima[0], 1)
         
     maxima = Maxima([0.0, 1.0, 2.0, 0.0])
-    self.assertEquals(len(maxima), 1)
-    self.assertEquals(maxima[0], 2)
+    self.assertEqual(len(maxima), 1)
+    self.assertEqual(maxima[0], 2)
     
     maxima = Maxima([0.0, 1.0, 2.0, 0.0, 1.0, 0.0])
-    self.assertEquals(len(maxima), 2)
-    self.assertEquals(maxima[0], 2)
-    self.assertEquals(maxima[1], 4)
+    self.assertEqual(len(maxima), 2)
+    self.assertEqual(maxima[0], 2)
+    self.assertEqual(maxima[1], 4)
     
     return
     
   def testMinima(self):
     minima = Minima([0.0, -1.0, 0.0])
-    self.assertEquals(len(minima), 1)
-    self.assertEquals(minima[0], 1)
+    self.assertEqual(len(minima), 1)
+    self.assertEqual(minima[0], 1)
         
     minima = Minima([0.0, -1.0, -2.0, 0.0])
-    self.assertEquals(len(minima), 1)
-    self.assertEquals(minima[0], 2)
+    self.assertEqual(len(minima), 1)
+    self.assertEqual(minima[0], 2)
     
     minima = Minima([0.0, -1.0, -2.0, 0.0, -1.0, 0.0])
-    self.assertEquals(len(minima), 2)
-    self.assertEquals(minima[0], 2)
-    self.assertEquals(minima[1], 4)
+    self.assertEqual(len(minima), 2)
+    self.assertEqual(minima[0], 2)
+    self.assertEqual(minima[1], 4)
     
     return
     
   def testFactorise(self):
-    self.assertEquals(Factorise(1), [1])
-    self.assertEquals(Factorise(5), [1, 5])
-    self.assertEquals(Factorise(10), [1, 2, 5, 10])
+    self.assertEqual(Factorise(1), [1])
+    self.assertEqual(Factorise(5), [1, 5])
+    self.assertEqual(Factorise(10), [1, 2, 5, 10])
     
     return
     
   def testFactorial(self):
-    self.assertEquals(Factorial(0), 1)
-    self.assertEquals(Factorial(1), 1)
-    self.assertEquals(Factorial(2), 2)
-    self.assertEquals(Factorial(3), 6)
-    self.assertEquals(Factorial(6), 720)
+    self.assertEqual(Factorial(0), 1)
+    self.assertEqual(Factorial(1), 1)
+    self.assertEqual(Factorial(2), 2)
+    self.assertEqual(Factorial(3), 6)
+    self.assertEqual(Factorial(6), 720)
     
     return
     
   def testCrossProduct(self):
     cross = CrossProduct([1.0, 0.0, 0.0], [0.0, 1.0, 0.0])
-    self.assertEquals(len(cross), 3)
-    self.assertAlmostEquals(cross[0], 0.0)
-    self.assertAlmostEquals(cross[1], 0.0)
-    self.assertAlmostEquals(cross[2], 1.0)
+    self.assertEqual(len(cross), 3)
+    self.assertAlmostEqual(cross[0], 0.0)
+    self.assertAlmostEqual(cross[1], 0.0)
+    self.assertAlmostEqual(cross[2], 1.0)
     
     return

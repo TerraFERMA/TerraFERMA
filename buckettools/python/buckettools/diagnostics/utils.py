@@ -378,27 +378,27 @@ class utilsUnittests(unittest.TestCase):
     return
     
   def testPrefix(self):
-    self.assertEquals(Prefix("1", "0", 2), "01")
-    self.assertEquals(Prefix("1", "0", 3), "001")
+    self.assertEqual(Prefix("1", "0", 2), "01")
+    self.assertEqual(Prefix("1", "0", 3), "001")
     self.assertRaises(AssertionError, Prefix, "1", "0", 0)
     self.assertRaises(AssertionError, Prefix, "1", "00", 2)
     
     return
   
   def testExpandList(self):
-    self.assertEquals(ExpandList((1, (2,), [3, 4])), [1, 2, 3, 4])
-    self.assertEquals(ExpandList("ab"), ["a", "b"])
+    self.assertEqual(ExpandList((1, (2,), [3, 4])), [1, 2, 3, 4])
+    self.assertEqual(ExpandList("ab"), ["a", "b"])
     try:
       import numpy
-      self.assertEquals(ExpandList(numpy.array([0.0, 1.0])), [0.0, 1.0])
+      self.assertEqual(ExpandList(numpy.array([0.0, 1.0])), [0.0, 1.0])
     except ImportError:
       pass
-    self.assertEquals(ExpandList(["one", "two"]), ["one", "two"])
+    self.assertEqual(ExpandList(["one", "two"]), ["one", "two"])
   
     return
 
   def testFormLine(self):
-    self.assertEquals(FormLine([1, [2, 3]], delimiter = ",", newline = False), "1,2,3")
+    self.assertEqual(FormLine([1, [2, 3]], delimiter = ",", newline = False), "1,2,3")
     
     return
 
@@ -430,18 +430,18 @@ class utilsUnittests(unittest.TestCase):
     return
     
   def testIndexOfMax(self):
-    self.assertEquals(IndexOfMax([1, 2, 10, 3, 4]), 2)
+    self.assertEqual(IndexOfMax([1, 2, 10, 3, 4]), 2)
     
     return
     
   def testIndexOfMin(self):
-    self.assertEquals(IndexOfMin([1, 2, -10, 3, 4]), 2)
+    self.assertEqual(IndexOfMin([1, 2, -10, 3, 4]), 2)
     
     return
     
   def testCountUnique(self):
-    self.assertEquals(CountUnique([1, 1, 2]), 2)
-    self.assertEquals(CountUnique(["b", "cd", "c", "d", "cd", "a", "b"]), 5)
+    self.assertEqual(CountUnique([1, 1, 2]), 2)
+    self.assertEqual(CountUnique(["b", "cd", "c", "d", "cd", "a", "b"]), 5)
     
     return
     
@@ -458,24 +458,24 @@ class utilsUnittests(unittest.TestCase):
   def testOffsetList(self):
     inputList = [1, 2, 3]
     outputList = OffsetList(inputList, -1)
-    self.assertEquals(len(outputList), 3)
-    self.assertEquals(outputList[0], 0)
-    self.assertEquals(outputList[1], 1)
-    self.assertEquals(outputList[2], 2)
+    self.assertEqual(len(outputList), 3)
+    self.assertEqual(outputList[0], 0)
+    self.assertEqual(outputList[1], 1)
+    self.assertEqual(outputList[2], 2)
     
     return
     
   def testDictInverse(self):
     dict = {1:"a", 2:"b"}
     dict = DictInverse(dict)
-    self.assertEquals(dict["a"], 1)
-    self.assertEquals(dict["b"], 2)
+    self.assertEqual(dict["a"], 1)
+    self.assertEqual(dict["b"], 2)
     
     return
     
   def testStripListDuplicates(self):
     list = [1, 2, 3, 2]
     StripListDuplicates(list)
-    self.assertEquals(list, [1, 2, 3])
+    self.assertEqual(list, [1, 2, 3])
     
     return
