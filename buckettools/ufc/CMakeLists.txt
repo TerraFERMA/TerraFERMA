@@ -25,7 +25,7 @@ project(BUCKETTOOLS_UFC)
 file(
     WRITE ${PROJECT_BINARY_DIR}/genwrappers.cmake
 "execute_process(
-    COMMAND ${BUCKETTOOLS_BIN}/systemwrappers_from_options -l ${PROJECT_BINARY_DIR}/cpp_filenames.txt.temp -- ${OPTIONSFILE}
+    COMMAND ${BUCKETTOOLS_BIN}/systemwrappers_from_options -f ${PROJECT_BINARY_DIR}/cpp_filenames.txt.temp -l ${PROJECT_BINARY_DIR}/cpp_libraries.txt.temp  -- ${OPTIONSFILE}
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
     RESULT_VARIABLE RETCODE
     )
@@ -46,12 +46,28 @@ if (CPP_FILENAMES_CHANGED)
       COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PROJECT_BINARY_DIR}/cpp_filenames.txt.temp ${PROJECT_BINARY_DIR}/cpp_filenames.txt
       WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
       )
+endif (CPP_FILENAMES_CHANGED)
 
+execute_process(
+    COMMAND ${CMAKE_COMMAND} -E compare_files ${PROJECT_BINARY_DIR}/cpp_libraries.txt.temp ${PROJECT_BINARY_DIR}/cpp_libraries.txt
+    RESULT_VARIABLE CPP_LIBRARIES_CHANGED
+    OUTPUT_QUIET
+    ERROR_QUIET
+    )
+
+if (CPP_LIBRARIES_CHANGED)
+  execute_process(
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PROJECT_BINARY_DIR}/cpp_libraries.txt.temp ${PROJECT_BINARY_DIR}/cpp_libraries.txt
+      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+      )
+endif (CPP_LIBRARIES_CHANGED)
+
+if (CPP_FILENAMES_CHANGED OR CPP_LIBRARIES_CHANGED)
   execute_process(
       COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target rebuild_cache
       WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
       )
-endif (CPP_FILENAMES_CHANGED)
+endif (CPP_FILENAMES_CHANGED OR CPP_LIBRARIES_CHANGED)
 "
     )
 
@@ -62,19 +78,23 @@ add_custom_target(
    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
    )
 
-if(NOT EXISTS ${PROJECT_BINARY_DIR}/cpp_filenames.txt)
-  # perform a dry run of code generation so that a base cpp_filenames can be created at configuration time
+if((NOT EXISTS ${PROJECT_BINARY_DIR}/cpp_filenames.txt) OR (NOT EXISTS ${PROJECT_BINARY_DIR}/cpp_libraries.txt))
+  # perform a dry run of code generation so that a base cpp_filenames and cpp_libraries can be created at configuration time
   execute_process(
-     COMMAND ${BUCKETTOOLS_BIN}/systemwrappers_from_options -d -l ${PROJECT_BINARY_DIR}/cpp_filenames.txt -- ${OPTIONSFILE}
+     COMMAND ${BUCKETTOOLS_BIN}/systemwrappers_from_options -d -f ${PROJECT_BINARY_DIR}/cpp_filenames.txt -l ${PROJECT_BINARY_DIR}/cpp_libraries.txt -- ${OPTIONSFILE}
      WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
      )
 endif()
 
 file(STRINGS ${PROJECT_BINARY_DIR}/cpp_filenames.txt CPP_FILENAMES)
+file(STRINGS ${PROJECT_BINARY_DIR}/cpp_libraries.txt CPP_LIBRARIES)
 
 # generate a library - really the main point of this whole process
 add_library(buckettools_ufc SHARED
-            ${PROJECT_BINARY_DIR}/SystemFunctionalsWrapper.cpp ${PROJECT_BINARY_DIR}/SystemSolversWrapper.cpp ${PROJECT_BINARY_DIR}/SystemExpressionsWrapper.cpp ${PROJECT_BINARY_DIR}/VisualizationWrapper.cpp 
+            ${PROJECT_BINARY_DIR}/SystemFunctionalsWrapper.cpp 
+            ${PROJECT_BINARY_DIR}/SystemSolversWrapper.cpp 
+            ${PROJECT_BINARY_DIR}/SystemExpressionsWrapper.cpp 
+            ${PROJECT_BINARY_DIR}/VisualizationWrapper.cpp
             ${CPP_FILENAMES})
 # tell cmake that this file doesn't exist until build time
 set_source_files_properties(${PROJECT_BINARY_DIR}/SystemFunctionalsWrapper.cpp PROPERTIES GENERATED 1)
@@ -86,4 +106,5 @@ set_source_files_properties(${CPP_FILENAMES} PROPERTIES GENERATED 1)
 add_dependencies(buckettools_ufc genwrappers)
 # link to other libraries
 target_link_libraries(buckettools_ufc ${DOLFIN_LIBRARIES})
+target_link_libraries(buckettools_ufc ${CPP_LIBRARIES})
 

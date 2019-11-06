@@ -164,10 +164,16 @@ This behaviour can be modified if the file can be loaded by libspud by toggling
 the option spud_file below.</a:documentation>
       <ref name="filename"/>
       <optional>
-        <element name="spud_file">
-          <a:documentation>When reading in this file treat it as a spud compatible file.</a:documentation>
-          <ref name="comment"/>
-        </element>
+        <choice>
+          <element name="spud_file">
+            <a:documentation>When reading in this file treat it as a spud compatible file and load its options.</a:documentation>
+            <ref name="comment"/>
+          </element>
+          <element name="json_file">
+            <a:documentation>When reading in this file load it as a json file and load it into a dictionary.</a:documentation>
+            <ref name="comment"/>
+          </element>
+        </choice>
       </optional>
     </element>
   </define>
@@ -354,9 +360,11 @@ The values of all the parameters for this simulation will be available to this c
 the names given to the parameters above.  They will be formatted as strings and should be converted 
 appropriately within the code.
 
-Additionally, the full path to the input file is available as input_filename and, if not a spud file, 
-the contents of the input file are available as a string as input_file.  The input_file string should be 
-modified - it is what will be written back to file.
+The full path to the input file is available as input_filename.  If a spud file the contents of
+that file will already be loaded into the global spud options dictionary.  If a json file then the contents
+will be available as a dictionary as input_dict.  If neither a spud or json file, 
+the contents of the input file are available as a string as input_file.  The input_file string, input_dict
+dictionary or global spud options dictionary should be modified - they will be written back to file.
 
 For more advanced usage the Run or Simulation class object is available as _self.</a:documentation>
               <ref name="python3_code"/>
@@ -608,9 +616,11 @@ The values of all the parameters for this simulation will be available to this c
 the names given to the parameters above.  They will be formatted as strings and should be converted 
 appropriately within the code.
 
-Additionally, the full path to the input file is available as input_filename and, if not a spud file, 
-the contents of the input file are available as a string as input_file.  The input_file string should be 
-modified - it is what will be written back to file.
+The full path to the input file is available as input_filename.  If a spud file the contents of
+that file will already be loaded into the global spud options dictionary.  If a json file then the contents
+will be available as a dictionary as input_dict.  If neither a spud or json file, 
+the contents of the input file are available as a string as input_file.  The input_file string, input_dict
+dictionary or global spud options dictionary should be modified - they will be written back to file.
 
 For more advanced usage the Run or Simulation class object is available as _self.</a:documentation>
               <ref name="python3_code"/>
@@ -729,6 +739,9 @@ e.g. perhaps a gmsh run</a:documentation>
       </optional>
       <optional>
         <ref name="required_output"/>
+      </optional>
+      <optional>
+        <ref name="dependencies"/>
       </optional>
       <optional>
         <ref name="commands"/>

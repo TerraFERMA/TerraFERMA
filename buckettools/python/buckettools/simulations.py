@@ -277,8 +277,11 @@ class Run:
     self.inputfilename = self.filename
     self.inputext = self.ext
     self.spudfile = False
+    self.jsonfile = False
     if "spudfile" in self.optionsdict:
       self.spudfile = self.optionsdict["spudfile"]
+    if "jsonfile" in self.optionsdict:
+      self.jsonfile = self.optionsdict["jsonfile"]
 
     self.name = self.optionsdict["name"]
 
@@ -351,6 +354,22 @@ class Run:
 
       libspud.write_options(os.path.join(self.rundirectory, self.filename+self.ext))
       threadlibspud.clear_options()
+    elif self.jsonfile:
+      import json
+      try:
+        inputfile = open(os.path.join(self.runinputdirectory, self.inputfilename+self.inputext))
+        inputjson = json.load(inputfile)
+        inputfile.close()
+      except json.JSONDecodeError:
+        inputjson = {}
+
+      valuesdict = {"input_dict":inputjson}
+      self.updateoptions(valuesdict=valuesdict)
+      
+      inputjson = valuesdict["input_dict"]
+      outputfile = open(os.path.join(self.rundirectory, self.filename+self.ext), 'w')
+      json.dump(inputjson, outputfile)
+      outputfile.close()
     else:
       inputfilepath = os.path.join(self.runinputdirectory, self.inputfilename+self.inputext)
       gz = False
@@ -1934,6 +1953,7 @@ class SimulationHarnessBatch(SimulationBatch):
      if run:
        options[path]["type"]    = Run
        options[path]["spudfile"] = libspud.have_option(optionpath+"/input_file/spud_file")
+       options[path]["jsonfile"] = libspud.have_option(optionpath+"/input_file/json_file")
        options[path]["run"] = self.getcommands(optionpath+"/commands")
      else:
        options[path]["type"]    = Simulation

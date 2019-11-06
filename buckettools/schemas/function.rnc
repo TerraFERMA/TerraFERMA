@@ -1086,7 +1086,7 @@ prescribed_cpp =
     ##
     ## These should be listed including an include statement, e.g.:
     ## 
-    ##     #include <string>
+    ##     #include &lt;string&gt;
     ##     #include "example.h"
     ##
     ## The expression will automatically include:
@@ -1094,7 +1094,10 @@ prescribed_cpp =
     ##     #include "BoostTypes.h"
     ##     #include "Bucket.h"
     ##     #include "SystemBucket.h"
-    ##     #include <dolfin.h>
+    ##     #include &lt;dolfin.h&gt;
+    ##
+    ## If the files are in a non-default location be sure to include the path
+    ## to them in the environment variable CPLUS_INCLUDE_PATH.
     element include {
       cpp_code
     }?,
@@ -1127,7 +1130,7 @@ prescribed_cpp =
     ## For example, to extract a boost shared pointer to a generic function for a coefficient called 
     ## "ExampleCoefficient", we should have declared in the members section above:
     ##
-    ##     std::shared_pointer< dolfin::GenericFunction > examplecoeff;
+    ##     std::shared_pointer&lt;dolfin::GenericFunction&gt; examplecoeff;
     ##
     ## or (utilizing the typedefs available to us through BoostTypes.h:
     ##
@@ -1136,18 +1139,18 @@ prescribed_cpp =
     ## Then, in this initialization function, we could extract the appropriate time level of that 
     ## coefficient from the "ExampleSystem" system using:
     ##
-    ##     examplecoeff = bucket()->fetch_system("ExampleSystem")->fetch_coeff("ExampleCoefficient")->genericfunction_ptr(time())
+    ##     examplecoeff = bucket()-&gt;fetch_system("ExampleSystem")-&gt;fetch_coeff("ExampleCoefficient")-&gt;genericfunction_ptr(time())
     ##
     ## or, if "ExampleSystem" is the current system, using the shortcut:
     ##
-    ##     examplecoeff = system()->fetch_coeff("ExampleCoefficient")->genericfunction_ptr(time())
+    ##     examplecoeff = system()-&gt;fetch_coeff("ExampleCoefficient")-&gt;genericfunction_ptr(time())
     element initialization {
       cpp_code
     },
     ## Overload the eval subroutine for this expression.  This has the standard interface for DOLFIN 
     ## expressions, i.e.:
     ##
-    ##     void eval(dolfin::Array<double>& values, const dolfin::Array<double>& x, const ufc::cell &cell) const
+    ##     void eval(dolfin::Array&lt;double&gt;&amp; values, const dolfin::Array&lt;double&gt;&amp; x, const ufc::cell &amp;cell) const
     ##
     ## To automatically evaluate and return the values of the "ExampleCoefficient" in the example in the 
     ## initialization section, all that would be required to write here is:
