@@ -56,11 +56,11 @@ def MatplotlibSupport():
   return "matplotlib" in globals()
 
 if MatplotlibSupport():
-  matplotlib.use("GTK3Agg")
+  matplotlib.use("Cairo")
   try:
     import matplotlib.backends.backend_gtk3agg
   except:
-    debug.deprint("Warning: Failed to import matplotlib.backends.backend_gtk3 module")
+    debug.deprint("Warning: Failed to import matplotlib.backends.backend_gtk3agg module")
   
 if not gui.GuiDisabledByEnvironment():
   try:

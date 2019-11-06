@@ -42,7 +42,6 @@ import os
 import unittest
 
 import buckettools.diagnostics.debug as debug
-import buckettools.diagnostics.optimise as optimise
 import buckettools.diagnostics.utils as utils
 
 def GuiDisabledByEnvironment():
