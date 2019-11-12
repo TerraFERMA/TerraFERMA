@@ -79,6 +79,17 @@ The return value must have length &gt; 0 and each entry must be of the same dime
     <element name="visualization">
       <a:documentation>Options to control the functionspace that the visualization output is interpolated to.</a:documentation>
       <ref name="element_options_scalar_lagrange_visualization"/>
+      <optional>
+        <element name="checkpoint_format">
+          <a:documentation>Write visualization data in checkpoint format.
+
+This allows fields and coefficient functions to be visualized on the function space described by their individual elements.
+Coefficient expressions will be output on the function space described by the visualization element above.
+
+If not selected, all visualization output is interpolated to the vertices.</a:documentation>
+          <ref name="comment"/>
+        </element>
+      </optional>
       <ref name="comment"/>
     </element>
     <element name="dump_periods">

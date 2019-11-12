@@ -162,36 +162,36 @@ void SpudSystemBucket::initialize_solvers()
   }
 }
 
-//*******************************************************************|************************************************************//
-// return a vector of GenericFunctions that are to be included in the visualization file(s) from this system
-//*******************************************************************|************************************************************//
-std::vector< GenericFunction_ptr > SpudSystemBucket::collect_vis_functions() const
-{
-  std::vector< GenericFunction_ptr > functions;
-
-  for (FunctionBucket_const_it f_it = fields_begin(); f_it != fields_end();
-                                                              f_it++)
-  {
-    if ((*(*f_it).second).include_in_visualization())
-    {
-      functions.push_back( (*(*f_it).second).function() );
-    }
-    if ((*(*f_it).second).include_residual_in_visualization())
-    {
-      functions.push_back( (*(*f_it).second).residualfunction() );
-    }
-  }
- 
-  for (FunctionBucket_const_it c_it = coeffs_begin(); c_it != coeffs_end(); c_it++)
-  {
-    if ((*(*c_it).second).include_in_visualization())
-    {
-      functions.push_back( (*(*c_it).second).function() );
-    }
-  }
-
-  return functions;
-}
+////*******************************************************************|************************************************************//
+//// return a vector of GenericFunctions that are to be included in the visualization file(s) from this system
+////*******************************************************************|************************************************************//
+//std::vector< GenericFunction_ptr > SpudSystemBucket::collect_vis_functions() const
+//{
+//  std::vector< GenericFunction_ptr > functions;
+//
+//  for (FunctionBucket_const_it f_it = fields_begin(); f_it != fields_end();
+//                                                              f_it++)
+//  {
+//    if ((*(*f_it).second).include_in_visualization())
+//    {
+//      functions.push_back( (*(*f_it).second).function() );
+//    }
+//    if ((*(*f_it).second).include_residual_in_visualization())
+//    {
+//      functions.push_back( (*(*f_it).second).residualfunction() );
+//    }
+//  }
+// 
+//  for (FunctionBucket_const_it c_it = coeffs_begin(); c_it != coeffs_end(); c_it++)
+//  {
+//    if ((*(*c_it).second).include_in_visualization())
+//    {
+//      functions.push_back( (*(*c_it).second).function() );
+//    }
+//  }
+//
+//  return functions;
+//}
 
 //*******************************************************************|************************************************************//
 // return a string describing the contents of the spud system

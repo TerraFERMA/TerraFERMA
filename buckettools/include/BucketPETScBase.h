@@ -51,7 +51,6 @@ namespace buckettools
   #endif
 
   typedef struct {                                                   // a structure used to pass bucket data into monitor functions
-    File_ptr pvdfile;                                                // (boost shared) pointer to a pvd file
     SolverBucket *solver;                                            // pointer to solver
   } CustomMonitorCtx;
 

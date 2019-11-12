@@ -78,6 +78,15 @@ diagnostic_output_options =
     ## Options to control the functionspace that the visualization output is interpolated to.
     element visualization {
       element_options_scalar_lagrange_visualization,
+      ## Write visualization data in checkpoint format.
+      ##
+      ## This allows fields and coefficient functions to be visualized on the function space described by their individual elements.
+      ## Coefficient expressions will be output on the function space described by the visualization element above.
+      ##
+      ## If not selected, all visualization output is interpolated to the vertices.
+      element checkpoint_format {
+        comment
+      }?,
       comment
     },
     ## Options to control the period between dumps of diagnostic data.

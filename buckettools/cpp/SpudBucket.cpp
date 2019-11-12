@@ -1134,6 +1134,8 @@ void SpudBucket::fill_diagnostics_()
 {
   std::stringstream buffer;                                          // optionpath buffer
 
+  write_vischeckpoints_ = Spud::have_option("/io/visualization/checkpoint_format");
+
   statfile_.reset( new StatisticsFile(output_basename()+".stat", 
                            (*(*meshes_begin()).second).mpi_comm(),
                            this) );
@@ -1172,92 +1174,11 @@ void SpudBucket::fill_diagnostics_()
     (*convfile_).write_header();
   }
 
+  write_convvis_ = Spud::have_option("/nonlinear_systems/monitors/visualization");
+
   for (SystemBucket_const_it s_it = systems_begin(); s_it != systems_end(); s_it++)
   {
     (*(*s_it).second).initialize_diagnostics();                      // initialize any diagnostic files in systems
-  }
-
-  if ((Spud::option_count("/system/field/diagnostics/include_in_visualization")+
-       Spud::option_count("/system/field/diagnostics/include_residual_in_visualization")+
-       Spud::option_count("/system/coefficient/diagnostics/include_in_visualization"))>0)
-  {
-    for (Mesh_const_it m_it = meshes_begin(); m_it != meshes_end(); m_it++)
-    {
-      std::vector<GenericFunction_ptr> functions;
-      for (SystemBucket_it s_it = systems_begin(); s_it != systems_end(); s_it++)// loop over the systems
-      {
-        if ((*(*s_it).second).mesh() == (*m_it).second)              // check the system is on the right mesh (using pointers)
-        {
-          if ((*(*s_it).second).include_in_visualization())          // are any functions of fields included in the visualization
-          {
-            
-            std::vector<GenericFunction_ptr> sysfuncs = 
-                (*std::dynamic_pointer_cast< SpudSystemBucket >((*s_it).second)).collect_vis_functions();
-
-            functions.insert(functions.end(), sysfuncs.begin(), sysfuncs.end());
-          }
-        }
-      }
-
-      if (functions.size()>0)                                        // if there were any functions to include, let's save this info
-      {
-        File_ptr pvd_file;
-        if (meshes_.size()>1)                                        // allocate the pvd file with an appropriate name
-        {
-          pvd_file.reset( new dolfin::File(output_basename()+"_"+(*m_it).first+".pvd", "compressed") );
-        }
-        else
-        {
-          pvd_file.reset( new dolfin::File(output_basename()+".pvd", "compressed") );
-        }
-
-
-        FunctionSpace_ptr vis_fs = fetch_visfunctionspace((*m_it).second);
-
-        visfiles_[pvd_file] = std::make_pair(vis_fs, functions);     // save to the data structure
-      }
-
-    }
-  }
-  
-  if (Spud::have_option("/nonlinear_systems/monitors/visualization"))
-  {
-    for (Mesh_const_it m_it = meshes_begin(); m_it != meshes_end(); m_it++)
-    {
-      std::vector<GenericFunction_ptr> functions;
-      for (SystemBucket_it s_it = systems_begin(); s_it != systems_end(); s_it++)// loop over the systems
-      {
-        if ((*(*s_it).second).mesh() == (*m_it).second)              // check the system is on the right mesh (using pointers)
-        {
-            
-          for (FunctionBucket_const_it f_it = (*(*s_it).second).fields_begin(); 
-                                       f_it != (*(*s_it).second).fields_end();
-                                       f_it++)
-          {
-            functions.push_back( (*(*f_it).second).function() );      // all fields and residuals get output in this debugging output
-            functions.push_back( (*(*f_it).second).residualfunction() ); // regardless of whether they're included in standard output
-          }
-
-          for (FunctionBucket_const_it c_it = (*(*s_it).second).coeffs_begin(); 
-                                       c_it != (*(*s_it).second).coeffs_end();
-                                       c_it++)
-          {
-            if ((*(*c_it).second).include_in_visualization())         // including coefficients here is just a niceity but some
-            {                                                         // coefficients aren't suitable for visualization so
-              functions.push_back( (*(*c_it).second).function() );    // only output them if we've asked for them in the normal
-            }                                                         // output
-          }
-
-        }
-      }
-
-      if (functions.size()>0)                                        // if there were any functions to include, let's save this info
-      {
-        File_ptr pvd_file = NULL;
-        convvisfiles_[(*m_it).first] = std::make_pair(pvd_file, functions);// save to the data structure
-      }
-
-    }
   }
   
 }

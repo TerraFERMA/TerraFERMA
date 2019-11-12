@@ -54,7 +54,7 @@ class Bucket:
   def list_namespaces(self):
     """Return a list of the namespaces."""
     namespaces = []
-    for meshname in self.meshes.iterkeys():
+    for meshname in self.meshes.keys():
       namespaces.append(self.visualization_namespace(meshname))
     for system in self.systems:
       for coeff in system.coeffs:
@@ -142,7 +142,7 @@ class Bucket:
     ufl.append(declaration_comment("Element", "Function", "VisualizationOnMesh"+meshname))
     ufl.append("vis_e = FiniteElement(\""+self.viselementfamily+"\", " \
                +meshcell+", " \
-               +`self.viselementdegree`+")"+os.linesep)
+               +repr(self.viselementdegree)+")"+os.linesep)
     ufl.append(os.linesep)
     ufl.append(declaration_comment("Test space", "Function", "VisualizationOnMesh"+meshname))
     ufl.append(testfunction_ufl("vis"))
@@ -165,20 +165,20 @@ class Bucket:
     
     filename = self.visualization_namespace(meshname)+".ufl"
     if suffix: filename += suffix
-    filehandle = file(filename, 'w')
+    filehandle = open(filename, 'w')
     filehandle.writelines(ufl)
     filehandle.close()
     
   def write_visualization_ufls(self, suffix=None):
     """Write the mesh visualization functionspaces to a ufl file."""
     # loop over all the meshes we recorded information about in case they have different cells
-    for meshname, meshcell in self.meshes.iteritems():
+    for meshname, meshcell in self.meshes.items():
       self.write_visualization_ufl(meshname, meshcell, suffix=suffix)
     
   def write_visualization_ufcs(self):
     """Write the mesh visualization functionspaces to a ufl file and transform it into ufc."""
     # loop over all the meshes we recorded information about in case they have different cells
-    for meshname, meshcell in self.meshes.iteritems():
+    for meshname, meshcell in self.meshes.items():
       self.write_visualization_ufl(meshname, meshcell, suffix=".temp")
       ffc(self.visualization_namespace(meshname), 'quadrature', 'default', None)
 
@@ -405,7 +405,7 @@ class Bucket:
     functionspace_cpp.append("    FunctionSpace_ptr functionspace;"+os.linesep)
 
     s = 0
-    for meshname in self.meshes.iterkeys():
+    for meshname in self.meshes.keys():
       include_cpp.append("#include \""+self.visualization_namespace(meshname)+".h\""+os.linesep)
       
       if s == 0:
@@ -435,16 +435,16 @@ class Bucket:
     cpp.append(os.linesep)
 
     filename = "VisualizationWrapper.cpp"
-    filehandle = file(filename+".temp", 'w')
+    filehandle = open(filename+".temp", 'w')
     filehandle.writelines(cpp)
     filehandle.close()
 
     try:
-      checksum = hashlib.md5(open(filename).read()).hexdigest()
+      checksum = hashlib.md5(open(filename).read().encode('utf-8')).hexdigest()
     except:
       checksum = None
 
-    if checksum != hashlib.md5(open(filename+".temp").read()).hexdigest():
+    if checksum != hashlib.md5(open(filename+".temp").read().encode('utf-8')).hexdigest():
       # file has changed
       shutil.copy(filename+".temp", filename)
 

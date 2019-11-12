@@ -141,10 +141,7 @@ void SolverBucket::solve()
   else if (type()=="Picard")                                         // this is a hand-rolled picard iteration - FIXME: switch to enum
   {
 
-
-    File_ptr pvdfile;
-    FunctionSpace_ptr visfuncspace;
-    std::vector< GenericFunction_ptr > functions;
+    XDMFFile_ptr vis_file;
     if(*visualizationmonitor_)
     {
       std::stringstream buffer;
@@ -152,20 +149,8 @@ void SolverBucket::solve()
                              << (*system()).name() << "_" 
                              << name() << "_" 
                              << (*(*system()).bucket()).timestep_count() << "_" 
-                             << (*(*system()).bucket()).iteration_count() << "_picard.pvd";
-      pvdfile.reset( new dolfin::File(buffer.str(), "compressed") );
-
-      Mesh_ptr sysmesh = (*system()).mesh();
-      visfuncspace = (*(*system()).bucket()).fetch_visfunctionspace(sysmesh);
-
-      for (FunctionBucket_const_it f_it = (*system()).fields_begin(); 
-                                   f_it != (*system()).fields_end(); 
-                                                            f_it++)
-      {
-        functions.push_back((*(*f_it).second).iteratedfunction());
-        functions.push_back((*(*f_it).second).residualfunction());
-      }
-
+                             << (*(*system()).bucket()).iteration_count() << "_picard.xdmf";
+      vis_file.reset( new dolfin::XDMFFile((*(*system()).mesh()).mpi_comm(), buffer.str()) );
     }
 
     assert(residual_);                                               // we need to assemble the residual again here as it may depend
@@ -203,7 +188,17 @@ void SolverBucket::solve()
       *(*(*system()).residualfunction()).vector() = (*std::dynamic_pointer_cast< dolfin::GenericVector >(residual_vector()));
       if (*visualizationmonitor_)
       {
-        (*pvdfile).write(functions, *visfuncspace, (double) iteration_count());
+        bool append = false;
+        for (FunctionBucket_const_it f_it = (*system()).fields_begin(); 
+                                     f_it != (*system()).fields_end(); 
+                                                              f_it++)
+        {
+          (*(*f_it).second).write_checkpoint(vis_file, "iterated", (double)iteration_count(),
+                                   append);
+          append = true;
+          (*(*f_it).second).write_checkpoint(vis_file, "residual", (double)iteration_count(),
+                                   true);
+        }
       }
       if (convfile_)
       {
@@ -343,7 +338,15 @@ void SolverBucket::solve()
         *(*(*system()).residualfunction()).vector() = (*std::dynamic_pointer_cast< dolfin::GenericVector >(residual_vector()));
         if (*visualizationmonitor_)
         {
-          (*pvdfile).write(functions, *visfuncspace, (double) iteration_count());
+          for (FunctionBucket_const_it f_it = (*system()).fields_begin(); 
+                                       f_it != (*system()).fields_end(); 
+                                                                f_it++)
+          {
+            (*(*f_it).second).write_checkpoint(vis_file, "iterated", (double)iteration_count(), 
+                                     true);
+            (*(*f_it).second).write_checkpoint(vis_file, "residual", (double)iteration_count(),
+                                     true);
+          }
         }
         if (convfile_)
         {

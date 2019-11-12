@@ -70,8 +70,6 @@ namespace buckettools
     void initialize_solvers();                                       // initialize the matrices related to forms as well as the
                                                                      // petsc objects
 
-    std::vector< GenericFunction_ptr > collect_vis_functions() const;// output the diagnostics on this system
-
     //***************************************************************|***********************************************************//
     // Base data access
     //***************************************************************|***********************************************************//

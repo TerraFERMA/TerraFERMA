@@ -31,13 +31,17 @@ class SpudBucket(buckettools.bucket.Bucket):
     self.meshes = {}
     # loop over the meshes in the options tree
     for i in range(libspud.option_count("/geometry/mesh")):
-      mesh_optionpath = "/geometry/mesh["+`i`+"]"
+      mesh_optionpath = "/geometry/mesh["+repr(i)+"]"
       mesh_name = libspud.get_option(mesh_optionpath+"/name")
       self.meshes[mesh_name] = libspud.get_option(mesh_optionpath+"/source/cell")
 
     visualization_optionpath = "/io/visualization/element"
-    self.viselementfamily = libspud.get_option(visualization_optionpath+"/family")
-    self.viselementdegree = libspud.get_option(visualization_optionpath+"/degree")
+    try:
+      self.viselementfamily = libspud.get_option(visualization_optionpath+"/family")
+      self.viselementdegree = libspud.get_option(visualization_optionpath+"/degree")
+    except libspud.SpudKeyError:
+      self.viselementfamily = "CG"
+      self.viselementdegree = 1
 
     parameters_optionpath = "/global_parameters/ufl"
     if libspud.have_option(parameters_optionpath):

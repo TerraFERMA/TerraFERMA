@@ -473,7 +473,9 @@ Importantly, this is the degree of the resulting form not the function itself!</
     </optional>
     <optional>
       <element name="symmetric">
-        <a:documentation>Tensor symmetry.</a:documentation>
+        <a:documentation>Tensor symmetry.
+
+WARNING: Not dependable in FEniCS.</a:documentation>
         <ref name="comment"/>
       </element>
     </optional>
@@ -533,7 +535,9 @@ Importantly, this is the degree of the resulting form not the function itself!</
   <define name="element_options_scalar_lagrange_visualization">
     <choice>
       <element name="element">
-        <a:documentation>Options describing piecewise linear continuous Lagrange finite element.</a:documentation>
+        <a:documentation>Element used to output coefficient expressions if checkpointing output is selected below.
+
+Options describing piecewise linear continuous Lagrange finite element.</a:documentation>
         <attribute name="name">
           <value>P1</value>
         </attribute>
@@ -541,7 +545,9 @@ Importantly, this is the degree of the resulting form not the function itself!</
         <ref name="comment"/>
       </element>
       <element name="element">
-        <a:documentation>Options describing piecewise quadratic continuous Lagrange finite element.</a:documentation>
+        <a:documentation>Element used to output coefficient expressions if checkpointing output is selected below.
+
+Options describing piecewise quadratic continuous Lagrange finite element.</a:documentation>
         <attribute name="name">
           <value>P2</value>
         </attribute>
@@ -549,7 +555,9 @@ Importantly, this is the degree of the resulting form not the function itself!</
         <ref name="comment"/>
       </element>
       <element name="element">
-        <a:documentation>Options describing piecewise linear discontinuous Lagrange finite element.</a:documentation>
+        <a:documentation>Element used to output coefficient expressions if checkpointing output is selected below.
+
+Options describing piecewise linear discontinuous Lagrange finite element.</a:documentation>
         <attribute name="name">
           <value>P1DG</value>
         </attribute>
@@ -557,7 +565,9 @@ Importantly, this is the degree of the resulting form not the function itself!</
         <ref name="comment"/>
       </element>
       <element name="element">
-        <a:documentation>Options describing piecewise quadratic discontinuous Lagrange finite element.</a:documentation>
+        <a:documentation>Element used to output coefficient expressions if checkpointing output is selected below.
+
+Options describing piecewise quadratic discontinuous Lagrange finite element.</a:documentation>
         <attribute name="name">
           <value>P2DG</value>
         </attribute>

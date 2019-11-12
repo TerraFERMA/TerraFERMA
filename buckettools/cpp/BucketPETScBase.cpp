@@ -309,32 +309,28 @@ PetscErrorCode buckettools::SNESCustomMonitor(SNES snes, PetscInt its,
 
   *(*(*system).snesupdatefunction()).vector() = solupdate;
 
-  std::vector< GenericFunction_ptr > functions;                      // create a list of subfunctions
-  for (FunctionBucket_const_it f_it = (*system).fields_begin(); 
-                               f_it != (*system).fields_end(); 
-                                                        f_it++)
-  {
-    functions.push_back((*(*f_it).second).iteratedfunction());
-    functions.push_back((*(*f_it).second).residualfunction());
-    functions.push_back((*(*f_it).second).snesupdatefunction());
-  }
-
   if (((*solver).visualization_monitor()))
   {
-    if (its==0)
-    {
-      buffer.str(""); buffer << (*bucket).output_basename() << "_" 
-                             << (*system).name() << "_" 
-                             << (*solver).name() << "_" 
-                             << (*bucket).timestep_count() << "_" 
-                             << (*bucket).iteration_count() << "_snes.pvd";
-      (*snesctx).pvdfile.reset( new dolfin::File(buffer.str(), "compressed") );
-    }
-    assert((*snesctx).pvdfile);
+    buffer.str(""); buffer << (*bucket).output_basename() << "_" 
+                           << (*system).name() << "_" 
+                           << (*solver).name() << "_" 
+                           << (*bucket).timestep_count() << "_" 
+                           << (*bucket).iteration_count() << "_snes.xdmf";
 
-    Mesh_ptr sysmesh = (*system).mesh();
-    FunctionSpace_ptr visfuncspace = (*bucket).fetch_visfunctionspace(sysmesh);
-    (*(*snesctx).pvdfile).write(functions, *visfuncspace, (double) its);
+    XDMFFile_ptr xdmf_file( new dolfin::XDMFFile((*(*system).mesh()).mpi_comm(), buffer.str()) );
+    bool append = (its!=0);
+    for (FunctionBucket_const_it f_it = (*system).fields_begin(); 
+                                 f_it != (*system).fields_end(); 
+                                                          f_it++)
+    {
+      (*(*f_it).second).write_checkpoint(xdmf_file, "iterated", (double)its, 
+                               append);
+      append = true;
+      (*(*f_it).second).write_checkpoint(xdmf_file, "residual", (double)its,
+                               true);
+      (*(*f_it).second).write_checkpoint(xdmf_file, "snesupdate", (double)its,
+                               true);
+    }
   }
 
   if ((*solver).convergence_file())
@@ -376,15 +372,6 @@ PetscErrorCode buckettools::KSPCustomMonitor(KSP ksp, int it,
 
   *(*(*system).residualfunction()).vector() = solresid;
 
-  std::vector< GenericFunction_ptr > functions;                      // create a list of subfunctions
-  for (FunctionBucket_const_it f_it = (*system).fields_begin(); 
-                               f_it != (*system).fields_end(); 
-                                                        f_it++)
-  {
-    functions.push_back((*(*f_it).second).iteratedfunction());
-    functions.push_back((*(*f_it).second).residualfunction());
-  }
-
   if ((*solver).type()=="SNES")
   {
     PetscInt iter;
@@ -394,21 +381,25 @@ PetscErrorCode buckettools::KSPCustomMonitor(KSP ksp, int it,
 
   if (((*solver).kspvisualization_monitor()))
   {
-    if (it==0)
-    {
-      buffer.str(""); buffer << (*bucket).output_basename() << "_" 
-                             << (*system).name() << "_" 
-                             << (*solver).name() << "_" 
-                             << (*bucket).timestep_count() << "_" 
-                             << (*bucket).iteration_count() << "_"
-                             << (*solver).iteration_count() << "_ksp.pvd";
-      (*kspctx).pvdfile.reset( new dolfin::File(buffer.str(), "compressed") );
-    }
-    assert((*kspctx).pvdfile);
+    buffer.str(""); buffer << (*bucket).output_basename() << "_" 
+                           << (*system).name() << "_" 
+                           << (*solver).name() << "_" 
+                           << (*bucket).timestep_count() << "_" 
+                           << (*bucket).iteration_count() << "_"
+                           << (*solver).iteration_count() << "_ksp.xdmf";
 
-    Mesh_ptr sysmesh = (*system).mesh();
-    FunctionSpace_ptr visfuncspace = (*bucket).fetch_visfunctionspace(sysmesh);
-    (*(*kspctx).pvdfile).write(functions, *visfuncspace, (double) it);
+    XDMFFile_ptr xdmf_file( new dolfin::XDMFFile((*(*system).mesh()).mpi_comm(), buffer.str()) );
+    bool append = (it!=0);
+    for (FunctionBucket_const_it f_it = (*system).fields_begin(); 
+                                 f_it != (*system).fields_end(); 
+                                                          f_it++)
+    {
+      (*(*f_it).second).write_checkpoint(xdmf_file, "iterated", (double)it,
+                               append);
+      append = true;
+      (*(*f_it).second).write_checkpoint(xdmf_file, "residual", (double)it,
+                               true);
+    }
   }
 
   if ((*solver).ksp_convergence_file())

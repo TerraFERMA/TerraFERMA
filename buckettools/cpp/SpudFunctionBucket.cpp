@@ -115,7 +115,7 @@ void SpudFunctionBucket::allocate_coeff_function()
 
     functionspace_ =                                                 // grab the functionspace for this coefficient from the bucket
           (*(*system_).bucket()).fetch_coefficientspace(uflsymbol());// data maps
-    localfunctionspace_ = functionspace_;
+    outputfunctionspace_ = functionspace_;
 
     function_.reset( new dolfin::Function(functionspace_) );        // allocate the function on this functionspace
     oldfunction_.reset( new dolfin::Function(functionspace_) );     // allocate the old function on this functionspace
@@ -437,7 +437,7 @@ void SpudFunctionBucket::allocate_field_()
   if (nfields == 1)                                                  // no subfunctions (this field is identical to the system)
   {                                                                  // just grab references to:
     functionspace_ = (*system_).functionspace();                     // the functionspace
-    localfunctionspace_ = functionspace_;
+    outputfunctionspace_ = functionspace_;
 
 
     function_ = (*system_).function();                               // the function
@@ -460,7 +460,7 @@ void SpudFunctionBucket::allocate_field_()
   else                                                               // yes, multiple fields in this system so we need to make
   {                                                                  // a subspace and subfunctions (dangerous, be careful!)
     functionspace_ = (*(*system_).functionspace())[index_];          // create a subspace
-    localfunctionspace_ = (*functionspace_).collapse();              // the collapsed functionspace for this function
+    outputfunctionspace_ = (*functionspace_).collapse();             // the collapsed functionspace for this function
 
     function_.reset( &(*(*system_).function())[index_],              // create a subfunction but don't delete it ever as it shares
                                               dolfin::NoDeleter() ); // information with the system function
@@ -486,8 +486,8 @@ void SpudFunctionBucket::allocate_field_()
   }
 
   tosystem_.reset( new dolfin::FunctionAssigner(functionspace_, 
-                                                localfunctionspace_) );
-  fromsystem_.reset( new dolfin::FunctionAssigner(localfunctionspace_, 
+                                                outputfunctionspace_) );
+  fromsystem_.reset( new dolfin::FunctionAssigner(outputfunctionspace_, 
                                                   functionspace_) );
 
   buffer.str(""); buffer << (*system_).name() << "::" << name();     // rename the function as SystemName::FieldName
@@ -959,6 +959,9 @@ void SpudFunctionBucket::allocate_coeff_expression_()
     }
 
     fill_is_();
+
+    outputfunctionspace_ = (*(*system()).bucket()).fetch_visfunctionspace((*system()).mesh());
+
   }
 
 }
