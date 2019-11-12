@@ -386,7 +386,7 @@ stat = parser("projection.stat")
 snes_dummy_min = stat["SNESProjection"]["Dummy"]["min"]
 </string_value>
         </variable>
-        <variable name="picard_field1_vtu">
+        <!--<variable name="picard_field1_vtu">
           <string_value lines="20" type="code" language="python">import buckettools.vtktools as vtktools
 import os, glob
 filename = max(glob.iglob("projection000010.*vtu"), key=os.path.getctime)
@@ -567,7 +567,7 @@ import os, glob
 filename = max(glob.iglob("projection000010.*vtu"), key=os.path.getctime)
 vtu = vtktools.vtu(filename)
 snes_field3_vtu_11 = vtu.GetField("SNESProjection::Field3")[:,1,1]</string_value>
-        </variable>
+        </variable>-->
       </variables>
     </simulation>
   </simulations>
@@ -842,7 +842,7 @@ assert numpy.all(abs(numpy.array(snes_dummy_max) - 6.0) &lt; 1.e-7)
 assert numpy.all(abs(numpy.array(snes_dummy_min) - 6.0) &lt; 1.e-7)
 </string_value>
     </test>
-    <test name="snes_resfield2_vtu_1">
+    <!--<test name="snes_resfield2_vtu_1">
       <string_value lines="20" type="code" language="python">import numpy
 for v in snes_resfield2_vtu_1: assert numpy.all(abs(v) &lt; 1.e-9)</string_value>
     </test>
@@ -1024,6 +1024,6 @@ for v in snes_field3_vtu_10: assert numpy.all(abs(v-4750.0) &lt; 1.e-9)</string_
     <test name="snes_field3_vtu_11">
       <string_value lines="20" type="code" language="python">import numpy
 for v in snes_field3_vtu_11: assert numpy.all(abs(v-5000.0) &lt; 1.e-9)</string_value>
-    </test>
+    </test>-->
   </tests>
 </harness_options>

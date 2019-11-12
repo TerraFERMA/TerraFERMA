@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -7,7 +7,7 @@
     <mesh name="Mesh">
       <source name="File">
         <file>
-          <string_value lines="1" type="filename">square_regions</string_value>
+          <string_value type="filename" lines="1">square_regions</string_value>
         </file>
         <cell>
           <string_value lines="1">triangle</string_value>
@@ -16,19 +16,19 @@
           <process name="1">
             <integer_value rank="0">1</integer_value>
             <region_ids>
-              <integer_value shape="4" rank="1">20 25 60 80</integer_value>
+              <integer_value rank="1" shape="4">20 25 60 80</integer_value>
             </region_ids>
           </process>
           <process name="2">
             <integer_value rank="0">2</integer_value>
             <region_ids>
-              <integer_value shape="4" rank="1">10 15 50 70</integer_value>
+              <integer_value rank="1" shape="4">10 15 50 70</integer_value>
             </region_ids>
           </process>
           <process name="3">
             <integer_value rank="0">3</integer_value>
             <region_ids>
-              <integer_value shape="4" rank="1">40 45 70 80</integer_value>
+              <integer_value rank="1" shape="4">40 45 70 80</integer_value>
             </region_ids>
           </process>
         </cell_destinations>
@@ -39,13 +39,23 @@
     <output_base_name>
       <string_value lines="1">stokes</string_value>
     </output_base_name>
+    <visualization>
+      <element name="P1">
+        <family>
+          <string_value lines="1">CG</string_value>
+        </family>
+        <degree>
+          <integer_value rank="0">1</integer_value>
+        </degree>
+      </element>
+    </visualization>
     <dump_periods/>
     <detectors>
       <point name="Point">
-        <real_value shape="2" dim1="dim" rank="1">0. 1.</real_value>
+        <real_value rank="1" dim1="dim" shape="2">0. 1.</real_value>
       </point>
       <point name="corner">
-        <real_value shape="2" dim1="dim" rank="1">1. 1.</real_value>
+        <real_value rank="1" dim1="dim" shape="2">1. 1.</real_value>
       </point>
     </detectors>
   </io>
@@ -69,24 +79,23 @@
               <integer_value rank="0">2</integer_value>
             </degree>
           </element>
-          <initial_condition type="initial_condition" name="WholeMesh">
+          <initial_condition name="WholeMesh" type="initial_condition">
             <constant name="dim">
-              <real_value shape="2" dim1="dim" rank="1">0.0 0.0</real_value>
+              <real_value rank="1" dim1="dim" shape="2">0.0 0.0</real_value>
             </constant>
           </initial_condition>
           <boundary_condition name="all">
             <boundary_ids>
-              <integer_value shape="4" rank="1">1 2 3 4</integer_value>
+              <integer_value rank="1" shape="4">1 2 3 4</integer_value>
             </boundary_ids>
             <sub_components name="All">
-              <type type="boundary_condition" name="Dirichlet">
+              <type name="Dirichlet" type="boundary_condition">
                 <python rank="1">
-                  <string_value lines="20" type="code" language="python3"># exact solution for velocity
+                  <string_value type="code" language="python3" lines="20"># exact solution for velocity
 def val(x):
   u = 20.*x[0]*x[1]**3
   v = 5.*(x[0]**4 - x[1]**4)
-  return [u,v]
-</string_value>
+  return [u,v]</string_value>
                 </python>
               </type>
             </sub_components>
@@ -113,14 +122,14 @@ def val(x):
               <integer_value rank="0">1</integer_value>
             </degree>
           </element>
-          <initial_condition type="initial_condition" name="WholeMesh">
+          <initial_condition name="WholeMesh" type="initial_condition">
             <constant>
               <real_value rank="0">0.0</real_value>
             </constant>
           </initial_condition>
           <reference_point name="Point">
             <coordinates>
-              <real_value shape="2" dim1="dim" rank="1">0. 0.</real_value>
+              <real_value rank="1" dim1="dim" shape="2">0. 0.</real_value>
             </coordinates>
           </reference_point>
         </rank>
@@ -145,25 +154,24 @@ def val(x):
               <integer_value rank="0">2</integer_value>
             </degree>
           </element>
-          <value type="value" name="Sides">
+          <value name="Sides" type="value">
             <region_ids>
-              <integer_value shape="12" rank="1">10 15 20 25 30 35 40 45 50 60 70 80</integer_value>
+              <integer_value rank="1" shape="12">10 15 20 25 30 35 40 45 50 60 70 80</integer_value>
             </region_ids>
             <constant name="dim">
-              <real_value shape="2" dim1="dim" rank="1">0.0 0.0</real_value>
+              <real_value rank="1" dim1="dim" shape="2">0.0 0.0</real_value>
             </constant>
           </value>
-          <value type="value" name="Center">
+          <value name="Center" type="value">
             <region_ids>
-              <integer_value shape="4" rank="1">1 2 3 4</integer_value>
+              <integer_value rank="1" shape="4">1 2 3 4</integer_value>
             </region_ids>
             <python rank="1">
-              <string_value lines="20" type="code" language="python3"># exact solution for velocity
+              <string_value type="code" language="python3" lines="20"># exact solution for velocity
 def val(x):
   u = 20.*x[0]*x[1]**3
   v = 5.*(x[0]**4 - x[1]**4)
-  return [u,v]
-</string_value>
+  return [u,v]</string_value>
             </python>
           </value>
         </rank>
@@ -184,24 +192,23 @@ def val(x):
               <integer_value rank="0">1</integer_value>
             </degree>
           </element>
-          <value type="value" name="Sides">
+          <value name="Sides" type="value">
             <region_ids>
-              <integer_value shape="12" rank="1">10 15 20 25 30 35 40 45 50 60 70 80</integer_value>
+              <integer_value rank="1" shape="12">10 15 20 25 30 35 40 45 50 60 70 80</integer_value>
             </region_ids>
             <constant>
               <real_value rank="0">0.0</real_value>
             </constant>
           </value>
-          <value type="value" name="Center">
+          <value name="Center" type="value">
             <region_ids>
-              <integer_value shape="4" rank="1">1 2 3 4</integer_value>
+              <integer_value rank="1" shape="4">1 2 3 4</integer_value>
             </region_ids>
             <python rank="0">
-              <string_value lines="20" type="code" language="python3"># exact solution for pressure
+              <string_value type="code" language="python3" lines="20"># exact solution for pressure
 def val(x):
   p = 60.*x[0]**2*x[1] - 20.*x[1]**3
-  return p
-</string_value>
+  return p</string_value>
             </python>
           </value>
         </rank>
@@ -214,9 +221,9 @@ def val(x):
       </ufl_symbol>
       <type name="Constant">
         <rank name="Vector" rank="1">
-          <value type="value" name="WholeMesh">
+          <value name="WholeMesh" type="value">
             <constant name="dim">
-              <real_value shape="2" dim1="dim" rank="1">0. 0.</real_value>
+              <real_value rank="1" dim1="dim" shape="2">0. 0.</real_value>
             </constant>
           </value>
         </rank>
@@ -237,28 +244,28 @@ def val(x):
               <integer_value rank="0">2</integer_value>
             </degree>
           </element>
-          <value type="value" name="Sides">
+          <value name="Sides" type="value">
             <region_ids>
-              <integer_value shape="12" rank="1">10 15 20 25 30 35 40 45 50 60 70 80</integer_value>
+              <integer_value rank="1" shape="12">10 15 20 25 30 35 40 45 50 60 70 80</integer_value>
             </region_ids>
             <constant name="dim">
-              <real_value shape="2" dim1="dim" rank="1">0.0 0.0</real_value>
+              <real_value rank="1" dim1="dim" shape="2">0.0 0.0</real_value>
             </constant>
           </value>
-          <value type="value" name="Center">
+          <value name="Center" type="value">
             <region_ids>
-              <integer_value shape="4" rank="1">1 2 3 4</integer_value>
+              <integer_value rank="1" shape="4">1 2 3 4</integer_value>
             </region_ids>
             <cpp rank="1">
               <members>
-                <string_value lines="20" type="code" language="cpp">GenericFunction_ptr num_ptr, sol_ptr;</string_value>
+                <string_value type="code" language="cpp" lines="20">GenericFunction_ptr num_ptr, sol_ptr;</string_value>
               </members>
               <initialization>
-                <string_value lines="20" type="code" language="cpp">num_ptr = system()-&gt;fetch_field("Velocity")-&gt;genericfunction_ptr(time());
+                <string_value type="code" language="cpp" lines="20">num_ptr = system()-&gt;fetch_field("Velocity")-&gt;genericfunction_ptr(time());
 sol_ptr = system()-&gt;fetch_coeff("AnalyticVelocity")-&gt;genericfunction_ptr(time());</string_value>
               </initialization>
               <eval>
-                <string_value lines="20" type="code" language="cpp">dolfin::Array&lt;double&gt; num(2), sol(2);
+                <string_value type="code" language="cpp" lines="20">dolfin::Array&lt;double&gt; num(2), sol(2);
 num_ptr-&gt;eval(num, x, cell);
 sol_ptr-&gt;eval(sol, x, cell);
 values[0] = std::abs(num[0] - sol[0]);
@@ -286,28 +293,28 @@ values[1] = std::abs(num[1] - sol[1]);</string_value>
               <integer_value rank="0">1</integer_value>
             </degree>
           </element>
-          <value type="value" name="Sides">
+          <value name="Sides" type="value">
             <region_ids>
-              <integer_value shape="12" rank="1">10 15 20 25 30 35 40 45 50 60 70 80</integer_value>
+              <integer_value rank="1" shape="12">10 15 20 25 30 35 40 45 50 60 70 80</integer_value>
             </region_ids>
             <constant>
               <real_value rank="0">0.0</real_value>
             </constant>
           </value>
-          <value type="value" name="Center">
+          <value name="Center" type="value">
             <region_ids>
-              <integer_value shape="4" rank="1">1 2 3 4</integer_value>
+              <integer_value rank="1" shape="4">1 2 3 4</integer_value>
             </region_ids>
             <cpp rank="0">
               <members>
-                <string_value lines="20" type="code" language="cpp">GenericFunction_ptr num_ptr, sol_ptr;</string_value>
+                <string_value type="code" language="cpp" lines="20">GenericFunction_ptr num_ptr, sol_ptr;</string_value>
               </members>
               <initialization>
-                <string_value lines="20" type="code" language="cpp">num_ptr = system()-&gt;fetch_field("Pressure")-&gt;genericfunction_ptr(time());
+                <string_value type="code" language="cpp" lines="20">num_ptr = system()-&gt;fetch_field("Pressure")-&gt;genericfunction_ptr(time());
 sol_ptr = system()-&gt;fetch_coeff("AnalyticPressure")-&gt;genericfunction_ptr(time());</string_value>
               </initialization>
               <eval>
-                <string_value lines="20" type="code" language="cpp">dolfin::Array&lt;double&gt; num(1), sol(1);
+                <string_value type="code" language="cpp" lines="20">dolfin::Array&lt;double&gt; num(1), sol(1);
 num_ptr-&gt;eval(num, x, cell);
 sol_ptr-&gt;eval(sol, x, cell);
 values[0] = std::abs(num[0] - sol[0]);</string_value>
@@ -334,10 +341,10 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
               <integer_value rank="0">1</integer_value>
             </degree>
           </element>
-          <value type="value" name="WholeMesh">
+          <value name="WholeMesh" type="value">
             <cpp rank="0">
               <members>
-                <string_value lines="20" type="code" language="cpp">struct lt_point
+                <string_value type="code" language="cpp" lines="20">struct lt_point
 {
   bool operator() (const dolfin::Point&amp; p1, const dolfin::Point&amp; p2) const
   {
@@ -355,7 +362,7 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
 dolfin::MeshFunction&lt;std::map&lt;dolfin::Point, std::size_t, lt_point&gt; &gt; cell_dof_map;</string_value>
               </members>
               <initialization>
-                <string_value lines="20" type="code" language="cpp">const Mesh_ptr m_ptr = system()-&gt;mesh();
+                <string_value type="code" language="cpp" lines="20">const Mesh_ptr m_ptr = system()-&gt;mesh();
 const std::size_t tdim = m_ptr-&gt;topology().dim();
 
 cell_dof_map.init(m_ptr, tdim);
@@ -406,7 +413,7 @@ for (dolfin::CellIterator cell(*m_ptr); !cell.end(); ++cell)
 }</string_value>
               </initialization>
               <eval>
-                <string_value lines="20" type="code" language="cpp">dolfin::Point lp(x.size(), x.data());
+                <string_value type="code" language="cpp" lines="20">dolfin::Point lp(x.size(), x.data());
 const std::map&lt;dolfin::Point, std::size_t, lt_point&gt;&amp; points = cell_dof_map[cell.index];
 const std::map&lt;dolfin::Point, std::size_t&gt;::const_iterator dof = points.find(lp);
 if (dof != points.end())
@@ -434,10 +441,10 @@ else
               <integer_value rank="0">1</integer_value>
             </degree>
           </element>
-          <value type="value" name="WholeMesh">
+          <value name="WholeMesh" type="value">
             <cpp rank="0">
               <members>
-                <string_value lines="20" type="code" language="cpp">struct lt_point
+                <string_value type="code" language="cpp" lines="20">struct lt_point
 {
   bool operator() (const dolfin::Point&amp; p1, const dolfin::Point&amp; p2) const
   {
@@ -455,7 +462,7 @@ else
 dolfin::MeshFunction&lt;std::map&lt;dolfin::Point, std::size_t, lt_point&gt; &gt; cell_dof_map;</string_value>
               </members>
               <initialization>
-                <string_value lines="20" type="code" language="cpp">const Mesh_ptr m_ptr = system()-&gt;mesh();
+                <string_value type="code" language="cpp" lines="20">const Mesh_ptr m_ptr = system()-&gt;mesh();
 const std::size_t tdim = m_ptr-&gt;topology().dim();
 
 cell_dof_map.init(m_ptr, tdim);
@@ -506,7 +513,7 @@ for (dolfin::CellIterator cell(*m_ptr); !cell.end(); ++cell)
 }</string_value>
               </initialization>
               <eval>
-                <string_value lines="20" type="code" language="cpp">dolfin::Point lp(x.size(), x.data());
+                <string_value type="code" language="cpp" lines="20">dolfin::Point lp(x.size(), x.data());
 const std::map&lt;dolfin::Point, std::size_t, lt_point&gt;&amp; points = cell_dof_map[cell.index];
 const std::map&lt;dolfin::Point, std::size_t&gt;::const_iterator dof = points.find(lp);
 if (dof != points.end())
@@ -534,10 +541,10 @@ else
               <integer_value rank="0">1</integer_value>
             </degree>
           </element>
-          <value type="value" name="WholeMesh">
+          <value name="WholeMesh" type="value">
             <cpp rank="0">
               <members>
-                <string_value lines="20" type="code" language="cpp">struct lt_point
+                <string_value type="code" language="cpp" lines="20">struct lt_point
 {
   bool operator() (const dolfin::Point&amp; p1, const dolfin::Point&amp; p2) const
   {
@@ -555,7 +562,7 @@ else
 dolfin::MeshFunction&lt;std::map&lt;dolfin::Point, std::size_t, lt_point&gt; &gt; cell_dof_map;</string_value>
               </members>
               <initialization>
-                <string_value lines="20" type="code" language="cpp">const Mesh_ptr m_ptr = system()-&gt;mesh();
+                <string_value type="code" language="cpp" lines="20">const Mesh_ptr m_ptr = system()-&gt;mesh();
 const std::size_t tdim = m_ptr-&gt;topology().dim();
 
 cell_dof_map.init(m_ptr, tdim);
@@ -606,7 +613,7 @@ for (dolfin::CellIterator cell(*m_ptr); !cell.end(); ++cell)
 }</string_value>
               </initialization>
               <eval>
-                <string_value lines="20" type="code" language="cpp">dolfin::Point lp(x.size(), x.data());
+                <string_value type="code" language="cpp" lines="20">dolfin::Point lp(x.size(), x.data());
 const std::map&lt;dolfin::Point, std::size_t, lt_point&gt;&amp; points = cell_dof_map[cell.index];
 const std::map&lt;dolfin::Point, std::size_t&gt;::const_iterator dof = points.find(lp);
 if (dof != points.end())
@@ -623,22 +630,20 @@ else
     <nonlinear_solver name="Solver">
       <type name="SNES">
         <form name="Residual" rank="0">
-          <string_value lines="20" type="code" language="python3">dx_center = dx(1) + dx(2) + dx(3) + dx(4)
+          <string_value type="code" language="python3" lines="20">dx_center = dx(1) + dx(2) + dx(3) + dx(4)
 # scaled viscosity term
 eta = 1.
 
 rv = (inner(sym(grad(v_t)), 2.*eta*sym(grad(v_i))) - div(v_t)*p_i - inner(v_t,f_i))*dx_center
 rp = -p_t*div(v_i)*dx_center
 
-r = rv + rp
-</string_value>
+r = rv + rp</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">r</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
-          <string_value lines="20" type="code" language="python3">a = derivative(r, us_i, us_a)
-</string_value>
+          <string_value type="code" language="python3" lines="20">a = derivative(r, us_i, us_a)</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
@@ -669,12 +674,12 @@ r = rv + rp
             <fieldsplit name="Center">
               <field name="Velocity">
                 <region_ids>
-                  <integer_value shape="12" rank="1">1 2 3 4 10 15 30 35 40 45 50 70</integer_value>
+                  <integer_value rank="1" shape="12">1 2 3 4 10 15 30 35 40 45 50 70</integer_value>
                 </region_ids>
               </field>
               <field name="Pressure">
                 <region_ids>
-                  <integer_value shape="12" rank="1">1 2 3 4 10 15 30 35 40 45 50 70</integer_value>
+                  <integer_value rank="1" shape="12">1 2 3 4 10 15 30 35 40 45 50 70</integer_value>
                 </region_ids>
               </field>
               <monitors>
@@ -687,12 +692,12 @@ r = rv + rp
                   <fieldsplit name="Center">
                     <field name="Velocity">
                       <region_ids>
-                        <integer_value shape="6" rank="1">1 2 3 4 10 15</integer_value>
+                        <integer_value rank="1" shape="6">1 2 3 4 10 15</integer_value>
                       </region_ids>
                     </field>
                     <field name="Pressure">
                       <region_ids>
-                        <integer_value shape="6" rank="1">1 2 3 4 10 15</integer_value>
+                        <integer_value rank="1" shape="6">1 2 3 4 10 15</integer_value>
                       </region_ids>
                     </field>
                     <monitors>
@@ -705,12 +710,12 @@ r = rv + rp
                         <fieldsplit name="Center">
                           <field name="Velocity">
                             <region_ids>
-                              <integer_value shape="4" rank="1">1 2 3 4</integer_value>
+                              <integer_value rank="1" shape="4">1 2 3 4</integer_value>
                             </region_ids>
                           </field>
                           <field name="Pressure">
                             <region_ids>
-                              <integer_value shape="4" rank="1">1 2 3 4</integer_value>
+                              <integer_value rank="1" shape="4">1 2 3 4</integer_value>
                             </region_ids>
                           </field>
                           <monitors>
@@ -759,8 +764,7 @@ r = rv + rp
       <solve name="at_start"/>
     </nonlinear_solver>
     <functional name="AbsoluteDifferenceVelocityL2NormSquared">
-      <string_value lines="20" type="code" language="python3">int = inner(diffv,diffv)*dx
-</string_value>
+      <string_value type="code" language="python3" lines="20">int = inner(diffv,diffv)*dx</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -769,8 +773,7 @@ r = rv + rp
       <include_in_statistics/>
     </functional>
     <functional name="AbsoluteDifferencePressureL2NormSquared">
-      <string_value lines="20" type="code" language="python3">int = diffp*diffp*dx
-</string_value>
+      <string_value type="code" language="python3" lines="20">int = diffp*diffp*dx</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -798,7 +801,7 @@ r = rv + rp
               <integer_value rank="0">1</integer_value>
             </degree>
           </element>
-          <initial_condition type="initial_condition" name="WholeMesh">
+          <initial_condition name="WholeMesh" type="initial_condition">
             <constant>
               <real_value rank="0">0.0</real_value>
             </constant>
@@ -813,15 +816,13 @@ r = rv + rp
     <nonlinear_solver name="Solver">
       <type name="SNES">
         <form name="Residual" rank="0">
-          <string_value lines="20" type="code" language="python3">r = (d_t*d_i - d_t*div(v_i))*dx
-</string_value>
+          <string_value type="code" language="python3" lines="20">r = (d_t*d_i - d_t*div(v_i))*dx</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">r</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
-          <string_value lines="20" type="code" language="python3">J = derivative(r,ud_i,ud_a)
-</string_value>
+          <string_value type="code" language="python3" lines="20">J = derivative(r,ud_i,ud_a)</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">J</string_value>
           </ufl_symbol>

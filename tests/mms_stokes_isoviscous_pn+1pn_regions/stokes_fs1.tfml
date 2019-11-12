@@ -39,6 +39,16 @@
     <output_base_name>
       <string_value lines="1">stokes</string_value>
     </output_base_name>
+    <visualization>
+      <element name="P1">
+        <family>
+          <string_value lines="1">CG</string_value>
+        </family>
+        <degree>
+          <integer_value rank="0">1</integer_value>
+        </degree>
+      </element>
+    </visualization>
     <dump_periods/>
     <detectors>
       <point name="Point">
@@ -119,7 +129,7 @@ def val(x):
           </initial_condition>
           <reference_point name="Point">
             <coordinates>
-              <real_value shape="2" dim1="dim" rank="1">0. 0.</real_value>
+              <real_value rank="1" dim1="dim" shape="2">0. 0.</real_value>
             </coordinates>
           </reference_point>
         </rank>

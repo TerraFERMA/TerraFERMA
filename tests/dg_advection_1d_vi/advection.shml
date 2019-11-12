@@ -110,7 +110,7 @@ stat = parser("advection.stat")
 elapsedtime = stat["ElapsedTime"]["value"][-1]
 </string_value>
         </variable>
-        <variable name="contour_location">
+        <!--<variable name="contour_location">
           <string_value lines="20" type="code" language="python">import buckettools.vtktools as vtktools
 import vtk
 from lxml import etree
@@ -220,7 +220,7 @@ contour.Update()
 polydata = contour.GetOutput()
 points = polydata.GetPoints()
 contour_location_3 = np.array([points.GetPoint(i) for i in xrange(points.GetNumberOfPoints())])</string_value>
-        </variable>
+        </variable>-->
       </variables>
     </simulation>
   </simulations>
@@ -266,7 +266,7 @@ for np in upper_bound_3.parameters["nprocs"]:
   assert(abs(elapsedtime[{"nprocs":np}]-2.0)&lt;1.e-6)
 </string_value>
     </test>
-    <test name="contour_location">
+    <!--<test name="contour_location">
       <string_value type="code" lines="20" language="python">for np in contour_location.parameters["nprocs"]:
   cl = contour_location[{"nprocs":np}]
   assert(len(cl)==1)
@@ -283,6 +283,6 @@ for np in upper_bound_3.parameters["nprocs"]:
   cl = contour_location_3[{"nprocs":np}]
   assert(len(cl)==1)
   assert(abs(cl[0][0]-2.5)&lt;0.1)</string_value>
-    </test>
+    </test>-->
   </tests>
 </harness_options>
