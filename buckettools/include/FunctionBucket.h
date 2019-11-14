@@ -289,11 +289,13 @@ namespace buckettools
     void write_checkpoint(XDMFFile_ptr xdmf_file,                    // write the FunctionBucket vector to the
                           const std::string function_type,
                           const double time,                         // given XDMF file
-                          const bool append=false);
+                          const bool append,
+                          const std::string name);
 
     void write_checkpoint(XDMFFile_ptr xdmf_file,                    // write the FunctionBucket vector to the
                           const double_ptr time,                     // given XDMF file
-                          const bool append=false);
+                          const bool append,
+                          const std::string name);
 
     void checkpoint(const double_ptr time);                          // checkpoint the functionbucket (vector and options)
 
@@ -381,7 +383,8 @@ namespace buckettools
     //***************************************************************|***********************************************************//
 
     void write_checkpoint_(XDMFFile_ptr xdmf_file, const GenericFunction_ptr u,
-                                          const double time, const bool append);
+                                          const double time, const bool append,
+                                          const std::string name);
 
     void write_vis_(const std::string &function_type);               // write visualization of specific function_type to bucket visfile
 

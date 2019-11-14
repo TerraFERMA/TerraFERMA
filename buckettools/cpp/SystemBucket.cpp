@@ -979,10 +979,10 @@ void SystemBucket::write_convvis()
                          f_it != fields_end(); f_it++)
   {
     (*(*f_it).second).write_checkpoint(convvis_file, "iterated", (double)(*bucket()).iteration_count(),
-                                       append);
+                                       append, name()+"::Iterated"+(*(*f_it).second).name());
     append=true;
     (*(*f_it).second).write_checkpoint(convvis_file, "residual", (double)(*bucket()).iteration_count(),
-                                       true);
+                                       true, name()+"::Residual"+(*(*f_it).second).name());
   }
 
   // including coefficients here is just a niceity but some
@@ -995,7 +995,7 @@ void SystemBucket::write_convvis()
     if ((*(*c_it).second).include_in_visualization())
     {
       (*(*c_it).second).write_checkpoint(convvis_file, "iterated", (double)(*bucket()).iteration_count(),
-                                         true);
+                                         true, name()+"::"+(*(*c_it).second).name());
     }
   }
 

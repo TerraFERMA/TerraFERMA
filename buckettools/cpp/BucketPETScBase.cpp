@@ -324,12 +324,12 @@ PetscErrorCode buckettools::SNESCustomMonitor(SNES snes, PetscInt its,
                                                           f_it++)
     {
       (*(*f_it).second).write_checkpoint(xdmf_file, "iterated", (double)its, 
-                               append);
+                               append, (*system).name()+"::Iterated"+(*(*f_it).second).name());
       append = true;
       (*(*f_it).second).write_checkpoint(xdmf_file, "residual", (double)its,
-                               true);
+                               true, (*system).name()+"::Residual"+(*(*f_it).second).name());
       (*(*f_it).second).write_checkpoint(xdmf_file, "snesupdate", (double)its,
-                               true);
+                               true, (*system).name()+"::SNESUpdate"+(*(*f_it).second).name());
     }
   }
 
@@ -395,10 +395,10 @@ PetscErrorCode buckettools::KSPCustomMonitor(KSP ksp, int it,
                                                           f_it++)
     {
       (*(*f_it).second).write_checkpoint(xdmf_file, "iterated", (double)it,
-                               append);
+                               append, (*system).name()+"::Iterated"+(*(*f_it).second).name());
       append = true;
       (*(*f_it).second).write_checkpoint(xdmf_file, "residual", (double)it,
-                               true);
+                               true, (*system).name()+"::Residual"+(*(*f_it).second).name());
     }
   }
 

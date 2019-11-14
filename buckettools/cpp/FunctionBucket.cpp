@@ -108,7 +108,12 @@ const GenericFunction_ptr FunctionBucket::genericfunction_ptr(const double_ptr t
 //*******************************************************************|************************************************************//
 const GenericFunction_ptr FunctionBucket::genericfunction_ptr(const std::string &function_type) const
 {
-  if (function_type=="iterated")
+  if (function_type=="function")
+  {
+    assert(function_);
+    return function_;
+  }
+  else if (function_type=="iterated")
   {
     assert(iteratedfunction_);
     return iteratedfunction_;
@@ -927,7 +932,7 @@ void FunctionBucket::output()
 {
   if (include_in_visualization())
   {
-    write_vis_("iterated");
+    write_vis_("function");
   }
   if (include_residual_in_visualization())
   {
@@ -939,22 +944,22 @@ void FunctionBucket::output()
 // checkpoint the functionbucket
 //*******************************************************************|************************************************************//
 void FunctionBucket::write_checkpoint(XDMFFile_ptr xdmf_file, const double_ptr time, 
-                                      const bool append)
+                                      const bool append, const std::string name)
 {
   GenericFunction_ptr u;
   u = genericfunction_ptr(time);
-  write_checkpoint_(xdmf_file, u, *time, append);
+  write_checkpoint_(xdmf_file, u, *time, append, name);
 }
 
 //*******************************************************************|************************************************************//
 // checkpoint the functionbucket
 //*******************************************************************|************************************************************//
 void FunctionBucket::write_checkpoint(XDMFFile_ptr xdmf_file, const std::string function_type,
-                                      const double time, const bool append)
+                                      const double time, const bool append, const std::string name)
 {
   GenericFunction_ptr u;
   u = genericfunction_ptr(function_type);
-  write_checkpoint_(xdmf_file, u, time, append);
+  write_checkpoint_(xdmf_file, u, time, append, name);
 }
 
 //*******************************************************************|************************************************************//
@@ -967,7 +972,7 @@ void FunctionBucket::checkpoint(const double_ptr time)
                          << (*system()).name() << "_" 
                          << (*(*system()).bucket()).checkpoint_count() << ".xdmf";
   XDMFFile_ptr xdmf_file( new dolfin::XDMFFile((*(*system()).mesh()).mpi_comm(), buffer.str()) );
-  write_checkpoint(xdmf_file, time, index()!=0);
+  write_checkpoint(xdmf_file, time, index()!=0, (*system()).name()+"::"+name());
   checkpoint_options_();
 }
 
@@ -975,7 +980,7 @@ void FunctionBucket::checkpoint(const double_ptr time)
 // checkpoint the functionbucket
 //*******************************************************************|************************************************************//
 void FunctionBucket::write_checkpoint_(XDMFFile_ptr xdmf_file, const GenericFunction_ptr u,
-                                       const double time, const bool append)
+                                       const double time, const bool append, const std::string name)
 {
   Function_ptr tmpfunction( new dolfin::Function(outputfunctionspace()) );
   const_Function_ptr uf = std::dynamic_pointer_cast<const dolfin::Function>(u);
@@ -994,7 +999,7 @@ void FunctionBucket::write_checkpoint_(XDMFFile_ptr xdmf_file, const GenericFunc
   {
     (*tmpfunction).interpolate(*u);
   } 
-  (*xdmf_file).write_checkpoint(*tmpfunction, (*u).name(),
+  (*xdmf_file).write_checkpoint(*tmpfunction, name,
                                 time,
                                 dolfin::XDMFFile::default_encoding,
                                 append);
@@ -1007,21 +1012,22 @@ void FunctionBucket::write_vis_(const std::string &function_type)
 {
   bool newfile;
   XDMFFile_ptr xdmf_file = (*(*system()).bucket()).fetch_visfile((*system()).mesh(), newfile);
+  GenericFunction_ptr u = genericfunction_ptr(function_type);
   if ((*(*system()).bucket()).write_vischeckpoints())
   {
     write_checkpoint(xdmf_file, function_type, (*(*system()).bucket()).current_time(),
-                     !newfile);
+                     !newfile, (*u).name());
   }
   else
   {
-    GenericFunction_ptr u = genericfunction_ptr(function_type);
     Function_ptr uf;
     uf = std::dynamic_pointer_cast<dolfin::Function>(u);
     if (!uf)
     {
-      uf.reset( new dolfin::Function(outputfunctionspace()) );
-      (*uf).interpolate(*u);
-      (*uf).rename((*system()).name()+"::"+name(), (*system()).name()+"::"+name());
+      tf_err("Not yet supported.", "Attempting to output coefficient expression.");
+      //uf.reset( new dolfin::Function(outputfunctionspace()) );
+      //(*uf).interpolate(*u);
+      //(*uf).rename((*system()).name()+"::"+name(), (*system()).name()+"::"+name());
     }
     (*xdmf_file).write(*uf, (*(*system()).bucket()).current_time());
   }

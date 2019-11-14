@@ -194,10 +194,10 @@ void SolverBucket::solve()
                                                               f_it++)
         {
           (*(*f_it).second).write_checkpoint(vis_file, "iterated", (double)iteration_count(),
-                                   append);
+                                   append, (*system()).name()+"::Iterated"+(*(*f_it).second).name());
           append = true;
           (*(*f_it).second).write_checkpoint(vis_file, "residual", (double)iteration_count(),
-                                   true);
+                                   true, (*system()).name()+"::Residual"+(*(*f_it).second).name());
         }
       }
       if (convfile_)
@@ -343,9 +343,9 @@ void SolverBucket::solve()
                                                                 f_it++)
           {
             (*(*f_it).second).write_checkpoint(vis_file, "iterated", (double)iteration_count(), 
-                                     true);
+                                     true, (*system()).name()+"::Iterated"+(*(*f_it).second).name());
             (*(*f_it).second).write_checkpoint(vis_file, "residual", (double)iteration_count(),
-                                     true);
+                                     true, (*system()).name()+"::Residual"+(*(*f_it).second).name());
           }
         }
         if (convfile_)
