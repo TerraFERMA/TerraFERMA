@@ -186,24 +186,26 @@ class Bucket:
     """Write a cpp header file describing all the ufc namespaces in the bucket."""
     cpp = []
 
-    cpp.append(os.linesep)
-    cpp.append("#include \"SystemFunctionalsWrapper.h\""+os.linesep)
-    cpp.append("#include \"BoostTypes.h\""+os.linesep)
-    cpp.append("#include \"Logger.h\""+os.linesep)
-    cpp.append("#include <dolfin.h>"+os.linesep)
-
     include_cpp = []
-    include_cpp.append(os.linesep)
+    include_cpp.append(""+os.linesep)
+    include_cpp.append("#include \"SystemFunctionalsWrapper.h\""+os.linesep)
+    include_cpp.append("#include \"BoostTypes.h\""+os.linesep)
+    include_cpp.append("#include \"Logger.h\""+os.linesep)
+    include_cpp.append("#include <dolfin.h>"+os.linesep)
 
     functionalcoefficientspace_cpp         = []
     functionalcoefficientspace_cpp.append("  // A function to return a functionspace (for a coefficient) from a system given a mesh, a functionalname and a uflsymbol."+os.linesep)
-    functionalcoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace_from_functional(const std::string &systemname, const std::string &functionalname, const std::string &uflsymbol, Mesh_ptr mesh)"+os.linesep)
+    functionalcoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace_from_functional(const std::string &systemname, const std::string &functionalname, const std::string &uflsymbol, "+os.linesep)
+    functionalcoefficientspace_cpp.append("                                                               Mesh_ptr mesh, PythonPeriodicMap_ptr periodicmap, MeshFunction_size_t_ptr facetdomains, "+os.linesep)
+    functionalcoefficientspace_cpp.append("                                                               const std::vector<std::size_t> &masterids, const std::vector<std::size_t> &slaveids)"+os.linesep)
     functionalcoefficientspace_cpp.append("  {"+os.linesep)
     functionalcoefficientspace_cpp.append("    FunctionSpace_ptr coefficientspace;"+os.linesep)
 
     constantfunctionalcoefficientspace_cpp         = []
     constantfunctionalcoefficientspace_cpp.append("  // A function to return a functionspace (for a coefficient) from a system given a mesh, a coefficientname and a uflsymbol."+os.linesep)
-    constantfunctionalcoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace_from_constant_functional(const std::string &systemname, const std::string &coefficientname, const std::string &uflsymbol, Mesh_ptr mesh)"+os.linesep)
+    constantfunctionalcoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace_from_constant_functional(const std::string &systemname, const std::string &coefficientname, const std::string &uflsymbol, "+os.linesep)
+    constantfunctionalcoefficientspace_cpp.append("                                                               Mesh_ptr mesh, PythonPeriodicMap_ptr periodicmap, MeshFunction_size_t_ptr facetdomains, "+os.linesep)
+    constantfunctionalcoefficientspace_cpp.append("                                                               const std::vector<std::size_t> &masterids, const std::vector<std::size_t> &slaveids)"+os.linesep)
     constantfunctionalcoefficientspace_cpp.append("  {"+os.linesep)
     constantfunctionalcoefficientspace_cpp.append("    FunctionSpace_ptr coefficientspace;"+os.linesep)
 
@@ -299,19 +301,25 @@ class Bucket:
 
     functionspace_cpp         = []
     functionspace_cpp.append("  // A function to return a functionspace from a system given a mesh (defaults to first solver in system as they should all be the same)."+os.linesep)
-    functionspace_cpp.append("  FunctionSpace_ptr ufc_fetch_functionspace(const std::string &systemname, Mesh_ptr mesh)"+os.linesep)
+    functionspace_cpp.append("  FunctionSpace_ptr ufc_fetch_functionspace(const std::string &systemname, ")
+    functionspace_cpp.append("                                            Mesh_ptr mesh, PythonPeriodicMap_ptr periodicmap, MeshFunction_size_t_ptr facetdomains, "+os.linesep)
+    functionspace_cpp.append("                                            const std::vector<std::size_t> &masterids, const std::vector<std::size_t> &slaveids)"+os.linesep)
     functionspace_cpp.append("  {"+os.linesep)
     functionspace_cpp.append("    FunctionSpace_ptr functionspace;"+os.linesep)
 
     solverfunctionspace_cpp         = []
     solverfunctionspace_cpp.append("  // A function to return a functionspace from a system given a mesh and a solvername."+os.linesep)
-    solverfunctionspace_cpp.append("  FunctionSpace_ptr ufc_fetch_functionspace(const std::string &systemname, const std::string &solvername, Mesh_ptr mesh)"+os.linesep)
+    solverfunctionspace_cpp.append("  FunctionSpace_ptr ufc_fetch_functionspace(const std::string &systemname, const std::string &solvername, "+os.linesep)
+    solverfunctionspace_cpp.append("                                            Mesh_ptr mesh, PythonPeriodicMap_ptr periodicmap, MeshFunction_size_t_ptr facetdomains, "+os.linesep)
+    solverfunctionspace_cpp.append("                                            const std::vector<std::size_t> &masterids, const std::vector<std::size_t> &slaveids)"+os.linesep)
     solverfunctionspace_cpp.append("  {"+os.linesep)
     solverfunctionspace_cpp.append("    FunctionSpace_ptr functionspace;"+os.linesep)
 
     solvercoefficientspace_cpp         = []
     solvercoefficientspace_cpp.append("  // A function to return a functionspace (for a coefficient) from a system given a mesh, a solvername and a uflsymbol."+os.linesep)
-    solvercoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace_from_solver(const std::string &systemname, const std::string &solvername, const std::string &uflsymbol, Mesh_ptr mesh)"+os.linesep)
+    solvercoefficientspace_cpp.append("  FunctionSpace_ptr ufc_fetch_coefficientspace_from_solver(const std::string &systemname, const std::string &solvername, const std::string &uflsymbol, "+os.linesep)
+    solvercoefficientspace_cpp.append("                                                           Mesh_ptr mesh, PythonPeriodicMap_ptr periodicmap, MeshFunction_size_t_ptr facetdomains, "+os.linesep)
+    solvercoefficientspace_cpp.append("                                                           const std::vector<std::size_t> &masterids, const std::vector<std::size_t> &slaveids)"+os.linesep)
     solvercoefficientspace_cpp.append("  {"+os.linesep)
     solvercoefficientspace_cpp.append("    FunctionSpace_ptr coefficientspace;"+os.linesep)
 
@@ -452,12 +460,6 @@ class Bucket:
     """Write a cpp header file describing all the cpp expression namespaces in the bucket."""
     cpp = []
 
-    cpp.append(os.linesep)
-    cpp.append("#include \"SystemExpressionsWrapper.h\""+os.linesep)
-    cpp.append("#include \"BoostTypes.h\""+os.linesep)
-    cpp.append("#include \"Logger.h\""+os.linesep)
-    cpp.append("#include <dolfin.h>"+os.linesep)
-
     include_cpp = []
     include_cpp.append(os.linesep)
 
@@ -478,6 +480,11 @@ class Bucket:
       cppexpression_cpp += system.cppexpression_cpp(index=s)
       cppexpression_init += system.cppexpression_init(index=s)
       s += 1
+
+    include_cpp.append("#include \"SystemExpressionsWrapper.h\""+os.linesep)
+    include_cpp.append("#include \"BoostTypes.h\""+os.linesep)
+    include_cpp.append("#include \"Logger.h\""+os.linesep)
+    include_cpp.append("#include <dolfin.h>"+os.linesep)
 
     cppexpression_cpp.append("    else"+os.linesep)
     cppexpression_cpp.append("    {"+os.linesep)

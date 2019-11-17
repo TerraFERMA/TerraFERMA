@@ -85,7 +85,16 @@ class SolverBucket:
     ffc(self.namespace(), self.form_representation, self.quadrature_rule, self.quadrature_degree)
     
   def functionspace_cpp_no_if(self):
-    return ["      functionspace.reset( new "+self.namespace()+"::FunctionSpace(mesh) );"+os.linesep]
+    cpp = []
+    cpp.append("      if (periodicmap && facetdomains)"+os.linesep)
+    cpp.append("      {"+os.linesep)
+    cpp.append("        functionspace.reset( new "+self.namespace()+"::FunctionSpace(mesh, periodicmap, facetdomains, masterids, slaveids) );"+os.linesep)
+    cpp.append("      }"+os.linesep)
+    cpp.append("      else"+os.linesep)
+    cpp.append("      {"+os.linesep)
+    cpp.append("        functionspace.reset( new "+self.namespace()+"::FunctionSpace(mesh) );"+os.linesep)
+    cpp.append("      }"+os.linesep)
+    return cpp
 
   def functionspace_cpp(self, index=0):
     cpp = [] 
@@ -94,7 +103,14 @@ class SolverBucket:
     else:
       cpp.append("      else if (solvername ==  \""+self.name+"\")"+os.linesep)
     cpp.append("      {"+os.linesep)
-    cpp.append("        functionspace.reset(new "+self.namespace()+"::FunctionSpace(mesh));"+os.linesep)
+    cpp.append("        if (periodicmap && facetdomains)"+os.linesep)
+    cpp.append("        {"+os.linesep)
+    cpp.append("          functionspace.reset(new "+self.namespace()+"::FunctionSpace(mesh, periodicmap, facetdomains, masterids, slaveids) );"+os.linesep) 
+    cpp.append("        }"+os.linesep)
+    cpp.append("        else"+os.linesep)
+    cpp.append("        {"+os.linesep)
+    cpp.append("          functionspace.reset(new "+self.namespace()+"::FunctionSpace(mesh));"+os.linesep)
+    cpp.append("        }"+os.linesep)
     cpp.append("      }"+os.linesep)
     return cpp
 

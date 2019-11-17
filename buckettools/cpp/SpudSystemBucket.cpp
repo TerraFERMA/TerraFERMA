@@ -22,10 +22,12 @@
 #include "Bucket.h"
 #include "BoostTypes.h"
 #include "SpudSystemBucket.h"
+#include "BoostTypes.h"
 #include "SystemSolversWrapper.h"
 #include "SpudBase.h"
 #include "SpudFunctionBucket.h"
 #include "SpudSolverBucket.h"
+#include "PythonPeriodicMap.h"
 #include "SpudFunctionalBucket.h"
 #include "Logger.h"
 #include <dolfin.h>
@@ -61,10 +63,14 @@ void SpudSystemBucket::fill()
   fill_base_();                                                      // fill in the base data (could be called from the
                                                                      // constructor?)
 
+  fill_periodicbcs_();                                              // fill in data about periodic bcs on the system
+
   fill_systemfunction_();                                            // register the functionspace and system functions
 
   fill_fields_();                                                    // initialize the fields (subfunctions) of this system
 
+  fill_bcs_();                                                       // fill in data about the bcs relative to the system (excludes
+                                                                     // periodic)
   fill_coeffs_();                                                    // initialize the coefficient expressions (and constants)
                                                                      // (can't do coefficient functions now because it's unlikely we 
                                                                      // have all the coefficient functionspaces)
@@ -252,8 +258,11 @@ void SpudSystemBucket::fill_systemfunction_()
     return;
   }
 
-  functionspace_ = ufc_fetch_functionspace(name(), mesh());          // fetch the first functionspace we can grab from the ufc 
-                                                                     // for this system
+  functionspace_ = ufc_fetch_functionspace(name(), mesh(),           // fetch the first functionspace we can grab from the ufc 
+                                           periodicmap(),            // for this system
+                                           facetdomains(), 
+                                           masterids(), slaveids());   
+                                                                     
 
   function_.reset( new dolfin::Function(functionspace_) );           // declare the function on this functionspace
   buffer.str(""); buffer << name() << "::Function";
@@ -325,6 +334,83 @@ void SpudSystemBucket::fill_fields_()
     register_field(field, (*field).name());                          // register this field in the system bucket
   }
 
+}
+
+//*******************************************************************|************************************************************//
+// fill in the data about the system bcs
+//*******************************************************************|************************************************************//
+void SpudSystemBucket::fill_periodicbcs_()
+{
+  std::stringstream buffer;                                          // optionpath buffer
+  Spud::OptionError serr;                                            // spud error code
+
+  buffer.str("");  buffer << optionpath() << "/boundary_condition";  // find out how many system bcs we have
+  int nbcs = Spud::option_count(buffer.str());
+  for (uint i = 0; i < nbcs; i++)                                    // loop over the system bcs in the options dictionary
+  {
+
+    std::vector<int> bcids;
+    buffer.str(""); buffer << optionpath() << 
+                    "/boundary_condition[" << i << 
+                    "]/boundary_ids";
+    serr = Spud::get_option(buffer.str(), bcids);
+    spud_err(buffer.str(), serr);
+
+    std::string bctype;
+    buffer.str(""); buffer << optionpath() << 
+                    "/boundary_condition[" << i << 
+                    "]/sub_components[0]/type/name";
+    serr = Spud::get_option(buffer.str(), bctype);
+    spud_err(buffer.str(), serr);
+
+    if(bctype=="Periodic")
+    {
+      for (uint j = 0; j < bcids.size(); j++)
+      {
+        masterids_.push_back(bcids[j]);
+      }
+
+      std::vector<int> slaveids_int;
+      buffer.str(""); buffer << optionpath() << 
+                      "/boundary_condition[" << i << 
+                      "]/sub_components::All/type::Periodic/slave_boundary_ids";
+      serr = Spud::get_option(buffer.str(), slaveids_int);
+      spud_err(buffer.str(), serr);
+      for (uint j = 0; j < slaveids_int.size(); j++)
+      {
+        slaveids_.push_back(slaveids_int[j]);
+      }
+
+      std::string function;
+      buffer.str(""); buffer << optionpath() << 
+                      "/boundary_condition[" << i << 
+                      "]/sub_components::All/type::Periodic/coordinate_map";
+      serr = Spud::get_option(buffer.str(), function);
+      spud_err(buffer.str(), serr);
+
+      periodicmap_.reset( new PythonPeriodicMap(function) );
+
+    }
+    else
+    {
+      dolfin::error("Unknown bc type.");
+    }
+
+  }
+
+  buffer.str("");  buffer << "/io/debugging/periodic_boundaries";  // output debugging info?
+  if (Spud::have_option(buffer.str()) && periodicmap())
+  {
+    buffer.str("");  buffer << (*bucket()).output_basename() << "_debugging_" << name() << "_periodic_boundaries.pvd";
+    dolfin::File file(buffer.str());
+    dolfin::MeshFunction<std::size_t> master_slave_entities;
+    for (uint i = 0; i <= (*mesh()).topology().dim()-1; i++)
+    {
+      master_slave_entities = dolfin::PeriodicBoundaryComputation::masters_slaves(mesh(),
+                                                      *periodicmap(), *facetdomains(), masterids(), slaveids(), i);
+      file << master_slave_entities;
+    }
+  }
 }
 
 //*******************************************************************|************************************************************//

@@ -108,6 +108,8 @@ namespace buckettools
 
     void fill_bcs_();                                                // fill in the data about the system bcs
 
+    void fill_periodicbcs_();                                        // fill in the data about the system bcs
+
     void fill_coeffs_();                                             // fill in the coefficient information
 
     void fill_solvers_();                                            // fill in the solver bucket information
