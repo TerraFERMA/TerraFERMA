@@ -110,8 +110,8 @@ void DetectorsFile::write_data()
     // quick sanity check...
 #ifdef HAS_MPI
     int mpierr;
-    MPI_Aint doublesize;
-    mpierr = MPI_Type_extent(MPI_DOUBLE_PRECISION, &doublesize);
+    MPI_Aint lb, doublesize;
+    mpierr = MPI_Type_get_extent(MPI_DOUBLE_PRECISION, &lb, &doublesize);
     mpi_err(mpierr);
     assert(mpiwritelocation_==mpiwritecount_*ncolumns_*doublesize);
 #endif
@@ -139,8 +139,8 @@ void DetectorsFile::data_timestep_()
     int mpierr;
     double value;
 
-    MPI_Aint doublesize;
-    mpierr = MPI_Type_extent(MPI_DOUBLE_PRECISION, &doublesize);
+    MPI_Aint lb, doublesize;
+    mpierr = MPI_Type_get_extent(MPI_DOUBLE_PRECISION, &lb, &doublesize);
     mpi_err(mpierr);
 
     value = (double)(*bucket_).timestep_count();                     // we recast this to make it easier to count columns
@@ -336,8 +336,8 @@ void DetectorsFile::data_detector_(const GenericDetectors_ptr d_ptr)
                                                                      // perhaps all processes should write?
 #ifdef HAS_MPI
   int mpierr;
-  MPI_Aint doublesize;
-  mpierr = MPI_Type_extent(MPI_DOUBLE_PRECISION, &doublesize);
+  MPI_Aint lb, doublesize;
+  mpierr = MPI_Type_get_extent(MPI_DOUBLE_PRECISION, &lb, &doublesize);
   mpi_err(mpierr);
 #endif
 
@@ -380,8 +380,8 @@ void DetectorsFile::data_func_(const FunctionBucket_ptr f_ptr)
   
 #ifdef HAS_MPI
   int mpierr;
-  MPI_Aint doublesize;
-  mpierr = MPI_Type_extent(MPI_DOUBLE_PRECISION, &doublesize);
+  MPI_Aint lb, doublesize;
+  mpierr = MPI_Type_get_extent(MPI_DOUBLE_PRECISION, &lb, &doublesize);
   mpi_err(mpierr);
 #endif
 

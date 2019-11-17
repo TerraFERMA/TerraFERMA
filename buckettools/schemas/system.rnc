@@ -69,7 +69,7 @@ functional_options =
     ## ufl code and symbol describing a functional.  This must return a single number and have a unique name beneath this field or coefficient.
     element functional {
       attribute name { xsd:string },
-      python_code,
+      python3_code,
       functional_ufl_symbol,
       form_representation,
       quadrature_degree,

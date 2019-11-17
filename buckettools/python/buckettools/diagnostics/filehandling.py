@@ -196,18 +196,18 @@ def FindAndReplace(filename, find, replace):
   
 class filehandlingUnittests(unittest.TestCase):
   def testFileExtension(self):
-    self.assertEquals(FileExtension("a.b"), ".b")
-    self.assertEquals(FileExtension("/one/two.three.four"), ".four")
-    self.assertEquals(FileExtension("a"), "")
-    self.assertEquals(FileExtension("../one.two"), ".two")
+    self.assertEqual(FileExtension("a.b"), ".b")
+    self.assertEqual(FileExtension("/one/two.three.four"), ".four")
+    self.assertEqual(FileExtension("a"), "")
+    self.assertEqual(FileExtension("../one.two"), ".two")
     
     return
     
   def testStripFileExtension(self):
-    self.assertEquals(StripFileExtension("a.b"), "a")
-    self.assertEquals(StripFileExtension("/one/two.three.four"), "/one/two.three")
-    self.assertEquals(StripFileExtension("a"), "a")
-    self.assertEquals(StripFileExtension("../one.two"), "../one")
+    self.assertEqual(StripFileExtension("a.b"), "a")
+    self.assertEqual(StripFileExtension("/one/two.three.four"), "/one/two.three")
+    self.assertEqual(StripFileExtension("a"), "a")
+    self.assertEqual(StripFileExtension("../one.two"), "../one")
     
     return
 

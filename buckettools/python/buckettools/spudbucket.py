@@ -21,6 +21,8 @@
 import libspud
 import buckettools.bucket
 import buckettools.spud
+import re
+import os
 
 class SpudBucket(buckettools.bucket.Bucket):
   def fill(self):
@@ -34,7 +36,7 @@ class SpudBucket(buckettools.bucket.Bucket):
 
     # loop over the systems in the options tree
     for i in range(libspud.option_count("/system")):
-      system_optionpath = "/system["+`i`+"]"
+      system_optionpath = "/system["+repr(i)+"]"
       system = buckettools.spud.SpudSystemBucket()
       # get all the information about this system from the options dictionary
       system.fill(system_optionpath, self)
@@ -42,4 +44,22 @@ class SpudBucket(buckettools.bucket.Bucket):
       self.systems.append(system)
       # done with this system
       del system
+
+    self.cpplibraries = []
+    cpplibraries_optionpath = "/global_parameters/cpp/libraries"
+    if libspud.have_option(cpplibraries_optionpath):
+      # regular expression to split up values string into a list
+      # the list may be comma(,), semicolon(;), space ( ) or newline (\n) delimited
+      #NODE                     EXPLANATION
+      #--------------------------------------------------------------------------------
+      #  (?:                      group, but do not capture (1 or more times
+      #                           (matching the most amount possible)):
+      #--------------------------------------------------------------------------------
+      #    [^,; \n]                 any character except: ',', ';', ' ',
+      #                             '\n' (newline)
+      #--------------------------------------------------------------------------------
+      #  )+                       end of grouping
+      # - from http://rick.measham.id.au/paste/explain.pl
+      r = re.compile(r'(?:[^,; '+os.linesep+'])+')
+      self.cpplibraries = r.findall(libspud.get_option(cpplibraries_optionpath))
 

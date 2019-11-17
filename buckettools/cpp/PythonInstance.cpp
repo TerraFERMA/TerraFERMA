@@ -100,7 +100,7 @@ void PythonInstance::init_()
   PyObject* tmppCode = PyRun_String(pythonbuffer.str().c_str(),      // run the python commands
                                 Py_file_input, pGlobals, pLocals_); 
   PyObject* pnArgs = PyDict_GetItemString(pLocals_, "_nargs");       // retrieve the result, _nargs
-  nargs_ = PyInt_AsLong(pnArgs);                                     // recast it as an integer
+  nargs_ = PyLong_AsLong(pnArgs);                                     // recast it as an integer
   
   if (PyErr_Occurred()){                                             // check for errors in getting the function
     print_error();

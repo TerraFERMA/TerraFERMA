@@ -121,11 +121,11 @@ void DiagnosticsFile::header_constants_(const bool &binary)
 #ifdef HAS_MPI
     // currently binary output is only used for parallel detectors so the mpi definition should be used
     int mpierr;
-    MPI_Aint mpidoublesize, mpiintsize;
-    mpierr = MPI_Type_extent(MPI_DOUBLE_PRECISION, &mpidoublesize);
+    MPI_Aint doublelb, intlb, mpidoublesize, mpiintsize;
+    mpierr = MPI_Type_get_extent(MPI_DOUBLE_PRECISION, &doublelb, &mpidoublesize);
     mpi_err(mpierr);
     doublesize = (int)mpidoublesize;
-    mpierr = MPI_Type_extent(MPI_INTEGER, &mpiintsize);
+    mpierr = MPI_Type_get_extent(MPI_INTEGER, &intlb, &mpiintsize);
     mpi_err(mpierr);
     intsize = (int)mpiintsize;
 #else

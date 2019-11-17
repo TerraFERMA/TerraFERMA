@@ -56,55 +56,55 @@ class FunctionBucket:
       return self.symbol+suffix+" = VectorConstant("+self.system.cell+")"+os.linesep
     elif self.rank == "Tensor":
       return self.symbol+suffix+" = TensorConstant("+self.system.cell+")"+os.linesep
-    print self.rank
-    print "Unknown rank."
+    print(self.rank)
+    print("Unknown rank.")
     sys.exit(1)
 
   def element_ufl(self):
-    ufl = []
     if self.enrichment_degree is not None and self.enrichment_family is not None:
-      ufl = self.sub_element_ufl(index=0)
-      ufl += self.sub_element_ufl(family=self.enrichment_family, degree=self.enrichment_degree, index=1)
-      ufl.append(self.symbol+"_e = "+self.symbol+"_e0 + "+self.symbol+"_e1"+os.linesep)
+      ufl = self.scalar_element_ufl(index=0)
+      ufl += self.scalar_element_ufl(family=self.enrichment_family, degree=self.enrichment_degree, index=1)
+      ufl.append(self.symbol+"_es = "+self.symbol+"_es0 + "+self.symbol+"_es1"+os.linesep)
       ufl.append(os.linesep)
     else:
-      ufl = self.sub_element_ufl()
+      ufl = self.scalar_element_ufl()
+    
+    ufl_line = self.symbol+"_e = "
+    if self.rank == "Scalar" or (self.rank == "Vector" and self.family in ["RT", "DRT", "BDM", "N1curl", "N2curl"]):
+      assert(self.size is None)
+      ufl_line += self.symbol+"_es"
+    else:
+      if self.rank == "Vector":
+        ufl_line += "VectorElement("+self.symbol+"_es"
+        if self.size: ufl_line += ", dim="+repr(self.size)
+      elif self.rank == "Tensor":
+        ufl_line += "TensorElement("+self.symbol+"_es"
+        if self.shape: ufl_line += ", shape=("+repr(self.shape[0])+","+repr(self.shape[1])+")"
+        if self.symmetry: ufl_line += ", symmetry=True"
+      else:
+        print(self.rank)
+        print("Unknown rank.")
+        sys.exit(1)
+      ufl_line +=")"+os.linesep
+    ufl.append(ufl_line)
+    ufl.append(os.linesep)
     return ufl
 
-  def sub_element_ufl(self, family=None, degree=None, index=None):
+  def scalar_element_ufl(self, family=None, degree=None, index=None):
     """Write an array of ufl strings describing the function (field or coefficient) element."""
     if family is None: family = self.family
     if degree is None: degree = self.degree
     if index is not None:
-      index = `index`
+      index = repr(index)
     else:
       index = ""
     ufl = []
     ufl.append(declaration_comment("Element", self.type, self.name))
-    ufl_line = self.symbol+"_e"+index+"= "
-    if self.rank == "Scalar":
-      ufl_line += "FiniteElement("
-    elif self.rank == "Vector":
-      # special case for vector elements - will need to be expanded
-      if family in ["RT", "DRT", "BDM", "N1curl", "N2curl"]:
-        assert(self.size is None)
-        ufl_line += "FiniteElement("
-      else:
-        ufl_line += "VectorElement("
-    elif self.rank == "Tensor":
-      ufl_line += "TensorElement("
-    else:
-      print self.rank
-      print "Unknown rank."
-      sys.exit(1)
+    ufl_line = self.symbol+"_es"+index+" = "
+    ufl_line += "FiniteElement("
     ufl_line += "\""+family +"\", " \
                +self.system.cell+", " \
-               +`degree`
-    if self.rank == "Vector":
-      if self.size: ufl_line += ", dim="+`self.size`
-    elif self.rank == "Tensor":
-      if self.shape: ufl_line += ", shape=("+`self.shape[0]`+","+`self.shape[1]`+")"
-      if self.symmetry: ufl_line += ", symmetry=True"
+               +repr(degree)
     if self.quadrature_rule is not None: ufl_line += ", quad_scheme="+"\""+self.quadrature_rule+"\""
     ufl_line +=")"+os.linesep
     ufl.append(ufl_line)

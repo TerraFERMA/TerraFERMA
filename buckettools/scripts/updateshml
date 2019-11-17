@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright (C) 2013 Columbia University in the City of New York and others.
 #
@@ -24,10 +24,11 @@ import glob
 import os
 import sys
 import argparse
-import string
 import shutil
 from lxml import etree
 import copy
+import subprocess
+import tempfile
 
 parser = argparse.ArgumentParser( \
                        description="""Updates shml files so they pass validation.""")
@@ -47,7 +48,7 @@ for f in args.file:
       if ext == "shml":
         filenames.append(os.path.join(os.curdir, filename))
       else:
-        print "Don't know how to deal with extension "+ext+".  Only know about shmls."
+        print("Don't know how to deal with extension "+ext+".  Only know about shmls.")
         sys.exit(1)
   else:
     
@@ -58,13 +59,13 @@ for f in args.file:
     dirname = os.path.normpath(dirname)
   
     for root, dirnames, files in os.walk(dirname, topdown=True):
-      depth = string.count(root, os.path.sep)
+      depth = root.count(os.path.sep)
       for filename in glob.glob1(os.path.join(root, os.path.dirname(f)), os.path.split(f)[-1]):
         ext = filename.split('.')[-1]
         if ext == "shml":
           filenames.append(os.path.join(os.path.join(root, os.path.dirname(f)), filename))
         else:
-          print "Don't know how to deal with extension "+ext+".  Only know about shmls."
+          print("Don't know how to deal with extension "+ext+".  Only know about shmls.")
           sys.exit(1)
       if depth == args.recurse:
         dirnames[:] = []
@@ -87,7 +88,7 @@ def update_functional_names(path):
   elements = tree.findall("//simulation/variables/variable/string_value")+tree.findall("/tests/test/string_value")
   # the extensions of files we're looking for and the acceptable values of their keys
   extensions = [['.stat', ['max', 'min', 'functional_value'], 'functional_value'], \
-                ['.steady', ['functional_change'], 'functional_change']]
+                ['.steady', ['change(', 'functional_change'], 'functional_change']]
   # first work out the output_base_names of the all the tfmls referenced by this shml
   tfmls = tree.findall("//simulation/input_file/string_value")
   tfmlnames = [tfml.text for tfml in tfmls]
@@ -102,7 +103,7 @@ def update_functional_names(path):
       basetfmlname = tfmlname.replace('_checkpoint', '')
       try:
         checkpoint_number = int(basetfmlname.split('_')[-1].split('.')[0])
-        basetfmlname = basetfmlname.replace('_'+`checkpoint_number`, '')
+        basetfmlname = basetfmlname.replace('_'+repr(checkpoint_number), '')
       except ValueError:
         pass
       i = tfmlnames.index(basetfmlname)
@@ -147,8 +148,48 @@ def update_functional_names(path):
                 continue
     element.text = "\n".join(lines)
 
+def update_python3():
+  global changed
+  # search for all python code strings
+  elements = tree.xpath('//string_value[@type="code" and @language="python"]')
+  if len(elements) != 0:
+    changed = True
+    for element in elements:
+      # open a temporary file that line buffers with .py suffix called tf
+      # once this closes it will be automatically deleted
+      with tempfile.NamedTemporaryFile(mode='w', buffering=1, suffix='.py') as tf:
+        # write code string to file and add a linesep to clear buffer
+        tf.file.write(element.text+os.linesep)
+        # try calling 2to3 (NOTE assuming 2to3-2.7 is valid here across platforms!)
+        command = ["2to3-2.7", "-W", "-n", "--add-suffix=3", "-o", os.path.dirname(tf.name), tf.name]
+        try:
+          p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        except Exception as exc:
+          # give warning if setting up command failed (e.g. command not found)
+          print("  WARNING: %s raised an exception before python3 conversion:"%(os.path.split(command[0])[-1]))
+          print("           %s"%str(exc))
+          print("           using command: %s"%(" ".join(command)))
+          print("           python3 conversion will be skipped for this element!")
+        else:
+          # wait for command to finish
+          retcode = p.wait()
+          if retcode:
+            # it failed... issue warning and as much info as we have
+            print("  WARNING: during python3 conversion %s returned: %d"%(os.path.split(command[0])[-1], retcode))
+            for line in iter(p.stdout.readline, b''):
+              print("             "+line.decode())
+            print("           using command: %s"%(" ".join(command)))
+            print("           python3 conversion will be skipped for this element!")
+          else:
+            # success (or at least we think so), proceed with rewriting element text and attributes
+            tf3 = open(tf.name+'3', 'r')
+            element.text = tf3.read()
+            tf3.close()
+            os.remove(tf3.name)
+            element.attrib['language'] = 'python3'
+
 for filename in filenames:
-  print 'Updating: '+filename
+  print('Updating: '+filename)
   tree = etree.parse(filename)
   global changed
   changed = False
@@ -157,6 +198,7 @@ for filename in filenames:
   update_string_value("//parameter/values")
   update_string_value("//run/commands/command")
   update_functional_names(os.path.split(filename)[0])
+  update_python3()
   if changed:
     backupfilename = os.path.join(os.path.split(filename)[0], os.path.split(filename)[-1].split('.')[0]+'.shml.bak')
     shutil.copy2(filename, backupfilename)

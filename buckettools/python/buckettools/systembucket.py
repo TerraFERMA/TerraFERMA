@@ -76,7 +76,7 @@ class SystemBucket:
           ufl.append(coeff.constant_ufl(suffix=suffix))
       else:
         if coeff.type == "Function":
-          print "coefficient functionspaces not output for special coefficient functions"
+          print("coefficient functionspaces not output for special coefficient functions")
         ufl += coeff.element_ufl()
         ufl.append(declaration_comment("Coefficient", coeff.type, coeff.name))
         for suffix in function_uflsymbol_suffixes():

@@ -29,24 +29,41 @@ using namespace buckettools;
 //*******************************************************************|************************************************************//
 // return a vector of dofs from the given functionspace for a field
 //*******************************************************************|************************************************************//
-std::vector<uint> buckettools::functionspace_dofs(const FunctionSpace_ptr functionspace,
+std::vector<std::size_t> buckettools::local_functionspace_dofs(const FunctionSpace_ptr functionspace,
                                                   const int &component)
 {
   std::vector<int>* components;
   components = new std::vector<int>;
   (*components).push_back(component);
-  std::vector<uint> indices = functionspace_dofs_values(functionspace, NULL, NULL,
+  std::vector<std::size_t> indices = functionspace_dofs_values(functionspace, NULL, NULL,
                                                         components, NULL, NULL,
                                                         NULL, NULL, NULL);
   delete components;
   components = NULL;
+
+  std::pair<std::size_t, std::size_t> ownership_range =              // the parallel ownership range of the functionspace
+          (*(*functionspace).dofmap()).ownership_range();
+  struct is_ghost {
+      is_ghost(std::size_t first, std::size_t second) : 
+                                     first(first), second(second) {}
+      bool operator()(std::size_t i) 
+                          { return ((i < first) || (i >= second)); }
+    private:
+      std::size_t first, second;
+  };
+  indices.erase( std::remove_if(indices.begin(), indices.end(), 
+                                is_ghost(ownership_range.first, 
+                                         ownership_range.second)), 
+                 indices.end());
+  std::sort(indices.begin(), indices.end());
+
   return indices;
 }
 
 //*******************************************************************|************************************************************//
 // return a vector of dofs from the given functionspace for a field
 //*******************************************************************|************************************************************//
-std::vector<uint> buckettools::functionspace_dofs_values(const FunctionSpace_ptr functionspace,
+std::vector<std::size_t> buckettools::functionspace_dofs_values(const FunctionSpace_ptr functionspace,
                                                          MeshFunction_size_t_ptr cellidmeshfunction,
                                                          MeshFunction_size_t_ptr facetidmeshfunction,
                                                          const std::vector<int>* components,
@@ -54,19 +71,19 @@ std::vector<uint> buckettools::functionspace_dofs_values(const FunctionSpace_ptr
                                                          const std::vector<int>* boundary_ids,
                                                          PETScVector_ptr values, 
                                                          const dolfin::Expression* value_exp, const double *value_const,
-                                                         uint depth, uint exp_index)
+                                                         std::size_t depth, std::size_t exp_index)
 {
-  std::vector<uint> dofs;
-  boost::unordered_set<uint> dof_set;
+  std::vector<std::size_t> dofs;
+  std::unordered_set<std::size_t> dof_set;
 
-  const uint num_sub_elements = (*(*functionspace).element()).num_sub_elements();
+  const std::size_t num_sub_elements = (*(*functionspace).element()).num_sub_elements();
   if (num_sub_elements>0)
   {
     assert(depth==0);                                                // component logic below only makes sense if we only end up
                                                                      // here on the first iteration
     depth++;
 
-    for (uint i = 0; i < num_sub_elements; i++)
+    for (std::size_t i = 0; i < num_sub_elements; i++)
     {
       if (components)
       {
@@ -84,7 +101,7 @@ std::vector<uint> buckettools::functionspace_dofs_values(const FunctionSpace_ptr
         exp_index = i;
       }
 
-      std::vector<uint> tmp_dofs;
+      std::vector<std::size_t> tmp_dofs;
       tmp_dofs = functionspace_dofs_values((*functionspace)[i], 
                                            cellidmeshfunction, facetidmeshfunction,
                                            components, region_ids, boundary_ids,
@@ -108,7 +125,7 @@ std::vector<uint> buckettools::functionspace_dofs_values(const FunctionSpace_ptr
                                   values, value_exp, value_const, 
                                   exp_index);
     }                                                            
-    boost::unordered_set<uint> f_dof_set;
+    std::unordered_set<std::size_t> f_dof_set;
     f_dof_set = facet_dofs_values(functionspace, facetidmeshfunction, 
                                   boundary_ids,
                                   values, value_exp, value_const, 
@@ -136,14 +153,14 @@ std::vector<uint> buckettools::functionspace_dofs_values(const FunctionSpace_ptr
 // return a set of dofs from the given functionspace possibly for a subset of the region ids as specified
 // FIXME: once mesh domain information is used cellidmeshfunction should be taken directly from the mesh
 //*******************************************************************|************************************************************//
-boost::unordered_set<uint> buckettools::cell_dofs_values(const FunctionSpace_ptr functionspace,
+std::unordered_set<std::size_t> buckettools::cell_dofs_values(const FunctionSpace_ptr functionspace,
                                                          MeshFunction_size_t_ptr cellidmeshfunction,
                                                          const std::vector<int>* region_ids,
                                                          PETScVector_ptr values, 
                                                          const dolfin::Expression* value_exp, const double* value_const,
-                                                         const uint &exp_index)
+                                                         const std::size_t &exp_index)
 {
-  boost::unordered_set<uint> dof_set;
+  std::unordered_set<std::size_t> dof_set;
 
   std::shared_ptr<const dolfin::GenericDofMap> dofmap = (*functionspace).dofmap();
   const_Mesh_ptr mesh = (*functionspace).mesh();
@@ -151,15 +168,15 @@ boost::unordered_set<uint> buckettools::cell_dofs_values(const FunctionSpace_ptr
   assert((*functionspace).element());
   std::shared_ptr<const dolfin::FiniteElement> element = (*functionspace).element();
 
-  const uint gdim = (*mesh).geometry().dim();                        // set up data for expression evaluation
+  const std::size_t gdim = (*mesh).geometry().dim();                        // set up data for expression evaluation
   boost::multi_array<double, 2> coordinates(boost::extents[(*dofmap).max_cell_dimension()][gdim]);
   std::vector<double> dof_coordinates;
   dolfin::Array<double> x(gdim);
 
-  uint value_size = 1;
+  std::size_t value_size = 1;
   if (value_exp)
   {
-    for (uint i = 0; i < (*value_exp).value_rank(); i++)
+    for (std::size_t i = 0; i < (*value_exp).value_rank(); i++)
     {
       value_size *= (*value_exp).value_dimension(i);
     }
@@ -193,9 +210,9 @@ boost::unordered_set<uint> buckettools::cell_dofs_values(const FunctionSpace_ptr
       }
     }
 
-    dolfin::ArrayView<const dolfin::la_index> tmp_dof_vec = (*dofmap).cell_dofs((*cell).index());
-    std::vector<dolfin::la_index> dof_vec;
-    for (std::size_t i = 0; i < tmp_dof_vec.size(); i++)
+    Eigen::Map<const Eigen::Array<dolfin::la_index, Eigen::Dynamic, 1>> tmp_dof_vec = (*dofmap).cell_dofs((*cell).index());
+    std::vector<std::size_t> dof_vec;
+    for (Eigen::Index i = 0; i < tmp_dof_vec.size(); i++)
     {
       dof_vec.push_back((*dofmap).local_to_global_index(tmp_dof_vec[i]));
     }
@@ -206,14 +223,14 @@ boost::unordered_set<uint> buckettools::cell_dofs_values(const FunctionSpace_ptr
       (*element).tabulate_dof_coordinates(coordinates, dof_coordinates, *cell);
     }
 
-    for (uint i = 0; i < dof_vec.size(); i++)                        // loop over the cell dof
+    for (std::size_t i = 0; i < dof_vec.size(); i++)                        // loop over the cell dof
     {
-      dof_set.insert((uint) dof_vec[i]);                             // and insert each one into the unordered set
+      dof_set.insert((std::size_t) dof_vec[i]);                             // and insert each one into the unordered set
       if (values)
       {
         if(value_exp)
         {
-          for (uint j = 0; j < gdim; j++)
+          for (std::size_t j = 0; j < gdim; j++)
           {
             x[j] = coordinates[i][j];
           }
@@ -237,14 +254,14 @@ boost::unordered_set<uint> buckettools::cell_dofs_values(const FunctionSpace_ptr
 // return a set of dofs from the given dofmap for the boundary ids specified
 // FIXME: once mesh domain information is used facetidmeshfunction should be taken directly from the mesh
 //*******************************************************************|************************************************************//
-boost::unordered_set<uint> buckettools::facet_dofs_values(const FunctionSpace_ptr functionspace,
+std::unordered_set<std::size_t> buckettools::facet_dofs_values(const FunctionSpace_ptr functionspace,
                                                           MeshFunction_size_t_ptr facetidmeshfunction,
                                                           const std::vector<int>* boundary_ids,
                                                           PETScVector_ptr values, 
                                                           const dolfin::Expression* value_exp, const double* value_const,
-                                                          const uint &exp_index)
+                                                          const std::size_t &exp_index)
 {
-  boost::unordered_set<uint> dof_set;                                // set up an unordered set of dof
+  std::unordered_set<std::size_t> dof_set;                                // set up an unordered set of dof
 
   assert(boundary_ids);
 
@@ -254,15 +271,15 @@ boost::unordered_set<uint> buckettools::facet_dofs_values(const FunctionSpace_pt
   assert((*functionspace).element());
   std::shared_ptr<const dolfin::FiniteElement> element = (*functionspace).element();
 
-  const uint gdim = (*mesh).geometry().dim();
+  const std::size_t gdim = (*mesh).geometry().dim();
   boost::multi_array<double, 2> coordinates(boost::extents[(*dofmap).max_cell_dimension()][gdim]);
   std::vector<double> dof_coordinates;
   dolfin::Array<double> x(gdim);
 
-  uint value_size = 1;
+  std::size_t value_size = 1;
   if (value_exp)
   {
-    for (uint i = 0; i < (*value_exp).value_rank(); i++)
+    for (std::size_t i = 0; i < (*value_exp).value_rank(); i++)
     {
       value_size *= (*value_exp).value_dimension(i);
     }
@@ -298,9 +315,9 @@ boost::unordered_set<uint> buckettools::facet_dofs_values(const FunctionSpace_pt
 
         const std::size_t facet_number = cell.index(*facet);         // get the local index of the facet w.r.t. the cell
 
-        dolfin::ArrayView<const dolfin::la_index> tmp_cell_dof_vec = (*dofmap).cell_dofs(cell.index());// get the cell dof (potentially for all components)
-        std::vector<dolfin::la_index> cell_dof_vec;
-        for (std::size_t i = 0; i < tmp_cell_dof_vec.size(); i++)
+        Eigen::Map<const Eigen::Array<dolfin::la_index, Eigen::Dynamic, 1>> tmp_cell_dof_vec = (*dofmap).cell_dofs(cell.index());
+        std::vector<std::size_t> cell_dof_vec;
+        for (Eigen::Index i = 0; i < tmp_cell_dof_vec.size(); i++)
         {
           cell_dof_vec.push_back((*dofmap).local_to_global_index(tmp_cell_dof_vec[i]));
         }
@@ -314,24 +331,24 @@ boost::unordered_set<uint> buckettools::facet_dofs_values(const FunctionSpace_pt
           (*element).tabulate_dof_coordinates(coordinates, dof_coordinates, cell);
         }
 
-        for (uint i = 0; i < facet_dof_vec.size(); i++)              // loop over facet dof
+        for (std::size_t i = 0; i < facet_dof_vec.size(); i++)              // loop over facet dof
         {
-          dof_set.insert((uint) cell_dof_vec[facet_dof_vec[i]]);     // and insert each one into the unordered set
+          dof_set.insert((std::size_t) cell_dof_vec[facet_dof_vec[i]]);     // and insert each one into the unordered set
           if (values)
           {
             if(value_exp)
             {
-              for (uint j = 0; j < gdim; j++)
+              for (std::size_t j = 0; j < gdim; j++)
               {
                 x[j] = coordinates[i][j];
               }
               (*value_exp).eval(values_array, x);                    // evaluate the values expression
-              (*values).setitem((uint) cell_dof_vec[facet_dof_vec[i]], 
+              (*values).setitem((std::size_t) cell_dof_vec[facet_dof_vec[i]], 
                                        values_array[exp_index]);
             }
             else
             {
-              (*values).setitem((uint) cell_dof_vec[facet_dof_vec[i]], 
+              (*values).setitem((std::size_t) cell_dof_vec[facet_dof_vec[i]], 
                                        *value_const);                // and insert each one into the unordered map
             }                                                        // assuming a constant
           }
@@ -347,38 +364,78 @@ boost::unordered_set<uint> buckettools::facet_dofs_values(const FunctionSpace_pt
 //*******************************************************************|************************************************************//
 // restrict a vector of indices by its parent (intersection) or sibling (complement), also by parallel ownership
 //*******************************************************************|************************************************************//
-void buckettools::restrict_indices(std::vector<uint> &indices, 
+void buckettools::restrict_indices(std::vector<std::size_t> &indices, 
                                    const FunctionSpace_ptr functionspace,
-                                   const std::vector<uint>* parent_indices, 
-                                   const std::vector<uint>* sibling_indices)
+                                   const std::vector<std::size_t>* parent_indices, 
+                                   const std::vector<std::size_t>* sibling_indices)
 {
 
-  std::vector<uint> tmp_indices = indices;
-  indices.clear();
-
-  std::pair<uint, uint> ownership_range =                            // the parallel ownership range of the system functionspace
+  std::pair<std::size_t, std::size_t> ownership_range =              // the parallel ownership range of the system functionspace
           (*(*functionspace).dofmap()).ownership_range();
 
-  for (std::vector<uint>::const_iterator                             // loop over the dof in the set
-                        dof_it = tmp_indices.begin(); 
-                        dof_it != tmp_indices.end(); 
-                        dof_it++)
-  {                                                                  // and insert them into the indices vector
-    if ((*dof_it >= ownership_range.first) &&                        // but first check that this process owns them
-                          (*dof_it < ownership_range.second))        // (in parallel)
+  const int dofmap_block_size = (*(*functionspace).dofmap()).block_size();
+  const std::vector<std::size_t> ghost_global_dofs = 
+              (*(*functionspace).dofmap()).local_to_global_unowned();
+
+  std::map<std::size_t, std::size_t> local_ghost_dofs_map;
+  for (std::size_t i = 0; i < ghost_global_dofs.size(); ++i)
+  {
+    for (std::size_t c = 0; c < dofmap_block_size; ++c)
     {
-      indices.push_back(*dof_it);
+      local_ghost_dofs_map[dofmap_block_size*ghost_global_dofs[i] + c] = i;
     }
   }
 
+  const std::vector<int> ghost_owner = 
+              (*(*functionspace).dofmap()).off_process_owner();
+
+  const MPI_Comm& mpi_comm = (*(*functionspace).mesh()).mpi_comm();
+  std::size_t nprocs = dolfin::MPI::size(mpi_comm);
+
+  std::vector<std::vector<std::size_t> > send_dofs(nprocs);
+  std::vector<std::vector<std::size_t> > receive_dofs;
+
+  std::set<std::size_t> indices_set;
+
+  for (std::vector<std::size_t>::const_iterator                      // loop over the dof in the set
+                        dof_it = indices.begin(); 
+                        dof_it != indices.end(); 
+                        dof_it++)
+  {                                                                  // and insert them into the indices vector
+    if ((*dof_it >= ownership_range.first) && (*dof_it < ownership_range.second))
+    {
+      indices_set.insert(*dof_it);
+    }
+    else                                                             // if we own them
+    {
+      std::size_t proc = ghost_owner[local_ghost_dofs_map.at(*dof_it)];
+      send_dofs[proc].push_back(*dof_it);
+    }
+  }
+
+  dolfin::MPI::all_to_all(mpi_comm, send_dofs, receive_dofs);
+
+  for (std::size_t p = 0; p < nprocs; ++p)
+  {
+    std::vector<std::size_t>& receive_dofs_p = receive_dofs[p];
+    for (std::vector<std::size_t>::const_iterator dof_it = receive_dofs_p.begin();
+                                                  dof_it != receive_dofs_p.end();
+                                                  ++dof_it)
+    {
+      indices_set.insert(*dof_it);
+    }
+  }
+
+  indices.clear();
+  indices.insert(indices.begin(), indices_set.begin(), indices_set.end());
   std::sort(indices.begin(), indices.end());                         // sort the vector of indices
 
   if(sibling_indices)                                                // we have been passed a list of sibling indices...
   {                                                                  // we wish to remove from the indices any indices that
                                                                      // also occur in the sibling indices
-    tmp_indices.clear();
+    std::vector<std::size_t> tmp_indices;
 
-    std::vector<uint>::const_iterator c_it = indices.begin(),
+    std::vector<std::size_t>::const_iterator c_it = indices.begin(),
                                       s_it = (*sibling_indices).begin();
     bool overlap = false;
     while ((c_it != indices.end()) && (s_it != (*sibling_indices).end()))
@@ -419,9 +476,9 @@ void buckettools::restrict_indices(std::vector<uint> &indices,
   if(parent_indices)                                                 // we have been passed a list of parent indices... 
   {                                                                  // we wish to remove from the indices any indices that do
                                                                      // not occur in the parent indices 
-    tmp_indices.clear();
+    std::vector<std::size_t> tmp_indices;
 
-    std::vector<uint>::const_iterator c_it = indices.begin(),
+    std::vector<std::size_t>::const_iterator c_it = indices.begin(),
                                       p_it = (*parent_indices).begin();
     bool extra = false;
     while ((c_it != indices.end()) && (p_it != (*parent_indices).end()))
@@ -461,7 +518,7 @@ void buckettools::restrict_indices(std::vector<uint> &indices,
 
 void buckettools::restrict_values(PETScVector_ptr values, 
                                   PETScVector_ptr tmp_values,
-                                  const std::vector<uint> &indices)
+                                  const std::vector<std::size_t> &indices)
 {
   PetscErrorCode perr;                                               // petsc error code
 
@@ -499,16 +556,16 @@ void buckettools::restrict_values(PETScVector_ptr values,
 // Fill a petsc IS object based on the supplied indices.
 //*******************************************************************|************************************************************//
 IS buckettools::convert_vector_to_is(const MPI_Comm &comm,
-                                     const std::vector<uint> &indices,
-                                     const uint &parent_offset, 
-                                     const std::vector<uint>* parent_indices)
+                                     const std::vector<std::size_t> &indices,
+                                     const std::size_t &parent_offset, 
+                                     const std::vector<std::size_t>* parent_indices)
 {
 
   PetscErrorCode perr;                                               // petsc error code
 
-  std::vector<uint>::const_iterator pos =  std::adjacent_find(indices.begin(), 
+  std::vector<std::size_t>::const_iterator pos =  std::adjacent_find(indices.begin(), 
                                                               indices.end(),  
-                                                              std::greater<uint>());
+                                                              std::greater<std::size_t>());
   assert(pos==indices.end());                                        // test that the incoming indices are sorted
 
   PetscInt n=indices.size();                                         // setup a simpler structure for petsc
@@ -519,14 +576,14 @@ IS buckettools::convert_vector_to_is(const MPI_Comm &comm,
   PetscInt *pindices;
   PetscMalloc(n*sizeof(PetscInt), &pindices);
 
-  uint ind = 0;
+  std::size_t ind = 0;
   if(parent_indices)
   {                                                                  // we have been passed a list of parent indices... 
                                                                      // our child indices must be a  subset of this list and indexed
                                                                      // into it so let's do that now while we convert structures...
-    uint p_size = (*parent_indices).size();
-    uint p_ind = 0;
-    for (std::vector<uint>::const_iterator                           // loop over the child indices
+    std::size_t p_size = (*parent_indices).size();
+    std::size_t p_ind = 0;
+    for (std::vector<std::size_t>::const_iterator                           // loop over the child indices
                                         it = indices.begin(); 
                                         it != indices.end(); 
                                         it++)
@@ -548,7 +605,7 @@ IS buckettools::convert_vector_to_is(const MPI_Comm &comm,
   }
   else
   {
-    for (std::vector<uint>::const_iterator                           // loop over the indices
+    for (std::vector<std::size_t>::const_iterator                           // loop over the indices
                                       ind_it = indices.begin(); 
                                       ind_it != indices.end(); 
                                       ind_it++)

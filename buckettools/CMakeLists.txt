@@ -18,14 +18,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
-# Require CMake 2.8
-cmake_minimum_required(VERSION 2.8) 
+cmake_minimum_required(VERSION 3.5) 
 
 # Set verbose output while testing CMake
 #set(CMAKE_VERBOSE_MAKEFILE 1)
 
 # Set CMake behavior
-cmake_policy(SET CMP0004 OLD)
+cmake_policy(SET CMP0004 NEW)
 
 # The project name for buckettools (sets up environment variables for binary and source directories)
 project(BUCKETTOOLS)
@@ -44,19 +43,9 @@ endif()
 
 # Get DOLFIN configuration data (dolfin-config.cmake must be in DOLFIN_CMAKE_CONFIG_PATH)
 find_package(DOLFIN REQUIRED)
+include(${DOLFIN_USE_FILE})
 
-list(APPEND BUCKETTOOLS_DEP_INCLUDE_DIRECTORIES "${DOLFIN_INCLUDE_DIRS};${DOLFIN_3RD_PARTY_INCLUDE_DIRS}")
-list(APPEND BUCKETTOOLS_TARGET_LINK_LIBRARIES "${DOLFIN_LIBRARIES}")
-list(APPEND BUCKETTOOLS_CXX_DEFINITIONS "${DOLFIN_CXX_DEFINITIONS}")
-list(APPEND BUCKETTOOLS_LINK_FLAGS "${DOLFIN_LINK_FLAGS}")
-set(BUCKETTOOLS_CXX_FLAGS "${BUCKETTOOLS_CXX_FLAGS} ${DOLFIN_CXX_FLAGS}")
-
-# Need to get VTK config because VTK uses advanced VTK features which
-# mean it's not enough to just link to the DOLFIN target. See
-# http://www.vtk.org/pipermail/vtk-developers/2013-October/014402.html
-find_package(VTK HINTS ${VTK_DIR} $ENV{VTK_DIR} NO_MODULE QUIET)
-
-find_package(PythonInterp 2 REQUIRED)
+find_package(PythonInterp 3 REQUIRED)
 
 # Set variables to help find Python library that is compatible with
 # interpreter
@@ -73,12 +62,6 @@ if (PYTHONINTERP_FOUND)
                   OUTPUT_VARIABLE _PYTHON_LIB_PATH
                   RESULT_VARIABLE _PYTHON_LIB_RESULT)
 
-  # Get Python version from interpreter (find_package sets this but only for cmake >= 2.8.5, which we don't require)
-  execute_process(COMMAND "${PYTHON_EXECUTABLE}" -c
-                           "import sys; sys.stdout.write(sys.version.split()[0])"
-                  OUTPUT_VARIABLE _PYTHON_VERSION_STR
-                  RESULT_VARIABLE _PYTHON_VERSION_RESULT)
-
   # Set include path, if returned by interpreter
   if ("${_PYTHON_INCLUDE_RESULT}" STREQUAL "0")
     set(PYTHON_INCLUDE_DIR ${_PYTHON_INCLUDE_PATH})
@@ -93,19 +76,13 @@ if (PYTHONINTERP_FOUND)
   else()
     message(FATAL_ERROR "Failed to find python library path.")
   endif()
-
-  # Add version number based on output from iterpreter
-  if ("${_PYTHON_VERSION_RESULT}" STREQUAL "0")
-    set(PYTHON_VERSION_STR ${_PYTHON_VERSION_STR})
-  else()
-    message(FATAL_ERROR "Failed to find python version.")
-  endif()
 else()
   message(FATAL_ERROR "Could not find python interpreter.")
 endif()
 
 # Find Pythons libs
-find_package(PythonLibs ${PYTHON_VERSION_STR} EXACT REQUIRED)
+message(STATUS "PYTHON_VERSION_STRING ${PYTHON_VERSION_STRING}")
+find_package(PythonLibs ${PYTHON_VERSION_STRING} REQUIRED)
 
 if(NOT ${PYTHONLIBS_FOUND})
   message(FATAL_ERROR "Could not find python libraries.")

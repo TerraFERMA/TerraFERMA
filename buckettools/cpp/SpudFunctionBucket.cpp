@@ -128,6 +128,7 @@ void SpudFunctionBucket::allocate_coeff_function()
 
     functionspace_ =                                                 // grab the functionspace for this coefficient from the bucket
           (*(*system_).bucket()).fetch_coefficientspace(uflsymbol());// data maps
+    localfunctionspace_ = functionspace_;
 
     function_.reset( new dolfin::Function(functionspace_) );        // allocate the function on this functionspace
     oldfunction_.reset( new dolfin::Function(functionspace_) );     // allocate the old function on this functionspace
@@ -449,6 +450,8 @@ void SpudFunctionBucket::allocate_field_()
   if (nfields == 1)                                                  // no subfunctions (this field is identical to the system)
   {                                                                  // just grab references to:
     functionspace_ = (*system_).functionspace();                     // the functionspace
+    localfunctionspace_ = functionspace_;
+
 
     function_ = (*system_).function();                               // the function
     oldfunction_ = (*system_).oldfunction();                         // the old function
@@ -470,6 +473,7 @@ void SpudFunctionBucket::allocate_field_()
   else                                                               // yes, multiple fields in this system so we need to make
   {                                                                  // a subspace and subfunctions (dangerous, be careful!)
     functionspace_ = (*(*system_).functionspace())[index_];          // create a subspace
+    localfunctionspace_ = (*functionspace_).collapse();              // the collapsed functionspace for this function
 
     function_.reset( &(*(*system_).function())[index_],              // create a subfunction but don't delete it ever as it shares
                                               dolfin::NoDeleter() ); // information with the system function
@@ -493,6 +497,11 @@ void SpudFunctionBucket::allocate_field_()
     }
 
   }
+
+  tosystem_.reset( new dolfin::FunctionAssigner(functionspace_, 
+                                                localfunctionspace_) );
+  fromsystem_.reset( new dolfin::FunctionAssigner(localfunctionspace_, 
+                                                  functionspace_) );
 
   buffer.str(""); buffer << (*system_).name() << "::" << name();     // rename the function as SystemName::FieldName
   (*function_).rename(buffer.str(), buffer.str());
@@ -549,24 +558,16 @@ void SpudFunctionBucket::allocate_field_()
                    << "/type/rank/initial_condition::WholeMesh/file";
   if(Spud::have_option(buffer.str()))
   {
-    std::string icfilename;
-    serr = Spud::get_option(buffer.str(), icfilename);
+    serr = Spud::get_option(buffer.str(), icfilename_);
     spud_err(buffer.str(), serr);
-    if (!(*system()).icfile())                                       // if there's no icfile_ associated with the system
-    {
-      assert(index()==0);
-      (*system()).icfile().reset( new dolfin::File(icfilename) );
-    }
   }
   else
   {
-    buffer.str(""); buffer << optionpath()                           // find out how many initial conditions we have
-                                   << "/type/rank/initial_condition";
-    if(Spud::have_option(buffer.str()))
-    {
-      icexpression_ = allocate_expression_over_regions_(buffer.str(), 
-                            (*(*system_).bucket()).start_time_ptr());// allocate the expression
-    }
+    buffer.str(""); buffer << optionpath()                           // set up initial condition optionpath
+                                   << "/type/rank/initial_condition";// if this doesn't exist allocate_expression will
+    icexpression_ = allocate_expression_over_regions_(buffer.str(),  // default to a 0 constant...
+                          (*(*system_).bucket()).start_time_ptr());  // allocate the expression
+    icfilename_ = "";
   }
 
   lower_cap_.resize(size());
@@ -1053,7 +1054,7 @@ Expression_ptr SpudFunctionBucket::allocate_expression_over_regions_(
 
     std::map< std::size_t, Expression_ptr > expressions;
 
-    int rank;
+    int lrank;
     std::vector< std::size_t > shape;
 
     for (uint i = 0; i < nvs; i++)
@@ -1080,16 +1081,16 @@ Expression_ptr SpudFunctionBucket::allocate_expression_over_regions_(
 
       if (i==0)                                                      // record the rank and shape of the expression
       {
-        rank = (*tmpexpression).value_rank();
-        for (uint d = 0; d < rank; d++)
+        lrank = (*tmpexpression).value_rank();
+        for (uint d = 0; d < lrank; d++)
         {
           shape.push_back((*tmpexpression).value_dimension(d));
         }
       }
       else                                                           // check its the same as previous expressions
       {
-        assert(rank==(*tmpexpression).value_rank());
-        for (uint d = 0; d < rank; d++)
+        assert(lrank==(*tmpexpression).value_rank());
+        for (uint d = 0; d < lrank; d++)
         {
           assert(shape[d]==(*tmpexpression).value_dimension(d));
         }
@@ -1121,7 +1122,7 @@ Expression_ptr SpudFunctionBucket::allocate_expression_over_regions_(
     }
 
     MeshFunction_size_t_ptr cell_ids = (*system_).celldomains();
-    if (rank==0)
+    if (lrank==0)
     {
       expression.reset( new RegionsExpression(expressions, 
                                                         cell_ids) );
@@ -1181,56 +1182,7 @@ Expression_ptr SpudFunctionBucket::allocate_expression_(
   intbuffer.str("");   intbuffer   << optionpath << "/internal";     // for an internal expression
   funcbuffer.str("");  funcbuffer  << optionpath << "/functional";   // for a functional
   
-  if (Spud::have_option(constbuffer.str()))                          // constant requested?
-  {
-    int rank;
-    serr = Spud::get_option_rank(constbuffer.str(), rank);           // find out the rank
-    spud_err(constbuffer.str(), serr);
-    if(rank==0)                                                      // scalar
-    {
-      double value;
-      serr = Spud::get_option(constbuffer.str(), value); 
-      spud_err(constbuffer.str(), serr);
-      expression.reset( new dolfin::Constant(value) );
-    }
-    else if (rank==1)                                                // vector
-    {
-      std::vector<double> values;
-      serr = Spud::get_option(constbuffer.str(), values); 
-      spud_err(constbuffer.str(), serr);
-      assert(values.size()==size());
-      expression.reset(new dolfin::Constant(values));
-    }
-    else if (rank==2)
-    {
-      std::vector<int> value_shape_int;
-      std::vector< std::vector<double> > values_arr; 
-      serr = Spud::get_option_shape(constbuffer.str(), value_shape_int); spud_err(constbuffer.str(), serr);
-      serr = Spud::get_option(constbuffer.str(), values_arr); spud_err(constbuffer.str(), serr);
-
-      std::vector<std::size_t> value_shape(2);
-      value_shape[0] = value_shape_int[0];
-      value_shape[1] = value_shape_int[1];
-      std::vector<double> values;
-      for (std::vector< std::vector<double> >::const_iterator val = values_arr.begin(); val != values_arr.end(); val++)
-      {
-        values.insert(values.end(), (*val).begin(), (*val).end());
-      }
-      assert(values.size()==size());
-      expression.reset(new dolfin::Constant(value_shape, values));
-    }
-    else
-    {
-      tf_err("Unknown rank for constant in init_exp_.", "Rank: %d", rank);
-    }
-
-    if (time_dependent)                                              // if we've asked if this expression is time dependent
-    {                                                                // ... it's not
-      *time_dependent = false;
-    }
-
-  } 
-  else if (Spud::have_option(pybuffer.str()))                        // python requested
+  if (Spud::have_option(pybuffer.str()))                             // python requested
   {
     std::string pyfunction;                                          // the python function string
     serr = Spud::get_option(pybuffer.str(), pyfunction); 
@@ -1244,23 +1196,23 @@ Expression_ptr SpudFunctionBucket::allocate_expression_(
     serr = Spud::get_option(buffer.str(), rankstring); 
     spud_err(buffer.str(), serr);
     
-    int rank;
-    rank = atoi(rankstring.c_str());
-    if(rank==0)                                                      // scalar
+    int lrank;
+    lrank = atoi(rankstring.c_str());
+    if(lrank==0)                                                      // scalar
     {
       expression.reset(new PythonExpression(pyfunction, time));
     }
-    else if (rank==1)                                                // vector
+    else if (lrank==1)                                                // vector
     {
       expression.reset(new PythonExpression(size(), pyfunction, time));
     }
-    else if (rank==2)
+    else if (lrank==2)
     {
       expression.reset(new PythonExpression(shape_, pyfunction, time));
     }
     else
     {
-      tf_err("Unknown rank for python expression in init_exp_.", "Rank: %d", rank);
+      tf_err("Unknown rank for python expression in init_exp_.", "Rank: %d", lrank);
     }
 
     if (time_dependent)                                              // if we've asked if this expression is time dependent
@@ -1280,9 +1232,9 @@ Expression_ptr SpudFunctionBucket::allocate_expression_(
     serr = Spud::get_option(buffer.str(), rankstring); 
     spud_err(buffer.str(), serr);
     
-    int rank;
-    rank = atoi(rankstring.c_str());
-    assert(rank==0);
+    int lrank;
+    lrank = atoi(rankstring.c_str());
+    assert(lrank==0);
 
     expression.reset( new dolfin::Constant(0.0) );                   // can't set this to the correct value yet as it depends on
                                                                      // having all its coefficients attached so for now just set it
@@ -1409,21 +1361,21 @@ Expression_ptr SpudFunctionBucket::allocate_expression_(
       spud_err(buffer.str(), serr);
 
       
-      int rank;
-      rank = atoi(rankstring.c_str());
-      if (rank==0)                                                   // scalar
+      int lrank;
+      lrank = atoi(rankstring.c_str());
+      if (lrank==0)                                                   // scalar
       {
         expression.reset(new SemiLagrangianExpression(
                                                (*system()).bucket(), time, 
                                                function, velocity, outside));
       }
-      else if (rank==1)                                              // vector
+      else if (lrank==1)                                              // vector
       {
         expression.reset(new SemiLagrangianExpression(size(),
                                                (*system()).bucket(), time, 
                                                function, velocity, outside));
       }
-      else if (rank==2)                                              // vector
+      else if (lrank==2)                                              // vector
       {
         expression.reset(new SemiLagrangianExpression(shape_,
                                                (*system()).bucket(), time, 
@@ -1431,7 +1383,7 @@ Expression_ptr SpudFunctionBucket::allocate_expression_(
       }
       else
       {
-        tf_err("Unknown rank for semi lagrangian expression in init_exp_.", "Rank: %d", rank);
+        tf_err("Unknown rank for semi lagrangian expression in init_exp_.", "Rank: %d", lrank);
       }
 
       if (time_dependent)                                            // if we've asked if this expression is time dependent
@@ -1446,10 +1398,83 @@ Expression_ptr SpudFunctionBucket::allocate_expression_(
     }
 
   }
-  else                                                               // unknown expression type
+  else
   {
-    tf_err("Unknown way of specifiying expression.", "Unknown expression type.");
-  }
+    int lrank = rank();                                               // default to functionbucket rank
+    if (Spud::have_option(constbuffer.str()))                        // but if we've requested a constant
+    {
+      serr = Spud::get_option_rank(constbuffer.str(), lrank);         // find out the rank in the schema
+      spud_err(constbuffer.str(), serr);
+    }
+    
+    if(lrank==0)                                                      // scalar
+    {
+      double value = 0.0;                                            // default to zero
+      if (Spud::have_option(constbuffer.str()))                      // but if we've requested a constant
+      {
+        serr = Spud::get_option(constbuffer.str(), value);           // take it from the options
+        spud_err(constbuffer.str(), serr);
+      }
+      expression.reset( new dolfin::Constant(value) );
+    }
+    else if (lrank==1)                                                // vector
+    {
+      std::vector<double> values;
+      if (Spud::have_option(constbuffer.str()))                      // if we've requested a constant
+      {
+        serr = Spud::get_option(constbuffer.str(), values); 
+        spud_err(constbuffer.str(), serr);
+      }
+      else
+      {
+        for (uint i = 0; i < size(); i++)
+        {
+          values.push_back(0.0);
+        }
+      }
+      assert(values.size()==size());
+      expression.reset(new dolfin::Constant(values));
+    }
+    else if (lrank==2)
+    {
+      std::vector<std::size_t> value_shape(2);
+      std::vector<double> values;
+      if (Spud::have_option(constbuffer.str()))                      // if we've requested a constant
+      {
+        std::vector< std::vector<double> > values_arr; 
+        std::vector<int> value_shape_int;
+        serr = Spud::get_option_shape(constbuffer.str(), value_shape_int); spud_err(constbuffer.str(), serr);
+        serr = Spud::get_option(constbuffer.str(), values_arr); spud_err(constbuffer.str(), serr);
+        value_shape[0] = value_shape_int[0];
+        value_shape[1] = value_shape_int[1];
+        for (std::vector< std::vector<double> >::const_iterator val = values_arr.begin(); val != values_arr.end(); val++)
+        {
+          values.insert(values.end(), (*val).begin(), (*val).end());
+        }
+      }
+      else
+      {
+        for (uint i = 0; i < size(); i++)
+        {
+          values.push_back(0.0);
+        }
+        value_shape[0] = shape_[0];
+        value_shape[1] = shape_[1];
+      }
+      assert(values.size()==size());
+      expression.reset(new dolfin::Constant(value_shape, values));
+    }
+    else
+    {
+      tf_err("Unknown rank for constant in init_exp_.", "Rank: %d", lrank);
+    }
+
+    if (time_dependent)                                              // if we've asked if this expression is time dependent
+    {                                                                // ... it's not
+      *time_dependent = false;
+    }
+
+  } 
   
   return expression;                                                 // return the allocated expression
   
@@ -1532,16 +1557,16 @@ GenericFunction_ptr SpudFunctionBucket::take_function_reference_(
       spud_err(buffer.str(), serr);
 
       
-      int rank;
-      rank = atoi(rankstring.c_str());
+      int lrank;
+      lrank = atoi(rankstring.c_str());
 
       const std::size_t functionrank = (*functionbucket).rank();
 
-      if (functionrank != rank)
+      if (functionrank != lrank)
       {
         tf_err("Rank of referenced function does not match rank of referee.", 
                "Reference rank: %d, Referee rank: %d", 
-               functionrank, rank);
+               functionrank, lrank);
       }
 
       function = (*functionbucket).genericfunction_ptr(time);
@@ -1624,7 +1649,7 @@ void SpudFunctionBucket::initialize_expression_(
   std::stringstream buffer;                                          // optionpath buffer
   Spud::OptionError serr;                                            // spud option error
 
-  std::stringstream constbuffer, pybuffer, funcbuffer, cppbuffer, intbuffer;    // some string assembly streams
+  std::stringstream funcbuffer, cppbuffer, intbuffer;                // some string assembly streams
   cppbuffer.str("");   cppbuffer   << optionpath << "/cpp";          // for a cpp expression
   intbuffer.str("");   intbuffer   << optionpath << "/internal";     // for an internal expression
   funcbuffer.str("");  funcbuffer  << optionpath << "/functional";   // for a functional
@@ -1697,7 +1722,7 @@ void SpudFunctionBucket::checkpoint_options_()
 
   namebuffer.str(""); namebuffer << (*(*system()).bucket()).output_basename() << "_" 
                                  << (*system()).name() << "_" 
-                                 << (*(*system()).bucket()).checkpoint_count() << ".xml";
+                                 << (*(*system()).bucket()).checkpoint_count();
   buffer.str(""); buffer << optionpath()
                                   << "/type[0]/rank[0]/initial_condition";
   int nics = Spud::option_count(buffer.str());

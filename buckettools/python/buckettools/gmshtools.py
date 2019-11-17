@@ -39,7 +39,7 @@ class GeoFile:
       return
     point.eid = self.pindex
     self.pindex += 1
-    line = "Point("+`point.eid`+") = {"+`point.x`+", "+`point.y`+", "+`point.z`+", "+`point.res`+"};"
+    line = "Point("+repr(point.eid)+") = {"+repr(point.x)+", "+repr(point.y)+", "+repr(point.z)+", "+repr(point.res)+"};"
     if comment:
       line += " "+self.comment(comment)
     else:
@@ -53,10 +53,10 @@ class GeoFile:
     self.cindex += 1
     for p in curve.points:
       self.addpoint(p)
-    line = curve.type+"("+`curve.eid`+") = {"
+    line = curve.type+"("+repr(curve.eid)+") = {"
     for p in range(len(curve.points)-1):
-      line += `curve.points[p].eid`+", "
-    line += `curve.points[-1].eid`+"};"
+      line += repr(curve.points[p].eid)+", "
+    line += repr(curve.points[-1].eid)+"};"
     if comment:
       line += " "+self.comment(comment)
     else:
@@ -73,12 +73,12 @@ class GeoFile:
     self.sindex += 1
     for curve in surface.curves:
       self.addcurve(curve)
-    line = "Line Loop("+`self.cindex`+") = {"
+    line = "Line Loop("+repr(self.cindex)+") = {"
     for c in range(len(surface.curves)-1):
-      line += `surface.directions[c]*surface.curves[c].eid`+", "
-    line += `surface.directions[-1]*surface.curves[-1].eid`+"};"+os.linesep
+      line += repr(surface.directions[c]*surface.curves[c].eid)+", "
+    line += repr(surface.directions[-1]*surface.curves[-1].eid)+"};"+os.linesep
     self.lines.append(line)
-    line = "Plane Surface("+`surface.eid`+") = {"+`self.cindex`+"};"
+    line = "Plane Surface("+repr(surface.eid)+") = {"+repr(self.cindex)+"};"
     if comment:
       line += " "+self.comment(comment)
     else:
@@ -87,32 +87,32 @@ class GeoFile:
     self.cindex += 1
 
   def addphysicalpoint(self, pid, points):
-    line = "Physical Point("+`pid`+") = {"
+    line = "Physical Point("+repr(pid)+") = {"
     for p in range(len(points)-1):
-      line += `points[p].eid`+", "
-    line += `points[-1].eid`+"};"+os.linesep
+      line += repr(points[p].eid)+", "
+    line += repr(points[-1].eid)+"};"+os.linesep
     self.lines.append(line)
 
   def addphysicalline(self, pid, curves):
-    line = "Physical Line("+`pid`+") = {"
+    line = "Physical Line("+repr(pid)+") = {"
     for c in range(len(curves)-1):
-      line += `curves[c].eid`+", "
-    line += `curves[-1].eid`+"};"+os.linesep
+      line += repr(curves[c].eid)+", "
+    line += repr(curves[-1].eid)+"};"+os.linesep
     self.lines.append(line)
 
   def addphysicalsurface(self, pid, surfaces):
-    line = "Physical Surface("+`pid`+") = {"
+    line = "Physical Surface("+repr(pid)+") = {"
     for s in range(len(surfaces)-1):
-      line += `surfaces[s].eid`+", "
-    line += `surfaces[-1].eid`+"};"+os.linesep
+      line += repr(surfaces[s].eid)+", "
+    line += repr(surfaces[-1].eid)+"};"+os.linesep
     self.lines.append(line)
 
   def addembed(self, surface, items):
     line = items[0].type+" {"
     for i in range(len(items)-1):
       assert(items[i].type==items[0].type)
-      line += `items[i].eid`+", "
-    line += `items[-1].eid`+"} In Surface {"+`surface.eid`+"};"+os.linesep
+      line += repr(items[i].eid)+", "
+    line += repr(items[-1].eid)+"} In Surface {"+repr(surface.eid)+"};"+os.linesep
     self.lines.append(line) 
 
   def addtransfinitecurve(self, curves, n):
@@ -121,17 +121,17 @@ class GeoFile:
         self.addcurve(curves[c])
     line = "Transfinite Line {"
     for c in range(len(curves)-1):
-      line += `curves[c].eid`+", "
-    line += `curves[-1].eid`+"} = "+`n`+";"+os.linesep
+      line += repr(curves[c].eid)+", "
+    line += repr(curves[-1].eid)+"} = "+repr(n)+";"+os.linesep
     self.lines.append(line)
 
   def addtransfinitesurface(self, surface, corners, direction):
     if surface.eid is None:
       self.addsurface(surface)
-    line = "Transfinite Surface {"+`surface.eid`+"} = {"
+    line = "Transfinite Surface {"+repr(surface.eid)+"} = {"
     for c in range(len(corners)-1):
-      line += `corners[c].eid`+", "
-    line += `corners[-1].eid`+"} "+direction+";"+os.linesep
+      line += repr(corners[c].eid)+", "
+    line += repr(corners[-1].eid)+"} "+direction+";"+os.linesep
     self.lines.append(line)
 
   def linebreak(self):
@@ -144,7 +144,7 @@ class GeoFile:
     self.lines.append(self.comment("Produced by: "+" ".join(sys.argv)))
 
   def write(self, filename):
-    f = file(filename, 'w')
+    f = open(filename, 'w')
     f.writelines(self.lines)
     f.close()
 
@@ -241,8 +241,8 @@ class Spline(Curve):
     derivs = self.find_derivatives()
     u = numpy.arange(0.0, self.x.size)
     polys = []
-    polys.append(interp.PiecewisePolynomial(u, zip(self.x, derivs[0]), orders=3, direction=None))
-    polys.append(interp.PiecewisePolynomial(u, zip(self.y, derivs[1]), orders=3, direction=None))
+    polys.append(interp.PiecewisePolynomial(u, list(zip(self.x, derivs[0])), orders=3, direction=None))
+    polys.append(interp.PiecewisePolynomial(u, list(zip(self.y, derivs[1])), orders=3, direction=None))
     return polys,u
 
   def intersecty(self, yint):
@@ -352,7 +352,7 @@ class Spline(Curve):
 
   def split(self, ps):
     points = [point for point in self.points]
-    pind = range(len(points))
+    pind = list(range(len(points)))
     derivs = self.find_derivatives()
     for p in ps:
       if p not in points or p==points[0] or p==points[-1]: continue
@@ -374,7 +374,7 @@ class Spline(Curve):
           if points[i] == ps[p]: break
       j = i
       if self.name:
-        name = self.name+"_split"+`p`
+        name = self.name+"_split"+repr(p)
       else: 
         name = None
       splines.append(Spline(newpoints, name=name, pid=self.pid))
@@ -436,7 +436,7 @@ class InterpolatedCubicSpline:
     self.length = 1.0 # must set this to one first to get the next line correct
     self.length = self.x2delu(self.x[-1])
     u = numpy.asarray([0.0])
-    u = numpy.append(u, [self.x2delu(self.x[i], x0=self.x[i-1]) for i in xrange(1,len(self.x))])
+    u = numpy.append(u, [self.x2delu(self.x[i], x0=self.x[i-1]) for i in range(1,len(self.x))])
     self.u = numpy.cumsum(u)
   
   def updateinterp(self):
@@ -778,7 +778,7 @@ class InterpolatedSciPySpline:
     spoint = self.uintersectxy(x, y)
     for i in range(2): 
       if len(spoint[i])>0: break
-    if len(spoint[i])==0: print "x, y = ", x, y
+    if len(spoint[i])==0: print("x, y = ", x, y)
     loc = self.interpcurveindex(spoint[i][0])
     totallength = sqrt((self.interpcurves[loc].points[-1].x - self.interpcurves[loc].points[0].x)**2 \
                       +(self.interpcurves[loc].points[-1].y - self.interpcurves[loc].points[0].y)**2)
@@ -907,7 +907,7 @@ class Surface(ElementaryEntity, PhysicalEntity):
     self.type = "Surface"
     self.curves = [curves[0]]
     self.directions = [1]
-    ind = range(1, len(curves))
+    ind = list(range(1, len(curves)))
     for j in range(1, len(curves)):
       pcurve = self.curves[j-1]
       if self.directions[j-1]==-1:
@@ -922,7 +922,7 @@ class Surface(ElementaryEntity, PhysicalEntity):
           self.directions.append(-1)
           break
       if i == len(ind)-1 and len(self.directions) == j:
-        print "Failed to complete line loop."
+        print("Failed to complete line loop.")
         sys.exit(1)
       self.curves.append(curves[ind[i]])
       i = ind.pop(i)
@@ -1066,16 +1066,16 @@ class Geometry:
       self.geofile.addpoint(point, self.pointcomments[p])
     self.geofile.linebreak()
 
-    for surface,items in iter(sorted(self.pointembeds.items(), key=lambda item: item[0].eid)):
+    for surface,items in iter(sorted(list(self.pointembeds.items()), key=lambda item: item[0].eid)):
       self.geofile.addembed(surface,items)
-    for surface,items in iter(sorted(self.lineembeds.items(), key=lambda item: item[0].eid)):
+    for surface,items in iter(sorted(list(self.lineembeds.items()), key=lambda item: item[0].eid)):
       self.geofile.addembed(surface,items)
     self.geofile.linebreak()
 
     for n,curves in iter(sorted(self.transfinitecurves.items())):
       self.geofile.addtransfinitecurve(curves,n)
     self.geofile.linebreak()
-    for surface,corners in iter(sorted(self.transfinitesurfaces.items(), key=lambda item: item[0].eid)):
+    for surface,corners in iter(sorted(list(self.transfinitesurfaces.items()), key=lambda item: item[0].eid)):
       self.geofile.addtransfinitesurface(surface,corners[0],corners[1])
     self.geofile.linebreak()
     
