@@ -450,7 +450,7 @@ void FunctionBucket::apply_ic(const std::string &function_type)
       assert(!icfilename_.empty());
       std::stringstream buffer;
       buffer.str(""); buffer << icfilename_ << ".xdmf";
-      dolfin::XDMFFile((*(*system()).mesh()).mpi_comm(), buffer.str()).read_checkpoint(*tmpfunction, (*system()).name()+"::"+name());
+      dolfin::XDMFFile((*(*system()).mesh()).mpi_comm(), buffer.str()).read_checkpoint(*tmpfunction, name());
     }
     (*tosystem_).assign(uf, tmpfunction);
   }
@@ -972,7 +972,7 @@ void FunctionBucket::checkpoint(const double_ptr time)
                          << (*system()).name() << "_" 
                          << (*(*system()).bucket()).checkpoint_count() << ".xdmf";
   XDMFFile_ptr xdmf_file( new dolfin::XDMFFile((*(*system()).mesh()).mpi_comm(), buffer.str()) );
-  write_checkpoint(xdmf_file, time, index()!=0, (*system()).name()+"::"+name());
+  write_checkpoint(xdmf_file, time, index()!=0, name());
   checkpoint_options_();
 }
 
