@@ -67,6 +67,10 @@ def writemesh(filename, vertex_coordinates, cells):
     return mesh
 
 def splitmesh(mesh, facetsubdomain, split_facet_ids, centroid_function, preserve_facet_ids=[], new_facet_ids=None):
+  # FIXME: this could be done better by just creating a MeshValueCollection as
+  # we loop over cells in the iterations (wasn't available when this
+  # function was first written!
+
   # get the indices of facets (those to be split, those to be preserved and all indexed facets)
   split_facet_indices = numpy.where([fid in split_facet_ids for fid in facetsubdomain.array()])[0]
   preserve_facet_indices = numpy.where([fid in preserve_facet_ids for fid in facetsubdomain.array()])[0]
