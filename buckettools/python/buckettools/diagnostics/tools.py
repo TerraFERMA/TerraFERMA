@@ -132,7 +132,7 @@ class Stat:
       pathSplit = path.split(delimiter)
       index = 0
       newPath = pathSplit[index]
-      while not newPath in s.keys():
+      while not newPath in list(s.keys()):
         index += 1
         newPath += delimiter + pathSplit[index]
         
@@ -169,7 +169,7 @@ class Stat:
         base += delimiter
     
       paths = []
-      for key in s.keys():
+      for key in list(s.keys()):
         if isinstance(s[key], dict):
           paths += SPaths(s[key], delimiter, base = base + key)
         else:
@@ -186,7 +186,7 @@ class Stat:
     
     def SPathLists(s, delimiter, base = []):    
       paths = []
-      for key in s.keys():
+      for key in list(s.keys()):
         if isinstance(s[key], dict):
           paths += SPathLists(s[key], delimiter, base = base + [key])
         else:
@@ -235,15 +235,15 @@ class Stat:
     
     def ParseRawS(s, delimiter):    
       newS = {}
-      for key1 in s.keys():
+      for key1 in list(s.keys()):
         assert(not key1 in ["val", "value"])
         if isinstance(s[key1], dict):
-          if len(s[key1].keys()) == 1 and s[key1].keys()[0] in ["val", "value"]:
-            newS[str(key1)] = s[key1][s[key1].keys()[0]]
+          if len(list(s[key1].keys())) == 1 and list(s[key1].keys())[0] in ["val", "value"]:
+            newS[str(key1)] = s[key1][list(s[key1].keys())[0]]
           else:
             subS = ParseRawS(s[key1], delimiter)
             newS[str(key1)] = {}
-            for key2 in subS.keys():
+            for key2 in list(subS.keys()):
               newS[str(key1)][str(key2)] = subS[key2]
         else:        
           rank = len(s[key1].shape)
@@ -282,7 +282,7 @@ class Stat:
 
     self._s = ParseRawS(statParser, self._delimiter)
     
-    if "ElapsedTime" in self.keys():
+    if "ElapsedTime" in list(self.keys()):
       t = self["ElapsedTime"]
       if t.shape[0] > 0:
         debug.dprint("Time range: " + str((t[0], t[-1])))
@@ -303,7 +303,7 @@ def JoinStat(*args):
   times = [stat["ElapsedTime"] for stat in args]
   
   startT = [t[0] for t in times]
-  permutation = utils.KeyedSort(startT, range(nStat))
+  permutation = utils.KeyedSort(startT, list(range(nStat)))
   stats = [args[index] for index in permutation]
   startT = [startT[index] for index in permutation]
   times = [times[index] for index in permutation]
@@ -331,7 +331,7 @@ def JoinStat(*args):
     
   stat = stats[0]
   data = {}
-  for key in stat.keys():
+  for key in list(stat.keys()):
     arr = stat[key]
     shape = list(arr.shape)
     shape[0] = dataIndices[-1]
@@ -342,7 +342,7 @@ def JoinStat(*args):
   
   for i in range(1, nStat):
     stat = stats[i]
-    for key in stat.keys(): 
+    for key in list(stat.keys()): 
       arr = stat[key]
       if not key in data:
         shape = list(arr.shape)
@@ -353,7 +353,7 @@ def JoinStat(*args):
       data[key][dataIndices[i]:dataIndices[i + 1]] = arr[:endIndices[i]]
   
   output = Stat(delimiter = delimiter)
-  for key in data.keys():
+  for key in list(data.keys()):
     output[key] = numpy.array(data[key])
   
   return output

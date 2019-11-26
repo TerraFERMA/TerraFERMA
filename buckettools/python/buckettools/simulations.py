@@ -277,8 +277,11 @@ class Run:
     self.inputfilename = self.filename
     self.inputext = self.ext
     self.spudfile = False
+    self.jsonfile = False
     if "spudfile" in self.optionsdict:
       self.spudfile = self.optionsdict["spudfile"]
+    if "jsonfile" in self.optionsdict:
+      self.jsonfile = self.optionsdict["jsonfile"]
 
     self.name = self.optionsdict["name"]
 
@@ -351,6 +354,22 @@ class Run:
 
       libspud.write_options(os.path.join(self.rundirectory, self.filename+self.ext))
       threadlibspud.clear_options()
+    elif self.jsonfile:
+      import json
+      try:
+        inputfile = open(os.path.join(self.runinputdirectory, self.inputfilename+self.inputext))
+        inputjson = json.load(inputfile)
+        inputfile.close()
+      except json.JSONDecodeError:
+        inputjson = {}
+
+      valuesdict = {"input_dict":inputjson}
+      self.updateoptions(valuesdict=valuesdict)
+      
+      inputjson = valuesdict["input_dict"]
+      outputfile = open(os.path.join(self.rundirectory, self.filename+self.ext), 'w')
+      json.dump(inputjson, outputfile)
+      outputfile.close()
     else:
       inputfilepath = os.path.join(self.runinputdirectory, self.inputfilename+self.inputext)
       gz = False
@@ -976,14 +995,15 @@ class Simulation(Run):
     requiredinput = self.getrequiredinput(run)
     threadlibspud.load_options(os.path.join(basedir, basefile))
     for s in range(libspud.option_count("/system")):
-      filename = libspud.get_option("/system["+repr(s)+"]/field/type/rank/initial_condition/file")
+      basename = libspud.get_option("/system["+repr(s)+"]/field/type/rank/initial_condition/file")
+      filenames = [basename+ext for ext in ['.xdmf', '.h5']]
       # for checkpoints we assume that the checkpointed file is the one we want so 
       # we clean the requiredinput list of any references to it as a value (if any exist)
       popkeys = []
       for inputpath_k, inputpath_v in requiredinput.items():
-        if filename == os.path.basename(inputpath_v): popkeys.append(inputpath_k)
+        if os.path.basename(inputpath_v) in filenames: popkeys.append(inputpath_k)
       for popkey in popkeys: requiredinput.pop(popkey)
-      requiredinput[os.path.join(basedir, filename)] = filename
+      for filename in filenames: requiredinput[os.path.join(basedir, filename)] = filename
     threadlibspud.clear_options()
     return requiredinput
 
@@ -1933,6 +1953,7 @@ class SimulationHarnessBatch(SimulationBatch):
      if run:
        options[path]["type"]    = Run
        options[path]["spudfile"] = libspud.have_option(optionpath+"/input_file/spud_file")
+       options[path]["jsonfile"] = libspud.have_option(optionpath+"/input_file/json_file")
        options[path]["run"] = self.getcommands(optionpath+"/commands")
      else:
        options[path]["type"]    = Simulation

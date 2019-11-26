@@ -117,6 +117,23 @@ Allows objects to be set in the global python dictionary accessible from within 
           <ref name="comment"/>
         </element>
       </optional>
+      <optional>
+        <element name="cpp">
+          <a:documentation>global cpp options</a:documentation>
+          <optional>
+            <element name="libraries">
+              <a:documentation>A comma, semicolon, space or newline separated list of libraries that need 
+to be linked against the application being built from this tfml file.
+
+Be sure to include all relevant paths to the libraries in LIBRARY_PATH 
+(at compile time, at least with gcc) and LD_LIBRARY_PATH (at run time, 
+if using a shared library).</a:documentation>
+              <ref name="anystring"/>
+            </element>
+          </optional>
+          <ref name="comment"/>
+        </element>
+      </optional>
       <ref name="comment"/>
     </element>
   </define>

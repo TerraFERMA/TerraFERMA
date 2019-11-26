@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright (C) 2013 Columbia University in the City of New York and others.
 #
@@ -24,8 +24,6 @@ import meshio
 import sys
 import numpy as np
 import os
-#import dolfin
-#import itertools
 
 filename = sys.argv[1]
 basename, ext = os.path.splitext(filename)
@@ -77,44 +75,4 @@ if facet_type in msh.cell_data and 'gmsh:physical' in msh.cell_data[facet_type]:
     facets = fix_orphaned_points(msh.cells[facet_type][facet_inds], orphaned_vertices)
     meshio.write(basename+'_facet_ids.xdmf', meshio.Mesh(points=vertices, cells={facet_type:facets}, \
                                                          cell_data={facet_type:{'facet_ids': facet_regions}}))
-
-
-#mesh = dolfin.Mesh()
-#mesh_editor = dolfin.MeshEditor()
-#mesh_editor.open(mesh, cell_type, highest_dim, highest_dim)
-#mesh_editor.init_vertices_global(len(vertices), len(vertices))
-#for i, vertex in enumerate(vertices):
-#  mesh_editor.add_vertex_global(i, i, vertex[:highest_dim])
-#mesh_editor.init_cells_global(len(msh.cells[cell_type]), len(msh.cells[cell_type]))
-#for i, cell in enumerate(cells):
-#  mesh_editor.add_cell(i, cell)
-#mesh_editor.close()
-#
-#mesh_domains = mesh.domains()
-#
-#cell_regions = msh.cell_data[cell_type]['gmsh:physical']
-#if len(cell_regions) > 0:
-#  cell_mvc = dolfin.MeshValueCollection('size_t', mesh, highest_dim)
-#  for cell, cell_region in enumerate(cell_regions):
-#    cell_mvc.set_value(cell, cell_region)
-#    mesh_domains.set_marker((cell, 0), cell_region)
-#
-#
-## for facets first find facets to retain
-#facet_inds = [np.all(np.isin(facet, orphaned_vertices, assume_unique=True, invert=True)) for facet in msh.cells[facet_type]]
-#facet_regions = msh.cell_data[facet_type]['gmsh:physical'][facet_inds]
-#if len(facet_regions) > 0:
-#  facet_mvc = dolfin.MeshValueCollection('size_t', mesh, highest_dim-1)
-#  # then reindex the remaining facets
-#  facets = fix_orphaned_points(msh.cells[facet_type][facet_inds], orphaned_vertices)
-#  facet_regions_by_node = {tuple(sorted(facets[i])) : facet_region \
-#                           for i, facet_region in enumerate(facet_regions)}
-#
-#  for cell, cell_vertices in enumerate(cells): 
-#    for i, facet_nodes in enumerate(itertools.combinations(sorted(cell_vertices, reverse=(highest_dim>1)), highest_dim)): 
-#      print(cell, facet_regions_by_node.get(tuple(sorted(facet_nodes)), 0), i)
-#      facet_mvc.set_value(cell, i, facet_regions_by_node.get(tuple(sorted(facet_nodes)), 0))
-#      mesh_domains.set_marker((cell, i),facet_regions_by_node.get(tuple(sorted(facet_nodes)), 0))
-#
-
 

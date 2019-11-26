@@ -129,11 +129,11 @@ file(
   set( ENV{THREADS} 1 )
 endif()
 
-if (ENV{OVERSUBSCRIBE})
-  set( TEST_COMMAND tfsimulationharness --run -l short --mpi-options ' --oversubscribe' -n \$ENV{THREADS} -e ${EXCLUDE_TAGS} -r -- *.shml )
-else (ENV{OVERSUBSCRIBE})
+if (\$ENV{OVERSUBSCRIBE})
+  set( TEST_COMMAND tfsimulationharness --run -l short --mpi-options \" --oversubscribe\" -n \$ENV{THREADS} -e ${EXCLUDE_TAGS} -r -- *.shml )
+else (\$ENV{OVERSUBSCRIBE})
   set( TEST_COMMAND tfsimulationharness --run -l short -n \$ENV{THREADS} -e ${EXCLUDE_TAGS} -r -- *.shml )
-endif (ENV{OVERSUBSCRIBE})
+endif (\$ENV{OVERSUBSCRIBE})
 
 execute_process(
      COMMAND echo Running: \${TEST_COMMAND}
@@ -150,11 +150,11 @@ if (NOT RETCODE EQUAL 0)
   message(FATAL_ERROR \"Command returned \${RETCODE}\")
 endif()
 
-if (ENV{OVERSUBSCRIBE})
-  set( TEST_COMMAND tfsimulationharness --run-from-checkpoint -l short --mpi-options ' --oversubscribe' -n \$ENV{THREADS} -e ${EXCLUDE_TAGS} -t run_from_checkpoint -r -- *.shml )
-else (ENV{OVERSUBSCRIBE})
+if (\$ENV{OVERSUBSCRIBE})
+  set( TEST_COMMAND tfsimulationharness --run-from-checkpoint -l short --mpi-options \" --oversubscribe\" -n \$ENV{THREADS} -e ${EXCLUDE_TAGS} -t run_from_checkpoint -r -- *.shml )
+else (\$ENV{OVERSUBSCRIBE})
   set( TEST_COMMAND tfsimulationharness --run-from-checkpoint -l short -n \$ENV{THREADS} -e ${EXCLUDE_TAGS} -t run_from_checkpoint -r -- *.shml )
-endif (ENV{OVERSUBSCRIBE})
+endif (\$ENV{OVERSUBSCRIBE})
 
 execute_process(
      COMMAND echo Running: \${TEST_COMMAND}
@@ -203,11 +203,11 @@ file(
   set( ENV{THREADS} 1 )
 endif()
 
-if (ENV{OVERSUBSCRIBE})
-  set( TEST_COMMAND tfsimulationharness --test -l medium --mpi-options ' --oversubscribe' -n \$ENV{THREADS} -e ${EXCLUDE_TAGS} -r -- *.shml )
-else (ENV{OVERSUBSCRIBE})
+if (\$ENV{OVERSUBSCRIBE})
+  set( TEST_COMMAND tfsimulationharness --test -l medium --mpi-options \" --oversubscribe\" -n \$ENV{THREADS} -e ${EXCLUDE_TAGS} -r -- *.shml )
+else (\$ENV{OVERSUBSCRIBE})
   set( TEST_COMMAND tfsimulationharness --test -l medium -n \$ENV{THREADS} -e ${EXCLUDE_TAGS} -r -- *.shml )
-endif (ENV{OVERSUBSCRIBE})
+endif (\$ENV{OVERSUBSCRIBE})
 
 execute_process(
      COMMAND echo Running: \${TEST_COMMAND}
@@ -239,11 +239,11 @@ file(
   set( ENV{THREADS} 1 )
 endif()
 
-if (ENV{OVERSUBSCRIBE})
-  set( TEST_COMMAND tfsimulationharness --test -l long --mpi-options ' --oversubscribe' -n \$ENV{THREADS} -e ${EXCLUDE_TAGS} -r -- *.shml )
-else (ENV{OVERSUBSCRIBE})
+if (\$ENV{OVERSUBSCRIBE})
+  set( TEST_COMMAND tfsimulationharness --test -l long --mpi-options \" --oversubscribe\" -n \$ENV{THREADS} -e ${EXCLUDE_TAGS} -r -- *.shml )
+else (\$ENV{OVERSUBSCRIBE})
   set( TEST_COMMAND tfsimulationharness --test -l long -n \$ENV{THREADS} -e ${EXCLUDE_TAGS} -r -- *.shml )
-endif (ENV{OVERSUBSCRIBE})
+endif (\$ENV{OVERSUBSCRIBE})
 
 execute_process(
      COMMAND echo Running: ${TEST_COMMAND}

@@ -96,6 +96,19 @@ global_parameters =
          )?,
          comment
        }?,
+       ## global cpp options
+       element cpp {
+         ## A comma, semicolon, space or newline separated list of libraries that need 
+         ## to be linked against the application being built from this tfml file.
+         ##
+         ## Be sure to include all relevant paths to the libraries in LIBRARY_PATH 
+         ## (at compile time, at least with gcc) and LD_LIBRARY_PATH (at run time, 
+         ## if using a shared library).
+         element libraries {
+            anystring
+         }?,
+         comment
+       }?,
        comment
      }
    )

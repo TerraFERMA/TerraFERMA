@@ -86,6 +86,7 @@ namespace buckettools {
   typedef std::shared_ptr< dolfin::File >                         File_ptr;
   typedef std::shared_ptr< dolfin::Array<double> >                Array_double_ptr;
   typedef std::shared_ptr< dolfin::SubDomain >                    SubDomain_ptr;
+  typedef std::shared_ptr< dolfin::FunctionAssigner >             FunctionAssigner_ptr;
 
   //*****************************************************************|************************************************************//
   // iterators to std shared pointers in map pointer structures

@@ -26,7 +26,7 @@
             <string_value lines="1">1</string_value>
           </values>
           <update>
-            <string_value type="code" language="python" lines="20">import libspud
+            <string_value type="code" language="python3" lines="20">import libspud
 for s in range(libspud.option_count("/system")):
   systempath = "/system["+repr(s)+"]"
   for ftype in ["field", "coefficient"]:
@@ -53,7 +53,7 @@ for s in range(libspud.option_count("/system")):
             <string_value lines="1">edges mixed</string_value>
           </values>
           <update>
-            <string_value type="code" language="python" lines="20">import libspud
+            <string_value type="code" language="python3" lines="20">import libspud
 
 edges   = {3: [40,45,70,80], 2: [10,15,50,70], 1:[20,25,60,80]}
 halves  = {3: [4,25,45,80], 2: [3,4,15,25,40,45,70,80], 1: [2,4,20,25,35,45,60,80]}
@@ -84,7 +84,7 @@ for k, v in domains.items():
           <parameter_sweep>
             <parameter name="ncells">
               <update>
-                <string_value type="code" language="python" lines="20">from string import Template as template
+                <string_value type="code" language="python3" lines="20">from string import Template as template
 input_file = template(input_file).safe_substitute({"ncells":ncells})</string_value>
               </update>
             </parameter>
@@ -92,7 +92,7 @@ input_file = template(input_file).safe_substitute({"ncells":ncells})</string_val
           <required_output>
             <filenames name="meshfiles">
               <python>
-                <string_value type="code" language="python" lines="20">meshfiles = ["square_regions"+ext for ext in [".xdmf", ".h5", "_cell_ids.xdmf", "_cell_ids.h5",  "_facet_ids.xdmf", "_facet_ids.h5"]]</string_value>
+                <string_value type="code" language="python3" lines="20">meshfiles = ["square_regions"+ext for ext in [".xdmf", ".h5", "_cell_ids.xdmf", "_cell_ids.h5",  "_facet_ids.xdmf", "_facet_ids.h5"]]</string_value>
               </python>
             </filenames>
           </required_output>
@@ -108,31 +108,31 @@ input_file = template(input_file).safe_substitute({"ncells":ncells})</string_val
       </dependencies>
       <variables>
         <variable name="v_error_l2_fs1">
-          <string_value type="code" language="python" lines="20">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 from math import sqrt
 stat = parser("stokes.stat")
 v_error_l2_fs1 = sqrt(stat["Stokes"]["AbsoluteDifferenceVelocityL2NormSquared"]["functional_value"][-1])</string_value>
         </variable>
         <variable name="v_error_linf_fs1">
-          <string_value type="code" language="python" lines="20">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 from math import sqrt
 stat = parser("stokes.stat")
 v_error_linf_fs1 = max(stat["Stokes"]["AbsoluteDifferenceVelocity"]['max'][:,-1])</string_value>
         </variable>
         <variable name="p_error_l2_fs1">
-          <string_value type="code" language="python" lines="20">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 from math import sqrt
 stat = parser("stokes.stat")
 p_error_l2_fs1 = sqrt(stat["Stokes"]["AbsoluteDifferencePressureL2NormSquared"]["functional_value"][-1])</string_value>
         </variable>
         <variable name="p_error_linf_fs1">
-          <string_value type="code" language="python" lines="20">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 from math import sqrt
 stat = parser("stokes.stat")
 p_error_linf_fs1 = stat["Stokes"]["AbsoluteDifferencePressure"]["max"][-1]</string_value>
         </variable>
         <variable name="nlogs_fs1">
-          <string_value type="code" language="python" lines="20">import glob
+          <string_value type="code" language="python3" lines="20">import glob
 nlogs_fs1 = len(glob.glob("terraferma.log-?"))</string_value>
         </variable>
       </variables>
@@ -153,7 +153,7 @@ nlogs_fs1 = len(glob.glob("terraferma.log-?"))</string_value>
             <string_value lines="1">1</string_value>
           </values>
           <update>
-            <string_value type="code" language="python" lines="20">import libspud
+            <string_value type="code" language="python3" lines="20">import libspud
 for s in range(libspud.option_count("/system")):
   systempath = "/system["+repr(s)+"]"
   for ftype in ["field", "coefficient"]:
@@ -180,7 +180,7 @@ for s in range(libspud.option_count("/system")):
             <string_value lines="1">edges halves</string_value>
           </values>
           <update>
-            <string_value type="code" language="python" lines="20">import libspud
+            <string_value type="code" language="python3" lines="20">import libspud
 
 edges   = {3: [40,45,70,80], 2: [10,15,50,70], 1:[20,25,60,80]}
 halves  = {3: [4,25,45,80], 2: [3,4,15,25,40,45,70,80], 1: [2,4,20,25,35,45,60,80]}
@@ -211,7 +211,7 @@ for k, v in domains.items():
           <parameter_sweep>
             <parameter name="ncells">
               <update>
-                <string_value type="code" language="python" lines="20">from string import Template as template
+                <string_value type="code" language="python3" lines="20">from string import Template as template
 input_file = template(input_file).safe_substitute({"ncells":ncells})</string_value>
               </update>
             </parameter>
@@ -219,7 +219,7 @@ input_file = template(input_file).safe_substitute({"ncells":ncells})</string_val
           <required_output>
             <filenames name="meshfiles">
               <python>
-                <string_value type="code" language="python" lines="20">meshfiles = ["square_regions"+ext for ext in [".xdmf", ".h5", "_cell_ids.xdmf", "_cell_ids.h5",  "_facet_ids.xdmf", "_facet_ids.h5"]]</string_value>
+                <string_value type="code" language="python3" lines="20">meshfiles = ["square_regions"+ext for ext in [".xdmf", ".h5", "_cell_ids.xdmf", "_cell_ids.h5",  "_facet_ids.xdmf", "_facet_ids.h5"]]</string_value>
               </python>
             </filenames>
           </required_output>
@@ -235,31 +235,31 @@ input_file = template(input_file).safe_substitute({"ncells":ncells})</string_val
       </dependencies>
       <variables>
         <variable name="v_error_l2_fs3">
-          <string_value type="code" language="python" lines="20">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 from math import sqrt
 stat = parser("stokes.stat")
 v_error_l2_fs3 = sqrt(stat["Stokes"]["AbsoluteDifferenceVelocityL2NormSquared"]["functional_value"][-1])</string_value>
         </variable>
         <variable name="v_error_linf_fs3">
-          <string_value type="code" language="python" lines="20">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 from math import sqrt
 stat = parser("stokes.stat")
 v_error_linf_fs3 = max(stat["Stokes"]["AbsoluteDifferenceVelocity"]['max'][:,-1])</string_value>
         </variable>
         <variable name="p_error_l2_fs3">
-          <string_value type="code" language="python" lines="20">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 from math import sqrt
 stat = parser("stokes.stat")
 p_error_l2_fs3 = sqrt(stat["Stokes"]["AbsoluteDifferencePressureL2NormSquared"]["functional_value"][-1])</string_value>
         </variable>
         <variable name="p_error_linf_fs3">
-          <string_value type="code" language="python" lines="20">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 from math import sqrt
 stat = parser("stokes.stat")
 p_error_linf_fs3 = stat["Stokes"]["AbsoluteDifferencePressure"]["max"][-1]</string_value>
         </variable>
         <variable name="nlogs_fs3">
-          <string_value type="code" language="python" lines="20">import glob
+          <string_value type="code" language="python3" lines="20">import glob
 nlogs_fs3 = len(glob.glob("terraferma.log-?"))</string_value>
         </variable>
       </variables>
@@ -267,7 +267,7 @@ nlogs_fs3 = len(glob.glob("terraferma.log-?"))</string_value>
   </simulations>
   <tests>
     <test name="v_error_l2_fs1">
-      <string_value type="code" language="python" lines="20">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 nprocs = v_error_l2_fs1.parameters['np']
 parts  = v_error_l2_fs1.parameters['part']
 for n in v_error_l2_fs1.parameters['n']:
@@ -283,7 +283,7 @@ for n in v_error_l2_fs1.parameters['n']:
   assert(numpy.all(conv &gt; int(n)+1.6))</string_value>
     </test>
     <test name="v_error_linf_fs1">
-      <string_value type="code" language="python" lines="20">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 nprocs = v_error_l2_fs1.parameters['np']
 parts  = v_error_l2_fs1.parameters['part']
 for n in v_error_l2_fs1.parameters['n']:
@@ -299,7 +299,7 @@ for n in v_error_l2_fs1.parameters['n']:
   assert(numpy.all(conv &gt; int(n)+1.5))</string_value>
     </test>
     <test name="p_error_l2_fs1">
-      <string_value type="code" language="python" lines="20">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 nprocs = v_error_l2_fs1.parameters['np']
 parts  = v_error_l2_fs1.parameters['part']
 for n in v_error_l2_fs1.parameters['n']:
@@ -315,7 +315,7 @@ for n in v_error_l2_fs1.parameters['n']:
   assert(numpy.all(conv &gt; int(n)+0.9))</string_value>
     </test>
     <test name="p_error_linf_fs1">
-      <string_value type="code" language="python" lines="20">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 nprocs = v_error_l2_fs1.parameters['np']
 parts  = v_error_l2_fs1.parameters['part']
 for n in v_error_l2_fs1.parameters['n']:
@@ -331,12 +331,12 @@ for n in v_error_l2_fs1.parameters['n']:
   assert(numpy.all(conv &gt; int(n)+0.5))</string_value>
     </test>
     <test name="nlogs_fs1">
-      <string_value type="code" language="python" lines="20">import itertools
+      <string_value type="code" language="python3" lines="20">import itertools
 for n in nlogs_fs1.parameters['n']:
   assert all([anp==int(np) for np in nlogs_fs1.parameters['np'] for anp in itertools.chain.from_iterable(nlogs_fs1[{'np':np, 'n': n}])])</string_value>
     </test>
     <test name="v_error_l2_fs3">
-      <string_value type="code" language="python" lines="20">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 nprocs = v_error_l2_fs3.parameters['np']
 parts  = v_error_l2_fs3.parameters['part']
 for n in v_error_l2_fs3.parameters['n']:
@@ -352,7 +352,7 @@ for n in v_error_l2_fs3.parameters['n']:
   assert(numpy.all(conv &gt; int(n)+1.6))</string_value>
     </test>
     <test name="v_error_linf_fs3">
-      <string_value type="code" language="python" lines="20">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 nprocs = v_error_l2_fs3.parameters['np']
 parts  = v_error_l2_fs3.parameters['part']
 for n in v_error_l2_fs3.parameters['n']:
@@ -368,7 +368,7 @@ for n in v_error_l2_fs3.parameters['n']:
   assert(numpy.all(conv &gt; int(n)+1.5))</string_value>
     </test>
     <test name="p_error_l2_fs3">
-      <string_value type="code" language="python" lines="20">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 nprocs = v_error_l2_fs3.parameters['np']
 parts  = v_error_l2_fs3.parameters['part']
 for n in v_error_l2_fs3.parameters['n']:
@@ -384,7 +384,7 @@ for n in v_error_l2_fs3.parameters['n']:
   assert(numpy.all(conv &gt; int(n)+0.9))</string_value>
     </test>
     <test name="p_error_linf_fs3">
-      <string_value type="code" language="python" lines="20">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 nprocs = v_error_l2_fs3.parameters['np']
 parts  = v_error_l2_fs3.parameters['part']
 for n in v_error_l2_fs3.parameters['n']:
@@ -400,7 +400,7 @@ for n in v_error_l2_fs3.parameters['n']:
   assert(numpy.all(conv &gt; int(n)+0.5))</string_value>
     </test>
     <test name="nlogs_fs3">
-      <string_value type="code" language="python" lines="20">import itertools
+      <string_value type="code" language="python3" lines="20">import itertools
 for n in nlogs_fs3.parameters['n']:
   assert all([anp==int(np) for np in nlogs_fs3.parameters['np'] for anp in itertools.chain.from_iterable(nlogs_fs3[{'np':np, 'n': n}])])</string_value>
     </test>

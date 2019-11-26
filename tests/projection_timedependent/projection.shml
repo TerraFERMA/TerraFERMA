@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <harness_options>
   <length>
     <string_value lines="1">short</string_value>
@@ -15,7 +15,7 @@
   <simulations>
     <simulation name="ProjectionCheckpointCheckpoint">
       <input_file>
-        <string_value lines="1" type="filename">projection_checkpoint_checkpoint.tfml</string_value>
+        <string_value type="filename" lines="1">projection_checkpoint_checkpoint.tfml</string_value>
       </input_file>
       <run_when name="input_changed_or_output_missing"/>
       <parameter_sweep>
@@ -24,107 +24,105 @@
             <string_value lines="1">1-&gt;1-&gt;1 2-&gt;1-&gt;2 1-&gt;2-&gt;1 2-&gt;2-&gt;2</string_value>
           </values>
           <update>
-            <string_value lines="20" type="code" language="python3">import libspud
+            <string_value type="code" language="python3" lines="20">import libspud
 
 # we just do the following to test tfsimulationharness functionality...
-libspud.set_option("/system::SNESProjection/field::Field1/type/rank/initial_condition/file", "projection_checkpoint_SNESProjection.xml")
-libspud.set_option("/system::SNESProjection/field::Field2/type/rank/initial_condition/file", "projection_checkpoint_SNESProjection.xml")
+libspud.set_option("/system::SNESProjection/field::Field1/type/rank/initial_condition/file", "projection_checkpoint_SNESProjection")
+libspud.set_option("/system::SNESProjection/field::Field2/type/rank/initial_condition/file", "projection_checkpoint_SNESProjection")
 
-libspud.set_option("/system::PicardProjection/field::Field1/type/rank/initial_condition/file", "projection_checkpoint_PicardProjection.xml")
-libspud.set_option("/system::PicardProjection/field::Field2/type/rank/initial_condition/file", "projection_checkpoint_PicardProjection.xml")
-</string_value>
+libspud.set_option("/system::PicardProjection/field::Field1/type/rank/initial_condition/file", "projection_checkpoint_PicardProjection")
+libspud.set_option("/system::PicardProjection/field::Field2/type/rank/initial_condition/file", "projection_checkpoint_PicardProjection")</string_value>
             <single_build/>
           </update>
           <process_scale>
-            <integer_value shape="4" rank="1">1 2 1 2</integer_value>
+            <integer_value rank="1" shape="4">1 2 1 2</integer_value>
           </process_scale>
         </parameter>
       </parameter_sweep>
       <dependencies>
         <simulation name="ProjectionCheckpoint">
           <input_file>
-            <string_value lines="1" type="filename">projection_checkpoint.tfml</string_value>
+            <string_value type="filename" lines="1">projection_checkpoint.tfml</string_value>
           </input_file>
           <run_when name="input_changed_or_output_missing"/>
           <parameter_sweep>
             <parameter name="nprocs">
               <update>
-                <string_value lines="20" type="code" language="python3">import libspud
+                <string_value type="code" language="python3" lines="20">import libspud
 libspud.set_option("/system::SNESProjection/nonlinear_solver::SimpleSolver/type::SNES/linear_solver/iterative_method::cg/max_iterations", 100)
 
 # we just do the following to test tfsimulationharness functionality...
-libspud.set_option("/system::SNESProjection/field::Field1/type/rank/initial_condition/file", "projection_SNESProjection.xml")
-libspud.set_option("/system::SNESProjection/field::Field2/type/rank/initial_condition/file", "projection_SNESProjection.xml")
+libspud.set_option("/system::SNESProjection/field::Field1/type/rank/initial_condition/file", "projection_SNESProjection")
+libspud.set_option("/system::SNESProjection/field::Field2/type/rank/initial_condition/file", "projection_SNESProjection")
 
-libspud.set_option("/system::PicardProjection/field::Field1/type/rank/initial_condition/file", "projection_PicardProjection.xml")
-libspud.set_option("/system::PicardProjection/field::Field2/type/rank/initial_condition/file", "projection_PicardProjection.xml")
-</string_value>
+libspud.set_option("/system::PicardProjection/field::Field1/type/rank/initial_condition/file", "projection_PicardProjection")
+libspud.set_option("/system::PicardProjection/field::Field2/type/rank/initial_condition/file", "projection_PicardProjection")</string_value>
                 <single_build/>
               </update>
               <process_scale>
-                <integer_value shape="4" rank="1">1 1 2 2</integer_value>
+                <integer_value rank="1" shape="4">1 1 2 2</integer_value>
               </process_scale>
             </parameter>
           </parameter_sweep>
           <required_output>
-            <filenames name="xmls">
+            <filenames name="ics">
               <python>
-                <string_value lines="20" type="code" language="python3">xmls = \
+                <string_value type="code" language="python3" lines="20">ics = \
   {
-  "projection_checkpoint_PicardProjection_0.xml":"projection_checkpoint_PicardProjection.xml",
-  "projection_checkpoint_SNESProjection_0.xml":"projection_checkpoint_SNESProjection.xml"
-  }
-</string_value>
+  "projection_checkpoint_PicardProjection_0.xdmf":"projection_checkpoint_PicardProjection.xdmf",
+  "projection_checkpoint_PicardProjection_0.h5":"projection_checkpoint_PicardProjection_0.h5",
+  "projection_checkpoint_SNESProjection_0.xdmf":"projection_checkpoint_SNESProjection.xdmf",
+  "projection_checkpoint_SNESProjection_0.h5":"projection_checkpoint_SNESProjection_0.h5"
+  }</string_value>
               </python>
             </filenames>
             <filenames name="tfml">
               <python>
-                <string_value lines="20" type="code" language="python3">tfml = {"projection_checkpoint_checkpoint_0.tfml":"projection_checkpoint_checkpoint.tfml"}
-</string_value>
+                <string_value type="code" language="python3" lines="20">tfml = {"projection_checkpoint_checkpoint_0.tfml":"projection_checkpoint_checkpoint.tfml"}</string_value>
               </python>
             </filenames>
           </required_output>
           <dependencies>
             <simulation name="Projection">
               <input_file>
-                <string_value lines="1" type="filename">projection.tfml</string_value>
+                <string_value type="filename" lines="1">projection.tfml</string_value>
               </input_file>
               <run_when name="input_changed_or_output_missing"/>
               <parameter_sweep>
                 <parameter name="nprocs">
                   <process_scale>
-                    <integer_value shape="4" rank="1">1 2 1 2</integer_value>
+                    <integer_value rank="1" shape="4">1 2 1 2</integer_value>
                   </process_scale>
                 </parameter>
               </parameter_sweep>
               <required_output>
-                <filenames name="xmls">
+                <filenames name="ics">
                   <python>
-                    <string_value lines="20" type="code" language="python3">xmls = \
+                    <string_value type="code" language="python3" lines="20">ics = \
   { 
-  "projection_PicardProjection_0.xml":"projection_PicardProjection.xml",
-  "projection_SNESProjection_0.xml":"projection_SNESProjection.xml"
-  }
-</string_value>
+  "projection_PicardProjection_0.xdmf":"projection_PicardProjection.xdmf",
+  "projection_PicardProjection_0.h5":"projection_PicardProjection_0.h5",
+  "projection_SNESProjection_0.xdmf":"projection_SNESProjection.xdmf",
+  "projection_SNESProjection_0.h5":"projection_SNESProjection_0.h5"
+  }</string_value>
                   </python>
                 </filenames>
                 <filenames name="tfml">
                   <python>
-                    <string_value lines="20" type="code" language="python3">tfml = {"projection_checkpoint_0.tfml":"projection_checkpoint.tfml"}
-</string_value>
+                    <string_value type="code" language="python3" lines="20">tfml = {"projection_checkpoint_0.tfml":"projection_checkpoint.tfml"}</string_value>
                   </python>
                 </filenames>
               </required_output>
               <dependencies>
                 <run name="Mesh">
                   <input_file>
-                    <string_value lines="1" type="filename">square.geo</string_value>
+                    <string_value type="filename" lines="1">square.geo</string_value>
                   </input_file>
                   <run_when name="input_changed_or_output_missing"/>
                   <required_output>
                     <filenames name="meshfiles">
                       <python>
-                        <string_value lines="20" type="code" language="python">meshfiles = ["square"+ext for ext in [".xdmf", ".h5", "_cell_ids.xdmf", "_cell_ids.h5", "_facet_ids.xdmf", "_facet_ids.h5"]]</string_value>
+                        <string_value type="code" language="python3" lines="20">meshfiles = ["square"+ext for ext in [".xdmf", ".h5", "_cell_ids.xdmf", "_cell_ids.h5", "_facet_ids.xdmf", "_facet_ids.h5"]]</string_value>
                       </python>
                     </filenames>
                   </required_output>
@@ -144,43 +142,38 @@ libspud.set_option("/system::PicardProjection/field::Field2/type/rank/initial_co
                     <string_value lines="1">100</string_value>
                   </values>
                   <update>
-                    <string_value lines="20" type="code" language="python3">import libspud
-libspud.set_option("/system::SNESProjection/nonlinear_solver::SimpleSolver/type::SNES/linear_solver/iterative_method::cg/max_iterations", int(maxits))
-</string_value>
+                    <string_value type="code" language="python3" lines="20">import libspud
+libspud.set_option("/system::SNESProjection/nonlinear_solver::SimpleSolver/type::SNES/linear_solver/iterative_method::cg/max_iterations", int(maxits))</string_value>
                   </update>
                 </parameter>
               </checkpoint>
               <variables>
                 <variable name="checkpoint_0">
-                  <string_value lines="20" type="code" language="python3">import libspud
+                  <string_value type="code" language="python3" lines="20">import libspud
 
 
 
 libspud.load_options("projection_checkpoint_0.tfml")
 checkpoint_0 = libspud.get_option("/timestepping/current_time")
-libspud.clear_options()
-</string_value>
+libspud.clear_options()</string_value>
                 </variable>
                 <variable name="checkpoint_1">
-                  <string_value lines="20" type="code" language="python3">import libspud
+                  <string_value type="code" language="python3" lines="20">import libspud
 
 
 
 libspud.load_options("projection_checkpoint_1.tfml")
 checkpoint_1 = libspud.get_option("/timestepping/current_time")
-libspud.clear_options()
-</string_value>
+libspud.clear_options()</string_value>
                 </variable>
                 <variable name="snes_fail">
-                  <string_value lines="20" type="code" language="python3">snes_fail = 'SNES failed to converge.' in open('terraferma.err-0', 'r').read()
-</string_value>
+                  <string_value type="code" language="python3" lines="20">snes_fail = 'SNES failed to converge.' in open('terraferma.err-0', 'r').read()</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_ncheckpoints">
-                  <string_value lines="20" type="code" language="python3">run_from_checkpoint_ncheckpoints = _self.numbercheckpoints()
-</string_value>
+                  <string_value type="code" language="python3" lines="20">run_from_checkpoint_ncheckpoints = _self.numbercheckpoints()</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_snes_source2_int_0">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 import os
 
 depth = _self.numbercheckpoints()
@@ -189,11 +182,10 @@ run_from_checkpoint_snes_source2_int_0 = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
 
-  run_from_checkpoint_snes_source2_int_0 = stat["SNESProjection"]["Source2Integral0"]["functional_value"]
-</string_value>
+  run_from_checkpoint_snes_source2_int_0 = stat["SNESProjection"]["Source2Integral0"]["functional_value"]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_snes_source2_int_1">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 import os
 
@@ -203,11 +195,10 @@ run_from_checkpoint_snes_source2_int_1 = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_snes_source2_int_1 = stat["SNESProjection"]["Source2Integral1"]["functional_value"]
-</string_value>
+  run_from_checkpoint_snes_source2_int_1 = stat["SNESProjection"]["Source2Integral1"]["functional_value"]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_picard_source2_int_0">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
@@ -219,11 +210,10 @@ run_from_checkpoint_picard_source2_int_0 = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_picard_source2_int_0 = stat["PicardProjection"]["Source2Integral0"]["functional_value"]
-</string_value>
+  run_from_checkpoint_picard_source2_int_0 = stat["PicardProjection"]["Source2Integral0"]["functional_value"]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_picard_source2_int_1">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
@@ -234,11 +224,10 @@ run_from_checkpoint_picard_source2_int_1 = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_picard_source2_int_1 = stat["PicardProjection"]["Source2Integral1"]["functional_value"]
-</string_value>
+  run_from_checkpoint_picard_source2_int_1 = stat["PicardProjection"]["Source2Integral1"]["functional_value"]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_snes_field2_int_0">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 import os
 
@@ -248,11 +237,10 @@ run_from_checkpoint_snes_field2_int_0 = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_snes_field2_int_0 = stat["SNESProjection"]["Field2Integral0"]["functional_value"]
-</string_value>
+  run_from_checkpoint_snes_field2_int_0 = stat["SNESProjection"]["Field2Integral0"]["functional_value"]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_snes_field2_int_1">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 import os
 
@@ -262,11 +250,10 @@ run_from_checkpoint_snes_field2_int_1 = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_snes_field2_int_1 = stat["SNESProjection"]["Field2Integral1"]["functional_value"]
-</string_value>
+  run_from_checkpoint_snes_field2_int_1 = stat["SNESProjection"]["Field2Integral1"]["functional_value"]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_picard_source2_oldint_0">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 import os
 
@@ -276,11 +263,10 @@ run_from_checkpoint_picard_source2_oldint_0 = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_picard_source2_oldint_0 = stat["PicardProjection"]["Source2OldIntegral0"]["functional_value"]
-</string_value>
+  run_from_checkpoint_picard_source2_oldint_0 = stat["PicardProjection"]["Source2OldIntegral0"]["functional_value"]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_picard_source2_oldint_1">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 import os
 
@@ -290,11 +276,10 @@ run_from_checkpoint_picard_source2_oldint_1 = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_picard_source2_oldint_1 = stat["PicardProjection"]["Source2OldIntegral1"]["functional_value"]
-</string_value>
+  run_from_checkpoint_picard_source2_oldint_1 = stat["PicardProjection"]["Source2OldIntegral1"]["functional_value"]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_picard_field2_min_0">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 import os
@@ -305,11 +290,10 @@ run_from_checkpoint_picard_field2_min_0 = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_picard_field2_min_0 = stat["PicardProjection"]["Field2"]["max"][0]
-</string_value>
+  run_from_checkpoint_picard_field2_min_0 = stat["PicardProjection"]["Field2"]["max"][0]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_picard_source1_int">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 import os
@@ -320,11 +304,10 @@ run_from_checkpoint_picard_source1_int = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_picard_source1_int = stat["PicardProjection"]["Source1Integral"]["functional_value"]
-</string_value>
+  run_from_checkpoint_picard_source1_int = stat["PicardProjection"]["Source1Integral"]["functional_value"]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_picard_field2_int_0">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 import os
@@ -334,11 +317,10 @@ run_from_checkpoint_picard_field2_int_0 = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_picard_field2_int_0 = stat["PicardProjection"]["Field2Integral0"]["functional_value"]
-</string_value>
+  run_from_checkpoint_picard_field2_int_0 = stat["PicardProjection"]["Field2Integral0"]["functional_value"]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_picard_field2_int_1">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 import os
@@ -348,11 +330,10 @@ run_from_checkpoint_picard_field2_int_1 = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_picard_field2_int_1 = stat["PicardProjection"]["Field2Integral1"]["functional_value"]
-</string_value>
+  run_from_checkpoint_picard_field2_int_1 = stat["PicardProjection"]["Field2Integral1"]["functional_value"]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_checkpoint_checkpoint_0">
-                  <string_value lines="20" type="code" language="python3">import libspud
+                  <string_value type="code" language="python3" lines="20">import libspud
 
 
 import os
@@ -363,11 +344,10 @@ run_from_checkpoint_checkpoint_checkpoint_0 = None
 if depth &gt; 0:
   libspud.load_options(os.path.join("checkpoint", "projection_checkpoint_checkpoint_0.tfml"))
   run_from_checkpoint_checkpoint_checkpoint_0 = libspud.get_option("/timestepping/current_time")
-  libspud.clear_options()
-</string_value>
+  libspud.clear_options()</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_snes_field1_min">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 import os
@@ -378,11 +358,10 @@ run_from_checkpoint_snes_field1_min = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_snes_field1_min = stat["SNESProjection"]["Field1"]["min"]
-</string_value>
+  run_from_checkpoint_snes_field1_min = stat["SNESProjection"]["Field1"]["min"]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_snes_field1_int">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 import os
@@ -393,11 +372,10 @@ run_from_checkpoint_snes_field1_int = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_snes_field1_int = stat["SNESProjection"]["Field1Integral"]["functional_value"]
-</string_value>
+  run_from_checkpoint_snes_field1_int = stat["SNESProjection"]["Field1Integral"]["functional_value"]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_checkpoint_checkpoint_1">
-                  <string_value lines="20" type="code" language="python3">import libspud
+                  <string_value type="code" language="python3" lines="20">import libspud
 
 
 import os
@@ -408,11 +386,10 @@ run_from_checkpoint_checkpoint_checkpoint_1 = None
 if depth &gt; 0:
   libspud.load_options(os.path.join("checkpoint", "projection_checkpoint_checkpoint_1.tfml"))
   run_from_checkpoint_checkpoint_checkpoint_1 = libspud.get_option("/timestepping/current_time")
-  libspud.clear_options()
-</string_value>
+  libspud.clear_options()</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_snes_field1_max">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 import os
@@ -423,11 +400,10 @@ run_from_checkpoint_snes_field1_max = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_snes_field1_max = stat["SNESProjection"]["Field1"]["max"]
-</string_value>
+  run_from_checkpoint_snes_field1_max = stat["SNESProjection"]["Field1"]["max"]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_snes_field2_min_1">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 import os
 
@@ -438,11 +414,10 @@ run_from_checkpoint_snes_field2_min_1 = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_snes_field2_min_1 = stat["SNESProjection"]["Field2"]["max"][1]
-</string_value>
+  run_from_checkpoint_snes_field2_min_1 = stat["SNESProjection"]["Field2"]["max"][1]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_snes_field2_min_0">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 import os
@@ -453,11 +428,10 @@ run_from_checkpoint_snes_field2_min_0 = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_snes_field2_min_0 = stat["SNESProjection"]["Field2"]["max"][0]
-</string_value>
+  run_from_checkpoint_snes_field2_min_0 = stat["SNESProjection"]["Field2"]["max"][0]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_picard_field2_oldint_0">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 import os
 
@@ -467,11 +441,10 @@ run_from_checkpoint_picard_field2_oldint_0 = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_picard_field2_oldint_0 = stat["PicardProjection"]["Field2OldIntegral0"]["functional_value"]
-</string_value>
+  run_from_checkpoint_picard_field2_oldint_0 = stat["PicardProjection"]["Field2OldIntegral0"]["functional_value"]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_picard_field2_oldint_1">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 import os
 
@@ -482,11 +455,10 @@ run_from_checkpoint_picard_field2_oldint_1 = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_picard_field2_oldint_1 = stat["PicardProjection"]["Field2OldIntegral1"]["functional_value"]
-</string_value>
+  run_from_checkpoint_picard_field2_oldint_1 = stat["PicardProjection"]["Field2OldIntegral1"]["functional_value"]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_snes_source1_oldint">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 import os
 
@@ -497,11 +469,10 @@ run_from_checkpoint_snes_source1_oldint = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_snes_source1_oldint = stat["SNESProjection"]["Source1OldIntegral"]["functional_value"]
-</string_value>
+  run_from_checkpoint_snes_source1_oldint = stat["SNESProjection"]["Source1OldIntegral"]["functional_value"]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_picard_field1_max">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 import os
 
@@ -512,11 +483,10 @@ run_from_checkpoint_picard_field1_max = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_picard_field1_max = stat["PicardProjection"]["Field1"]["max"]
-</string_value>
+  run_from_checkpoint_picard_field1_max = stat["PicardProjection"]["Field1"]["max"]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_picard_field2_min_1">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 import os
 
@@ -527,11 +497,10 @@ run_from_checkpoint_picard_field2_min_1 = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_picard_field2_min_1 = stat["PicardProjection"]["Field2"]["max"][1]
-</string_value>
+  run_from_checkpoint_picard_field2_min_1 = stat["PicardProjection"]["Field2"]["max"][1]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_picard_field1_min">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 import os
 
@@ -542,11 +511,10 @@ run_from_checkpoint_picard_field1_min = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_picard_field1_min = stat["PicardProjection"]["Field1"]["min"]
-</string_value>
+  run_from_checkpoint_picard_field1_min = stat["PicardProjection"]["Field1"]["min"]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_picard_field1_oldint">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 import os
 
@@ -557,11 +525,10 @@ run_from_checkpoint_picard_field1_oldint = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_picard_field1_oldint = stat["PicardProjection"]["Field1OldIntegral"]["functional_value"]
-</string_value>
+  run_from_checkpoint_picard_field1_oldint = stat["PicardProjection"]["Field1OldIntegral"]["functional_value"]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_snes_field2_max_1">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 import os
 
@@ -572,11 +539,10 @@ run_from_checkpoint_snes_field2_max_1 = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_snes_field2_max_1 = stat["SNESProjection"]["Field2"]["min"][1]
-</string_value>
+  run_from_checkpoint_snes_field2_max_1 = stat["SNESProjection"]["Field2"]["min"][1]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_snes_field2_max_0">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 import os
 
@@ -587,11 +553,10 @@ run_from_checkpoint_snes_field2_max_0 = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_snes_field2_max_0 = stat["SNESProjection"]["Field2"]["min"][0]
-</string_value>
+  run_from_checkpoint_snes_field2_max_0 = stat["SNESProjection"]["Field2"]["min"][0]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_picard_field2_max_1">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 import os
 
@@ -602,11 +567,10 @@ run_from_checkpoint_picard_field2_max_1 = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_picard_field2_max_1 = stat["PicardProjection"]["Field2"]["min"][1]
-</string_value>
+  run_from_checkpoint_picard_field2_max_1 = stat["PicardProjection"]["Field2"]["min"][1]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_picard_field2_max_0">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 import os
 
@@ -617,11 +581,10 @@ run_from_checkpoint_picard_field2_max_0 = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_picard_field2_max_0 = stat["PicardProjection"]["Field2"]["min"][0]
-</string_value>
+  run_from_checkpoint_picard_field2_max_0 = stat["PicardProjection"]["Field2"]["min"][0]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_snes_field1_oldint">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 import os
 
@@ -632,11 +595,10 @@ run_from_checkpoint_snes_field1_oldint = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_snes_field1_oldint = stat["SNESProjection"]["Field1OldIntegral"]["functional_value"]
-</string_value>
+  run_from_checkpoint_snes_field1_oldint = stat["SNESProjection"]["Field1OldIntegral"]["functional_value"]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_snes_source2_oldint_0">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 import os
 
@@ -647,11 +609,10 @@ run_from_checkpoint_snes_source2_oldint_0 = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_snes_source2_oldint_0 = stat["SNESProjection"]["Source2OldIntegral0"]["functional_value"]
-</string_value>
+  run_from_checkpoint_snes_source2_oldint_0 = stat["SNESProjection"]["Source2OldIntegral0"]["functional_value"]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_snes_source2_oldint_1">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 import os
 
@@ -662,11 +623,10 @@ run_from_checkpoint_snes_source2_oldint_1 = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_snes_source2_oldint_1 = stat["SNESProjection"]["Source2OldIntegral1"]["functional_value"]
-</string_value>
+  run_from_checkpoint_snes_source2_oldint_1 = stat["SNESProjection"]["Source2OldIntegral1"]["functional_value"]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_snes_field2_oldint_0">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 import os
@@ -677,11 +637,10 @@ run_from_checkpoint_snes_field2_oldint_0 = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_snes_field2_oldint_0 = stat["SNESProjection"]["Field2OldIntegral0"]["functional_value"]
-</string_value>
+  run_from_checkpoint_snes_field2_oldint_0 = stat["SNESProjection"]["Field2OldIntegral0"]["functional_value"]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_snes_source1_int">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 import os
 
@@ -692,11 +651,10 @@ run_from_checkpoint_snes_source1_int = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_snes_source1_int = stat["SNESProjection"]["Source1Integral"]["functional_value"]
-</string_value>
+  run_from_checkpoint_snes_source1_int = stat["SNESProjection"]["Source1Integral"]["functional_value"]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_snes_field2_oldint_1">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 import os
 
@@ -707,11 +665,10 @@ run_from_checkpoint_snes_field2_oldint_1 = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_snes_field2_oldint_1 = stat["SNESProjection"]["Field2OldIntegral1"]["functional_value"]
-</string_value>
+  run_from_checkpoint_snes_field2_oldint_1 = stat["SNESProjection"]["Field2OldIntegral1"]["functional_value"]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_picard_source1_oldint">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 import os
@@ -722,11 +679,10 @@ run_from_checkpoint_picard_source1_oldint = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_picard_source1_oldint = stat["PicardProjection"]["Source1OldIntegral"]["functional_value"]
-</string_value>
+  run_from_checkpoint_picard_source1_oldint = stat["PicardProjection"]["Source1OldIntegral"]["functional_value"]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_picard_field1_int">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 import os
 
@@ -737,11 +693,10 @@ run_from_checkpoint_picard_field1_int = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_picard_field1_int = stat["PicardProjection"]["Field1Integral"]["functional_value"]
-</string_value>
+  run_from_checkpoint_picard_field1_int = stat["PicardProjection"]["Field1Integral"]["functional_value"]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_snes_field2_int_0_steady">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 import os
 
@@ -752,11 +707,10 @@ run_from_checkpoint_snes_field2_int_0_steady = None
 if depth &gt; 0:
   steady = parser(os.path.join("checkpoint", "projection_checkpoint.steady"))
   
-  run_from_checkpoint_snes_field2_int_0_steady = steady["SNESProjection"]["Field2Integral0"]["functional_change"]
-</string_value>
+  run_from_checkpoint_snes_field2_int_0_steady = steady["SNESProjection"]["Field2Integral0"]["functional_change"]</string_value>
                 </variable>
                 <variable name="run_from_checkpoint_snes_field2_int_0_coeff">
-                  <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+                  <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 import os
 
@@ -767,950 +721,857 @@ run_from_checkpoint_snes_field2_int_0_coeff = None
 if depth &gt; 0:
   stat = parser(os.path.join("checkpoint", "projection_checkpoint.stat"))
   
-  run_from_checkpoint_snes_field2_int_0_coeff = stat["SNESProjection"]["Field2Integral0"]["max"]
-</string_value>
+  run_from_checkpoint_snes_field2_int_0_coeff = stat["SNESProjection"]["Field2Integral0"]["max"]</string_value>
                 </variable>
               </variables>
             </simulation>
           </dependencies>
           <variables>
             <variable name="snes_source2_int_0">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-snes_source2_int_0 = stat["SNESProjection"]["Source2Integral0"]["functional_value"]
-</string_value>
+snes_source2_int_0 = stat["SNESProjection"]["Source2Integral0"]["functional_value"]</string_value>
             </variable>
             <variable name="snes_source2_int_1">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-snes_source2_int_1 = stat["SNESProjection"]["Source2Integral1"]["functional_value"]
-</string_value>
+snes_source2_int_1 = stat["SNESProjection"]["Source2Integral1"]["functional_value"]</string_value>
             </variable>
             <variable name="picard_source2_int_0">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-picard_source2_int_0 = stat["PicardProjection"]["Source2Integral0"]["functional_value"]
-</string_value>
+picard_source2_int_0 = stat["PicardProjection"]["Source2Integral0"]["functional_value"]</string_value>
             </variable>
             <variable name="picard_source2_int_1">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-picard_source2_int_1 = stat["PicardProjection"]["Source2Integral1"]["functional_value"]
-</string_value>
+picard_source2_int_1 = stat["PicardProjection"]["Source2Integral1"]["functional_value"]</string_value>
             </variable>
             <variable name="snes_field2_int_0">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-snes_field2_int_0 = stat["SNESProjection"]["Field2Integral0"]["functional_value"]
-</string_value>
+snes_field2_int_0 = stat["SNESProjection"]["Field2Integral0"]["functional_value"]</string_value>
             </variable>
             <variable name="snes_field2_int_1">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-snes_field2_int_1 = stat["SNESProjection"]["Field2Integral1"]["functional_value"]
-</string_value>
+snes_field2_int_1 = stat["SNESProjection"]["Field2Integral1"]["functional_value"]</string_value>
             </variable>
             <variable name="picard_source2_oldint_0">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-picard_source2_oldint_0 = stat["PicardProjection"]["Source2OldIntegral0"]["functional_value"]
-</string_value>
+picard_source2_oldint_0 = stat["PicardProjection"]["Source2OldIntegral0"]["functional_value"]</string_value>
             </variable>
             <variable name="picard_source2_oldint_1">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-picard_source2_oldint_1 = stat["PicardProjection"]["Source2OldIntegral1"]["functional_value"]
-</string_value>
+picard_source2_oldint_1 = stat["PicardProjection"]["Source2OldIntegral1"]["functional_value"]</string_value>
             </variable>
             <variable name="picard_field2_min_0">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-picard_field2_min_0 = stat["PicardProjection"]["Field2"]["max"][0]
-</string_value>
+picard_field2_min_0 = stat["PicardProjection"]["Field2"]["max"][0]</string_value>
             </variable>
             <variable name="picard_source1_int">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-picard_source1_int = stat["PicardProjection"]["Source1Integral"]["functional_value"]
-</string_value>
+picard_source1_int = stat["PicardProjection"]["Source1Integral"]["functional_value"]</string_value>
             </variable>
             <variable name="picard_field2_int_0">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-picard_field2_int_0 = stat["PicardProjection"]["Field2Integral0"]["functional_value"]
-</string_value>
+picard_field2_int_0 = stat["PicardProjection"]["Field2Integral0"]["functional_value"]</string_value>
             </variable>
             <variable name="picard_field2_int_1">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-picard_field2_int_1 = stat["PicardProjection"]["Field2Integral1"]["functional_value"]
-</string_value>
+picard_field2_int_1 = stat["PicardProjection"]["Field2Integral1"]["functional_value"]</string_value>
             </variable>
             <variable name="checkpoint_checkpoint_0">
-              <string_value lines="20" type="code" language="python3">import libspud
+              <string_value type="code" language="python3" lines="20">import libspud
 
 
 
 libspud.load_options("projection_checkpoint_checkpoint_0.tfml")
 checkpoint_checkpoint_0 = libspud.get_option("/timestepping/current_time")
-libspud.clear_options()
-</string_value>
+libspud.clear_options()</string_value>
             </variable>
             <variable name="snes_field1_min">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-snes_field1_min = stat["SNESProjection"]["Field1"]["min"]
-</string_value>
+snes_field1_min = stat["SNESProjection"]["Field1"]["min"]</string_value>
             </variable>
             <variable name="snes_field1_int">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-snes_field1_int = stat["SNESProjection"]["Field1Integral"]["functional_value"]
-</string_value>
+snes_field1_int = stat["SNESProjection"]["Field1Integral"]["functional_value"]</string_value>
             </variable>
             <variable name="checkpoint_checkpoint_1">
-              <string_value lines="20" type="code" language="python3">import libspud
+              <string_value type="code" language="python3" lines="20">import libspud
 
 
 
 libspud.load_options("projection_checkpoint_checkpoint_1.tfml")
 checkpoint_checkpoint_1 = libspud.get_option("/timestepping/current_time")
-libspud.clear_options()
-</string_value>
+libspud.clear_options()</string_value>
             </variable>
             <variable name="snes_field1_max">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-snes_field1_max = stat["SNESProjection"]["Field1"]["max"]
-</string_value>
+snes_field1_max = stat["SNESProjection"]["Field1"]["max"]</string_value>
             </variable>
             <variable name="snes_field2_min_1">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-snes_field2_min_1 = stat["SNESProjection"]["Field2"]["max"][1]
-</string_value>
+snes_field2_min_1 = stat["SNESProjection"]["Field2"]["max"][1]</string_value>
             </variable>
             <variable name="snes_field2_min_0">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-snes_field2_min_0 = stat["SNESProjection"]["Field2"]["max"][0]
-</string_value>
+snes_field2_min_0 = stat["SNESProjection"]["Field2"]["max"][0]</string_value>
             </variable>
             <variable name="picard_field2_oldint_0">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-picard_field2_oldint_0 = stat["PicardProjection"]["Field2OldIntegral0"]["functional_value"]
-</string_value>
+picard_field2_oldint_0 = stat["PicardProjection"]["Field2OldIntegral0"]["functional_value"]</string_value>
             </variable>
             <variable name="picard_field2_oldint_1">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-picard_field2_oldint_1 = stat["PicardProjection"]["Field2OldIntegral1"]["functional_value"]
-</string_value>
+picard_field2_oldint_1 = stat["PicardProjection"]["Field2OldIntegral1"]["functional_value"]</string_value>
             </variable>
             <variable name="snes_source1_oldint">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-snes_source1_oldint = stat["SNESProjection"]["Source1OldIntegral"]["functional_value"]
-</string_value>
+snes_source1_oldint = stat["SNESProjection"]["Source1OldIntegral"]["functional_value"]</string_value>
             </variable>
             <variable name="picard_field1_max">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-picard_field1_max = stat["PicardProjection"]["Field1"]["max"]
-</string_value>
+picard_field1_max = stat["PicardProjection"]["Field1"]["max"]</string_value>
             </variable>
             <variable name="picard_field2_min_1">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-picard_field2_min_1 = stat["PicardProjection"]["Field2"]["max"][1]
-</string_value>
+picard_field2_min_1 = stat["PicardProjection"]["Field2"]["max"][1]</string_value>
             </variable>
             <variable name="picard_field1_min">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-picard_field1_min = stat["PicardProjection"]["Field1"]["min"]
-</string_value>
+picard_field1_min = stat["PicardProjection"]["Field1"]["min"]</string_value>
             </variable>
             <variable name="picard_field1_oldint">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-picard_field1_oldint = stat["PicardProjection"]["Field1OldIntegral"]["functional_value"]
-</string_value>
+picard_field1_oldint = stat["PicardProjection"]["Field1OldIntegral"]["functional_value"]</string_value>
             </variable>
             <variable name="snes_field2_max_1">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-snes_field2_max_1 = stat["SNESProjection"]["Field2"]["min"][1]
-</string_value>
+snes_field2_max_1 = stat["SNESProjection"]["Field2"]["min"][1]</string_value>
             </variable>
             <variable name="snes_field2_max_0">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-snes_field2_max_0 = stat["SNESProjection"]["Field2"]["min"][0]
-</string_value>
+snes_field2_max_0 = stat["SNESProjection"]["Field2"]["min"][0]</string_value>
             </variable>
             <variable name="picard_field2_max_1">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-picard_field2_max_1 = stat["PicardProjection"]["Field2"]["min"][1]
-</string_value>
+picard_field2_max_1 = stat["PicardProjection"]["Field2"]["min"][1]</string_value>
             </variable>
             <variable name="picard_field2_max_0">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-picard_field2_max_0 = stat["PicardProjection"]["Field2"]["min"][0]
-</string_value>
+picard_field2_max_0 = stat["PicardProjection"]["Field2"]["min"][0]</string_value>
             </variable>
             <variable name="snes_field1_oldint">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-snes_field1_oldint = stat["SNESProjection"]["Field1OldIntegral"]["functional_value"]
-</string_value>
+snes_field1_oldint = stat["SNESProjection"]["Field1OldIntegral"]["functional_value"]</string_value>
             </variable>
             <variable name="snes_source2_oldint_0">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-snes_source2_oldint_0 = stat["SNESProjection"]["Source2OldIntegral0"]["functional_value"]
-</string_value>
+snes_source2_oldint_0 = stat["SNESProjection"]["Source2OldIntegral0"]["functional_value"]</string_value>
             </variable>
             <variable name="snes_source2_oldint_1">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-snes_source2_oldint_1 = stat["SNESProjection"]["Source2OldIntegral1"]["functional_value"]
-</string_value>
+snes_source2_oldint_1 = stat["SNESProjection"]["Source2OldIntegral1"]["functional_value"]</string_value>
             </variable>
             <variable name="snes_field2_oldint_0">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-snes_field2_oldint_0 = stat["SNESProjection"]["Field2OldIntegral0"]["functional_value"]
-</string_value>
+snes_field2_oldint_0 = stat["SNESProjection"]["Field2OldIntegral0"]["functional_value"]</string_value>
             </variable>
             <variable name="snes_source1_int">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-snes_source1_int = stat["SNESProjection"]["Source1Integral"]["functional_value"]
-</string_value>
+snes_source1_int = stat["SNESProjection"]["Source1Integral"]["functional_value"]</string_value>
             </variable>
             <variable name="snes_field2_oldint_1">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-snes_field2_oldint_1 = stat["SNESProjection"]["Field2OldIntegral1"]["functional_value"]
-</string_value>
+snes_field2_oldint_1 = stat["SNESProjection"]["Field2OldIntegral1"]["functional_value"]</string_value>
             </variable>
             <variable name="picard_source1_oldint">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-picard_source1_oldint = stat["PicardProjection"]["Source1OldIntegral"]["functional_value"]
-</string_value>
+picard_source1_oldint = stat["PicardProjection"]["Source1OldIntegral"]["functional_value"]</string_value>
             </variable>
             <variable name="picard_field1_int">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-picard_field1_int = stat["PicardProjection"]["Field1Integral"]["functional_value"]
-</string_value>
+picard_field1_int = stat["PicardProjection"]["Field1Integral"]["functional_value"]</string_value>
             </variable>
             <variable name="snes_field2_int_0_steady">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 steady = parser("projection_checkpoint.steady")
 
-snes_field2_int_0_steady = steady["SNESProjection"]["Field2Integral0"]["functional_change"]
-</string_value>
+snes_field2_int_0_steady = steady["SNESProjection"]["Field2Integral0"]["functional_change"]</string_value>
             </variable>
             <variable name="snes_field2_int_0_coeff">
-              <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+              <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint.stat")
 
-snes_field2_int_0_coeff = stat["SNESProjection"]["Field2Integral0"]["max"]
-</string_value>
+snes_field2_int_0_coeff = stat["SNESProjection"]["Field2Integral0"]["max"]</string_value>
             </variable>
           </variables>
         </simulation>
       </dependencies>
       <variables>
         <variable name="checkpoint_snes_source2_int_0">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_source2_int_0 = stat["SNESProjection"]["Source2Integral0"]["functional_value"]
-</string_value>
+checkpoint_snes_source2_int_0 = stat["SNESProjection"]["Source2Integral0"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_snes_source2_int_1">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_source2_int_1 = stat["SNESProjection"]["Source2Integral1"]["functional_value"]
-</string_value>
+checkpoint_snes_source2_int_1 = stat["SNESProjection"]["Source2Integral1"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_picard_source2_int_0">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_picard_source2_int_0 = stat["PicardProjection"]["Source2Integral0"]["functional_value"]
-</string_value>
+checkpoint_picard_source2_int_0 = stat["PicardProjection"]["Source2Integral0"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_picard_source2_int_1">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_picard_source2_int_1 = stat["PicardProjection"]["Source2Integral1"]["functional_value"]
-</string_value>
+checkpoint_picard_source2_int_1 = stat["PicardProjection"]["Source2Integral1"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_snes_field2_int_0">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_field2_int_0 = stat["SNESProjection"]["Field2Integral0"]["functional_value"]
-</string_value>
+checkpoint_snes_field2_int_0 = stat["SNESProjection"]["Field2Integral0"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_snes_field2_int_1">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_field2_int_1 = stat["SNESProjection"]["Field2Integral1"]["functional_value"]
-</string_value>
+checkpoint_snes_field2_int_1 = stat["SNESProjection"]["Field2Integral1"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_picard_source2_oldint_0">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_picard_source2_oldint_0 = stat["PicardProjection"]["Source2OldIntegral0"]["functional_value"]
-</string_value>
+checkpoint_picard_source2_oldint_0 = stat["PicardProjection"]["Source2OldIntegral0"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_picard_source2_oldint_1">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_picard_source2_oldint_1 = stat["PicardProjection"]["Source2OldIntegral1"]["functional_value"]
-</string_value>
+checkpoint_picard_source2_oldint_1 = stat["PicardProjection"]["Source2OldIntegral1"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_picard_field2_min_0">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_picard_field2_min_0 = stat["PicardProjection"]["Field2"]["max"][0]
-</string_value>
+checkpoint_picard_field2_min_0 = stat["PicardProjection"]["Field2"]["max"][0]</string_value>
         </variable>
         <variable name="checkpoint_picard_source1_int">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_picard_source1_int = stat["PicardProjection"]["Source1Integral"]["functional_value"]
-</string_value>
+checkpoint_picard_source1_int = stat["PicardProjection"]["Source1Integral"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_picard_field2_int_0">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_picard_field2_int_0 = stat["PicardProjection"]["Field2Integral0"]["functional_value"]
-</string_value>
+checkpoint_picard_field2_int_0 = stat["PicardProjection"]["Field2Integral0"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_picard_field2_int_1">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_picard_field2_int_1 = stat["PicardProjection"]["Field2Integral1"]["functional_value"]
-</string_value>
+checkpoint_picard_field2_int_1 = stat["PicardProjection"]["Field2Integral1"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_checkpoint_checkpoint_0">
-          <string_value lines="20" type="code" language="python3">import libspud
+          <string_value type="code" language="python3" lines="20">import libspud
 
 
 
 libspud.load_options("projection_checkpoint_checkpoint_checkpoint_0.tfml")
 checkpoint_checkpoint_checkpoint_0 = libspud.get_option("/timestepping/current_time")
-libspud.clear_options()
-</string_value>
+libspud.clear_options()</string_value>
         </variable>
         <variable name="checkpoint_snes_field1_min">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_field1_min = stat["SNESProjection"]["Field1"]["min"]
-</string_value>
+checkpoint_snes_field1_min = stat["SNESProjection"]["Field1"]["min"]</string_value>
         </variable>
         <variable name="checkpoint_snes_field1_int">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_field1_int = stat["SNESProjection"]["Field1Integral"]["functional_value"]
-</string_value>
+checkpoint_snes_field1_int = stat["SNESProjection"]["Field1Integral"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_snes_field1_max">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_field1_max = stat["SNESProjection"]["Field1"]["max"]
-</string_value>
+checkpoint_snes_field1_max = stat["SNESProjection"]["Field1"]["max"]</string_value>
         </variable>
         <variable name="checkpoint_snes_field2_min_1">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_field2_min_1 = stat["SNESProjection"]["Field2"]["max"][1]
-</string_value>
+checkpoint_snes_field2_min_1 = stat["SNESProjection"]["Field2"]["max"][1]</string_value>
         </variable>
         <variable name="checkpoint_snes_field2_min_0">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_field2_min_0 = stat["SNESProjection"]["Field2"]["max"][0]
-</string_value>
+checkpoint_snes_field2_min_0 = stat["SNESProjection"]["Field2"]["max"][0]</string_value>
         </variable>
         <variable name="checkpoint_picard_field2_oldint_0">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_picard_field2_oldint_0 = stat["PicardProjection"]["Field2OldIntegral0"]["functional_value"]
-</string_value>
+checkpoint_picard_field2_oldint_0 = stat["PicardProjection"]["Field2OldIntegral0"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_picard_field2_oldint_1">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_picard_field2_oldint_1 = stat["PicardProjection"]["Field2OldIntegral1"]["functional_value"]
-</string_value>
+checkpoint_picard_field2_oldint_1 = stat["PicardProjection"]["Field2OldIntegral1"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_snes_source1_oldint">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_source1_oldint = stat["SNESProjection"]["Source1OldIntegral"]["functional_value"]
-</string_value>
+checkpoint_snes_source1_oldint = stat["SNESProjection"]["Source1OldIntegral"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_picard_field1_max">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_picard_field1_max = stat["PicardProjection"]["Field1"]["max"]
-</string_value>
+checkpoint_picard_field1_max = stat["PicardProjection"]["Field1"]["max"]</string_value>
         </variable>
         <variable name="checkpoint_picard_field2_min_1">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_picard_field2_min_1 = stat["PicardProjection"]["Field2"]["max"][1]
-</string_value>
+checkpoint_picard_field2_min_1 = stat["PicardProjection"]["Field2"]["max"][1]</string_value>
         </variable>
         <variable name="checkpoint_picard_field1_min">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_picard_field1_min = stat["PicardProjection"]["Field1"]["min"]
-</string_value>
+checkpoint_picard_field1_min = stat["PicardProjection"]["Field1"]["min"]</string_value>
         </variable>
         <variable name="checkpoint_picard_field1_oldint">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_picard_field1_oldint = stat["PicardProjection"]["Field1OldIntegral"]["functional_value"]
-</string_value>
+checkpoint_picard_field1_oldint = stat["PicardProjection"]["Field1OldIntegral"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_snes_field2_max_1">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_field2_max_1 = stat["SNESProjection"]["Field2"]["min"][1]
-</string_value>
+checkpoint_snes_field2_max_1 = stat["SNESProjection"]["Field2"]["min"][1]</string_value>
         </variable>
         <variable name="checkpoint_snes_field2_max_0">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_field2_max_0 = stat["SNESProjection"]["Field2"]["min"][0]
-</string_value>
+checkpoint_snes_field2_max_0 = stat["SNESProjection"]["Field2"]["min"][0]</string_value>
         </variable>
         <variable name="checkpoint_picard_field2_max_1">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_picard_field2_max_1 = stat["PicardProjection"]["Field2"]["min"][1]
-</string_value>
+checkpoint_picard_field2_max_1 = stat["PicardProjection"]["Field2"]["min"][1]</string_value>
         </variable>
         <variable name="checkpoint_picard_field2_max_0">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_picard_field2_max_0 = stat["PicardProjection"]["Field2"]["min"][0]
-</string_value>
+checkpoint_picard_field2_max_0 = stat["PicardProjection"]["Field2"]["min"][0]</string_value>
         </variable>
         <variable name="checkpoint_snes_field1_oldint">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_field1_oldint = stat["SNESProjection"]["Field1OldIntegral"]["functional_value"]
-</string_value>
+checkpoint_snes_field1_oldint = stat["SNESProjection"]["Field1OldIntegral"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_snes_source2_oldint_0">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_source2_oldint_0 = stat["SNESProjection"]["Source2OldIntegral0"]["functional_value"]
-</string_value>
+checkpoint_snes_source2_oldint_0 = stat["SNESProjection"]["Source2OldIntegral0"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_snes_source2_oldint_1">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_source2_oldint_1 = stat["SNESProjection"]["Source2OldIntegral1"]["functional_value"]
-</string_value>
+checkpoint_snes_source2_oldint_1 = stat["SNESProjection"]["Source2OldIntegral1"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_snes_field2_oldint_0">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_field2_oldint_0 = stat["SNESProjection"]["Field2OldIntegral0"]["functional_value"]
-</string_value>
+checkpoint_snes_field2_oldint_0 = stat["SNESProjection"]["Field2OldIntegral0"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_snes_source1_int">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_source1_int = stat["SNESProjection"]["Source1Integral"]["functional_value"]
-</string_value>
+checkpoint_snes_source1_int = stat["SNESProjection"]["Source1Integral"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_snes_field2_oldint_1">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_field2_oldint_1 = stat["SNESProjection"]["Field2OldIntegral1"]["functional_value"]
-</string_value>
+checkpoint_snes_field2_oldint_1 = stat["SNESProjection"]["Field2OldIntegral1"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_picard_source1_oldint">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_picard_source1_oldint = stat["PicardProjection"]["Source1OldIntegral"]["functional_value"]
-</string_value>
+checkpoint_picard_source1_oldint = stat["PicardProjection"]["Source1OldIntegral"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_picard_field1_int">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_picard_field1_int = stat["PicardProjection"]["Field1Integral"]["functional_value"]
-</string_value>
+checkpoint_picard_field1_int = stat["PicardProjection"]["Field1Integral"]["functional_value"]</string_value>
         </variable>
         <variable name="checkpoint_snes_field2_int_0_coeff">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 stat = parser("projection_checkpoint_checkpoint.stat")
 
-checkpoint_snes_field2_int_0_coeff = stat["SNESProjection"]["Field2Integral0"]["max"]
-</string_value>
+checkpoint_snes_field2_int_0_coeff = stat["SNESProjection"]["Field2Integral0"]["max"]</string_value>
         </variable>
         <variable name="checkpoint_snes_field2_int_0_steady">
-          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
+          <string_value type="code" language="python3" lines="20">from buckettools.statfile import parser
 
 
 
 steady = parser("projection_checkpoint_checkpoint.steady")
 
-checkpoint_snes_field2_int_0_steady = steady["SNESProjection"]["Field2Integral0"]["functional_change"]
-</string_value>
+checkpoint_snes_field2_int_0_steady = steady["SNESProjection"]["Field2Integral0"]["functional_change"]</string_value>
         </variable>
       </variables>
     </simulation>
   </simulations>
   <tests>
     <test name="snes_source2_int_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
 values = snes_source2_int_0
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_source2_int_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
 values = snes_source2_int_1
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_source2_int_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
 values = picard_source2_int_0
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_source2_int_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
 values = picard_source2_int_1
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_field2_int_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
 values = snes_field2_int_0
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_field2_int_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
 values = snes_field2_int_1
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_source2_oldint_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0]
 values = picard_source2_oldint_0
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_source2_oldint_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0]
 values = picard_source2_oldint_1
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_field2_min_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
 values = picard_field2_min_0
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_source1_int">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
 values = picard_source1_int
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_field2_int_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
 values = picard_field2_int_0
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_field2_int_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
 values = picard_field2_int_1
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_checkpoint_0">
-      <string_value lines="20" type="code" language="python3">import numpy
-assert numpy.all(numpy.array(checkpoint_checkpoint_0)==5.0)
-</string_value>
+      <string_value type="code" language="python3" lines="20">import numpy
+assert numpy.all(numpy.array(checkpoint_checkpoint_0)==5.0)</string_value>
     </test>
     <test name="snes_field1_min">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
 values = snes_field1_min
 print(values)
@@ -1719,115 +1580,104 @@ for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
 print(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_field1_int">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
 values = snes_field1_int
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_checkpoint_1">
-      <string_value lines="20" type="code" language="python3">import numpy
-assert numpy.all(numpy.array(checkpoint_checkpoint_1)==10.0)
-</string_value>
+      <string_value type="code" language="python3" lines="20">import numpy
+assert numpy.all(numpy.array(checkpoint_checkpoint_1)==10.0)</string_value>
     </test>
     <test name="snes_field1_max">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
 values = snes_field1_max
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_field2_min_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
 values = snes_field2_min_1
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_field2_min_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
 values = snes_field2_min_0
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_field2_oldint_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0]
 values = picard_field2_oldint_0
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_field2_oldint_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0]
 values = picard_field2_oldint_1
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_source1_oldint">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0]
 values = snes_source1_oldint
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_field1_max">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
 values = picard_field1_max
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_field2_min_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
 values = picard_field2_min_1
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_field1_min">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
 values = picard_field1_min
 maxerr = []
@@ -1835,569 +1685,515 @@ for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
 print(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_field1_oldint">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0]
 values = picard_field1_oldint
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_field2_max_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
 values = snes_field2_max_1
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_field2_max_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
 values = snes_field2_max_0
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_field2_max_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
 values = picard_field2_max_1
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_field2_max_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
 values = picard_field2_max_0
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_field1_oldint">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0]
 values = snes_field1_oldint
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_source2_oldint_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0]
 values = snes_source2_oldint_0
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_source2_oldint_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0]
 values = snes_source2_oldint_1
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_field2_oldint_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0]
 values = snes_field2_oldint_0
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_source1_int">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
 values = snes_source1_int
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_field2_oldint_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 0.0, 300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0]
 values = snes_field2_oldint_1
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_source1_oldint">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0]
 values = picard_source1_oldint
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="picard_field1_int">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
 values = picard_field1_int
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_source2_int_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
 values = checkpoint_snes_source2_int_0
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_source2_int_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
 values = checkpoint_snes_source2_int_1
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_source2_int_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
 values = checkpoint_picard_source2_int_0
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_source2_int_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
 values = checkpoint_picard_source2_int_1
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_field2_int_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
 values = checkpoint_snes_field2_int_0
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_field2_int_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
 values = checkpoint_snes_field2_int_1
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_source2_oldint_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [1000.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0]
 values = checkpoint_picard_source2_oldint_0
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_source2_oldint_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [1500.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0]
 values = checkpoint_picard_source2_oldint_1
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_field2_min_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
 values = checkpoint_picard_field2_min_0
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_source1_int">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
 values = checkpoint_picard_source1_int
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_field2_int_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
 values = checkpoint_picard_field2_int_0
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_field2_int_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
 values = checkpoint_picard_field2_int_1
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_checkpoint_checkpoint_0">
-      <string_value lines="20" type="code" language="python3">import numpy
-assert numpy.all(numpy.array(checkpoint_checkpoint_checkpoint_0)==10.0)
-</string_value>
+      <string_value type="code" language="python3" lines="20">import numpy
+assert numpy.all(numpy.array(checkpoint_checkpoint_checkpoint_0)==10.0)</string_value>
     </test>
     <test name="checkpoint_snes_field1_min">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
 values = checkpoint_snes_field1_min
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_field1_int">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
 values = checkpoint_snes_field1_int
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_field1_max">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
 values = checkpoint_snes_field1_max
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_field2_min_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
 values = checkpoint_snes_field2_min_1
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_field2_min_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
 values = checkpoint_snes_field2_min_0
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_field2_oldint_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [1000.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0]
 values = checkpoint_picard_field2_oldint_0
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_field2_oldint_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [1500.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0]
 values = checkpoint_picard_field2_oldint_1
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_source1_oldint">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [500.0, 500.0, 600.0, 700.0, 800.0, 900.0]
 values = checkpoint_snes_source1_oldint
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_field1_max">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
 values = checkpoint_picard_field1_max
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_field2_min_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
 values = checkpoint_picard_field2_min_1
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_field1_min">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
 values = checkpoint_picard_field1_min
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_field1_oldint">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [500.0, 500.0, 600.0, 700.0, 800.0, 900.0]
 values = checkpoint_picard_field1_oldint
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_field2_max_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
 values = checkpoint_snes_field2_max_1
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_field2_max_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
 values = checkpoint_snes_field2_max_0
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_field2_max_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
 values = checkpoint_picard_field2_max_1
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_field2_max_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
 values = checkpoint_picard_field2_max_0
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_field1_oldint">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [500.0, 500.0, 600.0, 700.0, 800.0, 900.0]
 values = checkpoint_snes_field1_oldint
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_source2_oldint_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [1000.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0]
 values = checkpoint_snes_source2_oldint_0
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_source2_oldint_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [1500.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0]
 values = checkpoint_snes_source2_oldint_1
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_field2_oldint_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [1000.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0]
 values = checkpoint_snes_field2_oldint_0
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_source1_int">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
 values = checkpoint_snes_source1_int
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_field2_oldint_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [1500.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0]
 values = checkpoint_snes_field2_oldint_1
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_source1_oldint">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [500.0, 500.0, 600.0, 700.0, 800.0, 900.0]
 values = checkpoint_picard_source1_oldint
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_picard_field1_int">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
 values = checkpoint_picard_field1_int
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_0">
-      <string_value lines="20" type="code" language="python3">import numpy
-assert numpy.all(numpy.array(checkpoint_0)==0.0)
-</string_value>
+      <string_value type="code" language="python3" lines="20">import numpy
+assert numpy.all(numpy.array(checkpoint_0)==0.0)</string_value>
     </test>
     <test name="checkpoint_1">
-      <string_value lines="20" type="code" language="python3">import numpy
-assert numpy.all(numpy.array(checkpoint_1)==1.0)
-</string_value>
+      <string_value type="code" language="python3" lines="20">import numpy
+assert numpy.all(numpy.array(checkpoint_1)==1.0)</string_value>
     </test>
     <test name="snes_fail">
-      <string_value lines="20" type="code" language="python3">assert all(snes_fail)
-</string_value>
+      <string_value type="code" language="python3" lines="20">assert all(snes_fail)</string_value>
     </test>
     <test name="snes_field2_int_0_steady">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 evalues = numpy.array([0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0])
 echanges = abs(evalues[1:]-evalues[:-1])/evalues[1:]
 test = echanges[1:-1:2].tolist() + [echanges[-1]]
@@ -2406,11 +2202,10 @@ maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_field2_int_0_steady">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 evalues = numpy.array([1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0])
 echanges = abs(evalues[1:]-evalues[:-1])/evalues[1:]
 test = echanges[1:-1:2].tolist() + [echanges[-1]]
@@ -2419,33 +2214,30 @@ maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="snes_field2_int_0_coeff">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [0.0, 200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
 values = snes_field2_int_0_coeff
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="checkpoint_snes_field2_int_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
 values = checkpoint_snes_field2_int_0_coeff
 maxerr = []
 for np in values.parameters["nprocs"]:
   maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
 maxerr = numpy.array(maxerr)
-assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_snes_source2_int_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
 values = run_from_checkpoint_snes_source2_int_0
 if all(run_from_checkpoint_ncheckpoints):
@@ -2455,11 +2247,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_snes_source2_int_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
 values = run_from_checkpoint_snes_source2_int_1
 if all(run_from_checkpoint_ncheckpoints):
@@ -2469,11 +2260,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_picard_source2_int_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
 values = run_from_checkpoint_picard_source2_int_0
 if all(run_from_checkpoint_ncheckpoints):
@@ -2483,11 +2273,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_picard_source2_int_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
 values = run_from_checkpoint_picard_source2_int_1
 if all(run_from_checkpoint_ncheckpoints):
@@ -2497,11 +2286,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_snes_field2_int_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
 values = run_from_checkpoint_snes_field2_int_0
 if all(run_from_checkpoint_ncheckpoints):
@@ -2511,11 +2299,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}][1:])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}][1:]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_snes_field2_int_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
 values = run_from_checkpoint_snes_field2_int_1
 if all(run_from_checkpoint_ncheckpoints):
@@ -2525,11 +2312,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}][1:])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}][1:]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_picard_source2_oldint_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0]
 values = run_from_checkpoint_picard_source2_oldint_0
 if all(run_from_checkpoint_ncheckpoints):
@@ -2539,11 +2325,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}][1:])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}][1:]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_picard_source2_oldint_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0]
 values = run_from_checkpoint_picard_source2_oldint_1
 if all(run_from_checkpoint_ncheckpoints):
@@ -2553,11 +2338,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}][1:])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}][1:]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_picard_field2_min_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
 values = run_from_checkpoint_picard_field2_min_0
 if all(run_from_checkpoint_ncheckpoints):
@@ -2567,11 +2351,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_picard_source1_int">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
 values = run_from_checkpoint_picard_source1_int
 if all(run_from_checkpoint_ncheckpoints):
@@ -2581,11 +2364,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_picard_field2_int_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
 values = run_from_checkpoint_picard_field2_int_0
 if all(run_from_checkpoint_ncheckpoints):
@@ -2595,11 +2377,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_picard_field2_int_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
 values = run_from_checkpoint_picard_field2_int_1
 if all(run_from_checkpoint_ncheckpoints):
@@ -2609,17 +2390,15 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_checkpoint_checkpoint_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 if all(run_from_checkpoint_ncheckpoints):
-  assert numpy.all(numpy.array(run_from_checkpoint_checkpoint_checkpoint_0)==6.0)
-</string_value>
+  assert numpy.all(numpy.array(run_from_checkpoint_checkpoint_checkpoint_0)==6.0)</string_value>
     </test>
     <test name="run_from_checkpoint_snes_field1_min">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
 values = run_from_checkpoint_snes_field1_min
 if all(run_from_checkpoint_ncheckpoints):
@@ -2630,11 +2409,10 @@ if all(run_from_checkpoint_ncheckpoints):
     maxerr.append(numpy.abs(values[{'nprocs':[np]}][1:]-test).max())
   maxerr = numpy.array(maxerr)
   print(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_snes_field1_int">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
 values = run_from_checkpoint_snes_field1_int
 if all(run_from_checkpoint_ncheckpoints):
@@ -2644,17 +2422,15 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}][1:])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}][1:]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_checkpoint_checkpoint_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 if all(run_from_checkpoint_ncheckpoints):
-  assert numpy.all(numpy.array(checkpoint_checkpoint_1)==10.0)
-</string_value>
+  assert numpy.all(numpy.array(checkpoint_checkpoint_1)==10.0)</string_value>
     </test>
     <test name="run_from_checkpoint_snes_field1_max">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
 values = run_from_checkpoint_snes_field1_max
 if all(run_from_checkpoint_ncheckpoints):
@@ -2664,11 +2440,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_snes_field2_min_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
 values = run_from_checkpoint_snes_field2_min_1
 if all(run_from_checkpoint_ncheckpoints):
@@ -2678,11 +2453,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_snes_field2_min_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
 values = run_from_checkpoint_snes_field2_min_0
 if all(run_from_checkpoint_ncheckpoints):
@@ -2692,11 +2466,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_picard_field2_oldint_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0]
 values = run_from_checkpoint_picard_field2_oldint_0
 if all(run_from_checkpoint_ncheckpoints):
@@ -2706,11 +2479,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}][1:])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}][1:]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_picard_field2_oldint_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0]
 values = run_from_checkpoint_picard_field2_oldint_1
 if all(run_from_checkpoint_ncheckpoints):
@@ -2720,11 +2492,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}][1:])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}][1:]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_snes_source1_oldint">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0]
 values = run_from_checkpoint_snes_source1_oldint
 if all(run_from_checkpoint_ncheckpoints):
@@ -2734,11 +2505,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}][1:])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}][1:]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_picard_field1_max">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
 values = run_from_checkpoint_picard_field1_max
 if all(run_from_checkpoint_ncheckpoints):
@@ -2748,11 +2518,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_picard_field2_min_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
 values = run_from_checkpoint_picard_field2_min_1
 if all(run_from_checkpoint_ncheckpoints):
@@ -2762,11 +2531,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_picard_field1_min">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
 values = run_from_checkpoint_picard_field1_min
 if all(run_from_checkpoint_ncheckpoints):
@@ -2777,11 +2545,10 @@ if all(run_from_checkpoint_ncheckpoints):
     maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
   maxerr = numpy.array(maxerr)
   print(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_picard_field1_oldint">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0]
 values = run_from_checkpoint_picard_field1_oldint
 if all(run_from_checkpoint_ncheckpoints):
@@ -2791,11 +2558,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}][1:])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}][1:]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_snes_field2_max_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
 values = run_from_checkpoint_snes_field2_max_1
 if all(run_from_checkpoint_ncheckpoints):
@@ -2805,11 +2571,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}][1:])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}][1:]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_snes_field2_max_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
 values = run_from_checkpoint_snes_field2_max_0
 if all(run_from_checkpoint_ncheckpoints):
@@ -2819,11 +2584,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}][1:])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}][1:]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_picard_field2_max_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0, 3000.0]
 values = run_from_checkpoint_picard_field2_max_1
 if all(run_from_checkpoint_ncheckpoints):
@@ -2833,11 +2597,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_picard_field2_max_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
 values = run_from_checkpoint_picard_field2_max_0
 if all(run_from_checkpoint_ncheckpoints):
@@ -2847,11 +2610,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_snes_field1_oldint">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0]
 values = run_from_checkpoint_snes_field1_oldint
 if all(run_from_checkpoint_ncheckpoints):
@@ -2861,11 +2623,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}][2:])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}][2:]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_snes_source2_oldint_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0]
 values = run_from_checkpoint_snes_source2_oldint_0
 if all(run_from_checkpoint_ncheckpoints):
@@ -2875,11 +2636,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}][1:])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}][1:]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_snes_source2_oldint_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [300.0, 600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0]
 values = run_from_checkpoint_snes_source2_oldint_1
 if all(run_from_checkpoint_ncheckpoints):
@@ -2889,11 +2649,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}][1:])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}][1:]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_snes_field2_oldint_0">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0]
 values = run_from_checkpoint_snes_field2_oldint_0
 if all(run_from_checkpoint_ncheckpoints):
@@ -2903,11 +2662,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}][2:])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}][2:]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_snes_source1_int">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
 values = run_from_checkpoint_snes_source1_int
 if all(run_from_checkpoint_ncheckpoints):
@@ -2917,11 +2675,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_snes_field2_oldint_1">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [600.0, 900.0, 1200.0, 1500.0, 1800.0, 2100.0, 2400.0, 2700.0]
 values = run_from_checkpoint_snes_field2_oldint_1
 if all(run_from_checkpoint_ncheckpoints):
@@ -2931,11 +2688,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}][2:])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}][2:]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_picard_source1_oldint">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0]
 values = run_from_checkpoint_picard_source1_oldint
 if all(run_from_checkpoint_ncheckpoints):
@@ -2945,11 +2701,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}][1:])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}][1:]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_picard_field1_int">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [100.0, 200.0, 300.0, 400.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0]
 values = run_from_checkpoint_picard_field1_int
 if all(run_from_checkpoint_ncheckpoints):
@@ -2959,11 +2714,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_snes_field2_int_0_steady">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 evalues = numpy.array([200.0, 400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0])
 echanges = abs(evalues[1:]-evalues[:-1])/evalues[1:]
 test = echanges[1:-1:2].tolist() + [echanges[-1]]
@@ -2975,11 +2729,10 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
     <test name="run_from_checkpoint_snes_field2_int_0_coeff">
-      <string_value lines="20" type="code" language="python3">import numpy
+      <string_value type="code" language="python3" lines="20">import numpy
 test = [400.0, 600.0, 800.0, 1000.0, 1200.0, 1400.0, 1600.0, 1800.0, 2000.0]
 values = run_from_checkpoint_snes_field2_int_0_coeff
 if all(run_from_checkpoint_ncheckpoints):
@@ -2989,8 +2742,7 @@ if all(run_from_checkpoint_ncheckpoints):
     print("values = ", values[{'nprocs':[np]}][1:])
     maxerr.append(numpy.abs(values[{'nprocs':[np]}][1:]-test).max())
   maxerr = numpy.array(maxerr)
-  assert(maxerr.max() &lt; 1.e-6)
-</string_value>
+  assert(maxerr.max() &lt; 1.e-6)</string_value>
     </test>
   </tests>
 </harness_options>
