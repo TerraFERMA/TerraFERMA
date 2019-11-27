@@ -1024,10 +1024,10 @@ void FunctionBucket::write_vis_(const std::string &function_type)
     uf = std::dynamic_pointer_cast<dolfin::Function>(u);
     if (!uf)
     {
-      tf_err("Not yet supported.", "Attempting to output coefficient expression.");
-      //uf.reset( new dolfin::Function(outputfunctionspace()) );
-      //(*uf).interpolate(*u);
-      //(*uf).rename((*system()).name()+"::"+name(), (*system()).name()+"::"+name());
+      //tf_err("Not yet supported.", "Attempting to output coefficient expression.");
+      uf.reset( new dolfin::Function(outputfunctionspace()) );
+      (*uf).interpolate(*u);
+      (*uf).rename((*system()).name()+"::"+name(), (*system()).name()+"::"+name());
     }
     (*xdmf_file).write(*uf, (*(*system()).bucket()).current_time());
   }
