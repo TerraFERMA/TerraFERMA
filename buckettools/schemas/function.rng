@@ -408,13 +408,13 @@ The minimum and maximum of functions is included.</a:documentation>
     <element name="diagnostics">
       <a:documentation>Output options</a:documentation>
       <optional>
-        <!--
-          ## Include this coefficient in the visualization output file 
-          ## (at the dof of the visualization element).
-          element include_in_visualization {
-            comment
-          }?,
-        -->
+        <element name="include_in_visualization">
+          <a:documentation>Include this coefficient in the visualization output file 
+(at the dof of the visualization element).</a:documentation>
+          <ref name="comment"/>
+        </element>
+      </optional>
+      <optional>
         <element name="include_in_statistics">
           <a:documentation>Include this coefficient in the statistics output file.
 The minimum and maximum (evaluated at the vertices of the mesh) 
