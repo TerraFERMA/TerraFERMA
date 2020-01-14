@@ -4,10 +4,29 @@ from lxml import etree
 import h5py
 import sys
 import numpy as np
+import os
 
-filename = sys.argv[1]
+import argparse
+import os
 
-tree = etree.parse(filename)
+parser = argparse.ArgumentParser( \
+                       description="""Time average xdmf files.""")
+parser.add_argument('file', action='store', metavar='file', type=str, nargs=1,
+                    help='specify filename(s)')
+parser.add_argument('-s', '--start', action='store', type=float, dest='start', required=False, default=None, 
+                    help='start time (in non-dimensional time)')
+parser.add_argument('-e', '--end', action='store', type=float, dest='end', required=False, default=None, 
+                    help='end time (in non-dimensional time)')
+args = parser.parse_args()
+
+fullfilename = args.file[0]
+
+start = args.start
+end = args.end
+
+path, filename = os.path.split(fullfilename)
+
+tree = etree.parse(fullfilename)
 
 grid = tree.find("//Grid")
 
@@ -31,13 +50,13 @@ def h5createdataset(h5group, keys, data):
   else:
     return None
 
-def xdmfattribute(attr):
+def xdmfattribute(attr, path=os.path.curdir):
   """Given an attribute element from an xdmf file return the numpy array of field values."""
   dataitem = attr.find("DataItem")
   i = dataitem.text.index(":")
   h5filename = dataitem.text[:i]
   h5path = dataitem.text[i+2:].split("/")
-  h5file = h5py.File(h5filename, "r")
+  h5file = h5py.File(os.path.join(path, h5filename), "r")
   dataset = h5finditem(h5file, h5path)
   array = np.array(dataset)
   h5file.close()
@@ -48,14 +67,11 @@ def subgridtime(sg):
   """Given a Grid element of an xdmf file return the time value."""
   return float(sg.find("Time").attrib["Value"])
 
-start = None
-end = None
-
 if grid.attrib["Name"] == "TimeSeries":
 
   subgrids = grid.findall("Grid")
   subgrids.sort(key=lambda sg: float(sg.find("Time").attrib["Value"]))
-  times = [subgridtime(sg) for sg in subgrids]
+  times = np.array([subgridtime(sg) for sg in subgrids])
 
   if start is not None:
     istart = abs(times-start).argmin()
@@ -74,7 +90,7 @@ if grid.attrib["Name"] == "TimeSeries":
   oldtime = subgridtime(sg)
   for attr in attributes:
     name = attr.attrib["Name"]
-    field = xdmfattribute(attr)
+    field = xdmfattribute(attr, path)
     fields[name] = np.zeros(field.shape)
     oldfields[name] = field
 
@@ -85,7 +101,7 @@ if grid.attrib["Name"] == "TimeSeries":
     dt = time - oldtime
     for attr in attributes:
       name = attr.attrib["Name"]
-      field = xdmfattribute(attr)
+      field = xdmfattribute(attr, path)
       fields[name] += 0.5*dt*(oldfields[name] + field)
       oldfields[name] = field
     oldtime = time
@@ -99,7 +115,7 @@ if grid.attrib["Name"] == "TimeSeries":
   i = dataitem.text.index(":")
   h5filename = dataitem.text[:i]
   newh5filename = "timeaveraged_"+repr(istart)+"_"+repr(iend)+"_"+h5filename
-  newh5file = h5py.File(newh5filename, "w")
+  newh5file = h5py.File(os.path.join(path, newh5filename), "w")
 
   for child in sg.getchildren():
     dataitem = child.find("DataItem")
@@ -110,7 +126,7 @@ if grid.attrib["Name"] == "TimeSeries":
         name = child.attrib["Name"]
         h5createdataset(newh5file, h5path, fields[name])
       else:
-        h5file = h5py.File(h5filename, "r")
+        h5file = h5py.File(os.path.join(path, h5filename), "r")
         data = np.array(h5finditem(h5file, h5path))
         h5file.close()
         h5createdataset(newh5file, h5path, data)
@@ -121,6 +137,6 @@ if grid.attrib["Name"] == "TimeSeries":
   for sg in subgrids[1:]: sg.getparent().remove(sg)
   
   newfilename = "timeaveraged_"+repr(istart)+"_"+repr(iend)+"_"+filename
-  tree.write(newfilename, xml_declaration=True)
+  tree.write(os.path.join(path, newfilename), xml_declaration=True)
 
 
