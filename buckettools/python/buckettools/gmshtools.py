@@ -387,9 +387,6 @@ class InterpolatedCubicSpline:
     self.points = [point for point in points]
     self.controlpoints = [point for point in points]
     self.controlpoints.sort(key=lambda point: point.x)
-    self.controlx = numpy.asarray([cp.x for cp in self.controlpoints])
-    self.controly = numpy.asarray([cp.y for cp in self.controlpoints])
-    self.cs = interp.CubicSpline(self.controlx, self.controly, bc_type=self.bctype)
     self.name = name
     if pids: 
       assert(len(self.pids)==len(self.points)-1)
@@ -433,6 +430,9 @@ class InterpolatedCubicSpline:
     self.pids = pids.tolist()
     self.x = numpy.array([self.points[i].x for i in range(len(self.points))])
     self.y = numpy.array([self.points[i].y for i in range(len(self.points))])
+    controlx = numpy.array([cp.x for cp in self.controlpoints])
+    controly = numpy.array([cp.y for cp in self.controlpoints])
+    self.cs = interp.CubicSpline(controlx, controly, bc_type=self.bctype)
     self.length = 1.0 # must set this to one first to get the next line correct
     self.length = self.x2delu(self.x[-1])
     u = numpy.asarray([0.0])
@@ -532,6 +532,8 @@ class InterpolatedCubicSpline:
   def croppoint(self, pind, coord):
     for i in range(len(pind)-1):
       p = self.points.pop(pind[i])
+      if p in self.controlpoints:
+        self.controlpoints.pop(self.controlpoints.index(p))
     self.points[pind[-1]].x = coord[0]
     self.points[pind[-1]].y = coord[1]
     self.update()
