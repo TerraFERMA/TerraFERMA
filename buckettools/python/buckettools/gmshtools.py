@@ -401,21 +401,23 @@ class InterpolatedCubicSpline:
     self.length = None
     self.update()
 
-  def __call__(self, delu, x0=0.0, der=0):
+  def __call__(self, delu, x0=None, der=0):
     # NOTE: this returns [x, dy/dx] when der=1...
     x = self.delu2x(delu, x0=x0)
     return [x, float(self.cs(x, nu=der))]
 
-  def x2delu(self, x, x0=0.0):
+  def x2delu(self, x, x0=None):
     """Convert from Delta x to Delta u:
        u = \int_{x0}^{x} sqrt(1 + (dy(x')/dx')**2) dx'
        x0 is the lower bound of integration - provide to get an incremental u"""
+    if x0 is None: x0 = self.x[0]
     return integ.quad(lambda xp: self.du(xp), x0, x)[0]/self.length
 
-  def delu2x(self, delu, x0=0.0):
+  def delu2x(self, delu, x0=None):
     """Convert from u to x:
        u(x) = \int_{x0}^x sqrt(1 + (dy(x')/dx')**2) dx'
        x0 is the lower bound of integration."""
+    if x0 is None: x0 = self.x[0]
     return opt.fsolve(lambda x: self.x2delu(x, x0=x0)-delu, x0, fprime=lambda x: [self.du(x)])[0]
 
   def du(self, x):
