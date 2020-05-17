@@ -44,7 +44,7 @@
               <string_value lines="1">gmsh -2 square.geo -o square.msh</string_value>
             </command>
             <command name="Convert">
-              <string_value lines="1">tfgmsh2xdmf square.msh square.xdmf</string_value>
+              <string_value lines="1">tfgmsh2xdmf square.msh</string_value>
             </command>
           </commands>
         </run>

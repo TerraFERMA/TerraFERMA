@@ -2,29 +2,36 @@ import math
 import sys
 import numpy
 import vtk
+import os
 
 # All returned arrays are cast into either numpy or numarray arrays
 arr=numpy.array
 
-class vtu:
+class vtu(object):
   """Unstructured grid object to deal with VTK unstructured grids."""
-  def __init__(self, filename = None):
+  def __init__(self, filename = None, tindex = -1, time = None, index = -1):
     """Creates a vtu object by reading the specified file."""
     if filename is None:
       self.ugrid = vtk.vtkUnstructuredGrid()
     else:
-      self.gridreader = None
-      if filename[-4:] == ".vtu":
-        self.gridreader=vtk.vtkXMLUnstructuredGridReader()
-      elif filename[-5:] == ".pvtu":
-        self.gridreader=vtk.vtkXMLPUnstructuredGridReader()
+      gridreader = None
+      ext = os.path.splitext(filename)[-1]
+      if ext == ".xdmf":
+        from buckettools import xdmftools
+        xdmf = xdmftools.XDMF(filename)
+        self.ugrid = xdmf.vtu(tindex=tindex, time=time, index=index).ugrid
       else:
-        raise Exception("ERROR: don't recognise file extension" + filename)
-      self.gridreader.SetFileName(filename)
-      self.gridreader.Update()
-      self.ugrid=self.gridreader.GetOutput()
+        if ext == ".vtu":
+          gridreader=vtk.vtkXMLUnstructuredGridReader()
+        elif ext == ".pvtu":
+          gridreader=vtk.vtkXMLPUnstructuredGridReader()
+        else:
+          raise Exception("ERROR: don't recognise file extension" + filename)
+        gridreader.SetFileName(filename)
+        gridreader.Update()
+        self.ugrid=gridreader.GetOutput()
       if self.ugrid.GetNumberOfPoints() + self.ugrid.GetNumberOfCells() == 0:
-        raise Exception("ERROR: No points or cells found after loading vtu " + filename)
+          raise Exception("ERROR: No points or cells found after loading vtu " + filename)
     self.filename=filename
 
   def GetScalarField(self, name):
@@ -156,7 +163,10 @@ class vtu:
       gridwriter=vtk.vtkXMLUnstructuredGridWriter()
 
     gridwriter.SetFileName(filename)
-    gridwriter.SetInput(self.ugrid)
+    if vtk.vtkVersion.GetVTKMajorVersion() <= 5:
+      gridwriter.SetInput(self.ugrid)
+    else:
+      gridwriter.SetInputData(self.ugrid)
     gridwriter.Write()
 
   def AddScalarField(self, name, array):
