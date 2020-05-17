@@ -387,9 +387,6 @@ class InterpolatedCubicSpline:
     self.points = [point for point in points]
     self.controlpoints = [point for point in points]
     self.controlpoints.sort(key=lambda point: point.x)
-    self.controlx = numpy.asarray([cp.x for cp in self.controlpoints])
-    self.controly = numpy.asarray([cp.y for cp in self.controlpoints])
-    self.cs = interp.CubicSpline(self.controlx, self.controly, bc_type=self.bctype)
     self.name = name
     if pids: 
       assert(len(self.pids)==len(self.points)-1)
@@ -404,21 +401,23 @@ class InterpolatedCubicSpline:
     self.length = None
     self.update()
 
-  def __call__(self, delu, x0=0.0, der=0):
+  def __call__(self, delu, x0=None, der=0):
     # NOTE: this returns [x, dy/dx] when der=1...
     x = self.delu2x(delu, x0=x0)
     return [x, float(self.cs(x, nu=der))]
 
-  def x2delu(self, x, x0=0.0):
+  def x2delu(self, x, x0=None):
     """Convert from Delta x to Delta u:
        u = \int_{x0}^{x} sqrt(1 + (dy(x')/dx')**2) dx'
        x0 is the lower bound of integration - provide to get an incremental u"""
+    if x0 is None: x0 = self.x[0]
     return integ.quad(lambda xp: self.du(xp), x0, x)[0]/self.length
 
-  def delu2x(self, delu, x0=0.0):
+  def delu2x(self, delu, x0=None):
     """Convert from u to x:
        u(x) = \int_{x0}^x sqrt(1 + (dy(x')/dx')**2) dx'
        x0 is the lower bound of integration."""
+    if x0 is None: x0 = self.x[0]
     return opt.fsolve(lambda x: self.x2delu(x, x0=x0)-delu, x0, fprime=lambda x: [self.du(x)])[0]
 
   def du(self, x):
@@ -433,6 +432,9 @@ class InterpolatedCubicSpline:
     self.pids = pids.tolist()
     self.x = numpy.array([self.points[i].x for i in range(len(self.points))])
     self.y = numpy.array([self.points[i].y for i in range(len(self.points))])
+    controlx = numpy.array([cp.x for cp in self.controlpoints])
+    controly = numpy.array([cp.y for cp in self.controlpoints])
+    self.cs = interp.CubicSpline(controlx, controly, bc_type=self.bctype)
     self.length = 1.0 # must set this to one first to get the next line correct
     self.length = self.x2delu(self.x[-1])
     u = numpy.asarray([0.0])
@@ -532,6 +534,8 @@ class InterpolatedCubicSpline:
   def croppoint(self, pind, coord):
     for i in range(len(pind)-1):
       p = self.points.pop(pind[i])
+      if p in self.controlpoints:
+        self.controlpoints.pop(self.controlpoints.index(p))
     self.points[pind[-1]].x = coord[0]
     self.points[pind[-1]].y = coord[1]
     self.update()

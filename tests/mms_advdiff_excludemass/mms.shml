@@ -66,7 +66,7 @@ input_file = template(input_file).safe_substitute({"nhpoints":npoints,"nvpoints"
               <string_value lines="1">gmsh -2 mesh.geo -o mesh.msh</string_value>
             </command>
             <command name="Convert">
-              <string_value lines="1">tfgmsh2xdmf mesh.msh mesh.xdmf</string_value>
+              <string_value lines="1">tfgmsh2xdmf mesh.msh</string_value>
             </command>
           </commands>
         </run>

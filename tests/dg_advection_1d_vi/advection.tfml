@@ -19,6 +19,16 @@
     <output_base_name>
       <string_value lines="1">advection</string_value>
     </output_base_name>
+    <visualization>
+      <element name="P1DG">
+        <family>
+          <string_value lines="1">DG</string_value>
+        </family>
+        <degree>
+          <integer_value rank="0">1</integer_value>
+        </degree>
+      </element>
+    </visualization>
     <dump_periods/>
     <detectors/>
   </io>
