@@ -1,0 +1,96 @@
+#!/usr/bin/env python3
+
+# Copyright (C) 2013 Columbia University in the City of New York and others.
+#
+# Please see the AUTHORS file in the main source directory for a full list
+# of contributors.
+#
+# This file is part of TerraFERMA.
+#
+# TerraFERMA is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# TerraFERMA is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
+
+import meshio
+import sys
+import numpy as np
+import os
+from buckettools import xdmftools
+from lxml import etree
+
+def xdmf2vtu(xdmf, outbasename=None, names=[], tindices=[], times=[], index=None):
+  """
+  Read an xdmf file and output a vtu file.
+  """
+  filename = xdmf.filename
+  basename, ext = os.path.splitext(filename)
+  if outbasename is not None:
+    basename, ext = os.path.splitext(outbasename)
+    if ext not in ['', '.vtu', '.pvd']:
+      raise Exception("ERROR: Unknown output extension: {}".format(ext,))
+
+  if times == [] and tindices == []:
+    times = xdmf.gettimes()
+    tindices = list(range(len(times)))
+  elif times != []:
+    xdmftimes = xdmf.gettimes()
+    tindices = [np.abs(xdmftimes-time).argmin() for time in times]
+    times = xdmftimes[tindices]
+  else:
+    times = xdmf.gettimes()[tindices]
+  vi = 0
+  pvdcollection = etree.Element('Collection')
+  for ti in tindices:
+    if index is None:
+      indices = list(range(xdmf.getnindices(tindex=ti)))
+    else:
+      indices = [index]
+    for i in indices:
+      outfilename = basename+repr(vi).zfill(6)+".vtu"
+      vtu = xdmf.vtu(names=names, tindex=ti, index=i)
+      vtu.Write(outfilename)
+      pvdcollection.append(etree.Element('DataSet', attrib={'timestep':repr(times[ti]), 'part':'0', 'file':outfilename}))
+      vi += 1
+
+  pvdroot = etree.Element('VTKFile', attrib={'type':'Collection', 'version':'0.1'})
+  pvdroot.append(pvdcollection)
+  pvdtree = etree.ElementTree(pvdroot)
+  pvdtree.write(basename+".pvd", encoding='UTF-8', pretty_print=True, xml_declaration=True)
+
+if __name__ == "__main__":
+  import argparse
+  import os
+
+  parser = argparse.ArgumentParser( \
+                         description="""Convert from a .xdmf file to a .vtu.""")
+  parser.add_argument('filename', action='store', metavar='filename', type=str,
+                      help='specify a .xdmf filename')
+  parser.add_argument('-vtu', '--outputvtu', action='store', metavar='vtufilename', type=str, default=False, const=None, required=False, nargs='?',
+                      help='convert to vtu (with pvd where possible) with optional given vtufilename or basename  (defaults to filename*.vtu and filename.pvd)')
+  parser.add_argument('-f', '--fieldname', action='store', metavar='fieldname', type=str, default=[], required=False, nargs='*',
+                      help='name of the fields to include in the vtu (defaults to all fields)')
+  parser.add_argument('-ti', '--tindex', action='store', metavar='ti', type=int, default=[], required=False, nargs='*',
+                      help='time indices to be converted (defaults to all times, ignored if --time provided)')
+  parser.add_argument('-t', '--time', action='store', metavar='time', type=float, default=[], required=False, nargs='*',
+                      help='search for the nearest times to be converted (defaults to all times, overrides --tindex)')
+  parser.add_argument('-i', '--index', action='store', metavar='index', type=int, default=None, required=False,
+                      help='index of output when multiple instances are included per timestep (defaults to all availble in each timestep)')
+  args = parser.parse_args()
+
+  basename, ext = os.path.splitext(args.filename)
+  if ext != '.xdmf':
+    raise Exception("ERROR: Unknown input extension: {}".format(ext,))
+
+  xdmf = xdmftools.XDMF(args.filename)
+
+  if args.outputvtu is not False:
+    xdmf2vtu(xdmf, outbasename=args.outputvtu, names=args.fieldname, tindices=args.tindex, times=args.time, index=args.index)

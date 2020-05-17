@@ -31,7 +31,7 @@
           </required_output>
           <commands>
             <command name="convert">
-              <string_value lines="1">tfgmsh2xdmf ridgemesh.msh ridgemesh.xdmf</string_value>
+              <string_value lines="1">tfgmsh2xdmf ridgemesh.msh</string_value>
             </command>
           </commands>
         </run>

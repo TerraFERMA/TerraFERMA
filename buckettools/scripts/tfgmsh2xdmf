@@ -25,54 +25,80 @@ import sys
 import numpy as np
 import os
 
-filename = sys.argv[1]
-basename, ext = os.path.splitext(filename)
+def gmsh2xdmf(filename, outbasename=None):
+  """
+  Read a (assumed gmsh) file at the location of filename.  Output XDMF files compatible with TF.
+  """
+  basename, ext = os.path.splitext(filename)
+  if ext != '.msh':
+    raise Exception("ERROR: Unknown input extension: {}".format(ext,))
 
-msh = meshio.read(filename)
+  if outbasename is not None:
+    basename, ext = os.path.splitext(outbasename)
+    if ext != '' and ext != '.xdmf':
+      raise Exception("ERROR: Unknown output extension: {}".format(ext,))
 
-highest_dim = 1
-cell_type = "line"
-facet_type = "vertex"
-if "tetra" in msh.cells:
-  highest_dim = 3
-  cell_type = "tetra"
-  facet_type = "triangle"
-elif "triangle" in msh.cells:
-  highest_dim = 2
-  cell_type = "triangle"
-  facet_type = "line"
+  msh = meshio.read(filename)
+  
+  highest_dim = 1
+  cell_type = "line"
+  facet_type = "vertex"
+  if "tetra" in msh.cells:
+    highest_dim = 3
+    cell_type = "tetra"
+    facet_type = "triangle"
+  elif "triangle" in msh.cells:
+    highest_dim = 2
+    cell_type = "triangle"
+    facet_type = "line"
+  
+  # remove vertices not mentioned in cell_type cells
+  orphaned_vertices = np.setdiff1d(np.arange(len(msh.points)), msh.cells[cell_type].flatten())
+  vertices = np.delete(msh.points, orphaned_vertices, axis=0)[:,:highest_dim]
+  
+  # then adjust any cells pointing at now misindexed vertices
+  
+  def fix_orphaned_points(cells, orphaned_vertices):
+    cells_flat = cells.flatten()
+    diff = np.zeros(len(cells_flat), dtype=cells_flat.dtype)
+    for orphan in orphaned_vertices:
+      diff[np.argwhere(cells_flat > orphan)] += 1
+    cells_flat -= diff
+    return cells_flat.reshape(cells.shape)
+  
+  cells = fix_orphaned_points(msh.cells[cell_type], orphaned_vertices)
+  
+  meshio.write(basename+'.xdmf', meshio.Mesh(points=vertices, cells={cell_type:cells}))
+  
+  if cell_type in msh.cell_data and 'gmsh:physical' in msh.cell_data[cell_type]:
+    cell_regions = msh.cell_data[cell_type]['gmsh:physical']
+    if len(cell_regions) > 0:
+      meshio.write(basename+'_cell_ids.xdmf', meshio.Mesh(points=vertices, cells={cell_type:cells}, \
+                                                          cell_data={cell_type:{'cell_ids': cell_regions}}))
+  
+  # for facets first find facets to retain
+  if facet_type in msh.cell_data and 'gmsh:physical' in msh.cell_data[facet_type]:
+    facet_inds = [np.all(np.isin(facet, orphaned_vertices, assume_unique=True, invert=True)) for facet in msh.cells[facet_type]]
+    facet_regions = msh.cell_data[facet_type]['gmsh:physical'][facet_inds]
+    if len(facet_regions) > 0:
+      # then reindex the remaining facets
+      facets = fix_orphaned_points(msh.cells[facet_type][facet_inds], orphaned_vertices)
+      meshio.write(basename+'_facet_ids.xdmf', meshio.Mesh(points=vertices, cells={facet_type:facets}, \
+                                                           cell_data={facet_type:{'facet_ids': facet_regions}}))
 
-# remove vertices not mentioned in cell_type cells
-orphaned_vertices = np.setdiff1d(np.arange(len(msh.points)), msh.cells[cell_type].flatten())
-vertices = np.delete(msh.points, orphaned_vertices, axis=0)[:,:highest_dim]
+if __name__ == "__main__":
+  import argparse
+  import os
 
-# then adjust any cells pointing at now misindexed vertices
+  parser = argparse.ArgumentParser( \
+                         description="""Convert from gmsh .msh to .xdmf.
+                                        If gmsh physical cell or facet ids are present, separate xdmf files (basename_cell_ids.xdmf
+                                        and basename_facet_ids.xdmf respectively) will be generated for
+                                        them.""")
+  parser.add_argument('filename', action='store', metavar='filename', type=str,
+                      help='specify gmsh .msh filename')
+  parser.add_argument('-o', '--output', action='store', metavar='filename', type=str, default=None, required=False,
+                      help='output filename or basename (defaults to filename.xdmf)')
+  args = parser.parse_args()
 
-def fix_orphaned_points(cells, orphaned_vertices):
-  cells_flat = cells.flatten()
-  diff = np.zeros(len(cells_flat), dtype=cells_flat.dtype)
-  for orphan in orphaned_vertices:
-    diff[np.argwhere(cells_flat > orphan)] += 1
-  cells_flat -= diff
-  return cells_flat.reshape(cells.shape)
-
-cells = fix_orphaned_points(msh.cells[cell_type], orphaned_vertices)
-
-meshio.write(basename+'.xdmf', meshio.Mesh(points=vertices, cells={cell_type:cells}))
-
-if cell_type in msh.cell_data and 'gmsh:physical' in msh.cell_data[cell_type]:
-  cell_regions = msh.cell_data[cell_type]['gmsh:physical']
-  if len(cell_regions) > 0:
-    meshio.write(basename+'_cell_ids.xdmf', meshio.Mesh(points=vertices, cells={cell_type:cells}, \
-                                                        cell_data={cell_type:{'cell_ids': cell_regions}}))
-
-# for facets first find facets to retain
-if facet_type in msh.cell_data and 'gmsh:physical' in msh.cell_data[facet_type]:
-  facet_inds = [np.all(np.isin(facet, orphaned_vertices, assume_unique=True, invert=True)) for facet in msh.cells[facet_type]]
-  facet_regions = msh.cell_data[facet_type]['gmsh:physical'][facet_inds]
-  if len(facet_regions) > 0:
-    # then reindex the remaining facets
-    facets = fix_orphaned_points(msh.cells[facet_type][facet_inds], orphaned_vertices)
-    meshio.write(basename+'_facet_ids.xdmf', meshio.Mesh(points=vertices, cells={facet_type:facets}, \
-                                                         cell_data={facet_type:{'facet_ids': facet_regions}}))
-
+  gmsh2xdmf(args.filename, args.output)
