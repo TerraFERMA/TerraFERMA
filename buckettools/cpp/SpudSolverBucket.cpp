@@ -328,9 +328,11 @@ void SpudSolverBucket::initialize()
       petsc_err(perr);
     }
 
-    if (Spud::have_option(optionpath()+"/type/monitors/convergence_file"))
+    if (Spud::have_option(optionpath()+"/type/monitors/visualization")||
+        Spud::have_option(optionpath()+"/type/monitors/convergence_file"))
     {
       snesmctx_.solver = this;
+      *visualizationmonitor_ = Spud::have_option(optionpath()+"/type/monitors/visualization"); 
       if (Spud::have_option(optionpath()+"/type/monitors/convergence_file"))
       {
         buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
@@ -369,6 +371,8 @@ void SpudSolverBucket::initialize()
 
     perr = KSPCreate((*(*system_).mesh()).mpi_comm(), &ksp_); 
     petsc_err(perr);                                                   // create a ksp object from the variable in the solverbucket
+
+    *visualizationmonitor_ = Spud::have_option(optionpath()+"/type/monitors/visualization"); 
 
     if (Spud::have_option(optionpath()+"/type/monitors/convergence_file"))
     {
@@ -592,6 +596,12 @@ void SpudSolverBucket::fill_base_()
 
   iteration_count_.reset( new int );
   *iteration_count_ = 0;
+
+  visualizationmonitor_.reset( new bool );
+  *visualizationmonitor_ = false;
+
+  kspvisualizationmonitor_.reset( new bool );
+  *kspvisualizationmonitor_ = false;
 
   buffer.str(""); buffer << optionpath() << 
                                 "/type/monitors/norms";
@@ -999,15 +1009,20 @@ void SpudSolverBucket::fill_ksp_(const std::string &optionpath, KSP &ksp,
       petsc_err(perr);
     }
 
-    if (Spud::have_option(optionpath+"/iterative_method/monitors/convergence_file"))
+    if (Spud::have_option(optionpath+"/iterative_method/monitors/visualization")||
+        Spud::have_option(optionpath+"/iterative_method/monitors/convergence_file"))
     {
       kspmctx_.solver = this;
-      buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
-                             << (*system()).name() << "_" 
-                             << name() << "_ksp.conv";
-      kspconvfile_.reset( new KSPConvergenceFile(buffer.str(), 
-                                    (*(*system_).mesh()).mpi_comm(), // allocate the file but don't write the header yet as the
-                                    &(*(*system()).bucket()), (*system()).name(), name()) );   // bucket isn't complete
+      *kspvisualizationmonitor_ = Spud::have_option(optionpath+"/iterative_method/monitors/visualization"); 
+      if (Spud::have_option(optionpath+"/iterative_method/monitors/convergence_file"))
+      {
+        buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
+                               << (*system()).name() << "_" 
+                               << name() << "_ksp.conv";
+        kspconvfile_.reset( new KSPConvergenceFile(buffer.str(), 
+                                      (*(*system_).mesh()).mpi_comm(), // allocate the file but don't write the header yet as the
+                                      &(*(*system()).bucket()), (*system()).name(), name()) );   // bucket isn't complete
+      }
       perr = KSPMonitorSet(ksp, KSPCustomMonitor, 
                                              &kspmctx_, PETSC_NULL); 
       petsc_err(perr);

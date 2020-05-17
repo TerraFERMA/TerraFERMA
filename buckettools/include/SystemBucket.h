@@ -263,8 +263,6 @@ namespace buckettools
     // Output functions
     //***************************************************************|***********************************************************//
 
-    void output();                                                   // output the diagnostics on this system
-
     const bool include_in_visualization() const;                     // return a boolean indicating if this system has fields to 
                                                                      // be included in diagnostic output
     
@@ -292,6 +290,10 @@ namespace buckettools
     virtual const std::string functionals_str(const int &indent=0) const;// return an indented string describing the functionals 
                                                                      // of the system
 
+    void output();                                                   // output vis from the system
+
+    void write_convvis();                                            // write convergence visualization checkpoint
+  
     void checkpoint(const double_ptr time);                          // checkpoint the system
 
   //*****************************************************************|***********************************************************//

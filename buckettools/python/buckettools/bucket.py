@@ -21,18 +21,27 @@
 from buckettools.base import *
 import shutil
 import hashlib
+import os
+import sys
+import subprocess
 
 class Bucket:
   """A class that stores all the information necessary to write the ufl for an options file (i.e. set of mixed function spaces)."""
 
   def __init__(self):
     """Define the expected members of the bucket class - only one really."""
+    self.meshes = None
+    self.viselementfamily = None
+    self.viselementdegree = None
     self.parameters = None
     self.systems = None
     self.cpplibraries = None
 
   def write_ufc(self):
-    """Write all ufl files described by the bucket."""
+    """Write all ufc files described by the bucket."""
+    # Write simple ufc files for visualization functionspaces
+    self.write_visualization_ufcs()
+    # Loop over the systems
     for system in self.systems:
       for coeff in system.coeffs:
         if coeff.functional:
@@ -45,6 +54,8 @@ class Bucket:
   def list_namespaces(self):
     """Return a list of the namespaces."""
     namespaces = []
+    for meshname in self.meshes.keys():
+      namespaces.append(self.visualization_namespace(meshname))
     for system in self.systems:
       for coeff in system.coeffs:
         if coeff.functional:
@@ -113,6 +124,9 @@ class Bucket:
 
   def write_ufl(self):
     """Write all ufl files described by the bucket."""
+    # Write simple ufc files for visualization functionspaces
+    self.write_visualization_ufls()
+    # Loop over the systems
     for system in self.systems:
       for coeff in system.coeffs:
         if coeff.functional:
@@ -121,6 +135,52 @@ class Bucket:
         solver.write_ufl()
       for functional in system.functionals:
         functional.write_ufl()
+
+  def visualization_ufl(self, meshname, meshcell):
+    """Return the ufl describing the visualization functionspace."""
+    ufl = []
+    ufl.append(declaration_comment("Element", "Function", "VisualizationOnMesh"+meshname))
+    ufl.append("vis_e = FiniteElement(\""+self.viselementfamily+"\", " \
+               +meshcell+", " \
+               +repr(self.viselementdegree)+")"+os.linesep)
+    ufl.append(os.linesep)
+    ufl.append(declaration_comment("Test space", "Function", "VisualizationOnMesh"+meshname))
+    ufl.append(testfunction_ufl("vis"))
+    ufl.append(declaration_comment("Trial space", "Function", "VisualizationOnMesh"+meshname))
+    ufl.append(trialfunction_ufl("vis"))
+    ufl.append(declaration_comment("Form", "form", "Bilinear"))
+    ufl.append("a = vis_t*vis_a*dx"+os.linesep)
+    ufl.append("forms = [a]"+os.linesep)
+    ufl.append(os.linesep)
+    ufl.append(produced_comment())
+    
+    return ufl
+      
+  def visualization_namespace(self, meshname):
+    return "_VisualizationOnMesh"+meshname
+    
+  def write_visualization_ufl(self, meshname, meshcell, suffix=None):
+    """Write the mesh visualization functionspace to a ufl file."""
+    ufl = self.visualization_ufl(meshname, meshcell)
+    
+    filename = self.visualization_namespace(meshname)+".ufl"
+    if suffix: filename += suffix
+    filehandle = open(filename, 'w')
+    filehandle.writelines(ufl)
+    filehandle.close()
+    
+  def write_visualization_ufls(self, suffix=None):
+    """Write the mesh visualization functionspaces to a ufl file."""
+    # loop over all the meshes we recorded information about in case they have different cells
+    for meshname, meshcell in self.meshes.items():
+      self.write_visualization_ufl(meshname, meshcell, suffix=suffix)
+    
+  def write_visualization_ufcs(self):
+    """Write the mesh visualization functionspaces to a ufl file and transform it into ufc."""
+    # loop over all the meshes we recorded information about in case they have different cells
+    for meshname, meshcell in self.meshes.items():
+      self.write_visualization_ufl(meshname, meshcell, suffix=".temp")
+      ffc(self.visualization_namespace(meshname), 'quadrature', 'default', None)
 
   def write_systemfunctionals_cpp(self):
     """Write a cpp header file describing all the ufc namespaces in the bucket."""
@@ -314,6 +374,67 @@ class Bucket:
     cpp.append(os.linesep)
 
     filename = "SystemSolversWrapper.cpp"
+    filehandle = open(filename+".temp", 'w')
+    filehandle.writelines(cpp)
+    filehandle.close()
+
+    try:
+      checksum = hashlib.md5(open(filename).read().encode('utf-8')).hexdigest()
+    except:
+      checksum = None
+
+    if checksum != hashlib.md5(open(filename+".temp").read().encode('utf-8')).hexdigest():
+      # file has changed
+      shutil.copy(filename+".temp", filename)
+
+  def write_visualization_cpp(self):
+    """Write a cpp header file describing all the ufc namespaces used for visualization in the bucket."""
+    cpp = []
+
+    cpp.append(os.linesep)
+    cpp.append("#include \"VisualizationWrapper.h\""+os.linesep)
+    cpp.append("#include \"BoostTypes.h\""+os.linesep)
+    cpp.append("#include <dolfin.h>"+os.linesep)
+
+    include_cpp = []
+
+    functionspace_cpp         = []
+    functionspace_cpp.append("  // A function to return a functionspace for visualization given a mesh and a mesh name."+os.linesep)
+    functionspace_cpp.append("  FunctionSpace_ptr ufc_fetch_visualization_functionspace(const std::string &meshname, Mesh_ptr mesh)"+os.linesep)
+    functionspace_cpp.append("  {"+os.linesep)
+    functionspace_cpp.append("    FunctionSpace_ptr functionspace;"+os.linesep)
+
+    s = 0
+    for meshname in self.meshes.keys():
+      include_cpp.append("#include \""+self.visualization_namespace(meshname)+".h\""+os.linesep)
+      
+      if s == 0:
+        functionspace_cpp.append("    if (meshname ==  \""+meshname+"\")"+os.linesep)
+      else:
+        functionspace_cpp.append("    else if (meshname ==  \""+meshname+"\")"+os.linesep)
+      functionspace_cpp.append("    {"+os.linesep)
+      functionspace_cpp.append("      functionspace.reset( new "+self.visualization_namespace(meshname)+"::FunctionSpace(mesh) );"+os.linesep)
+      functionspace_cpp.append("    }"+os.linesep)
+      
+      s += 1
+
+    functionspace_cpp.append("    else"+os.linesep)
+    functionspace_cpp.append("    {"+os.linesep)
+    functionspace_cpp.append("      dolfin::error(\"Unknown meshname in ufc_fetch_visualization_functionspace\");"+os.linesep)
+    functionspace_cpp.append("    }"+os.linesep)
+    functionspace_cpp.append("    return functionspace;"+os.linesep)
+    functionspace_cpp.append("  }"+os.linesep)
+
+    cpp += include_cpp
+    cpp.append(os.linesep)
+    cpp.append("namespace buckettools"+os.linesep)
+    cpp.append("{"+os.linesep)
+    cpp += functionspace_cpp
+    cpp.append(os.linesep)
+    cpp.append("}"+os.linesep)
+    cpp.append(os.linesep)
+
+    filename = "VisualizationWrapper.cpp"
     filehandle = open(filename+".temp", 'w')
     filehandle.writelines(cpp)
     filehandle.close()

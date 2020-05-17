@@ -783,18 +783,6 @@ std::vector< std::shared_ptr<const dolfin::DirichletBC> >::const_iterator System
 }
 
 //*******************************************************************|************************************************************//
-// loop over the fields outputting pvd diagnostics for all the fields in this system
-//*******************************************************************|************************************************************//
-void SystemBucket::output()
-{
-  for (FunctionBucket_it f_it = fields_begin(); f_it != fields_end(); 
-                                                              f_it++)
-  {
-    (*(*f_it).second).output();
-  }
-}
-
-//*******************************************************************|************************************************************//
 // return a boolean indicating if this system has fields to be included in visualization output
 //*******************************************************************|************************************************************//
 const bool SystemBucket::include_in_visualization() const
@@ -809,6 +797,20 @@ const bool SystemBucket::include_in_visualization() const
       break;
     }
   }
+
+  if (!include)
+  {
+    for (FunctionBucket_const_it c_it = coeffs_begin(); c_it != coeffs_end(); 
+                                                                c_it++)
+    {
+      include = (*(*c_it).second).include_in_visualization();
+      if (include)
+      {
+        break;
+      }
+    }
+  }
+
   return include;
 }
     
@@ -939,6 +941,64 @@ const std::string SystemBucket::functionals_str(const int &indent) const
     s << (*(*f_it).second).str(indent);
   }
   return s.str();
+}
+
+//*******************************************************************|************************************************************//
+// output the system
+//*******************************************************************|************************************************************//
+void SystemBucket::output()
+{
+
+  for (FunctionBucket_it f_it = fields_begin();
+                         f_it != fields_end(); f_it++)
+  {
+    (*(*f_it).second).output();
+  }
+
+  for (FunctionBucket_it c_it = coeffs_begin();
+                         c_it != coeffs_end(); c_it++)
+  {
+    (*(*c_it).second).output();
+  }
+
+}
+
+//*******************************************************************|************************************************************//
+// output the system
+//*******************************************************************|************************************************************//
+void SystemBucket::write_convvis()
+{
+
+  bool newfile, append;
+  XDMFFile_ptr convvis_file = (*bucket()).fetch_convvisfile(mesh(), newfile);
+
+  // all fields and residuals get output in this debugging output
+  // regardless of whether they're included in standard output
+  append = !newfile;
+  for (FunctionBucket_it f_it = fields_begin();
+                         f_it != fields_end(); f_it++)
+  {
+    (*(*f_it).second).write_checkpoint(convvis_file, "iterated", (double)(*bucket()).iteration_count(),
+                                       append, name()+"::Iterated"+(*(*f_it).second).name());
+    append=true;
+    (*(*f_it).second).write_checkpoint(convvis_file, "residual", (double)(*bucket()).iteration_count(),
+                                       true, name()+"::Residual"+(*(*f_it).second).name());
+  }
+
+  // including coefficients here is just a niceity but some
+  // coefficients aren't suitable for visualization so
+  // only output them if we've asked for them in the normal
+  // output
+  for (FunctionBucket_it c_it = coeffs_begin();
+                         c_it != coeffs_end(); c_it++)
+  {
+    if ((*(*c_it).second).include_in_visualization())
+    {
+      (*(*c_it).second).write_checkpoint(convvis_file, "iterated", (double)(*bucket()).iteration_count(),
+                                         true, name()+"::"+(*(*c_it).second).name());
+    }
+  }
+
 }
 
 //*******************************************************************|************************************************************//

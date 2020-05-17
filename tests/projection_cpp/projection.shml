@@ -31,7 +31,7 @@
           </required_output>
           <commands>
             <command name="Convert">
-              <string_value lines="1">tfgmsh2xdmf square.msh square.xdmf</string_value>
+              <string_value lines="1">tfgmsh2xdmf square.msh</string_value>
             </command>
             <command name="Remove">
               <string_value lines="1">rm square_cell_ids.xdmf square_cell_ids.h5</string_value>

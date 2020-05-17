@@ -55,7 +55,7 @@ libspud.set_option_attribute("/global_parameters/dolfin/ghost_mode/name", ghost_
               <string_value lines="1">gmsh -2 region_id.geo -o region_id.msh</string_value>
             </command>
             <command name="Convert">
-              <string_value lines="1">tfgmsh2xdmf region_id.msh region_id.xdmf</string_value>
+              <string_value lines="1">tfgmsh2xdmf region_id.msh</string_value>
             </command>
           </commands>
         </run>

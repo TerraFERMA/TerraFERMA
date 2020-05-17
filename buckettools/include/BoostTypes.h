@@ -83,7 +83,7 @@ namespace buckettools {
   typedef std::shared_ptr< dolfin::PETScVector >                  PETScVector_ptr;
   typedef std::shared_ptr< const dolfin::PETScVector >            const_PETScVector_ptr;
   typedef std::shared_ptr< dolfin::GenericVector >                GenericVector_ptr;
-  typedef std::shared_ptr< dolfin::File >                         File_ptr;
+  typedef std::shared_ptr< dolfin::XDMFFile >                     XDMFFile_ptr;
   typedef std::shared_ptr< dolfin::Array<double> >                Array_double_ptr;
   typedef std::shared_ptr< dolfin::SubDomain >                    SubDomain_ptr;
   typedef std::shared_ptr< dolfin::FunctionAssigner >             FunctionAssigner_ptr;
@@ -94,12 +94,16 @@ namespace buckettools {
 
   typedef std::map< std::string, FunctionSpace_ptr >::iterator           FunctionSpace_it;
   typedef std::map< std::string, FunctionSpace_ptr >::const_iterator     FunctionSpace_const_it;
+  typedef std::map< Mesh_ptr, FunctionSpace_ptr >::iterator              Mesh_FunctionSpace_it;
+  typedef std::map< Mesh_ptr, FunctionSpace_ptr >::const_iterator        Mesh_FunctionSpace_const_it;
   typedef std::map< std::string, GenericFunction_ptr >::iterator         GenericFunction_it;
   typedef std::map< std::string, GenericFunction_ptr >::const_iterator   GenericFunction_const_it;
   typedef std::map< std::string, Expression_ptr >::iterator              Expression_it;
   typedef std::map< std::string, Expression_ptr >::const_iterator        Expression_const_it;
   typedef std::map< std::size_t, Expression_ptr >::iterator              size_t_Expression_it;
   typedef std::map< std::size_t, Expression_ptr >::const_iterator        size_t_Expression_const_it;
+  typedef std::map< Mesh_ptr, XDMFFile_ptr >::iterator                   MeshXDMF_it;
+  typedef std::map< Mesh_ptr, XDMFFile_ptr >::const_iterator             MeshXDMF_const_it;
   typedef std::map< std::string, bool_ptr >::iterator                    bool_ptr_it;
   typedef std::map< std::string, bool_ptr >::const_iterator              bool_ptr_const_it;
 

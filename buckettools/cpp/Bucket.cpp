@@ -467,7 +467,7 @@ const int Bucket::checkpoint_count() const
 }
 
 //*******************************************************************|************************************************************//
-// register a (boost shared) pointer to a dolfin mesh in the bucket data maps
+// register a (std shared) pointer to a dolfin mesh in the bucket data maps
 //*******************************************************************|************************************************************//
 void Bucket::register_mesh(Mesh_ptr mesh, const std::string &name,
                            MeshFunction_size_t_ptr celldomains, 
@@ -487,7 +487,7 @@ void Bucket::register_mesh(Mesh_ptr mesh, const std::string &name,
 }
 
 //*******************************************************************|************************************************************//
-// return a (boost shared) pointer to a dolfin mesh in the bucket data maps
+// return a (std shared) pointer to a dolfin mesh in the bucket data maps
 //*******************************************************************|************************************************************//
 Mesh_ptr Bucket::fetch_mesh(const std::string &name)
 {
@@ -498,12 +498,12 @@ Mesh_ptr Bucket::fetch_mesh(const std::string &name)
   }
   else
   {
-    return (*m_it).second;                                           // if it does, return a (boost shared) pointer to it
+    return (*m_it).second;                                           // if it does, return a (std shared) pointer to it
   }
 }
 
 //*******************************************************************|************************************************************//
-// return a (boost shared) pointer to a dolfin mesh function in the bucket data maps
+// return a (std shared) pointer to a dolfin mesh function in the bucket data maps
 //*******************************************************************|************************************************************//
 MeshFunction_size_t_ptr Bucket::fetch_celldomains(const std::string &name)
 {
@@ -514,12 +514,12 @@ MeshFunction_size_t_ptr Bucket::fetch_celldomains(const std::string &name)
   }
   else
   {
-    return (*m_it).second;                                           // if it does, return a (boost shared) pointer to it
+    return (*m_it).second;                                           // if it does, return a (std shared) pointer to it
   }
 }
 
 //*******************************************************************|************************************************************//
-// return a (boost shared) pointer to a dolfin mesh function in the bucket data maps
+// return a (std shared) pointer to a dolfin mesh function in the bucket data maps
 //*******************************************************************|************************************************************//
 MeshFunction_size_t_ptr Bucket::fetch_facetdomains(const std::string &name)
 {
@@ -530,7 +530,7 @@ MeshFunction_size_t_ptr Bucket::fetch_facetdomains(const std::string &name)
   }
   else
   {
-    return (*m_it).second;                                           // if it does, return a (boost shared) pointer to it
+    return (*m_it).second;                                           // if it does, return a (std shared) pointer to it
   }
 }
 
@@ -631,7 +631,71 @@ MeshFunction_size_t_const_it Bucket::facetdomains_end() const
 }
 
 //*******************************************************************|************************************************************//
-// register a (boost shared) pointer to a system bucket in the bucket data maps
+// register a (std shared) pointer to a visualization functionspace in the bucket data maps
+//*******************************************************************|************************************************************//
+void Bucket::register_visfunctionspace(FunctionSpace_ptr visfunctionspace, Mesh_ptr mesh)
+{
+  Mesh_FunctionSpace_it f_it = visfunctionspaces_.find(mesh);        // check if a visfunctionspace mesh with this mesh already exists
+  if (f_it != visfunctionspaces_end())
+  {
+    dolfin::error("Visualization FunctionSpace already exists in bucket.");// if it does, issue an error
+  }
+  else
+  {
+    visfunctionspaces_[mesh] = visfunctionspace;                     // if not, insert it into the visfunctionspaces_ map
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return a (std shared) pointer to a visualization functionspace in the bucket data maps
+//*******************************************************************|************************************************************//
+FunctionSpace_ptr Bucket::fetch_visfunctionspace(const Mesh_ptr mesh)
+{
+  Mesh_FunctionSpace_it f_it = visfunctionspaces_.find(mesh);        // check if this visfunctionspace exists in the visfunctionspaces_ map
+  if (f_it == visfunctionspaces_end())
+  {
+    dolfin::error("Visualization FunctionSpace does not exist in bucket.");// if it doesn't, issue an error
+  }
+  else
+  {
+    return (*f_it).second;                                           // if it does, return a (std shared) pointer to it
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the beginning of the visfunctionspaces_ map
+//*******************************************************************|************************************************************//
+Mesh_FunctionSpace_it Bucket::visfunctionspaces_begin()
+{
+  return visfunctionspaces_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the beginning of the visfunctionspaces_ map
+//*******************************************************************|************************************************************//
+Mesh_FunctionSpace_const_it Bucket::visfunctionspaces_begin() const
+{
+  return visfunctionspaces_.begin();
+}
+
+//*******************************************************************|************************************************************//
+// return an iterator to the end of the visfunctionspaces_ map
+//*******************************************************************|************************************************************//
+Mesh_FunctionSpace_it Bucket::visfunctionspaces_end()
+{
+  return visfunctionspaces_.end();
+}
+
+//*******************************************************************|************************************************************//
+// return a constant iterator to the end of the visfunctionspaces_ map
+//*******************************************************************|************************************************************//
+Mesh_FunctionSpace_const_it Bucket::visfunctionspaces_end() const
+{
+  return visfunctionspaces_.end();
+}
+
+//*******************************************************************|************************************************************//
+// register a (std shared) pointer to a system bucket in the bucket data maps
 //*******************************************************************|************************************************************//
 void Bucket::register_system(SystemBucket_ptr system, 
                                          const std::string &name)
@@ -648,7 +712,7 @@ void Bucket::register_system(SystemBucket_ptr system,
 }
 
 //*******************************************************************|************************************************************//
-// return a (boost shared) pointer to a system bucket in the bucket data maps
+// return a (std shared) pointer to a system bucket in the bucket data maps
 //*******************************************************************|************************************************************//
 SystemBucket_ptr Bucket::fetch_system(const std::string &name)
 {
@@ -664,7 +728,7 @@ SystemBucket_ptr Bucket::fetch_system(const std::string &name)
 }
 
 //*******************************************************************|************************************************************//
-// return a constant (boost shared) pointer to a system bucket in the bucket data maps
+// return a constant (std shared) pointer to a system bucket in the bucket data maps
 //*******************************************************************|************************************************************//
 const SystemBucket_ptr Bucket::fetch_system(const std::string &name) 
                                                               const
@@ -757,7 +821,7 @@ const bool Bucket::contains_baseuflsymbol(
 }
 
 //*******************************************************************|************************************************************//
-// register a (boost shared) pointer to a function with the given ufl symbol in the bucket data maps
+// register a (std shared) pointer to a function with the given ufl symbol in the bucket data maps
 //*******************************************************************|************************************************************//
 void Bucket::register_uflsymbol(const std::pair< std::string, GenericFunction_ptr > &uflfunctionpair)
 {
@@ -765,7 +829,7 @@ void Bucket::register_uflsymbol(const std::pair< std::string, GenericFunction_pt
 }
 
 //*******************************************************************|************************************************************//
-// register a (boost shared) pointer to a function with the given ufl symbol in the bucket data maps
+// register a (std shared) pointer to a function with the given ufl symbol in the bucket data maps
 //*******************************************************************|************************************************************//
 void Bucket::register_uflsymbol(GenericFunction_ptr function, 
                                 const std::string &uflsymbol)
@@ -782,7 +846,7 @@ void Bucket::register_uflsymbol(GenericFunction_ptr function,
 }
 
 //*******************************************************************|************************************************************//
-// return a (boost shared) pointer to the function associated with the given ufl symbol
+// return a (std shared) pointer to the function associated with the given ufl symbol
 //*******************************************************************|************************************************************//
 GenericFunction_ptr Bucket::fetch_uflsymbol(
                                 const std::string &uflsymbol) const
@@ -799,7 +863,7 @@ GenericFunction_ptr Bucket::fetch_uflsymbol(
 }
 
 //*******************************************************************|************************************************************//
-// register a (boost shared) pointer to a functionspace for a coefficient with the given ufl symbol in the bucket data maps
+// register a (std shared) pointer to a functionspace for a coefficient with the given ufl symbol in the bucket data maps
 //*******************************************************************|************************************************************//
 void Bucket::register_coefficientspace(
                                 FunctionSpace_ptr coefficientspace, 
@@ -827,7 +891,7 @@ const bool Bucket::contains_coefficientspace(
 }
 
 //*******************************************************************|************************************************************//
-// return a (boost shared) pointer to a functionspace for a coefficient with the given ufl symbol from the bucket data maps
+// return a (std shared) pointer to a functionspace for a coefficient with the given ufl symbol from the bucket data maps
 //*******************************************************************|************************************************************//
 FunctionSpace_ptr Bucket::fetch_coefficientspace(
                                   const std::string &uflsymbol) const
@@ -845,7 +909,7 @@ FunctionSpace_ptr Bucket::fetch_coefficientspace(
 }
 
 //*******************************************************************|************************************************************//
-// register a (boost shared) pointer to a detector set in the bucket data maps
+// register a (std shared) pointer to a detector set in the bucket data maps
 //*******************************************************************|************************************************************//
 void Bucket::register_detector(GenericDetectors_ptr detector, 
                                             const std::string &name)
@@ -862,7 +926,7 @@ void Bucket::register_detector(GenericDetectors_ptr detector,
 }
 
 //*******************************************************************|************************************************************//
-// return a (boost shared) pointer to a detector set from the bucket data maps
+// return a (std shared) pointer to a detector set from the bucket data maps
 //*******************************************************************|************************************************************//
 GenericDetectors_ptr Bucket::fetch_detector(const std::string &name)
 {
@@ -873,7 +937,7 @@ GenericDetectors_ptr Bucket::fetch_detector(const std::string &name)
   }
   else
   {
-    return (*d_it).second;                                           // if it does, return a (boost shared) pointer to it
+    return (*d_it).second;                                           // if it does, return a (std shared) pointer to it
   }
 }
 
@@ -907,6 +971,78 @@ GenericDetectors_it Bucket::detectors_end()
 GenericDetectors_const_it Bucket::detectors_end() const
 {
   return detectors_.get<om_key_seq>().end();
+}
+
+//*******************************************************************|************************************************************//
+// return a (std shared) pointer to an XDMFFile from the bucket data maps
+// 
+// unlike other fetch_ functions this does not fail, allocating an XDMFFile if necessary
+//*******************************************************************|************************************************************//
+XDMFFile_ptr Bucket::fetch_visfile(const Mesh_ptr mesh, bool &newfile)
+{
+  MeshXDMF_it f_it = visfiles_.find(mesh);
+  if (f_it == visfiles_.end())
+  {
+    newfile = true;
+    XDMFFile_ptr xdmf_file;
+    if (meshes_.size()>1)                                            // allocate the xdmf file with an appropriate name
+    {
+      xdmf_file.reset( new dolfin::XDMFFile((*mesh).mpi_comm(), output_basename()+"_"+(*mesh).name()+".xdmf") );
+    }
+    else
+    {
+      xdmf_file.reset( new dolfin::XDMFFile((*mesh).mpi_comm(), output_basename()+".xdmf") );
+    }
+    (*xdmf_file).parameters["flush_output"] = true;
+    (*xdmf_file).parameters["functions_share_mesh"] = true;
+    (*xdmf_file).parameters["rewrite_function_mesh"] = false;
+    visfiles_[mesh] = xdmf_file;
+    return xdmf_file;
+  }
+  else
+  {
+    newfile = false;
+    return (*f_it).second;                                           // if it does, return a pointer to the functionspace
+  }
+}
+
+//*******************************************************************|************************************************************//
+// return a (std shared) pointer to an XDMFFile from the bucket data maps
+// 
+// unlike other fetch_ functions this does not fail, allocating an XDMFFile if necessary
+//*******************************************************************|************************************************************//
+XDMFFile_ptr Bucket::fetch_convvisfile(const Mesh_ptr mesh, bool &newfile)
+{
+  MeshXDMF_it f_it = convvisfiles_.find(mesh);
+  if (iteration_count()==0 || f_it == convvisfiles_.end())
+  {
+    newfile = true;
+    std::stringstream buffer;
+    if (meshes_.size()>1)                                          // allocate the xdmf file with an appropriate name
+    {
+      buffer.str(""); buffer << output_basename() << "_" << (*mesh).name() << "_nonlinearsystems_" << timestep_count() << ".xdmf";
+    }
+    else
+    {
+      buffer.str(""); buffer << output_basename() << "_nonlinearsystems_" << timestep_count() << ".xdmf";
+    }
+    XDMFFile_ptr xdmf_file( new dolfin::XDMFFile((*mesh).mpi_comm(), buffer.str()) );
+
+    if (f_it == convvisfiles_.end())
+    {
+      convvisfiles_[mesh] = xdmf_file;
+    }
+    else
+    {
+      (*f_it).second = xdmf_file;
+    }
+    return xdmf_file;
+  }
+  else
+  {
+    newfile = false;
+    return (*f_it).second;
+  }
 }
 
 //*******************************************************************|************************************************************//
@@ -978,10 +1114,10 @@ void Bucket::output(const int &location)
 
   if (write_vis)
   {
-    for (SystemBucket_it s_it = systems_begin(); s_it != systems_end();// loop over the systems
-                                                               s_it++)
+    for (SystemBucket_const_it s_it = systems_begin();
+                               s_it != systems_end(); s_it++)
     {
-      (*(*s_it).second).output();                                    // and output pvd files
+      (*(*s_it).second).output();
     }
   }
 
@@ -1029,7 +1165,6 @@ void Bucket::checkpoint_(const double_ptr time)
 {
   log(INFO, "Checkpointing simulation.");
 
- 
   for (SystemBucket_it s_it = systems_begin(); 
                        s_it != systems_end(); s_it++)
   {
@@ -1250,6 +1385,7 @@ void Bucket::solve_at_start_()
     update();
     output(OUTPUT_START);                                            // this is output here to show the state of variables right
                                                                      // before the timeloop
+    resetcalculated();
   }
 }
 
@@ -1304,6 +1440,15 @@ bool Bucket::complete_iterating_(const double &aerror0)
     if(convfile_)
     {
       (*convfile_).write_data(aerror);
+    }
+
+    if(write_convvis_)
+    {
+      for (SystemBucket_const_it s_it = systems_begin(); 
+                                 s_it != systems_end(); s_it++)
+      {
+        (*(*s_it).second).write_convvis();
+      }
     }
 
     completed = ((rerror <= *rtol_ || 

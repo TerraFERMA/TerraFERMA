@@ -474,6 +474,8 @@ tensor_element_options =
       integer_2_vector
     }?,
     ## Tensor symmetry.
+    ##
+    ## WARNING: Not dependable in FEniCS.
     element symmetric {
       comment
     }?
@@ -519,6 +521,44 @@ element_options_scalar_user =
          generic_element,
          enrichment_options,
          quadrature_rule?,
+         comment
+       }
+     )
+  )
+
+element_options_scalar_lagrange_visualization =
+  (
+     (
+       ## Element used to output coefficient expressions if checkpointing output is selected below.
+       ##
+       ## Options describing piecewise linear continuous Lagrange finite element.
+       element element {
+         attribute name { "P1" },
+         p1_element,
+         comment
+       }|
+       ## Element used to output coefficient expressions if checkpointing output is selected below.
+       ##
+       ## Options describing piecewise quadratic continuous Lagrange finite element.
+       element element {
+         attribute name { "P2" },
+         p2_element,
+         comment
+       }|
+       ## Element used to output coefficient expressions if checkpointing output is selected below.
+       ##
+       ## Options describing piecewise linear discontinuous Lagrange finite element.
+       element element {
+         attribute name { "P1DG" },
+         p1dg_element,
+         comment
+       }|
+       ## Element used to output coefficient expressions if checkpointing output is selected below.
+       ##
+       ## Options describing piecewise quadratic discontinuous Lagrange finite element.
+       element element {
+         attribute name { "P2DG" },
+         p2dg_element,
          comment
        }
      )

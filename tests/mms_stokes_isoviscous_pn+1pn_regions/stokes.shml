@@ -101,7 +101,7 @@ input_file = template(input_file).safe_substitute({"ncells":ncells})</string_val
               <string_value lines="1">gmsh -2 square_regions.geo</string_value>
             </command>
             <command name="Convert">
-              <string_value lines="1">tfgmsh2xdmf square_regions.msh square_regions.xdmf</string_value>
+              <string_value lines="1">tfgmsh2xdmf square_regions.msh</string_value>
             </command>
           </commands>
         </run>
@@ -228,7 +228,7 @@ input_file = template(input_file).safe_substitute({"ncells":ncells})</string_val
               <string_value lines="1">gmsh -2 square_regions.geo</string_value>
             </command>
             <command name="Convert">
-              <string_value lines="1">tfgmsh2xdmf square_regions.msh square_regions.xdmf</string_value>
+              <string_value lines="1">tfgmsh2xdmf square_regions.msh</string_value>
             </command>
           </commands>
         </run>

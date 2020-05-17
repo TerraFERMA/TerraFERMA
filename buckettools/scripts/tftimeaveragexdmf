@@ -1,0 +1,142 @@
+#!/usr/bin/env python3
+
+from lxml import etree
+import h5py
+import sys
+import numpy as np
+import os
+
+import argparse
+import os
+
+parser = argparse.ArgumentParser( \
+                       description="""Time average xdmf files.""")
+parser.add_argument('file', action='store', metavar='file', type=str, nargs=1,
+                    help='specify filename(s)')
+parser.add_argument('-s', '--start', action='store', type=float, dest='start', required=False, default=None, 
+                    help='start time (in non-dimensional time)')
+parser.add_argument('-e', '--end', action='store', type=float, dest='end', required=False, default=None, 
+                    help='end time (in non-dimensional time)')
+args = parser.parse_args()
+
+fullfilename = args.file[0]
+
+start = args.start
+end = args.end
+
+path, filename = os.path.split(fullfilename)
+
+tree = etree.parse(fullfilename)
+
+grid = tree.find("//Grid")
+
+def h5finditem(h5group, keys):
+  """Recurse through a nested h5group using a list of keys."""
+  if len(keys) > 1:
+    return h5finditem(h5group[keys[0]], keys[1:])
+  elif len(keys) == 1:
+    return h5group[keys[0]]
+  else:
+    return None
+
+def h5createdataset(h5group, keys, data):
+  """Recurse through a nested h5group and on the lowest level create a dataset."""
+  if len(keys) > 1:
+    if keys[0] not in h5group.keys(): subgroup = h5group.create_group(keys[0])
+    subgroup = h5group[keys[0]]
+    return h5createdataset(subgroup, keys[1:], data)
+  elif len(keys) == 1:
+    return h5group.create_dataset(keys[0], data=data)
+  else:
+    return None
+
+def xdmfattribute(attr, path=os.path.curdir):
+  """Given an attribute element from an xdmf file return the numpy array of field values."""
+  dataitem = attr.find("DataItem")
+  i = dataitem.text.index(":")
+  h5filename = dataitem.text[:i]
+  h5path = dataitem.text[i+2:].split("/")
+  h5file = h5py.File(os.path.join(path, h5filename), "r")
+  dataset = h5finditem(h5file, h5path)
+  array = np.array(dataset)
+  h5file.close()
+  return array
+
+  
+def subgridtime(sg):
+  """Given a Grid element of an xdmf file return the time value."""
+  return float(sg.find("Time").attrib["Value"])
+
+if grid.attrib["Name"] == "TimeSeries":
+
+  subgrids = grid.findall("Grid")
+  subgrids.sort(key=lambda sg: float(sg.find("Time").attrib["Value"]))
+  times = np.array([subgridtime(sg) for sg in subgrids])
+
+  if start is not None:
+    istart = abs(times-start).argmin()
+  else:
+    istart = 0
+
+  if end is not None:
+    iend = abs(times-end).argmin()
+  else:
+    iend = len(times)-1
+
+  fields = {}
+  oldfields = {}
+  sg = subgrids[istart]
+  attributes = sg.findall("Attribute")
+  oldtime = subgridtime(sg)
+  for attr in attributes:
+    name = attr.attrib["Name"]
+    field = xdmfattribute(attr, path)
+    fields[name] = np.zeros(field.shape)
+    oldfields[name] = field
+
+  for s in range(istart+1, iend+1):
+    sg = subgrids[s]
+    attributes = sg.findall("Attribute")
+    time = subgridtime(sg)
+    dt = time - oldtime
+    for attr in attributes:
+      name = attr.attrib["Name"]
+      field = xdmfattribute(attr, path)
+      fields[name] += 0.5*dt*(oldfields[name] + field)
+      oldfields[name] = field
+    oldtime = time
+
+  totaltime = times[iend] - times[istart]
+  for name in fields.keys():
+    fields[name] = fields[name]/totaltime
+
+  sg = subgrids[0]
+  dataitem = sg.find("Topology").find("DataItem")
+  i = dataitem.text.index(":")
+  h5filename = dataitem.text[:i]
+  newh5filename = "timeaveraged_"+repr(istart)+"_"+repr(iend)+"_"+h5filename
+  newh5file = h5py.File(os.path.join(path, newh5filename), "w")
+
+  for child in sg.getchildren():
+    dataitem = child.find("DataItem")
+    if dataitem is not None:
+      i = dataitem.text.index(":")
+      h5path = dataitem.text[i+2:].split("/")
+      if "Name" in child.attrib:
+        name = child.attrib["Name"]
+        h5createdataset(newh5file, h5path, fields[name])
+      else:
+        h5file = h5py.File(os.path.join(path, h5filename), "r")
+        data = np.array(h5finditem(h5file, h5path))
+        h5file.close()
+        h5createdataset(newh5file, h5path, data)
+      dataitem.text = newh5filename+dataitem.text[i:]
+
+  newh5file.close()
+
+  for sg in subgrids[1:]: sg.getparent().remove(sg)
+  
+  newfilename = "timeaveraged_"+repr(istart)+"_"+repr(iend)+"_"+filename
+  tree.write(os.path.join(path, newfilename), xml_declaration=True)
+
+

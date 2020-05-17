@@ -28,6 +28,7 @@
 #include "BucketDolfinBase.h"
 #include "PointDetectors.h"
 #include "StatisticsFile.h"
+#include "VisualizationWrapper.h"
 #include "Logger.h"
 #include <dolfin.h>
 #include <string>
@@ -1019,6 +1020,13 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
   (*mesh).rename(meshname, meshname);
   register_mesh(mesh, meshname, optionpath,
                 cellids, edgeids);                                   // put the new mesh in the bucket
+
+  FunctionSpace_ptr vis_fs =                                         // retrieve the visualization functionspace for this mesh
+                    ufc_fetch_visualization_functionspace(meshname,
+                                                          mesh);
+
+  register_visfunctionspace(vis_fs, mesh);                           // put the visualization functionspace in the bucket
+
 }
 
 //*******************************************************************|************************************************************//
@@ -1126,6 +1134,8 @@ void SpudBucket::fill_diagnostics_()
 {
   std::stringstream buffer;                                          // optionpath buffer
 
+  write_vischeckpoints_ = Spud::have_option("/io/visualization/checkpoint_format");
+
   statfile_.reset( new StatisticsFile(output_basename()+".stat", 
                            (*(*meshes_begin()).second).mpi_comm(),
                            this) );
@@ -1164,11 +1174,13 @@ void SpudBucket::fill_diagnostics_()
     (*convfile_).write_header();
   }
 
+  write_convvis_ = Spud::have_option("/nonlinear_systems/monitors/visualization");
+
   for (SystemBucket_const_it s_it = systems_begin(); s_it != systems_end(); s_it++)
   {
     (*(*s_it).second).initialize_diagnostics();                      // initialize any diagnostic files in systems
   }
-
+  
 }
 
 //*******************************************************************|************************************************************//
