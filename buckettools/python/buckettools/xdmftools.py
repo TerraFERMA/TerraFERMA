@@ -203,45 +203,30 @@ versions.
     # get cell details
     topo = self.gettopology(tindex=tindex, time=time)
     n = topo.shape[-1]
-    celltype = None  # assuming single cell type
+    grid = self._getgrid(tindex=tindex, time=time)
+    if grid.find("Topology") is None:
+      grid = self._getgrid(tindex=0)
+    topotype = grid.find("Topology").attrib.get("TopologyType")
+    celltypes = {"PolyVertex"    : vtk.vtk.VTK_VERTEX,
+                 "PolyLine"      : vtk.vtk.VTK_LINE,
+                 "Edge_3"        : vtk.vtk.VTK_QUADRATIC_EDGE,
+                 "Triangle"      : vtk.vtk.VTK_TRIANGLE,
+                 "Triangle_6"    : vtk.vtk.VTK_QUADRATIC_TRIANGLE,
+                 "Quadrilateral" : vtk.vtk.VTK_QUAD,
+                 "Quad_8"        : vtk.vtk.VTK_QUADRATIC_QUAD,
+                 "Tetrahedron"   : vtk.vtk.VTK_TETRA,
+                 "Tet_10"        : vtk.vtk.VTK_QUADRATIC_TETRA,
+                 "Hexahedron"    : vtk.vtk.VTK_HEXAHEDRON,
+                 "Hex_20"        : vtk.vtk.VTK_QUADRATIC_HEXAHEDRON
+                }
+    celltype = celltypes.get(topotype) # assuming single cell type
     cellorder = list(range(n))
-    if d == 1:
-      if n == 2:
-        celltype = vtk.vtk.VTK_LINE
-      elif n == 3:
-        celltype = vtk.vtk.VTK_QUADRATIC_EDGE
-      else:
-        self._unknowncelltype()
-    elif d == 2:
-      if n == 3:
-        celltype = vtk.vtk.VTK_TRIANGLE
-      elif n == 6:
-        cellorder = [0,1,2,5,3,4]
-        celltype = vtk.vtk.VTK_QUADRATIC_TRIANGLE
-      elif n == 4:
-        self._untestedcelltype()
-        celltype = vtk.vtk.VTK_QUAD
-      elif n == 8:
-        self._untestedcelltype()
-        celltype = vtk.vtk.VTK_QUADRATIC_QUAD
-      else:
-        self._unknowncelltype()
-    elif d == 3:
-      if n == 4:
-        celltype = vtk.vtk.VTK_TETRA
-      elif n == 10:
-        cellorder = [0,1,2,3,9,6,8,7,5,4]
-        celltype = vtk.vtk.VTK_QUADRATIC_TETRA
-      elif n == 8:
-        self._untestedcelltype()
-        celltype = vtk.vtk.VTK_HEXAHEDRON
-      elif n == 20:
-        self._untestedcelltype()
-        celltype = vtk.vtk.VTK_QUADRATIC_HEXAHEDRON
-      else:
-        self._unknowncelltype()
-    else:
-       self._unknowncelltype()
+    if celltype is None:
+      self._unknowncelltype()
+    elif celltype == vtk.vtk.VTK_QUADRATIC_TRIANGLE:
+      cellorder = [0,1,2,5,3,4]
+    elif celltype == vtk.vtk.VTK_QUADRATIC_TETRA:
+      cellorder = [0,1,2,3,9,6,8,7,5,4]
     
     # add the cells
     for t in topo:
