@@ -1,0 +1,72 @@
+#!/usr/bin/env python3
+
+# Copyright (C) 2013 Columbia University in the City of New York and others.
+#
+# Please see the AUTHORS file in the main source directory for a full list
+# of contributors.
+#
+# This file is part of TerraFERMA.
+#
+# TerraFERMA is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# TerraFERMA is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
+
+from buckettools import vtktools
+import json
+
+def vtudiff(filenames1, filenames2, filenameout, fieldnamemap={}):
+  """Take the diff of (multiple) vtu files"""
+  basenameout, ext = os.path.splitext(filenameout)
+  if ext != '.vtu':
+    raise Exception("ERROR: Unknown output extension: {}".format(ext,))
+
+
+  if abs(len(filenames1)-len(filenames2)) > 0:
+    if len(filenames1) == 1:
+      filenames1 = filenames1*len(filenames2)
+    elif len(filenames2) == 1:
+      filenames2 = filenames2*len(filenames1)
+    else:
+      raise Exception("If list of filenames have different lengths, at least one must be a single filename.")
+
+  # loop over files
+  for f in range(len(filenames1)):
+    vtu1 = vtktools.vtu(filenames1[f])
+    vtu2 = vtktools.vtu(filenames2[f])
+    vtudiff = vtktools.VtuDiff(vtu1, vtu2, fieldnamemap=fieldnamemap)
+    outfilename = filenameout
+    if len(filenames1) > 1: outfilename = basenameout+repr(f).zfill(6)+".vtu"
+    vtudiff.Write(outfilename)
+
+if __name__ == "__main__":
+  import argparse
+  import os
+
+  parser = argparse.ArgumentParser( \
+                         description="""Generates a vtus with fields equal to the difference between the corresponding fields in the
+                                        two input vtus (filename1 - filename2).  The fields of filename2 are interpolated onto the
+                                        points of filename1.""")
+  parser.add_argument('-f1', '--filename1', action='store', metavar='filename1', type=str, nargs='+', required=True,
+                      help='specify first vtu, pvtu or xdmf filename')
+  parser.add_argument('-f2', '--filename2', action='store', metavar='filename2', type=str, nargs='+', required=True,
+                      help='specify second vtu, pvtu or xdmf filename')
+  parser.add_argument('-o', '--output', action='store', metavar='filenameout', type=str, required=True,
+                      help='specify output filenameout')
+  parser.add_argument('-map', '--fieldnamemap', action='store', metavar='fieldnamemap', type=json.loads, required=False, default={},
+                      help="""a map of field names in filename1 to field names in filename2, specify using 
+                              `-map '{"filename1":"fieldname2", "fieldname1b":"fieldname2b"}'` (defaults to assuming field names are
+                              the same in both files, all fields in filename1 will be diffed if present in filename 2 regardless of what 
+                              is included in the map)""")
+  args = parser.parse_args()
+
+  vtudiff(args.filename1, args.filename2, args.output, fieldnamemap=args.fieldnamemap)
+
