@@ -643,6 +643,22 @@ r = r1 + r2 + r3</string_value>
                             </preconditioner>
                           </linear_solver>
                         </fieldsplit>
+                        <fieldsplit name="Component4">
+                          <field name="Field3">
+                            <components>
+                              <integer_value rank="1" shape="1">3</integer_value>
+                            </components>
+                          </field>
+                          <monitors>
+                            <view_index_set/>
+                          </monitors>
+                          <linear_solver>
+                            <iterative_method name="preonly"/>
+                            <preconditioner name="lu">
+                              <factorization_package name="mumps"/>
+                            </preconditioner>
+                          </linear_solver>
+                        </fieldsplit>
                       </preconditioner>
                     </linear_solver>
                   </fieldsplit>
