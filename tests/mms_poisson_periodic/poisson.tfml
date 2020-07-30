@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -7,7 +7,7 @@
     <mesh name="Mesh">
       <source name="UnitSquare">
         <number_cells>
-          <integer_value shape="2" dim1="2" rank="1">32 32</integer_value>
+          <integer_value rank="1" dim1="2" shape="2">32 32</integer_value>
         </number_cells>
         <diagonal>
           <string_value lines="1">right/left</string_value>
@@ -22,6 +22,16 @@
     <output_base_name>
       <string_value lines="1">poisson</string_value>
     </output_base_name>
+    <visualization>
+      <element name="P1">
+        <family>
+          <string_value lines="1">CG</string_value>
+        </family>
+        <degree>
+          <integer_value rank="0">1</integer_value>
+        </degree>
+      </element>
+    </visualization>
     <dump_periods/>
     <detectors/>
     <debugging>
@@ -48,23 +58,22 @@
               <integer_value rank="0">1</integer_value>
             </degree>
           </element>
-          <initial_condition type="initial_condition" name="WholeMesh">
+          <initial_condition name="WholeMesh" type="initial_condition">
             <constant>
               <real_value rank="0">0.</real_value>
             </constant>
           </initial_condition>
           <boundary_condition name="NonPeriodic">
             <boundary_ids>
-              <integer_value shape="2" rank="1">3 4</integer_value>
+              <integer_value rank="1" shape="2">3 4</integer_value>
             </boundary_ids>
             <sub_components name="All">
-              <type type="boundary_condition" name="Dirichlet">
+              <type name="Dirichlet" type="boundary_condition">
                 <python rank="0">
-                  <string_value lines="20" type="code" language="python3">from math import sin,cos,pi
+                  <string_value type="code" language="python3" lines="20">from math import sin,cos,pi
 def val(x):
   global sin,cos,pi
-  return cos(2*pi*x[0] + 0.25*pi)*sin(4*pi*x[1] + 0.25*pi)
-</string_value>
+  return cos(2*pi*x[0] + 0.25*pi)*sin(4*pi*x[1] + 0.25*pi)</string_value>
                 </python>
               </type>
             </sub_components>
@@ -91,13 +100,12 @@ def val(x):
               <integer_value rank="0">1</integer_value>
             </degree>
           </element>
-          <value type="value" name="WholeMesh">
+          <value name="WholeMesh" type="value">
             <python rank="0">
-              <string_value lines="20" type="code" language="python3">from math import sin,cos,pi
+              <string_value type="code" language="python3" lines="20">from math import sin,cos,pi
 def val(x):
   global sin,cos,pi
-  return 20.*pi**2*sin(4.*pi*x[1] + 0.25*pi)*cos(2.*pi*x[0] + 0.25*pi)
-</string_value>
+  return 20.*pi**2*sin(4.*pi*x[1] + 0.25*pi)*cos(2.*pi*x[0] + 0.25*pi)</string_value>
             </python>
           </value>
         </rank>
@@ -118,13 +126,12 @@ def val(x):
               <integer_value rank="0">1</integer_value>
             </degree>
           </element>
-          <value type="value" name="WholeMesh">
+          <value name="WholeMesh" type="value">
             <python rank="0">
-              <string_value lines="20" type="code" language="python3">from math import sin,cos,pi
+              <string_value type="code" language="python3" lines="20">from math import sin,cos,pi
 def val(x):
   global sin,cos,pi
-  return cos(2*pi*x[0] + 0.25*pi)*sin(4*pi*x[1] + 0.25*pi)
-</string_value>
+  return cos(2*pi*x[0] + 0.25*pi)*sin(4*pi*x[1] + 0.25*pi)</string_value>
             </python>
           </value>
         </rank>
@@ -145,17 +152,17 @@ def val(x):
               <integer_value rank="0">1</integer_value>
             </degree>
           </element>
-          <value type="value" name="WholeMesh">
+          <value name="WholeMesh" type="value">
             <cpp rank="0">
               <members>
-                <string_value lines="20" type="code" language="cpp">GenericFunction_ptr num_ptr, sol_ptr;</string_value>
+                <string_value type="code" language="cpp" lines="20">GenericFunction_ptr num_ptr, sol_ptr;</string_value>
               </members>
               <initialization>
-                <string_value lines="20" type="code" language="cpp">num_ptr = system()-&gt;fetch_field("Field")-&gt;genericfunction_ptr(time());
+                <string_value type="code" language="cpp" lines="20">num_ptr = system()-&gt;fetch_field("Field")-&gt;genericfunction_ptr(time());
 sol_ptr = system()-&gt;fetch_coeff("AnalyticField")-&gt;genericfunction_ptr(time());</string_value>
               </initialization>
               <eval>
-                <string_value lines="20" type="code" language="cpp">dolfin::Array&lt;double&gt; num(1), sol(1);
+                <string_value type="code" language="cpp" lines="20">dolfin::Array&lt;double&gt; num(1), sol(1);
 num_ptr-&gt;eval(num, x, cell);
 sol_ptr-&gt;eval(sol, x, cell);
 values[0] = std::abs(num[0] - sol[0]);</string_value>
@@ -170,17 +177,16 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
     </coefficient>
     <boundary_condition name="Periodic">
       <boundary_ids>
-        <integer_value shape="1" rank="1">1</integer_value>
+        <integer_value rank="1" shape="1">1</integer_value>
       </boundary_ids>
       <sub_components name="All">
-        <type type="boundary_condition" name="Periodic">
+        <type name="Periodic" type="boundary_condition">
           <slave_boundary_ids>
-            <integer_value shape="1" rank="1">2</integer_value>
+            <integer_value rank="1" shape="1">2</integer_value>
           </slave_boundary_ids>
           <coordinate_map rank="1">
-            <string_value lines="20" type="code" language="python3">def val(x):
-  return [x[0]-1.0, x[1]]
-</string_value>
+            <string_value type="code" language="python" lines="20">def val(x):
+  return [x[0]-1.0, x[1]]</string_value>
           </coordinate_map>
         </type>
       </sub_components>
@@ -188,15 +194,13 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
     <nonlinear_solver name="SNES">
       <type name="SNES">
         <form name="Residual" rank="0">
-          <string_value lines="20" type="code" language="python3">F = (inner(grad(u_t),grad(u_i)) - u_t*f)*dx
-</string_value>
+          <string_value type="code" language="python3" lines="20">F = (inner(grad(u_t),grad(u_i)) - u_t*f)*dx</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">F</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
-          <string_value lines="20" type="code" language="python3">J = derivative(F,us_i,us_a)
-</string_value>
+          <string_value type="code" language="python3" lines="20">J = derivative(F,us_i,us_a)</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">J</string_value>
           </ufl_symbol>
@@ -231,8 +235,7 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
       <solve name="in_timeloop"/>
     </nonlinear_solver>
     <functional name="FieldL2NormErrorSquared">
-      <string_value lines="20" type="code" language="python3">e2 = (u-ue)**2*dx
-</string_value>
+      <string_value type="code" language="python3" lines="20">e2 = (u-ue)**2*dx</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">e2</string_value>
       </ufl_symbol>
@@ -241,8 +244,7 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
       <include_in_statistics/>
     </functional>
     <functional name="AbsoluteDifferenceIntegral">
-      <string_value lines="20" type="code" language="python3">int = d*dx
-</string_value>
+      <string_value type="code" language="python3" lines="20">int = d*dx</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -251,8 +253,7 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
       <include_in_statistics/>
     </functional>
     <functional name="AbsoluteDifferenceL2NormSquared">
-      <string_value lines="20" type="code" language="python3">int = d*d*dx
-</string_value>
+      <string_value type="code" language="python3" lines="20">int = d*d*dx</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
