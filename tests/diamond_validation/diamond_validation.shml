@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <harness_options>
   <length>
     <string_value lines="1">short</string_value>
@@ -11,7 +11,7 @@
   </description>
   <tests>
     <test name="Validate">
-      <string_value lines="20" type="code" language="python">import sys
+      <string_value type="code" language="python3" lines="20">import sys
 import glob
 import os
 import string
@@ -30,11 +30,11 @@ command = ["git", "rev-parse", "--show-toplevel"]
 p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 retcode = p.wait()
 if retcode==0:
-  dirname = p.stdout.read().split("\n")[0]
+  dirname = p.stdout.read().decode().split("\n")[0]
 else:
   dirname = os.getcwd()
   if not os.path.exists(os.path.join(dirname, "diamond_validation.shml")):
-    print "diamond_validation: ERROR: don't know path to tests.  Please improve my logic!"
+    print("diamond_validation: ERROR: don't know path to tests.  Please improve my logic!")
     assert False
   dirname = os.path.join(dirname, os.path.pardir)
   
@@ -66,7 +66,7 @@ class DiamondValidator:
         extdict[extension] = config.schemata[extension][1][alias]
     
     schemadict = {}
-    for k,v in extdict.iteritems():
+    for k,v in list(extdict.items()):
       schemadict[k] = schema.Schema(v)
 
     if extension is not None:
@@ -89,9 +89,9 @@ class DiamondValidator:
     filenames = []
     baseDir = os.path.join(self._rootDir, testDir)
     for dirname, dirnames, files in os.walk(baseDir, topdown=True):
-      current_depth = string.count(dirname, os.path.sep) - string.count(baseDir, os.path.sep)
+      current_depth = dirname.count(os.path.sep) - baseDir.count(os.path.sep)
       filenames += glob.glob(os.path.join(dirname, "*." + extension))
-      dirnames[:] = filter(lambda dir: not (dir.endswith('.build') or dir.endswith('.run')), dirnames)
+      dirnames[:] = [dir for dir in dirnames if not (dir.endswith('.build') or dir.endswith('.run'))]
       if current_depth == depth: dirnames[:] = []
 
     return filenames
@@ -117,20 +117,21 @@ passes += tutorial_validator.Passes()
 optionErrors.update(tutorial_validator.OptionErrors())
 
 failures = []
-for filename in optionErrors.keys():
+for filename in list(optionErrors.keys()):
   if not filename in ignoredOptionsFiles:
     failures.append(filename)
 
 if len(failures)&gt;0:
-  print "*****Summary of options files with failures:"
+  print("*****Summary of options files with failures:")
   for filename in failures:
-    print filename
-  print "*****\n"
+    print(filename)
+  print("*****\n")
 
-print "diamond_validation: validation passes: " + str(passes)
-print "diamond_validation: validation failures: " + str(len(failures))
+print(("diamond_validation: validation passes: " + str(passes)))
+print(("diamond_validation: validation failures: " + str(len(failures))))
 
-assert len(failures) == 0</string_value>
+assert len(failures) == 0
+</string_value>
     </test>
   </tests>
 </harness_options>

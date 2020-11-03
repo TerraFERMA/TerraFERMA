@@ -61,13 +61,9 @@ mesh_options =
        ## Choose the source of this mesh as an externally generated mesh file.
        element source {
          attribute name { "File" },
-         ## Input the basename (i.e. without the .xml) of a DOLFIN format mesh. 
-         ## If mesh function files basename_facet_region.xml or basename_physical_region.xml
-         ## are found then these will also be automatically loaded and attached to the mesh
-         ## as boundary and cell ids respectively.
-         ## 
-         ## Note that if ids are attached to the mesh they must be used in the forms (dx 
-         ## and/or ds will not work without id information - dx(id) and/or ds(id))
+         ## Input the basename (i.e. basename.xdmf without the .xdmf) of a DOLFIN format mesh XDMF file. 
+         ## If mesh value collection files basename_facet_ids.xml and/or basename_cell_ids.xdmf are found
+         ## they will also be read and interpretted as boundary and cell ids.
          element file {
            filename
          },
@@ -82,6 +78,33 @@ mesh_options =
            },
            comment
          },
+         ## Provide a mapping between region ids and process owner ids.  Only works with ghost_mode == none.
+         ##
+         ## NOTE: Intended for debugging purposes only!  This will read in the whole mesh in serial 
+         ## before distributing it to the processes according to the process -> region_ids map provided
+         ## below.
+         ##
+         ## Region ids assigned to multple processes will be given to the highest rank proces.  Unassigned 
+         ## (or unvisited if run on fewer cores than processes listed in the map) region ids will be assigned
+         ## to process 0.
+         element cell_destinations {
+           ## Provide a process rank and a list of region ids that are to be assigned to it.
+           ##
+           ## If region ids are not specified, or are not read in as there are insufficient processes,
+           ## those ids will be assigned to process 0.  Therefore it is not generally necessary to describe
+           ## the region_ids for process 0.
+           ##
+           ## Repeated region ids will be assigned to the highest rank process.
+           element process {
+             attribute name { xsd:string },
+             integer,
+             ## A list of the region ids (physical ids in gmsh) that belong to this process.
+             element region_ids {
+               integer_vector
+             }
+           }+,
+           comment
+         }?,
          comment
        }|
        ## Choose the source of this mesh as an internally generated 1d interval of length 1.

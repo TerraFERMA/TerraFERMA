@@ -21,6 +21,7 @@
 # ALL dependencies need to be specified here
 # always included when using with spud package:
 include "spud_base.rnc"
+include "spud_extension.rnc"
 
 start =
    (
@@ -80,7 +81,7 @@ start =
             ## The test should end with an assert statement which will determine if the test passes or fails.
             element test {
                attribute name { xsd:string },
-               python_code
+               python3_code
             }+,
             comment
          }?,
@@ -140,10 +141,16 @@ run_input_file =
       ## the option spud_file below.
       element input_file {
          filename,
-         ## When reading in this file treat it as a spud compatible file.
-         element spud_file {
-           comment
-         }?
+         (
+            ## When reading in this file treat it as a spud compatible file and load its options.
+            element spud_file {
+              comment
+            }|
+            ## When reading in this file load it as a json file and load it into a dictionary.
+            element json_file {
+              comment
+            }
+         )?
       }
    )
 
@@ -171,7 +178,7 @@ filenames =
         ##
         ## For more advanced usage the Run or Simulation class object is available as _self.
         element python {
-           python_code
+           python3_code
         }
       )
    )
@@ -262,7 +269,7 @@ simulation_parameters =
             ##
             ## For more advanced usage the Run or Simulation class object is available as _self.
             element update {
-               python_code,
+               python3_code,
                ## Turn this option on if updating this parameter does not require a rebuild.  
                ## 
                ## If you are unsure about this it is best to leave this option turned off.
@@ -316,13 +323,15 @@ run_parameters =
             ## the names given to the parameters above.  They will be formatted as strings and should be converted 
             ## appropriately within the code.
             ##
-            ## Additionally, the full path to the input file is available as input_filename and, if not a spud file, 
-            ## the contents of the input file are available as a string as input_file.  The input_file string should be 
-            ## modified - it is what will be written back to file.
+            ## The full path to the input file is available as input_filename.  If a spud file the contents of
+            ## that file will already be loaded into the global spud options dictionary.  If a json file then the contents
+            ## will be available as a dictionary as input_dict.  If neither a spud or json file, 
+            ## the contents of the input file are available as a string as input_file.  The input_file string, input_dict
+            ## dictionary or global spud options dictionary should be modified - they will be written back to file.
             ##
             ## For more advanced usage the Run or Simulation class object is available as _self.
             element update {
-               python_code
+               python3_code
             }?,
             comment
          }*,
@@ -382,7 +391,7 @@ checkpoint =
             ## the names given to the parameters above.  They will be formatted as strings and should be converted 
             ## appropriately within the code.
             element update {
-               python_code
+               python3_code
             },
             comment
          }*,
@@ -407,7 +416,7 @@ variables =
          ## For more advanced usage the Run or Simulation class object is available as _self.
          element variable {
             attribute name { xsd:string },
-            python_code
+            python3_code
          }+,
          comment
       }
@@ -525,13 +534,15 @@ run_dependency_parameters =
             ## the names given to the parameters above.  They will be formatted as strings and should be converted 
             ## appropriately within the code.
             ##
-            ## Additionally, the full path to the input file is available as input_filename and, if not a spud file, 
-            ## the contents of the input file are available as a string as input_file.  The input_file string should be 
-            ## modified - it is what will be written back to file.
+            ## The full path to the input file is available as input_filename.  If a spud file the contents of
+            ## that file will already be loaded into the global spud options dictionary.  If a json file then the contents
+            ## will be available as a dictionary as input_dict.  If neither a spud or json file, 
+            ## the contents of the input file are available as a string as input_file.  The input_file string, input_dict
+            ## dictionary or global spud options dictionary should be modified - they will be written back to file.
             ##
             ## For more advanced usage the Run or Simulation class object is available as _self.
             element update {
-               python_code
+               python3_code
             }?,
             comment
          }*,
@@ -573,7 +584,7 @@ simulation_dependency_parameters =
             ##
             ## For more advanced usage the Run or Simulation class object is available as _self.
             element update {
-               python_code,
+               python3_code,
                ## Turn this option on if updating this parameter does not require a rebuild.  
                ## 
                ## If you are unsure about this it is best to leave this option turned off.
@@ -626,6 +637,7 @@ dependency_run =
          run_dependency_parameters?,
          required_input?,
          required_output?,
+         dependencies?,
          commands?,
          variables?,
          comment

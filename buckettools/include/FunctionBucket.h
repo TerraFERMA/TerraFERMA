@@ -151,6 +151,8 @@ namespace buckettools
                                                                      // NOTE: if this is a field of a mixed system functionspace,
                                                                      // this will return a subspace
 
+    const FunctionSpace_ptr outputfunctionspace() const              // return a constant (std shared) pointer to the collapsed
+    { return outputfunctionspace_; }                                 // or output functionspace
 
     const GenericFunction_ptr function() const                       // return a constant (std shared) pointer to the 
     { return function_; }                                            // function 
@@ -203,6 +205,8 @@ namespace buckettools
     //***************************************************************|***********************************************************//
     // Functions used to run the model
     //***************************************************************|***********************************************************//
+
+    void apply_ic(const std::string &function_type="old");           // apply the initial condition to the function
 
     void refresh(const bool force=false);                            // refresh this function bucket - this may call solvers so 
                                                                      // its not recommened to call loosely
@@ -262,8 +266,6 @@ namespace buckettools
     // Output functions
     //***************************************************************|***********************************************************//
 
-    void output();                                                   // output diagnostics about this function
-
     virtual const bool include_in_visualization() const;             // return a boolean indicating if this function is included in 
                                                                      // visualization output
 
@@ -282,7 +284,20 @@ namespace buckettools
     virtual const std::string str(int indent=0) const;               // return an indented string describing the contents 
                                                                      // of this function
 
-    void checkpoint();                                               // checkpoint the functionbucket
+    void output();                                                   // visualization output from the functionbucket
+
+    void write_checkpoint(XDMFFile_ptr xdmf_file,                    // write the FunctionBucket vector to the
+                          const std::string function_type,
+                          const double time,                         // given XDMF file
+                          const bool append,
+                          const std::string name);
+
+    void write_checkpoint(XDMFFile_ptr xdmf_file,                    // write the FunctionBucket vector to the
+                          const double_ptr time,                     // given XDMF file
+                          const bool append,
+                          const std::string name);
+
+    void checkpoint(const double_ptr time);                          // checkpoint the functionbucket (vector and options)
 
   //*****************************************************************|***********************************************************//
   // Protected functions
@@ -305,6 +320,7 @@ namespace buckettools
 
     FunctionSpace_ptr functionspace_;                                // the functionspace (may be a subspace) of this function (if it is
                                                                      // a field or a coefficient function)
+    FunctionSpace_ptr outputfunctionspace_;                          // the collapsed functionspace of this function
 
     GenericFunction_ptr function_, oldfunction_, iteratedfunction_;  // (std shared) pointers to different timelevel values of this function
 
@@ -316,6 +332,8 @@ namespace buckettools
 
     Expression_ptr icexpression_;                                    // (std shared) pointer to an expression describing the initial condition
 
+    std::string icfilename_;                                         // filename of checkpoint
+
     std::vector< std::size_t > shape_;                               // shape of the function
 
     int functiontype_;                                               // a *integer* describing the type of function bucket (field or coefficient)
@@ -326,8 +344,6 @@ namespace buckettools
 
     Form_ptr constantfunctional_;                                    // a functional that can be used to set a constant function
     
-    File_ptr pvdfile_, respvdfile_;                                  // (std shared) pointer to a pvd file output for this function
-
     double_ptr change_;                                              // change in the function in a norm
 
     bool_ptr change_calculated_;                                     // indicate if the change has been recalculated recently
@@ -337,6 +353,8 @@ namespace buckettools
     std::vector<double_ptr> lower_cap_, upper_cap_;                  // caps on a field
 
     std::vector<IS> component_is_;                                   // IS for components (into system vector!)
+
+    FunctionAssigner_ptr tosystem_, fromsystem_;                     // assigners to and from the system function (for fields)
 
     //***************************************************************|***********************************************************//
     // Pointers data
@@ -363,6 +381,12 @@ namespace buckettools
     //***************************************************************|***********************************************************//
     // Output functions (continued)
     //***************************************************************|***********************************************************//
+
+    void write_checkpoint_(XDMFFile_ptr xdmf_file, const GenericFunction_ptr u,
+                                          const double time, const bool append,
+                                          const std::string name);
+
+    void write_vis_(const std::string &function_type);               // write visualization of specific function_type to bucket visfile
 
     virtual void checkpoint_options_();                              // checkpoint the options system for the functionbucket
 

@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -19,6 +19,16 @@
     <output_base_name>
       <string_value lines="1">region_ids</string_value>
     </output_base_name>
+    <visualization>
+      <element name="P1">
+        <family>
+          <string_value lines="1">CG</string_value>
+        </family>
+        <degree>
+          <integer_value rank="0">1</integer_value>
+        </degree>
+      </element>
+    </visualization>
     <dump_periods/>
     <detectors>
       <point name="Lower">
@@ -35,7 +45,11 @@
       </point>
     </detectors>
   </io>
-  <global_parameters/>
+  <global_parameters>
+    <dolfin>
+      <ghost_mode name="none"/>
+    </dolfin>
+  </global_parameters>
   <system name="Regions">
     <mesh name="Mesh"/>
     <ufl_symbol name="global">
@@ -151,13 +165,15 @@
     <nonlinear_solver name="Solver">
       <type name="SNES">
         <form name="Residual" rank="0">
-          <string_value lines="20" type="code" language="python">r = f_t*(f_i-c_i)*dx(32) + f_t*(f_i-c_i)*dx(33) + f_t*(f_i-c_i)*dx(34) + f_t*(f_i-c_i)*dx(35)</string_value>
+          <string_value lines="20" type="code" language="python3">r = f_t*(f_i-c_i)*dx(32) + f_t*(f_i-c_i)*dx(33) + f_t*(f_i-c_i)*dx(34) + f_t*(f_i-c_i)*dx(35)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">r</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
-          <string_value lines="20" type="code" language="python">a = derivative(r, ur_i, ur_a)</string_value>
+          <string_value lines="20" type="code" language="python3">a = derivative(r, ur_i, ur_a)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>

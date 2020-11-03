@@ -151,6 +151,17 @@ bool SolverBucket::solve()
   else if (type()=="Picard")                                         // this is a hand-rolled picard iteration - FIXME: switch to enum
   {
 
+//    XDMFFile_ptr vis_file;
+//    if(*visualizationmonitor_)
+//    {
+//      std::stringstream buffer;
+//      buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
+//                             << (*system()).name() << "_" 
+//                             << name() << "_" 
+//                             << (*(*system()).bucket()).timestep_count() << "_" 
+//                             << (*(*system()).bucket()).iteration_count() << "_picard.xdmf";
+//      vis_file.reset( new dolfin::XDMFFile((*(*system()).mesh()).mpi_comm(), buffer.str()) );
+//    }
 
     assert(residual_);                                               // we need to assemble the residual again here as it may depend
                                                                      // on other systems that have been solved since the last call
@@ -183,9 +194,23 @@ bool SolverBucket::solve()
                                     iteration_count(), aerror, rerror);
 
     ConvergenceFile_ptr convfile = convergencefile();
-    if(convfile)
+    if(*visualizationmonitor_ || convfile)
     {
       *(*(*system()).residualfunction()).vector() = (*std::dynamic_pointer_cast< dolfin::GenericVector >(residual_vector()));
+      if (*visualizationmonitor_)
+      {
+//        bool append = false;
+//        for (FunctionBucket_const_it f_it = (*system()).fields_begin(); 
+//                                     f_it != (*system()).fields_end(); 
+//                                                              f_it++)
+//        {
+//          (*(*f_it).second).write_checkpoint(vis_file, "iterated", (double)iteration_count(),
+//                                   append, (*system()).name()+"::Iterated"+(*(*f_it).second).name());
+//          append = true;
+//          (*(*f_it).second).write_checkpoint(vis_file, "residual", (double)iteration_count(),
+//                                   true, (*system()).name()+"::Residual"+(*(*f_it).second).name());
+//        }
+      }
       if (convfile)
       {
         (*convfile).write_data();
@@ -261,7 +286,7 @@ bool SolverBucket::solve()
 
         IS is = solverindexsets_[(*f_it).first];
         Mat submatrix = solversubmatrices_[(*f_it).first];
-        perr = MatGetSubMatrix((*solvermatrix).mat(), is, is, MAT_REUSE_MATRIX, &submatrix);
+        perr = MatCreateSubMatrix((*solvermatrix).mat(), is, is, MAT_REUSE_MATRIX, &submatrix);
         petsc_err(perr);
 
       }
@@ -319,9 +344,21 @@ bool SolverBucket::solve()
                           iteration_count(), aerror, rerror);
                                                                      // and decide to loop or not...
 
-      if(convfile)
+      if(*visualizationmonitor_ || convfile)
       {
         *(*(*system()).residualfunction()).vector() = (*std::dynamic_pointer_cast< dolfin::GenericVector >(residual_vector()));
+        if (*visualizationmonitor_)
+        {
+//          for (FunctionBucket_const_it f_it = (*system()).fields_begin(); 
+//                                       f_it != (*system()).fields_end(); 
+//                                                                f_it++)
+//          {
+//            (*(*f_it).second).write_checkpoint(vis_file, "iterated", (double)iteration_count(), 
+//                                     true, (*system()).name()+"::Iterated"+(*(*f_it).second).name());
+//            (*(*f_it).second).write_checkpoint(vis_file, "residual", (double)iteration_count(),
+//                                     true, (*system()).name()+"::Residual"+(*(*f_it).second).name());
+//          }
+        }
         if (convfile)
         {
           (*convfile).write_data();
@@ -448,6 +485,22 @@ const int SolverBucket::iteration_count() const
 void SolverBucket::iteration_count(const int &it)
 {
   *iteration_count_ = it;
+}
+
+//*******************************************************************|************************************************************//
+// return true if we're using a visualization monitor
+//*******************************************************************|************************************************************//
+const bool SolverBucket::visualization_monitor() const
+{
+  return *visualizationmonitor_;
+}
+
+//*******************************************************************|************************************************************//
+// return true if we're using a ksp visualization monitor
+//*******************************************************************|************************************************************//
+const bool SolverBucket::kspvisualization_monitor() const
+{
+  return *kspvisualizationmonitor_;
 }
 
 //*******************************************************************|************************************************************//

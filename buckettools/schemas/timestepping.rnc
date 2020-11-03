@@ -185,6 +185,12 @@ nonlinear_systems_tolerances =
       ## Options to give extra information for each iteration of the
       ## timestep. Some of those may really slow down your computation!
       element monitors {
+        ## Output pvd visualization of the solution and residual at each iteration.
+        ## 
+        ## WARNING: This will produce a lot of output so should only be used for debugging purposes!
+        element visualization {
+          comment
+        }?,
         ## Output a diagnostic file detailing the convergence of the nonlinear system iterations.
         element convergence_file { 
           comment

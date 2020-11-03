@@ -1,0 +1,15 @@
+<Xdmf Version="3.0">
+  <Domain>
+    <Grid Name="Grid">
+      <Geometry GeometryType="XY">
+        <DataItem DataType="Float" Dimensions="1216 2" Format="HDF" Precision="8">subduction_cell_ids.h5:/data0</DataItem>
+      </Geometry>
+      <Topology NumberOfElements="2333" TopologyType="Triangle">
+        <DataItem DataType="Int" Dimensions="2333 3" Format="HDF" Precision="8">subduction_cell_ids.h5:/data1</DataItem>
+      </Topology>
+      <Attribute AttributeType="Scalar" Center="Cell" Name="cell_ids">
+        <DataItem DataType="Int" Dimensions="2333" Format="HDF" Precision="8">subduction_cell_ids.h5:/data2</DataItem>
+      </Attribute>
+    </Grid>
+  </Domain>
+</Xdmf>

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Copyright (C) 2013 Columbia University in the City of New York and others.
 #
@@ -53,6 +53,8 @@ bucket.write_ufc()
 # write a cpp header file to wrap the namespaces of the corresponding ufc
 bucket.write_systemfunctionals_cpp()
 bucket.write_systemsolvers_cpp()
+# write a cpp header file to wrap the namespaces of the visualization functionspace ufc
+bucket.write_visualization_cpp()
 
 # and we're done
 

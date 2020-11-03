@@ -162,6 +162,37 @@ void SpudSystemBucket::initialize_solvers()
   }
 }
 
+////*******************************************************************|************************************************************//
+//// return a vector of GenericFunctions that are to be included in the visualization file(s) from this system
+////*******************************************************************|************************************************************//
+//std::vector< GenericFunction_ptr > SpudSystemBucket::collect_vis_functions() const
+//{
+//  std::vector< GenericFunction_ptr > functions;
+//
+//  for (FunctionBucket_const_it f_it = fields_begin(); f_it != fields_end();
+//                                                              f_it++)
+//  {
+//    if ((*(*f_it).second).include_in_visualization())
+//    {
+//      functions.push_back( (*(*f_it).second).function() );
+//    }
+//    if ((*(*f_it).second).include_residual_in_visualization())
+//    {
+//      functions.push_back( (*(*f_it).second).residualfunction() );
+//    }
+//  }
+// 
+//  for (FunctionBucket_const_it c_it = coeffs_begin(); c_it != coeffs_end(); c_it++)
+//  {
+//    if ((*(*c_it).second).include_in_visualization())
+//    {
+//      functions.push_back( (*(*c_it).second).function() );
+//    }
+//  }
+//
+//  return functions;
+//}
+
 //*******************************************************************|************************************************************//
 // initialize any diagnostic output in this system
 //*******************************************************************|************************************************************//
@@ -255,7 +286,8 @@ void SpudSystemBucket::fill_systemfunction_()
   buffer.str(""); buffer << name() << "::Residual";
   (*residualfunction_).rename( buffer.str(), buffer.str() );
 
-  if (Spud::option_count(optionpath()+"/nonlinear_solver/type::SNES/monitors/convergence_file")>0)
+  if ((Spud::option_count(optionpath()+"/nonlinear_solver/type::SNES/monitors/visualization")+
+       Spud::option_count(optionpath()+"/nonlinear_solver/type::SNES/monitors/convergence_file"))>0)
   {
     snesupdatefunction_.reset( new dolfin::Function(functionspace_) );
     buffer.str(""); buffer << name() << "::SNESUpdateFunction";
@@ -291,11 +323,6 @@ void SpudSystemBucket::fill_fields_()
 {
   std::stringstream buffer;                                          // optionpath buffer
 
-                                                                     // prepare the system initial condition expression:
-  uint component = 0;                                               // initialize a counter for the scalar components of this
-                                                                     // system
-  std::map< std::size_t, Expression_ptr > icexpressions;             // set up a map from scalar component to initial condition expression
-
   buffer.str("");  buffer << optionpath() << "/field";               // find out how many fields we have
   int nfields = Spud::option_count(buffer.str());
   for (uint i = 0; i < nfields; i++)                                 // loop over the fields in the options dictionary
@@ -307,29 +334,6 @@ void SpudSystemBucket::fill_fields_()
     SpudFunctionBucket_ptr field(new SpudFunctionBucket( buffer.str(), this ));
     (*field).fill_field(i);                                          // fill in this field (providing its index in the system)
     register_field(field, (*field).name());                          // register this field in the system bucket
-                                  
-    if ((*field).icexpression())
-    {
-                                                                     // insert the field's initial condition expression into a 
-                                                                     // temporary system map:
-      size_t_Expression_it e_it = icexpressions.find(component);     // check if this component already exists
-      if (e_it != icexpressions.end())
-      {
-        tf_err("IC expression with given component number already exists in inexpressions map.", "Component: %d", component);
-      }
-      else
-      {
-        icexpressions[component] = (*field).icexpression();          // if it doesn't, insert it into the map
-      }
-    }
-
-    component += (*field).size();                                    // increment the component count by the size of this field
-                                                                     // (i.e. no. of scalar components)
-  }
-
-  if (!icexpressions.empty())
-  {
-    collect_ics_(component, icexpressions);                          // collect all the ics together into a new initial condition expression
   }
 
 }

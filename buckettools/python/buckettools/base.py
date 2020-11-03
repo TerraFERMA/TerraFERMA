@@ -97,7 +97,7 @@ def ffc(namespace, form_representation, quadrature_rule, quadrature_degree):
   uflfilename = namespace+".ufl"
 
   try:
-    checksum = hashlib.md5(open(uflfilename, 'r').read()).hexdigest()
+    checksum = hashlib.md5(open(uflfilename, 'r').read().encode('utf-8')).hexdigest()
   except:
     checksum = None
 
@@ -107,7 +107,7 @@ def ffc(namespace, form_representation, quadrature_rule, quadrature_degree):
     headerfile = None
 
   if headerfile:
-    rebuild = checksum != hashlib.md5(open(uflfilename+".temp", 'r').read()).hexdigest()
+    rebuild = checksum != hashlib.md5(open(uflfilename+".temp", 'r').read().encode('utf-8')).hexdigest()
 
     headertext = headerfile.read()
     
@@ -115,7 +115,7 @@ def ffc(namespace, form_representation, quadrature_rule, quadrature_degree):
     qdin = headertext.find(os.linesep, qdi, -1)
     if (qdi != -1) and (qdin != -1):
       qd_old = headertext[qdi:qdin].split(" ")[-1]
-      qd_new = `quadrature_degree` if quadrature_degree is not None else "-1"
+      qd_new = repr(quadrature_degree) if quadrature_degree is not None else 'None'
       rebuild = rebuild or qd_new != qd_old
     else: # if we don't know what the old quadrature degree was we always want to (re)build
       rebuild = True
@@ -146,7 +146,7 @@ def ffc(namespace, form_representation, quadrature_rule, quadrature_degree):
     shutil.copy(uflfilename+".temp", uflfilename)
     command = ["ffc", "-l", "dolfin", "-O", "-r", form_representation]
     if quadrature_degree is not None:
-      command += ["-fquadrature_degree="+`quadrature_degree`]
+      command += ["-fquadrature_degree="+repr(quadrature_degree)]
     command += ["-fsplit"]
     command += ["-q", quadrature_rule]
     command += [uflfilename]
@@ -165,15 +165,16 @@ def ffc(namespace, form_representation, quadrature_rule, quadrature_degree):
     output = ""  # save the output in case we want to pipe it to stdout on failure
     with open(logfilename, 'w') as logfile: # but otherwise just send it to a logfile
       i = -1
-      for line in iter(p.stdout.readline, ""):
-        logfile.write(line)
-        output += line
-        if warning.search(line):            # search for warnings
-          sys.stdout.write(line)
-          i = line.find("WARNING:")
+      for line in iter(p.stdout.readline, b""):
+        dline = line.decode()
+        logfile.write(dline)
+        output += dline
+        if warning.search(dline):            # search for warnings
+          sys.stdout.write(dline)
+          i = dline.find("WARNING:")
           warnings = True
-        elif i > -1 and line.startswith(" "*(i+8)):  # and indented lines after warnings
-          sys.stdout.write(line)
+        elif i > -1 and dline.startswith(" "*(i+8)):  # and indented lines after warnings
+          sys.stdout.write(dline)
         else:
           i = -1
     # report warnings

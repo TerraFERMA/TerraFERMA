@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -22,6 +22,16 @@
     <output_base_name>
       <string_value lines="1">nonlinear_coupled_poisson</string_value>
     </output_base_name>
+    <visualization>
+      <element name="P1">
+        <family>
+          <string_value lines="1">CG</string_value>
+        </family>
+        <degree>
+          <integer_value rank="0">1</integer_value>
+        </degree>
+      </element>
+    </visualization>
     <dump_periods/>
     <detectors/>
   </io>
@@ -87,10 +97,11 @@
             <sub_components name="All">
               <type type="boundary_condition" name="Dirichlet">
                 <python rank="0">
-                  <string_value lines="20" type="code" language="python">from math import exp
+                  <string_value lines="20" type="code" language="python3">from math import exp
 def val(x):
   global exp
-  return exp(x[0] + x[1]/2.)</string_value>
+  return exp(x[0] + x[1]/2.)
+</string_value>
                 </python>
               </type>
             </sub_components>
@@ -118,12 +129,13 @@ def val(x):
           </element>
           <value type="value" name="WholeMesh">
             <python rank="0">
-              <string_value lines="20" type="code" language="python">def val(xx):
+              <string_value lines="20" type="code" language="python3">def val(xx):
   from math import exp
   p1 = 1
   x = xx[0]
   y = xx[1]
-  return -(1+p1)*exp(x*(1+p1) + 0.5*y*(1-p1)) - 0.25*(1-p1)*exp(x*(1+p1) + 0.5*y*(1-p1))</string_value>
+  return -(1+p1)*exp(x*(1+p1) + 0.5*y*(1-p1)) - 0.25*(1-p1)*exp(x*(1+p1) + 0.5*y*(1-p1))
+</string_value>
             </python>
           </value>
         </rank>
@@ -161,10 +173,11 @@ def val(x):
           </element>
           <value type="value" name="WholeMesh">
             <python rank="0">
-              <string_value lines="20" type="code" language="python">from math import exp
+              <string_value lines="20" type="code" language="python3">from math import exp
 def val(x):
   global exp
-  return exp(x[0] + x[1]/2.)</string_value>
+  return exp(x[0] + x[1]/2.)
+</string_value>
             </python>
           </value>
         </rank>
@@ -224,10 +237,11 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
           </element>
           <value type="value" name="WholeMesh">
             <python rank="1">
-              <string_value lines="20" type="code" language="python">from math import exp
+              <string_value lines="20" type="code" language="python3">from math import exp
 def val(x):
   global exp
-  return [exp(x[0] + x[1]/2.), 0.5*exp(x[0] + x[1]/2.)]</string_value>
+  return [exp(x[0] + x[1]/2.), 0.5*exp(x[0] + x[1]/2.)]
+</string_value>
             </python>
           </value>
         </rank>
@@ -237,15 +251,17 @@ def val(x):
     <nonlinear_solver name="Solver">
       <type name="SNES">
         <form name="Residual" rank="0">
-          <string_value lines="20" type="code" language="python">r = (inner(grad(f1_t), (f2_i**p1)*grad(f1_i)) - f1_t*s1)*dx \
+          <string_value lines="20" type="code" language="python3">r = (inner(grad(f1_t), (f2_i**p1)*grad(f1_i)) - f1_t*s1)*dx \
      + f1_t*(f2_i**p1)*g1[0]*ds(1) - f1_t*(f2_i**p1)*g1[0]*ds(2) \
-     + f1_t*(f2_i**p1)*g1[1]*ds(3) - f1_t*(f2_i**p1)*g1[1]*ds(4)</string_value>
+     + f1_t*(f2_i**p1)*g1[1]*ds(3) - f1_t*(f2_i**p1)*g1[1]*ds(4)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">r</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
-          <string_value lines="20" type="code" language="python">a = derivative(r, us1_i, us1_a)</string_value>
+          <string_value lines="20" type="code" language="python3">a = derivative(r, us1_i, us1_a)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
@@ -276,7 +292,8 @@ def val(x):
       <solve name="in_timeloop"/>
     </nonlinear_solver>
     <functional name="AbsoluteDifferenceField1Integral">
-      <string_value lines="20" type="code" language="python">int = d1*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = d1*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -285,7 +302,8 @@ def val(x):
       <include_in_statistics/>
     </functional>
     <functional name="AbsoluteDifferenceField1L2NormSquared">
-      <string_value lines="20" type="code" language="python">int = d1*d1*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = d1*d1*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -325,10 +343,11 @@ def val(x):
             <sub_components name="All">
               <type type="boundary_condition" name="Dirichlet">
                 <python rank="0">
-                  <string_value lines="20" type="code" language="python">from math import exp
+                  <string_value lines="20" type="code" language="python3">from math import exp
 def val(x):
   global exp
-  return exp(x[0] - x[1]/2.)</string_value>
+  return exp(x[0] - x[1]/2.)
+</string_value>
                 </python>
               </type>
             </sub_components>
@@ -356,12 +375,13 @@ def val(x):
           </element>
           <value type="value" name="WholeMesh">
             <python rank="0">
-              <string_value lines="20" type="code" language="python">def val(xx):
+              <string_value lines="20" type="code" language="python3">def val(xx):
   from math import exp
   p2 = 1
   x = xx[0]
   y = xx[1]
-  return -(1+p2)*exp(x*(1+p2) - 0.5*y*(1-p2)) - 0.25*(1-p2)*exp(x*(1+p2) - 0.5*y*(1-p2))</string_value>
+  return -(1+p2)*exp(x*(1+p2) - 0.5*y*(1-p2)) - 0.25*(1-p2)*exp(x*(1+p2) - 0.5*y*(1-p2))
+</string_value>
             </python>
           </value>
         </rank>
@@ -399,10 +419,11 @@ def val(x):
           </element>
           <value type="value" name="WholeMesh">
             <python rank="0">
-              <string_value lines="20" type="code" language="python">from math import exp
+              <string_value lines="20" type="code" language="python3">from math import exp
 def val(x):
   global exp
-  return exp(x[0] - x[1]/2.)</string_value>
+  return exp(x[0] - x[1]/2.)
+</string_value>
             </python>
           </value>
         </rank>
@@ -462,10 +483,11 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
           </element>
           <value type="value" name="WholeMesh">
             <python rank="1">
-              <string_value lines="20" type="code" language="python">from math import exp
+              <string_value lines="20" type="code" language="python3">from math import exp
 def val(x):
   global exp
-  return [exp(x[0] - x[1]/2.), -0.5*exp(x[0] - x[1]/2.)]</string_value>
+  return [exp(x[0] - x[1]/2.), -0.5*exp(x[0] - x[1]/2.)]
+</string_value>
             </python>
           </value>
         </rank>
@@ -475,15 +497,17 @@ def val(x):
     <nonlinear_solver name="Solver">
       <type name="SNES">
         <form name="Residual" rank="0">
-          <string_value lines="20" type="code" language="python">r = (inner(grad(f2_t), (f1_i**p2)*grad(f2_i)) - f2_t*s2)*dx \
+          <string_value lines="20" type="code" language="python3">r = (inner(grad(f2_t), (f1_i**p2)*grad(f2_i)) - f2_t*s2)*dx \
      + f2_t*(f1_i**p2)*g2[0]*ds(1) - f2_t*(f1_i**p2)*g2[0]*ds(2) \
-     + f2_t*(f1_i**p2)*g2[1]*ds(3) - f2_t*(f1_i**p2)*g2[1]*ds(4)</string_value>
+     + f2_t*(f1_i**p2)*g2[1]*ds(3) - f2_t*(f1_i**p2)*g2[1]*ds(4)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">r</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
-          <string_value lines="20" type="code" language="python">a = derivative(r, us2_i, us2_a)</string_value>
+          <string_value lines="20" type="code" language="python3">a = derivative(r, us2_i, us2_a)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
@@ -514,7 +538,8 @@ def val(x):
       <solve name="in_timeloop"/>
     </nonlinear_solver>
     <functional name="AbsoluteDifferenceField2Integral">
-      <string_value lines="20" type="code" language="python">int = d2*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = d2*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -523,7 +548,8 @@ def val(x):
       <include_in_statistics/>
     </functional>
     <functional name="AbsoluteDifferenceField2L2NormSquared">
-      <string_value lines="20" type="code" language="python">int = d2*d2*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = d2*d2*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>

@@ -29,6 +29,7 @@
 #include "BucketDolfinBase.h"
 #include "PointDetectors.h"
 #include "StatisticsFile.h"
+#include "VisualizationWrapper.h"
 #include "Logger.h"
 #include <dolfin.h>
 #include <string>
@@ -697,77 +698,121 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
     buffer.str(""); buffer << optionpath << "/source/file";
     serr = Spud::get_option(buffer.str(), basename); 
     spud_err(buffer.str(), serr);
-
+    std::stringstream filename;
+    filename.str(""); filename << basename << ".xdmf";
 
     std::ifstream file;                                              // dummy file stream to test if files exist
                                                                      // (better way of doing this?)
     
-    std::stringstream filename;
+    buffer.str(""); buffer << optionpath << "/source/cell_destinations";
+    if (Spud::have_option(buffer.str()))
+    {
+      mesh.reset(new dolfin::Mesh());
 
-    filename.str(""); filename << basename << ".xml";
-    file.open(filename.str().c_str(), std::ifstream::in);
-    if (file)
-    {
-      file.close();
-      mesh.reset(new dolfin::Mesh(filename.str()));
-    }
-    else
-    {
-      filename.str(""); filename << basename << ".xml.gz";
+      buffer.str(""); buffer << optionpath << "/source/cell_destinations/process";
+      int ndests = Spud::option_count(buffer.str());
+      std::map<int, std::vector<int> > process_region_ids;
+      for (int i = 0; i < ndests; i++)
+      {
+        buffer.str(""); buffer << optionpath << "/source/cell_destinations/process[" << i << "]";
+   
+        int proc;
+        serr = Spud::get_option(buffer.str(), proc);
+        spud_err(buffer.str(), serr);
+
+        buffer << "/region_ids";
+        serr = Spud::get_option(buffer.str(), process_region_ids[proc]);
+        spud_err(buffer.str(), serr);
+      }
+
+      Mesh_ptr tmp_mesh(new dolfin::Mesh(MPI_COMM_SELF));
+      dolfin::XDMFFile((*tmp_mesh).mpi_comm(), filename.str()).read(*tmp_mesh);
+      dolfin::MeshValueCollection<std::size_t> cellidsmvc(tmp_mesh, (*tmp_mesh).topology().dim());
+
+      filename.str(""); filename << basename << "_cell_ids.xdmf";      // check if the cell ids file exists
       file.open(filename.str().c_str(), std::ifstream::in);
       if (file)
       {
         file.close();
-        mesh.reset(new dolfin::Mesh(filename.str()));
+
+        dolfin::XDMFFile((*tmp_mesh).mpi_comm(), filename.str()).read(cellidsmvc, "cell_ids");
       }
       else
       {
-        tf_err("Could not find requested mesh.", 
-               "%s.xml or %s.xml.gz not found.", basename.c_str(), basename.c_str());
-      }
-    }
-    (*mesh).init();                                                  // initialize the mesh (maps between dimensions etc.)
+        tf_err("Could not find cell id xdmf file that is required for specified cell partitioning.",
+               "%s not found.", filename.str().c_str());
 
-    filename.str(""); filename << basename << "_facet_region.xml";   // check if the edge subdomain mesh function file exists
+      }
+
+      if (dolfin::MPI::rank((*mesh).mpi_comm())==0)
+      {
+        // just rank 0 copies all the mesh data into the empty mesh
+        // local_mesh_data instantiation below distributes it to other processes
+        *mesh = *tmp_mesh;
+      }
+
+      dolfin::LocalMeshData local_mesh_data(*mesh);
+      const std::vector<std::int64_t>& global_cell_indices = local_mesh_data.topology.global_cell_indices;
+      std::vector<int> cell_destinations(global_cell_indices.size(), 0);
+      uint nprocs = dolfin::MPI::size((*mesh).mpi_comm());
+      for (std::size_t i = 0; i < global_cell_indices.size(); ++i)
+      {
+        std::int64_t global_index = global_cell_indices[i];
+        std::size_t region_id = cellidsmvc.get_value(global_index, 0);
+        for (int p = nprocs-1; p > 0; p--)
+        {
+          const std::vector<int>& region_ids = process_region_ids.at(p);
+          std::vector<int>::const_iterator region_it = 
+                    std::find(region_ids.begin(), region_ids.end(), region_id);
+          if (region_it != region_ids.end())
+          {
+            cell_destinations[i] = p;
+            break;
+          }
+        }
+      }
+      local_mesh_data.topology.cell_partition = cell_destinations;
+
+      std::string ghost_mode = "none";
+      buffer.str(""); buffer << "/global_parameters/dolfin/ghost_mode";
+      if (Spud::have_option(buffer.str()))
+      {
+        buffer << "/name";
+        serr = Spud::get_option(buffer.str(), ghost_mode);
+        spud_err(buffer.str(), serr);
+      }
+
+      mesh.reset(new dolfin::Mesh());  // all the data is in local_mesh_data so we can reset the mesh
+      dolfin::MeshPartitioning::build_distributed_mesh(*mesh, local_mesh_data, ghost_mode);
+    }
+    else
+    {
+      mesh.reset(new dolfin::Mesh());
+      dolfin::XDMFFile(filename.str()).read(*mesh);
+    }
+
+    (*mesh).init();                                                  // initialize the mesh (maps between dimensions etc.)
+    filename.str(""); filename << basename << "_facet_ids.xdmf";     // check if the facet ids file exists
     file.open(filename.str().c_str(), std::ifstream::in);
     if (file)                                                        // if it does then attach it to the dolfin MeshData structure 
     {                                                                // using the dolfin reserved name for exterior facets
       file.close();
 
-      edgeids.reset(new dolfin::MeshFunction<std::size_t>(mesh, filename.str()));
-    }
-    else
-    {
-      filename.str(""); filename << basename << "_facet_region.xml.gz";// check if the edge subdomain mesh function file exists
-      file.open(filename.str().c_str(), std::ifstream::in);
-      if (file)                                                      // if it does then attach it to the dolfin MeshData structure 
-      {                                                              // using the dolfin reserved name for exterior facets
-        file.close();
-
-        edgeids.reset(new dolfin::MeshFunction<std::size_t>(mesh, filename.str()));
-      }
+      dolfin::MeshValueCollection<std::size_t> edgeidsmvc(mesh, (*mesh).topology().dim()-1);
+      dolfin::XDMFFile(filename.str()).read(edgeidsmvc, "facet_ids");
+      edgeids.reset(new dolfin::MeshFunction<std::size_t>(mesh, edgeidsmvc));
     }
 
-    filename.str(""); filename << basename << "_physical_region.xml";// check if the region subdomain mesh function file exists
+    filename.str(""); filename << basename << "_cell_ids.xdmf";      // check if the cell ids file exists
     file.open(filename.str().c_str(), std::ifstream::in);
     if (file)                                                        // if it does then attach it to the dolfin MeshData structure 
     {                                                                // using the dolfin reserved name for cell domains
       file.close();
 
-      cellids.reset(new dolfin::MeshFunction<std::size_t>(mesh, filename.str()));
+      dolfin::MeshValueCollection<std::size_t> cellidsmvc(mesh, (*mesh).topology().dim());
+      dolfin::XDMFFile(filename.str()).read(cellidsmvc, "cell_ids");
+      cellids.reset(new dolfin::MeshFunction<std::size_t>(mesh, cellidsmvc));
     }
-    else
-    {
-      filename.str(""); filename << basename << "_physical_region.xml.gz";// check if the region subdomain mesh function file exists
-      file.open(filename.str().c_str(), std::ifstream::in);
-      if (file)                                                        // if it does then attach it to the dolfin MeshData structure 
-      {                                                                // using the dolfin reserved name for cell domains
-        file.close();
-
-        cellids.reset(new dolfin::MeshFunction<std::size_t>(mesh, filename.str()));
-      }
-    }
-
   }
   else if (source=="UnitInterval")                                   // source is an internally generated dolfin mesh
   {
@@ -948,6 +993,13 @@ void SpudBucket::fill_meshes_(const std::string &optionpath)
   (*mesh).rename(meshname, meshname);
   register_mesh(mesh, meshname, optionpath,
                 cellids, edgeids);                                   // put the new mesh in the bucket
+
+  FunctionSpace_ptr vis_fs =                                         // retrieve the visualization functionspace for this mesh
+                    ufc_fetch_visualization_functionspace(meshname,
+                                                          mesh);
+
+  register_visfunctionspace(vis_fs, mesh);                           // put the visualization functionspace in the bucket
+
 }
 
 //*******************************************************************|************************************************************//
@@ -1050,7 +1102,7 @@ void SpudBucket::fill_detectors_()
 
 //*******************************************************************|************************************************************//
 // for each solve location check if the user has specified a solution order or not
-// if they have read he options, if not, default to using the flags under the solvers
+// if they have read the options, if not, default to using the flags under the solvers
 //*******************************************************************|************************************************************//
 void SpudBucket::fill_systemssolvers_()
 {
@@ -1089,6 +1141,8 @@ void SpudBucket::fill_systemssolvers_()
 void SpudBucket::fill_diagnostics_()
 {
   std::stringstream buffer;                                          // optionpath buffer
+
+  write_vischeckpoints_ = Spud::have_option("/io/visualization/checkpoint_format");
 
   statfile_.reset( new StatisticsFile(output_basename()+".stat", 
                            (*(*meshes_begin()).second).mpi_comm(),

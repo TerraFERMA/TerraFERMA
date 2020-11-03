@@ -113,17 +113,17 @@ namespace buckettools
 
     const double start_time() const;                                 // return the current time
 
-    const double_ptr start_time_ptr() const                          // return a (const boost shared) pointer to the start time
+    const double_ptr start_time_ptr() const                          // return a (const std shared) pointer to the start time
     { return start_time_; }
 
     const double old_time() const;                                   // return the old time (from the previous timestep)
 
-    const double_ptr old_time_ptr() const                            // return a (const boost shared) pointer to the old time
+    const double_ptr old_time_ptr() const                            // return a (const std shared) pointer to the old time
     { return old_time_; }
 
     const double current_time() const;                               // return the current time
 
-    const double_ptr current_time_ptr() const                        // return a (const boost shared) pointer to the current time
+    const double_ptr current_time_ptr() const                        // return a (const std shared) pointer to the current time
     { return current_time_; }
 
     const double finish_time() const;                                // return the finish time
@@ -157,11 +157,11 @@ namespace buckettools
                        MeshFunction_size_t_ptr facetdomains = NULL);
                                                                      // register a mesh with the given name in the bucket
 
-    Mesh_ptr fetch_mesh(const std::string &name);                    // return a (boost shared) pointer to a mesh with the given name
+    Mesh_ptr fetch_mesh(const std::string &name);                    // return a (std shared) pointer to a mesh with the given name
     
-    MeshFunction_size_t_ptr fetch_celldomains(const std::string &name);     // return a (boost shared) pointer to a meshfunction with the given name
+    MeshFunction_size_t_ptr fetch_celldomains(const std::string &name);     // return a (std shared) pointer to a meshfunction with the given name
 
-    MeshFunction_size_t_ptr fetch_facetdomains(const std::string &name);    // return a (boost shared) pointer to a meshfunction with the given name
+    MeshFunction_size_t_ptr fetch_facetdomains(const std::string &name);    // return a (std shared) pointer to a meshfunction with the given name
     
     Mesh_it meshes_begin();                                          // return an iterator to the beginning of the meshes
 
@@ -187,6 +187,19 @@ namespace buckettools
 
     MeshFunction_size_t_const_it facetdomains_end() const;            // return a constant iterator to the end of the meshfunctions
  
+    void register_visfunctionspace(
+               FunctionSpace_ptr functionspace, Mesh_ptr mesh);      // register a visualization functionspace with a mesh
+
+    FunctionSpace_ptr fetch_visfunctionspace(const Mesh_ptr mesh);   // return a (std shared) pointer to a functionspace on the given mesh
+    
+    Mesh_FunctionSpace_it visfunctionspaces_begin();                 // return an iterator to the beginning of the visfunctionspaces
+
+    Mesh_FunctionSpace_const_it visfunctionspaces_begin() const;     // return a constant iterator to the beginning of the visfunctionspaces
+
+    Mesh_FunctionSpace_it visfunctionspaces_end();                   // return an iterator to the end of the visfunctionspaces
+
+    Mesh_FunctionSpace_const_it visfunctionspaces_end() const;       // return a constant iterator to the end of the visfunctionspaces
+ 
     //***************************************************************|***********************************************************//
     // System data access
     //***************************************************************|***********************************************************//
@@ -194,9 +207,9 @@ namespace buckettools
     void register_system(SystemBucket_ptr system,                    // register a system with the given name in the bucket
                                           const std::string &name);
 
-    SystemBucket_ptr fetch_system(const std::string &name);          // return a (boost shared) pointer to a system with the given name
+    SystemBucket_ptr fetch_system(const std::string &name);          // return a (std shared) pointer to a system with the given name
     
-    const SystemBucket_ptr fetch_system(const std::string &name)     // return a constant (boost shared) pointer to a system with the given name 
+    const SystemBucket_ptr fetch_system(const std::string &name)     // return a constant (std shared) pointer to a system with the given name 
           const;                                                
     
     SystemBucket_it systems_begin();                                 // return an iterator to the beginning of the systems
@@ -220,13 +233,13 @@ namespace buckettools
     const bool contains_baseuflsymbol(const std::string &uflsymbol)  // return a boolean, true if the bucket contains a base ufl symbol
                                                         const;       //                 for the given ufl symbol false otherwise
 
-    void register_uflsymbol(const std::pair< std::string,            // register a (boost shared) pointer to a function with a ufl  
+    void register_uflsymbol(const std::pair< std::string,            // register a (std shared) pointer to a function with a ufl  
                             GenericFunction_ptr > &uflfunctionpair); // symbol
 
-    void register_uflsymbol(GenericFunction_ptr function,            // register a (boost shared) pointer to a function with a ufl
+    void register_uflsymbol(GenericFunction_ptr function,            // register a (std shared) pointer to a function with a ufl
                             const std::string &uflsymbol);           // symbol
 
-    GenericFunction_ptr fetch_uflsymbol(const std::string &uflsymbol)// fetch a (boost shared) pointer to a function associated with
+    GenericFunction_ptr fetch_uflsymbol(const std::string &uflsymbol)// fetch a (std shared) pointer to a function associated with
                        const;                                        // a ufl symbol
 
     //***************************************************************|***********************************************************//
@@ -240,7 +253,7 @@ namespace buckettools
     const bool contains_coefficientspace(const std::string           // returns a boolean, true if the bucket contains a
                                                &uflsymbol) const;    // functionspace for the uflsymbol, false otherwise
 
-    FunctionSpace_ptr fetch_coefficientspace(const std::string       // returns a (boost shared) pointer to a functionspace for
+    FunctionSpace_ptr fetch_coefficientspace(const std::string       // returns a (std shared) pointer to a functionspace for
                                                &uflsymbol) const;    // the coefficient with the given uflsymbol
 
     //***************************************************************|***********************************************************//
@@ -283,6 +296,13 @@ namespace buckettools
     //***************************************************************|***********************************************************//
     // Output functions
     //***************************************************************|***********************************************************//
+
+    XDMFFile_ptr fetch_visfile(const Mesh_ptr mesh, bool &newfile);  // fetch (and possibly allocate) a visualization file
+
+    XDMFFile_ptr fetch_convvisfile(const Mesh_ptr mesh, bool &newfile);// fetch (and possibly allocate) a visualization file
+
+    const bool write_vischeckpoints() const                          // return if we're visualizing using checkpoint format or not
+    { return write_vischeckpoints_; }
 
     void output(const int &location);                                // output diagnostics for the bucket
 
@@ -334,6 +354,8 @@ namespace buckettools
 
     std::string output_basename_;                                    // the output base name
 
+    bool write_vischeckpoints_;                                      // whether to write visualization checkpoints or not
+    
     double_ptr visualization_period_, statistics_period_,            // dump periods
                steadystate_period_, detectors_period_,
                timestepadapt_period_, checkpoint_period_;
@@ -355,17 +377,19 @@ namespace buckettools
     // Pointers data
     //***************************************************************|***********************************************************//
 
-    ordered_map<const std::string, Mesh_ptr> meshes_;                // a map from mesh names to (boost shared) pointers to meshes
+    ordered_map<const std::string, Mesh_ptr> meshes_;                // a map from mesh names to (std shared) pointers to meshes
 
-    ordered_map<const std::string, MeshFunction_size_t_ptr> celldomains_;   // a map from mesh names to (boost shared) pointers to
+    ordered_map<const std::string, MeshFunction_size_t_ptr> celldomains_;   // a map from mesh names to (std shared) pointers to
                                                                      // meshfunctions describing the cellids
 
-    ordered_map<const std::string, MeshFunction_size_t_ptr> facetdomains_;  // a map from mesh names to (boost shared) pointers to
+    ordered_map<const std::string, MeshFunction_size_t_ptr> facetdomains_;  // a map from mesh names to (std shared) pointers to
                                                                      // meshfunctions describing the facetids
 
-    ordered_map<const std::string, SystemBucket_ptr> systems_;       // a map from system names to (boost shared) pointers to systems
+    std::map< Mesh_ptr, FunctionSpace_ptr > visfunctionspaces_;      // pointers to visualization functionspaces
 
-    ordered_map<const std::string, GenericDetectors_ptr> detectors_; // a map from detector set name to (boost shared) pointers to detectors
+    ordered_map<const std::string, SystemBucket_ptr> systems_;             // a map from system names to (std shared) pointers to systems
+
+    ordered_map<const std::string, GenericDetectors_ptr> detectors_;        // a map from detector set name to (std shared) pointers to detectors
 
     ordered_map<const int, SystemsSolverBucket_ptr > systemssolvers_;// a map to the system solvers
 
@@ -378,6 +402,8 @@ namespace buckettools
     DetectorsFile_ptr detfile_;                                      // pointer to a detectors file
 
     SteadyStateFile_ptr steadyfile_;                                 // pointer to a steady state file
+
+    std::map< Mesh_ptr, XDMFFile_ptr > visfiles_;     // pointer to visualization file(s)
 
     //***************************************************************|***********************************************************//
     // Filling data
@@ -400,7 +426,7 @@ namespace buckettools
     static time_t start_walltime_;                                   // the start time                                    
 
     static boost::timer::cpu_timer timer_;                           // timer from the start of the simulation (init)
-    
+
     //***************************************************************|***********************************************************//
     // Pointers data (continued)
     //***************************************************************|***********************************************************//
@@ -439,7 +465,7 @@ namespace buckettools
 
   };
 
-  typedef std::shared_ptr< Bucket > Bucket_ptr;                    // define a boost shared ptr type for the class
+  typedef std::shared_ptr< Bucket > Bucket_ptr;                    // define a std shared ptr type for the class
 
 }
 #endif

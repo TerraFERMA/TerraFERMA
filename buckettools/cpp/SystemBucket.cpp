@@ -20,7 +20,7 @@
 
 
 #include "BoostTypes.h"
-#include "InitialConditionExpression.h"
+#include "Bucket.h"
 #include "SystemBucket.h"
 #include "FunctionBucket.h"
 #include "SolverBucket.h"
@@ -812,18 +812,6 @@ std::vector< std::shared_ptr<const dolfin::DirichletBC> >::const_iterator System
 }
 
 //*******************************************************************|************************************************************//
-// loop over the fields outputting pvd diagnostics for all the fields in this system
-//*******************************************************************|************************************************************//
-void SystemBucket::output()
-{
-  for (FunctionBucket_it f_it = fields_begin(); f_it != fields_end(); 
-                                                              f_it++)
-  {
-    (*(*f_it).second).output();
-  }
-}
-
-//*******************************************************************|************************************************************//
 // return a boolean indicating if this system has fields to be included in visualization output
 //*******************************************************************|************************************************************//
 const bool SystemBucket::include_in_visualization() const
@@ -838,6 +826,20 @@ const bool SystemBucket::include_in_visualization() const
       break;
     }
   }
+
+  if (!include)
+  {
+    for (FunctionBucket_const_it c_it = coeffs_begin(); c_it != coeffs_end(); 
+                                                                c_it++)
+    {
+      include = (*(*c_it).second).include_in_visualization();
+      if (include)
+      {
+        break;
+      }
+    }
+  }
+
   return include;
 }
     
@@ -998,29 +1000,73 @@ const std::string SystemBucket::functionals_str(const int &indent) const
 }
 
 //*******************************************************************|************************************************************//
+// output the system
+//*******************************************************************|************************************************************//
+void SystemBucket::output()
+{
+
+  for (FunctionBucket_it f_it = fields_begin();
+                         f_it != fields_end(); f_it++)
+  {
+    (*(*f_it).second).output();
+  }
+
+  for (FunctionBucket_it c_it = coeffs_begin();
+                         c_it != coeffs_end(); c_it++)
+  {
+    (*(*c_it).second).output();
+  }
+
+}
+
+////*******************************************************************|************************************************************//
+//// output the system
+////*******************************************************************|************************************************************//
+//void SystemBucket::write_convvis()
+//{
+//
+//  bool newfile, append;
+//  XDMFFile_ptr convvis_file = (*bucket()).fetch_convvisfile(mesh(), newfile);
+//
+//  // all fields and residuals get output in this debugging output
+//  // regardless of whether they're included in standard output
+//  append = !newfile;
+//  for (FunctionBucket_it f_it = fields_begin();
+//                         f_it != fields_end(); f_it++)
+//  {
+//    (*(*f_it).second).write_checkpoint(convvis_file, "iterated", (double)(*bucket()).iteration_count(),
+//                                       append, name()+"::Iterated"+(*(*f_it).second).name());
+//    append=true;
+//    (*(*f_it).second).write_checkpoint(convvis_file, "residual", (double)(*bucket()).iteration_count(),
+//                                       true, name()+"::Residual"+(*(*f_it).second).name());
+//  }
+//
+//  // including coefficients here is just a niceity but some
+//  // coefficients aren't suitable for visualization so
+//  // only output them if we've asked for them in the normal
+//  // output
+//  for (FunctionBucket_it c_it = coeffs_begin();
+//                         c_it != coeffs_end(); c_it++)
+//  {
+//    if ((*(*c_it).second).include_in_visualization())
+//    {
+//      (*(*c_it).second).write_checkpoint(convvis_file, "iterated", (double)(*bucket()).iteration_count(),
+//                                         true, name()+"::"+(*(*c_it).second).name());
+//    }
+//  }
+//
+//}
+
+//*******************************************************************|************************************************************//
 // checkpoint the system
 //*******************************************************************|************************************************************//
 void SystemBucket::checkpoint(const double_ptr time)
 {
-  Function_ptr function = function_ptr(time);
-
-  if (function)
-  {
-
-    std::stringstream buffer;
-
-    buffer.str(""); buffer << (*bucket()).output_basename() << "_" 
-                           << name() << "_" 
-                           << (*bucket()).checkpoint_count() << ".xml";
-    dolfin::File sysfile(buffer.str());
-    sysfile << *function;
-
-  }
 
   for (FunctionBucket_it f_it = fields_begin();                      // if there's no function then there should be no fields
                          f_it != fields_end(); f_it++)               // so this is a bit redundant outside the above if statement
   {
-    (*(*f_it).second).checkpoint();
+    (*(*f_it).second).checkpoint(time);
   }
 
   for (SolverBucket_it s_it = solvers_begin();
@@ -1032,62 +1078,14 @@ void SystemBucket::checkpoint(const double_ptr time)
 }
 
 //*******************************************************************|************************************************************//
-// given a map from components to field initial condition expressions initialize the system initial condition expression
-//*******************************************************************|************************************************************//
-void SystemBucket::collect_ics_(const uint &components, const std::map< std::size_t, Expression_ptr > &icexpressions)
-{
-  const std::size_t nfields = icexpressions.size();
-  if (nfields>0)
-  {
-    const std::size_t size = (*(*icexpressions.begin()).second).value_size();
-    if (nfields==1 && size==components)                              // single field
-    {
-      const std::size_t rank = (*(*icexpressions.begin()).second).value_rank();
-      if (rank==0)                                                   // scalar
-      {
-        icexpression_.reset(new InitialConditionExpression(icexpressions));
-      }
-      else if (rank==1)                                              // vector
-      {
-        icexpression_.reset(new InitialConditionExpression(components, icexpressions));
-      }
-      else if (rank==2)                                              // tensor
-      {
-        std::vector<std::size_t> value_shape(2, 0);
-        for (uint i=0; i<rank; i++)
-        {
-          value_shape[i] = (*(*icexpressions.begin()).second).value_dimension(i);
-        }
-        icexpression_.reset(new InitialConditionExpression(value_shape, icexpressions));
-      }
-      else
-      {
-        tf_err("Unknown rank in collect_ics_.", "Rank: %d", rank);
-      }
-    }
-    else                                                             // vectors are the general case for a mixed function
-    {
-      icexpression_.reset(new InitialConditionExpression(components, icexpressions));
-    }
-  }
-}
-
-//*******************************************************************|************************************************************//
 // initialize the system with a combined initial condition (calls eval)
 //*******************************************************************|************************************************************//
 void SystemBucket::apply_ic_()
 {
-  if (icexpression_)
+  for (FunctionBucket_it f_it = fields_begin();                      // if there's no function then there should be no fields
+                         f_it != fields_end(); f_it++)               // so this is a bit redundant outside the above if statement
   {
-    (*oldfunction_).interpolate(*icexpression_);                     // interpolate the initial condition onto the old function
-  }
-  else if (icfile_)
-  {
-    (*icfile()) >> (*oldfunction_);
-  }
-  else
-  {
-    (*(*oldfunction_).vector()).zero();                              // by default we have a zero ic
+    (*(*f_it).second).apply_ic();
   }
   (*(*iteratedfunction_).vector()) = (*(*oldfunction_).vector());    // set the iterated function vector to the old function vector
   (*(*function_).vector()) = (*(*oldfunction_).vector());            // set the function vector to the old function vector

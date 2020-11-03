@@ -52,7 +52,7 @@ picard =
     ## ufl code preamble to the forms defined below.  
     ## Any system, field or coefficient ufl symbols defined in this options file may be used in this preamble.
     element preamble {
-      python_code 
+      python3_code 
     }?,
     ## ufl code form describing a bilinear form (must return a bilinear form).  
     ## Any system, field or coefficient ufl symbols defined in this options file may be used in this form as well as any symbols 
@@ -60,7 +60,7 @@ picard =
     element form {
       attribute name { "Bilinear" },
       attribute rank { "1" },
-      python_code,
+      python3_code,
       form_ufl_symbol,
       ident_zeros
     },
@@ -72,7 +72,7 @@ picard =
     element form {
       attribute name { "BilinearPC" },
       attribute rank { "1" },
-      python_code,
+      python3_code,
       form_ufl_symbol,
       ident_zeros
     }?,
@@ -82,7 +82,7 @@ picard =
     element form {
       attribute name { "Linear" },
       attribute rank { "0" },
-      python_code,
+      python3_code,
       form_ufl_symbol
     },
     ## ufl code form describing a linear residual form (must return a linear form).  
@@ -92,7 +92,7 @@ picard =
       attribute name { "Residual" },
       attribute rank { "0" },
       ## ufl code describing a form.
-      python_code,
+      python3_code,
       form_ufl_symbol
     },
     form_representation,
@@ -121,6 +121,12 @@ picard =
     ## Options to give extra information for each iteration of the
     ## Picard solve. Some of those may really slow down your computation!
     element monitors {
+       ## Output pvd visualization of the solution and residual at each iteration.
+       ## 
+       ## WARNING: This will produce a lot of output so should only be used for debugging purposes!
+       element visualization {
+          comment
+       }?,
        ## Output a diagnostic file detailing the convergence of this solver.
        element convergence_file { 
          comment
@@ -153,7 +159,7 @@ snes =
     ## ufl code preamble to the forms defined below.  
     ## Any system, field or coefficient ufl symbols defined in this options file may be used in this preamble.
     element preamble {
-      python_code
+      python3_code
     }?,
     ## ufl code form describing a linear residual form (must return a linear form).  
     ## Any system, field or coefficient ufl symbols defined in this options file may be used in this form as well as any symbols 
@@ -161,7 +167,7 @@ snes =
     element form {
       attribute name { "Residual" },
       attribute rank { "0" },
-      python_code,
+      python3_code,
       form_ufl_symbol
     },
     ## ufl code form describing a jacobian bilinear form (must return a bilinear form).  
@@ -170,7 +176,7 @@ snes =
     element form {
       attribute name { "Jacobian" },
       attribute rank { "1" },
-      python_code,
+      python3_code,
       form_ufl_symbol,
       ident_zeros
     },
@@ -182,7 +188,7 @@ snes =
     element form {
       attribute name { "JacobianPC" },
       attribute rank { "1" },
-      python_code,
+      python3_code,
       form_ufl_symbol,
       ident_zeros
     }?,
@@ -326,6 +332,12 @@ snes =
        element solution_graph {
          comment
        }?,
+       ## Output pvd visualization of the solution and residual at each iteration.
+       ## 
+       ## WARNING: This will produce a lot of output so should only be used for debugging purposes!
+       element visualization {
+         comment
+       }?,
        ## Output a diagnostic file detailing the convergence of this solver.
        element convergence_file { 
          comment
@@ -427,7 +439,7 @@ is_field_null =
         ## 
         ## The resulting null space will be normalized automatically.
         element python {
-          python_code
+          python3_code
         }
       ),
       comment
@@ -463,7 +475,7 @@ is_field_constraints =
         ##
         ## The return value must have the same length as the number of components described above for this field.
         element python {
-          python_code
+          python3_code
         }
       ),
       comment
@@ -1387,7 +1399,7 @@ pcfieldsplit_composite_types =
             element form {
               attribute name { "SchurPC" },
               attribute rank { "1" },
-              python_code,
+              python3_code,
               form_ufl_symbol,
               ident_zeros
             },
@@ -1562,6 +1574,12 @@ iterative_monitors_base =
 
 iterative_monitors_vis = 
   (
+    ## Output pvd visualization of the solution and residual at each iteration.
+    ## 
+    ## WARNING: This will produce a lot of output so should only be used for debugging purposes!
+    element visualization {
+      comment
+    }?,
     ## Output a diagnostic file detailing the convergence of this solver.
     element convergence_file { 
       comment

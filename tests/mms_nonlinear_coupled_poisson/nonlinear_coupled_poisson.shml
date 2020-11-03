@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <harness_options>
   <length>
     <string_value lines="1">short</string_value>
@@ -21,41 +21,47 @@
             <string_value lines="1">5 10 20 40</string_value>
           </values>
           <update>
-            <string_value lines="20" type="code" language="python">import libspud
-libspud.set_option("/geometry/mesh::Mesh/source::UnitSquare/number_cells", [int(ncells), int(ncells)])</string_value>
+            <string_value lines="20" type="code" language="python3">import libspud
+libspud.set_option("/geometry/mesh::Mesh/source::UnitSquare/number_cells", [int(ncells), int(ncells)])
+</string_value>
             <single_build/>
           </update>
         </parameter>
       </parameter_sweep>
       <variables>
         <variable name="snes_field1_error_l2">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 from math import sqrt
 stat = parser("nonlinear_coupled_poisson.stat")
-snes_field1_error_l2 = sqrt(stat["System"]["AbsoluteDifferenceField1L2NormSquared"]["functional_value"][-1])</string_value>
+snes_field1_error_l2 = sqrt(stat["System"]["AbsoluteDifferenceField1L2NormSquared"]["functional_value"][-1])
+</string_value>
         </variable>
         <variable name="snes_field1_error_linf">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 from math import sqrt
 stat = parser("nonlinear_coupled_poisson.stat")
-snes_field1_error_linf = stat["System"]["AbsoluteDifferenceField1"]["max"][-1]</string_value>
+snes_field1_error_linf = stat["System"]["AbsoluteDifferenceField1"]["max"][-1]
+</string_value>
         </variable>
         <variable name="snes_field2_error_l2">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 from math import sqrt
 stat = parser("nonlinear_coupled_poisson.stat")
-snes_field2_error_l2 = sqrt(stat["System"]["AbsoluteDifferenceField2L2NormSquared"]["functional_value"][-1])</string_value>
+snes_field2_error_l2 = sqrt(stat["System"]["AbsoluteDifferenceField2L2NormSquared"]["functional_value"][-1])
+</string_value>
         </variable>
         <variable name="snes_field2_error_linf">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 from math import sqrt
 stat = parser("nonlinear_coupled_poisson.stat")
-snes_field2_error_linf = stat["System"]["AbsoluteDifferenceField2"]["max"][-1]</string_value>
+snes_field2_error_linf = stat["System"]["AbsoluteDifferenceField2"]["max"][-1]
+</string_value>
         </variable>
         <variable name="snes_nits">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 conv = parser("nonlinear_coupled_poisson_System_Solver_snes_in_timeloop.conv")
-snes_nits = conv["NonlinearIteration"]["value"][-1]</string_value>
+snes_nits = conv["NonlinearIteration"]["value"][-1]
+</string_value>
         </variable>
       </variables>
     </simulation>
@@ -70,41 +76,47 @@ snes_nits = conv["NonlinearIteration"]["value"][-1]</string_value>
             <string_value lines="1">5 10 20 40</string_value>
           </values>
           <update>
-            <string_value lines="20" type="code" language="python">import libspud
-libspud.set_option("/geometry/mesh::Mesh/source::UnitSquare/number_cells", [int(ncells), int(ncells)])</string_value>
+            <string_value lines="20" type="code" language="python3">import libspud
+libspud.set_option("/geometry/mesh::Mesh/source::UnitSquare/number_cells", [int(ncells), int(ncells)])
+</string_value>
             <single_build/>
           </update>
         </parameter>
       </parameter_sweep>
       <variables>
         <variable name="picard_field1_error_l2">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 from math import sqrt
 stat = parser("nonlinear_coupled_poisson.stat")
-picard_field1_error_l2 = sqrt(stat["System"]["AbsoluteDifferenceField1L2NormSquared"]["functional_value"][-1])</string_value>
+picard_field1_error_l2 = sqrt(stat["System"]["AbsoluteDifferenceField1L2NormSquared"]["functional_value"][-1])
+</string_value>
         </variable>
         <variable name="picard_field1_error_linf">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 from math import sqrt
 stat = parser("nonlinear_coupled_poisson.stat")
-picard_field1_error_linf = stat["System"]["AbsoluteDifferenceField1"]["max"][-1]</string_value>
+picard_field1_error_linf = stat["System"]["AbsoluteDifferenceField1"]["max"][-1]
+</string_value>
         </variable>
         <variable name="picard_field2_error_l2">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 from math import sqrt
 stat = parser("nonlinear_coupled_poisson.stat")
-picard_field2_error_l2 = sqrt(stat["System"]["AbsoluteDifferenceField2L2NormSquared"]["functional_value"][-1])</string_value>
+picard_field2_error_l2 = sqrt(stat["System"]["AbsoluteDifferenceField2L2NormSquared"]["functional_value"][-1])
+</string_value>
         </variable>
         <variable name="picard_field2_error_linf">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 from math import sqrt
 stat = parser("nonlinear_coupled_poisson.stat")
-picard_field2_error_linf = stat["System"]["AbsoluteDifferenceField2"]["max"][-1]</string_value>
+picard_field2_error_linf = stat["System"]["AbsoluteDifferenceField2"]["max"][-1]
+</string_value>
         </variable>
         <variable name="picard_nits">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 conv = parser("nonlinear_coupled_poisson_System_Solver_picard_in_timeloop.conv")
-picard_nits = conv["NonlinearIteration"]["value"][-1]</string_value>
+picard_nits = conv["NonlinearIteration"]["value"][-1]
+</string_value>
         </variable>
       </variables>
     </simulation>
@@ -119,144 +131,165 @@ picard_nits = conv["NonlinearIteration"]["value"][-1]</string_value>
             <string_value lines="1">5 10 20 40</string_value>
           </values>
           <update>
-            <string_value lines="20" type="code" language="python">import libspud
-libspud.set_option("/geometry/mesh::Mesh/source::UnitSquare/number_cells", [int(ncells), int(ncells)])</string_value>
+            <string_value lines="20" type="code" language="python3">import libspud
+libspud.set_option("/geometry/mesh::Mesh/source::UnitSquare/number_cells", [int(ncells), int(ncells)])
+</string_value>
             <single_build/>
           </update>
         </parameter>
       </parameter_sweep>
       <variables>
         <variable name="ns_field1_error_l2">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 from math import sqrt
 stat = parser("nonlinear_coupled_poisson.stat")
-ns_field1_error_l2 = sqrt(stat["System1"]["AbsoluteDifferenceField1L2NormSquared"]["functional_value"][-1])</string_value>
+ns_field1_error_l2 = sqrt(stat["System1"]["AbsoluteDifferenceField1L2NormSquared"]["functional_value"][-1])
+</string_value>
         </variable>
         <variable name="ns_field1_error_linf">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 from math import sqrt
 stat = parser("nonlinear_coupled_poisson.stat")
-ns_field1_error_linf = stat["System1"]["AbsoluteDifferenceField1"]["max"][-1]</string_value>
+ns_field1_error_linf = stat["System1"]["AbsoluteDifferenceField1"]["max"][-1]
+</string_value>
         </variable>
         <variable name="ns_field2_error_l2">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 from math import sqrt
 stat = parser("nonlinear_coupled_poisson.stat")
-ns_field2_error_l2 = sqrt(stat["System2"]["AbsoluteDifferenceField2L2NormSquared"]["functional_value"][-1])</string_value>
+ns_field2_error_l2 = sqrt(stat["System2"]["AbsoluteDifferenceField2L2NormSquared"]["functional_value"][-1])
+</string_value>
         </variable>
         <variable name="ns_field2_error_linf">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 from math import sqrt
 stat = parser("nonlinear_coupled_poisson.stat")
-ns_field2_error_linf = stat["System2"]["AbsoluteDifferenceField2"]["max"][-1]</string_value>
+ns_field2_error_linf = stat["System2"]["AbsoluteDifferenceField2"]["max"][-1]
+</string_value>
         </variable>
         <variable name="ns_nits">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 conv = parser("nonlinear_coupled_poisson_in_timeloop_nonlinear_systems.conv")
-ns_nits = conv["nonlinear_systems_iteration"]["value"][-1]</string_value>
+ns_nits = conv["nonlinear_systems_iteration"]["value"][-1]
+</string_value>
         </variable>
       </variables>
     </simulation>
   </simulations>
   <tests>
     <test name="snes_field1_error_l2_p1">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 error_l2_a = numpy.array(snes_field1_error_l2[{'degree':['1']}])
 conv_l2 = numpy.log2(error_l2_a[:-1]/error_l2_a[1:])
-print conv_l2
-assert(numpy.all(conv_l2 &gt; 1.5))</string_value>
+print(conv_l2)
+assert(numpy.all(conv_l2 &gt; 1.5))
+</string_value>
     </test>
     <test name="snes_field1_error_linf_p1">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 error_linf_a = numpy.array(snes_field1_error_linf[{'degree':['1']}])
 conv_linf = numpy.log2(error_linf_a[:-1]/error_linf_a[1:])
-print conv_linf
-assert(numpy.all(conv_linf &gt; 1.5))</string_value>
+print(conv_linf)
+assert(numpy.all(conv_linf &gt; 1.5))
+</string_value>
     </test>
     <test name="snes_field2_error_l2_p1">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 error_l2_a = numpy.array(snes_field2_error_l2[{'degree':['1']}])
 conv_l2 = numpy.log2(error_l2_a[:-1]/error_l2_a[1:])
-print conv_l2
-assert(numpy.all(conv_l2 &gt; 1.5))</string_value>
+print(conv_l2)
+assert(numpy.all(conv_l2 &gt; 1.5))
+</string_value>
     </test>
     <test name="snes_field2_error_linf_p1">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 error_linf_a = numpy.array(snes_field2_error_linf[{'degree':['1']}])
 conv_linf = numpy.log2(error_linf_a[:-1]/error_linf_a[1:])
-print conv_linf
-assert(numpy.all(conv_linf &gt; 1.5))</string_value>
+print(conv_linf)
+assert(numpy.all(conv_linf &gt; 1.5))
+</string_value>
     </test>
     <test name="picard_field1_error_l2_p1">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 error_l2_a = numpy.array(picard_field1_error_l2[{'degree':['1']}])
 conv_l2 = numpy.log2(error_l2_a[:-1]/error_l2_a[1:])
-print conv_l2
-assert(numpy.all(conv_l2 &gt; 1.5))</string_value>
+print(conv_l2)
+assert(numpy.all(conv_l2 &gt; 1.5))
+</string_value>
     </test>
     <test name="picard_field1_error_linf_p1">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 error_linf_a = numpy.array(picard_field1_error_linf[{'degree':['1']}])
 conv_linf = numpy.log2(error_linf_a[:-1]/error_linf_a[1:])
-print conv_linf
-assert(numpy.all(conv_linf &gt; 1.5))</string_value>
+print(conv_linf)
+assert(numpy.all(conv_linf &gt; 1.5))
+</string_value>
     </test>
     <test name="picard_field2_error_l2_p1">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 error_l2_a = numpy.array(picard_field2_error_l2[{'degree':['1']}])
 conv_l2 = numpy.log2(error_l2_a[:-1]/error_l2_a[1:])
-print conv_l2
-assert(numpy.all(conv_l2 &gt; 1.5))</string_value>
+print(conv_l2)
+assert(numpy.all(conv_l2 &gt; 1.5))
+</string_value>
     </test>
     <test name="picard_field2_error_linf_p1">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 error_linf_a = numpy.array(picard_field2_error_linf[{'degree':['1']}])
 conv_linf = numpy.log2(error_linf_a[:-1]/error_linf_a[1:])
-print conv_linf
-assert(numpy.all(conv_linf &gt; 1.5))</string_value>
+print(conv_linf)
+assert(numpy.all(conv_linf &gt; 1.5))
+</string_value>
     </test>
     <test name="ns_field1_error_l2_p1">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 error_l2_a = numpy.array(ns_field1_error_l2[{'degree':['1']}])
 conv_l2 = numpy.log2(error_l2_a[:-1]/error_l2_a[1:])
-print conv_l2
-assert(numpy.all(conv_l2 &gt; 1.5))</string_value>
+print(conv_l2)
+assert(numpy.all(conv_l2 &gt; 1.5))
+</string_value>
     </test>
     <test name="ns_field1_error_linf_p1">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 error_linf_a = numpy.array(ns_field1_error_linf[{'degree':['1']}])
 conv_linf = numpy.log2(error_linf_a[:-1]/error_linf_a[1:])
-print conv_linf
-assert(numpy.all(conv_linf &gt; 1.5))</string_value>
+print(conv_linf)
+assert(numpy.all(conv_linf &gt; 1.5))
+</string_value>
     </test>
     <test name="ns_field2_error_l2_p1">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 error_l2_a = numpy.array(ns_field2_error_l2[{'degree':['1']}])
 conv_l2 = numpy.log2(error_l2_a[:-1]/error_l2_a[1:])
-print conv_l2
-assert(numpy.all(conv_l2 &gt; 1.5))</string_value>
+print(conv_l2)
+assert(numpy.all(conv_l2 &gt; 1.5))
+</string_value>
     </test>
     <test name="ns_field2_error_linf_p1">
-      <string_value lines="20" type="code" language="python">import numpy
+      <string_value lines="20" type="code" language="python3">import numpy
 error_linf_a = numpy.array(ns_field2_error_linf[{'degree':['1']}])
 conv_linf = numpy.log2(error_linf_a[:-1]/error_linf_a[1:])
-print conv_linf
-assert(numpy.all(conv_linf &gt; 1.5))</string_value>
+print(conv_linf)
+assert(numpy.all(conv_linf &gt; 1.5))
+</string_value>
     </test>
     <test name="snes_nits">
-      <string_value lines="20" type="code" language="python">import numpy
-print snes_nits
-assert numpy.all(abs(numpy.array(snes_nits) - 6) &lt;= 1)</string_value>
+      <string_value lines="20" type="code" language="python3">import numpy
+print(snes_nits)
+assert numpy.all(abs(numpy.array(snes_nits) - 6) &lt;= 1)
+</string_value>
     </test>
     <test name="picard_nits">
-      <string_value lines="20" type="code" language="python">import numpy
-print picard_nits
-assert numpy.all(abs(numpy.array(picard_nits) - 9) &lt;= 1)</string_value>
+      <string_value lines="20" type="code" language="python3">import numpy
+print(picard_nits)
+assert numpy.all(abs(numpy.array(picard_nits) - 9) &lt;= 1)
+</string_value>
     </test>
     <test name="ns_nits">
-      <string_value lines="20" type="code" language="python">import numpy
-print ns_nits
-assert numpy.all(abs(numpy.array(ns_nits) - 5) &lt;= 1)</string_value>
+      <string_value lines="20" type="code" language="python3">import numpy
+print(ns_nits)
+assert numpy.all(abs(numpy.array(ns_nits) - 5) &lt;= 1)
+</string_value>
     </test>
   </tests>
 </harness_options>

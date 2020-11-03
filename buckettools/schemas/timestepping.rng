@@ -215,6 +215,14 @@ Defaults to 1.e-50.</a:documentation>
       <a:documentation>Options to give extra information for each iteration of the
 timestep. Some of those may really slow down your computation!</a:documentation>
       <optional>
+        <element name="visualization">
+          <a:documentation>Output pvd visualization of the solution and residual at each iteration.
+
+WARNING: This will produce a lot of output so should only be used for debugging purposes!</a:documentation>
+          <ref name="comment"/>
+        </element>
+      </optional>
+      <optional>
         <element name="convergence_file">
           <a:documentation>Output a diagnostic file detailing the convergence of the nonlinear system iterations.</a:documentation>
           <ref name="comment"/>

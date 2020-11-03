@@ -74,7 +74,7 @@ class SpudFunctionBucket(buckettools.functionbucket.FunctionBucket):
     
     self.cpp = []
     for k in range(libspud.option_count(optionpath+"/type/rank/initial_condition")):
-      cpp_optionpath = optionpath+"/type/rank/initial_condition["+`k`+"]"
+      cpp_optionpath = optionpath+"/type/rank/initial_condition["+repr(k)+"]"
       if libspud.have_option(cpp_optionpath+"/cpp"):
         cpp_name = libspud.get_option(cpp_optionpath+"/name")
         cppexpression = buckettools.spud.SpudCppExpressionBucket()
@@ -86,10 +86,10 @@ class SpudFunctionBucket(buckettools.functionbucket.FunctionBucket):
         del cppexpression
 
     for j in range(libspud.option_count(optionpath+"/type/rank/boundary_condition")):
-      bc_optionpath = optionpath+"/type/rank/boundary_condition["+`j`+"]"
+      bc_optionpath = optionpath+"/type/rank/boundary_condition["+repr(j)+"]"
       bc_name = libspud.get_option(bc_optionpath+"/name")
       for k in range(libspud.option_count(bc_optionpath+"/sub_components")):
-        bc_comp_optionpath = bc_optionpath+"/sub_components["+`k`+"]"
+        bc_comp_optionpath = bc_optionpath+"/sub_components["+repr(k)+"]"
         bc_comp_name = libspud.get_option(bc_comp_optionpath+"/name")
         
         cpp_optionpath = bc_comp_optionpath+"/type"
@@ -105,7 +105,7 @@ class SpudFunctionBucket(buckettools.functionbucket.FunctionBucket):
           del cppexpression
 
     for k in range(libspud.option_count(optionpath+"/type/rank/value")):
-      cpp_optionpath = optionpath+"/type/rank/value["+`k`+"]"
+      cpp_optionpath = optionpath+"/type/rank/value["+repr(k)+"]"
       if libspud.have_option(cpp_optionpath+"/cpp"):
         cpp_name = libspud.get_option(cpp_optionpath+"/name")
         cppexpression = buckettools.spud.SpudCppExpressionBucket()
