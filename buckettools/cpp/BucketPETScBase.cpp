@@ -311,26 +311,21 @@ PetscErrorCode buckettools::SNESCustomMonitor(SNES snes, PetscInt its,
 
   if (((*solver).visualization_monitor()))
   {
-//    buffer.str(""); buffer << (*bucket).output_basename() << "_" 
-//                           << (*system).name() << "_" 
-//                           << (*solver).name() << "_" 
-//                           << (*bucket).timestep_count() << "_" 
-//                           << (*bucket).iteration_count() << "_snes.xdmf";
-//
-//    XDMFFile_ptr xdmf_file( new dolfin::XDMFFile((*(*system).mesh()).mpi_comm(), buffer.str()) );
-//    bool append = (its!=0);
-//    for (FunctionBucket_const_it f_it = (*system).fields_begin(); 
-//                                 f_it != (*system).fields_end(); 
-//                                                          f_it++)
-//    {
-//      (*(*f_it).second).write_checkpoint(xdmf_file, "iterated", (double)its, 
-//                               append, (*system).name()+"::Iterated"+(*(*f_it).second).name());
-//      append = true;
-//      (*(*f_it).second).write_checkpoint(xdmf_file, "residual", (double)its,
-//                               true, (*system).name()+"::Residual"+(*(*f_it).second).name());
-//      (*(*f_it).second).write_checkpoint(xdmf_file, "snesupdate", (double)its,
-//                               true, (*system).name()+"::SNESUpdate"+(*(*f_it).second).name());
-//    }
+    buffer.str(""); buffer << (*solver).visualization_basename() << "_snes.xdmf";
+    XDMFFile_ptr xdmf_file( new dolfin::XDMFFile((*(*system).mesh()).mpi_comm(), buffer.str()) );
+    bool append = (its!=0);
+    for (FunctionBucket_const_it f_it = (*system).fields_begin(); 
+                                 f_it != (*system).fields_end(); 
+                                                          f_it++)
+    {
+      (*(*f_it).second).write_checkpoint(xdmf_file, "iterated", (double)its, 
+                               append, (*system).name()+"::Iterated"+(*(*f_it).second).name());
+      append = true;
+      (*(*f_it).second).write_checkpoint(xdmf_file, "residual", (double)its,
+                               true, (*system).name()+"::Residual"+(*(*f_it).second).name());
+      (*(*f_it).second).write_checkpoint(xdmf_file, "snesupdate", (double)its,
+                               true, (*system).name()+"::SNESUpdate"+(*(*f_it).second).name());
+    }
   }
 
   ConvergenceFile_ptr convfile = (*solver).convergencefile();
@@ -382,25 +377,20 @@ PetscErrorCode buckettools::KSPCustomMonitor(KSP ksp, int it,
 
   if (((*solver).kspvisualization_monitor()))
   {
-//    buffer.str(""); buffer << (*bucket).output_basename() << "_" 
-//                           << (*system).name() << "_" 
-//                           << (*solver).name() << "_" 
-//                           << (*bucket).timestep_count() << "_" 
-//                           << (*bucket).iteration_count() << "_"
-//                           << (*solver).iteration_count() << "_ksp.xdmf";
-//
-//    XDMFFile_ptr xdmf_file( new dolfin::XDMFFile((*(*system).mesh()).mpi_comm(), buffer.str()) );
-//    bool append = (it!=0);
-//    for (FunctionBucket_const_it f_it = (*system).fields_begin(); 
-//                                 f_it != (*system).fields_end(); 
-//                                                          f_it++)
-//    {
-//      (*(*f_it).second).write_checkpoint(xdmf_file, "iterated", (double)it,
-//                               append, (*system).name()+"::Iterated"+(*(*f_it).second).name());
-//      append = true;
-//      (*(*f_it).second).write_checkpoint(xdmf_file, "residual", (double)it,
-//                               true, (*system).name()+"::Residual"+(*(*f_it).second).name());
-//    }
+    buffer.str(""); buffer << (*solver).visualization_basename() << "_"
+                           << (*solver).iteration_count() << "_ksp.xdmf";
+    XDMFFile_ptr xdmf_file( new dolfin::XDMFFile((*(*system).mesh()).mpi_comm(), buffer.str()) );
+    bool append = (it!=0);
+    for (FunctionBucket_const_it f_it = (*system).fields_begin(); 
+                                 f_it != (*system).fields_end(); 
+                                                          f_it++)
+    {
+      (*(*f_it).second).write_checkpoint(xdmf_file, "iterated", (double)it,
+                               append, (*system).name()+"::Iterated"+(*(*f_it).second).name());
+      append = true;
+      (*(*f_it).second).write_checkpoint(xdmf_file, "residual", (double)it,
+                               true, (*system).name()+"::Residual"+(*(*f_it).second).name());
+    }
   }
 
   KSPConvergenceFile_ptr kspconvfile = (*solver).kspconvergencefile();

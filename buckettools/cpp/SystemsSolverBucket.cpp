@@ -335,6 +335,24 @@ std::string SystemsSolverBucket::unique_name() const
 }
 
 //*******************************************************************|************************************************************//
+// a utility function to set the nonlinear systems iterations in output file basenames
+//*******************************************************************|************************************************************//
+std::string SystemsSolverBucket::iterations_str() const
+{
+  std::stringstream buffer;
+  buffer.str("");
+  if (systemssolver())
+  {
+    buffer << (*systemssolver()).iterations_str();
+  }
+  if (iterative())
+  {
+    buffer << "_" << iteration_count();
+  }
+  return buffer.str();
+}
+
+//*******************************************************************|************************************************************//
 // register a (boost shared) pointer to a solver bucket in the system bucket data maps
 //*******************************************************************|************************************************************//
 void SystemsSolverBucket::register_solver(GenericSolverBucket_ptr solver, const std::string &name)
@@ -557,6 +575,52 @@ bool SystemsSolverBucket::complete_iterating_(const double &aerror0)
     if(convfile_)
     {
       (*convfile_).write_data(aerror);
+    }
+
+    if(write_convvis_)
+    {
+      std::stringstream buffer;
+      buffer.str(""); buffer << (*bucket()).output_basename() << "_" << unique_name() << "_" << (*bucket()).timestep_count();
+      if (systemssolver())
+      {
+        buffer << (*systemssolver()).iterations_str();
+      }
+      buffer << "_systemssolver.xdmf";
+      XDMFFile_ptr convvis_file( new dolfin::XDMFFile((*(*(**(residualsolvers_.begin())).system()).mesh()).mpi_comm(), buffer.str()) );
+      // making an assumption here that all meshes share the same comm!
+      bool append = iteration_count()!=0;
+
+      std::vector<SolverBucket_ptr>::const_iterator s_it;
+      for (s_it = residualsolvers_.begin(); s_it != residualsolvers_.end(); s_it++)
+      {
+        // all fields and residuals get output in this debugging output
+        // regardless of whether they're included in standard output
+        for (FunctionBucket_it f_it = (*(**s_it).system()).fields_begin();
+                               f_it != (*(**s_it).system()).fields_end(); f_it++)
+        {
+          (*(*f_it).second).write_checkpoint(convvis_file, "iterated", (double)iteration_count(),
+                                             append, (*(**s_it).system()).name()+"::Iterated"+(*(*f_it).second).name());
+          append=true;
+          (*(*f_it).second).write_checkpoint(convvis_file, "residual", (double)iteration_count(),
+                                             append, (*(**s_it).system()).name()+"::Residual"+(*(*f_it).second).name());
+        }
+
+        // including coefficients here is just a niceity but some
+        // coefficients aren't suitable for visualization so
+        // only output them if we've asked for them in the normal
+        // output
+        for (FunctionBucket_it c_it = (*(**s_it).system()).coeffs_begin();
+                               c_it != (*(**s_it).system()).coeffs_end(); c_it++)
+        {
+          if ((*(*c_it).second).include_in_visualization())
+          {
+            (*(*c_it).second).write_checkpoint(convvis_file, "iterated", (double)iteration_count(),
+                                               append, (*(**s_it).system()).name()+"::"+(*(*c_it).second).name());
+            append=true;
+          }
+        }
+
+      }
     }
 
     completed = ((rerror <= *rtol_ || 

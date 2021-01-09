@@ -87,6 +87,9 @@ void SpudSystemsSolverBucket::initialize_diagnostics()
                                   bucket(), this) );
   }
 
+  buffer.str(""); buffer << l_optionpath << "/monitors/visualization";
+  write_convvis_ = Spud::have_option(buffer.str());
+
   for (GenericSolverBucket_it s_it = solvers_begin(); 
                               s_it != solvers_end(); s_it++)
   {

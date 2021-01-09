@@ -285,8 +285,6 @@ namespace buckettools
 
     void output();                                                   // output vis from the system
 
-    void write_convvis();                                            // write convergence visualization checkpoint
-  
     void checkpoint(const double_ptr time);                          // checkpoint the system
 
   //*****************************************************************|***********************************************************//

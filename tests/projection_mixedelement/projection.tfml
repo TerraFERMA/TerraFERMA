@@ -173,6 +173,7 @@
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics/>
       </diagnostics>
     </coefficient>
@@ -237,6 +238,7 @@ def val(x):
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics/>
       </diagnostics>
     </coefficient>
@@ -634,6 +636,7 @@ r = r1 + r2 + r3</string_value>
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics/>
       </diagnostics>
     </coefficient>
@@ -678,6 +681,7 @@ r = r1 + r2 + r3</string_value>
         </rank>
       </type>
       <diagnostics>
+        <include_in_visualization/>
         <include_in_statistics/>
       </diagnostics>
     </coefficient>

@@ -115,6 +115,8 @@ namespace buckettools
 
     std::string unique_name() const;
 
+    std::string iterations_str() const;                              //utility function to get the iterations as string
+
     //***************************************************************|***********************************************************//
     // Sub solver data access
     //***************************************************************|***********************************************************//
@@ -199,6 +201,7 @@ namespace buckettools
 
     SystemsConvergenceFile_ptr convfile_;                            // nonlinear systems convergence file
 
+    bool write_convvis_;                                             // write convergence visualization files every iteration
 
     //***************************************************************|***********************************************************//
     // Pointers data

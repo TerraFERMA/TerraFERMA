@@ -22,6 +22,7 @@
 #include "BoostTypes.h"
 #include "SolverBucket.h"
 #include "SystemBucket.h"
+#include "SystemsSolverBucket.h"
 #include "Bucket.h"
 #include "Logger.h"
 #include <dolfin.h>
@@ -151,80 +152,14 @@ bool SolverBucket::solve()
   else if (type()=="Picard")                                         // this is a hand-rolled picard iteration - FIXME: switch to enum
   {
 
-//    XDMFFile_ptr vis_file;
-//    if(*visualizationmonitor_)
-//    {
-//      std::stringstream buffer;
-//      buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_" 
-//                             << (*system()).name() << "_" 
-//                             << name() << "_" 
-//                             << (*(*system()).bucket()).timestep_count() << "_" 
-//                             << (*(*system()).bucket()).iteration_count() << "_picard.xdmf";
-//      vis_file.reset( new dolfin::XDMFFile((*(*system()).mesh()).mpi_comm(), buffer.str()) );
-//    }
-
-    assert(residual_);                                               // we need to assemble the residual again here as it may depend
-                                                                     // on other systems that have been solved since the last call
-    dolfin::Assembler assemblerres;
-    assemblerres.assemble(*res_, *residual_);                        // assemble the residual
-    for(std::vector< std::shared_ptr<const dolfin::DirichletBC> >::const_iterator bc = 
-                          (*system_).bcs_begin(); 
-                          bc != (*system_).bcs_end(); bc++)
-    {                                                                // apply bcs to residuall (should we do this?!)
-      (*(*bc)).apply(*res_, (*(*(*system_).iteratedfunction()).vector()));
-    }
-
-    double aerror = (*res_).norm("l2");                              // work out the initial absolute l2 error (this should be
-                                                                     // initialized to the right value on the first pass and still
-                                                                     // be the correct value from the previous sweep (if this stops
-                                                                     // being the case it will be necessary to assemble the residual
-                                                                     // here too)
-    double aerror0 = aerror;                                         // record the initial absolute error
-    double rerror;
-    if(aerror==0.0)
-    {
-      rerror = aerror;                                               // relative error, starts out as 0 - won't iterate at all
-    }
-    else
-    {
-      rerror = aerror/aerror0;                                       // relative error, starts out as 1.
-    }
-
-    log(INFO, "  %u Picard Residual Norm (absolute, relative) = %g, %g\n", 
-                                    iteration_count(), aerror, rerror);
-
-    ConvergenceFile_ptr convfile = convergencefile();
-    if(*visualizationmonitor_ || convfile)
-    {
-      *(*(*system()).residualfunction()).vector() = (*std::dynamic_pointer_cast< dolfin::GenericVector >(residual_vector()));
-      if (*visualizationmonitor_)
-      {
-//        bool append = false;
-//        for (FunctionBucket_const_it f_it = (*system()).fields_begin(); 
-//                                     f_it != (*system()).fields_end(); 
-//                                                              f_it++)
-//        {
-//          (*(*f_it).second).write_checkpoint(vis_file, "iterated", (double)iteration_count(),
-//                                   append, (*system()).name()+"::Iterated"+(*(*f_it).second).name());
-//          append = true;
-//          (*(*f_it).second).write_checkpoint(vis_file, "residual", (double)iteration_count(),
-//                                   true, (*system()).name()+"::Residual"+(*(*f_it).second).name());
-//        }
-      }
-      if (convfile)
-      {
-        (*convfile).write_data();
-      }
-    }
-
-
+    double aerror0 = residual_norm();
+    log(INFO, "Entering Picard nonlinear solver: %s", name().c_str());
+    
     (*(*(*system_).iteratedfunction()).vector()) =                   // system iterated function gets set to the function values
                                 (*(*(*system_).function()).vector());
 
-    while (iteration_count() < minits_ ||                            // loop for the minimum number of iterations or
-          (iteration_count() < maxits_ &&                            // up to the maximum number of iterations 
-                           rerror > rtol_ && aerror > atol_))        // until the max is reached or a tolerance criterion is
-    {                                                                // satisfied
+    while (!complete_iterating_picard_(aerror0))
+    {
       (*iteration_count_)++;                                         // increment iteration counter
 
       dolfin::SystemAssembler assembler(bilinear_, linear_,
@@ -324,62 +259,12 @@ bool SolverBucket::solve()
       }
 
       *work_ = (*(*(*system_).iteratedfunction()).vector());         // set the work vector to the iterated function
-      perr = KSPSolve(ksp_, (*rhs_).vec(), (*work_).vec());        // perform a linear solve
+      perr = KSPSolve(ksp_, (*rhs_).vec(), (*work_).vec());          // perform a linear solve
       petsc_fail(perr);
       ksp_check_convergence_(ksp_);
       (*(*(*system_).iteratedfunction()).vector()) = *work_;         // update the iterated function with the work vector
 
-      assert(residual_);
-      assemblerres.assemble(*res_, *residual_);                      // assemble the residual
-      for(std::vector< std::shared_ptr<const dolfin::DirichletBC> >::const_iterator bc = 
-                             (*system_).bcs_begin(); 
-                             bc != (*system_).bcs_end(); bc++)
-      {                                                              // apply bcs to residual (should we do this?!)
-        (*(*bc)).apply(*res_, (*(*(*system_).iteratedfunction()).vector()));
-      }
 
-      aerror = (*res_).norm("l2");                                   // work out absolute error
-      rerror = aerror/aerror0;                                       // and relative error
-      log(INFO, "  %u Picard Residual Norm (absolute, relative) = %g, %g\n", 
-                          iteration_count(), aerror, rerror);
-                                                                     // and decide to loop or not...
-
-      if(*visualizationmonitor_ || convfile)
-      {
-        *(*(*system()).residualfunction()).vector() = (*std::dynamic_pointer_cast< dolfin::GenericVector >(residual_vector()));
-        if (*visualizationmonitor_)
-        {
-//          for (FunctionBucket_const_it f_it = (*system()).fields_begin(); 
-//                                       f_it != (*system()).fields_end(); 
-//                                                                f_it++)
-//          {
-//            (*(*f_it).second).write_checkpoint(vis_file, "iterated", (double)iteration_count(), 
-//                                     true, (*system()).name()+"::Iterated"+(*(*f_it).second).name());
-//            (*(*f_it).second).write_checkpoint(vis_file, "residual", (double)iteration_count(),
-//                                     true, (*system()).name()+"::Residual"+(*(*f_it).second).name());
-//          }
-        }
-        if (convfile)
-        {
-          (*convfile).write_data();
-        }
-      }
-
-    }
-
-    if (iteration_count() == maxits_ && rerror > rtol_ && aerror > atol_)
-    {
-      log(WARNING, "it = %d, maxits_ = %d", iteration_count(), maxits_);
-      log(WARNING, "rerror = %.12e, rtol_ = %.12e", rerror, rtol_);
-      log(WARNING, "aerror = %.12e, atol_ = %.12e", aerror, atol_);
-      if (ignore_failures_)
-      {
-        log(WARNING, "Ignoring: Picard failure. Solver: %s::%s.", (*system_).name().c_str(), name().c_str());
-      }
-      else
-      {
-        tf_fail("Picard iterations failed to converge.", "Iteration count, relative error or absolute error too high.");
-      }
     }
 
     (*(*(*system_).function()).vector()) =                              // update the function values with the iterated values
@@ -501,6 +386,28 @@ const bool SolverBucket::visualization_monitor() const
 const bool SolverBucket::kspvisualization_monitor() const
 {
   return *kspvisualizationmonitor_;
+}
+
+//*******************************************************************|************************************************************//
+// return the basename for visualization monitors
+//*******************************************************************|************************************************************//
+std::string SolverBucket::visualization_basename()
+{
+  std::stringstream buffer;
+  buffer.str(""); buffer << (*(*system()).bucket()).output_basename() << "_"  
+                         << (*system()).name() << "_"  
+                         << name() << "_"; 
+  if (current_systemssolver_.length() > 0) 
+  {
+    buffer << current_systemssolver_ << "_"; 
+  }
+  buffer << (*(*system()).bucket()).timestep_count();
+  if (current_systemssolver_.length() > 0) 
+  {
+    SystemsSolverBucket* p_syssol = fetch_systemssolver(current_systemssolver_);
+    buffer << (*p_syssol).iterations_str();
+  }
+  return buffer.str();
 }
 
 //*******************************************************************|************************************************************//
@@ -947,6 +854,76 @@ const std::string SolverBucket::forms_str(const int &indent) const
     s << indentation << "Form " << (*f_it).first  << std::endl;
   }
   return s.str();
+}
+
+//*******************************************************************|************************************************************//
+// return a boolean indicating if the Picard solver has finished iterating or not
+//*******************************************************************|************************************************************//
+bool SolverBucket::complete_iterating_picard_(const double &aerror0)
+{
+  double aerror = residual_norm();
+  double rerror;
+  if (aerror0 == 0.0)
+  {
+    rerror = aerror;
+  }
+  else
+  {
+    rerror = aerror/aerror0;
+  }
+
+  log(INFO, "  %u Picard Residual Norm (absolute, relative) = %g, %g\n", 
+                      iteration_count(), aerror, rerror);
+                                                                 // and decide to loop or not...
+
+
+  ConvergenceFile_ptr convfile = convergencefile();
+  if (convfile)
+  {
+    (*convfile).write_data();
+  }
+
+  if (*visualizationmonitor_)
+  {
+    std::stringstream buffer;
+    buffer.str(""); buffer << visualization_basename() << "_picard.xdmf";
+    XDMFFile_ptr vis_file( new dolfin::XDMFFile((*(*system()).mesh()).mpi_comm(), buffer.str()) );
+
+    bool append = iteration_count()!=0;
+    for (FunctionBucket_const_it f_it = (*system()).fields_begin(); 
+                                 f_it != (*system()).fields_end(); 
+                                                          f_it++)
+    {
+      (*(*f_it).second).write_checkpoint(vis_file, "iterated", (double)iteration_count(),
+                               append, (*system()).name()+"::Iterated"+(*(*f_it).second).name());
+      append = true;
+      (*(*f_it).second).write_checkpoint(vis_file, "residual", (double)iteration_count(),
+                               true, (*system()).name()+"::Residual"+(*(*f_it).second).name());
+    }
+  }
+
+  bool completed = ((rerror <= rtol_ || 
+                     aerror <= atol_ || 
+                     iteration_count() >= maxits_) 
+                    && iteration_count() >= minits_);
+
+  if (iteration_count() == maxits_ && rerror > rtol_ && aerror > atol_)
+  {
+    log(WARNING, "it = %d, maxits_ = %d", iteration_count(), maxits_);
+    log(WARNING, "rerror = %.12e, rtol_ = %.12e", rerror, rtol_);
+    log(WARNING, "aerror = %.12e, atol_ = %.12e", aerror, atol_);
+    if (ignore_failures_)
+    {
+      log(WARNING, "Ignoring: Picard failure. Solver: %s::%s.", (*system_).name().c_str(), name().c_str());
+    }
+    else
+    {
+      tf_fail("Picard iterations failed to converge.", "Iteration count, relative error or absolute error too high.");
+    }
+  }
+
+  return completed;
+
 }
 
 //*******************************************************************|************************************************************//

@@ -124,6 +124,8 @@ namespace buckettools
     const bool visualization_monitor() const;                        // return true if we're using a visualization monitor
     
     const bool kspvisualization_monitor() const;                     // return true if we're using a visualization monitor
+
+    std::string visualization_basename();                            // return a basename for any visualization monitors
     
     const bool monitor_norms() const                                 // return true if norms should be monitored in nonlinear iterations
     { return monitornorms_; }
@@ -348,6 +350,8 @@ namespace buckettools
     //***************************************************************|***********************************************************//
     // Solver convergence checking
     //***************************************************************|***********************************************************//
+
+    bool complete_iterating_picard_(const double &aerror0);          // indicate if nonlinear systems iterations are complete or not
 
     void snes_check_convergence_();                                  // check snes convergence
 

@@ -299,8 +299,6 @@ namespace buckettools
 
     XDMFFile_ptr fetch_visfile(const Mesh_ptr mesh, bool &newfile);  // fetch (and possibly allocate) a visualization file
 
-    XDMFFile_ptr fetch_convvisfile(const Mesh_ptr mesh, bool &newfile);// fetch (and possibly allocate) a visualization file
-
     const bool write_vischeckpoints() const                          // return if we're visualizing using checkpoint format or not
     { return write_vischeckpoints_; }
 
@@ -403,7 +401,7 @@ namespace buckettools
 
     SteadyStateFile_ptr steadyfile_;                                 // pointer to a steady state file
 
-    std::map< Mesh_ptr, XDMFFile_ptr > visfiles_;     // pointer to visualization file(s)
+    std::map< Mesh_ptr, XDMFFile_ptr > visfiles_;                    // pointer to visualization file(s)
 
     //***************************************************************|***********************************************************//
     // Filling data

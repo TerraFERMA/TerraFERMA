@@ -1019,44 +1019,6 @@ void SystemBucket::output()
 
 }
 
-////*******************************************************************|************************************************************//
-//// output the system
-////*******************************************************************|************************************************************//
-//void SystemBucket::write_convvis()
-//{
-//
-//  bool newfile, append;
-//  XDMFFile_ptr convvis_file = (*bucket()).fetch_convvisfile(mesh(), newfile);
-//
-//  // all fields and residuals get output in this debugging output
-//  // regardless of whether they're included in standard output
-//  append = !newfile;
-//  for (FunctionBucket_it f_it = fields_begin();
-//                         f_it != fields_end(); f_it++)
-//  {
-//    (*(*f_it).second).write_checkpoint(convvis_file, "iterated", (double)(*bucket()).iteration_count(),
-//                                       append, name()+"::Iterated"+(*(*f_it).second).name());
-//    append=true;
-//    (*(*f_it).second).write_checkpoint(convvis_file, "residual", (double)(*bucket()).iteration_count(),
-//                                       true, name()+"::Residual"+(*(*f_it).second).name());
-//  }
-//
-//  // including coefficients here is just a niceity but some
-//  // coefficients aren't suitable for visualization so
-//  // only output them if we've asked for them in the normal
-//  // output
-//  for (FunctionBucket_it c_it = coeffs_begin();
-//                         c_it != coeffs_end(); c_it++)
-//  {
-//    if ((*(*c_it).second).include_in_visualization())
-//    {
-//      (*(*c_it).second).write_checkpoint(convvis_file, "iterated", (double)(*bucket()).iteration_count(),
-//                                         true, name()+"::"+(*(*c_it).second).name());
-//    }
-//  }
-//
-//}
-
 //*******************************************************************|************************************************************//
 // checkpoint the system
 //*******************************************************************|************************************************************//
