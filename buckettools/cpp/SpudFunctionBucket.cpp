@@ -547,6 +547,9 @@ void SpudFunctionBucket::allocate_field_()
   {
     serr = Spud::get_option(buffer.str(), icfilename_);
     spud_err(buffer.str(), serr);
+    buffer << "/fieldname";
+    serr = Spud::get_option(buffer.str(), icfieldname_, name());
+    spud_err(buffer.str(), serr);
   }
   else
   {
@@ -1705,6 +1708,11 @@ void SpudFunctionBucket::checkpoint_options_()
   buffer.str(""); buffer << optionpath()
                                   << "/type[0]/rank[0]/initial_condition::WholeMesh/type";
   serr = Spud::set_option_attribute(buffer.str(), "initial_condition");
+  spud_err_accept(buffer.str(), serr, Spud::SPUD_NEW_KEY_WARNING);
+
+  buffer.str(""); buffer << optionpath()
+                                  << "/type[0]/rank[0]/initial_condition::WholeMesh/file/__value/type";
+  serr = Spud::set_option_attribute(buffer.str(), "filename");
   spud_err_accept(buffer.str(), serr, Spud::SPUD_NEW_KEY_WARNING);
 
   buffer.str(""); buffer << optionpath()

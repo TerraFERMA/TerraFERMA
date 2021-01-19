@@ -334,6 +334,8 @@ namespace buckettools
 
     std::string icfilename_;                                         // filename of checkpoint
 
+    std::string icfieldname_;                                         // fieldname in checkpoint
+
     std::vector< std::size_t > shape_;                               // shape of the function
 
     int functiontype_;                                               // a *integer* describing the type of function bucket (field or coefficient)
