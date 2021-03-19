@@ -73,7 +73,7 @@ for f in args.file:
 def update_string_value(path):
   global changed
   elements = tree.findall(path)
-  if len(elements) is not 0:
+  if len(elements) !=  0:
     for element in elements:
       if element.find("string_value") is None:
         text = element.text
@@ -160,8 +160,8 @@ def update_python3():
       with tempfile.NamedTemporaryFile(mode='w', buffering=1, suffix='.py') as tf:
         # write code string to file and add a linesep to clear buffer
         tf.file.write(element.text+os.linesep)
-        # try calling 2to3 (NOTE assuming 2to3-2.7 is valid here across platforms!)
-        command = ["2to3-2.7", "-W", "-n", "--add-suffix=3", "-o", os.path.dirname(tf.name), tf.name]
+        # try calling 2to3 (NOTE assuming 2to3  is valid here across platforms!)
+        command = ["2to3", "-W", "-n", "--add-suffix=3", "-o", os.path.dirname(tf.name), tf.name]
         try:
           p = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         except Exception as exc:
