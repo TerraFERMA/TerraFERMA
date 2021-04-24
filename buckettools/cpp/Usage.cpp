@@ -307,7 +307,11 @@ void buckettools::parse_arguments(int argc, char** argv)
   if(command_line_options.count("petsc-info"))                       // petsc-info
   {
     PetscErrorCode perr;                                             // petsc error code
+    #if PETSC_VERSION_MAJOR == 3 && PETSC_VERSION_MINOR > 12
+    perr = PetscInfoAllow(PETSC_TRUE);
+    #else
     perr = PetscInfoAllow(PETSC_TRUE, PETSC_NULL);
+    #endif
     petsc_err(perr);
   }
 
