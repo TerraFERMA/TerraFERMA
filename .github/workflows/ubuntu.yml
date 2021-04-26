@@ -52,7 +52,7 @@ jobs:
         
           - name: "Short Focal"
             release: focal
-            command: "THREADS=2 make run_shorttest"
+            command: "THREADS=2 make run_shorttests"
 
     steps:
 
