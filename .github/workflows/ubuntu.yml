@@ -33,7 +33,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: docker/$${{ matrix.release }}/actions/Dockerfile
+          file: docker/${{ matrix.release }}/actions/Dockerfile
           push: true
           tags: terraferma/actions:${{ matrix.release }}-${{ github.sha }}
 
