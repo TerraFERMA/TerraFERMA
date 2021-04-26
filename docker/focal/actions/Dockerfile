@@ -36,11 +36,9 @@ RUN mkdir $TF_PREFIX && \
     chgrp adm -R $TF_PREFIX && \
     chmod g+w -R $TF_PREFIX
 
-COPY . $TF_HOME
-RUN chown -R tfuser $TF_HOME
-
 USER tfuser
-WORKDIR $TF_HOME
+WORKDIR $TF_HOME/TerraFERMA
+COPY . $TF_HOME/TerraFERMA
 
 RUN export PYTHONPATH=$FENICS_PREFIX/lib/python3.8/site-packages && \
     export PETSC_DIR=$PETSC_PREFIX && \
@@ -51,13 +49,15 @@ RUN export PYTHONPATH=$FENICS_PREFIX/lib/python3.8/site-packages && \
     mkdir build && \
     cd build && \
     cmake -DCMAKE_INSTALL_PREFIX=${TF_PREFIX} \
-          -DCMAKE_BUILD_TYPE=Release  \
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo  \
           ../. && \
     make && \
     make install
 
 # install an environment module for terraferma
 COPY docker/focal/actions/terraferma.configmodule /usr/local/share/environment-modules/terraferma
+
+WORKDIR $TF_HOME
 
 COPY docker/focal/actions/bash.load-modules $TF_HOME/.bash.load-modules
 RUN cat $TF_HOME/.bash.load-modules >> $TF_HOME/.profile
