@@ -62,7 +62,7 @@ jobs:
       - name: ${{ matrix.name }} Testing
         run: |
          chmod 777 .
-         docker pull terraferma/actions:${{ env.name }}-${{ matrix.release }}
+         docker pull terraferma/actions:${{ jobs.build.env.name }}-${{ matrix.release }}
          #docker run --workdir /home/tfuser/TerraFERMA/build terraferma/actions:${{ matrix.release }}-${{ env.name }} "${{ matrix.command }}"
 
   #    - uses: actions/upload-artifact@v2
