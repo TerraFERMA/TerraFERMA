@@ -59,7 +59,7 @@ jobs:
       - name: ${{ matrix.name }} Testing
         run: |
          chmod 777 .
-         docker pull fluidity/actions:${{ matrix.release }}-${{ github.sha }}
+         docker pull terraferma/actions:${{ matrix.release }}-${{ github.sha }}
          docker run --workdir /home/tfuser/TerraFERMA/build terraferma/actions:${{ matrix.release }}-${{ github.sha }} "${{ matrix.command }}"
 
   #    - uses: actions/upload-artifact@v2
