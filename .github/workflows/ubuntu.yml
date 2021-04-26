@@ -22,6 +22,9 @@ jobs:
       - name: Check Out Repo 
         uses: actions/checkout@v2
 
+      - name: Get Name
+        run: echo "name=${GITHUB_REF#refs/}" >> $GITHUB_ENV
+
       - name: Login to Docker Hub
         uses: docker/login-action@v1
         with:
@@ -35,7 +38,7 @@ jobs:
           context: .
           file: docker/${{ matrix.release }}/actions/Dockerfile
           push: true
-          tags: terraferma/actions:${{ matrix.release }}-${{ github.sha }}
+          tags: terraferma/actions:${{ env.name }}-${{ matrix.release }}
 
   testing:
 
@@ -59,8 +62,8 @@ jobs:
       - name: ${{ matrix.name }} Testing
         run: |
          chmod 777 .
-         docker pull terraferma/actions:${{ matrix.release }}-${{ github.sha }}
-         docker run --workdir /home/tfuser/TerraFERMA/build terraferma/actions:${{ matrix.release }}-${{ github.sha }} "${{ matrix.command }}"
+         docker pull terraferma/actions:${{ env.name }}-${{ matrix.release }}
+         #docker run --workdir /home/tfuser/TerraFERMA/build terraferma/actions:${{ matrix.release }}-${{ env.name }} "${{ matrix.command }}"
 
   #    - uses: actions/upload-artifact@v2
   #      with:
