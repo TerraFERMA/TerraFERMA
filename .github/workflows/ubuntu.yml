@@ -55,7 +55,7 @@ jobs:
         
           - name: "Short Focal"
             release: focal
-            command: "THREADS=2 make run_shorttests"
+            command: "THREADS=2 make run_quicktests"
 
     steps:
 
@@ -66,7 +66,7 @@ jobs:
         run: |
          chmod 777 .
          docker pull terraferma/actions:${{ env.name }}-${{ matrix.release }}
-         #docker run --workdir /home/tfuser/TerraFERMA/build terraferma/actions:${{ matrix.release }}-${{ env.name }} "${{ matrix.command }}"
+         docker run --workdir /home/tfuser/TerraFERMA/build terraferma/actions:${{ matrix.release }}-${{ env.name }} "${{ matrix.command }}"
 
   #    - uses: actions/upload-artifact@v2
   #      with:
