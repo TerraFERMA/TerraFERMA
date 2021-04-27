@@ -1,0 +1,10 @@
+
+if [ "x$MODULESHOME" != "x" ]; then
+  if [ `module avail -t 2>&1 | grep -c '^openmpi'` -gt 0 ]; then module load openmpi; fi
+  if [ `module avail -t 2>&1 | grep -c '^hdf5'` -gt 0 ]; then module load hdf5; fi
+  if [ `module avail -t 2>&1 | grep -c '^pybind11'` -gt 0 ]; then module load pybind11; fi
+  if [ `module avail -t 2>&1 | grep -c '^petsc'` -gt 0 ]; then module load petsc; fi
+  if [ `module avail -t 2>&1 | grep -c '^fenics'` -gt 0 ]; then module load fenics; fi
+  if [ `module avail -t 2>&1 | grep -c '^spud'` -gt 0 ]; then module load spud; fi
+fi
+

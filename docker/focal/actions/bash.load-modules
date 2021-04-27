@@ -1,5 +1,0 @@
-
-if [ "x$MODULESHOME" != "x" ]; then
-  if [ `module avail -t 2>&1 | grep -c '^terraferma'` -gt 0 ]; then module load terraferma; fi
-fi
-

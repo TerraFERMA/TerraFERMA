@@ -22,7 +22,7 @@
 # Builds a Docker image with a full installation of TerraFERMA.  
 # The built image can be found at:
 #
-#   https://hub.docker.com/r/terraferma/actions
+#   https://hub.docker.com/r/terraferma/dev
 #
 
 # build using the TerraFERMA development environment
@@ -30,23 +30,25 @@ FROM terraferma/dev-env:fenics-2019.1.0-focal-githubactions
 MAINTAINER terraferma <terraferma@lists.columbia.edu>
 
 USER tfuser
-WORKDIR $TF_HOME/TerraFERMA
-COPY . $TF_HOME/TerraFERMA
+WORKDIR /tmp
 
 # install terraferma
-RUN mkdir build && \
+RUN git clone -b master-2019.1.0  -q https://github.com/TerraFERMA/TerraFERMA.git && \
+    cd TerraFERMA && \
+    mkdir build && \
     cd build && \
     cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
-          -DCMAKE_BUILD_TYPE=RelWithDebInfo  \
+          -DCMAKE_BUILD_TYPE=Release  \
           ../. && \
     make && \
-    make install
+    make install && \
+    rm -rf /tmp/*
 
 # link the installed tests and tutorials directories to the home directory
 RUN ln -s $INSTALL_PREFIX/share/terraferma/tests $TF_HOME/tests && \
     ln -s $INSTALL_PREFIX/share/terraferma/tutorials $TF_HOME/tutorials
-COPY docker/focal/actions/WELCOME $TF_HOME/WELCOME
+COPY WELCOME $TF_HOME/WELCOME
 
-WORKDIR $TF_HOME
 USER root
+
 
