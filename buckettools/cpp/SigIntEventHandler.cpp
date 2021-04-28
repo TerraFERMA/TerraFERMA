@@ -45,7 +45,7 @@ SigIntEventHandler::~SigIntEventHandler()
 //*******************************************************************|************************************************************//
 // hook method
 //*******************************************************************|************************************************************//
-int SigIntEventHandler::handle_signal(int signum)
+void SigIntEventHandler::handle_signal(int signum)
 {
   assert (signum == SIGINT);
   log(ERROR, "SIGINT received.");
