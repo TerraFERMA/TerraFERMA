@@ -54,7 +54,7 @@ nu = -1.0*(stat["Stokes"]["TemperatureTopSurfaceIntegral"]["functional_value"][-
 
 det = parser("rbconvection.det")
 
-extremumloc = (det["Stokes"]["Temperature"]["Array"][0:129/2,-1]).argmin()*1./128.
+extremumloc = (det["Stokes"]["Temperature"]["Array"][0:64,-1]).argmin()*1./128.
 </string_value>
         </variable>
         <variable name="extremumval">
@@ -62,7 +62,7 @@ extremumloc = (det["Stokes"]["Temperature"]["Array"][0:129/2,-1]).argmin()*1./12
 
 det = parser("rbconvection.det")
 
-extremumval = (det["Stokes"]["Temperature"]["Array"][0:129/2,-1]).min()
+extremumval = (det["Stokes"]["Temperature"]["Array"][0:64,-1]).min()
 </string_value>
         </variable>
         <variable name="steadystate">
