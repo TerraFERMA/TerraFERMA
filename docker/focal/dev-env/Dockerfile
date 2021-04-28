@@ -55,6 +55,7 @@ RUN apt-get update && \
                        libboost-iostreams-dev \
                        libboost-timer-dev \
                        libhdf5-dev \
+                       libhdf5-openmpi-dev \
                        gmsh \
                        wget \
                        gir1.2-gtksource-3.0 \
