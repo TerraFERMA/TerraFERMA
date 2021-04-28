@@ -55,7 +55,7 @@ jobs:
         
           - name: "Short Focal"
             release: focal
-            command: "THREADS=2 make run_quicktests"
+            command: "OVERSUBSCRIBE=1 THREADS=2 make run_quicktests"
 
     steps:
 

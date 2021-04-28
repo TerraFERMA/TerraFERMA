@@ -61,8 +61,5 @@ conv_linf = numpy.log2(error_linf_a[:-1]/error_linf_a[1:])
 print(conv_linf)
 assert(numpy.all(conv_linf &gt; 1.5))</string_value>
     </test>
-    <test name="failure">
-      <string_value type="code" language="python3" lines="20">assert(False)</string_value>
-    </test>
   </tests>
 </harness_options>
