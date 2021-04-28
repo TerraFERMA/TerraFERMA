@@ -50,12 +50,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: [ "Short Focal" ]
+        name: [ "Quick Tests Focal", "Short Tests Focal", "Medium Tests Focal" ]
         include:
         
-          - name: "Short Focal"
+          - name: "Quick Tests Focal"
             release: focal
             command: "OVERSUBSCRIBE=1 THREADS=2 make run_quicktests"
+
+          - name: "Short Tests Focal"
+            release: focal
+            command: "OVERSUBSCRIBE=1 THREADS=2 make run_shorttests"
+
+          - name: "Medium Tests Focal"
+            release: focal
+            command: "OVERSUBSCRIBE=1 THREADS=2 make run_mediumtests"
 
     steps:
 
