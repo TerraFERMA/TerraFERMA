@@ -75,7 +75,7 @@ void SignalHandler::dispatcher(int signum)
 {
   if (SignalHandler::signal_handlers_[signum] != 0)                  // sanity check
   {
-    (*SignalHandler::signal_handlers_[signum]).handle_signal (signum);
+    (*SignalHandler::signal_handlers_[signum]).handle_signal(signum);
   }
 }
 
