@@ -44,11 +44,15 @@ RUN git clone -b master-2019.1.0  -q https://github.com/TerraFERMA/TerraFERMA.gi
     make install && \
     rm -rf /tmp/*
 
+ENV TF_CMAKE_PATH       $INSTALL_PREFIX/share/terraferma/cpp
+ENV CMAKE_MODULE_PATH   $INSTALL_PREFIX/share/buckettools/cmake/modules:$CMAKE_MODULE_PATH
+ENV DIAMOND_CONFIG_PATH $INSTALL_PREFIX/share/buckettools/diamond:$DIAMOND_CONFIG_PATH
+
 # link the installed tests and tutorials directories to the home directory
 RUN ln -s $INSTALL_PREFIX/share/terraferma/tests $TF_HOME/tests && \
     ln -s $INSTALL_PREFIX/share/terraferma/tutorials $TF_HOME/tutorials
 COPY WELCOME $TF_HOME/WELCOME
 
+WORKDIR $TF_HOME
 USER root
-
 
