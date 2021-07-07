@@ -1,0 +1,18 @@
+# TerraFERMA dev docker image
+
+Welcome to TerraFERMA!
+
+This docker image contains a complete installation of TerraFERMA and its dependencies, PETSc, FEniCS and SPuD, within an Ubuntu
+20.04LTS OS.
+
+The environment variables have been set automatically using environment modules and it should now be possible to build and run
+TerraFERMA models within this container.  Opening the diamond GUI (and other visualization tools) depends on having forwarded the
+X11 connection correctly from this docker container to the local machine.  Additionally the `shared` directory is available to use 
+as shared volume with the local machine but depends on the correct configuration being used at startup.
+
+The folders `tests` and `tutorials` contain links to the installed testing and tutorial suites for TerraFERMA.  Additional input
+files can be downloaded directly to this container or shared via the local machine.  For example, the benchmarking suite can be 
+obtained from the TerraFERMA github repositories. 
+
+
+
