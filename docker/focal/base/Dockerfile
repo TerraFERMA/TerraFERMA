@@ -79,7 +79,8 @@ ENV MANPATH         $INSTALL_PREFIX/share/man:$MANPATH
  
 RUN mkdir $INSTALL_PREFIX && \
     chgrp adm -R $INSTALL_PREFIX && \
-    chmod g+w -R $INSTALL_PREFIX
+    chmod g+w -R $INSTALL_PREFIX && \
+    chmod a+w /tmp
 
 USER tfuser
 ENV TF_HOME /home/tfuser
