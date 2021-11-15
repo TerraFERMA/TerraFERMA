@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -95,7 +95,7 @@
   </timestepping>
   <global_parameters>
     <ufl>
-      <string_value lines="20" type="code" language="python"># Global parameters for porosity pressure residual 
+      <string_value lines="20" type="code" language="python3"># Global parameters for porosity pressure residual 
 
 # permeability
 K = f_i**n
@@ -113,7 +113,8 @@ f_half = 0.5*(f_i + f_n)
 ds_top   = ds(4)
 ds_bottom = ds(3)
 ds_left  = ds(1)
-ds_right = ds(2)</string_value>
+ds_right = ds(2)
+</string_value>
     </ufl>
     <dolfin>
       <ghost_mode name="shared_facet"/>
@@ -167,7 +168,7 @@ ds_right = ds(2)</string_value>
           </element>
           <initial_condition type="initial_condition" name="WholeMesh">
             <python rank="0">
-              <string_value lines="20" type="code" language="python"># Initialize to two solitary wave profiles 
+              <string_value lines="20" type="code" language="python3"># Initialize to two solitary wave profiles 
 # using PySolwave routines 
 # This header will act as a global header to all subsequent def val instances
 # (with great power comes great responsibility)
@@ -182,9 +183,9 @@ tfswave0 = TFSolitaryWave(tfmlfile,c_name="c0",x0_name="x0")
 tfswave1 = TFSolitaryWave(tfmlfile,c_name="c1",x0_name="x1")
 
 # print some diagnostics
-print 'rmax = ',tfswave0.rmax, tfswave1.rmax
-print 'c0,c1 =', tfswave0.swave.c, tfswave1.swave.c
-print 'x0,x1 =', tfswave0.x0, tfswave1.x0
+print('rmax = ',tfswave0.rmax, tfswave1.rmax)
+print('c0,c1 =', tfswave0.swave.c, tfswave1.swave.c)
+print('x0,x1 =', tfswave0.x0, tfswave1.x0)
 
 # python function for setting initial condition
 import numpy as np
@@ -193,7 +194,8 @@ def val(x):
   xa = np.array(x)
   f0 = tfswave0.eval(xa)
   f1 = tfswave1.eval(xa)
-  return max(f0,f1)</string_value>
+  return max(f0,f1)
+</string_value>
             </python>
           </initial_condition>
           <boundary_condition name="top">
@@ -394,11 +396,11 @@ def val(x):
     <nonlinear_solver name="InitialGuess">
       <type name="SNES">
         <form name="Residual" rank="0">
-          <string_value lines="20" type="code" language="python">#pressure residual (just project)
+          <string_value lines="20" type="code" language="python3">#pressure residual (just project)
 Fp = p_t*(p_i - p_n)*dx
 
 #outward facing facet normal for porosity cell
-fn = FacetNormal(f.cell())
+fn = FacetNormal(f_e.cell())
 # facet normal solid velocity
 vn = dot(W, fn)
 # rectified normal solid velocity ( = vn if outflow, 0 if inflow)
@@ -426,14 +428,16 @@ sffacet = dt*jump(f_t)*upwindfacetflux
 Ff =  bf*dx + sftop*ds_top + sfbot*ds_bottom + sfside*ds_left + sfside*ds_right + sffacet*dS
 
 # total residual
-F = Fp + Ff</string_value>
+F = Fp + Ff
+</string_value>
           <comment>Just take an euler step to make a crude guess for the porosity at the next step</comment>
           <ufl_symbol name="solver">
             <string_value lines="1">F</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
-          <string_value lines="20" type="code" language="python">J = derivative(F, us_i, us_a)</string_value>
+          <string_value lines="20" type="code" language="python3">J = derivative(F, us_i, us_a)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">J</string_value>
           </ufl_symbol>
@@ -511,8 +515,8 @@ F = Fp + Ff</string_value>
     <nonlinear_solver name="Solver">
       <type name="SNES">
         <form name="Residual" rank="0">
-          <string_value lines="20" type="code" language="python">#facet normal on pressure
-pn = FacetNormal(p.cell())
+          <string_value lines="20" type="code" language="python3">#facet normal on pressure
+pn = FacetNormal(p_e.cell())
 
 # body integral for pressure
 bp = inner(grad(p_t), K*(grad(p_i) + ghat)) + p_t*p_i*Xi_i 
@@ -525,7 +529,7 @@ spbot   = -p_t*inner(K*ghat, pn) #"free flux BC where inner(grad(p),pn)=0
 Fp = bp*dx + sptop*ds_top + spbot*ds_bottom
 
 #outward facing facet normal for porosity cell
-fn = FacetNormal(f.cell())
+fn = FacetNormal(f_e.cell())
 # facet normal solid velocity
 vn = dot(W, fn)
 # rectified normal solid velocity ( = vn if outflow, 0 if inflow)
@@ -552,13 +556,15 @@ sffacet = dt*jump(f_t)*upwindfacetflux
 Ff =  bf*dx + sftop*ds_top + sfbot*ds_bottom + sfside*ds_left + sfside*ds_right + sffacet*dS
 
 # total residual
-F = Fp + Ff</string_value>
+F = Fp + Ff
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">F</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
-          <string_value lines="20" type="code" language="python">J = derivative(F, us_i, us_a)</string_value>
+          <string_value lines="20" type="code" language="python3">J = derivative(F, us_i, us_a)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">J</string_value>
           </ufl_symbol>
@@ -639,7 +645,8 @@ F = Fp + Ff</string_value>
       <solve name="in_timeloop"/>
     </nonlinear_solver>
     <functional name="PressureIntegral">
-      <string_value lines="20" type="code" language="python">int = p*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = p*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -648,7 +655,8 @@ F = Fp + Ff</string_value>
       <include_in_statistics/>
     </functional>
     <functional name="PorosityIntegral">
-      <string_value lines="20" type="code" language="python">int = f*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = f*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -691,13 +699,15 @@ F = Fp + Ff</string_value>
     <nonlinear_solver name="Solver">
       <type name="SNES">
         <form name="Residual" rank="0">
-          <string_value lines="20" type="code" language="python">F = inner(vf_t,(vf_i - W_i + K/f_i*(grad(p) + ghat)))*dx</string_value>
+          <string_value lines="20" type="code" language="python3">F = inner(vf_t,(vf_i - W_i + K/f_i*(grad(p) + ghat)))*dx
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">F</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
-          <string_value lines="20" type="code" language="python">J = derivative(F,uvf_i,uvf_a)</string_value>
+          <string_value lines="20" type="code" language="python3">J = derivative(F,uvf_i,uvf_a)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">J</string_value>
           </ufl_symbol>
@@ -766,20 +776,22 @@ F = Fp + Ff</string_value>
     <nonlinear_solver name="Solver">
       <type name="SNES">
         <form name="Residual" rank="0">
-          <string_value lines="20" type="code" language="python"># Finite volume style estimate of Courant number
+          <string_value lines="20" type="code" language="python3"># Finite volume style estimate of Courant number
 # calculate the outward facing normal component of velocity for each facet
 n = FacetNormal(cfl_e.cell())
 vn = dot(vf_i, n)
 vout = 0.5*(vn + abs(vn))
 
 # project the cell integral of the the outgoing flux from each cell
-F = cfl_t*cfl_i*dx - cfl_t('+')*vout('+')*dt('+')*dS - cfl_t('-')*vout('-')*dt('-')*dS - cfl_t*vout*dt*ds(1) - cfl_t*vout*dt*ds(2) - cfl_t*vout*dt*ds(3) - cfl_t*vout*dt*ds(4)</string_value>
+F = cfl_t*cfl_i*dx - cfl_t('+')*vout('+')*dt('+')*dS - cfl_t('-')*vout('-')*dt('-')*dS - cfl_t*vout*dt*ds(1) - cfl_t*vout*dt*ds(2) - cfl_t*vout*dt*ds(3) - cfl_t*vout*dt*ds(4)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">F</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
-          <string_value lines="20" type="code" language="python">J = derivative(F,ucfl_i,ucfl_a)</string_value>
+          <string_value lines="20" type="code" language="python3">J = derivative(F,ucfl_i,ucfl_a)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">J</string_value>
           </ufl_symbol>
