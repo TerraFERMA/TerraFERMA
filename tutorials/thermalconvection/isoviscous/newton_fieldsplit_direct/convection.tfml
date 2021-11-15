@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -94,12 +94,13 @@
   </timestepping>
   <global_parameters>
     <ufl>
-      <string_value lines="20" type="code" language="python"># theta weightings for Temperature and velocity
+      <string_value lines="20" type="code" language="python3"># theta weightings for Temperature and velocity
 theta = 0.5
 theta_v = 0.5
 
 # scaled constant viscosity
-eta = 1.</string_value>
+eta = 1.
+</string_value>
     </ufl>
   </global_parameters>
   <system name="Convection">
@@ -251,9 +252,10 @@ eta = 1.</string_value>
           </element>
           <initial_condition type="initial_condition" name="WholeMesh">
             <python rank="0">
-              <string_value lines="20" type="code" language="python">def val(x):
+              <string_value lines="20" type="code" language="python3">def val(x):
   from math import sin, cos, pi
-  return 1.-x[1] + 0.2*cos(x[0]*pi)*sin(x[1]*pi)</string_value>
+  return 1.-x[1] + 0.2*cos(x[0]*pi)*sin(x[1]*pi)
+</string_value>
             </python>
           </initial_condition>
           <boundary_condition name="Top">
@@ -311,7 +313,7 @@ eta = 1.</string_value>
     <nonlinear_solver name="Solver">
       <type name="SNES">
         <form name="Residual" rank="0">
-          <string_value lines="20" type="code" language="python"># theta weighted variables
+          <string_value lines="20" type="code" language="python3"># theta weighted variables
 T_theta = theta*T_i + (1.-theta)*T_n
 v_theta = theta_v*v_i + (1.-theta_v)*v_n
 
@@ -323,13 +325,15 @@ FT = (T_t*((T_i - T_n) + dt*inner(v_theta, grad(T_theta))) +
          dt/Ra*inner(grad(T_t), grad(T_theta)))*dx
 
 # Total non-linear residual for the system
-F = Fv + Fp + FT</string_value>
+F = Fv + Fp + FT
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">F</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
-          <string_value lines="20" type="code" language="python">J = derivative(F, us_i, us_a)</string_value>
+          <string_value lines="20" type="code" language="python3">J = derivative(F, us_i, us_a)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">J</string_value>
           </ufl_symbol>
@@ -402,7 +406,8 @@ F = Fv + Fp + FT</string_value>
       <solve name="in_timeloop"/>
     </nonlinear_solver>
     <functional name="VelocityvrmsSquared">
-      <string_value lines="20" type="code" language="python">int = Ra*Ra*inner(v,v)*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = Ra*Ra*inner(v,v)*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -411,7 +416,8 @@ F = Fv + Fp + FT</string_value>
       <include_in_statistics/>
     </functional>
     <functional name="PressureIntegral">
-      <string_value lines="20" type="code" language="python">int = p*dx</string_value>
+      <string_value lines="20" type="code" language="python3">int = p*dx
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -420,7 +426,8 @@ F = Fv + Fp + FT</string_value>
       <include_in_statistics/>
     </functional>
     <functional name="TemperatureNu">
-      <string_value lines="20" type="code" language="python">int = -T.dx(1)*ds(4)</string_value>
+      <string_value lines="20" type="code" language="python3">int = -T.dx(1)*ds(4)
+</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -463,20 +470,22 @@ F = Fv + Fp + FT</string_value>
     <nonlinear_solver name="Solver">
       <type name="SNES">
         <form name="Residual" rank="0">
-          <string_value lines="20" type="code" language="python"># Finite volume style estimate of Courant number
+          <string_value lines="20" type="code" language="python3"># Finite volume style estimate of Courant number
 # calculate the outward facing normal component of velocity for each facet
 n = FacetNormal(c_e.cell())
 vn = dot(v_i, n)
 vout = 0.5*(vn + abs(vn))
 
 # project the cell integral of the the outgoing flux from each cell
-F = c_t*c_i*dx - c_t('+')*vout('+')*dt('+')*dS - c_t('-')*vout('-')*dt('-')*dS - c_t*vout*dt*ds(1) - c_t*vout*dt*ds(2) - c_t*vout*dt*ds(3) - c_t*vout*dt*ds(4)</string_value>
+F = c_t*c_i*dx - c_t('+')*vout('+')*dt('+')*dS - c_t('-')*vout('-')*dt('-')*dS - c_t*vout*dt*ds(1) - c_t*vout*dt*ds(2) - c_t*vout*dt*ds(3) - c_t*vout*dt*ds(4)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">F</string_value>
           </ufl_symbol>
         </form>
         <form name="Jacobian" rank="1">
-          <string_value lines="20" type="code" language="python">J = derivative(F,uc_i,uc_a)</string_value>
+          <string_value lines="20" type="code" language="python3">J = derivative(F,uc_i,uc_a)
+</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">J</string_value>
           </ufl_symbol>
