@@ -18,8 +18,8 @@ Created on Tue Feb  5 21:48:05 2013
 @author: mspieg
 """
 
-from solitarywave import SolitaryWave
-from sinc_eo import D2_e
+from .solitarywave import SolitaryWave
+from .sinc_eo import D2_e
 from numpy import *
 
 import pylab as pl
@@ -69,14 +69,14 @@ Aar = zeros((3,nc))
 war = zeros((3,nc))
 
 for d in range(1,4):
-    print 'd = ',d
-    print 'c     A   w'
-    for i in xrange(len(c)):
+    print('d = ',d)
+    print('c     A   w')
+    for i in range(len(c)):
         sw = SolitaryWave(c[i],n,m,d,N)
         A,w = velmax(sw)
         Aar[d-1,i] = A
         war[d-1,i] = w
-        print c[i],A,w
+        print(c[i],A,w)
         
 pl.figure()
 plotvelmax(c,war,n,m)
