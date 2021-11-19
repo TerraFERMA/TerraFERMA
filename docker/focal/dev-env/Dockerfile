@@ -30,7 +30,7 @@
 #
 
 # build from the base image
-FROM terraferma/base:fenics-2019.1.0-focal-githubactions
+FROM terraferma/base:fenics-2019.1.0-focal
 MAINTAINER terraferma <terraferma@lists.columbia.edu>
 
 USER root
