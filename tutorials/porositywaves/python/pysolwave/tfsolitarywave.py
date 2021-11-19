@@ -8,8 +8,8 @@ __copyright__ = "Copyright (C) 2010 Marc Spiegelman"
 __license__  = "GNU LGPL Version 2.1"
 
 import numpy as np
-from solitarywave import SolitaryWave
-from waveerrors import WaveError
+from .solitarywave import SolitaryWave
+from .waveerrors import WaveError
 import libspud
 import dolfin as df
 
@@ -57,7 +57,7 @@ class TFSolitaryWave:
         if d == 1:
             self.index = [self.dim - 1]
         else: 
-            self.index = range(0,int(d))  
+            self.index = list(range(0,int(d)))  
             
         # check that the origin point is the correct dimension
         assert (len(self.x0) == self.dim)
@@ -94,7 +94,7 @@ class TFSolitaryWave:
             mesh = df.IntervalMesh(number_cells,left,right)
         elif meshtype == 'File':
             mesh_filename = libspud.get_option("/geometry/mesh::Mesh/source::File/file")
-            print "tfml_file  = ",self.tfml_file, "mesh_filename=",mesh_filename
+            print("tfml_file  = ",self.tfml_file, "mesh_filename=",mesh_filename)
             mesh = df.Mesh(mesh_filename)
         else:
             df.error("Error: unknown mesh type "+meshtype)
@@ -111,8 +111,8 @@ class TFSolitaryWave:
         self.functionspace = df.FunctionSpace(mesh, e)
 
         #work out the order of the fields
-        for i in xrange(libspud.option_count("/system::"+system_name+"/field")):
-          name = libspud.get_option("/system::"+system_name+"/field["+`i`+"]/name")
+        for i in range(libspud.option_count("/system::"+system_name+"/field")):
+          name = libspud.get_option("/system::"+system_name+"/field["+repr(i)+"]/name")
           if name == f_name:
             self.f_index = i
           if name == p_name:
@@ -177,7 +177,7 @@ class TFSolitaryWave:
         libspud.load_options(checkpoint_file)
         time = libspud.get_option("/timestepping/current_time")
         dt = libspud.get_option("/timestepping/timestep/coefficient/type/rank/value/constant")
-        print "t=",time," dt=", dt
+        print("t=",time," dt=", dt)
         
         #load xml file
         xml_file = checkpoint_file.replace("checkpoint",self.system_name)

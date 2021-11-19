@@ -11,8 +11,8 @@ from numpy import *
 from scipy.optimize import fmin_bfgs, fsolve, brent, brentq
 import sys
 
-from magmasinc import solwave_mck, solwave_con, solwave_m1, solwave_gen
-from solitarywave import *
+from .magmasinc import solwave_mck, solwave_con, solwave_m1, solwave_gen
+from .solitarywave import *
 
 def radial_expression(wd,d):
     """ returns Expression for radial function R= || x - x_0|| for wd dimensional solitary wave in d dimensional space
