@@ -8,7 +8,6 @@ simpson@math.toronto.edu
 
 from . import sincmats
 from numpy import dot, sqrt, vstack, diag, hstack, zeros, fliplr, arange, pi, sinc
-#from scipy.interpolate.interpolate import spline
 
 
 def points(N, h):

@@ -19,7 +19,6 @@ import numpy as np
 from numpy import diag, dot, sqrt, pi, linspace, log, cosh, max
 from scipy.optimize.minpack import fsolve
 from scipy.linalg import solve
-from scipy.interpolate import spline
 
 def solwave_mck_eq(u, params):
 	"""
@@ -296,7 +295,6 @@ def solwave_con(c, d, M, dist = pi / 2., xtol = 1.e-12, verbose = False):
 			  'D2': D2, 'D1':D1, 'D1_r':D1_r, 'IN': IN1}
 
 		try:
-#			uguess = spline(r0, u0, r)
 			uguess = sinc_eo.sincinterp_e(r0,u0,r1)
 		except:
 			uguess = 3. * (1. - 2. / c1) / cosh(.5 * decay * r1)**2
@@ -527,7 +525,6 @@ def solwave_gen(c, n, m, d, M, dist = pi / 2., xtol = 1.e-12, verbose = False):
 			  'D2': D2, 'D1': D1, 'D1_r': D1_r, 'IN': IN1}
 
 		try:
-#			uguess = spline(r0, u0, r1)
 			uguess = sinc_eo.sincinterp_e(r0, u0, r1)
 		except:
 			uguess = 3. * (1. - n / c1) / cosh(.5 * decay * r1)**2
@@ -730,7 +727,6 @@ def solwave_m1(c, n, d, M, dist = pi / 2., xtol = 1.e-12, verbose = False):
 			  'D2': D2, 'D1': D1, 'D1_r': D1_r, 'IN': IN1}
 
 		try:
-#			uguess = spline(r0, u0, r1)
 			uguess = sinc_eo.sincinterp_e(r0,u0,r1)
 		except:
 			uguess = 3. * (1. - n / c1) / cosh(.5 * decay * r1)**2
