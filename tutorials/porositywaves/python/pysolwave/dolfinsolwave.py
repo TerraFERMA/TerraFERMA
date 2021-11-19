@@ -11,8 +11,8 @@ from numpy import *
 from scipy.optimize import fmin_bfgs, fsolve, brent, brentq
 import sys
 
-from magmasinc import solwave_mck, solwave_con, solwave_m1, solwave_gen
-from sinc_eo import sincinterp_e
+from .magmasinc import solwave_mck, solwave_con, solwave_m1, solwave_gen
+from .sinc_eo import sincinterp_e
 
 def wave_profile(c,n,m,d,N):
     """ return 1-D solitary wave profile fc(r) using PySolwave Routines
