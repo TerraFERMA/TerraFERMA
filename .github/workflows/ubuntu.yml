@@ -65,6 +65,10 @@ jobs:
             release: focal
             command: "OVERSUBSCRIBE=1 THREADS=2 make run_mediumtests"
 
+          - name: "Short Tutorial Tests Focal"
+            release: focal
+            command: "OVERSUBSCRIBE=1 THREADS=2 make run_shorttutorialtests"
+
     steps:
 
       - name: ${{ matrix.name }} Name
