@@ -10,6 +10,7 @@ from dolfin import *
 from numpy import *
 from scipy.optimize import fmin_bfgs, fsolve, brent, brentq
 import sys
+from ttictoc import tic,toc
 
 from .magmasinc import solwave_mck, solwave_con, solwave_m1, solwave_gen
 from .solitarywave import *
@@ -27,7 +28,7 @@ def radial_expression(wd,d):
         str = "sqrt(pow((x[0]-x0),2) + pow((x[1]-x1),2) + pow((x[2]-x2),2))"
 
 
-    R=Expression(str,x0=0.,x1=0.,x2=0.)
+    R=Expression(str,x0=0.,x1=0.,x2=0.,degree=1)
     return R
 
 
@@ -57,7 +58,7 @@ def ProjectSolitaryWave(V,x0,h_on_delta,solitarywave):
     fx *= h_on_delta
     
     #get numpy array for radial function and interpolate using sinc
-    rmesh = fx.array(); # get numpy array
+    rmesh = array([f for f in fx]) # get numpy array
     phi = solitarywave.eval(rmesh)
     
     # reload phi onto function
@@ -140,7 +141,7 @@ class WaveError:
         fx *= self.h_on_delta
 
         #get numpy array for radial function and interpolate using sinc
-        rmesh = fx.array(); # get numpy array
+        rmesh = array([f for f in fx]) # get numpy array
         phi = self.solitarywave.eval(rmesh)
 
         # reload phi onto function
