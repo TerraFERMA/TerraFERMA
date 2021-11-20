@@ -35,6 +35,8 @@ class TFSolitaryWave:
         # get model dimension
         self.dim = libspud.get_option("/geometry/dimension")
         self.system_name = system_name
+        self.p_name = p_name
+        self.f_name = f_name
         # get solitary wave parameters
         path="/system::"+system_name+"/coefficient::"
         scalar_value="/type::Constant/rank::Scalar/value::WholeMesh/constant"
@@ -105,10 +107,8 @@ class TFSolitaryWave:
         p_degree = libspud.get_option(path+p_name+"/type/rank/element/degree")
         f_family = libspud.get_option(path+f_name+"/type/rank/element/family")
         f_degree = libspud.get_option(path+f_name+"/type/rank/element/degree")        
-        pe = df.FiniteElement(p_family, mesh.ufl_cell(), p_degree)
-        ve = df.FiniteElement(f_family, mesh.ufl_cell(), f_degree)
-        e = pe*ve
-        self.functionspace = df.FunctionSpace(mesh, e)
+        fe = df.FiniteElement(f_family, mesh.ufl_cell(), f_degree)
+        self.f_functionspace = df.FunctionSpace(mesh, fe)
 
         #work out the order of the fields
         for i in range(libspud.option_count("/system::"+system_name+"/field")):
@@ -180,14 +180,17 @@ class TFSolitaryWave:
         print("t=",time," dt=", dt)
         
         #load xml file
-        xml_file = checkpoint_file.replace("checkpoint",self.system_name)
-        xml_file = xml_file.replace("tfml","xml")
+        xdmf_file = checkpoint_file.replace("checkpoint",self.system_name)
+        xdmf_file = xdmf_file.replace("tfml","xdmf")
         
         
         # load function and extract porosity
-        u = df.Function(self.functionspace,xml_file)
-        fields = u.split(deepcopy = True)
-        f = fields[self.f_index]
+        #u = df.Function(self.functionspace,xdmf_file)
+        f = df.Function(self.f_functionspace)
+        with df.XDMFFile(xdmf_file) as fhandle:
+            fhandle.read_checkpoint(f, self.f_name)
+        #fields = u.split(deepcopy = True)
+        #f = fields[self.f_index]
         
         
         #initialize Error Object
