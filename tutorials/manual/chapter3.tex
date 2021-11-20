@@ -2,7 +2,6 @@
 \label{cha:stokes-equation}
 
 \section{Problem Overview}
-\label{sec:problem-formulation}
 
 A fundamental problem in Solid Earth Sciences is the solution of
 Stokes equation for the incompressible creeping flow of a highly
@@ -39,7 +38,6 @@ than Poisson,  we will demonstrate that setting the problem up in
 \ref{cha:poiss-equat-unit}. 
 
 \subsection{Variational forms}
-\label{sec:variational-forms}
 
 For this tutorial, we will use a stable ``Taylor-Hood'' element where
 velocity is assumed to be a vector valued function with each component
@@ -127,7 +125,6 @@ iterative solvers to solve this problem accurately. Figure
 \end{figure}
 
 \section{Solution using \TF}
-\label{sec:solution-using-tf}
 
 However, setting this problem up in \TF{} is not
 much more difficult than solving the scalar Poisson equation.  The
@@ -368,7 +365,6 @@ memory to run large ($\geq 128\times128$ cell) direct solves.
 
 %\pagebreak{}
 \section{Themes and Variations}
-\label{sec:themes-variations}
 
 Many of the simple variations demonstrated in Chapter
 \ref{cha:poiss-equat-unit} for Poisson's Equation are readily adapted
@@ -400,7 +396,6 @@ $ tfsimulationharness --test stokes.shml
 \end{figure}
 
 \subsection{Iterative Solvers and Fieldsplit preconditioners}
-\label{sec:iterative-solvers-1}
 
 For moderate sized problems in 2-D, sparse-direct solvers can be
 efficient and extremely robust methods.  However, for larger problems

@@ -22,7 +22,6 @@
 \label{cha:poiss-equat-unit}
 
 \section{Problem Overview}
-\label{sec:problem-formulation}
 
 A classic problem for learning any new PDE solver package is to
 consider  Poisson's equation on the unit square,  with unit
@@ -112,7 +111,6 @@ For the specific case of Poisson's equation with Dirichlet boundary conditions,
 the weak form of the residual can be written, after integration by
 parts as
 \begin{equation}
-  \label{eq:4}
   F(u_{i};u_{t}) = \int_{\Omega}
   \left(
     \grad u_{t}\cdot\grad u_{i} - u_{t}f
@@ -609,7 +607,6 @@ should be small.  Simple things to watch out for are
 
 
 \section{Themes and Variations}
-\label{sec:themes-variations}
 
 Given an initial working \texttt{tfml} file, one of the very nice
 features of \TF{} is that it becomes usually quite straightforward to
@@ -893,7 +890,6 @@ of the box at $x=1$) and $\partial\Omega_{D}$ are the remaining Dirichlet bounda
 The weak form of the residual after integration by parts (and
 including the surface terms) now looks like
 \begin{equation}
-  \label{eq:4}
   F(u_{i};u_{t}) = \int_{\Omega}
   \left(
     \grad u_{t}\cdot\grad u_{i} - u_{t}f
