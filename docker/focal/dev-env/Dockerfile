@@ -67,6 +67,9 @@ RUN apt-get update && \
                        vim \
                        vtk7 \
                        evince \
+                       latexmk \
+                       texlive-latex-recommended \
+                       texlive-latex-extra \
                        python3 \
                        python3-ipdb \
                        python3-numpy \
