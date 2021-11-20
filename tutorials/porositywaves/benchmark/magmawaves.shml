@@ -196,7 +196,7 @@ for line in table0:
   print(line[0:-1])
 
 filename = "table0_short_c{0}_n{1}_m{2}.tex".format(c,kn,m)
-filehandle = file(filename, 'w')
+filehandle = open(filename, 'w')
 filehandle.writelines(table0)
 filehandle.close()
 </string_value>
