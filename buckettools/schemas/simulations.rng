@@ -52,6 +52,7 @@ simulation harness files and decide which simulations to run.</a:documentation>
           </attribute>
           <choice>
             <value>special</value>
+            <value>quick</value>
             <value>short</value>
             <value>medium</value>
             <value>long</value>
