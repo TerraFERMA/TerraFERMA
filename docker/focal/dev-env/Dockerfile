@@ -63,10 +63,12 @@ RUN apt-get update && \
                        adwaita-icon-theme-full \
                        2to3 \
                        tcl \
+                       ack \
                        vim \
                        vtk7 \
                        evince \
                        python3 \
+                       python3-ipdb \
                        python3-numpy \
                        python3-scipy \
                        python3-sympy \
@@ -90,6 +92,7 @@ RUN apt-get update && \
                        python3-pkgconfig \
                        python3-vtk7 && \
     apt-get clean && \
+    pip3 install ttictoc && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # set environment variables for OPENBLAS to make single threaded
