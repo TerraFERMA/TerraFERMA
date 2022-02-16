@@ -117,8 +117,8 @@ void SpudFunctionBucket::allocate_coeff_function()
           (*(*system_).bucket()).fetch_coefficientspace(uflsymbol());// data maps
     outputfunctionspace_ = functionspace_;
 
-    function_.reset( new dolfin::Function(functionspace_) );        // allocate the function on this functionspace
-    oldfunction_.reset( new dolfin::Function(functionspace_) );     // allocate the old function on this functionspace
+    function_.reset( new dolfin::Function(functionspace_) );         // allocate the function on this functionspace
+    oldfunction_.reset( new dolfin::Function(functionspace_) );      // allocate the old function on this functionspace
     iteratedfunction_ = function_;                                   // just point this at the function
 
                                                                      // can't initialize this yet (it may depend on other

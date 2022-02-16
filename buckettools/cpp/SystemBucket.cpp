@@ -175,6 +175,20 @@ void SystemBucket::update_nonlinear()
 }
 
 //*******************************************************************|************************************************************//
+// update the iterated vectors of the system
+//*******************************************************************|************************************************************//
+void SystemBucket::update_iterated()
+{
+  const double relax = (*bucket_).relaxation_parameter();
+  if (relax != 1.0)
+  {
+    (*(*iteratedfunction()).vector()) *= relax; 
+    (*(*iteratedfunction()).vector()) += *((*(*olditeratedfunction()).vector())*(1.-relax));// update the iterated function with the work vector
+  }
+  *(*olditeratedfunction()).vector() = *(*iteratedfunction()).vector();
+}
+
+//*******************************************************************|************************************************************//
 // return the maximum change in the requested fields of the system
 //*******************************************************************|************************************************************//
 const double SystemBucket::maxchange()
@@ -1032,6 +1046,7 @@ void SystemBucket::apply_ic_()
     (*(*f_it).second).apply_ic();
   }
   (*(*iteratedfunction_).vector()) = (*(*oldfunction_).vector());    // set the iterated function vector to the old function vector
+  (*(*olditeratedfunction_).vector()) = (*(*oldfunction_).vector()); // set the old iterated function vector to the old function vector
   (*(*function_).vector()) = (*(*oldfunction_).vector());            // set the function vector to the old function vector
 }
 

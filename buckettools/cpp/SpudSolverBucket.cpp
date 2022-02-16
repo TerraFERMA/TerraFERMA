@@ -585,6 +585,10 @@ void SpudSolverBucket::fill_base_()
   serr = Spud::get_option(buffer.str(), minits_, 0);                 // picard solver types)
   spud_err(buffer.str(), serr);
 
+  buffer.str(""); buffer << optionpath() << "/type/relaxation_parameter"; // relaxation parameter (only applies to picard solver
+  serr = Spud::get_option(buffer.str(), relax_, 1.0);                // types)
+  spud_err(buffer.str(), serr);
+
   buffer.str(""); buffer << optionpath() <<                          // maximum number of residual evaluations (only applies to snes
                                   "/type/max_function_evaluations";  // solver types)
   serr = Spud::get_option(buffer.str(), maxfes_, 10000); 
