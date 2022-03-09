@@ -220,7 +220,7 @@ Defaults to 1.e-50.</a:documentation>
         </element>
       </optional>
       <optional>
-        <element name="relaxation">
+        <element name="relaxation_parameter">
           <a:documentation>Relaxation parameter for solution between iterations.
 
 Defaults to 1.0 (no relaxation).</a:documentation>

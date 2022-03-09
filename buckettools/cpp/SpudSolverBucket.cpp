@@ -262,6 +262,13 @@ void SpudSolverBucket::initialize()
       perr = SNESLineSearchSetParams(snes_, alpha, maxstep); petsc_err(perr);
       #endif
        
+      buffer.str(""); buffer << optionpath() << "/type/snes_type::ls/damping";
+      double damping;
+      serr = Spud::get_option(buffer.str(), damping, 1.0);
+      spud_err(buffer.str(), serr);
+
+      perr = SNESLineSearchSetDamping(linesearch, damping); petsc_err(perr);
+       
     }
     else
     {
