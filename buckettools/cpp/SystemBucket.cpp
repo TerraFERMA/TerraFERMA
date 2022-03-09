@@ -179,13 +179,16 @@ void SystemBucket::update_nonlinear()
 //*******************************************************************|************************************************************//
 void SystemBucket::update_iterated()
 {
-  const double relax = (*bucket_).relaxation_parameter();
-  if (relax != 1.0)
+  if (fields_size()>0)
   {
-    (*(*iteratedfunction()).vector()) *= relax; 
-    (*(*iteratedfunction()).vector()) += *((*(*olditeratedfunction()).vector())*(1.-relax));// update the iterated function with the work vector
+    const double relax = (*bucket_).relaxation_parameter();
+    if (relax != 1.0)
+    {
+      (*(*iteratedfunction()).vector()) *= relax; 
+      (*(*iteratedfunction()).vector()) += *((*(*olditeratedfunction()).vector())*(1.-relax));// update the iterated function with the work vector
+    }
+    *(*olditeratedfunction()).vector() = *(*iteratedfunction()).vector();
   }
-  *(*olditeratedfunction()).vector() = *(*iteratedfunction()).vector();
 }
 
 //*******************************************************************|************************************************************//
