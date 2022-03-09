@@ -97,7 +97,7 @@ file(
   set( ENV{THREADS} 1 )
 endif()
 
-set( BUILD_COMMAND tfsimulationharness --build -l short medium long -n \$ENV{THREADS} -e ${EXCLUDE_TAGS} -r -- *.shml )
+set( BUILD_COMMAND tfsimulationharness --build -l quick short medium long -n \$ENV{THREADS} -e ${EXCLUDE_TAGS} -r -- *.shml )
 
 execute_process(
      COMMAND echo Running: \${BUILD_COMMAND}
@@ -119,6 +119,80 @@ endif()
 add_custom_target(
   build_tests
   COMMAND ${CMAKE_COMMAND} -P build_tests.cmake
+  WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+  DEPENDS copy_test_input
+  )
+
+file(
+    WRITE ${PROJECT_BINARY_DIR}/run_quicktests.cmake
+"if (NOT DEFINED ENV{THREADS})
+  set( ENV{THREADS} 1 )
+endif()
+
+if (\$ENV{OVERSUBSCRIBE})
+  set( TEST_COMMAND tfsimulationharness --run -l quick --mpi-options \" --oversubscribe\" -n \$ENV{THREADS} -e ${EXCLUDE_TAGS} -r -- *.shml )
+else (\$ENV{OVERSUBSCRIBE})
+  set( TEST_COMMAND tfsimulationharness --run -l quick -n \$ENV{THREADS} -e ${EXCLUDE_TAGS} -r -- *.shml )
+endif (\$ENV{OVERSUBSCRIBE})
+
+execute_process(
+     COMMAND echo Running: \${TEST_COMMAND}
+     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
+     )
+
+execute_process(
+    COMMAND \${TEST_COMMAND}
+    RESULT_VARIABLE RETCODE
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
+    )
+
+if (NOT RETCODE EQUAL 0)
+  message(FATAL_ERROR \"Command returned \${RETCODE}\")
+endif()
+
+if (\$ENV{OVERSUBSCRIBE})
+  set( TEST_COMMAND tfsimulationharness --run-from-checkpoint -l quick --mpi-options \" --oversubscribe\" -n \$ENV{THREADS} -e ${EXCLUDE_TAGS} -t run_from_checkpoint -r -- *.shml )
+else (\$ENV{OVERSUBSCRIBE})
+  set( TEST_COMMAND tfsimulationharness --run-from-checkpoint -l quick -n \$ENV{THREADS} -e ${EXCLUDE_TAGS} -t run_from_checkpoint -r -- *.shml )
+endif (\$ENV{OVERSUBSCRIBE})
+
+execute_process(
+     COMMAND echo Running: \${TEST_COMMAND}
+     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
+     )
+
+execute_process(
+    COMMAND \${TEST_COMMAND}
+    RESULT_VARIABLE RETCODE
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
+    )
+
+if (NOT RETCODE EQUAL 0)
+  message(FATAL_ERROR \"Command returned \${RETCODE}\")
+endif()
+
+set( TEST_COMMAND tfsimulationharness --just-test -l quick -n \$ENV{THREADS} -e ${EXCLUDE_TAGS} -r -- *.shml )
+
+execute_process(
+     COMMAND echo Running: \${TEST_COMMAND}
+     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
+     )
+
+execute_process(
+    COMMAND \${TEST_COMMAND}
+    RESULT_VARIABLE RETCODE
+    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}/tests
+    )
+
+if (NOT RETCODE EQUAL 0)
+  message(FATAL_ERROR \"Command returned \${RETCODE}\")
+endif()
+"
+    )
+
+add_custom_target(
+  run_quicktests
+  COMMAND ${CMAKE_COMMAND} -P run_quicktests.cmake
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   DEPENDS copy_test_input
   )

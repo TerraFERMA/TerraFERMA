@@ -23,7 +23,7 @@
 from buckettools import vtktools
 import json
 
-def vtudiff(filenames1, filenames2, filenameout, fieldnamemap={}):
+def vtudiff(filenames1, filenames2, filenameout, fieldnamemap={}, keeporiginal=False):
   """Take the diff of (multiple) vtu files"""
   basenameout, ext = os.path.splitext(filenameout)
   if ext != '.vtu':
@@ -42,7 +42,7 @@ def vtudiff(filenames1, filenames2, filenameout, fieldnamemap={}):
   for f in range(len(filenames1)):
     vtu1 = vtktools.vtu(filenames1[f])
     vtu2 = vtktools.vtu(filenames2[f])
-    vtudiff = vtktools.VtuDiff(vtu1, vtu2, fieldnamemap=fieldnamemap)
+    vtudiff = vtktools.VtuDiff(vtu1, vtu2, fieldnamemap=fieldnamemap, original_fields=keeporiginal)
     outfilename = filenameout
     if len(filenames1) > 1: outfilename = basenameout+repr(f).zfill(6)+".vtu"
     vtudiff.Write(outfilename)
@@ -61,6 +61,9 @@ if __name__ == "__main__":
                       help='specify second vtu, pvtu or xdmf filename')
   parser.add_argument('-o', '--output', action='store', metavar='filenameout', type=str, required=True,
                       help='specify output filenameout')
+  parser.add_argument('-orig', '--keep-original', action='store_true', dest='keeporiginal', required=False,
+                      help="""keep the original fields from the first file and the second file (remapped if necessary) appended by 
+                              the tags \"::Original1\" and \"::Original2\" respectively""")
   parser.add_argument('-map', '--fieldnamemap', action='store', metavar='fieldnamemap', type=json.loads, required=False, default={},
                       help="""a map of field names in filename1 to field names in filename2, specify using 
                               `-map '{"filename1":"fieldname2", "fieldname1b":"fieldname2b"}'` (defaults to assuming field names are
@@ -68,5 +71,5 @@ if __name__ == "__main__":
                               is included in the map)""")
   args = parser.parse_args()
 
-  vtudiff(args.filename1, args.filename2, args.output, fieldnamemap=args.fieldnamemap)
+  vtudiff(args.filename1, args.filename2, args.output, fieldnamemap=args.fieldnamemap, keeporiginal=args.keeporiginal)
 
