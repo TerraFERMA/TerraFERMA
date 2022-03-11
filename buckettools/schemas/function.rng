@@ -1728,7 +1728,13 @@ Assumed to be the current system if left unspecified.</a:documentation>
     <element name="file">
       <a:documentation>Give the name of a checkpoint file.  All fields in a system must share this file
 and the functionspace must be identical to the original system's functionspace.</a:documentation>
-      <ref name="anystring"/>
+      <ref name="filename"/>
+      <optional>
+        <element name="fieldname">
+          <a:documentation>Give the name of the field in the checkpoint file.  If unspecified, defaults to the field name for this field.</a:documentation>
+          <ref name="anystring"/>
+        </element>
+      </optional>
     </element>
   </define>
   <define name="prescribed_scalar">

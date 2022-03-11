@@ -8,8 +8,8 @@ __copyright__ = "Copyright (C) 2010 Marc Spiegelman"
 __license__  = "GNU LGPL Version 2.1"
 
 import numpy as np
-from solitarywave import SolitaryWave
-from waveerrors import WaveError
+from .solitarywave import SolitaryWave
+from .waveerrors import WaveError
 import libspud
 import dolfin as df
 
@@ -35,6 +35,8 @@ class TFSolitaryWave:
         # get model dimension
         self.dim = libspud.get_option("/geometry/dimension")
         self.system_name = system_name
+        self.p_name = p_name
+        self.f_name = f_name
         # get solitary wave parameters
         path="/system::"+system_name+"/coefficient::"
         scalar_value="/type::Constant/rank::Scalar/value::WholeMesh/constant"
@@ -57,7 +59,7 @@ class TFSolitaryWave:
         if d == 1:
             self.index = [self.dim - 1]
         else: 
-            self.index = range(0,int(d))  
+            self.index = list(range(0,int(d)))  
             
         # check that the origin point is the correct dimension
         assert (len(self.x0) == self.dim)
@@ -94,7 +96,7 @@ class TFSolitaryWave:
             mesh = df.IntervalMesh(number_cells,left,right)
         elif meshtype == 'File':
             mesh_filename = libspud.get_option("/geometry/mesh::Mesh/source::File/file")
-            print "tfml_file  = ",self.tfml_file, "mesh_filename=",mesh_filename
+            print("tfml_file  = ",self.tfml_file, "mesh_filename=",mesh_filename)
             mesh = df.Mesh(mesh_filename)
         else:
             df.error("Error: unknown mesh type "+meshtype)
@@ -105,14 +107,12 @@ class TFSolitaryWave:
         p_degree = libspud.get_option(path+p_name+"/type/rank/element/degree")
         f_family = libspud.get_option(path+f_name+"/type/rank/element/family")
         f_degree = libspud.get_option(path+f_name+"/type/rank/element/degree")        
-        pe = df.FiniteElement(p_family, mesh.ufl_cell(), p_degree)
-        ve = df.FiniteElement(f_family, mesh.ufl_cell(), f_degree)
-        e = pe*ve
-        self.functionspace = df.FunctionSpace(mesh, e)
+        fe = df.FiniteElement(f_family, mesh.ufl_cell(), f_degree)
+        self.f_functionspace = df.FunctionSpace(mesh, fe)
 
         #work out the order of the fields
-        for i in xrange(libspud.option_count("/system::"+system_name+"/field")):
-          name = libspud.get_option("/system::"+system_name+"/field["+`i`+"]/name")
+        for i in range(libspud.option_count("/system::"+system_name+"/field")):
+          name = libspud.get_option("/system::"+system_name+"/field["+repr(i)+"]/name")
           if name == f_name:
             self.f_index = i
           if name == p_name:
@@ -177,17 +177,20 @@ class TFSolitaryWave:
         libspud.load_options(checkpoint_file)
         time = libspud.get_option("/timestepping/current_time")
         dt = libspud.get_option("/timestepping/timestep/coefficient/type/rank/value/constant")
-        print "t=",time," dt=", dt
+        print("t=",time," dt=", dt)
         
         #load xml file
-        xml_file = checkpoint_file.replace("checkpoint",self.system_name)
-        xml_file = xml_file.replace("tfml","xml")
+        xdmf_file = checkpoint_file.replace("checkpoint",self.system_name)
+        xdmf_file = xdmf_file.replace("tfml","xdmf")
         
         
         # load function and extract porosity
-        u = df.Function(self.functionspace,xml_file)
-        fields = u.split(deepcopy = True)
-        f = fields[self.f_index]
+        #u = df.Function(self.functionspace,xdmf_file)
+        f = df.Function(self.f_functionspace)
+        with df.XDMFFile(xdmf_file) as fhandle:
+            fhandle.read_checkpoint(f, self.f_name)
+        #fields = u.split(deepcopy = True)
+        #f = fields[self.f_index]
         
         
         #initialize Error Object

@@ -10,8 +10,8 @@ from numpy import *
 from scipy.interpolate import interp1d
 import sys
 
-from magmasinc import solwave_mck, solwave_con, solwave_m1, solwave_gen
-from sinc_eo import sincinterp_e
+from .magmasinc import solwave_mck, solwave_con, solwave_m1, solwave_gen
+from .sinc_eo import sincinterp_e
 
 class SolitaryWave:
     """ class for calculating and evaluating solitary wave profiles from Simpson

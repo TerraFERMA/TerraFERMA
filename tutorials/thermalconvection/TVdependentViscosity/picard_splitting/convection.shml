@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <harness_options>
   <length>
     <string_value lines="1">long</string_value>
@@ -26,10 +26,11 @@ This .shml file controls Ra # and resolution and can be used to test parallel ex
             <string_value lines="1">64</string_value>
           </values>
           <update>
-            <string_value lines="20" type="code" language="python">import libspud
+            <string_value lines="20" type="code" language="python3">import libspud
 
 N = int(ncells)
-libspud.set_option("/geometry/mesh::Mesh/source::Rectangle/number_cells",[N,N])</string_value>
+libspud.set_option("/geometry/mesh::Mesh/source::Rectangle/number_cells",[N,N])
+</string_value>
             <comment>change the number of cells in the rectangular mesh</comment>
             <single_build/>
           </update>
@@ -39,8 +40,9 @@ libspud.set_option("/geometry/mesh::Mesh/source::Rectangle/number_cells",[N,N])<
             <string_value lines="1">1.e4</string_value>
           </values>
           <update>
-            <string_value lines="20" type="code" language="python">import libspud
-libspud.set_option("/system::Convection/coefficient::RayleighNumber/type::Constant/rank::Scalar/value::WholeMesh/constant",float(Ra))</string_value>
+            <string_value lines="20" type="code" language="python3">import libspud
+libspud.set_option("/system::Convection/coefficient::RayleighNumber/type::Constant/rank::Scalar/value::WholeMesh/constant",float(Ra))
+</string_value>
             <comment>change the number of cells in the rectangular mesh</comment>
             <single_build/>
           </update>
@@ -51,9 +53,10 @@ libspud.set_option("/system::Convection/coefficient::RayleighNumber/type::Consta
             <string_value lines="1">0</string_value>
           </values>
           <update>
-            <string_value lines="20" type="code" language="python">import libspud
+            <string_value lines="20" type="code" language="python3">import libspud
 if conv_file == '0':
-  libspud.delete_option("/solution_order/solve::in_timeloop/solver::nonlinear_systems/type::nonlinear_systems_solver/monitors/convergence_file")</string_value>
+  libspud.delete_option("/solution_order/solve::in_timeloop/solver::nonlinear_systems/type::nonlinear_systems_solver/monitors/convergence_file")
+</string_value>
             <single_build/>
           </update>
           <comment>Boolean to turn on/off convergence file (keeping a convergence file will degrade performance)</comment>
@@ -61,56 +64,62 @@ if conv_file == '0':
       </parameter_sweep>
       <variables>
         <variable name="Nu">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 stat = parser("rbconvection.stat")
-Nu = stat["Temperature"]["TemperatureNu"]["functional_value"][-1]</string_value>
+Nu = stat["Temperature"]["TemperatureNu"]["functional_value"][-1]
+</string_value>
         </variable>
         <variable name="Vrms">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 from math import sqrt
 stat = parser("rbconvection.stat")
-Vrms = sqrt(stat["Convection"]["VelocityvrmsSquared"]["functional_value"][-1])</string_value>
+Vrms = sqrt(stat["Convection"]["VelocityvrmsSquared"]["functional_value"][-1])
+</string_value>
           <comment>RMS velocity</comment>
         </variable>
         <variable name="Walltime">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 stat = parser("rbconvection.stat")
-Walltime = stat["ElapsedWallTime"]["value"][-1]</string_value>
+Walltime = stat["ElapsedWallTime"]["value"][-1]
+</string_value>
         </variable>
       </variables>
     </simulation>
   </simulations>
   <tests>
     <test name="Nu">
-      <string_value lines="20" type="code" language="python">#extract value from nested list
+      <string_value lines="20" type="code" language="python3">#extract value from nested list
 parameters=Nu.parameters
 Nu_value=Nu[parameters]
 
 #regression test
 value = 4.8964700443
 relerror = abs(Nu_value -value)/abs(value)
-print "Nu =", Nu_value, "regression test value =", value, "relative error =", relerror
-assert (relerror &lt; 1.e-5)</string_value>
+print("Nu =", Nu_value, "regression test value =", value, "relative error =", relerror)
+assert (relerror &lt; 1.e-5)
+</string_value>
     </test>
     <test name="Vrms">
-      <string_value lines="20" type="code" language="python">#extract value from nested list
+      <string_value lines="20" type="code" language="python3">#extract value from nested list
 parameters=Nu.parameters
 Vrms_value=Vrms[parameters]
 
 #regression test
 value = 42.8377673601
 relerror = abs(Vrms_value -value)/abs(value)
-print "Vrms =", Vrms_value, "regression test value =", value, "relative error =", relerror
-assert (relerror &lt; 1.e-5)</string_value>
+print("Vrms =", Vrms_value, "regression test value =", value, "relative error =", relerror)
+assert (relerror &lt; 1.e-5)
+</string_value>
     </test>
     <test name="Walltime">
-      <string_value lines="20" type="code" language="python">#extract value from nested list
+      <string_value lines="20" type="code" language="python3">#extract value from nested list
 parameters=Nu.parameters
 Walltime_value=Walltime[parameters]
 
 #regression test
-print "Walltime =",Walltime_value
-assert (Walltime_value &lt;= 3000.)</string_value>
+print("Walltime =",Walltime_value)
+assert (Walltime_value &lt;= 3000.)
+</string_value>
     </test>
   </tests>
 </harness_options>

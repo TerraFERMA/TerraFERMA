@@ -43,7 +43,7 @@ namespace buckettools
 
   public:
 
-    virtual int handle_signal(int signum) = 0;                       // pure virtual hook for signals
+    virtual void handle_signal(int signum) = 0;                       // pure virtual hook for signals
 
     virtual sig_atomic_t received() = 0;                             // pure virtual received check for signals
 
