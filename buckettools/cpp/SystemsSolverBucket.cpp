@@ -587,7 +587,7 @@ bool SystemsSolverBucket::complete_iterating_(const double &aerror0)
       }
       buffer << "_systemssolver.xdmf";
       XDMFFile_ptr convvis_file( new dolfin::XDMFFile((*(*(**(residualsolvers_.begin())).system()).mesh()).mpi_comm(), buffer.str()) );
-      // making an assumption here that all meshes share the same comm!
+      // FIXME: making an assumption here that all meshes share the same comm!
       bool append = iteration_count()!=0;
 
       std::vector<SolverBucket_ptr>::const_iterator s_it;

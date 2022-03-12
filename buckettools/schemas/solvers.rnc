@@ -359,27 +359,36 @@ snes =
 solve_location = 
   (
     (
-      ## Solve the equations listed in this nonlinear solver every timestep.
+      ## By default solve this nonlinear solver every timestep.
+      ##
+      ## This will be overridden by specifying a solve in_timeloop under solution_order or if this nonlinear solver is listed in
+      ## any other solve under solution_order.
       element solve {
         attribute name {"in_timeloop"},
         comment
       }|
-      ## Only solve the equations listed in this nonlinear solver at the start of the simulation.
+      ## By default solve this nonlinear solver only at the start of the simulation.
+      ##
+      ## This will be overridden by specifying a solve at_start under solution_order or if this nonlinear solver is listed in
+      ## any other solve under solution_order.
       element solve {
         attribute name {"at_start"},
         comment
       }|
-      ## Only solve the equations listed in this nonlinear solver when diagnostic output is performed.
+      ## By default solve this nonlinear solver whenever diagnostic output is calculated.
       ##
-      ## This means that this system will be updated at an interval dependant on how the diagnostic dump periods are set in /io.
+      ## This will be overridden by specifying a solve with_diagnostics under solution_order or if this nonlinear solver is listed in
+      ## any other solve under solution_order.
       element solve {
         attribute name {"with_diagnostics"},
         comment
       }|
-      ## Never solve the equations listed in this nonlinear solver.
+      ## By default never solve the equations listed in this nonlinear solver.
       ##
       ## This is primarily intended to be used in checkpoint files when systems set to solve 'at_start' are never solved for in the 
       ## checkpointed simulation.
+      ##
+      ## This will be overridden if this nonlinear solver is listed in any solve under solution_order.
       element solve {
         attribute name {"never"},
         comment

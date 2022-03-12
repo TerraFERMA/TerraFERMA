@@ -58,8 +58,8 @@ void SpudSystemsSolverBucket::fill()
   fill_base_();                                                      // fill the base solver data: type, name etc.
 
   fill_solvers_();                                                   // fill the map of sub systems solvers and sub (standard) solvers
-
-  fill_solverlists_();                                               // fill a list of solvers to be used in the residual calculation
+ 
+  // no equivalent of fill_solverlists_ here as it is taken care of in fill_solvers_
 
 }
 
@@ -218,6 +218,17 @@ void SpudSystemsSolverBucket::fill_solvers_()
       (*solver).fill();                                              // recursively fill the sub systems solver
 
       register_solver(solver, (*solver).name());
+
+      buffer.str(""); buffer << solver_optionpath << "/type/exclude_from_systems_residual";
+      if (!Spud::have_option(buffer.str()))
+      {
+        const std::vector<SolverBucket_ptr>& tmpresidualsolvers = (*solver).residualsolvers();
+        std::vector<SolverBucket_ptr>::const_iterator ts_it;
+        for (ts_it = tmpresidualsolvers.begin(); ts_it != tmpresidualsolvers.end(); ts_it++)
+        {
+          residualsolvers_.push_back(*ts_it);
+        }
+      }
     }
     else if (type=="nonlinear_solver")                               // this is just a reference to a standard system::solver
     {
@@ -241,6 +252,12 @@ void SpudSystemsSolverBucket::fill_solvers_()
       register_solver(solver, lname);                                // not necessarily the name of the solver
                                                                      // instead the name it was given by the user in this list
       (*solver).register_systemssolver(this, unique_name());         // reverse registration as well but with our unique-ified name
+
+      buffer.str(""); buffer << solver_optionpath << "/type/exclude_from_systems_residual";
+      if (!Spud::have_option(buffer.str()))
+      {
+        residualsolvers_.push_back(solver);
+      }
     }
     else
     {
