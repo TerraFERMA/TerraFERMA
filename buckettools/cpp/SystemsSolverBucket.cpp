@@ -103,6 +103,8 @@ void SystemsSolverBucket::fill_base_()
  
   minits_ = 0;
 
+  relax_ = 1.0;
+
   ignore_failures_ = false;
 
   iteration_count_.reset( new int );
