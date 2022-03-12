@@ -54,12 +54,14 @@
             <type name="nonlinear_solver">
               <system name="System1"/>
               <nonlinear_solver name="Solver"/>
+              <include_in_systems_residual/>
             </type>
           </solver>
           <solver name="System2::Solver">
             <type name="nonlinear_solver">
               <system name="System2"/>
               <nonlinear_solver name="Solver"/>
+              <include_in_systems_residual/>
             </type>
           </solver>
         </type>
