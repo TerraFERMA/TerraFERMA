@@ -190,6 +190,12 @@ nonlinear =
         element min_iterations {
           integer
         }?,
+        ## Relaxation parameter for solution between iterations.
+        ##
+        ## Defaults to 1.0 (no relaxation).
+        element relaxation_parameter {
+          real
+        }?,
         ## Options to give extra information for each iteration of the
         ## timestep. Some of those may really slow down your computation!
         element monitors {

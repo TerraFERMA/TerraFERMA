@@ -117,8 +117,8 @@ void SpudFunctionBucket::allocate_coeff_function()
           (*(*system_).bucket()).fetch_coefficientspace(uflsymbol());// data maps
     outputfunctionspace_ = functionspace_;
 
-    function_.reset( new dolfin::Function(functionspace_) );        // allocate the function on this functionspace
-    oldfunction_.reset( new dolfin::Function(functionspace_) );     // allocate the old function on this functionspace
+    function_.reset( new dolfin::Function(functionspace_) );         // allocate the function on this functionspace
+    oldfunction_.reset( new dolfin::Function(functionspace_) );      // allocate the old function on this functionspace
     iteratedfunction_ = function_;                                   // just point this at the function
 
                                                                      // can't initialize this yet (it may depend on other
@@ -546,6 +546,9 @@ void SpudFunctionBucket::allocate_field_()
   if(Spud::have_option(buffer.str()))
   {
     serr = Spud::get_option(buffer.str(), icfilename_);
+    spud_err(buffer.str(), serr);
+    buffer << "/fieldname";
+    serr = Spud::get_option(buffer.str(), icfieldname_, name());
     spud_err(buffer.str(), serr);
   }
   else
@@ -1388,70 +1391,44 @@ Expression_ptr SpudFunctionBucket::allocate_expression_(
     }
 
   }
-  else
+  else if (Spud::have_option(constbuffer.str()))                     // finally the constant case
   {
-    int lrank = rank();                                               // default to functionbucket rank
-    if (Spud::have_option(constbuffer.str()))                        // but if we've requested a constant
-    {
-      serr = Spud::get_option_rank(constbuffer.str(), lrank);         // find out the rank in the schema
-      spud_err(constbuffer.str(), serr);
-    }
+    int lrank;
+    serr = Spud::get_option_rank(constbuffer.str(), lrank);          // find out the rank in the schema
+    spud_err(constbuffer.str(), serr);
     
-    if(lrank==0)                                                      // scalar
+    if(lrank==0)                                                     // scalar
     {
-      double value = 0.0;                                            // default to zero
-      if (Spud::have_option(constbuffer.str()))                      // but if we've requested a constant
-      {
-        serr = Spud::get_option(constbuffer.str(), value);           // take it from the options
-        spud_err(constbuffer.str(), serr);
-      }
+      double value;
+      serr = Spud::get_option(constbuffer.str(), value);             // take it from the options
+      spud_err(constbuffer.str(), serr);
       expression.reset( new dolfin::Constant(value) );
     }
-    else if (lrank==1)                                                // vector
+    else if (lrank==1)                                               // vector
     {
       std::vector<double> values;
-      if (Spud::have_option(constbuffer.str()))                      // if we've requested a constant
-      {
-        serr = Spud::get_option(constbuffer.str(), values); 
-        spud_err(constbuffer.str(), serr);
-      }
-      else
-      {
-        for (uint i = 0; i < size(); i++)
-        {
-          values.push_back(0.0);
-        }
-      }
+      serr = Spud::get_option(constbuffer.str(), values); 
+      spud_err(constbuffer.str(), serr);
       assert(values.size()==size());
       expression.reset(new dolfin::Constant(values));
     }
     else if (lrank==2)
     {
+      std::vector< std::vector<double> > values_arr; 
+      std::vector<int> value_shape_int;
+      serr = Spud::get_option_shape(constbuffer.str(), value_shape_int); spud_err(constbuffer.str(), serr);
+      serr = Spud::get_option(constbuffer.str(), values_arr); spud_err(constbuffer.str(), serr);
+
       std::vector<std::size_t> value_shape(2);
       std::vector<double> values;
-      if (Spud::have_option(constbuffer.str()))                      // if we've requested a constant
+      value_shape[0] = value_shape_int[0];
+      value_shape[1] = value_shape_int[1];
+      for (std::vector< std::vector<double> >::const_iterator val = values_arr.begin(); val != values_arr.end(); val++)
       {
-        std::vector< std::vector<double> > values_arr; 
-        std::vector<int> value_shape_int;
-        serr = Spud::get_option_shape(constbuffer.str(), value_shape_int); spud_err(constbuffer.str(), serr);
-        serr = Spud::get_option(constbuffer.str(), values_arr); spud_err(constbuffer.str(), serr);
-        value_shape[0] = value_shape_int[0];
-        value_shape[1] = value_shape_int[1];
-        for (std::vector< std::vector<double> >::const_iterator val = values_arr.begin(); val != values_arr.end(); val++)
-        {
-          values.insert(values.end(), (*val).begin(), (*val).end());
-        }
-      }
-      else
-      {
-        for (uint i = 0; i < size(); i++)
-        {
-          values.push_back(0.0);
-        }
-        value_shape[0] = shape_[0];
-        value_shape[1] = shape_[1];
+        values.insert(values.end(), (*val).begin(), (*val).end());
       }
       assert(values.size()==size());
+
       expression.reset(new dolfin::Constant(value_shape, values));
     }
     else
@@ -1731,6 +1708,11 @@ void SpudFunctionBucket::checkpoint_options_()
   buffer.str(""); buffer << optionpath()
                                   << "/type[0]/rank[0]/initial_condition::WholeMesh/type";
   serr = Spud::set_option_attribute(buffer.str(), "initial_condition");
+  spud_err_accept(buffer.str(), serr, Spud::SPUD_NEW_KEY_WARNING);
+
+  buffer.str(""); buffer << optionpath()
+                                  << "/type[0]/rank[0]/initial_condition::WholeMesh/file/__value/type";
+  serr = Spud::set_option_attribute(buffer.str(), "filename");
   spud_err_accept(buffer.str(), serr, Spud::SPUD_NEW_KEY_WARNING);
 
   buffer.str(""); buffer << optionpath()

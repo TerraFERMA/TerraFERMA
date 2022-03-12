@@ -270,64 +270,8 @@ class vtu(object):
 
   def ProbeData(self, coordinates, name):
     """Interpolate field values at these coordinates."""
-
-    # Initialise locator
-    locator = vtk.vtkPointLocator()
-    locator.SetDataSet(self.ugrid)
-    locator.SetTolerance(10.0)
-    locator.Update()
-
-    # Initialise probe
-    points = vtk.vtkPoints()
-    points.SetDataTypeToDouble()
-    ilen, jlen = coordinates.shape
-    for i in range(ilen):
-      points.InsertNextPoint(coordinates[i][0], coordinates[i][1], coordinates[i][2])
-    polydata = vtk.vtkPolyData()
-    polydata.SetPoints(points)
-    probe = vtk.vtkProbeFilter()
-    probe.SetInput(polydata)
-    probe.SetSource(self.ugrid)
-    probe.Update()
-
-    # Generate a list invalidNodes, containing a map from invalid nodes in the
-    # result to their closest nodes in the input
-    valid_ids = probe.GetValidPoints()
-    valid_loc = 0
-    invalidNodes = []
-    for i in range(ilen):
-      if valid_ids.GetTuple1(valid_loc) == i:
-        valid_loc += 1
-      else:
-        nearest = locator.FindClosestPoint([coordinates[i][0], coordinates[i][1], coordinates[i][2]])
-        invalidNodes.append((i, nearest))
-
-    # Get final updated values
-    pointdata=probe.GetOutput().GetPointData()
-    vtkdata=pointdata.GetArray(name)
-    nc=vtkdata.GetNumberOfComponents()
-    nt=vtkdata.GetNumberOfTuples()
-    array = arr([vtkdata.GetValue(i) for i in range(nt * nc)])
-    
-    # Fix the point data at invalid nodes
-    if len(invalidNodes) > 0:
-      try:
-        oldField = self.ugrid.GetPointData().GetArray(name)
-        components = oldField.GetNumberOfComponents()
-      except:
-        try:
-          oldField = self.ugrid.GetCellData().GetArray(name)
-          components = oldField.GetNumberOfComponents()
-        except:
-          raise Exception("ERROR: couldn't find point or cell field data with name "+name+" in file "+self.filename+".")
-      for invalidNode, nearest in invalidNodes:
-        for comp in range(nc):
-          array[invalidNode * nc + comp] = oldField.GetValue(nearest * nc + comp)
-          
-    valShape = self.GetField(name)[0].shape
-    array.shape = tuple([nt] + list(valShape))
-          
-    return array
+    probe = VTUProbe(self.ugrid, coordinates)
+    return probe.GetField(name)
 
   def RemoveField(self, name):
     """Removes said field from the unstructured grid."""
@@ -382,7 +326,10 @@ class vtu(object):
   def Crop(self, min_x, max_x, min_y, max_y, min_z, max_z):
     """Trim off the edges defined by a bounding box."""
     trimmer = vtk.vtkExtractUnstructuredGrid()
-    trimmer.SetInput(self.ugrid)
+    if vtk.vtkVersion.GetVTKMajorVersion() <= 5:
+      trimmer.SetInput(self.ugrid)
+    else:
+      trimmer.SetInputData(self.ugrid)
     trimmer.SetExtent(min_x, max_x, min_y, max_y, min_z, max_z)
     trimmer.Update()
     trimmed_ug = trimmer.GetOutput()
@@ -474,8 +421,11 @@ class vtu(object):
   def StructuredPointProbe(self, nx, ny, nz, bounding_box=None):
     """ Probe the unstructured grid dataset using a structured points dataset. """
 
-    probe = vtk.vtkProbeFilter ()
-    probe.SetSource (self.ugrid)
+    probe = vtk.vtkProbeFilter()
+    if vtk.vtkVersion.GetVTKMajorVersion() <= 5:
+      probe.SetSource(self.ugrid)
+    else:
+      probe.SetSourceData(self.ugrid)
 
     sgrid = vtk.vtkStructuredPoints()
 
@@ -496,7 +446,10 @@ class vtu(object):
 
     sgrid.SetSpacing(spacing)
 
-    probe.SetInput (sgrid)
+    if vtk.vtkVersion.GetVTKMajorVersion() <= 5:
+      probe.SetInput(sgrid)
+    else:
+      probe.SetInputData(sgrid)
     probe.Update ()
 
     return probe.GetOutput()
@@ -596,7 +549,10 @@ class vtu(object):
     The returned array gives a cell-wise derivative.
     """
     cd=vtk.vtkCellDerivatives()
-    cd.SetInput(self.ugrid)
+    if vtk.vtkVersion.GetVTKMajorVersion() <= 5:
+      cd.SetInput(self.ugrid)
+    else:
+      cd.SetInputData(self.ugrid)
     pointdata=self.ugrid.GetPointData()
     nc=pointdata.GetArray(name).GetNumberOfComponents()
     if nc==1:
@@ -621,7 +577,10 @@ class vtu(object):
     The returned array gives a cell-wise derivative.
     """
     cd=vtk.vtkCellDerivatives()
-    cd.SetInput(self.ugrid)
+    if vtk.vtkVersion.GetVTKMajorVersion() <= 5:
+      cd.SetInput(self.ugrid)
+    else:
+      cd.SetInputData(self.ugrid)
     pointdata=self.ugrid.GetPointData()
     cd.SetVectorModeToComputeVorticity()
     cd.SetTensorModeToPassTensors()
@@ -636,10 +595,84 @@ class vtu(object):
     All existing fields will remain.
     """
     cdtpd=vtk.vtkCellDataToPointData()
-    cdtpd.SetInput(self.ugrid)
+    if vtk.vtkVersion.GetVTKMajorVersion() <= 5:
+      cdtpd.SetInput(self.ugrid)
+    else:
+      cdtpd.SetInputData(self.ugrid)
     cdtpd.PassCellDataOn()
     cdtpd.Update()
     self.ugrid=cdtpd.GetUnstructuredGridOutput()
+
+class VTUProbe(object):
+  """A class that combines a vtkProbeFilter with a list of invalid points (points that it failed to probe
+  where we take the value of the nearest point)"""
+
+  def __init__(self, ugrid, coordinates):
+    # Initialise locator
+    locator = vtk.vtkPointLocator()
+    locator.SetDataSet(ugrid)
+    locator.SetTolerance(10.0)
+    locator.Update()
+
+    # Initialise probe
+    points = vtk.vtkPoints()
+    points.SetDataTypeToDouble()
+    ilen, jlen = coordinates.shape
+    for i in range(ilen):
+      points.InsertNextPoint(coordinates[i][0], coordinates[i][1], coordinates[i][2])
+    polydata = vtk.vtkPolyData()
+    polydata.SetPoints(points)
+    self.probe = vtk.vtkProbeFilter()
+    if vtk.vtkVersion.GetVTKMajorVersion() <= 5:
+      self.probe.SetInput(polydata)
+      self.probe.SetSource(ugrid)
+    else:
+      self.probe.SetInputData(polydata)
+      self.probe.SetSourceData(ugrid)
+    self.probe.Update()
+
+    # Generate a list invalidNodes, containing a map from invalid nodes in the
+    # result to their closest nodes in the input
+    valid_ids = self.probe.GetValidPoints()
+    valid_loc = 0
+    self.invalidNodes = []
+    for i in range(ilen):
+      if valid_ids.GetTuple1(valid_loc) == i:
+        valid_loc += 1
+      else:
+        nearest = locator.FindClosestPoint([coordinates[i][0], coordinates[i][1], coordinates[i][2]])
+        self.invalidNodes.append((i, nearest))
+    self.ugrid = ugrid
+
+  def GetField(self, name):
+    # Get final updated values
+    pointdata = self.probe.GetOutput().GetPointData()
+    vtkdata=pointdata.GetArray(name)
+    nc=vtkdata.GetNumberOfComponents()
+    nt=vtkdata.GetNumberOfTuples()
+    array = arr([vtkdata.GetValue(i) for i in range(nt * nc)])
+    
+    # Fix the point data at invalid nodes
+    if len(self.invalidNodes) > 0:
+      oldField = self.ugrid.GetPointData().GetArray(name)
+      if oldField is None:
+        oldField = self.ugrid.GetCellData().GetArray(name)
+        if oldField is None:
+          raise Exception("ERROR: couldn't find point or cell field data with name "+name+".")
+      components = oldField.GetNumberOfComponents()
+      for invalidNode, nearest in self.invalidNodes:
+        for comp in range(nc):
+          array[invalidNode * nc + comp] = oldField.GetValue(nearest * nc + comp)
+          
+    # this is a copy and paster from vtu.GetField above:
+    if nc==9:
+      return array.reshape(nt,3,3)
+    elif nc==4:
+      return array.reshape(nt,2,2)
+    else:
+      return array.reshape(nt,nc)
+          
+    return array
     
 def VtuMatchLocations(vtu1, vtu2, tolerance = 1.0e-6):
   """
@@ -695,7 +728,7 @@ def VtuMatchLocationsArbitrary(vtu1, vtu2, tolerance = 1.0e-6):
   # should now be in same order, so we can check for its biggest difference
   return numpy.allclose(locations1[sort_index1],locations2[sort_index2], atol=tolerance)
 
-def VtuDiff(vtu1, vtu2, filename = None):
+def VtuDiff(vtu1, vtu2, fieldnamemap={}, original_fields=False):
   """
   Generate a vtu with fields generated by taking the difference between the field
   values in the two supplied vtus. Fields that are not common between the two vtus
@@ -705,27 +738,66 @@ def VtuDiff(vtu1, vtu2, filename = None):
 
   # Generate empty output vtu
   resultVtu = vtu()
-  resultVtu.filename = filename
 
   # If the input vtu point locations match, do not use probe
   useProbe  = not VtuMatchLocations(vtu1, vtu2)
+  if useProbe:
+    probe = VTUProbe(vtu2.ugrid, vtu1.GetLocations())
 
   # Copy the grid from the first input vtu into the output vtu
   resultVtu.ugrid.DeepCopy(vtu1.ugrid)
 
   # Find common field names between the input vtus and generate corresponding
   # difference fields
-  fieldNames1 = vtu1.GetFieldNames()
-  fieldNames2 = vtu2.GetFieldNames()
-  for fieldName in fieldNames1:
-    if fieldName in fieldNames2:
+  vtkdata=vtu1.ugrid.GetPointData()
+  fieldnames1 = [vtkdata.GetArrayName(i) for i in range(vtkdata.GetNumberOfArrays())]
+  vtkdata=vtu2.ugrid.GetPointData()
+  fieldnames2 = [vtkdata.GetArrayName(i) for i in range(vtkdata.GetNumberOfArrays())]
+  for fieldname1 in fieldnames1:
+    fieldname2 = fieldnamemap.get(fieldname1, fieldname1)
+    field1 = vtu1.GetField(fieldname1)
+    if fieldname2 in fieldnames2:
       if useProbe:
-        field2 = vtu2.ProbeData(vtu1.GetLocations(), fieldName)
+        field2 = probe.GetField(fieldname2)
       else:
-        field2 = vtu2.GetField(fieldName)
-      resultVtu.SubFieldFromField(fieldName, field2)
+        field2 = vtu2.GetField(fieldname2)
+      resultVtu.AddField(fieldname1, field1-field2)
+      if original_fields: resultVtu.AddField(fieldname1+"::Original2", field2)
     else:
-      resultVtu.RemoveField(fieldName)
+      resultVtu.RemoveField(fieldname1)
+    if original_fields: resultVtu.AddField(fieldname1+"::Original1", field1)
 
-  return resultVtu  
+  # Also look for cell-based fields. This only works if we don't have
+  # to interpolate (both meshes are the same)
+  vtkdata=vtu1.ugrid.GetCellData()
+  fieldnames1 = [vtkdata.GetArrayName(i) for i in range(vtkdata.GetNumberOfArrays())]
+  vtkdata=vtu2.ugrid.GetCellData()
+  fieldnames2 = [vtkdata.GetArrayName(i) for i in range(vtkdata.GetNumberOfArrays())]
+  if useProbe:
+    # meshes are different - we can't interpolate cell-based fields so let's just remove them from the output
+    for fieldname1 in fieldnames1:
+      fieldname2 = fieldnamemap.get(fieldname1, fieldname1)
+      if fieldname2=='vtkGhostLevels':
+        # this field should just be passed on unchanged
+        continue
+      if original_fields: 
+        field1 = vtu1.GetField(fieldname1)
+        resultVtu.AddField(fieldname1+"::Original1", field1)
+      resultVtu.RemoveField(fieldname1)
+  else:
+    # meshes are the same - we can simply subtract
+    for fieldname1 in fieldnames1:
+      fieldname2 = fieldnamemap.get(fieldname1, fieldname1)
+      field1 = vtu1.GetField(fieldname1)
+      if fieldname2=='vtkGhostLevels':
+        # this field should just be passed on unchanged
+        continue
+      elif fieldname2 in fieldnames2:
+        field2 = vtu2.GetField(fieldname2)
+        resultVtu.AddField(fieldname1, field1-field2)
+        if original_fields: resultVtu.AddField(fieldname1+"::Original2", field2)
+      else:
+        resultVtu.RemoveField(fieldname1)
+      if original_fields: resultVtu.AddField(fieldname1+"::Original1", field1)
 
+  return resultVtu

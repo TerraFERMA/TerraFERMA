@@ -67,7 +67,7 @@ namespace buckettools
 
     static SignalHandler *instance_;                                 // singleton pointer
 
-    static EventHandler_ptr signal_handlers_[NSIG];                  // table ot pointers to eventhandlers registered by applications
+    static EventHandler_ptr signal_handlers_[NSIG];                  // table of pointers to eventhandlers registered by applications
                                                                      // NSIG is the number of signals defined in signal.h
   };
 

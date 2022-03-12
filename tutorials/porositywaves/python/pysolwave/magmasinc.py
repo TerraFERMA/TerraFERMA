@@ -14,12 +14,11 @@ n>1, m<>1: solwave_gen
 Author: Gideon Simpson, simpson@math.toronto.edu
 """
 
-import sinc_eo, magma1d
+from . import sinc_eo, magma1d
 import numpy as np
 from numpy import diag, dot, sqrt, pi, linspace, log, cosh, max
 from scipy.optimize.minpack import fsolve
 from scipy.linalg import solve
-from scipy.interpolate import spline
 
 def solwave_mck_eq(u, params):
 	"""
@@ -141,7 +140,7 @@ def solwave_mck(c, d, M, dist = pi / 2., xtol = 1.e-12, verbose = False):
 			params['d'] = d1
 
 			if verbose:
-				print ' computing with d = ', d1
+				print(' computing with d = ', d1)
 		
 			u1, infodict, ier, mesg = \
 			    fsolve(lambda v:solwave_mck_eq(v,params), u0, \
@@ -159,22 +158,22 @@ def solwave_mck(c, d, M, dist = pi / 2., xtol = 1.e-12, verbose = False):
 			else:
 				if verbose:
 					if np.max(np.abs(u1)) <= 1.e-8:
-						print " converged to the zero solution, adjusteing delta_dim"
+						print(" converged to the zero solution, adjusteing delta_dim")
 					else:
-						print " solver failed to converge, adjusting delta_dim"
-						print " solver err = ", ier
+						print(" solver failed to converge, adjusting delta_dim")
+						print(" solver err = ", ier)
 
 				delta_dim = delta_dim / 2.
 			if verbose:
 				jac = solwave_mck_eq_jac(u1, params)
 				condnum = np.linalg.cond(jac)
-				print " condition number = ", condnum
+				print(" condition number = ", condnum)
 
 				
 		u = u0
 
 	if d0 < d:
-		print " Failed to converge to the soliton solution, last value of d =", d0
+		print(" Failed to converge to the soliton solution, last value of d =", d0)
 		f = 0.0
 	else:
 		f = 1. + u
@@ -265,7 +264,7 @@ def solwave_con(c, d, M, dist = pi / 2., xtol = 1.e-12, verbose = False):
 	# guess.  This may be replaced with another algorithm if a better
 	# initial guess for the 1D soliton is available.
 	if verbose:
-		print " iterating in c"
+		print(" iterating in c")
 
 	# Initial value for delta c.  This can be tuned as needed.
 	delta_c = .5 * 2./c
@@ -296,13 +295,12 @@ def solwave_con(c, d, M, dist = pi / 2., xtol = 1.e-12, verbose = False):
 			  'D2': D2, 'D1':D1, 'D1_r':D1_r, 'IN': IN1}
 
 		try:
-#			uguess = spline(r0, u0, r)
 			uguess = sinc_eo.sincinterp_e(r0,u0,r1)
 		except:
 			uguess = 3. * (1. - 2. / c1) / cosh(.5 * decay * r1)**2
 
 		if verbose:
-			print ' computing with c = ', c1
+			print(' computing with c = ', c1)
 
 		u1, infodict, ier, mesg = \
 		    fsolve(lambda v:solwave_con_eq(v, params), uguess, \
@@ -319,17 +317,17 @@ def solwave_con(c, d, M, dist = pi / 2., xtol = 1.e-12, verbose = False):
 		else:
 			if verbose:
 				if np.max(np.abs(u1)) <= 1.e-8:
-					print " converged to the zero solution, adjusteing delta_c"
+					print(" converged to the zero solution, adjusteing delta_c")
 				else:
-					print " solver failed to converge, adjusting delta_c"
-					print " solver err = ", ier
+					print(" solver failed to converge, adjusting delta_c")
+					print(" solver err = ", ier)
 
 			delta_c = delta_c / 2.
 			
 		if verbose:
 			jac = solwave_con_eq_jac(u1, params)
 			condnum = np.linalg.cond(jac)
-			print " condition number = ", condnum
+			print(" condition number = ", condnum)
 			
 
 	u = u0
@@ -339,7 +337,7 @@ def solwave_con(c, d, M, dist = pi / 2., xtol = 1.e-12, verbose = False):
 	if d > 1.:
 		
 		if verbose:
-			print " iterating in d"
+			print(" iterating in d")
 
 		delta_dim = (d - 1.) / 10.
 
@@ -357,7 +355,7 @@ def solwave_con(c, d, M, dist = pi / 2., xtol = 1.e-12, verbose = False):
 			params['d'] = d1
 
 			if verbose:
-				print ' computing with d = ', d1
+				print(' computing with d = ', d1)
 		
 			u1, infodict, ier, mesg = \
 			    fsolve(lambda v:solwave_con_eq(v,params), u0, \
@@ -373,24 +371,24 @@ def solwave_con(c, d, M, dist = pi / 2., xtol = 1.e-12, verbose = False):
 			else:
 				if verbose:
 					if np.max(np.abs(u1)) <= 1.e-8:
-						print " converged to the zero solution, adjusteing delta_dim"
+						print(" converged to the zero solution, adjusteing delta_dim")
 					else:
-						print " solver failed to converge, adjusting delta_dim"
-						print " solver err = ", ier
-						print mesg
+						print(" solver failed to converge, adjusting delta_dim")
+						print(" solver err = ", ier)
+						print(mesg)
 
 				delta_dim = delta_dim / 2.
 
 			if verbose:
 				jac = solwave_con_eq_jac(u1, params)
 				condnum = np.linalg.cond(jac)
-				print " condition number = ", condnum
+				print(" condition number = ", condnum)
 				
 		u = u0
 
 	if d0 < d:
 
-		print " Failed to converge to the soliton solution, last value of d =", d0
+		print(" Failed to converge to the soliton solution, last value of d =", d0)
 
 		f = 0.0 * r
 		return r, f
@@ -496,7 +494,7 @@ def solwave_gen(c, n, m, d, M, dist = pi / 2., xtol = 1.e-12, verbose = False):
 	# guess.  This may be replaced with another algorithm if a better
 	# initial guess for the 1D soliton is available.
 	if verbose:
-		print " iterating in c"
+		print(" iterating in c")
 
 	# Initial value for delta c.  This can be tuned as needed.
 	delta_c = .5 * n / c
@@ -527,13 +525,12 @@ def solwave_gen(c, n, m, d, M, dist = pi / 2., xtol = 1.e-12, verbose = False):
 			  'D2': D2, 'D1': D1, 'D1_r': D1_r, 'IN': IN1}
 
 		try:
-#			uguess = spline(r0, u0, r1)
 			uguess = sinc_eo.sincinterp_e(r0, u0, r1)
 		except:
 			uguess = 3. * (1. - n / c1) / cosh(.5 * decay * r1)**2
 
 		if verbose:
-			print ' computing with c = ', c1
+			print(' computing with c = ', c1)
 
 		u1, infodict, ier, mesg = \
 		    fsolve(lambda v: solwave_gen_eq(v,params), uguess, \
@@ -550,10 +547,10 @@ def solwave_gen(c, n, m, d, M, dist = pi / 2., xtol = 1.e-12, verbose = False):
 		else:
 			if verbose:
 				if np.max(np.abs(u1)) <= 1.e-8:
-					print " converged to the zero solution, adjusteing delta_c"
+					print(" converged to the zero solution, adjusteing delta_c")
 				else:
-					print " solver failed to converge, adjusting delta_c"
-					print " solver err = ", ier
+					print(" solver failed to converge, adjusting delta_c")
+					print(" solver err = ", ier)
 
 			delta_c = delta_c / 2.
 
@@ -563,7 +560,7 @@ def solwave_gen(c, n, m, d, M, dist = pi / 2., xtol = 1.e-12, verbose = False):
 	# Iterate in dimension, if neccessary
 	if d > 1.:
 		if verbose:
-			print " iterating in d"
+			print(" iterating in d")
 
 		delta_dim = (n - 1.) / 10.
 
@@ -582,7 +579,7 @@ def solwave_gen(c, n, m, d, M, dist = pi / 2., xtol = 1.e-12, verbose = False):
 			params['d'] = d1
 
 			if verbose:
-				print ' computing with d = ', d1
+				print(' computing with d = ', d1)
 		
 			u1, infodict, ier, mesg = \
 			    fsolve(lambda v: solwave_gen_eq(v, params), u0, \
@@ -599,17 +596,17 @@ def solwave_gen(c, n, m, d, M, dist = pi / 2., xtol = 1.e-12, verbose = False):
 			else:
 				if verbose:
 					if np.max(np.abs(u1)) <= 1.e-8:
-						print " converged to the zero solution, adjusteing delta_dim"
+						print(" converged to the zero solution, adjusteing delta_dim")
 					else:
-						print " solver failed to converge, adjusting delta_dim"
-						print " solver err = ", ier
+						print(" solver failed to converge, adjusting delta_dim")
+						print(" solver err = ", ier)
 
 				delta_dim = delta_dim / 2.
 				
 		u = u0
 		
 	if d0 < d:
-		print " Failed to converge to the soliton solution, last value of d =", d0
+		print(" Failed to converge to the soliton solution, last value of d =", d0)
 		f = 0.0
 	else:
 		f = 1. + u
@@ -699,7 +696,7 @@ def solwave_m1(c, n, d, M, dist = pi / 2., xtol = 1.e-12, verbose = False):
 	# guess.  This may be replaced with another algorithm if a better
 	# initial guess for the 1D soliton is available.
 	if verbose:
-		print " iterating in c"
+		print(" iterating in c")
 
 	# Initial value for delta c.  This can be tuned as needed.
 	delta_c = .5 * n / c
@@ -730,13 +727,12 @@ def solwave_m1(c, n, d, M, dist = pi / 2., xtol = 1.e-12, verbose = False):
 			  'D2': D2, 'D1': D1, 'D1_r': D1_r, 'IN': IN1}
 
 		try:
-#			uguess = spline(r0, u0, r1)
 			uguess = sinc_eo.sincinterp_e(r0,u0,r1)
 		except:
 			uguess = 3. * (1. - n / c1) / cosh(.5 * decay * r1)**2
 
 		if verbose:
-			print ' computing with c = ', c1
+			print(' computing with c = ', c1)
 
 		u1, infodict, ier, mesg = \
 		    fsolve(lambda v: solwave_m1_eq(v,params), uguess, \
@@ -753,10 +749,10 @@ def solwave_m1(c, n, d, M, dist = pi / 2., xtol = 1.e-12, verbose = False):
 		else:
 			if verbose:
 				if np.max(np.abs(u1)) <= 1.e-8:
-					print " converged to the zero solution, adjusteing delta_c"
+					print(" converged to the zero solution, adjusteing delta_c")
 				else:
-					print " solver failed to converge, adjusting delta_c"
-					print " solver err = ", ier
+					print(" solver failed to converge, adjusting delta_c")
+					print(" solver err = ", ier)
 
 			delta_c = delta_c / 2.
 
@@ -767,7 +763,7 @@ def solwave_m1(c, n, d, M, dist = pi / 2., xtol = 1.e-12, verbose = False):
 	if d > 1.:
 
 		if verbose:
-			print " iterating in d"
+			print(" iterating in d")
 
 		delta_dim = (n - 1.) / 10.
 
@@ -786,7 +782,7 @@ def solwave_m1(c, n, d, M, dist = pi / 2., xtol = 1.e-12, verbose = False):
 			params['d'] = d1
 
 			if verbose:
-				print ' computing with d = ', d1
+				print(' computing with d = ', d1)
 		
 			u1, infodict, ier, mesg = \
 			    fsolve(lambda v: solwave_m1_eq(v, params), u0, \
@@ -803,17 +799,17 @@ def solwave_m1(c, n, d, M, dist = pi / 2., xtol = 1.e-12, verbose = False):
 			else:
 				if verbose:
 					if np.max(np.abs(u1)) <= 1.e-8:
-						print " converged to the zero solution, adjusteing delta_dim"
+						print(" converged to the zero solution, adjusteing delta_dim")
 					else:
-						print " solver failed to converge, adjusting delta_dim"
-						print " solver err = ", ier
+						print(" solver failed to converge, adjusting delta_dim")
+						print(" solver err = ", ier)
 
 				delta_dim = delta_dim / 2.
 				
 		u = u0
 		
 	if d0 < d:
-		print " Failed to converge to the soliton solution, last value of d =", d0
+		print(" Failed to converge to the soliton solution, last value of d =", d0)
 		f = 0.0
 	else:
 		f = 1. + u

@@ -1,0 +1,83 @@
+#!/usr/bin/env python3
+
+# Copyright (C) 2013 Columbia University in the City of New York and others.
+#
+# Please see the AUTHORS file in the main source directory for a full list
+# of contributors.
+#
+# This file is part of TerraFERMA.
+#
+# TerraFERMA is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# TerraFERMA is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
+
+from buckettools import vtktools
+import numpy as np
+
+def depthaverage(filename, fieldnames=[], nx=1, ny=1, nz=1):
+
+  vtu = vtktools.vtu(filename)
+  bounds = vtu.ugrid.GetBounds()
+  X, Y, Z = np.meshgrid(np.linspace(bounds[0], bounds[1], nx), \
+                        np.linspace(bounds[2], bounds[3], ny), \
+                        np.linspace(bounds[4], bounds[5], nz))
+  coords = np.column_stack((X.flatten(), Y.flatten(), Z.flatten()))
+  probe = vtktools.VTUProbe(vtu.ugrid, coords)
+
+  if len(fieldnames)==0: fieldnames = vtu.GetFieldNames()
+  
+  shape = (nz, ny, nx)
+  sumoveri = (np.array(shape)>1).sum()-1 # work out index up to which we're averaging
+  depth = bounds[sumoveri*2+1]-np.linspace(bounds[sumoveri*2], bounds[sumoveri*2+1], shape[-(sumoveri+1)])[::-1] # depth
+  ofields = [depth]
+  ofieldnames = ['Depth']
+  for fieldname in fieldnames:
+    fielddata = probe.GetField(fieldname)
+    nc = fielddata.shape[-1]
+    for c in range(nc):
+      carr = fielddata[:,c].reshape(shape).transpose()
+      for i in range(sumoveri):
+        carr = carr.sum(axis=i)/shape[-(i+1)]
+      ofields.append(carr.flatten()[::-1])
+    if nc > 1:
+      ofieldnames += [fieldname+'%'+repr(i) for i in range(nc)]
+    else:
+      ofieldnames += [fieldname]
+
+  ofieldsarr = np.column_stack(ofields)
+  return ofieldsarr, ofieldnames
+
+
+if __name__ == "__main__":
+  import argparse
+  import os
+
+  parser = argparse.ArgumentParser( \
+                         description="""Generates a tsv file with columns of depth averaged data from Cartesian vtu or xdmf file.""")
+  parser.add_argument('filename', action='store', metavar='filename', type=str,
+                      help='Specify a vtu, pvtu or xdmf filename')
+  parser.add_argument('-o', '--output', action='store', metavar='filename', type=str, required=False, default='depth_averaged.tsv',
+                      help='Specify output tsv filename, defaults to `depth_averaged.tsv`.')
+  parser.add_argument('-nx', action='store', metavar='nx', type=int, required=False, default=1,
+                      help='Number of probe locations in x direction, defaults to 1 (for 0D data).')
+  parser.add_argument('-ny', action='store', metavar='ny', type=int, required=False, default=1,
+                      help='Number of probe locations in y direction, defaults to 1 (for 1D data).')
+  parser.add_argument('-nz', action='store', metavar='nz', type=int, required=False, default=1,
+                      help='Number of probe locations in z direction, defaults to 1 (for 2D data).')
+  parser.add_argument('-f', '--fieldnames', action='store', metavar='fieldnames', type=str, required=False, default=[], nargs='*',
+                      help="""A list of field names to include.  Includes all point data arrays if not specified.""")
+  args = parser.parse_args()
+
+  ofieldsarray, ofieldnames = depthaverage(args.filename, fieldnames=args.fieldnames, nx=args.nx, ny=args.ny, nz=args.nz)
+  
+  np.savetxt(args.output, ofieldsarray, delimiter='\t', header='\t'.join(ofieldnames))
+
