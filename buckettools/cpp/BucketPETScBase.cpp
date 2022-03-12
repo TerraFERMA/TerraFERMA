@@ -311,12 +311,7 @@ PetscErrorCode buckettools::SNESCustomMonitor(SNES snes, PetscInt its,
 
   if (((*solver).visualization_monitor()))
   {
-    buffer.str(""); buffer << (*bucket).output_basename() << "_" 
-                           << (*system).name() << "_" 
-                           << (*solver).name() << "_" 
-                           << (*bucket).timestep_count() << "_" 
-                           << (*bucket).iteration_count() << "_snes.xdmf";
-
+    buffer.str(""); buffer << (*solver).visualization_basename() << "_snes.xdmf";
     XDMFFile_ptr xdmf_file( new dolfin::XDMFFile((*(*system).mesh()).mpi_comm(), buffer.str()) );
     bool append = (its!=0);
     for (FunctionBucket_const_it f_it = (*system).fields_begin(); 
@@ -333,10 +328,11 @@ PetscErrorCode buckettools::SNESCustomMonitor(SNES snes, PetscInt its,
     }
   }
 
-  if ((*solver).convergence_file())
+  ConvergenceFile_ptr convfile = (*solver).convergencefile();
+  if (convfile)
   {
 
-    (*(*solver).convergence_file()).write_data();
+    (*convfile).write_data();
 
   }
 
@@ -344,7 +340,7 @@ PetscErrorCode buckettools::SNESCustomMonitor(SNES snes, PetscInt its,
 }
 
 //*******************************************************************|************************************************************//
-// define the petsc ksp monitor callback function that outputs a visualization file
+// define the petsc ksp monitor callback function that outputs a visualization and a convergence file
 //*******************************************************************|************************************************************//
 PetscErrorCode buckettools::KSPCustomMonitor(KSP ksp, int it,
                                       PetscReal rnorm, void* mctx)
@@ -381,13 +377,8 @@ PetscErrorCode buckettools::KSPCustomMonitor(KSP ksp, int it,
 
   if (((*solver).kspvisualization_monitor()))
   {
-    buffer.str(""); buffer << (*bucket).output_basename() << "_" 
-                           << (*system).name() << "_" 
-                           << (*solver).name() << "_" 
-                           << (*bucket).timestep_count() << "_" 
-                           << (*bucket).iteration_count() << "_"
+    buffer.str(""); buffer << (*solver).visualization_basename() << "_"
                            << (*solver).iteration_count() << "_ksp.xdmf";
-
     XDMFFile_ptr xdmf_file( new dolfin::XDMFFile((*(*system).mesh()).mpi_comm(), buffer.str()) );
     bool append = (it!=0);
     for (FunctionBucket_const_it f_it = (*system).fields_begin(); 
@@ -402,10 +393,11 @@ PetscErrorCode buckettools::KSPCustomMonitor(KSP ksp, int it,
     }
   }
 
-  if ((*solver).ksp_convergence_file())
+  KSPConvergenceFile_ptr kspconvfile = (*solver).kspconvergencefile();
+  if (kspconvfile)
   {
 
-    (*(*solver).ksp_convergence_file()).write_data(it);
+    (*kspconvfile).write_data(it);
 
   }
 

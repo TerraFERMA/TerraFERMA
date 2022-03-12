@@ -66,16 +66,11 @@ namespace buckettools
                        const MPI_Comm &comm, 
                        const Bucket *bucket,
                        const std::string &systemname, 
-                       const std::string &solvername);               // specific constructor
+                       const std::string &solvername,
+                       const std::string &systemssolvername="");     // specific constructor
  
     ~KSPConvergenceFile();                                           // default destructor
     
-    //***************************************************************|***********************************************************//
-    // Header writing functions
-    //***************************************************************|***********************************************************//
-
-    void write_header();                         // write header for the bucket
-
     //***************************************************************|***********************************************************//
     // Data writing functions
     //***************************************************************|***********************************************************//
@@ -96,11 +91,21 @@ namespace buckettools
 
     std::string solvername_;                                         // solver name
 
+    std::string systemssolvername_;                                  // systems solver name (if any)
+
     std::vector< FunctionBucket_ptr > fields_;
 
     //***************************************************************|***********************************************************//
-    // Header writing functions (continued)
+    // Base data access
     //***************************************************************|***********************************************************//
+
+    SystemsSolverBucket* systemssolver_();                           // return a pointer to the SystemsSolverBukcet (if any)
+
+    //***************************************************************|***********************************************************//
+    // Header writing functions
+    //***************************************************************|***********************************************************//
+
+    void write_header_();                                            // write header for the bucket
 
     void header_iteration_();                                        // write the header for iterations 
     

@@ -29,7 +29,6 @@
 #include "SteadyStateFile.h"
 #include "SolverBucket.h"
 #include "DetectorsFile.h"
-#include "SystemsConvergenceFile.h"
 #include <dolfin.h>
 #include <boost/timer/timer.hpp>
 
@@ -76,8 +75,6 @@ namespace buckettools
 
     void run();                                                      // run the model described in the bucket
  
-    void solve(const int &location);                                 // solve all the systems in the bucket (depending on location)
-
     void resetcalculated();                                          // update the calculated booleans in the systems in this bucket
 
     void update();                                                   // update the functions in the systems in this bucket
@@ -135,9 +132,10 @@ namespace buckettools
 
     const double walltime_limit() const;                             // return the walltime limit
 
-    const double timestep() const;                                   // return the timestep (as a double)
+    const double_ptr walltime_limit_ptr() const                      // return the walltime limit as a pointer
+    { return walltime_limit_; }
 
-    const int iteration_count() const;                               // return the number of nonlinear iterations taken
+    const double timestep() const;                                   // return the timestep (as a double)
 
     const std::string output_basename() const                        // return the output base name
     { return output_basename_; }
@@ -276,12 +274,30 @@ namespace buckettools
     GenericDetectors_const_it detectors_end() const;                 // return a constant iterator to the beginning of the detectors
 
     //***************************************************************|***********************************************************//
+    // Systems solver data access
+    //***************************************************************|***********************************************************//
+
+    void register_systemssolver(SystemsSolverBucket_ptr systemsolver,// register a systems solver with the given name
+                                  const int &location);
+    
+    SystemsSolverBucket_ptr fetch_systemssolver(const int &location);// fetch a systemssolver set with the given name
+
+    const SystemsSolverBucket_ptr fetch_systemssolver(const int &location)
+                                                           const;    // fetch a systemssolver set with the given name
+
+    i_SystemsSolverBucket_it systemssolvers_begin();                 // return an iterator to the beginning of the systemssolvers
+
+    i_SystemsSolverBucket_const_it systemssolvers_begin() const;     // return a constant iterator to the beginning of the systemssolvers
+
+    i_SystemsSolverBucket_it systemssolvers_end();                   // return an iterator to the beginning of the systemssolvers
+
+    i_SystemsSolverBucket_const_it systemssolvers_end() const;       // return a constant iterator to the beginning of the systemssolvers
+
+    //***************************************************************|***********************************************************//
     // Output functions
     //***************************************************************|***********************************************************//
 
     XDMFFile_ptr fetch_visfile(const Mesh_ptr mesh, bool &newfile);  // fetch (and possibly allocate) a visualization file
-
-    XDMFFile_ptr fetch_convvisfile(const Mesh_ptr mesh, bool &newfile);// fetch (and possibly allocate) a visualization file
 
     const bool write_vischeckpoints() const                          // return if we're visualizing using checkpoint format or not
     { return write_vischeckpoints_; }
@@ -293,6 +309,8 @@ namespace buckettools
     const std::string str() const;                                   // return a string describing the bucket contents
     
     virtual const std::string meshes_str(const int &indent=0) const; // return an indented string describing the meshes in the bucket
+
+    const std::string systemssolvers_str(const int &indent=0) const; // return an indented string describing the systems in the bucket
 
     const std::string systems_str(const int &indent=0) const;        // return an indented string describing the systems in the bucket
 
@@ -320,7 +338,7 @@ namespace buckettools
                             current_time_, finish_time_, 
                             walltime_limit_;                         // the current and finish times of the simulation
 
-    int_ptr timestep_count_, number_timesteps_;                      // the number of timesteps and number of nonlinear iterations taken
+    int_ptr timestep_count_, number_timesteps_;                      // the number of timesteps 
 
     std::pair< std::string, Constant_ptr > timestep_;                // the timestep, represented as a dolfin constant so it can be used in
                                                                      // the ufl (ufl symbol first member of pair)
@@ -329,14 +347,6 @@ namespace buckettools
 
     std::vector< std::pair< FunctionBucket_ptr, double > >           // constraints on the timestep in < FunctionBucket_ptr, max value > pairs
                                               timestep_constraints_;
-
-    int_ptr iteration_count_;                                        // the number of iterations requested and the number of nonlinear 
-                                                                     // iterations taken
-    int minits_, maxits_;                                            // nonlinear system iteration counts
-
-    double *rtol_, atol_;                                            // nonlinear system tolerances
-
-    bool ignore_failures_;                                           // ignore convergence failures of the nonlinear systems
 
     double_ptr steadystate_tol_;                                     // the steady state tolerance
 
@@ -379,6 +389,8 @@ namespace buckettools
 
     ordered_map<const std::string, GenericDetectors_ptr> detectors_;        // a map from detector set name to (std shared) pointers to detectors
 
+    ordered_map<const int, SystemsSolverBucket_ptr > systemssolvers_;// a map to the system solvers
+
     //***************************************************************|***********************************************************//
     // Diagnostics data
     //***************************************************************|***********************************************************//
@@ -389,11 +401,7 @@ namespace buckettools
 
     SteadyStateFile_ptr steadyfile_;                                 // pointer to a steady state file
 
-    SystemsConvergenceFile_ptr convfile_;                            // nonlinear systems convergence file
-
-    std::map< Mesh_ptr, XDMFFile_ptr > visfiles_, convvisfiles_;     // pointer to visualization file(s)
-
-    bool write_convvis_;                                             // write convvisfiles_ every nonlinear systems iteration
+    std::map< Mesh_ptr, XDMFFile_ptr > visfiles_;                    // pointer to visualization file(s)
 
     //***************************************************************|***********************************************************//
     // Filling data
@@ -444,8 +452,6 @@ namespace buckettools
 
     void solve_in_timeloop_();                                       // solve the solvers in this system (in order during the
                                                                      // timeloop of a simulation)
-
-    bool complete_iterating_(const double &aerror0);                 // indicate if nonlinear systems iterations are complete or not
 
     //***************************************************************|***********************************************************//
     // Output functions (continued)

@@ -48,28 +48,29 @@ SteadyStateFile::~SteadyStateFile()
 }
 
 //*******************************************************************|************************************************************//
-// write a header for the model described in the given bucket
-//*******************************************************************|************************************************************//
-void SteadyStateFile::write_header()
-{
-  header_open_();
-  header_constants_();                                               // write constant tags
-  header_timestep_();                                                // write tags for the timesteps
-  header_bucket_();                                                  // write tags for the actual bucket variables - fields etc.
-  header_close_();
-}
-
-//*******************************************************************|************************************************************//
 // write data for the model described in the given bucket
 //*******************************************************************|************************************************************//
 void SteadyStateFile::write_data()
 {
+  initialize_();
   
   data_timestep_();                                                 // write the timestepping information
   data_bucket_();                                                   // write the bucket data
   
   data_endlineflush_();
   
+}
+
+//*******************************************************************|************************************************************//
+// write a header for the model described in the given bucket
+//*******************************************************************|************************************************************//
+void SteadyStateFile::write_header_()
+{
+  header_open_();
+  header_constants_();                                               // write constant tags
+  header_timestep_();                                                // write tags for the timesteps
+  header_bucket_();                                                  // write tags for the actual bucket variables - fields etc.
+  header_close_();
 }
 
 //*******************************************************************|************************************************************//

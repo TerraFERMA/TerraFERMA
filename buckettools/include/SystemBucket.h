@@ -78,6 +78,8 @@ namespace buckettools
 
     void update_nonlinear();                                         // update the potentially nonlinear functions in this system
 
+    void update_iterated(const double relax);                        // update the iterated vectors in this system
+
     void update_timedependent();                                     // update the potentially time dependent functions in this system
 
     const double maxchange();                                        // return the maximum change in the (requested) fields over the last timestep
@@ -95,16 +97,9 @@ namespace buckettools
 
     const std::vector<int> solve_locations() const;                  // return a std::vector indicating the solve locations of the solvers
 
-    const bool solved(const int &location) const;                    // return a boolean indicating if this system has been solved
-
-    const bool solved(const std::vector<int> &locations=
-                                          std::vector<int>()) const; // return a boolean indicating if this system has been solved
-
     //***************************************************************|***********************************************************//
     // Filling data
     //***************************************************************|***********************************************************//
-
-    void initialize_diagnostics() const;                             // initialize any diagnostic output from this system
 
     void initialize_forms();                                         // attach all fields and coefficients to forms and functionals
 
@@ -149,6 +144,9 @@ namespace buckettools
 
     const Function_ptr iteratedfunction() const                      // return a (boost shared) pointer to the iterated system
     { return iteratedfunction_; }                                    // function
+
+    const Function_ptr olditeratedfunction() const                   // return a (boost shared) pointer to the "old" iterated system
+    { return olditeratedfunction_; }                                 // function from the previous iteration
 
     const Function_ptr changefunction() const                        // return a (boost shared) pointer to the change in the system
     { return changefunction_; }                                      // function over a timestep
@@ -302,8 +300,6 @@ namespace buckettools
 
     void output();                                                   // output vis from the system
 
-    void write_convvis();                                            // write convergence visualization checkpoint
-  
     void checkpoint(const double_ptr time);                          // checkpoint the system
 
   //*****************************************************************|***********************************************************//
@@ -336,8 +332,9 @@ namespace buckettools
 
     FunctionSpace_ptr functionspace_;                                // a (boost shared) pointer to the system functionspace
 
-    Function_ptr function_, oldfunction_, iteratedfunction_;         // (boost shared) pointers to the system functions at different
-                                                                     // time levels (old, iterated - most up to date -, base)
+    Function_ptr function_, oldfunction_, iteratedfunction_,         // (boost shared) pointers to the system functions at different
+                 olditeratedfunction_;                               // time levels (old, iterated - most up to date -, base,
+                                                                     // olditerated - previous iteration)
 
     Function_ptr changefunction_;                                    // (boost shared) pointer to the change between timesteps
 

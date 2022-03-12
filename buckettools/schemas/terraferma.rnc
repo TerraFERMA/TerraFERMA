@@ -48,7 +48,7 @@ start =
          # in timestepping.rnc
          timestepping?,
          # in timestepping.rnc
-         nonlinear?,
+         solution_order?,
          global_parameters,
          # in system.rnc
          system+,

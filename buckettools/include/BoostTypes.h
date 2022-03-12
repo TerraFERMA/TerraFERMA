@@ -54,14 +54,22 @@ namespace buckettools {
   typedef std::shared_ptr< SystemBucket >     SystemBucket_ptr;
   class FunctionBucket;                                              // predeclaration
   typedef std::shared_ptr< FunctionBucket >   FunctionBucket_ptr;
+  class GenericSolverBucket;                                         // predeclaration
+  typedef std::shared_ptr< GenericSolverBucket > GenericSolverBucket_ptr;
   class SolverBucket;                                                // predeclaration
   typedef std::shared_ptr< SolverBucket >     SolverBucket_ptr;
+  class SystemsSolverBucket;                                         // predeclaration
+  typedef std::shared_ptr< SystemsSolverBucket > SystemsSolverBucket_ptr;
   class FunctionalBucket;                                            // predeclaration
   typedef std::shared_ptr< FunctionalBucket > FunctionalBucket_ptr;
   class GenericDetectors;                                            // predeclaration
   typedef std::shared_ptr< GenericDetectors > GenericDetectors_ptr;
   class ReferencePoint;                                              // predeclaration
   typedef std::shared_ptr< ReferencePoint >   ReferencePoint_ptr;
+  class ConvergenceFile;                                             // predeclaration
+  typedef std::shared_ptr< ConvergenceFile >   ConvergenceFile_ptr;
+  class KSPConvergenceFile;                                          // predeclaration
+  typedef std::shared_ptr< KSPConvergenceFile >   KSPConvergenceFile_ptr;
 
   //*****************************************************************|************************************************************//
   // std shared pointers to dolfin objects
@@ -132,10 +140,25 @@ namespace buckettools {
   typedef boost::multi_index::index<ordered_map<const std::string,SystemBucket_ptr>,om_key_seq>::type::iterator        SystemBucket_it;
   typedef boost::multi_index::index<ordered_map<const std::string,SystemBucket_ptr>,om_key_seq>::type::const_iterator  SystemBucket_const_it;
 
+  typedef boost::multi_index::index<ordered_map<const std::string,GenericSolverBucket_ptr>,om_key_hash>::type::iterator       GenericSolverBucket_hash_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,GenericSolverBucket_ptr>,om_key_hash>::type::const_iterator GenericSolverBucket_const_hash_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,GenericSolverBucket_ptr>,om_key_seq>::type::iterator        GenericSolverBucket_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,GenericSolverBucket_ptr>,om_key_seq>::type::const_iterator  GenericSolverBucket_const_it;
+
   typedef boost::multi_index::index<ordered_map<const std::string,SolverBucket_ptr>,om_key_hash>::type::iterator       SolverBucket_hash_it;
   typedef boost::multi_index::index<ordered_map<const std::string,SolverBucket_ptr>,om_key_hash>::type::const_iterator SolverBucket_const_hash_it;
   typedef boost::multi_index::index<ordered_map<const std::string,SolverBucket_ptr>,om_key_seq>::type::iterator        SolverBucket_it;
   typedef boost::multi_index::index<ordered_map<const std::string,SolverBucket_ptr>,om_key_seq>::type::const_iterator  SolverBucket_const_it;
+
+  typedef boost::multi_index::index<ordered_map<const std::string,SystemsSolverBucket*>,om_key_hash>::type::iterator       p_SystemsSolverBucket_hash_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,SystemsSolverBucket*>,om_key_hash>::type::const_iterator p_SystemsSolverBucket_const_hash_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,SystemsSolverBucket*>,om_key_seq>::type::iterator        p_SystemsSolverBucket_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,SystemsSolverBucket*>,om_key_seq>::type::const_iterator  p_SystemsSolverBucket_const_it;
+
+  typedef boost::multi_index::index<ordered_map<const int,SystemsSolverBucket_ptr>,om_key_hash>::type::iterator       i_SystemsSolverBucket_hash_it;
+  typedef boost::multi_index::index<ordered_map<const int,SystemsSolverBucket_ptr>,om_key_hash>::type::const_iterator i_SystemsSolverBucket_const_hash_it;
+  typedef boost::multi_index::index<ordered_map<const int,SystemsSolverBucket_ptr>,om_key_seq>::type::iterator        i_SystemsSolverBucket_it;
+  typedef boost::multi_index::index<ordered_map<const int,SystemsSolverBucket_ptr>,om_key_seq>::type::const_iterator  i_SystemsSolverBucket_const_it;
 
   typedef boost::multi_index::index<ordered_map<const std::string,FunctionBucket_ptr>,om_key_hash>::type::iterator       FunctionBucket_hash_it;
   typedef boost::multi_index::index<ordered_map<const std::string,FunctionBucket_ptr>,om_key_hash>::type::const_iterator FunctionBucket_const_hash_it;
@@ -186,6 +209,16 @@ namespace buckettools {
   typedef boost::multi_index::index<ordered_map<const std::string,std::vector<std::string>>,om_key_hash>::type::const_iterator vector_string_const_hash_it;
   typedef boost::multi_index::index<ordered_map<const std::string,std::vector<std::string>>,om_key_seq>::type::iterator        vector_string_it;
   typedef boost::multi_index::index<ordered_map<const std::string,std::vector<std::string>>,om_key_seq>::type::const_iterator  vector_string_const_it;
+
+  typedef boost::multi_index::index<ordered_map<const std::string,ConvergenceFile_ptr>,om_key_hash>::type::iterator       ConvergenceFile_hash_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,ConvergenceFile_ptr>,om_key_hash>::type::const_iterator ConvergenceFile_const_hash_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,ConvergenceFile_ptr>,om_key_seq>::type::iterator        ConvergenceFile_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,ConvergenceFile_ptr>,om_key_seq>::type::const_iterator  ConvergenceFile_const_it;
+
+  typedef boost::multi_index::index<ordered_map<const std::string,KSPConvergenceFile_ptr>,om_key_hash>::type::iterator       KSPConvergenceFile_hash_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,KSPConvergenceFile_ptr>,om_key_hash>::type::const_iterator KSPConvergenceFile_const_hash_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,KSPConvergenceFile_ptr>,om_key_seq>::type::iterator        KSPConvergenceFile_it;
+  typedef boost::multi_index::index<ordered_map<const std::string,KSPConvergenceFile_ptr>,om_key_seq>::type::const_iterator  KSPConvergenceFile_const_it;
 
 }
 

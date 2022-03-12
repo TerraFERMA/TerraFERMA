@@ -157,78 +157,236 @@ constant_timestep =
     }
   )
 
-nonlinear =
+nonlinear_systems_tolerances =
    (
-      ## Options to perform multiple iterations per timestep (i.e. to solve the systems repeatedly).
+      ## The relative error allowed to remain in the vector l2 norm of the combined systems residual upon termination
+      ## of the iteration loop.
       ##
-      ## If selected those systems marked to be solved in the timestep loop will be solved repeatedly, updating 
-      ## interdependent coefficients at each system assembly and solve, until the requested convergence criteria
-      ## are satisfied.
+      ## If a system contains multiple solvers, the residual defined in the last solver is taken as that system's
+      ## residual.
+      element relative_error {
+        real
+      },
+      ## The absolute error allowed to remain in the vector l2 norm of the combined systems residual upon termination
+      ## of the iteration loop.
       ##
-      ## Diagnostic systems will only be solved if convergence monitoring is requested.
-      element nonlinear_systems {
-        ## The relative error allowed to remain in the vector l2 norm of the combined systems residual upon termination
-        ## of the iteration loop.
-        ##
-        ## If a system contains multiple solvers, the residual defined in the last solver is taken as that system's
-        ## residual.
-        element relative_error {
-          real
-        },
-        ## The absolute error allowed to remain in the vector l2 norm of the combined systems residual upon termination
-        ## of the iteration loop.
-        ##
-        ## Defaults to 1.e-50.
-        element absolute_error {
-          real
-        }?,
-        ## The maximum number of iterations to take in this nonlinear system loop.
-        element max_iterations {
-          integer
-        },
-        ## The minimum number of iterations to take in this nonlinear system loop.
-        element min_iterations {
-          integer
-        }?,
-        ## Options to give extra information for each iteration of the
-        ## timestep. Some of those may really slow down your computation!
-        element monitors {
-          ## Output pvd visualization of the solution and residual at each iteration.
-          ## 
-          ## WARNING: This will produce a lot of output so should only be used for debugging purposes!
-          element visualization {
-            comment
-          }?,
-          ## Output a diagnostic file detailing the convergence of the nonlinear system iterations.
-          element convergence_file { 
-            comment
-          }?,
+      ## Defaults to 1.e-50.
+      element absolute_error {
+        real
+      }?,
+      ## The maximum number of iterations to take in this nonlinear system loop.
+      element max_iterations {
+        integer
+      },
+      ## The minimum number of iterations to take in this nonlinear system loop.
+      element min_iterations {
+        integer
+      }?,
+      ## Relaxation parameter for solution between iterations.
+      ##
+      ## Defaults to 1.0 (no relaxation).
+      element relaxation_parameter {
+        real
+      }?,
+      ## Options to give extra information for each iteration of the
+      ## timestep. Some of those may really slow down your computation!
+      element monitors {
+        ## Output pvd visualization of the solution and residual at each iteration.
+        ## 
+        ## WARNING: This will produce a lot of output so should only be used for debugging purposes!
+        element visualization {
           comment
-        },
+        }?,
+        ## Output a diagnostic file detailing the convergence of the nonlinear system iterations.
+        element convergence_file { 
+          comment
+        }?
+      },
+      (
         (
-          (
-            ## Never ignore solver failures (the highly recommended default).
-            ##
-            ## This option tests the convergence of the nonlinear systems and terminates the simulations at the end of the next timestep 
-            ## if it has failed to converge.
-            ##
-            ## This option does not affect the handling of convergence failures within each system solver.
-            element never_ignore_convergence_failures {
-              comment
-            }|
-            ## Ignore solver failures.  Intended for debugging purposes only!
-            ##
-            ## **Do not use this option in any scientific simulation.**
-            ##
-            ## This option allows the simulation to continue even if the nonlinear systems fail to meet the convergence criteria.
-            ##
-            ## This option does not affect the handling of convergence failures within each system solver.
-            element ignore_all_convergence_failures {
-              comment
-            }
-          )
-        ),
+          ## Never ignore solver failures (the highly recommended default).
+          ##
+          ## This option tests the convergence of the nonlinear systems and terminates the simulations at the end of the next iteration 
+          ## if it has failed to converge.
+          ##
+          ## This option does not affect the handling of convergence failures within each system solver.
+          element never_ignore_solver_failures {
+            comment
+          }|
+          ## Ignore solver failures.  Intended for debugging purposes only!
+          ##
+          ## **Do not use this option in any scientific simulation.**
+          ##
+          ## This option allows the simulation to continue even if the nonlinear systems fail to meet the convergence criteria.
+          ##
+          ## This option does not affect the handling of convergence failures within each system solver.
+          element ignore_all_solver_failures {
+            comment
+          }
+        )
+      )
+   )
+
+solution_order = 
+   (
+      ## By default, TerraFERMA calls solvers in the order in which they appear in the options file: first by system and then by
+      ## nonlinear_solver.
+      ##
+      ## The solution_order option allows this to be overridden and, additionally, allows nonlinearities between systems to be
+      ## iteratively accounted for (to some specified tolerance).
+      ##
+      ## Three solve locations are currently implemented in TerraFERMA: at_start, in_timeloop and with_diagnostics.  Activating a
+      ## solution_order option here for any of these will over-ride the solve location designation described under the nonlinear_solver
+      ## itself.
+      element solution_order {
+        ## Activate this option to over-ride the default solution order (by system and then by nonlinear_solver) at the start of the
+        ## simulation.  Note that this will ignore the solve::at_start option underneath the nonlinear_solver itself.
+        ## Once activated here, nonlinear_solvers with a solve::at_start option must be explicitly listed here to actually be
+        ## solved.
+        element solve {
+          attribute name { "at_start" },
+          nonlinear_solver_step_top+,
+          nonlinear_coupled?,
+          comment
+        }?,
+        ## Activate this option to over-ride the default solution order (by system and then by nonlinear_solver) in the timeloop of the
+        ## simulation.  Note that this will ignore the solve::in_timeloop option underneath the nonlinear_solver itself.
+        ## Once activated here, nonlinear_solvers with a solve::in_timeloop option must be explicitly listed here to actually be
+        ## solved.
+        element solve {
+          attribute name { "in_timeloop" },
+          nonlinear_solver_step_top+,
+          nonlinear_coupled?,
+          comment
+        }?,
+        ## Activate this option to over-ride the default solution order (by system and then by nonlinear_solver) with the diagnostics of the
+        ## simulation.  Note that this will ignore the solve::with_diagnostics option underneath the nonlinear_solver itself.
+        ## Once activated here, nonlinear_solvers with a solve::with_diagnostics option must be explicitly listed here to actually be
+        ## solved.
+        element solve {
+          attribute name { "with_diagnostics" },
+          nonlinear_solver_step_top+,
+          nonlinear_coupled?,
+          comment
+        }?
+      }
+   )
+
+nonlinear_coupled = 
+   (
+      ## Sometime an individual system or nonlinear_solver needs to be solved outside of the standard solve locations.  For example,
+      ## when updating the timestep or when some systems request diagnostic output but others don't.
+      ##
+      ## On these occasions the individual non_linear solvers here are, by default, assumed not to be coupled together.  Turning on
+      ## these options forces all the solvers to be solved together always, incorporating any (one-way) dependencies between successive
+      ## systems.
+      ## 
+      ## This does not affect the solution order in the timeloop or at the start of the simulation where all solvers are always
+      ## solved in the solution order specified here.
+      element coupled {
         comment
+      }
+   )
+
+include_in_residual =
+   (
+     (
+         ## By default, include the residual of this solver when evaluating the overall residual of the coupled nonlinear_systems_solver.
+         ##
+         ## Excluding the residual can be useful when there are multiple solvers in a single system and only the residual of the last to be solved is relevant
+         ## to the coupled problem, e.g. the earlier solves are just establishing better initial guesses.
+         element include_in_systems_residual {
+            comment
+         }|
+         ## Exclude the residual of this solver when evaluating the overall residual of the coupled nonlinear_systems_solver.
+         ##
+         ## This can be useful when there are multiple solvers in a single system and only the residual of the last to be solved is relevant
+         ## to the coupled problem, e.g. the earlier solves are just establishing better initial guesses.
+         element exclude_from_systems_residual {
+            comment
+         }
+     )
+   )
+
+nonlinear_solver_type_nonlinear_solver =
+   (
+      attribute name { "nonlinear_solver" },
+      ## The system name
+      element system {
+        attribute name { xsd:string },
+        comment
+      },
+      ## The nonlinear solver name
+      element nonlinear_solver {
+        attribute name { xsd:string },
+        comment
+      }
+   )
+
+nonlinear_solver_type_nonlinear_systems_solver =
+   (
+      attribute name { "nonlinear_systems_solver" },
+      nonlinear_systems_tolerances,
+      nonlinear_solver_step+
+   )
+
+nonlinear_solver_step_top =
+   (
+      ## Specify the solver to be solved here.
+      ##
+      ## This can either be a reference to a nonlinear_solver in a system or a new nonlinear systems solver that iterates over
+      ## multiple nonlinear_solvers to converge nonlinearities between systems.
+      element solver {
+        attribute name { xsd:string },
+        (
+          ## Choose the type of the solver.
+          ##
+          ## This can either be a reference to a nonlinear_solver in a system or a new nonlinear systems solver that iterates over
+          ## multiple nonlinear_solvers to converge nonlinearities between systems.
+          element type {
+            nonlinear_solver_type_nonlinear_solver,
+            comment
+          }|
+          ## Choose the type of the solver.
+          ##
+          ## This can either be a reference to a nonlinear_solver in a system or a new nonlinear systems solver that iterates over
+          ## multiple nonlinear_solvers to converge nonlinearities between systems.
+          element type {
+            nonlinear_solver_type_nonlinear_systems_solver,
+            comment
+          }
+        )
+      }
+   )
+
+nonlinear_solver_step =
+   (
+      ## Specify the solver to be solved here.
+      ##
+      ## This can either be a reference to a nonlinear_solver in a system or a new nonlinear systems solver that iterates over
+      ## multiple nonlinear_solvers to converge nonlinearities between systems.
+      element solver {
+        attribute name { xsd:string },
+        (
+          ## Choose the type of the solver.
+          ##
+          ## This can either be a reference to a nonlinear_solver in a system or a new nonlinear systems solver that iterates over
+          ## multiple nonlinear_solvers to converge nonlinearities between systems.
+          element type {
+            nonlinear_solver_type_nonlinear_solver,
+            include_in_residual,
+            comment
+          }|
+          ## Choose the type of the solver.
+          ##
+          ## This can either be a reference to a nonlinear_solver in a system or a new nonlinear systems solver that iterates over
+          ## multiple nonlinear_solvers to converge nonlinearities between systems.
+          element type {
+            nonlinear_solver_type_nonlinear_systems_solver,
+            include_in_residual,
+            comment
+          }
+        )
       }
    )
 

@@ -146,6 +146,14 @@ Defaults to 1.e-50.</a:documentation>
         <ref name="integer"/>
       </element>
     </optional>
+    <optional>
+      <element name="relaxation_parameter">
+        <a:documentation>Relaxation parameter for solution between iterations.
+
+Defaults to 1.0 (no relaxation).</a:documentation>
+        <ref name="real"/>
+      </element>
+    </optional>
     <element name="monitors">
       <a:documentation>Options to give extra information for each iteration of the
 Picard solve. Some of those may really slow down your computation!</a:documentation>
@@ -289,6 +297,18 @@ fixed number of Newton steps).</a:documentation>
           </element>
         </choice>
         <ref name="snes_convergence_test"/>
+        <optional>
+          <element name="damping_parameter">
+            <a:documentation>The damping parameter in SNES is roughly equivalent to a relaxation parameter in the Picard and nonlinear systems solvers.
+
+The basic line search merely takes the update step scaled by the damping parameter. 
+
+In a cubic or quadratic line search it is used as the maximum possible step length, as the bt line search only backtracks. 
+
+Defaults to 1.0 if unset.</a:documentation>
+            <ref name="real"/>
+          </element>
+        </optional>
         <optional>
           <element name="alpha">
             <a:documentation>The scalar such that .5*f_{n+1} . f_{n+1} &lt;= .5*f_n . f_n - alpha |p_n . J . f_n|.
@@ -454,33 +474,42 @@ WARNING: This will produce a lot of output so should only be used for debugging 
   <define name="solve_location">
     <choice>
       <element name="solve">
-        <a:documentation>Solve the equations listed in this nonlinear solver every timestep.</a:documentation>
+        <a:documentation>By default solve this nonlinear solver every timestep.
+
+This will be overridden by specifying a solve in_timeloop under solution_order or if this nonlinear solver is listed in
+any other solve under solution_order.</a:documentation>
         <attribute name="name">
           <value>in_timeloop</value>
         </attribute>
         <ref name="comment"/>
       </element>
       <element name="solve">
-        <a:documentation>Only solve the equations listed in this nonlinear solver at the start of the simulation.</a:documentation>
+        <a:documentation>By default solve this nonlinear solver only at the start of the simulation.
+
+This will be overridden by specifying a solve at_start under solution_order or if this nonlinear solver is listed in
+any other solve under solution_order.</a:documentation>
         <attribute name="name">
           <value>at_start</value>
         </attribute>
         <ref name="comment"/>
       </element>
       <element name="solve">
-        <a:documentation>Only solve the equations listed in this nonlinear solver when diagnostic output is performed.
+        <a:documentation>By default solve this nonlinear solver whenever diagnostic output is calculated.
 
-This means that this system will be updated at an interval dependant on how the diagnostic dump periods are set in /io.</a:documentation>
+This will be overridden by specifying a solve with_diagnostics under solution_order or if this nonlinear solver is listed in
+any other solve under solution_order.</a:documentation>
         <attribute name="name">
           <value>with_diagnostics</value>
         </attribute>
         <ref name="comment"/>
       </element>
       <element name="solve">
-        <a:documentation>Never solve the equations listed in this nonlinear solver.
+        <a:documentation>By default never solve the equations listed in this nonlinear solver.
 
 This is primarily intended to be used in checkpoint files when systems set to solve 'at_start' are never solved for in the 
-checkpointed simulation.</a:documentation>
+checkpointed simulation.
+
+This will be overridden if this nonlinear solver is listed in any solve under solution_order.</a:documentation>
         <attribute name="name">
           <value>never</value>
         </attribute>

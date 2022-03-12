@@ -200,6 +200,17 @@ void SpudSystemBucket::initialize_solvers()
 //}
 
 //*******************************************************************|************************************************************//
+// initialize any diagnostic output in this system
+//*******************************************************************|************************************************************//
+void SpudSystemBucket::initialize_diagnostics() const                // doesn't allocate anything so can be const
+{
+  for (SolverBucket_it s_it = solvers_begin(); s_it != solvers_end(); s_it++)
+  {
+    (*std::dynamic_pointer_cast< SpudSolverBucket >((*s_it).second)).initialize_diagnostics();
+  }
+}
+
+//*******************************************************************|************************************************************//
 // return a string describing the contents of the spud system
 //*******************************************************************|************************************************************//
 const std::string SpudSystemBucket::str(int indent) const
@@ -275,6 +286,10 @@ void SpudSystemBucket::fill_systemfunction_()
   iteratedfunction_.reset( new dolfin::Function(functionspace_) );   // declare the iterated function on this functionspace
   buffer.str(""); buffer << name() << "::IteratedFunction";
   (*iteratedfunction_).rename( buffer.str(), buffer.str() );
+
+  olditeratedfunction_.reset( new dolfin::Function(functionspace_) );// declare the old iterated function (previous iteration) on this functionspace
+  buffer.str(""); buffer << name() << "::OldIteratedFunction";
+  (*olditeratedfunction_).rename( buffer.str(), buffer.str() );
 
   changefunction_.reset( new dolfin::Function(functionspace_) );     // declare the change in the function between timesteps
   buffer.str(""); buffer << name() << "::TimestepChange";

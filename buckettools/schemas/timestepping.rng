@@ -183,83 +183,267 @@ Useful in combination with checkpointing on clusters.</a:documentation>
       <ref name="comment"/>
     </element>
   </define>
-  <define name="nonlinear">
-    <element name="nonlinear_systems">
-      <a:documentation>Options to perform multiple iterations per timestep (i.e. to solve the systems repeatedly).
-
-If selected those systems marked to be solved in the timestep loop will be solved repeatedly, updating 
-interdependent coefficients at each system assembly and solve, until the requested convergence criteria
-are satisfied.
-
-Diagnostic systems will only be solved if convergence monitoring is requested.</a:documentation>
-      <element name="relative_error">
-        <a:documentation>The relative error allowed to remain in the vector l2 norm of the combined systems residual upon termination
+  <define name="nonlinear_systems_tolerances">
+    <element name="relative_error">
+      <a:documentation>The relative error allowed to remain in the vector l2 norm of the combined systems residual upon termination
 of the iteration loop.
 
 If a system contains multiple solvers, the residual defined in the last solver is taken as that system's
 residual.</a:documentation>
-        <ref name="real"/>
-      </element>
-      <optional>
-        <element name="absolute_error">
-          <a:documentation>The absolute error allowed to remain in the vector l2 norm of the combined systems residual upon termination
+      <ref name="real"/>
+    </element>
+    <optional>
+      <element name="absolute_error">
+        <a:documentation>The absolute error allowed to remain in the vector l2 norm of the combined systems residual upon termination
 of the iteration loop.
 
 Defaults to 1.e-50.</a:documentation>
-          <ref name="real"/>
-        </element>
-      </optional>
-      <element name="max_iterations">
-        <a:documentation>The maximum number of iterations to take in this nonlinear system loop.</a:documentation>
+        <ref name="real"/>
+      </element>
+    </optional>
+    <element name="max_iterations">
+      <a:documentation>The maximum number of iterations to take in this nonlinear system loop.</a:documentation>
+      <ref name="integer"/>
+    </element>
+    <optional>
+      <element name="min_iterations">
+        <a:documentation>The minimum number of iterations to take in this nonlinear system loop.</a:documentation>
         <ref name="integer"/>
       </element>
-      <optional>
-        <element name="min_iterations">
-          <a:documentation>The minimum number of iterations to take in this nonlinear system loop.</a:documentation>
-          <ref name="integer"/>
-        </element>
-      </optional>
-      <element name="monitors">
-        <a:documentation>Options to give extra information for each iteration of the
+    </optional>
+    <optional>
+      <element name="relaxation_parameter">
+        <a:documentation>Relaxation parameter for solution between iterations.
+
+Defaults to 1.0 (no relaxation).</a:documentation>
+        <ref name="real"/>
+      </element>
+    </optional>
+    <element name="monitors">
+      <a:documentation>Options to give extra information for each iteration of the
 timestep. Some of those may really slow down your computation!</a:documentation>
-        <optional>
-          <element name="visualization">
-            <a:documentation>Output pvd visualization of the solution and residual at each iteration.
+      <optional>
+        <element name="visualization">
+          <a:documentation>Output pvd visualization of the solution and residual at each iteration.
 
 WARNING: This will produce a lot of output so should only be used for debugging purposes!</a:documentation>
-            <ref name="comment"/>
-          </element>
-        </optional>
-        <optional>
-          <element name="convergence_file">
-            <a:documentation>Output a diagnostic file detailing the convergence of the nonlinear system iterations.</a:documentation>
-            <ref name="comment"/>
-          </element>
-        </optional>
-        <ref name="comment"/>
-      </element>
-      <choice>
-        <element name="never_ignore_convergence_failures">
-          <a:documentation>Never ignore solver failures (the highly recommended default).
+          <ref name="comment"/>
+        </element>
+      </optional>
+      <optional>
+        <element name="convergence_file">
+          <a:documentation>Output a diagnostic file detailing the convergence of the nonlinear system iterations.</a:documentation>
+          <ref name="comment"/>
+        </element>
+      </optional>
+    </element>
+    <choice>
+      <element name="never_ignore_solver_failures">
+        <a:documentation>Never ignore solver failures (the highly recommended default).
 
-This option tests the convergence of the nonlinear systems and terminates the simulations at the end of the next timestep 
+This option tests the convergence of the nonlinear systems and terminates the simulations at the end of the next iteration 
 if it has failed to converge.
 
 This option does not affect the handling of convergence failures within each system solver.</a:documentation>
-          <ref name="comment"/>
-        </element>
-        <element name="ignore_all_convergence_failures">
-          <a:documentation>Ignore solver failures.  Intended for debugging purposes only!
+        <ref name="comment"/>
+      </element>
+      <element name="ignore_all_solver_failures">
+        <a:documentation>Ignore solver failures.  Intended for debugging purposes only!
 
 **Do not use this option in any scientific simulation.**
 
 This option allows the simulation to continue even if the nonlinear systems fail to meet the convergence criteria.
 
 This option does not affect the handling of convergence failures within each system solver.</a:documentation>
+        <ref name="comment"/>
+      </element>
+    </choice>
+  </define>
+  <define name="solution_order">
+    <element name="solution_order">
+      <a:documentation>By default, TerraFERMA calls solvers in the order in which they appear in the options file: first by system and then by
+nonlinear_solver.
+
+The solution_order option allows this to be overridden and, additionally, allows nonlinearities between systems to be
+iteratively accounted for (to some specified tolerance).
+
+Three solve locations are currently implemented in TerraFERMA: at_start, in_timeloop and with_diagnostics.  Activating a
+solution_order option here for any of these will over-ride the solve location designation described under the nonlinear_solver
+itself.</a:documentation>
+      <optional>
+        <element name="solve">
+          <a:documentation>Activate this option to over-ride the default solution order (by system and then by nonlinear_solver) at the start of the
+simulation.  Note that this will ignore the solve::at_start option underneath the nonlinear_solver itself.
+Once activated here, nonlinear_solvers with a solve::at_start option must be explicitly listed here to actually be
+solved.</a:documentation>
+          <attribute name="name">
+            <value>at_start</value>
+          </attribute>
+          <oneOrMore>
+            <ref name="nonlinear_solver_step_top"/>
+          </oneOrMore>
+          <optional>
+            <ref name="nonlinear_coupled"/>
+          </optional>
+          <ref name="comment"/>
+        </element>
+      </optional>
+      <optional>
+        <element name="solve">
+          <a:documentation>Activate this option to over-ride the default solution order (by system and then by nonlinear_solver) in the timeloop of the
+simulation.  Note that this will ignore the solve::in_timeloop option underneath the nonlinear_solver itself.
+Once activated here, nonlinear_solvers with a solve::in_timeloop option must be explicitly listed here to actually be
+solved.</a:documentation>
+          <attribute name="name">
+            <value>in_timeloop</value>
+          </attribute>
+          <oneOrMore>
+            <ref name="nonlinear_solver_step_top"/>
+          </oneOrMore>
+          <optional>
+            <ref name="nonlinear_coupled"/>
+          </optional>
+          <ref name="comment"/>
+        </element>
+      </optional>
+      <optional>
+        <element name="solve">
+          <a:documentation>Activate this option to over-ride the default solution order (by system and then by nonlinear_solver) with the diagnostics of the
+simulation.  Note that this will ignore the solve::with_diagnostics option underneath the nonlinear_solver itself.
+Once activated here, nonlinear_solvers with a solve::with_diagnostics option must be explicitly listed here to actually be
+solved.</a:documentation>
+          <attribute name="name">
+            <value>with_diagnostics</value>
+          </attribute>
+          <oneOrMore>
+            <ref name="nonlinear_solver_step_top"/>
+          </oneOrMore>
+          <optional>
+            <ref name="nonlinear_coupled"/>
+          </optional>
+          <ref name="comment"/>
+        </element>
+      </optional>
+    </element>
+  </define>
+  <define name="nonlinear_coupled">
+    <element name="coupled">
+      <a:documentation>Sometime an individual system or nonlinear_solver needs to be solved outside of the standard solve locations.  For example,
+when updating the timestep or when some systems request diagnostic output but others don't.
+
+On these occasions the individual non_linear solvers here are, by default, assumed not to be coupled together.  Turning on
+these options forces all the solvers to be solved together always, incorporating any (one-way) dependencies between successive
+systems.
+
+This does not affect the solution order in the timeloop or at the start of the simulation where all solvers are always
+solved in the solution order specified here.</a:documentation>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="include_in_residual">
+    <choice>
+      <element name="include_in_systems_residual">
+        <a:documentation>By default, include the residual of this solver when evaluating the overall residual of the coupled nonlinear_systems_solver.
+
+Excluding the residual can be useful when there are multiple solvers in a single system and only the residual of the last to be solved is relevant
+to the coupled problem, e.g. the earlier solves are just establishing better initial guesses.</a:documentation>
+        <ref name="comment"/>
+      </element>
+      <element name="exclude_from_systems_residual">
+        <a:documentation>Exclude the residual of this solver when evaluating the overall residual of the coupled nonlinear_systems_solver.
+
+This can be useful when there are multiple solvers in a single system and only the residual of the last to be solved is relevant
+to the coupled problem, e.g. the earlier solves are just establishing better initial guesses.</a:documentation>
+        <ref name="comment"/>
+      </element>
+    </choice>
+  </define>
+  <define name="nonlinear_solver_type_nonlinear_solver">
+    <attribute name="name">
+      <value>nonlinear_solver</value>
+    </attribute>
+    <element name="system">
+      <a:documentation>The system name</a:documentation>
+      <attribute name="name">
+        <data type="string"/>
+      </attribute>
+      <ref name="comment"/>
+    </element>
+    <element name="nonlinear_solver">
+      <a:documentation>The nonlinear solver name</a:documentation>
+      <attribute name="name">
+        <data type="string"/>
+      </attribute>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="nonlinear_solver_type_nonlinear_systems_solver">
+    <attribute name="name">
+      <value>nonlinear_systems_solver</value>
+    </attribute>
+    <ref name="nonlinear_systems_tolerances"/>
+    <oneOrMore>
+      <ref name="nonlinear_solver_step"/>
+    </oneOrMore>
+  </define>
+  <define name="nonlinear_solver_step_top">
+    <element name="solver">
+      <a:documentation>Specify the solver to be solved here.
+
+This can either be a reference to a nonlinear_solver in a system or a new nonlinear systems solver that iterates over
+multiple nonlinear_solvers to converge nonlinearities between systems.</a:documentation>
+      <attribute name="name">
+        <data type="string"/>
+      </attribute>
+      <choice>
+        <element name="type">
+          <a:documentation>Choose the type of the solver.
+
+This can either be a reference to a nonlinear_solver in a system or a new nonlinear systems solver that iterates over
+multiple nonlinear_solvers to converge nonlinearities between systems.</a:documentation>
+          <ref name="nonlinear_solver_type_nonlinear_solver"/>
+          <ref name="comment"/>
+        </element>
+        <element name="type">
+          <a:documentation>Choose the type of the solver.
+
+This can either be a reference to a nonlinear_solver in a system or a new nonlinear systems solver that iterates over
+multiple nonlinear_solvers to converge nonlinearities between systems.</a:documentation>
+          <ref name="nonlinear_solver_type_nonlinear_systems_solver"/>
           <ref name="comment"/>
         </element>
       </choice>
-      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="nonlinear_solver_step">
+    <element name="solver">
+      <a:documentation>Specify the solver to be solved here.
+
+This can either be a reference to a nonlinear_solver in a system or a new nonlinear systems solver that iterates over
+multiple nonlinear_solvers to converge nonlinearities between systems.</a:documentation>
+      <attribute name="name">
+        <data type="string"/>
+      </attribute>
+      <choice>
+        <element name="type">
+          <a:documentation>Choose the type of the solver.
+
+This can either be a reference to a nonlinear_solver in a system or a new nonlinear systems solver that iterates over
+multiple nonlinear_solvers to converge nonlinearities between systems.</a:documentation>
+          <ref name="nonlinear_solver_type_nonlinear_solver"/>
+          <ref name="include_in_residual"/>
+          <ref name="comment"/>
+        </element>
+        <element name="type">
+          <a:documentation>Choose the type of the solver.
+
+This can either be a reference to a nonlinear_solver in a system or a new nonlinear systems solver that iterates over
+multiple nonlinear_solvers to converge nonlinearities between systems.</a:documentation>
+          <ref name="nonlinear_solver_type_nonlinear_systems_solver"/>
+          <ref name="include_in_residual"/>
+          <ref name="comment"/>
+        </element>
+      </choice>
     </element>
   </define>
 </grammar>
