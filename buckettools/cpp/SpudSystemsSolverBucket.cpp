@@ -171,6 +171,10 @@ void SpudSystemsSolverBucket::fill_base_()
   serr = Spud::get_option(buffer.str(), minits_, 0);                 // picard solver types)
   spud_err(buffer.str(), serr);
 
+  buffer.str(""); buffer << l_optionpath << "/relaxation_parameter";
+  serr = Spud::get_option(buffer.str(), relax_, 1.0);
+  spud_err(buffer.str(), serr);
+
   buffer.str(""); buffer << l_optionpath << 
                                 "/ignore_all_solver_failures";
   ignore_failures_ = Spud::have_option(buffer.str());

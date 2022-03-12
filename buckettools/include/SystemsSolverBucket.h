@@ -189,7 +189,7 @@ namespace buckettools
                                                                      // iterations taken
     int minits_, maxits_;                                            // nonlinear system iteration counts
 
-    double *rtol_, atol_;                                            // nonlinear system tolerances
+    double *rtol_, atol_, relax_;                                    // nonlinear system tolerances and relaxation parameter
 
     bool ignore_failures_;                                           // ignore solver failures
 
@@ -222,6 +222,8 @@ namespace buckettools
     //***************************************************************|***********************************************************//
 
     bool complete_iterating_(const double &aerror0);                 // indicate if nonlinear systems iterations are complete or not
+
+    void update_iterated_();                                         // loop over the residualsolvers_ systems, updating iterated functions
 
     //***************************************************************|***********************************************************//
     // Output functions (continued)

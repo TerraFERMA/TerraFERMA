@@ -212,6 +212,8 @@ bool SystemsSolverBucket::solve()
       (*(*s_it).second).reset_current_systemssolver();
     }
 
+    update_iterated_();
+
     //update_nonlinear();
   }
 
@@ -666,7 +668,18 @@ bool SystemsSolverBucket::complete_iterating_(const double &aerror0)
 
 }
 
-    
+//*******************************************************************|************************************************************//
+// loop over the residualsolvers_ systems, calling update_iterated on each of them
+//*******************************************************************|************************************************************//
+void SystemsSolverBucket::update_iterated_()
+{
+  std::vector<SolverBucket_ptr>::const_iterator s_it;
+  for (s_it = residualsolvers_.begin(); s_it != residualsolvers_.end(); s_it++)
+  {
+    (*(**s_it).system()).update_iterated(relax_);
+  }
+}
+
 //*******************************************************************|************************************************************//
 // virtual checkpointing of options
 //*******************************************************************|************************************************************//

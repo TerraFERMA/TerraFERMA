@@ -146,6 +146,14 @@ Defaults to 1.e-50.</a:documentation>
         <ref name="integer"/>
       </element>
     </optional>
+    <optional>
+      <element name="relaxation_parameter">
+        <a:documentation>Relaxation parameter for solution between iterations.
+
+Defaults to 1.0 (no relaxation).</a:documentation>
+        <ref name="real"/>
+      </element>
+    </optional>
     <element name="monitors">
       <a:documentation>Options to give extra information for each iteration of the
 Picard solve. Some of those may really slow down your computation!</a:documentation>
@@ -289,6 +297,18 @@ fixed number of Newton steps).</a:documentation>
           </element>
         </choice>
         <ref name="snes_convergence_test"/>
+        <optional>
+          <element name="damping_parameter">
+            <a:documentation>The damping parameter in SNES is roughly equivalent to a relaxation parameter in the Picard and nonlinear systems solvers.
+
+The basic line search merely takes the update step scaled by the damping parameter. 
+
+In a cubic or quadratic line search it is used as the maximum possible step length, as the bt line search only backtracks. 
+
+Defaults to 1.0 if unset.</a:documentation>
+            <ref name="real"/>
+          </element>
+        </optional>
         <optional>
           <element name="alpha">
             <a:documentation>The scalar such that .5*f_{n+1} . f_{n+1} &lt;= .5*f_n . f_n - alpha |p_n . J . f_n|.

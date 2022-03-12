@@ -278,6 +278,10 @@ void SpudSystemBucket::fill_systemfunction_()
   buffer.str(""); buffer << name() << "::IteratedFunction";
   (*iteratedfunction_).rename( buffer.str(), buffer.str() );
 
+  olditeratedfunction_.reset( new dolfin::Function(functionspace_) );// declare the old iterated function (previous iteration) on this functionspace
+  buffer.str(""); buffer << name() << "::OldIteratedFunction";
+  (*olditeratedfunction_).rename( buffer.str(), buffer.str() );
+
   changefunction_.reset( new dolfin::Function(functionspace_) );     // declare the change in the function between timesteps
   buffer.str(""); buffer << name() << "::TimestepChange";
   (*changefunction_).rename( buffer.str(), buffer.str() );

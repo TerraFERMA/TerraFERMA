@@ -211,6 +211,14 @@ Defaults to 1.e-50.</a:documentation>
         <ref name="integer"/>
       </element>
     </optional>
+    <optional>
+      <element name="relaxation_parameter">
+        <a:documentation>Relaxation parameter for solution between iterations.
+
+Defaults to 1.0 (no relaxation).</a:documentation>
+        <ref name="real"/>
+      </element>
+    </optional>
     <element name="monitors">
       <a:documentation>Options to give extra information for each iteration of the
 timestep. Some of those may really slow down your computation!</a:documentation>

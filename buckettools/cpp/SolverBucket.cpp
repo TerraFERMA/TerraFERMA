@@ -262,12 +262,21 @@ bool SolverBucket::solve()
       perr = KSPSolve(ksp_, (*rhs_).vec(), (*work_).vec());          // perform a linear solve
       petsc_fail(perr);
       ksp_check_convergence_(ksp_);
-      (*(*(*system_).iteratedfunction()).vector()) = *work_;         // update the iterated function with the work vector
+      if (relax_ != 1.0)
+      {
+        (*(*(*system_).iteratedfunction()).vector()) *= (1.-relax_); 
+        (*(*(*system_).iteratedfunction()).vector()) += *((*work_)*relax_);// update the iterated function with the work vector
+      }
+      else
+      {
+        (*(*(*system_).iteratedfunction()).vector()) = *work_; 
+      }
+      
 
 
     }
 
-    (*(*(*system_).function()).vector()) =                              // update the function values with the iterated values
+    (*(*(*system_).function()).vector()) =                           // update the function values with the iterated values
                       (*(*(*system_).iteratedfunction()).vector());
 
   }
