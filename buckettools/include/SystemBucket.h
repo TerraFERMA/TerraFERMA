@@ -78,7 +78,7 @@ namespace buckettools
 
     void update_nonlinear();                                         // update the potentially nonlinear functions in this system
 
-    void update_iterated();                                          // update the iterated vectors in this system
+    void update_iterated(const double relax);                        // update the iterated vectors in this system
 
     void update_timedependent();                                     // update the potentially time dependent functions in this system
 
@@ -97,16 +97,9 @@ namespace buckettools
 
     const std::vector<int> solve_locations() const;                  // return a std::vector indicating the solve locations of the solvers
 
-    const bool solved(const int &location) const;                    // return a boolean indicating if this system has been solved
-
-    const bool solved(const std::vector<int> &locations=
-                                          std::vector<int>()) const; // return a boolean indicating if this system has been solved
-
     //***************************************************************|***********************************************************//
     // Filling data
     //***************************************************************|***********************************************************//
-
-    void initialize_diagnostics() const;                             // initialize any diagnostic output from this system
 
     void initialize_forms();                                         // attach all fields and coefficients to forms and functionals
 
@@ -307,8 +300,6 @@ namespace buckettools
 
     void output();                                                   // output vis from the system
 
-    void write_convvis();                                            // write convergence visualization checkpoint
-  
     void checkpoint(const double_ptr time);                          // checkpoint the system
 
   //*****************************************************************|***********************************************************//

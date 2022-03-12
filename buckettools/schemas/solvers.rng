@@ -474,33 +474,42 @@ WARNING: This will produce a lot of output so should only be used for debugging 
   <define name="solve_location">
     <choice>
       <element name="solve">
-        <a:documentation>Solve the equations listed in this nonlinear solver every timestep.</a:documentation>
+        <a:documentation>By default solve this nonlinear solver every timestep.
+
+This will be overridden by specifying a solve in_timeloop under solution_order or if this nonlinear solver is listed in
+any other solve under solution_order.</a:documentation>
         <attribute name="name">
           <value>in_timeloop</value>
         </attribute>
         <ref name="comment"/>
       </element>
       <element name="solve">
-        <a:documentation>Only solve the equations listed in this nonlinear solver at the start of the simulation.</a:documentation>
+        <a:documentation>By default solve this nonlinear solver only at the start of the simulation.
+
+This will be overridden by specifying a solve at_start under solution_order or if this nonlinear solver is listed in
+any other solve under solution_order.</a:documentation>
         <attribute name="name">
           <value>at_start</value>
         </attribute>
         <ref name="comment"/>
       </element>
       <element name="solve">
-        <a:documentation>Only solve the equations listed in this nonlinear solver when diagnostic output is performed.
+        <a:documentation>By default solve this nonlinear solver whenever diagnostic output is calculated.
 
-This means that this system will be updated at an interval dependant on how the diagnostic dump periods are set in /io.</a:documentation>
+This will be overridden by specifying a solve with_diagnostics under solution_order or if this nonlinear solver is listed in
+any other solve under solution_order.</a:documentation>
         <attribute name="name">
           <value>with_diagnostics</value>
         </attribute>
         <ref name="comment"/>
       </element>
       <element name="solve">
-        <a:documentation>Never solve the equations listed in this nonlinear solver.
+        <a:documentation>By default never solve the equations listed in this nonlinear solver.
 
 This is primarily intended to be used in checkpoint files when systems set to solve 'at_start' are never solved for in the 
-checkpointed simulation.</a:documentation>
+checkpointed simulation.
+
+This will be overridden if this nonlinear solver is listed in any solve under solution_order.</a:documentation>
         <attribute name="name">
           <value>never</value>
         </attribute>

@@ -21,6 +21,7 @@
 
 #include "DiagnosticsFile.h"
 #include "Bucket.h"
+#include "SystemsSolverBucket.h"
 #include "MPIBase.h"
 #include "Usage.h"
 #include <cstdio>
@@ -38,12 +39,9 @@ using namespace buckettools;
 DiagnosticsFile::DiagnosticsFile(const std::string &name, 
                                  const MPI_Comm &comm,
                                  const Bucket *bucket) : 
-                                 name_(name), mpicomm_(comm), bucket_(bucket), ncolumns_(0)
+                                 name_(name), mpicomm_(comm), bucket_(bucket), ncolumns_(0), initialized_(false)
 {
-  if (dolfin::MPI::rank(mpicomm_)==0)
-  {
-    file_.open((char*)name.c_str());                                 // open the file_ member
-  }
+                                                                     // do nothing
 }
 
 //*******************************************************************|************************************************************//
@@ -52,6 +50,22 @@ DiagnosticsFile::DiagnosticsFile(const std::string &name,
 DiagnosticsFile::~DiagnosticsFile()
 {
   close();                                                           // close the file_ member
+}
+
+//*******************************************************************|************************************************************//
+// initialize the file
+//*******************************************************************|************************************************************//
+void DiagnosticsFile::initialize_()
+{
+  if (!initialized_)
+  {
+    if (dolfin::MPI::rank(mpicomm_)==0)
+    {
+      file_.open((char*)name_.c_str());                                 // open the file_ member
+    }
+    write_header_();
+    initialized_ = true;
+  }
 }
 
 //*******************************************************************|************************************************************//
@@ -160,6 +174,21 @@ void DiagnosticsFile::header_timestep_()
 }
 
 //*******************************************************************|************************************************************//
+// write lines of the xml header for values relating to any nonlinear systems iterations
+//*******************************************************************|************************************************************//
+void DiagnosticsFile::header_systemssolver_(const SystemsSolverBucket* p_syssol)
+{
+  if ((*p_syssol).iterative())
+  {
+    tag_((*p_syssol).name()+"_iteration", "value");
+  }
+  if ((*p_syssol).systemssolver())
+  {
+    header_systemssolver_((*p_syssol).systemssolver());
+  }
+}
+
+//*******************************************************************|************************************************************//
 // write an xml tag for a constant that does not vary throughout a simulation
 //*******************************************************************|************************************************************//
 void DiagnosticsFile::constant_tag_(const std::string &name, 
@@ -244,6 +273,21 @@ void DiagnosticsFile::data_timestep_()
     file_.unsetf(std::ios::scientific);
   }
   
+}
+
+//*******************************************************************|************************************************************//
+// write data to the file for values relating to any nonlinear systems iterations
+//*******************************************************************|************************************************************//
+void DiagnosticsFile::data_systemssolver_(const SystemsSolverBucket* p_syssol)
+{
+  if ((*p_syssol).iterative())
+  {
+    data_((*p_syssol).iteration_count());
+  }
+  if ((*p_syssol).systemssolver())
+  {
+    data_systemssolver_((*p_syssol).systemssolver());
+  }
 }
 
 //*******************************************************************|************************************************************//

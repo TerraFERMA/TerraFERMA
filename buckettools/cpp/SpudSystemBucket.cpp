@@ -200,6 +200,17 @@ void SpudSystemBucket::initialize_solvers()
 //}
 
 //*******************************************************************|************************************************************//
+// initialize any diagnostic output in this system
+//*******************************************************************|************************************************************//
+void SpudSystemBucket::initialize_diagnostics() const                // doesn't allocate anything so can be const
+{
+  for (SolverBucket_it s_it = solvers_begin(); s_it != solvers_end(); s_it++)
+  {
+    (*std::dynamic_pointer_cast< SpudSolverBucket >((*s_it).second)).initialize_diagnostics();
+  }
+}
+
+//*******************************************************************|************************************************************//
 // return a string describing the contents of the spud system
 //*******************************************************************|************************************************************//
 const std::string SpudSystemBucket::str(int indent) const
