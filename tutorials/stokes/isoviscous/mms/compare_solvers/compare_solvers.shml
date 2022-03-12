@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version='1.0' encoding='UTF-8'?>
 <harness_options>
   <length>
     <string_value lines="1">medium</string_value>
@@ -21,9 +21,10 @@
             <string_value lines="1">16 32 64 128 256</string_value>
           </values>
           <update>
-            <string_value lines="20" type="code" language="python">import libspud
+            <string_value lines="20" type="code" language="python3">import libspud
 n = int(ncells)
-libspud.set_option("/geometry/mesh::Mesh/source::Rectangle/number_cells", [n, n])</string_value>
+libspud.set_option("/geometry/mesh::Mesh/source::Rectangle/number_cells", [n, n])
+</string_value>
             <single_build/>
           </update>
         </parameter>
@@ -33,32 +34,35 @@ libspud.set_option("/geometry/mesh::Mesh/source::Rectangle/number_cells", [n, n]
             <comment>if conv_file = 0 then delete convergence file from monitor</comment>
           </values>
           <update>
-            <string_value lines="20" type="code" language="python">import libspud
+            <string_value lines="20" type="code" language="python3">import libspud
 if conv_file == '0':
-  libspud.delete_option("/system::Stokes/nonlinear_solver::Solver/type::SNES/linear_solver/iterative_method[0]/monitors/convergence_file")</string_value>
+  libspud.delete_option("/system::Stokes/nonlinear_solver::Solver/type::SNES/linear_solver/iterative_method[0]/monitors/convergence_file")
+</string_value>
             <single_build/>
           </update>
         </parameter>
       </parameter_sweep>
       <variables>
         <variable name="error_l2_V_direct">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 from math import sqrt
 stat = parser("stokes.stat")
 # get ||V||_2 and ||error_V||_2
 l2_norm_V = sqrt(stat["Stokes"]["VelocityL2NormSquared"]["functional_value"][-1])
-error_l2_V_direct = sqrt(stat["Stokes"]["VelocityL2NormErrorSquared"]["functional_value"][-1])/l2_norm_V</string_value>
+error_l2_V_direct = sqrt(stat["Stokes"]["VelocityL2NormErrorSquared"]["functional_value"][-1])/l2_norm_V
+</string_value>
         </variable>
         <variable name="error_l2_P_direct">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 from math import sqrt
 stat = parser("stokes.stat")
 # get ||P||_2 and ||error_P||_2
 l2_norm_P = sqrt(stat["Stokes"]["PressureL2NormSquared"]["functional_value"][-1])
-error_l2_P_direct = sqrt(stat["Stokes"]["PressureL2NormErrorSquared"]["functional_value"][-1])/l2_norm_P</string_value>
+error_l2_P_direct = sqrt(stat["Stokes"]["PressureL2NormErrorSquared"]["functional_value"][-1])/l2_norm_P
+</string_value>
         </variable>
         <variable name="ksp_L2residual_direct">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 from glob import glob
 convfile = glob("*.conv")
 if convfile:
@@ -66,37 +70,45 @@ if convfile:
   # extract the system residaul
   ksp_L2residual_direct = conv['Stokes']['res_norm(l2)']
 else:
-  ksp_L2residual_direct = []</string_value>
+  ksp_L2residual_direct = []
+</string_value>
         </variable>
         <variable name="NDofs_direct">
-          <string_value lines="20" type="code" language="python"># this requires that the PYTHONPATH is correct by source ./environment
+          <string_value lines="20" type="code" language="python3"># this requires that the PYTHONPATH is correct by source ./environment
 from getNdofs import getNdofs
 
-NDofs_direct = max(getNdofs())</string_value>
+NDofs_direct = max(getNdofs())
+</string_value>
         </variable>
         <variable name="petsc_time_direct">
-          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
-petsc_time_direct = sum(LocalTimes.values())/numProcs</string_value>
+          <string_value lines="20" type="code" language="python3">exec(compile(open('petsc_log.py', "rb").read(), 'petsc_log.py', 'exec'))
+petsc_time_direct = sum(LocalTimes.values())/numProcs
+</string_value>
         </variable>
         <variable name="SNES_Solve_time_direct">
-          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
-SNES_Solve_time_direct =  sum([  Stages['Main Stage']['SNESSolve'][n]['time'] for n in range(numProcs) ])/numProcs</string_value>
+          <string_value lines="20" type="code" language="python3">exec(compile(open('petsc_log.py', "rb").read(), 'petsc_log.py', 'exec'))
+SNES_Solve_time_direct =  sum([  Stages['Main Stage']['SNESSolve'][n]['time'] for n in range(numProcs) ])/numProcs
+</string_value>
         </variable>
         <variable name="SNES_FunctionEval_time_direct">
-          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
-SNES_FunctionEval_time_direct =  sum([  Stages['Main Stage']['SNESFunctionEval'][n]['time'] for n in range(numProcs) ])/numProcs</string_value>
+          <string_value lines="20" type="code" language="python3">exec(compile(open('petsc_log.py', "rb").read(), 'petsc_log.py', 'exec'))
+SNES_FunctionEval_time_direct =  sum([  Stages['Main Stage']['SNESFunctionEval'][n]['time'] for n in range(numProcs) ])/numProcs
+</string_value>
         </variable>
         <variable name="SNES_JacobianEval_time_direct">
-          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
-SNES_JacobianEval_time_direct = sum([  Stages['Main Stage']['SNESJacobianEval'][n]['time'] for n in range(numProcs) ])/numProcs</string_value>
+          <string_value lines="20" type="code" language="python3">exec(compile(open('petsc_log.py', "rb").read(), 'petsc_log.py', 'exec'))
+SNES_JacobianEval_time_direct = sum([  Stages['Main Stage']['SNESJacobianEval'][n]['time'] for n in range(numProcs) ])/numProcs
+</string_value>
         </variable>
         <variable name="KSP_Solve_time_direct">
-          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
-KSP_Solve_time_direct =   sum([  Stages['Main Stage']['KSPSolve'][n]['time'] for n in range(numProcs) ])/numProcs</string_value>
+          <string_value lines="20" type="code" language="python3">exec(compile(open('petsc_log.py', "rb").read(), 'petsc_log.py', 'exec'))
+KSP_Solve_time_direct =   sum([  Stages['Main Stage']['KSPSolve'][n]['time'] for n in range(numProcs) ])/numProcs
+</string_value>
         </variable>
         <variable name="PC_Setup_time_direct">
-          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
-PC_Setup_time_direct =  sum([  Stages['Main Stage']['PCSetUp'][n]['time'] for n in range(numProcs) ])/numProcs</string_value>
+          <string_value lines="20" type="code" language="python3">exec(compile(open('petsc_log.py', "rb").read(), 'petsc_log.py', 'exec'))
+PC_Setup_time_direct =  sum([  Stages['Main Stage']['PCSetUp'][n]['time'] for n in range(numProcs) ])/numProcs
+</string_value>
         </variable>
       </variables>
     </simulation>
@@ -111,9 +123,10 @@ PC_Setup_time_direct =  sum([  Stages['Main Stage']['PCSetUp'][n]['time'] for n 
             <string_value lines="1">16 32 64 128 256</string_value>
           </values>
           <update>
-            <string_value lines="20" type="code" language="python">import libspud
+            <string_value lines="20" type="code" language="python3">import libspud
 n = int(ncells)
-libspud.set_option("/geometry/mesh::Mesh/source::Rectangle/number_cells", [n, n])</string_value>
+libspud.set_option("/geometry/mesh::Mesh/source::Rectangle/number_cells", [n, n])
+</string_value>
             <single_build/>
           </update>
         </parameter>
@@ -123,32 +136,35 @@ libspud.set_option("/geometry/mesh::Mesh/source::Rectangle/number_cells", [n, n]
             <comment>if conv_file = 0 then delete convergence file from monitor</comment>
           </values>
           <update>
-            <string_value lines="20" type="code" language="python">import libspud
+            <string_value lines="20" type="code" language="python3">import libspud
 if conv_file == '0':
-  libspud.delete_option("/system::Stokes/nonlinear_solver::Solver/type::SNES/linear_solver/iterative_method[0]/monitors/convergence_file")</string_value>
+  libspud.delete_option("/system::Stokes/nonlinear_solver::Solver/type::SNES/linear_solver/iterative_method[0]/monitors/convergence_file")
+</string_value>
             <single_build/>
           </update>
         </parameter>
       </parameter_sweep>
       <variables>
         <variable name="error_l2_V_fs_direct">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 from math import sqrt
 stat = parser("stokes.stat")
 # get ||V||_2 and ||error_V||_2
 l2_norm_V = sqrt(stat["Stokes"]["VelocityL2NormSquared"]["functional_value"][-1])
-error_l2_V_fs_direct = sqrt(stat["Stokes"]["VelocityL2NormErrorSquared"]["functional_value"][-1])/l2_norm_V</string_value>
+error_l2_V_fs_direct = sqrt(stat["Stokes"]["VelocityL2NormErrorSquared"]["functional_value"][-1])/l2_norm_V
+</string_value>
         </variable>
         <variable name="error_l2_P_fs_direct">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 from math import sqrt
 stat = parser("stokes.stat")
 # get ||P||_2 and ||error_P||_2
 l2_norm_P = sqrt(stat["Stokes"]["PressureL2NormSquared"]["functional_value"][-1])
-error_l2_P_fs_direct = sqrt(stat["Stokes"]["PressureL2NormErrorSquared"]["functional_value"][-1])/l2_norm_P</string_value>
+error_l2_P_fs_direct = sqrt(stat["Stokes"]["PressureL2NormErrorSquared"]["functional_value"][-1])/l2_norm_P
+</string_value>
         </variable>
         <variable name="ksp_L2residual_fs_direct">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 from glob import glob
 convfile = glob("*.conv")
 if convfile:
@@ -156,37 +172,45 @@ if convfile:
   # extract the system residaul
   ksp_L2residual_fs_direct = conv['Stokes']['res_norm(l2)']
 else:
-  ksp_L2residual_fs_direct = []</string_value>
+  ksp_L2residual_fs_direct = []
+</string_value>
         </variable>
         <variable name="NDofs_fs_direct">
-          <string_value lines="20" type="code" language="python"># this requires that the PYTHONPATH is correct by source ./environment
+          <string_value lines="20" type="code" language="python3"># this requires that the PYTHONPATH is correct by source ./environment
 from getNdofs import getNdofs
 
-NDofs_fs_direct = max(getNdofs())</string_value>
+NDofs_fs_direct = max(getNdofs())
+</string_value>
         </variable>
         <variable name="petsc_time_fs_direct">
-          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
-petsc_time_fs_direct = sum(LocalTimes.values())/numProcs</string_value>
+          <string_value lines="20" type="code" language="python3">exec(compile(open('petsc_log.py', "rb").read(), 'petsc_log.py', 'exec'))
+petsc_time_fs_direct = sum(LocalTimes.values())/numProcs
+</string_value>
         </variable>
         <variable name="SNES_Solve_time_fs_direct">
-          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
-SNES_Solve_time_fs_direct =  sum([  Stages['Main Stage']['SNESSolve'][n]['time'] for n in range(numProcs) ])/numProcs</string_value>
+          <string_value lines="20" type="code" language="python3">exec(compile(open('petsc_log.py', "rb").read(), 'petsc_log.py', 'exec'))
+SNES_Solve_time_fs_direct =  sum([  Stages['Main Stage']['SNESSolve'][n]['time'] for n in range(numProcs) ])/numProcs
+</string_value>
         </variable>
         <variable name="SNES_FunctionEval_time_fs_direct">
-          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
-SNES_FunctionEval_time_fs_direct =  sum([  Stages['Main Stage']['SNESFunctionEval'][n]['time'] for n in range(numProcs) ])/numProcs</string_value>
+          <string_value lines="20" type="code" language="python3">exec(compile(open('petsc_log.py', "rb").read(), 'petsc_log.py', 'exec'))
+SNES_FunctionEval_time_fs_direct =  sum([  Stages['Main Stage']['SNESFunctionEval'][n]['time'] for n in range(numProcs) ])/numProcs
+</string_value>
         </variable>
         <variable name="SNES_JacobianEval_time_fs_direct">
-          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
-SNES_JacobianEval_time_fs_direct = sum([  Stages['Main Stage']['SNESJacobianEval'][n]['time'] for n in range(numProcs) ])/numProcs</string_value>
+          <string_value lines="20" type="code" language="python3">exec(compile(open('petsc_log.py', "rb").read(), 'petsc_log.py', 'exec'))
+SNES_JacobianEval_time_fs_direct = sum([  Stages['Main Stage']['SNESJacobianEval'][n]['time'] for n in range(numProcs) ])/numProcs
+</string_value>
         </variable>
         <variable name="KSP_Solve_time_fs_direct">
-          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
-KSP_Solve_time_fs_direct =   sum([  Stages['Main Stage']['KSPSolve'][n]['time'] for n in range(numProcs) ])/numProcs</string_value>
+          <string_value lines="20" type="code" language="python3">exec(compile(open('petsc_log.py', "rb").read(), 'petsc_log.py', 'exec'))
+KSP_Solve_time_fs_direct =   sum([  Stages['Main Stage']['KSPSolve'][n]['time'] for n in range(numProcs) ])/numProcs
+</string_value>
         </variable>
         <variable name="PC_Setup_time_fs_direct">
-          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
-PC_Setup_time_fs_direct =  sum([  Stages['Main Stage']['PCSetUp'][n]['time'] for n in range(numProcs) ])/numProcs</string_value>
+          <string_value lines="20" type="code" language="python3">exec(compile(open('petsc_log.py', "rb").read(), 'petsc_log.py', 'exec'))
+PC_Setup_time_fs_direct =  sum([  Stages['Main Stage']['PCSetUp'][n]['time'] for n in range(numProcs) ])/numProcs
+</string_value>
         </variable>
       </variables>
     </simulation>
@@ -201,9 +225,10 @@ PC_Setup_time_fs_direct =  sum([  Stages['Main Stage']['PCSetUp'][n]['time'] for
             <string_value lines="1">16 32 64 128 256</string_value>
           </values>
           <update>
-            <string_value lines="20" type="code" language="python">import libspud
+            <string_value lines="20" type="code" language="python3">import libspud
 n = int(ncells)
-libspud.set_option("/geometry/mesh::Mesh/source::Rectangle/number_cells", [n, n])</string_value>
+libspud.set_option("/geometry/mesh::Mesh/source::Rectangle/number_cells", [n, n])
+</string_value>
             <single_build/>
           </update>
         </parameter>
@@ -213,32 +238,35 @@ libspud.set_option("/geometry/mesh::Mesh/source::Rectangle/number_cells", [n, n]
             <comment>if conv_file = 0 then delete convergence file from monitor</comment>
           </values>
           <update>
-            <string_value lines="20" type="code" language="python">import libspud
+            <string_value lines="20" type="code" language="python3">import libspud
 if conv_file == '0':
-  libspud.delete_option("/system::Stokes/nonlinear_solver::Solver/type::SNES/linear_solver/iterative_method[0]/monitors/convergence_file")</string_value>
+  libspud.delete_option("/system::Stokes/nonlinear_solver::Solver/type::SNES/linear_solver/iterative_method[0]/monitors/convergence_file")
+</string_value>
             <single_build/>
           </update>
         </parameter>
       </parameter_sweep>
       <variables>
         <variable name="error_l2_V_iterative">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 from math import sqrt
 stat = parser("stokes.stat")
 # get ||V||_2 and ||error_V||_2
 l2_norm_V = sqrt(stat["Stokes"]["VelocityL2NormSquared"]["functional_value"][-1])
-error_l2_V_iterative = sqrt(stat["Stokes"]["VelocityL2NormErrorSquared"]["functional_value"][-1])/l2_norm_V</string_value>
+error_l2_V_iterative = sqrt(stat["Stokes"]["VelocityL2NormErrorSquared"]["functional_value"][-1])/l2_norm_V
+</string_value>
         </variable>
         <variable name="error_l2_P_iterative">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 from math import sqrt
 stat = parser("stokes.stat")
 # get ||P||_2 and ||error_P||_2
 l2_norm_P = sqrt(stat["Stokes"]["PressureL2NormSquared"]["functional_value"][-1])
-error_l2_P_iterative = sqrt(stat["Stokes"]["PressureL2NormErrorSquared"]["functional_value"][-1])/l2_norm_P</string_value>
+error_l2_P_iterative = sqrt(stat["Stokes"]["PressureL2NormErrorSquared"]["functional_value"][-1])/l2_norm_P
+</string_value>
         </variable>
         <variable name="ksp_L2residual_iterative">
-          <string_value lines="20" type="code" language="python">from buckettools.statfile import parser
+          <string_value lines="20" type="code" language="python3">from buckettools.statfile import parser
 from glob import glob
 convfile = glob("*.conv")
 if convfile:
@@ -246,53 +274,63 @@ if convfile:
   # extract the system residual
   ksp_L2residual_iterative = conv['Stokes']['res_norm(l2)']
 else:
-  ksp_L2residual_iterative = []</string_value>
+  ksp_L2residual_iterative = []
+</string_value>
         </variable>
         <variable name="NDofs_iterative">
-          <string_value lines="20" type="code" language="python">from getNdofs import getNdofs
+          <string_value lines="20" type="code" language="python3">from getNdofs import getNdofs
 
-NDofs_iterative = max(getNdofs())</string_value>
+NDofs_iterative = max(getNdofs())
+</string_value>
         </variable>
         <variable name="petsc_time_iterative">
-          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
-petsc_time_iterative = sum(LocalTimes.values())/numProcs</string_value>
+          <string_value lines="20" type="code" language="python3">exec(compile(open('petsc_log.py', "rb").read(), 'petsc_log.py', 'exec'))
+petsc_time_iterative = sum(LocalTimes.values())/numProcs
+</string_value>
         </variable>
         <variable name="SNES_Solve_time_iterative">
-          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
-SNES_Solve_time_iterative =  sum([  Stages['Main Stage']['SNESSolve'][n]['time'] for n in range(numProcs) ])/numProcs</string_value>
+          <string_value lines="20" type="code" language="python3">exec(compile(open('petsc_log.py', "rb").read(), 'petsc_log.py', 'exec'))
+SNES_Solve_time_iterative =  sum([  Stages['Main Stage']['SNESSolve'][n]['time'] for n in range(numProcs) ])/numProcs
+</string_value>
         </variable>
         <variable name="SNES_FunctionEval_time_iterative">
-          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
-SNES_FunctionEval_time_iterative =  sum([  Stages['Main Stage']['SNESFunctionEval'][n]['time'] for n in range(numProcs) ])/numProcs</string_value>
+          <string_value lines="20" type="code" language="python3">exec(compile(open('petsc_log.py', "rb").read(), 'petsc_log.py', 'exec'))
+SNES_FunctionEval_time_iterative =  sum([  Stages['Main Stage']['SNESFunctionEval'][n]['time'] for n in range(numProcs) ])/numProcs
+</string_value>
         </variable>
         <variable name="SNES_JacobianEval_time_iterative">
-          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
-SNES_JacobianEval_time_iterative = sum([  Stages['Main Stage']['SNESJacobianEval'][n]['time'] for n in range(numProcs) ])/numProcs</string_value>
+          <string_value lines="20" type="code" language="python3">exec(compile(open('petsc_log.py', "rb").read(), 'petsc_log.py', 'exec'))
+SNES_JacobianEval_time_iterative = sum([  Stages['Main Stage']['SNESJacobianEval'][n]['time'] for n in range(numProcs) ])/numProcs
+</string_value>
         </variable>
         <variable name="KSP_Solve_time_iterative">
-          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
-KSP_Solve_time_iterative =   sum([  Stages['Main Stage']['KSPSolve'][n]['time'] for n in range(numProcs) ])/numProcs</string_value>
+          <string_value lines="20" type="code" language="python3">exec(compile(open('petsc_log.py', "rb").read(), 'petsc_log.py', 'exec'))
+KSP_Solve_time_iterative =   sum([  Stages['Main Stage']['KSPSolve'][n]['time'] for n in range(numProcs) ])/numProcs
+</string_value>
         </variable>
         <variable name="PC_Setup_time_iterative">
-          <string_value lines="20" type="code" language="python">execfile('petsc_log.py')
-PC_Setup_time_iterative =  sum([  Stages['Main Stage']['PCSetUp'][n]['time'] for n in range(numProcs) ])/numProcs</string_value>
+          <string_value lines="20" type="code" language="python3">exec(compile(open('petsc_log.py', "rb").read(), 'petsc_log.py', 'exec'))
+PC_Setup_time_iterative =  sum([  Stages['Main Stage']['PCSetUp'][n]['time'] for n in range(numProcs) ])/numProcs
+</string_value>
         </variable>
       </variables>
     </simulation>
   </simulations>
   <tests>
     <test name="Error_l2_V">
-      <string_value lines="20" type="code" language="python">print error_l2_V_direct
-print error_l2_V_fs_direct
-print error_l2_V_iterative</string_value>
+      <string_value lines="20" type="code" language="python3">print(error_l2_V_direct)
+print(error_l2_V_fs_direct)
+print(error_l2_V_iterative)
+</string_value>
     </test>
     <test name="Error_l2_p">
-      <string_value lines="20" type="code" language="python">print error_l2_P_direct
-print error_l2_P_fs_direct
-print error_l2_P_iterative</string_value>
+      <string_value lines="20" type="code" language="python3">print(error_l2_P_direct)
+print(error_l2_P_fs_direct)
+print(error_l2_P_iterative)
+</string_value>
     </test>
     <test name="PlotErrors">
-      <string_value lines="20" type="code" language="python">import numpy as np
+      <string_value lines="20" type="code" language="python3">import numpy as np
 import matplotlib
 # set a display independent backend
 matplotlib.use('Agg')
@@ -328,10 +366,11 @@ pl.title('Solver Convergence')
 pl.legend(loc='best',fontsize=12)
 pl.savefig('Solver_comparison_convergence.pdf')
 
-print "Convergence plot in Solver_comparison_convergence.pdf"</string_value>
+print("Convergence plot in Solver_comparison_convergence.pdf")
+</string_value>
     </test>
     <test name="PlotConvergence">
-      <string_value lines="20" type="code" language="python">import numpy as np
+      <string_value lines="20" type="code" language="python3">import numpy as np
 import matplotlib
 # set a display independent backend
 matplotlib.use('Agg')
@@ -350,7 +389,7 @@ for i in range(len(solvers)):
 
 #convert back to a string
 NPlot = "{0}".format(min(Nmax))
-print Nmax, NPlot
+print(Nmax, NPlot)
   
 #print ksp_L2residual_fs_direct
 #print ksp_L2residual_fs_direct[{'ncells':NPlot}]
@@ -363,7 +402,7 @@ for i in range(len(solvers)):
   #print solvers[i], ncells, h
   slice = "[{'ncells':NPlot,'conv_file':'1'}]"
   L2res = eval("ksp_L2residual_"+solver+slice)
-  kits = range(len(L2res))
+  kits = list(range(len(L2res)))
 #  print kits, L2res
   pl.semilogy(kits,L2res,color+'+-')
   pl.hold(True)   
@@ -376,10 +415,11 @@ pl.legend(solvers,loc='best')
 pl.savefig('Solver_Comparison_ksp_convergence.pdf')
 
 
-print "KSP Convergence plot in Solver_comparison_ksp_convergence.pdf"</string_value>
+print("KSP Convergence plot in Solver_comparison_ksp_convergence.pdf")
+</string_value>
     </test>
     <test name="PlotTiming">
-      <string_value lines="20" type="code" language="python">import numpy as np
+      <string_value lines="20" type="code" language="python3">import numpy as np
 import matplotlib
 # set a display independent backend
 matplotlib.use('Agg')
@@ -408,10 +448,10 @@ for i in range(len(solvers)):
   solve_time = KSP_Solve_time
   
   # and print some junk out
-  print solver, "total_time=",total_time
-  print solver, "assembly_time", assembly_time
-  print solver, "solve_time", solve_time
-  print solver, "PC_setup_time", PC_Setup_time
+  print(solver, "total_time=",total_time)
+  print(solver, "assembly_time", assembly_time)
+  print(solver, "solve_time", solve_time)
+  print(solver, "PC_setup_time", PC_Setup_time)
   
   # and plot the buggers out
   legend.append(solver+' KSP solve')
@@ -430,7 +470,8 @@ pl.legend(legend,loc='best',fontsize=10)
 pl.savefig('Solver_Comparison_normalized_solver_timing.pdf')
 
 
-print "Timing plot in Solver_comparison_normalized_solver_timing.pdf"</string_value>
+print("Timing plot in Solver_comparison_normalized_solver_timing.pdf")
+</string_value>
     </test>
   </tests>
 </harness_options>

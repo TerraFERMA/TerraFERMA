@@ -22,7 +22,6 @@
 \label{cha:poiss-equat-unit}
 
 \section{Problem Overview}
-\label{sec:problem-formulation}
 
 A classic problem for learning any new PDE solver package is to
 consider  Poisson's equation on the unit square,  with unit
@@ -112,7 +111,6 @@ For the specific case of Poisson's equation with Dirichlet boundary conditions,
 the weak form of the residual can be written, after integration by
 parts as
 \begin{equation}
-  \label{eq:4}
   F(u_{i};u_{t}) = \int_{\Omega}
   \left(
     \grad u_{t}\cdot\grad u_{i} - u_{t}f
@@ -267,7 +265,7 @@ $ make run
 which will create a build directory \texttt{build} using
 \texttt{cmake} then compile and run the code. Output from the run
 includes stdout (in \texttt{terraferma.log-0)}, statistics files (see
-below) and \texttt{vtk} files that can be visualized using paraview
+below) and \texttt{xdmf} (and accompanying \texttt{h5}) files that can be visualized using paraview
 (or any other vtk visualization system) to produce something like
 \begin{figure}[h]
   \centering
@@ -571,7 +569,7 @@ Compilation the first time requires automatic generation of C++ code from
 the ufl forms (using FFC), then creating wrappers to link into the
 base \TF{} libraries.  Once the code has been compiled however, changes
 to run-time parameters will not force a recompile or relinking and
-\lstinline[style=Bash]´$ make run´ %$
+\lstinline[style=Bash]{$ make run} %$
 will be much quicker.  Any change to \texttt{ufl} or expressions that
 require recompilation will force a rebuild automatically.
 \item \textbf{Trouble shooting:} Murphy is the lord of modeling and
@@ -609,7 +607,6 @@ should be small.  Simple things to watch out for are
 
 
 \section{Themes and Variations}
-\label{sec:themes-variations}
 
 Given an initial working \texttt{tfml} file, one of the very nice
 features of \TF{} is that it becomes usually quite straightforward to
@@ -659,19 +656,26 @@ for use in TF (DOLFIN) use
 \begin{lstlisting}[style=Bash]
 $ cd $TF_HOME/share/terraferma/tutorials/poisson/gmsh/mesh
 $ gmsh -2 -algo del2d widget.geo
-$ dolfin-convert widget.msh widget.xml
+$ tfgmsh2xdmf widget.msh
 \end{lstlisting}
 the \texttt{gmsh} command generates a 2-D unstructured mesh in
-\texttt{widget.msh} and  \texttt{dolfin-convert} generates a dolfin
-meshfile in \texttt{.xml} format  that include the mesh geometry as
-well as labels for boundary ids.  The actual boundary id's for the
+\texttt{widget.msh} and  \texttt{tfgmsh2xdmf} generates a set of dolfin
+meshfiles in \texttt{.xdmf} (and accompanying \texttt{.h5}) format.  
+These include \texttt{widget.xdmf} and \texttt{widget.h5}  that include the mesh geometry,
+\texttt{widget\_cell\_ids.xdmf} and \texttt{widget\_cell\_ids.h5} that include any cell ids, and
+\texttt{widget\_facet\_ids.xdmf} and \texttt{widget\_facet\_ids.h5} that include the boundary 
+(or facet) ids.  The boundary id's for the
 exterior walls (1-6) and interior hole (7) can be found in the geometry file
 \texttt{widget.geo}.
 
 To incorporate this mesh into \texttt{poisson.tfml} we simply change
-the mesh source to \texttt{Source (File)} and add the file name
-relative to the \texttt{tfml} file (i.e. \texttt{../mesh/widget}
-without the \texttt{.xml} extension). We also have to edit the
+the mesh source to \texttt{Source (File)} and add the base file name (\texttt{widget})
+with a path relative to the \texttt{tfml} file (i.e. \texttt{../mesh/widget}
+without the \texttt{.xdmf} or \texttt{.h5} extension).  \TF{} will automatically search
+for the corresponding cell and facet id files in the same location as the base file
+and load them if found.  If they are not found then no cell or boundary ids will be available.
+
+We now have to edit the
 boundary id's in the boundary condition (and add one more boundary
 condition for the hole).  A fully worked out example is included and
 produces the result shown in Figure \ref{fig:poisson_gmsh}.
@@ -886,7 +890,6 @@ of the box at $x=1$) and $\partial\Omega_{D}$ are the remaining Dirichlet bounda
 The weak form of the residual after integration by parts (and
 including the surface terms) now looks like
 \begin{equation}
-  \label{eq:4}
   F(u_{i};u_{t}) = \int_{\Omega}
   \left(
     \grad u_{t}\cdot\grad u_{i} - u_{t}f

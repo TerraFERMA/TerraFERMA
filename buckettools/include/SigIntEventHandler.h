@@ -48,7 +48,7 @@ namespace buckettools
 
     ~SigIntEventHandler();                                           // default destructor
 
-    virtual int handle_signal(int signum);                           // hook method
+    void handle_signal(int signum);                                   // hook method
 
     sig_atomic_t received()                                          // accessor
     { return received_; }

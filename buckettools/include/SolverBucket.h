@@ -233,6 +233,8 @@ namespace buckettools
 
     int minits_, maxits_, maxfes_;                                   // nonlinear solver iteration counts
 
+    double relax_;                                                   // relaxation parameter
+
     int_ptr iteration_count_;                                        // nonlinear iterations taken (may not be accurate!)
 
     bool ident_zeros_, ident_zeros_pc_;                              // replace zero rows with the identity (matrix and pc)

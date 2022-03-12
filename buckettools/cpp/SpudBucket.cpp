@@ -434,6 +434,10 @@ void SpudBucket::fill_timestepping_()
   serr = Spud::get_option(buffer.str(), atol_, 1.e-50); 
   spud_err(buffer.str(), serr);
 
+  buffer.str(""); buffer << "/nonlinear_systems/relaxation_parameter";
+  serr = Spud::get_option(buffer.str(), relax_, 1.0);
+  spud_err(buffer.str(), serr);
+
   buffer.str(""); buffer << "/nonlinear_systems/ignore_all_convergence_failures";
   ignore_failures_ = Spud::have_option(buffer.str());
 

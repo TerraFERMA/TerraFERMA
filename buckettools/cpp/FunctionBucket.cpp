@@ -449,7 +449,8 @@ void FunctionBucket::apply_ic(const std::string &function_type)
     {
       std::stringstream buffer;
       buffer.str(""); buffer << icfilename_ << ".xdmf";
-      dolfin::XDMFFile((*(*system()).mesh()).mpi_comm(), buffer.str()).read_checkpoint(*tmpfunction, name());
+      assert(!icfieldname_.empty());
+      dolfin::XDMFFile((*(*system()).mesh()).mpi_comm(), buffer.str()).read_checkpoint(*tmpfunction, icfieldname_);
     }
     else
     {

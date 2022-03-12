@@ -264,6 +264,18 @@ void Bucket::update_nonlinear()
 }
 
 //*******************************************************************|************************************************************//
+// loop over the ordered systems in the bucket, calling update_iterated on each of them
+//*******************************************************************|************************************************************//
+void Bucket::update_iterated()
+{
+  for (SystemBucket_const_it s_it = systems_begin(); 
+                             s_it != systems_end(); s_it++)
+  {
+    (*(*s_it).second).update_iterated();
+  }
+}
+
+//*******************************************************************|************************************************************//
 // return a boolean indicating if the simulation has finished or not (normally for reasons other than the time being complete)
 //*******************************************************************|************************************************************//
 bool Bucket::complete()
@@ -1409,6 +1421,8 @@ void Bucket::solve_in_timeloop_()
     (*iteration_count_)++;                                           // increment iteration counter
 
     solve(SOLVE_TIMELOOP);                                           // solve all systems in the bucket
+
+    update_iterated();                                               // apply relaxation
 
     //update_nonlinear();
   }

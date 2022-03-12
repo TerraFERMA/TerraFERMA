@@ -14,8 +14,8 @@ from pickle import dump
 
 # note:  Current PySolwave must be in python path
 
-from solitarywave import *
-from waveerrors import *
+from .solitarywave import *
+from .waveerrors import *
 
 # and need libspud
 import libspud
@@ -54,8 +54,8 @@ def tfmlgeterrors(name):
     solwave_code = libspud.get_option("/system::magma/field::Porosity/type::Function/rank::Scalar/initial_condition/python")
     exec(solwave_code)
     # print wave parameters
-    print 'Solitary Wave parameters: c =',swave.c,', n = ',swave.n,', m = ',swave.m,', d = ',swave.d
-    print 'h_on_delta =', h_on_delta
+    print('Solitary Wave parameters: c =',swave.c,', n = ',swave.n,', m = ',swave.m,', d = ',swave.d)
+    print('h_on_delta =', h_on_delta)
    
     # calculate dh_nodes_per_compaction length
     dh = mesh.hmin() # cell diameter (circum-circle)
