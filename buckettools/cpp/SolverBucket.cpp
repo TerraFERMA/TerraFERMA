@@ -313,10 +313,19 @@ void SolverBucket::solve()
       }
 
       *work_ = (*(*(*system_).iteratedfunction()).vector());         // set the work vector to the iterated function
-      perr = KSPSolve(ksp_, (*rhs_).vec(), (*work_).vec());        // perform a linear solve
+      perr = KSPSolve(ksp_, (*rhs_).vec(), (*work_).vec());          // perform a linear solve
       petsc_fail(perr);
       ksp_check_convergence_(ksp_);
-      (*(*(*system_).iteratedfunction()).vector()) = *work_;         // update the iterated function with the work vector
+      if (relax_ != 1.0)
+      {
+        (*(*(*system_).iteratedfunction()).vector()) *= (1.-relax_); 
+        (*(*(*system_).iteratedfunction()).vector()) += *((*work_)*relax_);// update the iterated function with the work vector
+      }
+      else
+      {
+        (*(*(*system_).iteratedfunction()).vector()) = *work_; 
+      }
+      
 
       assert(residual_);
       assemblerres.assemble(*res_, *residual_);                      // assemble the residual
@@ -371,7 +380,7 @@ void SolverBucket::solve()
       }
     }
 
-    (*(*(*system_).function()).vector()) =                              // update the function values with the iterated values
+    (*(*(*system_).function()).vector()) =                           // update the function values with the iterated values
                       (*(*(*system_).iteratedfunction()).vector());
 
   }
