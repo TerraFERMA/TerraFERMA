@@ -47,11 +47,11 @@ start =
          io,
          # in timestepping.rnc
          timestepping?,
-         # in timestepping.rnc
-         solution_order?,
          global_parameters,
          # in system.rnc
          system+,
+         # in timestepping.rnc
+         solution_order?,
          comment
       }
    )

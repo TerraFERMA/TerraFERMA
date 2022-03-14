@@ -185,16 +185,15 @@ Useful in combination with checkpointing on clusters.</a:documentation>
   </define>
   <define name="nonlinear_systems_tolerances">
     <element name="relative_error">
-      <a:documentation>The relative error allowed to remain in the vector l2 norm of the combined systems residual upon termination
+      <a:documentation>The relative error allowed to remain in the vector l2 norm of the combined solvers residual upon termination
 of the iteration loop.
 
-If a system contains multiple solvers, the residual defined in the last solver is taken as that system's
-residual.</a:documentation>
+Residuals from solvers that should be ignored may be excluded beneath the solver reference below.</a:documentation>
       <ref name="real"/>
     </element>
     <optional>
       <element name="absolute_error">
-        <a:documentation>The absolute error allowed to remain in the vector l2 norm of the combined systems residual upon termination
+        <a:documentation>The absolute error allowed to remain in the vector l2 norm of the combined solvers residual upon termination
 of the iteration loop.
 
 Defaults to 1.e-50.</a:documentation>
@@ -244,7 +243,7 @@ WARNING: This will produce a lot of output so should only be used for debugging 
 This option tests the convergence of the nonlinear systems and terminates the simulations at the end of the next iteration 
 if it has failed to converge.
 
-This option does not affect the handling of convergence failures within each system solver.</a:documentation>
+This option does not affect the handling of convergence failures within each solver.</a:documentation>
         <ref name="comment"/>
       </element>
       <element name="ignore_all_solver_failures">
@@ -254,14 +253,16 @@ This option does not affect the handling of convergence failures within each sys
 
 This option allows the simulation to continue even if the nonlinear systems fail to meet the convergence criteria.
 
-This option does not affect the handling of convergence failures within each system solver.</a:documentation>
+This option does not affect the handling of convergence failures within each solver.</a:documentation>
         <ref name="comment"/>
       </element>
     </choice>
   </define>
   <define name="solution_order">
     <element name="solution_order">
-      <a:documentation>By default, TerraFERMA calls solvers in the order in which they appear in the options file: first by system and then by
+      <a:documentation>Override the order that the system solvers are called.
+
+By default, TerraFERMA calls solvers in the order in which they appear in the options file: first by system and then by
 nonlinear_solver.
 
 The solution_order option allows this to be overridden and, additionally, allows nonlinearities between systems to be
@@ -269,7 +270,9 @@ iteratively accounted for (to some specified tolerance).
 
 Three solve locations are currently implemented in TerraFERMA: at_start, in_timeloop and with_diagnostics.  Activating a
 solution_order option here for any of these will over-ride the solve location designation described under the nonlinear_solver
-itself.</a:documentation>
+itself.
+
+WARNING: this can lead to solves never being called if they are not specified in the solution order.</a:documentation>
       <optional>
         <element name="solve">
           <a:documentation>Activate this option to over-ride the default solution order (by system and then by nonlinear_solver) at the start of the
@@ -391,7 +394,7 @@ to the coupled problem, e.g. the earlier solves are just establishing better ini
       <a:documentation>Specify the solver to be solved here.
 
 This can either be a reference to a nonlinear_solver in a system or a new nonlinear systems solver that iterates over
-multiple nonlinear_solvers to converge nonlinearities between systems.</a:documentation>
+multiple nonlinear_solvers to converge nonlinearities between sub-solvers.</a:documentation>
       <attribute name="name">
         <data type="string"/>
       </attribute>
@@ -400,7 +403,7 @@ multiple nonlinear_solvers to converge nonlinearities between systems.</a:docume
           <a:documentation>Choose the type of the solver.
 
 This can either be a reference to a nonlinear_solver in a system or a new nonlinear systems solver that iterates over
-multiple nonlinear_solvers to converge nonlinearities between systems.</a:documentation>
+multiple nonlinear_solvers to converge nonlinearities between sub-solvers.</a:documentation>
           <ref name="nonlinear_solver_type_nonlinear_solver"/>
           <ref name="comment"/>
         </element>
@@ -408,7 +411,7 @@ multiple nonlinear_solvers to converge nonlinearities between systems.</a:docume
           <a:documentation>Choose the type of the solver.
 
 This can either be a reference to a nonlinear_solver in a system or a new nonlinear systems solver that iterates over
-multiple nonlinear_solvers to converge nonlinearities between systems.</a:documentation>
+multiple nonlinear_solvers to converge nonlinearities between sub-solvers.</a:documentation>
           <ref name="nonlinear_solver_type_nonlinear_systems_solver"/>
           <ref name="comment"/>
         </element>
@@ -420,7 +423,7 @@ multiple nonlinear_solvers to converge nonlinearities between systems.</a:docume
       <a:documentation>Specify the solver to be solved here.
 
 This can either be a reference to a nonlinear_solver in a system or a new nonlinear systems solver that iterates over
-multiple nonlinear_solvers to converge nonlinearities between systems.</a:documentation>
+multiple nonlinear_solvers to converge nonlinearities between sub-solvers.</a:documentation>
       <attribute name="name">
         <data type="string"/>
       </attribute>
@@ -429,7 +432,7 @@ multiple nonlinear_solvers to converge nonlinearities between systems.</a:docume
           <a:documentation>Choose the type of the solver.
 
 This can either be a reference to a nonlinear_solver in a system or a new nonlinear systems solver that iterates over
-multiple nonlinear_solvers to converge nonlinearities between systems.</a:documentation>
+multiple nonlinear_solvers to converge nonlinearities between sub-solvers.</a:documentation>
           <ref name="nonlinear_solver_type_nonlinear_solver"/>
           <ref name="include_in_residual"/>
           <ref name="comment"/>
@@ -438,7 +441,7 @@ multiple nonlinear_solvers to converge nonlinearities between systems.</a:docume
           <a:documentation>Choose the type of the solver.
 
 This can either be a reference to a nonlinear_solver in a system or a new nonlinear systems solver that iterates over
-multiple nonlinear_solvers to converge nonlinearities between systems.</a:documentation>
+multiple nonlinear_solvers to converge nonlinearities between sub-solvers.</a:documentation>
           <ref name="nonlinear_solver_type_nonlinear_systems_solver"/>
           <ref name="include_in_residual"/>
           <ref name="comment"/>

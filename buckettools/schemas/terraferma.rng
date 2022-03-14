@@ -50,15 +50,15 @@ When viewed in diamond, options which are shaded blue are incomplete and require
         <!-- in timestepping.rnc -->
         <ref name="timestepping"/>
       </optional>
-      <optional>
-        <!-- in timestepping.rnc -->
-        <ref name="solution_order"/>
-      </optional>
       <ref name="global_parameters"/>
       <oneOrMore>
         <!-- in system.rnc -->
         <ref name="system"/>
       </oneOrMore>
+      <optional>
+        <!-- in timestepping.rnc -->
+        <ref name="solution_order"/>
+      </optional>
       <ref name="comment"/>
     </element>
   </start>
