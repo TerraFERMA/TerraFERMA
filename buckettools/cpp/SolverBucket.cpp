@@ -134,6 +134,9 @@ bool SolverBucket::solve()
 
   *iteration_count_ = 0;                                             // an iteration counter
 
+  (*(*(*system_).function()).vector()) =                             // update the function values with the iterated values
+                    (*(*(*system_).iteratedfunction()).vector());
+
   if (type()=="SNES")                                                // this is a petsc snes solver - FIXME: switch to an enumerated type
   {                                                                  // loop over the collected vector of system bcs
     for(std::vector< std::shared_ptr<const dolfin::DirichletBC> >::const_iterator    
@@ -143,11 +146,11 @@ bool SolverBucket::solve()
       (*(*bc)).apply(*(*(*system_).function()).vector());            // apply the bcs to the solution and
       (*(*bc)).apply(*(*(*system_).iteratedfunction()).vector());    // iterated solution
     }
-    *work_ = (*(*(*system_).function()).vector());                   // set the work vector to the function vector
+    *work_ = (*(*(*system_).iteratedfunction()).vector());           // set the work vector to the function vector
     perr = SNESSolve(snes_, PETSC_NULL, (*work_).vec());             // call petsc to perform a snes solve
     petsc_fail(perr);
     snes_check_convergence_();
-    (*(*(*system_).function()).vector()) = *work_;                   // update the function
+    (*(*(*system_).iteratedfunction()).vector()) = *work_;           // update the function
   }
   else if (type()=="Picard")                                         // this is a hand-rolled picard iteration - FIXME: switch to enum
   {
@@ -155,9 +158,6 @@ bool SolverBucket::solve()
     double aerror0 = residual_norm();
     log(INFO, "Entering Picard nonlinear solver: %s", name().c_str());
     
-    (*(*(*system_).iteratedfunction()).vector()) =                   // system iterated function gets set to the function values
-                                (*(*(*system_).function()).vector());
-
     while (!complete_iterating_picard_(aerror0))
     {
       (*iteration_count_)++;                                         // increment iteration counter
@@ -272,18 +272,16 @@ bool SolverBucket::solve()
         (*(*(*system_).iteratedfunction()).vector()) = *work_; 
       }
       
-
-
     }
-
-    (*(*(*system_).function()).vector()) =                           // update the function values with the iterated values
-                      (*(*(*system_).iteratedfunction()).vector());
 
   }
   else                                                               // don't know what solver type this is
   {
     tf_err("Unknown solver type.", "Type: %s", type_.c_str());
   }
+
+  (*(*(*system_).function()).vector()) =                           // update the function values with the iterated values
+                    (*(*(*system_).iteratedfunction()).vector());
 
   (*system()).postprocess_values();
 
