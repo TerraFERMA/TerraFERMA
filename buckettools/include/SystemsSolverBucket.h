@@ -211,6 +211,8 @@ namespace buckettools
 
     std::vector<SolverBucket_ptr> residualsolvers_;                  // a list of the solvers used to caluclate the residual norm
 
+    std::vector<SystemBucket*> uniquesystems_;                       // a list of systems used in this system solver
+
   //*****************************************************************|***********************************************************//
   // Private functions
   //*****************************************************************|***********************************************************//
@@ -223,7 +225,11 @@ namespace buckettools
 
     bool complete_iterating_(const double &aerror0);                 // indicate if nonlinear systems iterations are complete or not
 
-    void update_iterated_();                                         // loop over the residualsolvers_ systems, updating iterated functions
+    void initialize_olditerated_();                                  // loop over the uniquesystems_, initializing old iterated functions
+
+    void update_iterated_();                                         // loop over the uniquesystems_, updating iterated functions
+
+    void finalize_olditerated_();                                    // loop over the uniquesystems_, finalizing old iterated functions
 
     //***************************************************************|***********************************************************//
     // Output functions (continued)

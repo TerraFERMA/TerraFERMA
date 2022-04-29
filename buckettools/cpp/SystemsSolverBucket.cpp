@@ -161,6 +161,7 @@ void SystemsSolverBucket::fill_solverlists_()
          {
            residualsolvers_.push_back(*ts_it);
            systemnames.push_back((*(**ts_it).system()).name());
+           uniquesystems_.push_back((**ts_it).system());
          }
        }
      }
@@ -173,6 +174,7 @@ void SystemsSolverBucket::fill_solverlists_()
          {
            residualsolvers_.push_back(s_ptr);
            systemnames.push_back((*(*s_ptr).system()).name());
+           uniquesystems_.push_back((*s_ptr).system());
          }
        }
        else                                                          // shouldn't hit here (hopefully)
@@ -201,6 +203,8 @@ bool SystemsSolverBucket::solve()
     log(INFO, "Entering nonlinear systems iteration: %s", name().c_str());
   }
 
+  initialize_olditerated_();
+
   while (!complete_iterating_(aerror0))
   {
     (*iteration_count_)++;                                           // increment iteration counter
@@ -218,6 +222,8 @@ bool SystemsSolverBucket::solve()
 
     //update_nonlinear();
   }
+
+  finalize_olditerated_();
 
   if (solved_)
   {
@@ -590,36 +596,36 @@ bool SystemsSolverBucket::complete_iterating_(const double &aerror0)
         buffer << (*systemssolver()).iterations_str();
       }
       buffer << "_systemssolver.xdmf";
-      XDMFFile_ptr convvis_file( new dolfin::XDMFFile((*(*(**(residualsolvers_.begin())).system()).mesh()).mpi_comm(), buffer.str()) );
+      XDMFFile_ptr convvis_file( new dolfin::XDMFFile((*(**(uniquesystems_.begin())).mesh()).mpi_comm(), buffer.str()) );
       // FIXME: making an assumption here that all meshes share the same comm!
       bool append = iteration_count()!=0;
 
-      std::vector<SolverBucket_ptr>::const_iterator s_it;
-      for (s_it = residualsolvers_.begin(); s_it != residualsolvers_.end(); s_it++)
+      std::vector<SystemBucket*>::const_iterator s_it;
+      for (s_it = uniquesystems_.begin(); s_it != uniquesystems_.end(); s_it++)
       {
         // all fields and residuals get output in this debugging output
         // regardless of whether they're included in standard output
-        for (FunctionBucket_it f_it = (*(**s_it).system()).fields_begin();
-                               f_it != (*(**s_it).system()).fields_end(); f_it++)
+        for (FunctionBucket_it f_it = (**s_it).fields_begin();
+                               f_it != (**s_it).fields_end(); f_it++)
         {
           (*(*f_it).second).write_checkpoint(convvis_file, "iterated", (double)iteration_count(),
-                                             append, (*(**s_it).system()).name()+"::Iterated"+(*(*f_it).second).name());
+                                             append, (**s_it).name()+"::Iterated"+(*(*f_it).second).name());
           append=true;
           (*(*f_it).second).write_checkpoint(convvis_file, "residual", (double)iteration_count(),
-                                             append, (*(**s_it).system()).name()+"::Residual"+(*(*f_it).second).name());
+                                             append, (**s_it).name()+"::Residual"+(*(*f_it).second).name());
         }
 
         // including coefficients here is just a niceity but some
         // coefficients aren't suitable for visualization so
         // only output them if we've asked for them in the normal
         // output
-        for (FunctionBucket_it c_it = (*(**s_it).system()).coeffs_begin();
-                               c_it != (*(**s_it).system()).coeffs_end(); c_it++)
+        for (FunctionBucket_it c_it = (**s_it).coeffs_begin();
+                               c_it != (**s_it).coeffs_end(); c_it++)
         {
           if ((*(*c_it).second).include_in_visualization())
           {
             (*(*c_it).second).write_checkpoint(convvis_file, "iterated", (double)iteration_count(),
-                                               append, (*(**s_it).system()).name()+"::"+(*(*c_it).second).name());
+                                               append, (**s_it).name()+"::"+(*(*c_it).second).name());
             append=true;
           }
         }
@@ -671,14 +677,38 @@ bool SystemsSolverBucket::complete_iterating_(const double &aerror0)
 }
 
 //*******************************************************************|************************************************************//
-// loop over the residualsolvers_ systems, calling update_iterated on each of them
+// loop over the uniquesystems_ systems, calling initialize_olditerated on each of them
+//*******************************************************************|************************************************************//
+void SystemsSolverBucket::initialize_olditerated_()
+{
+  std::vector<SystemBucket*>::const_iterator s_it;
+  for (s_it = uniquesystems_.begin(); s_it != uniquesystems_.end(); s_it++)
+  {
+    (**s_it).initialize_olditerated();
+  }
+}
+
+//*******************************************************************|************************************************************//
+// loop over the uniquesystems_ systems, calling update_iterated on each of them
 //*******************************************************************|************************************************************//
 void SystemsSolverBucket::update_iterated_()
 {
-  std::vector<SolverBucket_ptr>::const_iterator s_it;
-  for (s_it = residualsolvers_.begin(); s_it != residualsolvers_.end(); s_it++)
+  std::vector<SystemBucket*>::const_iterator s_it;
+  for (s_it = uniquesystems_.begin(); s_it != uniquesystems_.end(); s_it++)
   {
-    (*(**s_it).system()).update_iterated(relax_);
+    (**s_it).update_iterated(relax_);
+  }
+}
+
+//*******************************************************************|************************************************************//
+// loop over the uniquesystems_ systems, calling finalize_olditerated on each of them
+//*******************************************************************|************************************************************//
+void SystemsSolverBucket::finalize_olditerated_()
+{
+  std::vector<SystemBucket*>::const_iterator s_it;
+  for (s_it = uniquesystems_.begin(); s_it != uniquesystems_.end(); s_it++)
+  {
+    (**s_it).finalize_olditerated();
   }
 }
 
