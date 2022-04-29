@@ -78,7 +78,11 @@ namespace buckettools
 
     void update_nonlinear();                                         // update the potentially nonlinear functions in this system
 
+    void initialize_olditerated();                                   // initialize a new old iterated function
+
     void update_iterated(const double relax);                        // update the iterated vectors in this system
+
+    void finalize_olditerated();                                     // delete an old iterated function
 
     void update_timedependent();                                     // update the potentially time dependent functions in this system
 
@@ -146,7 +150,7 @@ namespace buckettools
     { return iteratedfunction_; }                                    // function
 
     const Function_ptr olditeratedfunction() const                   // return a (boost shared) pointer to the "old" iterated system
-    { return olditeratedfunction_; }                                 // function from the previous iteration
+    { return olditeratedfunctions_.back(); }                         // function from the previous iteration
 
     const Function_ptr changefunction() const                        // return a (boost shared) pointer to the change in the system
     { return changefunction_; }                                      // function over a timestep
@@ -332,9 +336,9 @@ namespace buckettools
 
     FunctionSpace_ptr functionspace_;                                // a (boost shared) pointer to the system functionspace
 
-    Function_ptr function_, oldfunction_, iteratedfunction_,         // (boost shared) pointers to the system functions at different
-                 olditeratedfunction_;                               // time levels (old, iterated - most up to date -, base,
-                                                                     // olditerated - previous iteration)
+    Function_ptr function_, oldfunction_, iteratedfunction_;         // (boost shared) pointers to the system functions at different
+                                                                     // time levels (old, iterated - most up to date -, base)
+    std::vector<Function_ptr> olditeratedfunctions_;                 // old iterated - previous iteration - functions
 
     Function_ptr changefunction_;                                    // (boost shared) pointer to the change between timesteps
 

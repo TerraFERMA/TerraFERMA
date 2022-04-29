@@ -202,6 +202,7 @@ void SpudSystemsSolverBucket::fill_solvers_()
     l_optionpath = buffer.str();
   }
 
+  std::vector<std::string> systemnames;
   buffer.str(""); buffer << l_optionpath << "/solver";
   int nsolvers = Spud::option_count(buffer.str());
   for (uint i=0; i<nsolvers; i++)                                    // loop over the solvers listed
@@ -223,14 +224,25 @@ void SpudSystemsSolverBucket::fill_solvers_()
 
       register_solver(solver, (*solver).name());
 
+      const std::vector<SolverBucket_ptr>& tmpresidualsolvers = (*solver).residualsolvers();
+
       buffer.str(""); buffer << solver_optionpath << "/type/exclude_from_systems_residual";
       if (!Spud::have_option(buffer.str()))
       {
-        const std::vector<SolverBucket_ptr>& tmpresidualsolvers = (*solver).residualsolvers();
         std::vector<SolverBucket_ptr>::const_iterator ts_it;
         for (ts_it = tmpresidualsolvers.begin(); ts_it != tmpresidualsolvers.end(); ts_it++)
         {
           residualsolvers_.push_back(*ts_it);
+        }
+      }
+
+      std::vector<SolverBucket_ptr>::const_iterator ts_it;
+      for (ts_it = tmpresidualsolvers.begin(); ts_it != tmpresidualsolvers.end(); ts_it++)
+      {                                                             // check we don't have a solver from this system already
+        if (std::find(systemnames.begin(), systemnames.end(), (*(**ts_it).system()).name()) == systemnames.end())
+        {
+          systemnames.push_back((*(**ts_it).system()).name());
+          uniquesystems_.push_back((**ts_it).system());
         }
       }
     }
@@ -261,6 +273,12 @@ void SpudSystemsSolverBucket::fill_solvers_()
       if (!Spud::have_option(buffer.str()))
       {
         residualsolvers_.push_back(solver);
+      }
+
+      if (std::find(systemnames.begin(), systemnames.end(), (*(*solver).system()).name()) == systemnames.end())
+      {
+        systemnames.push_back((*(*solver).system()).name());
+        uniquesystems_.push_back((*solver).system());
       }
     }
     else

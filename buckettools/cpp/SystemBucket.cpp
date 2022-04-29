@@ -250,6 +250,16 @@ void SystemBucket::update_nonlinear()
 }
 
 //*******************************************************************|************************************************************//
+// allocate an old iterated function
+//*******************************************************************|************************************************************//
+void SystemBucket::initialize_olditerated()
+{
+  Function_ptr olditeratedfunction_(new dolfin::Function(functionspace_));
+  olditeratedfunctions_.push_back(olditeratedfunction_);
+  *(*olditeratedfunction()).vector() = *(*iteratedfunction()).vector();
+}
+
+//*******************************************************************|************************************************************//
 // update the iterated vectors of the system
 //*******************************************************************|************************************************************//
 void SystemBucket::update_iterated(const double relax)
@@ -263,6 +273,14 @@ void SystemBucket::update_iterated(const double relax)
     }
     *(*olditeratedfunction()).vector() = *(*iteratedfunction()).vector();
   }
+}
+
+//*******************************************************************|************************************************************//
+// delete an old iterated function
+//*******************************************************************|************************************************************//
+void SystemBucket::finalize_olditerated()
+{
+  olditeratedfunctions_.pop_back();
 }
 
 //*******************************************************************|************************************************************//
@@ -1066,7 +1084,6 @@ void SystemBucket::apply_ic_()
     (*(*f_it).second).apply_ic();
   }
   (*(*iteratedfunction_).vector()) = (*(*oldfunction_).vector());    // set the iterated function vector to the old function vector
-  (*(*olditeratedfunction_).vector()) = (*(*oldfunction_).vector()); // set the old iterated function vector to the old function vector
   (*(*function_).vector()) = (*(*oldfunction_).vector());            // set the function vector to the old function vector
 }
 
