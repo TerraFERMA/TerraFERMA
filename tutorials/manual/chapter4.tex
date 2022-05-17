@@ -111,7 +111,7 @@ v_theta = theta*v_i + (1.-theta)*v_n
 Fv = (inner(sym(grad(v_t)),2.*eta*sym(grad(v_i)))
     - p_i*div(v_t) - T_i*v_t[1])*dx  
 Fp = -p_t*div(v_i)*dx 
-FT = (T_t*(T_i - T_n  + dt*inner(v_theta, grad(T_theta))) 
+FT = (T_t*((T_i - T_n)  + dt*inner(v_theta, grad(T_theta))) 
     + dt/Ra*inner(grad(T_t), grad(T_theta)))*dx 
 
 F =  Fv + Fp +FT
