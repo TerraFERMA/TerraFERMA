@@ -86,6 +86,8 @@ namespace buckettools
 
     void update_nonlinear();                                         // update the potentially nonlinear functions in the systems in this bucket
 
+    void update_iterated();                                          // update the iterated vectors in the systems (allows relaxation in global nonlinear iterations)
+
     void update_timedependent();                                     // update the potentially timedependent functions in the systems in this bucket
 
     bool complete();                                                 // indicate if the simulation is complete or not
@@ -138,6 +140,9 @@ namespace buckettools
     const double timestep() const;                                   // return the timestep (as a double)
 
     const int iteration_count() const;                               // return the number of nonlinear iterations taken
+
+    const double relaxation_parameter() const                        // return the relaxation parameter
+    { return relax_; }
 
     const std::string output_basename() const                        // return the output base name
     { return output_basename_; }
@@ -335,6 +340,8 @@ namespace buckettools
     int minits_, maxits_;                                            // nonlinear system iteration counts
 
     double *rtol_, atol_;                                            // nonlinear system tolerances
+
+    double relax_;                                                   // relaxation parameter
 
     bool ignore_failures_;                                           // ignore convergence failures of the nonlinear systems
 

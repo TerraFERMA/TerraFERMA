@@ -262,6 +262,13 @@ void SpudSolverBucket::initialize()
       perr = SNESLineSearchSetParams(snes_, alpha, maxstep); petsc_err(perr);
       #endif
        
+      buffer.str(""); buffer << optionpath() << "/type/snes_type::ls/damping";
+      double damping;
+      serr = Spud::get_option(buffer.str(), damping, 1.0);
+      spud_err(buffer.str(), serr);
+
+      perr = SNESLineSearchSetDamping(linesearch, damping); petsc_err(perr);
+       
     }
     else
     {
@@ -583,6 +590,10 @@ void SpudSolverBucket::fill_base_()
 
   buffer.str(""); buffer << optionpath() << "/type/min_iterations";  // minimum number of nonlinear iterations (only applies to
   serr = Spud::get_option(buffer.str(), minits_, 0);                 // picard solver types)
+  spud_err(buffer.str(), serr);
+
+  buffer.str(""); buffer << optionpath() << "/type/relaxation_parameter"; // relaxation parameter (only applies to picard solver
+  serr = Spud::get_option(buffer.str(), relax_, 1.0);                // types)
   spud_err(buffer.str(), serr);
 
   buffer.str(""); buffer << optionpath() <<                          // maximum number of residual evaluations (only applies to snes
