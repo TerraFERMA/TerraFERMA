@@ -46,10 +46,11 @@ file(
 #  header file for the build)
 file(
     WRITE ${PROJECT_BINARY_DIR}/builddefs.cmake
-    "find_program(HAVE_GIT git)
+    "set( GIT_COMMAND git log --pretty=format:\"%H %ad\" HEAD -1 )
+    find_program(HAVE_GIT git)
     if(HAVE_GIT)
         execute_process (
-           COMMAND git log --pretty=format:\"%H %ad\" -1 HEAD
+           COMMAND \${GIT_COMMAND}
            WORKING_DIRECTORY \${DIR}
            OUTPUT_VARIABLE GIT_SHA
            ERROR_VARIABLE GIT_ERR
@@ -57,10 +58,10 @@ file(
            ERROR_STRIP_TRAILING_WHITESPACE
            )
         if(GIT_ERR)
-           set(GIT_SHA \"git_log_not_found\")
+           set(GIT_SHA \\\"git_log_not_found\\\")
         endif(GIT_ERR)
     else(HAVE_GIT)
-        set(GIT_SHA \"git_not_found\")
+        set(GIT_SHA \\\"git_not_found\\\")
     endif(HAVE_GIT)
     configure_file(\${SRC} \${DST})
     "
