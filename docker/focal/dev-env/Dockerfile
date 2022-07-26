@@ -56,6 +56,7 @@ RUN apt-get update && \
                        libboost-timer-dev \
                        libhdf5-dev \
                        libhdf5-openmpi-dev \
+                       libopenblas-dev \
                        gmsh \
                        wget \
                        gir1.2-gtksource-3.0 \
@@ -112,7 +113,7 @@ RUN git clone -b v3.17.1 -q https://gitlab.com/petsc/petsc.git && \
                         --FOPTFLAGS="-O3" \
                         --with-shared-libraries=1 \
                         --with-debugging=0 \
-                        --download-openblas=1 \
+                        --with-openblas-lib=/usr/lib/$(uname -i)-linux-gnu/libopenblas.so \
                         --download-suitesparse=1 \
                         --download-hypre=1 \
                         --download-ml=1 \
