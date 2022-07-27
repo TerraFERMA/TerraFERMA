@@ -34,6 +34,8 @@ ARG TAG=fenics-2019.1.0-focal
 FROM terraferma/base:${TAG}
 MAINTAINER terraferma <terraferma@lists.columbia.edu>
 
+ARG DEBUG=0
+
 USER root
 WORKDIR /tmp
 
@@ -112,7 +114,7 @@ RUN git clone -b v3.17.1 -q https://gitlab.com/petsc/petsc.git && \
                         --CXXOPTFLAGS="-O3" \
                         --FOPTFLAGS="-O3" \
                         --with-shared-libraries=1 \
-                        --with-debugging=0 \
+                        --with-debugging=$DEBUG \
                         --with-openblas-lib=/usr/lib/$(uname -i)-linux-gnu/libopenblas.so \
                         --download-suitesparse=1 \
                         --download-hypre=1 \
@@ -155,7 +157,7 @@ RUN git clone -b tferma-master-2019.1.0 -q https://bitbucket.org/tferma/dolfin.g
     cd dolfin && \
     mkdir build && \
     cd build && \
-    cmake -DCMAKE_BUILD_TYPE=Release \
+    cmake -DCMAKE_BUILD_TYPE=`[[ $DEBUG -eq 1 ]] && echo "Debug" || echo "Release"` \
           -DDOLFIN_ENABLE_CHOLMOD:BOOL=OFF \
           -DDOLFIN_ENABLE_UMFPACK:BOOL=OFF \
           -DDOLFIN_ENABLE_TRILINOS:BOOL=OFF \

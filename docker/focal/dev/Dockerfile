@@ -30,16 +30,20 @@ ARG TAG=fenics-2019.1.0-focal
 FROM terraferma/dev-env:${TAG}
 MAINTAINER terraferma <terraferma@lists.columbia.edu>
 
+ARG BRANCH=master-2019.1.0
+ARG REPO=https://github.com/TerraFERMA/TerraFERMA.git
+ARG DEBUG=0
+
 USER tfuser
 WORKDIR /tmp
 
 # install terraferma
-RUN git clone -b master-2019.1.0  -q https://github.com/TerraFERMA/TerraFERMA.git && \
+RUN git clone -b $BRANCH -q $REPO && \
     cd TerraFERMA && \
     mkdir build && \
     cd build && \
     cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
-          -DCMAKE_BUILD_TYPE=Release  \
+          -DCMAKE_BUILD_TYPE=`[[ $DEBUG -eq 1 ]] && echo "Debug" || echo "Release"` \
           ../. && \
     make && \
     make install && \
