@@ -36,9 +36,9 @@ TAG=''
 BRANCH='master-2019.1.0'
 REPO='https://github.com/TerraFERMA/TerraFERMA.git'
 DEBUG=0
-PLATFORMS=0
+PLATFORMS=''
 
-while getopts ":t:b:r:p:dh" opt; do
+while getopts ":t:b:r:mdh" opt; do
     case $opt in
         h )
            usage
@@ -57,7 +57,7 @@ while getopts ":t:b:r:p:dh" opt; do
            DEBUG=1
            ;;
         p )
-           PLATFORMS=${OPTARG}
+           PLATFORMS="--platform ${OPTARG}"
            ;;
         : )
            echo "ERROR: -${OPTARG} requires an argument." 1>&2
@@ -79,22 +79,36 @@ fi
 DIR=$(realpath $1)
 SDIR=$(basename $DIR)
 
-# if no tag is specified default to enki-portal
-if [ -z "$TAG" ]; then
-    TAG='fenics-2019.1.0-focal'
-    if [ "$BRANCH" != 'master-2019.1.0' ]; then
-        TAG="${TAG}-$BRANCH"
-    fi
-    if [ "$BUILD" == 'Debug' ]; then
-        TAG="${TAG}-debug"
+PTAG=''
+if [ -z "$PLATFORMS" ]; then
+    PROC=`uname -m`
+    if [ "$PROC" == "x86_64" ]; then
+        PTAG="amd64"
+    elif [ "$PROC" == "arm64" ]; then
+        PTAG="arm64"
     fi
 fi
 
-echo $DIR
-echo $SDIR
-echo $DEBUG
-echo $TAG
-echo $REPO
+# if no tag is specified default to enki-portal
+if [ -z "$TAG" ]; then
+    TAG="fenics-2019.1.0-focal"
+    if [ "$BRANCH" != 'master-2019.1.0' ]; then
+        TAG="${TAG}-$BRANCH"
+    fi
+    if [ $DEBUG -eq 1 ]; then
+        TAG="${TAG}-debug"
+    fi
+    if [ "$PTAG" ]; then
+        TAG="${TAG}-${PTAG}"
+    fi
+fi
+
+echo "DIR = "$DIR
+echo "SDIR = "$SDIR
+echo "DEBUG = "$DEBUG
+echo "TAG = "$TAG
+echo "REPO = "$REPO
+echo "PTAG = "$PTAG
 
 cd $repo_path
 docker buildx build --file $DIR/Dockerfile \
@@ -102,7 +116,7 @@ docker buildx build --file $DIR/Dockerfile \
                     --build-arg BRANCH=$BRANCH \
                     --build-arg DEBUG=$DEBUG \
                     --build-arg REPO=$REPO \
-                    --tag terraferma/$SDIR:$TAG --push .
+                    --tag terraferma/$SDIR:$TAG $PLATFORMS --push .
 
 
 ## needs to be run from the base repo directory
