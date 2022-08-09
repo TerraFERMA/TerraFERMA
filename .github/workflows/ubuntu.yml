@@ -98,7 +98,7 @@ jobs:
         run: |
          chmod 777 .
          docker pull terraferma/actions:${{ env.name }}-${{ matrix.release }}
-         docker run -v $PWD:/home/tfuser/shared -e HOST_UID=`id -u` -e HOST_GID=`id -g` --workdir /home/tfuser/TerraFERMA/build terraferma/actions:${{ env.name }}-${{ matrix.release }} "${{ matrix.command }} && tar --exclude=*.build -czf ${{ matrix.outputtar }} ${{ matrix.outputdir }} && cp ${{ matrix.outputtar }} /home/tfuser/shared"
+         docker run -v $PWD:/home/tfuser/shared -e HOST_UID=`id -u` -e HOST_GID=`id -g` --workdir /home/tfuser/TerraFERMA/build terraferma/actions:${{ env.name }}-${{ matrix.release }} "${{ matrix.command }}; STATUS=$?; tar --exclude=*.build -cvzf ${{ matrix.outputtar }} ${{ matrix.outputdir }}; cp -v ${{ matrix.outputtar }} /home/tfuser/shared; (exit $STATUS)"
 
       - uses: actions/upload-artifact@v3
         with:
