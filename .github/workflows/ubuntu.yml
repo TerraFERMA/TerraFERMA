@@ -56,26 +56,38 @@ jobs:
           - name: "Quick Tests Focal"
             release: focal
             command: "OVERSUBSCRIBE=1 THREADS=2 make run_quicktests"
+            outputdir: "tests"
+            outputtar: "quicktests.tar.gz"
 
           - name: "Short Tests Focal"
             release: focal
             command: "OVERSUBSCRIBE=1 THREADS=2 make run_shorttests"
+            outputdir: "tests"
+            outputtar: "shorttests.tar.gz"
 
           - name: "Medium Tests Focal"
             release: focal
             command: "OVERSUBSCRIBE=1 THREADS=2 make run_mediumtests"
+            outputdir: "tests"
+            outputtar: "mediumtests.tar.gz"
 
           - name: "Short Tutorial Tests Focal"
             release: focal
             command: "OVERSUBSCRIBE=1 THREADS=2 make run_shorttutorialtests"
+            outputdir: "tutorials"
+            outputtar: "shorttutorials.tar.gz"
 
           - name: "Medium Tutorial Tests Focal"
             release: focal
             command: "OVERSUBSCRIBE=1 THREADS=2 make run_mediumtutorialtests"
+            outputdir: "tutorials"
+            outputtar: "mediumtutorials.tar.gz"
 
           - name: "Build Cookbook Focal"
             release: focal
             command: "make build_cookbook"
+            outputdir: "tutorials/manual"
+            outputtar: "manual.tar.gz"
 
     steps:
 
@@ -86,5 +98,12 @@ jobs:
         run: |
          chmod 777 .
          docker pull terraferma/actions:${{ env.name }}-${{ matrix.release }}
-         docker run --workdir /home/tfuser/TerraFERMA/build terraferma/actions:${{ env.name }}-${{ matrix.release }} "${{ matrix.command }}"
+         docker run --workdir /home/tfuser/TerraFERMA/build terraferma/actions:${{ env.name }}-${{ matrix.release }} "${{ matrix.command }} && tar --exclude=*.build -czf ${{ matrix.outputtar }} ${{ matrix.outputdir }} && cp ${{ matrix.outputtar}} /home/tfuser/shared"
+
+      - uses: actions/upload-artifact@v3
+        with:
+          path: ${{ matrix.outputtar }}
+          name: test_outputs
+
+
 
