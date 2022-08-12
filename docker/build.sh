@@ -1,4 +1,4 @@
-# Script to build (and push) docker images for ThermoCodegen.
+# Script to build (and push) docker images for TerraFERMA.
 
 # Note that this assumes that an appropriate multiplatform docker builder is available.
 # i.e. it may be necessary to run:
