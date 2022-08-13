@@ -30,8 +30,11 @@
 #
 
 # build from the base image
-FROM terraferma/base:fenics-2019.1.0-focal
+ARG TAG=fenics-2019.1.0-focal
+FROM terraferma/base:${TAG}
 MAINTAINER terraferma <terraferma@lists.columbia.edu>
+
+ARG DEBUG=0
 
 USER root
 WORKDIR /tmp
@@ -47,7 +50,6 @@ RUN apt-get update && \
                        gfortran \
                        cmake \
                        flex \
-                       libopenblas-dev \
                        libeigen3-dev \
                        libboost-dev \
                        libboost-filesystem-dev \
@@ -56,6 +58,7 @@ RUN apt-get update && \
                        libboost-timer-dev \
                        libhdf5-dev \
                        libhdf5-openmpi-dev \
+                       libopenblas-dev \
                        gmsh \
                        wget \
                        gir1.2-gtksource-3.0 \
@@ -105,14 +108,14 @@ ENV OPENBLAS_VERBOSE=0
 USER tfuser
 
 # download and install petsc from source
-RUN git clone -b v3.14.6 -q https://gitlab.com/petsc/petsc.git && \
+RUN git clone -b v3.17.1 -q https://gitlab.com/petsc/petsc.git && \
     cd petsc && \
     python3 ./configure --COPTFLAGS="-O3" \
                         --CXXOPTFLAGS="-O3" \
                         --FOPTFLAGS="-O3" \
                         --with-shared-libraries=1 \
-                        --with-openblas=1 \
-                        --with-debugging=0 \
+                        --with-debugging=$DEBUG \
+                        --with-openblas-lib=/usr/lib/$(uname -i)-linux-gnu/libopenblas.so \
                         --download-suitesparse=1 \
                         --download-hypre=1 \
                         --download-ml=1 \
@@ -121,6 +124,7 @@ RUN git clone -b v3.14.6 -q https://gitlab.com/petsc/petsc.git && \
                         --download-blacs=1 \
                         --download-scalapack=1 \
                         --download-mumps=1 \
+                        --download-cmake=1 \
                         --prefix=$INSTALL_PREFIX && \
     make all && \
     make install && \
@@ -153,7 +157,7 @@ RUN git clone -b tferma-master-2019.1.0 -q https://bitbucket.org/tferma/dolfin.g
     cd dolfin && \
     mkdir build && \
     cd build && \
-    cmake -DCMAKE_BUILD_TYPE=Release \
+    cmake -DCMAKE_BUILD_TYPE=`[[ $DEBUG -eq 1 ]] && echo "Debug" || echo "Release"` \
           -DDOLFIN_ENABLE_CHOLMOD:BOOL=OFF \
           -DDOLFIN_ENABLE_UMFPACK:BOOL=OFF \
           -DDOLFIN_ENABLE_TRILINOS:BOOL=OFF \
@@ -182,7 +186,7 @@ ENV SPUD_DIR $INSTALL_PREFIX
 ENV NO_AT_BRIDGE 1
 
 # welcome at startup
-COPY WELCOME $TF_HOME/WELCOME
+COPY docker/focal/dev-env/WELCOME $TF_HOME/WELCOME
 
 WORKDIR $TF_HOME
 USER root
