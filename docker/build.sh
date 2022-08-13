@@ -7,7 +7,7 @@
 
 usage() {
     echo "Usage:" 1>&2
-    echo "bash $0 [-h] [-t tag<string>] [-b branch<string>] [-r repo<string>] [-d] [-a] dir<string>" 1>&2
+    echo "bash $0 [-h] [-t tag<string>] [-b branch<string>] [-r repo<string>] [-p platform<string>,platform<string>] [-d] dir<string>" 1>&2
     echo "  dir: required name of the subdirectory containing the Dockerfile" 1>&2
     echo "  -h: print this help message and exit" 1>&2
     echo "  -t: specify a tag name (defaults to fenics-2019.1.0-focal)" 1>&2
@@ -38,7 +38,7 @@ REPO='https://github.com/TerraFERMA/TerraFERMA.git'
 DEBUG=0
 PLATFORMS=''
 
-while getopts ":t:b:r:mdh" opt; do
+while getopts ":t:b:r:p:dh" opt; do
     case $opt in
         h )
            usage
@@ -89,7 +89,7 @@ if [ -z "$PLATFORMS" ]; then
     fi
 fi
 
-# if no tag is specified default to enki-portal
+# if no tag is specified default to fenics-2019.1.0-focal
 if [ -z "$TAG" ]; then
     TAG="fenics-2019.1.0-focal"
     if [ "$BRANCH" != 'master-2019.1.0' ]; then
@@ -103,12 +103,16 @@ if [ -z "$TAG" ]; then
     fi
 fi
 
-echo "DIR = "$DIR
-echo "SDIR = "$SDIR
-echo "DEBUG = "$DEBUG
-echo "TAG = "$TAG
-echo "REPO = "$REPO
-echo "PTAG = "$PTAG
+echo "Building:"
+echo "  $DIR/Dockerfile"
+echo "  with tag terraferma/$SDIR:$TAG"
+echo "  from repo $REPO"
+if [ "$PLATFORMS" ]; then
+  echo "  with $PLATFORMS"
+fi
+if [ $DEBUG -eq 1 ]; then
+  echo "  with debugging enabled"
+fi
 
 cd $repo_path
 docker buildx build --file $DIR/Dockerfile \
@@ -118,24 +122,3 @@ docker buildx build --file $DIR/Dockerfile \
                     --build-arg REPO=$REPO \
                     --tag terraferma/$SDIR:$TAG $PLATFORMS --push .
 
-
-## needs to be run from the base repo directory
-#
-## base
-#
-#docker buildx build --file docker/focal/base/Dockerfile --platform linux/arm64             --tag terraferma/base:fenics-2019.1.0-focal-arm64 --push .
-#docker buildx build --file docker/focal/base/Dockerfile --platform linux/amd64             --tag terraferma/base:fenics-2019.1.0-focal-amd64 --push .
-#docker buildx build --file docker/focal/base/Dockerfile --platform linux/amd64,linux/arm64 --tag terraferma/base:fenics-2019.1.0-focal       --push .
-#
-## dev-env
-#
-#docker buildx build --build-arg TAG=fenics-2019.1.0-focal-arm64 --file docker/focal/dev-env/Dockerfile --platform linux/arm64             --tag terraferma/dev-env:fenics-2019.1.0-focal-arm64 --push .
-#docker buildx build --build-arg TAG=fenics-2019.1.0-focal-amd64 --file docker/focal/dev-env/Dockerfile --platform linux/amd64             --tag terraferma/dev-env:fenics-2019.1.0-focal-amd64 --push .
-#docker buildx build --build-arg TAG=fenics-2019.1.0-focal       --file docker/focal/dev-env/Dockerfile --platform linux/amd64,linux/arm64 --tag terraferma/dev-env:fenics-2019.1.0-focal       --push .
-#
-## dev
-#
-#docker buildx build --build-arg TAG=fenics-2019.1.0-focal-arm64 --file docker/focal/dev/Dockerfile --platform linux/arm64             --tag terraferma/dev:fenics-2019.1.0-focal-arm64 --push .
-#docker buildx build --build-arg TAG=fenics-2019.1.0-focal-amd64 --file docker/focal/dev/Dockerfile --platform linux/amd64             --tag terraferma/dev:fenics-2019.1.0-focal-amd64 --push .
-#docker buildx build --build-arg TAG=fenics-2019.1.0-focal       --file docker/focal/dev/Dockerfile --platform linux/amd64,linux/arm64 --tag terraferma/dev:fenics-2019.1.0-focal       --push .
-#
