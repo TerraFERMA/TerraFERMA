@@ -90,6 +90,7 @@
         <include_in_visualization/>
         <include_in_statistics/>
         <include_residual_in_visualization/>
+        <include_previous_timestep_in_visualization/>
       </diagnostics>
     </field>
     <field name="Field2">
@@ -117,6 +118,7 @@
         <include_in_visualization/>
         <include_in_statistics/>
         <include_residual_in_visualization/>
+        <include_previous_timestep_in_visualization/>
       </diagnostics>
     </field>
     <field name="Field3">
@@ -157,6 +159,7 @@
         <include_in_visualization/>
         <include_in_statistics/>
         <include_residual_in_visualization/>
+        <include_previous_timestep_in_visualization/>
       </diagnostics>
     </field>
     <coefficient name="Source1">
@@ -593,6 +596,7 @@ r = r1 + r2 + r3</string_value>
         <include_in_visualization/>
         <include_in_statistics/>
         <include_residual_in_visualization/>
+        <include_previous_timestep_in_visualization/>
       </diagnostics>
     </field>
     <field name="Field2">
@@ -620,6 +624,7 @@ r = r1 + r2 + r3</string_value>
         <include_in_visualization/>
         <include_in_statistics/>
         <include_residual_in_visualization/>
+        <include_previous_timestep_in_visualization/>
       </diagnostics>
     </field>
     <coefficient name="Source1">

@@ -813,6 +813,16 @@ const bool FunctionBucket::include_residual_in_visualization() const
 }
 
 //*******************************************************************|************************************************************//
+// include the previous timestep of this function in visualization output
+// this is a virtual function and should be implemented in the derived options class
+//*******************************************************************|************************************************************//
+const bool FunctionBucket::include_previous_timestep_in_visualization() const
+{
+  tf_err("Failed to find virtual function.", "Need a virtual include_previous_timestep_in_visualization.");
+  return false;
+}
+
+//*******************************************************************|************************************************************//
 // include this function in diagnostic output
 // this is a virtual function and should be implemented in the derived options class
 //*******************************************************************|************************************************************//
@@ -941,6 +951,10 @@ void FunctionBucket::output()
   if (include_residual_in_visualization())
   {
     write_vis_("residual");
+  }
+  if (include_previous_timestep_in_visualization())
+  {
+    write_vis_("old");
   }
 }
 
