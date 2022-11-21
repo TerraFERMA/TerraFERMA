@@ -272,6 +272,9 @@ namespace buckettools
     virtual const bool include_residual_in_visualization() const;    // return a boolean indicating if the residual of this function is included in 
                                                                      // visualization output
 
+    virtual const bool include_previous_timestep_in_visualization() const;// return a boolean indicating if the previous timestep of this function is included in 
+                                                                     // visualization output
+
     virtual const bool include_in_statistics() const;                // return a boolean indicating if this function is included in 
                                                                      // diagnostic output
 
