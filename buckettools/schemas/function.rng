@@ -401,6 +401,12 @@ The minimum and maximum of functions is included.</a:documentation>
           <ref name="comment"/>
         </element>
       </optional>
+      <optional>
+        <element name="include_previous_timestep_in_visualization">
+          <a:documentation>Include the previous timestep of this field in a visualization output file.</a:documentation>
+          <ref name="comment"/>
+        </element>
+      </optional>
       <ref name="comment"/>
     </element>
   </define>
