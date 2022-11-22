@@ -309,7 +309,7 @@ void SpudSystemsSolverBucket::checkpoint_options_()
 
     buffer.str(""); buffer << l_optionpath << "/solver";
     int nsolvers = Spud::option_count(buffer.str());
-    for (uint i=0; i<nsolvers; i++)
+    for (int i=nsolvers-1; i>=0; i--)
     {
       buffer.str(""); buffer << l_optionpath << "/solver[" << i << "]";
       serr = Spud::delete_option(buffer.str());
