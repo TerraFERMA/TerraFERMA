@@ -1087,6 +1087,20 @@ stat = parser("projection_checkpoint.stat")
 
 snes_field2_int_0_coeff = stat["SNESProjection"]["Field2Integral0"]["max"]</string_value>
             </variable>
+            <variable name="picard_field1_vtu_m2">
+              <string_value type="code" language="python3" lines="20">import buckettools.vtktools as vtktools
+
+filename = "projection_checkpoint.xdmf"
+vtu = vtktools.vtu(filename, tindex=-2)
+picard_field1_vtu_m2 = vtu.GetField("PicardProjection::Field1")</string_value>
+            </variable>
+            <variable name="picard_oldfield1_vtu_m1">
+              <string_value type="code" language="python3" lines="20">import buckettools.vtktools as vtktools
+
+filename = "projection_checkpoint.xdmf"
+vtu = vtktools.vtu(filename, tindex=-1)
+picard_oldfield1_vtu_m1 = vtu.GetField("PicardProjection::OldField1")</string_value>
+            </variable>
           </variables>
         </simulation>
       </dependencies>
@@ -2743,6 +2757,11 @@ if all(run_from_checkpoint_ncheckpoints):
     maxerr.append(numpy.abs(values[{'nprocs':[np]}][1:]-test).max())
   maxerr = numpy.array(maxerr)
   assert(maxerr.max() &lt; 1.e-6)</string_value>
+    </test>
+    <test name="picard_oldfield1_vtu">
+      <string_value type="code" language="python3" lines="20">import numpy
+for ov, v in zip(picard_oldfield1_vtu_m1, picard_field1_vtu_m2):
+  assert numpy.all(abs(v-ov) &lt; 1.e-9)</string_value>
     </test>
   </tests>
 </harness_options>

@@ -89,6 +89,9 @@ namespace buckettools
     const bool include_residual_in_visualization() const;            // return a boolean indicating if the residual of this function is to 
                                                                      // be included in diagnostic output
     
+    const bool include_previous_timestep_in_visualization() const;   // return a boolean indicating if the previous timestep of this function is to 
+                                                                     // be included in diagnostic output
+    
     const bool include_in_statistics() const;                        // return a boolean indicating if this function is to 
                                                                      // be included in diagnostic output
     

@@ -1170,6 +1170,13 @@ void SpudSolverBucket::fill_pc_(const std::string &optionpath, PC &pc,
                                       factorization_package.c_str()); 
     petsc_err(perr);
 
+    // set default mat ordering type to be external for umfpack and mumps
+    // can be overwritten later
+    if (factorization_package=="umfpack" || factorization_package=="mumps")
+    {
+      perr = PCFactorSetMatOrderingType(pc, "external"); petsc_err(perr);
+    }
+    
   }
   else if (preconditioner=="hypre")
   {
@@ -1187,7 +1194,7 @@ void SpudSolverBucket::fill_pc_(const std::string &optionpath, PC &pc,
   }
   else if ((preconditioner=="bjacobi")||(preconditioner=="asm"))
   {
-    perr = PCSetUp(pc); petsc_err(perr);                               // call this before subpc can be retrieved
+    perr = PCSetUp(pc); petsc_err(perr);                             // call this before subpc can be retrieved
 
     KSP *subksp;
     if(preconditioner=="bjacobi")
@@ -1206,11 +1213,24 @@ void SpudSolverBucket::fill_pc_(const std::string &optionpath, PC &pc,
     }
 
     PC subpc;
-    perr = KSPGetPC(*subksp, &subpc); petsc_err(perr);                  // get the sub pc from the sub ksp
+    perr = KSPGetPC(*subksp, &subpc); petsc_err(perr);               // get the sub pc from the sub ksp
     fill_pc_(optionpath+"/preconditioner", subpc,
              prefix, 
              parent_offset, parent_indices);
 
+  }
+
+  buffer.str(""); buffer << optionpath <<                            // we get to choose an ordering type (overwrites earlier)
+                      "/preconditioner/ordering_type";
+  if (Spud::have_option(buffer.str()))
+  {
+    buffer << "/name";
+    std::string ordering_type;
+    serr = Spud::get_option(buffer.str(), ordering_type); 
+    spud_err(buffer.str(), serr);
+
+    perr = PCFactorSetMatOrderingType(pc, ordering_type.c_str()); 
+    petsc_err(perr);
   }
 
   buffer.str(""); buffer << optionpath 

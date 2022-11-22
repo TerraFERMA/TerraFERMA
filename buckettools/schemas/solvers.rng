@@ -696,6 +696,8 @@ If left unspecified, defaults to the whole boundary of the above region(s) (if s
       <ref name="pcfieldsplit_options_picard"/>
       <ref name="pcilu_options"/>
       <ref name="pclu_options"/>
+      <ref name="pccholesky_options"/>
+      <ref name="pcicc_options"/>
       <ref name="pcprometheus_options"/>
       <ref name="pchypre_options"/>
       <ref name="pcgamg_options"/>
@@ -717,6 +719,8 @@ If left unspecified, defaults to the whole boundary of the above region(s) (if s
       <ref name="pcfieldsplit_options_snes"/>
       <ref name="pcilu_options"/>
       <ref name="pclu_options"/>
+      <ref name="pccholesky_options"/>
+      <ref name="pcicc_options"/>
       <ref name="pcprometheus_options"/>
       <ref name="pchypre_options"/>
       <ref name="pcgamg_options"/>
@@ -1136,6 +1140,9 @@ practice may be quite different though.</a:documentation>
       <attribute name="name">
         <value>ilu</value>
       </attribute>
+      <optional>
+        <ref name="pcfactororder_options"/>
+      </optional>
       <ref name="comment"/>
     </element>
   </define>
@@ -1145,6 +1152,21 @@ practice may be quite different though.</a:documentation>
       <attribute name="name">
         <value>icc</value>
       </attribute>
+      <optional>
+        <ref name="pcfactororder_options"/>
+      </optional>
+      <ref name="comment"/>
+    </element>
+  </define>
+  <define name="pccholesky_options">
+    <element name="preconditioner">
+      <a:documentation>Incomplete Cholesky decomposition (only works for symmetric matrices)</a:documentation>
+      <attribute name="name">
+        <value>choleksy</value>
+      </attribute>
+      <optional>
+        <ref name="pcfactororder_options"/>
+      </optional>
       <ref name="comment"/>
     </element>
   </define>
@@ -1190,8 +1212,158 @@ Useful for parallel direct solves (if installed on system).</a:documentation>
           <ref name="comment"/>
         </element>
       </choice>
+      <optional>
+        <ref name="pcfactororder_options"/>
+      </optional>
       <ref name="comment"/>
     </element>
+  </define>
+  <define name="pcfactororder_options">
+    <choice>
+      <element name="ordering_type">
+        <a:documentation>PC Factor Mat Ordering Type - external (requires availability of external package)
+
+Sets the ordering routine (to reduce fill) to be used in the LU, ILU, Cholesky, and ICC factorizations.
+
+Default lets petsc choose, except for when using umfpack and mumps, which default to "external."</a:documentation>
+        <attribute name="name">
+          <value>external</value>
+        </attribute>
+        <ref name="comment"/>
+      </element>
+      <element name="ordering_type">
+        <a:documentation>PC Factor Mat Ordering Type - nd
+
+Sets the ordering routine (to reduce fill) to be used in the LU, ILU, Cholesky, and ICC factorizations.
+
+Default lets petsc choose, except for when using umfpack and mumps, which default to "external."</a:documentation>
+        <attribute name="name">
+          <value>nd</value>
+        </attribute>
+        <ref name="comment"/>
+      </element>
+      <element name="ordering_type">
+        <a:documentation>PC Factor Mat Ordering Type - natural
+
+Sets the ordering routine (to reduce fill) to be used in the LU, ILU, Cholesky, and ICC factorizations.
+
+Default lets petsc choose, except for when using umfpack and mumps, which default to "external."</a:documentation>
+        <attribute name="name">
+          <value>natural</value>
+        </attribute>
+        <ref name="comment"/>
+      </element>
+      <element name="ordering_type">
+        <a:documentation>PC Factor Mat Ordering Type - lwd
+
+Sets the ordering routine (to reduce fill) to be used in the LU, ILU, Cholesky, and ICC factorizations.
+
+Default lets petsc choose, except for when using umfpack and mumps, which default to "external."</a:documentation>
+        <attribute name="name">
+          <value>lwd</value>
+        </attribute>
+        <ref name="comment"/>
+      </element>
+      <element name="ordering_type">
+        <a:documentation>PC Factor Mat Ordering Type - rcm
+
+Sets the ordering routine (to reduce fill) to be used in the LU, ILU, Cholesky, and ICC factorizations.
+
+Default lets petsc choose, except for when using umfpack and mumps, which default to "external."</a:documentation>
+        <attribute name="name">
+          <value>rcm</value>
+        </attribute>
+        <ref name="comment"/>
+      </element>
+      <element name="ordering_type">
+        <a:documentation>PC Factor Mat Ordering Type - qmd
+
+Sets the ordering routine (to reduce fill) to be used in the LU, ILU, Cholesky, and ICC factorizations.
+
+Default lets petsc choose, except for when using umfpack and mumps, which default to "external."</a:documentation>
+        <attribute name="name">
+          <value>qmd</value>
+        </attribute>
+        <ref name="comment"/>
+      </element>
+      <element name="ordering_type">
+        <a:documentation>PC Factor Mat Ordering Type - rowlength
+
+Sets the ordering routine (to reduce fill) to be used in the LU, ILU, Cholesky, and ICC factorizations.
+
+Default lets petsc choose, except for when using umfpack and mumps, which default to "external."</a:documentation>
+        <attribute name="name">
+          <value>rowlength</value>
+        </attribute>
+        <ref name="comment"/>
+      </element>
+      <element name="ordering_type">
+        <a:documentation>PC Factor Mat Ordering Type - wbm
+
+Sets the ordering routine (to reduce fill) to be used in the LU, ILU, Cholesky, and ICC factorizations.
+
+Default lets petsc choose, except for when using umfpack and mumps, which default to "external."</a:documentation>
+        <attribute name="name">
+          <value>wbm</value>
+        </attribute>
+        <ref name="comment"/>
+      </element>
+      <element name="ordering_type">
+        <a:documentation>PC Factor Mat Ordering Type - spectral
+
+Sets the ordering routine (to reduce fill) to be used in the LU, ILU, Cholesky, and ICC factorizations.
+
+Default lets petsc choose, except for when using umfpack and mumps, which default to "external."</a:documentation>
+        <attribute name="name">
+          <value>spectral</value>
+        </attribute>
+        <ref name="comment"/>
+      </element>
+      <element name="ordering_type">
+        <a:documentation>PC Factor Mat Ordering Type - amd (requires UMFPACK)
+
+Sets the ordering routine (to reduce fill) to be used in the LU, ILU, Cholesky, and ICC factorizations.
+
+Default lets petsc choose, except for when using umfpack and mumps, which default to "external."</a:documentation>
+        <attribute name="name">
+          <value>amd</value>
+        </attribute>
+        <ref name="comment"/>
+      </element>
+      <element name="ordering_type">
+        <a:documentation>PC Factor Mat Ordering Type - metisnd (requires METIS)
+
+Sets the ordering routine (to reduce fill) to be used in the LU, ILU, Cholesky, and ICC factorizations.
+
+Default lets petsc choose, except for when using umfpack and mumps, which default to "external."</a:documentation>
+        <attribute name="name">
+          <value>metisnd</value>
+        </attribute>
+        <ref name="comment"/>
+      </element>
+      <element name="ordering_type">
+        <a:documentation>PC Factor Mat Ordering Type - natural_or_nd (special case for Cholesky and ICC)
+
+Sets the ordering routine (to reduce fill) to be used in the LU, ILU, Cholesky, and ICC factorizations.
+
+Default lets petsc choose, except for when using umfpack and mumps, which default to "external."</a:documentation>
+        <attribute name="name">
+          <value>natural_or_nd</value>
+        </attribute>
+        <ref name="comment"/>
+      </element>
+      <element name="ordering_type">
+        <a:documentation>PC Factor Mat Ordering Type
+
+Sets the ordering routine (to reduce fill) to be used in the LU, ILU, Cholesky, and ICC factorizations.
+
+Default lets petsc choose, except for when using umfpack and mumps, which default to "external."</a:documentation>
+        <attribute name="name">
+          <data type="string"/>
+        </attribute>
+        <ref name="comment"/>
+      </element>
+    </choice>
   </define>
   <define name="pcprometheus_options">
     <element name="preconditioner">
@@ -1347,6 +1519,7 @@ than with bjacobi.</a:documentation>
       <ref name="pcsor_options"/>
       <ref name="pceisenstat_options"/>
       <ref name="pcilu_options"/>
+      <ref name="pccholesky_options"/>
       <ref name="pcicc_options"/>
       <ref name="pclu_options"/>
       <ref name="pcprometheus_options"/>
