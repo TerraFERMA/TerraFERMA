@@ -582,6 +582,8 @@ pc_options_picard =
        pcfieldsplit_options_picard|
        pcilu_options|
        pclu_options|
+       pccholesky_options|
+       pcicc_options|
        pcprometheus_options|
        pchypre_options|
        pcgamg_options|
@@ -605,6 +607,8 @@ pc_options_snes =
        pcfieldsplit_options_snes|
        pcilu_options|
        pclu_options|
+       pccholesky_options|
+       pcicc_options|
        pcprometheus_options|
        pchypre_options|
        pcgamg_options|
@@ -1033,6 +1037,7 @@ pcilu_options =
       ## Incomplete LU decomposition
       element preconditioner {
          attribute name { "ilu" },
+         pcfactororder_options?,
          comment
       }
    )
@@ -1042,6 +1047,17 @@ pcicc_options =
       ## Incomplete Cholesky decomposition (only works for symmetric matrices)
       element preconditioner {
          attribute name { "icc" },
+         pcfactororder_options?,
+         comment
+      }
+   )
+   
+pccholesky_options =
+   (
+      ## Incomplete Cholesky decomposition (only works for symmetric matrices)
+      element preconditioner {
+         attribute name { "choleksy" },
+         pcfactororder_options?,
          comment
       }
    )
@@ -1079,8 +1095,130 @@ pclu_options =
              comment
            }
          ),
+         pcfactororder_options?,
          comment
      }
+   )
+
+pcfactororder_options =
+   (
+      ## PC Factor Mat Ordering Type - external (requires availability of external package)
+      ##
+      ## Sets the ordering routine (to reduce fill) to be used in the LU, ILU, Cholesky, and ICC factorizations.
+      ##
+      ## Default lets petsc choose, except for when using umfpack and mumps, which default to "external."
+      element ordering_type {
+         attribute name { "external" },
+         comment
+      }|
+      ## PC Factor Mat Ordering Type - nd
+      ##
+      ## Sets the ordering routine (to reduce fill) to be used in the LU, ILU, Cholesky, and ICC factorizations.
+      ##
+      ## Default lets petsc choose, except for when using umfpack and mumps, which default to "external."
+      element ordering_type {
+         attribute name { "nd" },
+         comment
+      }|
+      ## PC Factor Mat Ordering Type - natural
+      ##
+      ## Sets the ordering routine (to reduce fill) to be used in the LU, ILU, Cholesky, and ICC factorizations.
+      ##
+      ## Default lets petsc choose, except for when using umfpack and mumps, which default to "external."
+      element ordering_type {
+         attribute name { "natural" },
+         comment
+      }|
+      ## PC Factor Mat Ordering Type - lwd
+      ##
+      ## Sets the ordering routine (to reduce fill) to be used in the LU, ILU, Cholesky, and ICC factorizations.
+      ##
+      ## Default lets petsc choose, except for when using umfpack and mumps, which default to "external."
+      element ordering_type {
+         attribute name { "lwd" },
+         comment
+      }|
+      ## PC Factor Mat Ordering Type - rcm
+      ##
+      ## Sets the ordering routine (to reduce fill) to be used in the LU, ILU, Cholesky, and ICC factorizations.
+      ##
+      ## Default lets petsc choose, except for when using umfpack and mumps, which default to "external."
+      element ordering_type {
+         attribute name { "rcm" },
+         comment
+      }|
+      ## PC Factor Mat Ordering Type - qmd
+      ##
+      ## Sets the ordering routine (to reduce fill) to be used in the LU, ILU, Cholesky, and ICC factorizations.
+      ##
+      ## Default lets petsc choose, except for when using umfpack and mumps, which default to "external."
+      element ordering_type {
+         attribute name { "qmd" },
+         comment
+      }|
+      ## PC Factor Mat Ordering Type - rowlength
+      ##
+      ## Sets the ordering routine (to reduce fill) to be used in the LU, ILU, Cholesky, and ICC factorizations.
+      ##
+      ## Default lets petsc choose, except for when using umfpack and mumps, which default to "external."
+      element ordering_type {
+         attribute name { "rowlength" },
+         comment
+      }|
+      ## PC Factor Mat Ordering Type - wbm
+      ##
+      ## Sets the ordering routine (to reduce fill) to be used in the LU, ILU, Cholesky, and ICC factorizations.
+      ##
+      ## Default lets petsc choose, except for when using umfpack and mumps, which default to "external."
+      element ordering_type {
+         attribute name { "wbm" },
+         comment
+      }|
+      ## PC Factor Mat Ordering Type - spectral
+      ##
+      ## Sets the ordering routine (to reduce fill) to be used in the LU, ILU, Cholesky, and ICC factorizations.
+      ##
+      ## Default lets petsc choose, except for when using umfpack and mumps, which default to "external."
+      element ordering_type {
+         attribute name { "spectral" },
+         comment
+      }|
+      ## PC Factor Mat Ordering Type - amd (requires UMFPACK)
+      ##
+      ## Sets the ordering routine (to reduce fill) to be used in the LU, ILU, Cholesky, and ICC factorizations.
+      ##
+      ## Default lets petsc choose, except for when using umfpack and mumps, which default to "external."
+      element ordering_type {
+         attribute name { "amd" },
+         comment
+      }|
+      ## PC Factor Mat Ordering Type - metisnd (requires METIS)
+      ##
+      ## Sets the ordering routine (to reduce fill) to be used in the LU, ILU, Cholesky, and ICC factorizations.
+      ##
+      ## Default lets petsc choose, except for when using umfpack and mumps, which default to "external."
+      element ordering_type {
+         attribute name { "metisnd" },
+         comment
+      }|
+      ## PC Factor Mat Ordering Type - natural_or_nd (special case for Cholesky and ICC)
+      ##
+      ## Sets the ordering routine (to reduce fill) to be used in the LU, ILU, Cholesky, and ICC factorizations.
+      ##
+      ## Default lets petsc choose, except for when using umfpack and mumps, which default to "external."
+      element ordering_type {
+         attribute name { "natural_or_nd" },
+         comment
+      }|
+      ## PC Factor Mat Ordering Type
+      ##
+      ## Sets the ordering routine (to reduce fill) to be used in the LU, ILU, Cholesky, and ICC factorizations.
+      ##
+      ## Default lets petsc choose, except for when using umfpack and mumps, which default to "external."
+      element ordering_type {
+         attribute name { xsd:string },
+         comment
+      }
    )
 
 pcprometheus_options =
@@ -1226,6 +1364,7 @@ subpc_options =
          pcsor_options|
          pceisenstat_options|
          pcilu_options|
+         pccholesky_options|
          pcicc_options|
          pclu_options|
          pcprometheus_options|

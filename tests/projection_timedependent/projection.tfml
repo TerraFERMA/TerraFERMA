@@ -117,6 +117,7 @@
       <diagnostics>
         <include_in_visualization/>
         <include_in_statistics/>
+        <include_previous_timestep_in_visualization/>
       </diagnostics>
     </field>
     <field name="Field2">
@@ -156,6 +157,7 @@
       <diagnostics>
         <include_in_visualization/>
         <include_in_statistics/>
+        <include_previous_timestep_in_visualization/>
       </diagnostics>
     </field>
     <coefficient name="Source1">
@@ -439,6 +441,7 @@ r = r1 + r2</string_value>
       <diagnostics>
         <include_in_visualization/>
         <include_in_statistics/>
+        <include_previous_timestep_in_visualization/>
       </diagnostics>
     </field>
     <field name="Field2">
@@ -478,6 +481,7 @@ r = r1 + r2</string_value>
       <diagnostics>
         <include_in_visualization/>
         <include_in_statistics/>
+        <include_previous_timestep_in_visualization/>
       </diagnostics>
     </field>
     <coefficient name="Source1">

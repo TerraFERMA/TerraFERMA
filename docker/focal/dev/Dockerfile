@@ -26,19 +26,24 @@
 #
 
 # build using the TerraFERMA development environment
-FROM terraferma/dev-env:fenics-2019.1.0-focal
+ARG TAG=fenics-2019.1.0-focal
+FROM terraferma/dev-env:${TAG}
 MAINTAINER terraferma <terraferma@lists.columbia.edu>
+
+ARG BRANCH=master-2019.1.0
+ARG REPO=https://github.com/TerraFERMA/TerraFERMA.git
+ARG DEBUG=0
 
 USER tfuser
 WORKDIR /tmp
 
 # install terraferma
-RUN git clone -b master-2019.1.0  -q https://github.com/TerraFERMA/TerraFERMA.git && \
+RUN git clone -b $BRANCH -q $REPO && \
     cd TerraFERMA && \
     mkdir build && \
     cd build && \
     cmake -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
-          -DCMAKE_BUILD_TYPE=Release  \
+          -DCMAKE_BUILD_TYPE=`[[ $DEBUG -eq 1 ]] && echo "Debug" || echo "Release"` \
           ../. && \
     make && \
     make install && \
@@ -51,7 +56,7 @@ ENV DIAMOND_CONFIG_PATH $INSTALL_PREFIX/share/buckettools/diamond:$DIAMOND_CONFI
 # link the installed tests and tutorials directories to the home directory
 RUN ln -s $INSTALL_PREFIX/share/terraferma/tests $TF_HOME/tests && \
     ln -s $INSTALL_PREFIX/share/terraferma/tutorials $TF_HOME/tutorials
-COPY WELCOME $TF_HOME/WELCOME
+COPY docker/focal/dev/WELCOME $TF_HOME/WELCOME
 
 WORKDIR $TF_HOME
 USER root

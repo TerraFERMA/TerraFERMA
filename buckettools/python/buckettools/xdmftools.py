@@ -362,7 +362,7 @@ versions.
       if lfamily == family and ldegree == degree:
         cfunc = lfunc
       else:
-        if lrank == "Scalar":
+        if (lrank == "Scalar") or (lrank == "Vector" and lfamily in ["RT", "DRT", "BDM", "N1curl", "N2curl"]):
           V = df.FunctionSpace(mesh, lfamily, ldegree)
         elif lrank == "Vector":
           V = df.VectorFunctionSpace(mesh, lfamily, ldegree)

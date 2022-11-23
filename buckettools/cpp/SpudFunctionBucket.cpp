@@ -278,6 +278,14 @@ const bool SpudFunctionBucket::include_residual_in_visualization() const
 }
 
 //*******************************************************************|************************************************************//
+// return a boolean indicating if the previous timestep of this function bucket should be included in visualization output
+//*******************************************************************|************************************************************//
+const bool SpudFunctionBucket::include_previous_timestep_in_visualization() const
+{
+  return Spud::have_option(optionpath()+"/diagnostics/include_previous_timestep_in_visualization");
+}
+
+//*******************************************************************|************************************************************//
 // return a boolean indicating if this function bucket should be included in diagnostic output
 //*******************************************************************|************************************************************//
 const bool SpudFunctionBucket::include_in_statistics() const

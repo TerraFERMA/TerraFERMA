@@ -33,7 +33,7 @@
 #
 
 # build off Ubuntu 20.04LTS (Focal) with a few fixes for docker
-FROM phusion/baseimage:master-amd64
+FROM phusion/baseimage:focal-1.2.0
 MAINTAINER terraferma <terraferma@lists.columbia.edu>
 
 # Get Ubuntu updates
@@ -51,7 +51,7 @@ ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 ENV LANGUAGE=C.UTF-8
 
-COPY set-home-permissions.sh /etc/my_init.d/set-home-permissions.sh
+COPY docker/focal/base/set-home-permissions.sh /etc/my_init.d/set-home-permissions.sh
 
 # Set up user so that we do not run as root
 # See https://github.com/phusion/baseimage-docker/issues/186
@@ -90,7 +90,7 @@ RUN touch $TF_HOME/.sudo_as_admin_successful && \
 VOLUME /home/tfuser/shared
 
 # Print a default welcome message on startup
-COPY WELCOME $TF_HOME/WELCOME
+COPY docker/focal/base/WELCOME $TF_HOME/WELCOME
 
 WORKDIR $TF_HOME
 USER root
