@@ -29,7 +29,7 @@
 #
 # The built image can be found at:
 #
-#   https://hub.docker.com/r/terraferma/base
+#   https://github.com/orgs/TerraFERMA/packages/container/package/base
 #
 
 # build off Ubuntu 20.04LTS (Focal) with a few fixes for docker

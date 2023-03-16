@@ -22,7 +22,7 @@
 # Builds a Docker image with a full installation of TerraFERMA.  
 # The built image can be found at:
 #
-#   https://hub.docker.com/r/terraferma/actions
+#   https://github.com/orgs/TerraFERMA/packages/container/package/actions
 #
 
 # build using the TerraFERMA development environment

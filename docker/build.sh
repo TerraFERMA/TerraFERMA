@@ -105,7 +105,7 @@ fi
 
 echo "Building:"
 echo "  $DIR/Dockerfile"
-echo "  with tag terraferma/$SDIR:$TAG"
+echo "  with tag ghcr.io/terraferma/$SDIR:$TAG"
 echo "  from repo $REPO"
 if [ "$PLATFORMS" ]; then
   echo "  with $PLATFORMS"
@@ -120,5 +120,5 @@ docker buildx build --file $DIR/Dockerfile \
                     --build-arg BRANCH=$BRANCH \
                     --build-arg DEBUG=$DEBUG \
                     --build-arg REPO=$REPO \
-                    --tag terraferma/$SDIR:$TAG $PLATFORMS --push .
+                    --tag ghcr.io/terraferma/$SDIR:$TAG $PLATFORMS --push .
 

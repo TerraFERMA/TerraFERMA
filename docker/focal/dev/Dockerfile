@@ -22,12 +22,12 @@
 # Builds a Docker image with a full installation of TerraFERMA.  
 # The built image can be found at:
 #
-#   https://hub.docker.com/r/terraferma/dev
+#   https://github.com/orgs/TerraFERMA/packages/container/package/dev
 #
 
 # build using the TerraFERMA development environment
 ARG TAG=fenics-2019.1.0-focal
-FROM terraferma/dev-env:${TAG}
+FROM ghcr.io/terraferma/dev-env:${TAG}
 MAINTAINER terraferma <terraferma@lists.columbia.edu>
 
 ARG BRANCH=master-2019.1.0
