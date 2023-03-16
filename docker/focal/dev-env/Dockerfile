@@ -26,12 +26,12 @@
 # Builds a Docker image with the correct environment for compiling 
 # TerraFERMA.  The built image can be found at:
 #
-#   https://hub.docker.com/r/terraferma/dev-env
+#   https://github.com/orgs/TerraFERMA/packages/container/package/dev-env
 #
 
 # build from the base image
 ARG TAG=fenics-2019.1.0-focal
-FROM terraferma/base:${TAG}
+FROM ghcr.io/terraferma/base:${TAG}
 MAINTAINER terraferma <terraferma@lists.columbia.edu>
 
 ARG DEBUG=0

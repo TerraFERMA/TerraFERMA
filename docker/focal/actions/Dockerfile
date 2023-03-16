@@ -22,11 +22,11 @@
 # Builds a Docker image with a full installation of TerraFERMA.  
 # The built image can be found at:
 #
-#   https://hub.docker.com/r/terraferma/actions
+#   https://github.com/orgs/TerraFERMA/packages/container/package/actions
 #
 
 # build using the TerraFERMA development environment
-FROM terraferma/dev-env:fenics-2019.1.0-focal
+FROM ghcr.io/terraferma/dev-env:fenics-2019.1.0-focal
 MAINTAINER terraferma <terraferma@lists.columbia.edu>
 
 USER tfuser
