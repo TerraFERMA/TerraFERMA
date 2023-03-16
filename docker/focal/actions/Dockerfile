@@ -26,7 +26,7 @@
 #
 
 # build using the TerraFERMA development environment
-FROM terraferma/dev-env:fenics-2019.1.0-focal
+FROM ghcr.io/terraferma/dev-env:fenics-2019.1.0-focal
 MAINTAINER terraferma <terraferma@lists.columbia.edu>
 
 USER tfuser
