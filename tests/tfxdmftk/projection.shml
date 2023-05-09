@@ -1,0 +1,191 @@
+<?xml version='1.0' encoding='utf-8'?>
+<harness_options>
+  <length>
+    <string_value lines="1">quick</string_value>
+  </length>
+  <owner>
+    <string_value lines="1">cwilson</string_value>
+  </owner>
+  <description>
+    <string_value lines="1">A test of tfxdmftk in parallel.</string_value>
+  </description>
+  <simulations>
+    <simulation name="ProjectionCheckpoint">
+      <input_file>
+        <string_value type="filename" lines="1">projection_checkpoint_0.tfml</string_value>
+      </input_file>
+      <run_when name="input_changed_or_output_missing"/>
+      <parameter_sweep>
+        <parameter name="nprocs">
+          <values>
+            <string_value lines="1">2-&gt;1</string_value>
+          </values>
+          <process_scale>
+            <integer_value rank="1" shape="1">1</integer_value>
+          </process_scale>
+        </parameter>
+      </parameter_sweep>
+      <dependencies>
+        <simulation name="Projection">
+          <input_file>
+            <string_value type="filename" lines="1">projection2d.tfml</string_value>
+          </input_file>
+          <run_when name="input_changed_or_output_missing"/>
+          <parameter_sweep>
+            <parameter name="nprocs">
+              <process_scale>
+                <integer_value rank="1" shape="1">2</integer_value>
+              </process_scale>
+            </parameter>
+          </parameter_sweep>
+          <required_output>
+            <filenames name="ics">
+              <python>
+                <string_value type="code" language="python3" lines="20">ics = [ "projection_Projection_0.xdmf", "projection_Projection_0.h5"]</string_value>
+              </python>
+            </filenames>
+            <filenames name="tfml">
+              <python>
+                <string_value type="code" language="python3" lines="20">tfml = ["projection_checkpoint_0.tfml"]</string_value>
+              </python>
+            </filenames>
+          </required_output>
+          <variables>
+            <variable name="vtuvals">
+              <string_value type="code" language="python3" lines="20">import buckettools.vtktools as vtktools
+import vtk
+from buckettools.threadlibspud import *
+import os
+import numpy as np
+
+filename = os.path.split(input_filename)[-1]
+threadlibspud.load_options(filename)
+basename = libspud.get_option("/io/output_base_name")
+threadlibspud.clear_options()
+
+xdmffilename = basename+".xdmf"
+vtu = vtktools.vtu(xdmffilename, index=-1)
+x = vtu.GetLocations()[:,0]
+f = vtu.GetScalarField("Projection::Field")
+vtu.Write(basename+".vtu")
+vtuvals = np.asarray([[x[i], f[i]] for i in range(len(x))])</string_value>
+            </variable>
+            <variable name="vtuvals_checkpoint">
+              <string_value type="code" language="python3" lines="20">import buckettools.vtktools as vtktools
+import vtk
+from buckettools.threadlibspud import *
+import os
+import numpy as np
+
+filename = os.path.split(input_filename)[-1]
+threadlibspud.load_options(filename)
+basename = libspud.get_option("/io/output_base_name")
+threadlibspud.clear_options()
+
+xdmffilename = basename+"_Projection_0.xdmf"
+vtu = vtktools.vtu(xdmffilename)
+x = vtu.GetLocations()[:,0]
+f = vtu.GetScalarField("Field")
+vtu.Write(basename+"_Projection_0.vtu")
+vtuvals_checkpoint = np.asarray([[x[i], f[i]] for i in range(len(x))])</string_value>
+            </variable>
+          </variables>
+        </simulation>
+      </dependencies>
+      <variables>
+        <variable name="checkpoint_vtuvals">
+          <string_value type="code" language="python3" lines="20">import buckettools.vtktools as vtktools
+import vtk
+from buckettools.threadlibspud import *
+import os
+import numpy as np
+
+filename = os.path.split(input_filename)[-1]
+threadlibspud.load_options(filename)
+basename = libspud.get_option("/io/output_base_name")
+threadlibspud.clear_options()
+
+xdmffilename = basename+".xdmf"
+vtu = vtktools.vtu(xdmffilename, index=0)
+x = vtu.GetLocations()[:,0]
+f = vtu.GetScalarField("Projection::Field")
+vtu.Write(basename+".vtu")
+checkpoint_vtuvals = np.asarray([[x[i], f[i]] for i in range(len(x))])</string_value>
+        </variable>
+        <variable name="checkpoint_vtuvals_checkpoint">
+          <string_value type="code" language="python3" lines="20">import buckettools.vtktools as vtktools
+import vtk
+from buckettools.threadlibspud import *
+import os
+import numpy as np
+
+filename = os.path.split(input_filename)[-1]
+threadlibspud.load_options(filename)
+basename = libspud.get_option("/io/output_base_name")
+threadlibspud.clear_options()
+
+xdmffilename = basename+"_Projection_0.xdmf"
+vtu = vtktools.vtu(xdmffilename)
+x = vtu.GetLocations()[:,0]
+f = vtu.GetScalarField("Field")
+vtu.Write(basename+"_Projection_0.vtu")
+checkpoint_vtuvals_checkpoint = np.asarray([[x[i], f[i]] for i in range(len(x))])</string_value>
+        </variable>
+      </variables>
+    </simulation>
+  </simulations>
+  <tests>
+    <test name="ordered">
+      <string_value type="code" language="python3" lines="20">import numpy as np
+tol = 1.e-10
+testpass = True
+var = vtuvals
+for nproc in var.parameters['nprocs']:
+  key = {'nprocs': nproc}
+  lpass = np.all(np.abs(var[key][:,0]-var[key][:,1])&lt;tol)
+  if not lpass: print("nproc ", nproc, "failed vtuvals")
+  testpass = testpass and lpass
+  
+assert(testpass)</string_value>
+    </test>
+    <test name="ordered_checkpoint">
+      <string_value type="code" language="python3" lines="20">import numpy as np
+tol = 1.e-10
+testpass = True
+var = vtuvals_checkpoint
+for nproc in var.parameters['nprocs']:
+  key = {'nprocs': nproc}
+  lpass = np.all(np.abs(var[key][:,0]-var[key][:,1])&lt;tol)
+  if not lpass: print("nproc ", nproc, "failed vtuvals_checkpoint")
+  testpass = testpass and lpass
+  
+assert(testpass)</string_value>
+    </test>
+    <test name="checkpoint_ordered">
+      <string_value type="code" language="python3" lines="20">import numpy as np
+tol = 1.e-10
+testpass = True
+var = checkpoint_vtuvals
+for nproc in var.parameters['nprocs']:
+  key = {'nprocs': nproc}
+  lpass = np.all(np.abs(var[key][:,0]-var[key][:,1])&lt;tol)
+  if not lpass: print("nproc ", nproc, "failed checkpoint_vtuvals")
+  testpass = testpass and lpass
+  
+assert(testpass)</string_value>
+    </test>
+    <test name="checkpoint_ordered_checkpoint">
+      <string_value type="code" language="python3" lines="20">import numpy as np
+tol = 1.e-10
+testpass = True
+var = checkpoint_vtuvals_checkpoint
+for nproc in var.parameters['nprocs']:
+  key = {'nprocs': nproc}
+  lpass = np.all(np.abs(var[key][:,0]-var[key][:,1])&lt;tol)
+  if not lpass: print("nproc ", nproc, "failed checkpoint_vtuvals_checkpoint")
+  testpass = testpass and lpass
+  
+assert(testpass)</string_value>
+    </test>
+  </tests>
+</harness_options>

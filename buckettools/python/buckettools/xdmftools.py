@@ -265,6 +265,16 @@ versions.
       mdeg = max(degree, mdeg)
       disc = disc or (family != "CG" and degree > 0)
 
+    modelfunc = None
+    for degree in [2,1]:
+      for name, attrib in functions.items():
+        if attrib[1] == degree and attrib[0] in ("CG", "DG"):
+          modelfunc = name
+          if attrib[0] == "DG": break
+      if modelfunc is not None and functions[modelfunc][0] == "DG": break
+          
+    dfxdmf = df.XDMFFile(self.filename)
+
     # make a mesh
     # FIXME: assuming the same mesh for all fields (so defaulting to first)
     coords = self.getlocations(tindex=tindex, time=time)
@@ -296,7 +306,11 @@ versions.
       dofcoord = element.tabulate_dof_coordinates(cell)
       celldofs = dofmap.cell_dofs(cell.index())
       for i,cd in enumerate(celldofs):
-        coordmap[cd] = dofcoord[i]
+        coordmap[dofmap.local_to_global_index(cd)] = dofcoord[i]
+    #print("coordmap1")
+    #for k,v in coordmap.items():
+    #  print(k,v)
+
     n = len(celldofs) # FIXME: assuming single cell type
 
     # some dofmaps
@@ -336,8 +350,6 @@ versions.
     elif celltype == vtk.vtk.VTK_QUADRATIC_TETRA:
       cellorder = [0,1,2,3,9,6,8,7,5,4]
     
-    dfxdmf = df.XDMFFile(self.filename)
-
     # add the cells
     for cell in df.cells(mesh):
       celldofs = dofmap.cell_dofs(cell.index())
@@ -360,18 +372,36 @@ versions.
       else:
         self._unknownrank()
 
-      if lfamily == family and ldegree == degree:
-        cfunc = lfunc
+      #if lfamily == family and ldegree == degree:
+      #  cfunc = lfunc
+      #  V = lfunc.function_space()
+      #else:
+      if (lrank == "Scalar") or (lrank == "Vector" and lfamily in ["RT", "DRT", "BDM", "N1curl", "N2curl"]):
+        V = df.FunctionSpace(mesh, lfamily, ldegree)
+      elif lrank == "Vector":
+        V = df.VectorFunctionSpace(mesh, lfamily, ldegree)
       else:
-        if (lrank == "Scalar") or (lrank == "Vector" and lfamily in ["RT", "DRT", "BDM", "N1curl", "N2curl"]):
-          V = df.FunctionSpace(mesh, lfamily, ldegree)
-        elif lrank == "Vector":
-          V = df.VectorFunctionSpace(mesh, lfamily, ldegree)
-        else:
-          V = df.TensorFunctionSpace(mesh, lfamily, ldegree)
-        cfunc = df.Function(V)
+        V = df.TensorFunctionSpace(mesh, lfamily, ldegree)
+      rfunc = df.Function(V)
+      cfunc = df.Function(V)
 
+      for v in cfunc.vector(): print(v)
       dfxdmf.read_checkpoint(cfunc, name, tindex)
+      print('tmpfunction:')
+      for v in cfunc.vector(): print(v)
+
+      #coordmap = OrderedDict()
+      #dofmap = cfunc.function_space().dofmap()
+      #element = cfunc.function_space().element()
+      #for cell in df.cells(mesh):
+      #  dofcoord = element.tabulate_dof_coordinates(cell)
+      #  celldofs = dofmap.cell_dofs(cell.index())
+      #  for i,cd in enumerate(celldofs):
+      #    coordmap[dofmap.local_to_global_index(cd)] = dofcoord[i]
+      #print("coordmap2")
+      #for k,v in coordmap.items():
+      #  print(k,v[0],cfunc.vector()[k])
+      print(self.getfield(name, tindex))
 
       if (lfamily == "DG" and ldegree == 0) or (lfamily == family and ldegree == degree):
         lfunc = cfunc
