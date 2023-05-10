@@ -2,15 +2,18 @@
 <terraferma_options>
   <geometry>
     <dimension>
-      <integer_value rank="0">1</integer_value>
+      <integer_value rank="0">2</integer_value>
     </dimension>
     <mesh name="Mesh">
-      <source name="UnitInterval">
+      <source name="UnitSquare">
         <number_cells>
-          <integer_value rank="0">100</integer_value>
+          <integer_value rank="1" dim1="2" shape="2">3 3</integer_value>
         </number_cells>
+        <diagonal>
+          <string_value lines="1">right</string_value>
+        </diagonal>
         <cell>
-          <string_value lines="1">interval</string_value>
+          <string_value lines="1">triangle</string_value>
         </cell>
       </source>
     </mesh>
@@ -20,18 +23,22 @@
       <string_value lines="1">projection</string_value>
     </output_base_name>
     <visualization>
-      <element name="P1DG">
+      <element name="P1">
         <family>
-          <string_value lines="1">DG</string_value>
+          <string_value lines="1">CG</string_value>
         </family>
         <degree>
           <integer_value rank="0">1</integer_value>
         </degree>
       </element>
-      <checkpoint_format/>
     </visualization>
     <dump_periods/>
     <detectors/>
+    <checkpointing>
+      <checkpoint_period_in_timesteps>
+        <integer_value rank="0">1</integer_value>
+      </checkpoint_period_in_timesteps>
+    </checkpointing>
   </io>
   <global_parameters/>
   <system name="Projection">
@@ -44,10 +51,10 @@
         <string_value lines="1">f</string_value>
       </ufl_symbol>
       <type name="Function">
-        <rank name="Scalar" rank="0">
-          <element name="P2">
+        <rank name="Vector" rank="1">
+          <element name="P2DG">
             <family>
-              <string_value lines="1">CG</string_value>
+              <string_value lines="1">DG</string_value>
             </family>
             <degree>
               <integer_value rank="0">2</integer_value>
@@ -64,7 +71,7 @@
       <type name="SNES">
         <form name="Residual" rank="0">
           <string_value type="code" language="python3" lines="20">x = SpatialCoordinate(u_e.cell())
-r = f_t*(f_i - x[0])*dx</string_value>
+r = inner(f_t, f_i - x)*dx</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">r</string_value>
           </ufl_symbol>
@@ -87,7 +94,9 @@ r = f_t*(f_i - x[0])*dx</string_value>
         <max_iterations>
           <integer_value rank="0">1</integer_value>
         </max_iterations>
-        <monitors/>
+        <monitors>
+          <residual/>
+        </monitors>
         <linear_solver>
           <iterative_method name="preonly"/>
           <preconditioner name="lu">

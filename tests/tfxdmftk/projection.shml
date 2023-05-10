@@ -18,23 +18,23 @@
       <parameter_sweep>
         <parameter name="nprocs">
           <values>
-            <string_value lines="1">2-&gt;1</string_value>
+            <string_value lines="1">1-&gt;2 2-&gt;1 1-&gt;1 2-&gt;2</string_value>
           </values>
           <process_scale>
-            <integer_value rank="1" shape="1">1</integer_value>
+            <integer_value rank="1" shape="4">2 1 1 2</integer_value>
           </process_scale>
         </parameter>
       </parameter_sweep>
       <dependencies>
         <simulation name="Projection">
           <input_file>
-            <string_value type="filename" lines="1">projection2d.tfml</string_value>
+            <string_value type="filename" lines="1">projection.tfml</string_value>
           </input_file>
           <run_when name="input_changed_or_output_missing"/>
           <parameter_sweep>
             <parameter name="nprocs">
               <process_scale>
-                <integer_value rank="1" shape="1">2</integer_value>
+                <integer_value rank="1" shape="4">1 2 1 2</integer_value>
               </process_scale>
             </parameter>
           </parameter_sweep>
@@ -65,10 +65,10 @@ threadlibspud.clear_options()
 
 xdmffilename = basename+".xdmf"
 vtu = vtktools.vtu(xdmffilename, index=-1)
-x = vtu.GetLocations()[:,0]
-f = vtu.GetScalarField("Projection::Field")
+x = vtu.GetLocations()
+f = vtu.GetVectorField("Projection::Field")
 vtu.Write(basename+".vtu")
-vtuvals = np.asarray([[x[i], f[i]] for i in range(len(x))])</string_value>
+vtuvals = np.asarray([[x[i,0], f[i,0], x[i,1], f[i,1]] for i in range(len(x))])</string_value>
             </variable>
             <variable name="vtuvals_checkpoint">
               <string_value type="code" language="python3" lines="20">import buckettools.vtktools as vtktools
@@ -84,10 +84,10 @@ threadlibspud.clear_options()
 
 xdmffilename = basename+"_Projection_0.xdmf"
 vtu = vtktools.vtu(xdmffilename)
-x = vtu.GetLocations()[:,0]
-f = vtu.GetScalarField("Field")
+x = vtu.GetLocations()
+f = vtu.GetVectorField("Field")
 vtu.Write(basename+"_Projection_0.vtu")
-vtuvals_checkpoint = np.asarray([[x[i], f[i]] for i in range(len(x))])</string_value>
+vtuvals_checkpoint = np.asarray([[x[i,0], f[i,0], x[i,1], f[i,1]] for i in range(len(x))])</string_value>
             </variable>
           </variables>
         </simulation>
@@ -107,10 +107,10 @@ threadlibspud.clear_options()
 
 xdmffilename = basename+".xdmf"
 vtu = vtktools.vtu(xdmffilename, index=0)
-x = vtu.GetLocations()[:,0]
-f = vtu.GetScalarField("Projection::Field")
+x = vtu.GetLocations()
+f = vtu.GetVectorField("Projection::Field")
 vtu.Write(basename+".vtu")
-checkpoint_vtuvals = np.asarray([[x[i], f[i]] for i in range(len(x))])</string_value>
+checkpoint_vtuvals = np.asarray([[x[i,0], f[i,0], x[i,1], f[i,1]] for i in range(len(x))])</string_value>
         </variable>
         <variable name="checkpoint_vtuvals_checkpoint">
           <string_value type="code" language="python3" lines="20">import buckettools.vtktools as vtktools
@@ -126,10 +126,10 @@ threadlibspud.clear_options()
 
 xdmffilename = basename+"_Projection_0.xdmf"
 vtu = vtktools.vtu(xdmffilename)
-x = vtu.GetLocations()[:,0]
-f = vtu.GetScalarField("Field")
+x = vtu.GetLocations()
+f = vtu.GetVectorField("Field")
 vtu.Write(basename+"_Projection_0.vtu")
-checkpoint_vtuvals_checkpoint = np.asarray([[x[i], f[i]] for i in range(len(x))])</string_value>
+checkpoint_vtuvals_checkpoint = np.asarray([[x[i,0], f[i,0], x[i,1], f[i,1]] for i in range(len(x))])</string_value>
         </variable>
       </variables>
     </simulation>
@@ -143,6 +143,7 @@ var = vtuvals
 for nproc in var.parameters['nprocs']:
   key = {'nprocs': nproc}
   lpass = np.all(np.abs(var[key][:,0]-var[key][:,1])&lt;tol)
+  lpass = lpass and np.all(np.abs(var[key][:,2]-var[key][:,3])&lt;tol)
   if not lpass: print("nproc ", nproc, "failed vtuvals")
   testpass = testpass and lpass
   
@@ -156,6 +157,7 @@ var = vtuvals_checkpoint
 for nproc in var.parameters['nprocs']:
   key = {'nprocs': nproc}
   lpass = np.all(np.abs(var[key][:,0]-var[key][:,1])&lt;tol)
+  lpass = lpass and np.all(np.abs(var[key][:,2]-var[key][:,3])&lt;tol)
   if not lpass: print("nproc ", nproc, "failed vtuvals_checkpoint")
   testpass = testpass and lpass
   
@@ -169,6 +171,7 @@ var = checkpoint_vtuvals
 for nproc in var.parameters['nprocs']:
   key = {'nprocs': nproc}
   lpass = np.all(np.abs(var[key][:,0]-var[key][:,1])&lt;tol)
+  lpass = lpass and np.all(np.abs(var[key][:,2]-var[key][:,3])&lt;tol)
   if not lpass: print("nproc ", nproc, "failed checkpoint_vtuvals")
   testpass = testpass and lpass
   
@@ -182,6 +185,7 @@ var = checkpoint_vtuvals_checkpoint
 for nproc in var.parameters['nprocs']:
   key = {'nprocs': nproc}
   lpass = np.all(np.abs(var[key][:,0]-var[key][:,1])&lt;tol)
+  lpass = lpass and np.all(np.abs(var[key][:,2]-var[key][:,3])&lt;tol)
   if not lpass: print("nproc ", nproc, "failed checkpoint_vtuvals_checkpoint")
   testpass = testpass and lpass
   
