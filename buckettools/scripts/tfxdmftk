@@ -27,7 +27,7 @@ import os
 from buckettools import xdmftools
 from lxml import etree
 
-def xdmf2vtu(xdmf, outbasename=None, names=[], tindices=[], times=[], index=None):
+def xdmf2vtu(xdmf, outbasename=None, names=[], tindices=[], times=[], index=None, family=None, degree=None):
   """
   Read an xdmf file and output a vtu file.
   """
@@ -56,7 +56,7 @@ def xdmf2vtu(xdmf, outbasename=None, names=[], tindices=[], times=[], index=None
       indices = [index]
     for i in indices:
       outfilename = basename+repr(vi).zfill(6)+".vtu"
-      vtu = xdmf.vtu(names=names, tindex=ti, index=i)
+      vtu = xdmf.vtu(names=names, tindex=ti, index=i, family=family, degree=degree)
       vtu.Write(outfilename)
       pvdcollection.append(etree.Element('DataSet', attrib={'timestep':repr(times[ti]), 'part':'0', 'file':outfilename}))
       vi += 1
@@ -84,6 +84,10 @@ if __name__ == "__main__":
                       help='search for the nearest times to be converted (defaults to all times, overrides --tindex)')
   parser.add_argument('-i', '--index', action='store', metavar='index', type=int, default=None, required=False,
                       help='index of output when multiple instances are included per timestep (defaults to all availble in each timestep)')
+  parser.add_argument('--family', action='store', metavar='family', type=str, default=None, required=False,
+                      help='family (CG or DG) to interpolate functions to (only applies to checkpoint xdmfs and defaults to DG if discontinuous fields are present)')
+  parser.add_argument('--degree', action='store', metavar='degree', type=int, default=None, required=False,
+                      help='degree (1 or 2) to interpolate functions to (only applies to checkpoint xdmfs and defaults to minimum of highest degree present and 2)')
   args = parser.parse_args()
 
   basename, ext = os.path.splitext(args.filename)
@@ -93,4 +97,4 @@ if __name__ == "__main__":
   xdmf = xdmftools.XDMF(args.filename)
 
   if args.outputvtu is not False:
-    xdmf2vtu(xdmf, outbasename=args.outputvtu, names=args.fieldname, tindices=args.tindex, times=args.time, index=args.index)
+    xdmf2vtu(xdmf, outbasename=args.outputvtu, names=args.fieldname, tindices=args.tindex, times=args.time, index=args.index, family=args.family, degree=args.degree)

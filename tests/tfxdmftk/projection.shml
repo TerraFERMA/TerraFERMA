@@ -89,6 +89,28 @@ f = vtu.GetVectorField("Field")
 vtu.Write(basename+"_Projection_0.vtu")
 vtuvals_checkpoint = np.asarray([[x[i,0], f[i,0], x[i,1], f[i,1]] for i in range(len(x))])</string_value>
             </variable>
+            <variable name="vtuvals_checkpoint_p1dg">
+              <string_value type="code" language="python3" lines="20">import buckettools.xdmftools as xdmftools
+import vtk
+from buckettools.threadlibspud import *
+import os
+import numpy as np
+
+filename = os.path.split(input_filename)[-1]
+threadlibspud.load_options(filename)
+basename = libspud.get_option("/io/output_base_name")
+threadlibspud.clear_options()
+
+xdmffilename = basename+"_Projection_0.xdmf"
+# us a different method to the other variables
+# and limit the interpolation to be p1dg
+xdmf = xdmftools.XDMF(xdmffilename)
+vtu = xdmf.vtu(family="DG", degree=1)
+x = vtu.GetLocations()
+f = vtu.GetVectorField("Field")
+vtu.Write(basename+"_p1dg_Projection_0.vtu")
+vtuvals_checkpoint_p1dg = np.asarray([[x[i,0], f[i,0], x[i,1], f[i,1]] for i in range(len(x))])</string_value>
+            </variable>
           </variables>
         </simulation>
       </dependencies>
@@ -187,6 +209,20 @@ for nproc in var.parameters['nprocs']:
   lpass = np.all(np.abs(var[key][:,0]-var[key][:,1])&lt;tol)
   lpass = lpass and np.all(np.abs(var[key][:,2]-var[key][:,3])&lt;tol)
   if not lpass: print("nproc ", nproc, "failed checkpoint_vtuvals_checkpoint")
+  testpass = testpass and lpass
+  
+assert(testpass)</string_value>
+    </test>
+    <test name="ordered_checkpoint_p1dg">
+      <string_value type="code" language="python3" lines="20">import numpy as np
+tol = 1.e-10
+testpass = True
+var = vtuvals_checkpoint_p1dg
+for nproc in var.parameters['nprocs']:
+  key = {'nprocs': nproc}
+  lpass = np.all(np.abs(var[key][:,0]-var[key][:,1])&lt;tol)
+  lpass = lpass and np.all(np.abs(var[key][:,2]-var[key][:,3])&lt;tol)
+  if not lpass: print("nproc ", nproc, "failed vtuvals_checkpoint")
   testpass = testpass and lpass
   
 assert(testpass)</string_value>

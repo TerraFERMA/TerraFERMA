@@ -231,7 +231,7 @@ versions.
   #  Interpolate field values at the given coordinates
   #  """
 
-  def _vtucheckpoint(self, names=[], tindex=-1, time=None, index=-1):
+  def _vtucheckpoint(self, names=[], tindex=-1, time=None, index=-1, family=None, degree=None):
     from buckettools import vtktools as vtk
     import dolfin as df
     from collections import OrderedDict
@@ -250,20 +250,20 @@ versions.
           raise Exception("field names must be a string or list of strings")
 
     functions = {}
-    mdeg = 1
+    mdegree = 1
     disc = False
     cell = None
     for name in names:
       attr = self._getattr(name, tindex=tindex, time=time, index=index)
-      family = attr.attrib["ElementFamily"]
-      degree = int(attr.attrib["ElementDegree"])
+      lfamily = attr.attrib["ElementFamily"]
+      ldegree = int(attr.attrib["ElementDegree"])
       fcell  = attr.attrib["ElementCell"]
       frank  = attr.attrib["AttributeType"]
       if cell is None: cell = fcell
       if fcell != cell: raise Exception("Mixed cell types.")
-      functions[name] = (family, degree, fcell, frank)
-      mdeg = max(degree, mdeg)
-      disc = disc or (family != "CG" and degree > 0)
+      functions[name] = (lfamily, ldegree, fcell, frank)
+      mdegree = max(ldegree, mdegree)
+      disc = disc or (lfamily != "CG" and ldegree > 0)
 
     # make a mesh
     # FIXME: assuming the same mesh for all fields (so defaulting to first)
@@ -297,8 +297,8 @@ versions.
     for i,c in enumerate(topo): editor.add_cell(i, c)
     editor.close()
 
-    family = "DG" if disc else "CG"
-    degree = 2 if mdeg > 1 else 1
+    if family is None: family = "DG" if disc else "CG"
+    if degree is None: degree = 2 if mdegree > 1 else 1
     sV = df.FunctionSpace(mesh, family, degree)
     vV = df.VectorFunctionSpace(mesh, family, degree)
     tV = df.TensorFunctionSpace(mesh, family, degree)
@@ -519,7 +519,7 @@ versions.
 
     return vtu
 
-  def vtu(self, names=[], tindex=-1, time=None, index=-1):
+  def vtu(self, names=[], tindex=-1, time=None, index=-1, family=None, degree=None):
     """
     Convert the given tindex or time and index to a vtu.
 
@@ -529,7 +529,7 @@ versions.
     """
     vtu = None
     if self.checkpoint:
-      vtu = self._vtucheckpoint(names=names,tindex=tindex,time=time,index=index)
+      vtu = self._vtucheckpoint(names=names,tindex=tindex,time=time,index=index,family=family,degree=degree)
     else:
       vtu = self._vtutsgrid(names=names,tindex=tindex,time=time,index=index)
 
