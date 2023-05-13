@@ -23,7 +23,13 @@ class XDMF(object):
     """
     self.filename = filename
     self.path = os.path.split(filename)[0]
-    self.tree = etree.parse(filename)
+    self._refresh()
+
+  def _refresh(self):
+    """
+    Refresh the xdmf data
+    """
+    self.tree = etree.parse(self.filename)
     grid = self.tree.find("//Grid")
     self.type = grid.attrib["Name"]
     self.checkpoint = False
@@ -80,20 +86,22 @@ class XDMF(object):
       raise IndexError("attribute missing or index out of range")
     return attrs[index]
 
-  def _getvalues(self, element):
+  def _getvalues(self, element, dataitem=None):
     """
     Given an element from an xdmf file that contains a DataItem,
     return the numpy array of the data.
     """
-    dataitems = element.findall("DataItem")
-    if len(dataitems) > 1:
-      # if there's more than one data item, take the float (only expect this to apply to checkpoints)
-      dataitem = [di for di in dataitems if di.attrib.get('NumberType', 'Float')=='Float'][0]
-    else:
-      dataitem = dataitems[0]
+    if dataitem is None:
+      dataitems = element.findall("DataItem")
+      if len(dataitems) > 1:
+        # if there's more than one data item, take the float (only expect this to apply to checkpoints)
+        dataitem = [di for di in dataitems if di.attrib.get('NumberType', 'Float')=='Float'][0]
+      else:
+        dataitem = dataitems[0]
     i = dataitem.text.index(":")
     h5filename = dataitem.text[:i]
     h5keys = [k for k in dataitem.text[i+1:].split("/") if k != '']
+    # FIXME: add logic here to check if h5 and xdmf files are synced
     h5file = h5py.File(os.path.join(self.path, h5filename), "r")
     dataset = h5find(h5file, h5keys)
     array = np.asarray(dataset)
@@ -231,14 +239,47 @@ versions.
   #  Interpolate field values at the given coordinates
   #  """
 
-  def _vtucheckpoint(self, names=[], tindex=-1, time=None, index=-1, family=None, degree=None):
-    from buckettools import vtktools as vtk
-    import dolfin as df
-    from collections import OrderedDict
-    vtu = vtk.vtu()
+  def _vtudefaultargs(self,names=None, tindices=None, times=None, writefile=False):
+    """
+    Set some default arguments for vtu conversion
+    """
+    basename = None
+    if writefile is not False:
+      if isinstance(writefile, str):
+        basename, ext = os.path.splitext(writefile)
+        if ext not in ['', '.vtu']:
+          raise Exception("ERROR: Unknown output extension: {}".format(ext,))
+      else:
+        basename, ext = os.path.splitext(self.filename)
 
-    if names == []:
-      names = self.getfieldnames(tindex=tindex, time=time)
+    # NOTE: checkpoints don't really distinguish between tindices and indices
+    if times is None and tindices is None:
+      times = self.gettimes()
+      tindices = list(range(len(times)))
+    elif times is not None:
+      try:
+        iter(times)
+      except TypeError:
+        times = [times]
+      xdmftimes = self.gettimes()
+      # argmin here will select which "index" to use if multiple tindices
+      # have the same time in checkpoint xdmfs
+      tindices = [np.abs(xdmftimes-time).argmin() for time in times]
+      times = xdmftimes[tindices]
+    else:
+      if isinstance(tindices, int):
+        tindices = [tindices]
+      else:
+        try:
+          iter(tindices)
+        except TypeError:
+          raise Exception("tindices must be an integer or a list of integers")
+      times = self.gettimes()[tindices]
+
+    if names is None:
+      # assuming names are the same for all tindices requested
+      # if they aren't then this function should be called repeatedly for each tindex
+      names = self.getfieldnames(tindex=tindices[0])
     else:
       if isinstance(names, str):
         names = [names]
@@ -249,38 +290,53 @@ versions.
         except TypeError:
           raise Exception("field names must be a string or list of strings")
 
+    return names, tindices, times, basename
+
+
+  def _vtucheckpoint(self, names=None, tindices=None, times=None, family=None, degree=None, writefile=False):
+    """
+    Convert this XDMF into a series of VTUs.
+      names: names of fields to convert
+      tindices: tindices to convert
+      times: times to convert
+      family: target functionspace family (CG or DG)
+      degree: target functionspace degree (1 or 2)
+      writefile: write to disc on the fly, returning a list of filenames instead of vtu objects (saves memory), (bool equivalent or output file or basename)
+    """
+    from buckettools import vtktools as vtk
+    import dolfin as df
+    from collections import OrderedDict
+
+    names, tindices, times, basename = self._vtudefaultargs(names=names, tindices=tindices, times=times, writefile=writefile)
+
     functions = {}
     mdegree = 1
     disc = False
     cell = None
     for name in names:
-      attr = self._getattr(name, tindex=tindex, time=time, index=index)
+      # assuming attributes are the same for all tindices requested
+      # if they aren't then this function should be called repeatedly for each tindex
+      attr = self._getattr(name, tindex=tindices[0])
       lfamily = attr.attrib["ElementFamily"]
       ldegree = int(attr.attrib["ElementDegree"])
       fcell  = attr.attrib["ElementCell"]
       frank  = attr.attrib["AttributeType"]
       if cell is None: cell = fcell
       if fcell != cell: raise Exception("Mixed cell types.")
-      functions[name] = (lfamily, ldegree, fcell, frank)
+      functions[name] = [lfamily, ldegree, fcell, frank, None, None]
       mdegree = max(ldegree, mdegree)
       disc = disc or (lfamily != "CG" and ldegree > 0)
 
     # make a mesh
     # FIXME: assuming the same mesh for all fields (so defaulting to first)
-    coords = self.getlocations(tindex=tindex, time=time)
-    topo = self.gettopology(tindex=tindex, time=time)
+    coords = self.getlocations(tindex=tindices[0])
+    topo = self.gettopology(tindex=tindices[0])
     # this topology is in the wrong order relative to the checkpointed fields
     # so now we must retrieve the cell order from a field (just taking the first)
-    attr = self._getattr(names[0], tindex=tindex, time=time, index=index)
+    attr = self._getattr(names[0], tindex=tindices[0])
     dataitems = attr.findall("DataItem")
     dataitem = [di for di in dataitems if di.text.endswith('cells')][0]
-    i = dataitem.text.index(":")
-    h5filename = dataitem.text[:i]
-    h5keys = [k for k in dataitem.text[i+1:].split("/") if k != '']
-    h5file = h5py.File(os.path.join(self.path, h5filename), "r")
-    dataset = h5find(h5file, h5keys)
-    cellorder = np.asarray(dataset)
-    h5file.close()
+    cellorder = self._getvalues(attr, dataitem=dataitem)
     # and resort the topology based on the cell ordering of the field
     toposorted = [None]*len(topo)
     for i,c in enumerate(cellorder): toposorted[c[0]] = topo[i]
@@ -326,15 +382,7 @@ versions.
     # cell-based
     cdofmap = np.asarray(list(range(topo.shape[0])), dtype=int)
 
-    # add points
-    points = vtk.vtk.vtkPoints()
-    points.SetDataTypeToDouble()
-    for c in coordmap.values():
-      cp = c.tolist()+[0.0]*(3-d)
-      points.InsertNextPoint(cp[0], cp[1], cp[2])
-    vtu.ugrid.SetPoints(points)
-
-    # get cell details
+    # assumed available cell types
     # FIXME: assuming simplicial
     celltypes = {(0,1) : vtk.vtk.VTK_VERTEX,
                  (1,1) : vtk.vtk.VTK_LINE,
@@ -352,104 +400,139 @@ versions.
       cellorder = [0,1,2,5,3,4]
     elif celltype == vtk.vtk.VTK_QUADRATIC_TETRA:
       cellorder = [0,1,2,3,9,6,8,7,5,4]
-    
-    dfxdmf = df.XDMFFile(self.filename)
 
+    ugrid = vtk.vtk.vtkUnstructuredGrid()
+    # add points
+    points = vtk.vtk.vtkPoints()
+    points.SetDataTypeToDouble()
+    for c in coordmap.values():
+      cp = c.tolist()+[0.0]*(3-d)
+      points.InsertNextPoint(cp[0], cp[1], cp[2])
+    ugrid.SetPoints(points)
+    
     # add the cells
     for cell in df.cells(mesh):
       celldofs = dofmap.cell_dofs(cell.index())
       idList = vtk.vtk.vtkIdList()
       for i in range(n): idList.InsertNextId(ldofmap[celldofs[cellorder[i]]])
-      vtu.ugrid.InsertNextCell(celltype, idList)
+      ugrid.InsertNextCell(celltype, idList)
 
-    # add the fields
-    pointdata = vtu.ugrid.GetPointData()
-    celldata = vtu.ugrid.GetCellData()
-    for name in names:
-      lfamily, ldegree, lcell, lrank = functions[name]
+    vtus = []
+    for tindex in tindices:
+      vtu = vtk.vtu()
+      vtu.ugrid = ugrid
 
-      if lrank == "Scalar":
-        lfunc = sfunc
-      elif lrank == "Vector":
-        lfunc = vfunc
-      elif lrank == "Tensor":
-        lfunc = tfunc
-      else:
-        self._unknownrank()
+      # add the fields
+      pointdata = vtu.ugrid.GetPointData()
+      celldata = vtu.ugrid.GetCellData()
+      for name in names:
+        lfamily, ldegree, lcell, lrank, lfunc, cfunc = functions[name]
 
-      if lfamily == family and ldegree == degree:
-        cfunc = lfunc
-      else:
-        if (lrank == "Scalar") or (lrank == "Vector" and lfamily in ["RT", "DRT", "BDM", "N1curl", "N2curl"]):
-          V = df.FunctionSpace(mesh, lfamily, ldegree)
-        elif lrank == "Vector":
-          V = df.VectorFunctionSpace(mesh, lfamily, ldegree)
+        if lfunc is None:
+          if lrank == "Scalar":
+            lfunc = sfunc
+          elif lrank == "Vector":
+            lfunc = vfunc
+          elif lrank == "Tensor":
+            lfunc = tfunc
+          else:
+            self._unknownrank()
+          functions[name][4] = lfunc
+
+        if cfunc is None:
+          if lfamily == family and ldegree == degree:
+            cfunc = lfunc
+          else:
+            if (lrank == "Scalar") or (lrank == "Vector" and lfamily in ["RT", "DRT", "BDM", "N1curl", "N2curl"]):
+              V = df.FunctionSpace(mesh, lfamily, ldegree)
+            elif lrank == "Vector":
+              V = df.VectorFunctionSpace(mesh, lfamily, ldegree)
+            else:
+              V = df.TensorFunctionSpace(mesh, lfamily, ldegree)
+            cfunc = df.Function(V)
+          functions[name][5] = cfunc
+
+        # load this everytime to try to be in sync
+        dfxdmf = df.XDMFFile(self.filename)
+        dfxdmf.read_checkpoint(cfunc, name, tindex)
+        dfxdmf.close()
+
+        if (lfamily == "DG" and ldegree == 0) or (lfamily == family and ldegree == degree):
+          lfunc = cfunc
         else:
-          V = df.TensorFunctionSpace(mesh, lfamily, ldegree)
-        cfunc = df.Function(V)
+          lfunc.interpolate(cfunc)
 
-      dfxdmf.read_checkpoint(cfunc, name, tindex)
+        dpp = 1
+        fdim = np.asarray(lfunc.value_shape(), dtype=int).prod()
+        indices = list(range(fdim))
+        if lrank == "Vector":
+          dpp = 3
+        elif lrank == "Tensor":
+          dpp = 9
+          indices[2] = 3
+          indices[3] = 4
 
-      if (lfamily == "DG" and ldegree == 0) or (lfamily == family and ldegree == degree):
-        lfunc = cfunc
+        lrdofmap = rdofmap
+        if lfamily == "DG" and ldegree == 0: lrdofmap = cdofmap
+        ndofs = len(lrdofmap)
+
+        vals = np.zeros((ndofs, dpp))
+        lfuncs = [lfunc]
+        if lrank != "Scalar": lfuncs = lfunc.split(deepcopy=True)
+        for i in range(len(lfuncs)):
+          vals[:, indices[i]] = lvec = lfuncs[i].vector()[lrdofmap]
+
+        data = vtk.vtk.vtkDoubleArray()
+        data.SetNumberOfValues(vals.size)
+        if lrank != "Scalar": data.SetNumberOfComponents(dpp)
+        data.SetName(name)
+        vals = vals.flatten()
+        for i, v in enumerate(vals): data.SetValue(i, v)
+        if lfamily == "DG" and ldegree == 0:
+          celldata.AddArray(data)
+          celldata.SetActiveScalars(name)
+        else:
+          pointdata.AddArray(data)
+          pointdata.SetActiveScalars(name)
+
+      if writefile is not False:
+        outfilename = basename+repr(tindex).zfill(6)+".vtu"
+        vtu.Write(outfilename)
+        vtus.append(outfilename)
       else:
-        lfunc.interpolate(cfunc)
+        vtus.append(vtu)
 
-      dpp = 1
-      fdim = np.asarray(lfunc.value_shape(), dtype=int).prod()
-      indices = list(range(fdim))
-      if lrank == "Vector":
-        dpp = 3
-      elif lrank == "Tensor":
-        dpp = 9
-        indices[2] = 3
-        indices[3] = 4
+    return vtus, times
 
-      lrdofmap = rdofmap
-      if lfamily == "DG" and ldegree == 0: lrdofmap = cdofmap
-      ndofs = len(lrdofmap)
-
-      vals = np.zeros((ndofs, dpp))
-      lfuncs = [lfunc]
-      if lrank != "Scalar": lfuncs = lfunc.split(deepcopy=True)
-      for i in range(len(lfuncs)):
-        vals[:, indices[i]] = lvec = lfuncs[i].vector()[lrdofmap]
-
-      data = vtk.vtk.vtkDoubleArray()
-      data.SetNumberOfValues(vals.size)
-      if lrank != "Scalar": data.SetNumberOfComponents(dpp)
-      data.SetName(name)
-      vals = vals.flatten()
-      for i, v in enumerate(vals): data.SetValue(i, v)
-      if lfamily == "DG" and ldegree == 0:
-        celldata.AddArray(data)
-        celldata.SetActiveScalars(name)
-      else:
-        pointdata.AddArray(data)
-        pointdata.SetActiveScalars(name)
-
-    dfxdmf.close()
-
-    return vtu
-
-  def _vtutsgrid(self, names=[], tindex=-1, time=None, index=-1):
+  def _vtutsgrid(self, names=None, tindices=None, times=None, indices=None, writefile=False):
+    """
+    Convert this XDMF into a series of VTUs.
+      names: names of fields to convert
+      tindices: tindices to convert
+      times: times to convert
+      indices: indices from multiply valued time-levels to include
+      writefile: write to disc on the fly, returning a list of filenames instead of vtu objects (saves memory), (bool equivalent or output file or basename)
+    """
     from buckettools import vtktools as vtk
-    vtu = vtk.vtu()
+
+    names, tindices, times, basename = self._vtudefaultargs(names=names, tindices=tindices, times=times, writefile=writefile)
+
+    ugrid = vtk.vtk.vtkUnstructuredGrid()
 
     # add points
     points = vtk.vtk.vtkPoints()
     points.SetDataTypeToDouble()
-    coords = self.getlocations(tindex=tindex, time=time)
+    coords = self.getlocations(tindex=tindices[0])
     d = coords.shape[-1]
     for c in coords:
       cp = c.tolist()+[0.0]*(3-d)
       points.InsertNextPoint(cp[0], cp[1], cp[2])
-    vtu.ugrid.SetPoints(points)
+    ugrid.SetPoints(points)
 
     # get cell details
-    topo = self.gettopology(tindex=tindex, time=time)
+    topo = self.gettopology(tindex=tindices[0])
     n = topo.shape[-1]
-    grid = self._getgrid(tindex=tindex, time=time)
+    grid = self._getgrid(tindex=tindices[0])
     if grid.find("Topology") is None:
       grid = self._getgrid(tindex=0)
     topotype = grid.find("Topology").attrib.get("TopologyType")
@@ -479,47 +562,57 @@ versions.
       idList = vtk.vtk.vtkIdList()
       for i in cellorder:
         idList.InsertNextId(t[i])
-      vtu.ugrid.InsertNextCell(celltype, idList)
+      ugrid.InsertNextCell(celltype, idList)
 
-    # add the fields
-    if names == []:
-      names = self.getfieldnames(tindex=tindex, time=time)
-    else:
-      if isinstance(names, str):
-        names = [names]
-      else:
-        # check if iterable
-        try:
-          iter(names)
-        except TypeError:
-          raise Exception("field names must be a string or list of strings")
-    pointdata = vtu.ugrid.GetPointData()
-    celldata = vtu.ugrid.GetCellData()
-    for name in names:
-      attr = self._getattr(name, tindex=tindex, time=time, index=index)
-      center = attr.attrib['Center']
-      attrtype = attr.attrib['AttributeType']
-      vals = self._getvalues(attr)
-      data = vtk.vtk.vtkDoubleArray()
-      data.SetNumberOfValues(vals.size)
-      if attrtype != 'Scalar': 
-        data.SetNumberOfComponents(np.asarray(vals.shape[1:]).prod())
-      data.SetName(name)
-      vals = vals.flatten()
-      for i, v in enumerate(vals):
-        data.SetValue(i, v)
-      if center == 'Node':
-        pointdata.AddArray(data)
-        pointdata.SetActiveScalars(name)
-      elif center == 'Cell':
-        celldata.AddArray(data)
-        celldata.SetActiveScalars(name)
-      else:
-        raise Exception("Unknown data center.")
+    vi = tindices[0]
+    vtus = []
+    rtimes = []
+    for tindex in tindices:
+      lindices = list(range(self.getnindices(tindex=tindex)))
+      if indices is not None:
+        cindices = [len(lindices)+ii if ii < 0 else ii for ii in indices]
+        lindices = sorted([li for li in lindices if li in cindices])
+      for index in lindices:
+        vtu = vtk.vtu()
+        vtu.ugrid = ugrid
 
-    return vtu
+        pointdata = vtu.ugrid.GetPointData()
+        celldata = vtu.ugrid.GetCellData()
+        for name in names:
+          attr = self._getattr(name, tindex=tindex, index=index)
+          center = attr.attrib['Center']
+          attrtype = attr.attrib['AttributeType']
+          vals = self._getvalues(attr)
+          data = vtk.vtk.vtkDoubleArray()
+          data.SetNumberOfValues(vals.size)
+          if attrtype != 'Scalar': 
+            data.SetNumberOfComponents(np.asarray(vals.shape[1:]).prod())
+          data.SetName(name)
+          vals = vals.flatten()
+          for i, v in enumerate(vals):
+            data.SetValue(i, v)
+          if center == 'Node':
+            pointdata.AddArray(data)
+            pointdata.SetActiveScalars(name)
+          elif center == 'Cell':
+            celldata.AddArray(data)
+            celldata.SetActiveScalars(name)
+          else:
+            raise Exception("Unknown data center.")
 
-  def vtu(self, names=[], tindex=-1, time=None, index=-1, family=None, degree=None):
+        rtimes.append(times[tindex])  # may be multiple entries if multiple indices
+        if writefile is not False:
+          outfilename = basename+repr(vi).zfill(6)+".vtu"
+          vtu.Write(outfilename)
+          vtus.append(outfilename)
+        else:
+          vtus.append(vtu)
+
+        vi += 1 
+
+    return vtus, rtimes
+
+  def vtu(self, names=None, tindex=-1, time=None, index=-1, family=None, degree=None, writefile=False):
     """
     Convert the given tindex or time and index to a vtu.
 
@@ -527,11 +620,74 @@ versions.
 
     If names is given, only those fields are output.  If not supplied all fields are included.
     """
-    vtu = None
-    if self.checkpoint:
-      vtu = self._vtucheckpoint(names=names,tindex=tindex,time=time,index=index,family=family,degree=degree)
-    else:
-      vtu = self._vtutsgrid(names=names,tindex=tindex,time=time,index=index)
+    tindices = [tindex]
+    times = None
+    if time is not None: times = [time]
 
-    return vtu
+    if self.checkpoint:
+      vtus, times = self._vtucheckpoint(names=names,tindices=tindices,times=times,family=family,degree=degree,writefile=writefile)
+    else:
+      indices = [index]
+      vtus, times = self._vtutsgrid(names=names,tindices=tindices,times=times,indices=indices,writefile=writefile)
+
+    return vtus[0]
+
+  def vtus(self, names=None, tindices=None, times=None, indices=None, family=None, degree=None, writefile=False):
+    """
+    Convert the given tindices or times and indices to a series of vtus.
+
+    If times are given they override tindices.
+
+    If names is given, only those fields are output.  If not supplied all fields are included.
+
+    If writefile (bool or output file/basename) is given then a list of filenames written to disc will be returned.
+    """
+    if self.checkpoint:
+      vtus, times = self._vtucheckpoint(names=names,tindices=tindices,times=times,family=family,degree=degree,writefile=writefile)
+    else:
+      vtus, times = self._vtutsgrid(names=names,tindices=tindices,times=times,indices=indices,writefile=writefile)
+
+    return vtus, times
+
+  def pvd(self, names=None, tindices=None, times=None, indices=None, family=None, degree=None, writefile=False):
+    """
+    Convert the given tindices or times and indices to a series of vtus.
+
+    If times are given they override tindices.
+
+    If names is given, only those fields are output.  If not supplied all fields are included.
+
+    If writefile (bool or output file/basename) is given then a list of filenames written to disc will be returned.
+    """
+
+    vtus, times = self.vtus(names=names, tindices=tindices, times=times, indices=indices, family=family, degree=degree, writefile=writefile)
+
+    basename, ext = os.path.splitext(self.filename)
+    if writefile is not False:
+      if isinstance(writefile, str):
+        basename, ext = os.path.splitext(writefile)
+        if ext not in ['', '.vtu', '.pvd']:
+          raise Exception("ERROR: Unknown output extension: {}".format(ext,))
+
+    pvdcollection = etree.Element('Collection')
+    for ti, time in enumerate(times):
+      if isinstance(vtus[ti], str):
+        vtufilename = vtus[ti]
+      else:
+        vtufilename = vtus[ti].filename
+        if vtufilename is None:
+          vtufilename = basename+repr(ti).zfill(6)+".vtu"
+          vtus[ti].filename = vtufilename
+      pvdcollection.append(etree.Element('DataSet', attrib={'timestep':repr(time), 'part':'0', 'file':vtufilename}))
+    pvdroot = etree.Element('VTKFile', attrib={'type':'Collection', 'version':'0.1'})
+    pvdroot.append(pvdcollection)
+    pvdtree = etree.ElementTree(pvdroot)
+
+    if writefile is not False:
+      pvdtree.write(basename+".pvd", encoding='UTF-8', pretty_print=True, xml_declaration=True)
+      pvd = basename+".pvd"
+    else:
+      pvd = pvdtree
+
+    return pvd, vtus, times
 

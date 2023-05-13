@@ -147,13 +147,13 @@ class vtu(object):
     else:
       raise Exception("Field rank > 2 encountered")
 
-  def Write(self, filename=[]):
+  def Write(self, filename=None):
     """Writes the grid to a vtu file.
 
     If no filename is specified it will use the name of the file originally
     read in, thus overwriting it!
     """
-    if filename==[]:
+    if filename is None:
       filename=self.filename
     if filename is None:
       raise Exception("No file supplied")
