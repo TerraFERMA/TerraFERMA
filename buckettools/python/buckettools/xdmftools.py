@@ -4,6 +4,7 @@ import sys
 import numpy as np
 import os
 import warnings
+import time 
 
 def h5find(h5, keys):
   """
@@ -101,9 +102,16 @@ class XDMF(object):
     i = dataitem.text.index(":")
     h5filename = dataitem.text[:i]
     h5keys = [k for k in dataitem.text[i+1:].split("/") if k != '']
-    # FIXME: add logic here to check if h5 and xdmf files are synced
-    h5file = h5py.File(os.path.join(self.path, h5filename), "r")
-    dataset = h5find(h5file, h5keys)
+    # try to open h5 files but retry after 5 seconds if there's an error
+    ntries = 10
+    for n in range(ntries):
+      try:
+        h5file = h5py.File(os.path.join(self.path, h5filename), "r")
+        dataset = h5find(h5file, h5keys)
+        break
+      except KeyError as e:
+        if n==ntries-1: raise(e)
+        time.sleep(5)
     array = np.asarray(dataset)
     h5file.close()
     return array
@@ -233,11 +241,6 @@ versions.
       attrs = grid.findall("Attribute")
       names = list(set([a.attrib["Name"] for a in attrs]))
     return names
-
-  #def probedata(self, coordinates, name, tindex=-1, time=None, index=-1):
-  #  """
-  #  Interpolate field values at the given coordinates
-  #  """
 
   def _vtudefaultargs(self,names=None, tindices=None, times=None, writefile=False):
     """
