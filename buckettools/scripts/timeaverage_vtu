@@ -1,0 +1,21 @@
+#!/usr/bin/env python3
+# PYTHON_ARGCOMPLETE_OK
+
+if __name__ == "__main__":
+  import argparse
+  import os
+  from buckettools.vtktools import timeaverage_vtu
+
+  parser = argparse.ArgumentParser( \
+                      description="""Generate a time-averaged vtu""")
+  parser.add_argument('filename', action='store', metavar='filename', type=str, nargs='+',
+                      help='specify .xdmf, .pvd, .vtu or .pvtu filename(s)')
+  parser.add_argument('-o', '--output', action='store', metavar='outputfilename', type=str, default=True, const=None, required=False, nargs='?',
+                      help='output filename or basename for vtu (defaults to filename_timeaveraged.vtu)')
+
+  args = parser.parse_args()
+
+  timeaverage_vtu(args.filename, writefile=args.output)
+
+
+

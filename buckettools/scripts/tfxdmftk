@@ -33,6 +33,8 @@ if __name__ == "__main__":
                       help='specify a .xdmf filename')
   parser.add_argument('-vtu', '--outputvtu', action='store', metavar='vtufilename', type=str, default=False, const=None, required=False, nargs='?',
                       help='convert to vtu (with pvd where possible) with optional given vtufilename or basename  (defaults to filename*.vtu and filename.pvd)')
+  parser.add_argument('-pvd', '--outputpvd', action='store', metavar='pvdfilename', type=str, default=False, const=None, required=False, nargs='?',
+                      help='generate a pvd with optional given pvdfilename or basename  (defaults to filename.pvd)')
   parser.add_argument('-f', '--fieldname', action='store', metavar='fieldname', type=str, default=None, required=False, nargs='*',
                       help='name of the fields to include in the vtu (defaults to all fields)')
   parser.add_argument('-ti', '--tindex', action='store', metavar='ti', type=int, default=None, required=False, nargs='*',
@@ -57,16 +59,19 @@ if __name__ == "__main__":
 
   xdmf = xdmftools.XDMF(args.filename)
 
+  tindices = args.tindex
+  if args.tirange is not None:
+    xdmftimes = xdmf.gettimes()
+    tirange = [len(xdmftimes)+ti if ti < 0 else min(ti, len(xdmftimes)) for ti in args.tirange]
+    tindices = list(range(tirange[0], tirange[1]))
+  times = args.time
+  if args.trange is not None:
+    xdmftimes = xdmf.gettimes()
+    trange = [min(t, xdmftimes[-1]) for t in args.trange]
+    tirange = [np.abs(xdmftimes-t).argmin() for t in trange]
+    times = xdmftimes[tirange[0], tirange[1]+1]
+
   if args.outputvtu is not False:
-    tindices = args.tindex
-    if args.tirange is not None:
-      xdmftimes = xdmf.gettimes()
-      tirange = [len(xdmftimes)+ti if ti < 0 else min(ti, len(xdmftimes)) for ti in args.tirange]
-      tindices = list(range(tirange[0], tirange[1]))
-    times = args.time
-    if args.trange is not None:
-      xdmftimes = xdmf.gettimes()
-      trange = [min(t, xdmftimes[-1]) for t in args.trange]
-      tirange = [np.abs(xdmftimes-t).argmin() for t in trange]
-      times = xdmftimes[tirange[0], tirange[1]+1]
     xdmf.pvd(names=args.fieldname, tindices=tindices, times=times, indices=args.index, family=args.family, degree=args.degree, writefile=args.outputvtu)
+  elif args.outputpvd is not False:
+    xdmf.generate_pvd(names=args.fieldname, tindices=tindices, times=times, indices=args.index, family=args.family, degree=args.degree, writefile=args.outputpvd)

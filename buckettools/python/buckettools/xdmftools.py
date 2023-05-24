@@ -340,7 +340,7 @@ versions.
     dataitems = attr.findall("DataItem")
     dataitem = [di for di in dataitems if di.text.endswith('cells')][0]
     cellorder = self._getvalues(attr, dataitem=dataitem)
-    # and resort the topology based on the cell ordering of the field
+    # and re-sort the topology based on the cell ordering of the field
     toposorted = [None]*len(topo)
     for i,c in enumerate(cellorder): toposorted[c[0]] = topo[i]
     topo = np.asarray(toposorted)
@@ -681,6 +681,44 @@ versions.
         if vtufilename is None:
           vtufilename = basename+repr(ti).zfill(6)+".vtu"
           vtus[ti].filename = vtufilename
+      pvdcollection.append(etree.Element('DataSet', attrib={'timestep':repr(time), 'part':'0', 'file':vtufilename}))
+    pvdroot = etree.Element('VTKFile', attrib={'type':'Collection', 'version':'0.1'})
+    pvdroot.append(pvdcollection)
+    pvdtree = etree.ElementTree(pvdroot)
+
+    if writefile is not False:
+      pvdtree.write(basename+".pvd", encoding='UTF-8', pretty_print=True, xml_declaration=True)
+      pvd = basename+".pvd"
+    else:
+      pvd = pvdtree
+
+    return pvd, vtus, times
+
+  def generate_pvd(self, names=None, tindices=None, times=None, indices=None, family=None, degree=None, writefile=False):
+    """
+    Convert the given tindices or times and indices to a series of vtus.
+
+    If times are given they override tindices.
+
+    If names is given, only those fields are output.  If not supplied all fields are included.
+
+    If writefile (bool or output file/basename) is given then a list of filenames written to disc will be returned.
+    """
+
+    names, tindices, times, basename = self._vtudefaultargs(names=names, tindices=tindices, times=times, writefile=writefile)
+
+    basename, ext = os.path.splitext(self.filename)
+    if writefile is not False:
+      if isinstance(writefile, str):
+        basename, ext = os.path.splitext(writefile)
+        if ext not in ['', '.vtu', '.pvd']:
+          raise Exception("ERROR: Unknown output extension: {}".format(ext,))
+
+    pvdcollection = etree.Element('Collection')
+    vtus = []
+    for ti, time in enumerate(times):
+      vtufilename = basename+repr(tindices[ti]).zfill(6)+".vtu"
+      vtus.append(vtufilename)
       pvdcollection.append(etree.Element('DataSet', attrib={'timestep':repr(time), 'part':'0', 'file':vtufilename}))
     pvdroot = etree.Element('VTKFile', attrib={'type':'Collection', 'version':'0.1'})
     pvdroot.append(pvdcollection)

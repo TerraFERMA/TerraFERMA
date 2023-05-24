@@ -1,6 +1,7 @@
 import dolfin
 import numpy
 import subprocess
+import os
 
 def makemesh(vertex_coordinates, cells):
     "constructs dolfin mesh given numpy arrays of vertex coordinates and cell maps, *does not* output mesh to file"
@@ -221,3 +222,59 @@ def splitmesh(mesh, facetsubdomain, split_facet_ids, centroid_function, preserve
                     split_facetsubdomain[int(split_facet)] = facetsubdomain[int(facet)]
 
   return split_mesh, split_facetsubdomain
+
+def extract_submesh(filename, regionids, writefile=False):
+  """Extract a submesh from an xdmf file of a mesh."""
+  basename, ext = os.path.splitext(filename)
+  if ext not in ['.xdmf']:
+    raise Exception("ERROR: Unknown output extension: {}".format(ext,))
+
+  # read in the mesh
+  mesh = dolfin.Mesh()
+  dolfin.XDMFFile(dolfin.MPI.comm_world, filename).read(mesh)
+
+  D = mesh.topology().dim()
+  md = mesh.domains()
+
+  cellfunc = dolfin.MeshFunction("size_t", mesh, D, 0)
+  dolfin.XDMFFile(dolfin.MPI.comm_world, basename+"_cell_ids"+ext).read(cellfunc)
+  for cell in dolfin.cells(mesh): md.set_marker((cell.index(), cellfunc[cell.index()]), D)
+
+  facetmvc = dolfin.MeshValueCollection("size_t", mesh, D-1)
+  dolfin.XDMFFile(dolfin.MPI.comm_world, basename+"_facet_ids"+ext).read(facetmvc)
+  facetfunc = dolfin.MeshFunction("size_t", mesh, facetmvc)
+  for facet in dolfin.facets(mesh): md.set_marker((facet.index(), facetfunc[facet.index()]), D-1)
+
+  submesh = dolfin.SubMesh(mesh, regionids)
+  submd = submesh.domains()
+
+  subcellfunc = dolfin.MeshFunction("size_t", submesh, D, submd)
+  subcellmvc = dolfin.MeshValueCollection("size_t", subcellfunc)
+  subcellmvc.rename("cell_ids", "cell_ids")
+
+  subfacetfunc = dolfin.MeshFunction("size_t", submesh, D-1, submd)
+  subfacetmvc = dolfin.MeshValueCollection("size_t", subfacetfunc)
+  subfacetmvc.rename("facet_ids", "facet_ids")
+
+  outsubmesh = []
+  if writefile is not False:
+    if isinstance(writefile, str):
+      outbasename, outext = os.path.splitext(writefile)
+      if outext not in ['', '.xdmf']:
+        raise Exception("ERROR: Unknown output extension: {}".format(outext,))
+    else:
+      outbasename = basename+"_submesh"
+
+    dolfin.XDMFFile(dolfin.MPI.comm_world, outbasename+".xdmf").write(submesh)
+    outsubmesh.append(outbasename+".xdmf")
+    dolfin.XDMFFile(dolfin.MPI.comm_world, outbasename+"_cell_ids.xdmf").write(subcellmvc)
+    outsubmesh.append(outbasename+"_cell_ids.xdmf")
+    dolfin.XDMFFile(dolfin.MPI.comm_world, outbasename+"_facet_ids.xdmf").write(subfacetmvc)
+    outsubmesh.append(outbasename+"_facet_ids.xdmf")
+  else:
+    outsubmesh.append(submesh)
+    outsubmesh.append(subcellmvc)
+    outsubmesh.append(subfacetmvc)
+
+  return outsubmesh
+

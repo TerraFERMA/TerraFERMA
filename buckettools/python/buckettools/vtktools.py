@@ -9,17 +9,30 @@ arr=numpy.array
 
 class vtu(object):
   """Unstructured grid object to deal with VTK unstructured grids."""
-  def __init__(self, filename = None, tindex = -1, time = None, index = -1):
+  def __init__(self, filename = None, tindex = -1, time = None, index = -1, family=None, degree=None):
     """Creates a vtu object by reading the specified file."""
     if filename is None:
       self.ugrid = vtk.vtkUnstructuredGrid()
     else:
       gridreader = None
       ext = os.path.splitext(filename)[-1]
+
+      # "deal" with pvds
+      if ext == ".pvd":
+        from lxml import etree
+        tree = etree.parse(filename)
+        vtus = [element for element in tree.getroot().iterdescendants(tag="DataSet")]
+        times = numpy.asarray([float(vtu.attrib["timestep"]) for vtu in vtus])
+        filenames = [vtu.attrib["file"] for vtu in vtus]
+        ltindex = tindex
+        if time is not None: ltindex = numpy.abs(times-time).argmin()
+        filename = filenames[ltindex]
+        ext = os.path.splitext(filename)[-1]
+
       if ext == ".xdmf":
         from buckettools import xdmftools
         xdmf = xdmftools.XDMF(filename)
-        self.ugrid = xdmf.vtu(tindex=tindex, time=time, index=index).ugrid
+        self.ugrid = xdmf.vtu(tindex=tindex, time=time, index=index, family=family, degree=degree).ugrid
       else:
         if ext == ".vtu":
           gridreader=vtk.vtkXMLUnstructuredGridReader()
@@ -801,3 +814,247 @@ def VtuDiff(vtu1, vtu2, fieldnamemap={}, original_fields=False):
       if original_fields: resultVtu.AddField(fieldname1+"::Original1", field1)
 
   return resultVtu
+
+def extract_subvtus(filenames, meshfilename, region_ids, \
+                    names=None, tindices=None, times=None, \
+                    family=None, degree=None, writefile=False):
+  """
+  Extract vtus representing just the region_ids in region_ids.
+
+  All other arguments are to deal with xdmfs and pvds with multiple times and/or functionspaces.
+  """
+  from buckettools import mesh, vtktools
+  from lxml import etree
+  import re 
+
+  # sort out the files we're processing
+  ltimes = []
+  lfilenames = []
+  for filename in filenames:
+    basename, ext = os.path.splitext(filename)
+    if ext == ".pvd":
+      pvdtree = etree.parse(filename)
+      pvdeles = [ele for ele in pvdtree.getroot().iterdescendants(tag="DataSet")]
+      pvdtimes = numpy.asarray([float(ele.attrib["timestep"]) for ele in pvdeles])
+      pvdfnames = [ele.attrib["file"] for ele in pvdeles]
+      ltindices = list(range(len(pvdfnames)))
+      if tindices is not None: ltindices = tindices.copy()
+      if times is not None: ltindices = [numpy.abs(pvdtimes-t).argmin() for t in times]
+      for ti in ltindices:
+        ltimes.append(pvdtimes[ti])
+        lfilenames.append(pvdfnames[ti])
+    elif ext == ".xdmf":
+      from buckettools import xdmftools
+      # FIXME: this will write a whole load of vtus to disk
+      xdmf = xdmftools.XDMF(filename)
+      xdmffnames, xdmftimes = xdmf.vtus(names=names, tindices=tindices, times=times, \
+                                        family=family, degree=degree, writefile=True)
+      ltimes += xdmftimes
+      lfilenames += xdmffnames
+    elif ext in [".pvtu", ".vtu"]:
+      try:
+        vtutime = float(re.sub("[^0-9]", "", basename))
+      except ValueError:
+        vtutime = 0.0
+      ltimes.append(vtutime)
+      lfilenames.append(filename)
+    else:
+      raise Exception("ERROR: Unknown input file extension {} in extract_vtus!".format(ext,))
+
+  # work out (default) output basename
+  if isinstance(writefile, str):
+    outbasename, outext = os.path.splitext(writefile)
+    if outext not in ['', '.vtu', '.pvd']:
+      raise Exception("ERROR: Unknown output file extension {} in extract_vtus!".format(ext,))
+
+  # all of the files in lfilenames should now be [p]vtus
+
+  # extract the submesh from the mesh described in meshfilename
+  submesh, smcells, smfacets = mesh.extract_submesh(meshfilename, region_ids)
+  cells = submesh.data().array("parent_cell_indices", 2)
+
+  vtu = vtktools.vtu(lfilenames[0])
+  # figure out which points are in the submesh cells in the vtu (not in the mesh!)
+  points = []
+  for ci in cells:
+    cell = vtu.ugrid.GetCell(ci)
+    np = cell.GetNumberOfPoints()
+    for i in range(np):
+      points.append(cell.GetPointId(i))
+  points = list(set(points))
+
+  # insert points into a new ugrid
+  newugrid = vtktools.vtk.vtkUnstructuredGrid()
+  newvtupoints = vtktools.vtk.vtkPoints()
+  newvtupoints.SetDataTypeToDouble()
+  newpoints = {}
+  for i, pi in enumerate(points):
+    newvtupoints.InsertNextPoint(vtu.ugrid.GetPoint(pi))
+    newpoints[pi] = i
+  newugrid.SetPoints(newvtupoints)
+
+  # insert cells into a new grid
+  for ci in cells:
+    cell = vtu.ugrid.GetCell(ci)
+    np = cell.GetNumberOfPoints()
+    idList = vtktools.vtk.vtkIdList()
+    for i in range(np): idList.InsertNextId(newpoints[cell.GetPointId(i)])
+    newugrid.InsertNextCell(cell.GetCellType(), idList)
+
+  # start looping over files and fields
+  fi = 0
+  newvtus = []
+  for filename in lfilenames:
+    vtu = vtktools.vtu(filename)
+
+    newvtu = vtktools.vtu()
+    newvtu.ugrid = newugrid
+
+    fieldnames = vtu.GetFieldNames()
+    for fname in fieldnames:
+      field = vtu.GetField(fname)
+      if field.shape[0] == vtu.ugrid.GetNumberOfPoints():
+        newfield = [field[pi] for pi in points]
+      elif field.shape[0] == vtu.ugrid.GetNumberOfCells():
+        newfield = [field[i] for i in range(len(cells))]
+      else:
+        raise Exception("Unknown type of field!")
+      newvtu.AddField(fname, numpy.asarray(newfield))
+
+    if isinstance(writefile, str):
+      loutbasename = outbasename
+      if len(lfilenames) > 1: loutbasename += repr(fi).zfill(6)
+    else:
+      loutbasename = os.path.splitext(filename)[0]
+      index = re.sub("[^0-9]", "", loutbasename)
+      if len(index)>0: loutbasename = loutbasename[:-len(index)]
+      loutbasename += "_subvtu"+index
+    outfilename = loutbasename + ".vtu"
+    if writefile is not False:
+      newvtu.Write(outfilename)
+      newvtus.append(outfilename)
+    else:
+      newvtu.filename = outfilename
+      newvtus.append(newvtu)
+
+    fi += 1
+
+  pvdcollection = etree.Element('Collection')
+  for ti, time in enumerate(ltimes):
+    if isinstance(newvtus[ti], str):
+      vtufilename = newvtus[ti]
+    else:
+      vtufilename = newvtus[ti].filename
+    pvdcollection.append(etree.Element('DataSet', attrib={'timestep':repr(time), 'part':'0', 'file':vtufilename}))
+  pvdroot = etree.Element('VTKFile', attrib={'type':'Collection', 'version':'0.1'})
+  pvdroot.append(pvdcollection)
+  pvdtree = etree.ElementTree(pvdroot)
+
+  if writefile is not False:
+    if isinstance(writefile, str): 
+      loutbasename = outbasename
+    else:
+      loutbasename = os.path.splitext(lfilenames[0])[0]
+      index = re.sub("[^0-9]", "", loutbasename)
+      loutbasename = loutbasename[:-len(index)]+"_subvtus"
+    pvdtree.write(loutbasename+".pvd", encoding='UTF-8', pretty_print=True, xml_declaration=True)
+    pvd = basename+".pvd"
+  else:
+    pvd = pvdtree
+
+  return pvd, newvtus, ltimes
+
+def timeaverage_vtu(filenames, \
+                    names=None, tindices=None, times=None, \
+                    family=None, degree=None, writefile=False):
+  """
+  Generate a time-averaged vtu of the files in filenames.
+
+  All other arguments are to deal with xdmfs and pvds with multiple times and/or functionspaces.
+  """
+  from buckettools import mesh, vtktools
+  from lxml import etree
+  import re 
+
+  # sort out the files we're processing
+  ltimes = []
+  lfilenames = []
+  for filename in filenames:
+    basename, ext = os.path.splitext(filename)
+    if ext == ".pvd":
+      pvdtree = etree.parse(filename)
+      pvdeles = [ele for ele in pvdtree.getroot().iterdescendants(tag="DataSet")]
+      pvdtimes = numpy.asarray([float(ele.attrib["timestep"]) for ele in pvdeles])
+      pvdfnames = [ele.attrib["file"] for ele in pvdeles]
+      ltindices = list(range(len(pvdfnames)))
+      if tindices is not None: ltindices = tindices.copy()
+      if times is not None: ltindices = [numpy.abs(pvdtimes-t).argmin() for t in times]
+      for ti in ltindices:
+        ltimes.append(pvdtimes[ti])
+        lfilenames.append(pvdfnames[ti])
+    elif ext == ".xdmf":
+      from buckettools import xdmftools
+      # FIXME: this will write a whole load of vtus to disk
+      xdmf = xdmftools.XDMF(filename)
+      xdmffnames, xdmftimes = xdmf.vtus(names=names, tindices=tindices, times=times, \
+                                        family=family, degree=degree, writefile=True)
+      ltimes += xdmftimes
+      lfilenames += xdmffnames
+    elif ext in [".pvtu", ".vtu"]:
+      vtutime = float(re.sub("[^0-9]", "", basename))
+      ltimes.append(vtutime)
+      lfilenames.append(filename)
+    else:
+      raise Exception("ERROR: Unknown input file extension {} in timeaverage_vtu!".format(ext,))
+
+  # all of the files in lfilenames should now be [p]vtus
+
+  vtu = vtktools.vtu(lfilenames[0])
+  # figure out fields we'll be averaging
+  fieldnames = vtu.GetFieldNames()
+  fields = {}
+  oldfields = {}
+  for fname in fieldnames:
+    field = vtu.GetField(fname)
+    fields[fname] = numpy.zeros(field.shape)
+    oldfields[fname] = field
+
+  oldtime = ltimes[0]
+
+  # start looping over files and fields
+  for fi, filename in enumerate(lfilenames[1:]):
+    try:
+      vtu = vtktools.vtu(filename)
+    except:
+      continue
+
+    time = ltimes[fi+1]
+    dt = time-oldtime
+
+    for fname, field in fields.items():
+      field = vtu.GetField(fname)
+      fields[fname] += 0.5*dt*(field + oldfields[fname])
+      oldfields[fname] = field
+
+    oldtime = time
+
+  vtu = vtktools.vtu(lfilenames[0])
+
+  # figure out fields we'll be averaging
+  for fname, field in fields.items(): vtu.AddField(fname, field)
+  
+  # output if requested
+  if writefile is not False:
+    if isinstance(writefile, str):
+      outbasename, outext = os.path.splitext(writefile)
+      if outext not in ['', '.vtu']:
+        raise Exception("ERROR: Unknown output file extension {} in timeaverage_vtu!".format(ext,))
+    else:
+      outbasename = os.path.splitext(lfilenames[0])[0]
+      index = re.sub("[^0-9]", "", outbasename)
+      outbasename = outbasename[:-len(index)]+"_timeaveraged"
+    vtu.Write(outbasename+".vtu")
+    return outbasename+".vtu"
+  else:
+    return vtu
+

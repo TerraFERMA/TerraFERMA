@@ -33,64 +33,23 @@ import sys
 import subprocess
 import numpy
 import os
+from buckettools.mesh import extract_submesh
 
-parser = argparse.ArgumentParser( \
-                       description="""This takes a dolfin .xdmf mesh file """ +\
-                       """and extracts the submesh with the given region id(s).""")
-parser.add_argument('filename', metavar='filename', type=str,
-                    help='specify the name of the dolfin .xdmf file')
-parser.add_argument('-r', '--regionids', action='store', metavar='split_ids', dest='regionids', type=int, nargs='+', required=True,
-                    help='specify the region ids where the submesh is to be extracted')
-parser.add_argument('-o', '--outputfilename', action='store', metavar='filename', dest='outputfilename', type=str, default=None, required=False,
-                    help='specify the output filename (defaults to the input filename_submesh)')
-try:
-  argcomplete.autocomplete(parser)
-except NameError:
-  pass
-args = parser.parse_args()
+if __name__ == "__main__":
+  parser = argparse.ArgumentParser( \
+                         description="""This takes a dolfin .xdmf mesh file """ +\
+                         """and extracts the submesh with the given region id(s).""")
+  parser.add_argument('filename', metavar='filename', type=str,
+                      help='specify the name of the dolfin .xdmf file')
+  parser.add_argument('-r', '--regionids', action='store', metavar='region_id', dest='regionids', type=int, nargs='+', required=True,
+                      help='specify the region ids where the submesh is to be extracted')
+  parser.add_argument('-o', '--outputfilename', action='store', metavar='filename', dest='outputfilename', type=str, default=True, required=False,
+                      help='specify the output filename (defaults to the input filename_submesh)')
+  try:
+    argcomplete.autocomplete(parser)
+  except NameError:
+    pass
+  args = parser.parse_args()
 
-# organize the filename
-fullname = args.filename
-basename, extension = os.path.splitext(fullname)
-
-outfullname = args.outputfilename
-if outfullname is None: outfullname = basename+"_submesh"+extension
-outbasename, outextension = os.path.splitext(outfullname)
-
-# check that the filename ends with the right format
-if extension!=".xdmf" or outextension!=".xdmf":
-    sys.stderr.write("Input and output mesh filenames must end in .xdmf.\n")
-    parser.print_help()
-    sys.exit(1)
-
-# read in the mesh
-mesh = dolfin.Mesh()
-dolfin.XDMFFile(dolfin.MPI.comm_world, fullname).read(mesh)
-
-D = mesh.topology().dim()
-md = mesh.domains()
-
-cellfunc = dolfin.MeshFunction("size_t", mesh, D, 0)
-dolfin.XDMFFile(dolfin.MPI.comm_world, basename+"_cell_ids"+extension).read(cellfunc)
-for cell in dolfin.cells(mesh): md.set_marker((cell.index(), cellfunc[cell.index()]), D)
-
-facetmvc = dolfin.MeshValueCollection("size_t", mesh, D-1)
-dolfin.XDMFFile(dolfin.MPI.comm_world, basename+"_facet_ids"+extension).read(facetmvc)
-facetfunc = dolfin.MeshFunction("size_t", mesh, facetmvc)
-for facet in dolfin.facets(mesh): md.set_marker((facet.index(), facetfunc[facet.index()]), D-1)
-
-submesh = dolfin.SubMesh(mesh, args.regionids)
-submd = submesh.domains()
-
-subcellfunc = dolfin.MeshFunction("size_t", submesh, D, submd)
-subcellmvc = dolfin.MeshValueCollection("size_t", subcellfunc)
-subcellmvc.rename("cell_ids", "cell_ids")
-
-subfacetfunc = dolfin.MeshFunction("size_t", submesh, D-1, submd)
-subfacetmvc = dolfin.MeshValueCollection("size_t", subfacetfunc)
-subfacetmvc.rename("facet_ids", "facet_ids")
-
-dolfin.XDMFFile(dolfin.MPI.comm_world, outfullname).write(submesh)
-dolfin.XDMFFile(dolfin.MPI.comm_world, outbasename+"_cell_ids"+extension).write(subcellmvc)
-dolfin.XDMFFile(dolfin.MPI.comm_world, outbasename+"_facet_ids"+extension).write(subfacetmvc)
+  extract_submesh(args.filename, args.regionids, writefile=args.outputfilename)
 
