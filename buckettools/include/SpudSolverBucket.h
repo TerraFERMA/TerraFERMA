@@ -61,6 +61,8 @@ namespace buckettools
 
     void initialize();                                               // initialize the solvers and tensors
 
+    void initialize_diagnostics();                                   // initialize any diagnostic output in the solver
+
     //***************************************************************|***********************************************************//
     // Base data access
     //***************************************************************|***********************************************************//
@@ -176,7 +178,7 @@ namespace buckettools
     // Output functions (continued)
     //***************************************************************|***********************************************************//
 
-    void checkpoint_options_();                                      // checkpoint the options system for the spudsystembucket
+    void checkpoint_options_();                                      // checkpoint the options system for the spudsystemssolverbucket
 
     
   };

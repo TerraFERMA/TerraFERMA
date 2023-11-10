@@ -162,6 +162,8 @@ namespace buckettools
 
     void fill_detectors_();                                          // fill the detectors
  
+    void fill_systemssolvers_();                                     // fill the systems solvers
+
     void fill_diagnostics_();                                        // fill the detectors
  
     //***************************************************************|***********************************************************//

@@ -23,6 +23,7 @@
 #include "Bucket.h"
 #include "SystemBucket.h"
 #include "SolverBucket.h"
+#include "SystemsSolverBucket.h"
 #include <cstdio>
 #include <string>
 #include <fstream>
@@ -38,10 +39,12 @@ KSPConvergenceFile::KSPConvergenceFile(const std::string &name,
                                        const MPI_Comm &comm, 
                                        const Bucket *bucket,
                                        const std::string &systemname, 
-                                       const std::string &solvername) :
+                                       const std::string &solvername,
+                                       const std::string &systemssolvername) :
                                         DiagnosticsFile(name, comm, bucket),
                                         systemname_(systemname),
-                                        solvername_(solvername)
+                                        solvername_(solvername),
+                                        systemssolvername_(systemssolvername)
 {
                                                                      // do nothing... all handled by DiagnosticsFile constructor
 }
@@ -55,23 +58,11 @@ KSPConvergenceFile::~KSPConvergenceFile()
 }
 
 //*******************************************************************|************************************************************//
-// write a header for the model described in the given bucket
-//*******************************************************************|************************************************************//
-void KSPConvergenceFile::write_header()
-{
-  header_open_();
-  header_constants_();                                               // write constant tags
-  header_timestep_();                                                // write tags for the timesteps
-  header_iteration_();                                               // write tags for the iterations
-  header_bucket_();                                                  // write tags for the actual bucket variables - fields etc.
-  header_close_();
-}
-
-//*******************************************************************|************************************************************//
 // write data for the model described in the given bucket
 //*******************************************************************|************************************************************//
 void KSPConvergenceFile::write_data(const int &kspit)
 {
+  initialize_();
   
   data_timestep_();                                                  // write the timestepping information
   data_iteration_(kspit);                                            // write the iteration information
@@ -82,12 +73,41 @@ void KSPConvergenceFile::write_data(const int &kspit)
 }
 
 //*******************************************************************|************************************************************//
+// convenience function to return the associated systems solver (if any)
+//*******************************************************************|************************************************************//
+SystemsSolverBucket* KSPConvergenceFile::systemssolver_()
+{
+  SystemsSolverBucket* p_syssol = NULL;
+  if (systemssolvername_.length() > 0)
+  {
+    p_syssol = (*(*(*bucket_).fetch_system(systemname_)).fetch_solver(solvername_)).fetch_systemssolver(systemssolvername_);
+  }
+  return p_syssol;
+}
+
+//*******************************************************************|************************************************************//
+// write a header for the model described in the given bucket
+//*******************************************************************|************************************************************//
+void KSPConvergenceFile::write_header_()
+{
+  header_open_();
+  header_constants_();                                               // write constant tags
+  header_timestep_();                                                // write tags for the timesteps
+  header_iteration_();                                               // write tags for the iterations
+  header_bucket_();                                                  // write tags for the actual bucket variables - fields etc.
+  header_close_();
+}
+
+//*******************************************************************|************************************************************//
 // write lines of the xml header for values relating to iterations
 //*******************************************************************|************************************************************//
 void KSPConvergenceFile::header_iteration_()
 {
-  
-  tag_("NonlinearSystemsIteration", "value");                        // the nonlinear systems iteration
+  SystemsSolverBucket* p_syssol = systemssolver_();
+  if (p_syssol)                                                      // any nonlinear systems iterations
+  {
+    header_systemssolver_(p_syssol);
+  }
   tag_("NonlinearIteration", "value");                               // the nonlinear solver iteration
   tag_("KSPIteration", "value");                                     // the ksp solver iteration
   
@@ -175,9 +195,13 @@ void KSPConvergenceFile::header_func_(const FunctionBucket_ptr f_ptr)
 //*******************************************************************|************************************************************//
 void KSPConvergenceFile::data_iteration_(const int &kspit)
 {
+  SystemsSolverBucket* p_syssol = systemssolver_();
+  if (p_syssol)                                                      // any nonlinear systems iterations
+  {
+    data_systemssolver_(p_syssol);
+  }
+
   SolverBucket_ptr sol_ptr = (*(*bucket_).fetch_system(systemname_)).fetch_solver(solvername_);
-  
-  data_((*bucket_).iteration_count());  
   data_((*sol_ptr).iteration_count());
   data_(kspit);
 }

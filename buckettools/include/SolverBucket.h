@@ -26,6 +26,8 @@
 #include "BucketPETScBase.h"
 #include "ConvergenceFile.h"
 #include "KSPConvergenceFile.h"
+#include "GenericSolverBucket.h"
+#include "SystemBucket.h"
 #include <dolfin.h>
 #include "petscsnes.h"
 
@@ -36,8 +38,6 @@ namespace buckettools
   typedef std::shared_ptr< SystemBucket > SystemBucket_ptr;        // so we can predeclare a pointer to it
   class FunctionBucket;                                              // predeclare the class itself
   typedef std::shared_ptr< FunctionBucket > FunctionBucket_ptr;    // so we can predeclare a pointer to it
-  
-  enum solve_location { SOLVE_START, SOLVE_TIMELOOP, SOLVE_DIAGNOSTICS, SOLVE_NEVER };
 
   //*****************************************************************|************************************************************//
   // SolverBucket class:
@@ -45,7 +45,7 @@ namespace buckettools
   // The SolverBucket class describes system functions and coefficients and provides data types
   // to the underlying functionals.
   //*****************************************************************|************************************************************//
-  class SolverBucket
+  class SolverBucket : public GenericSolverBucket
   {
 
   //*****************************************************************|***********************************************************//
@@ -68,7 +68,7 @@ namespace buckettools
     // Functions used to run the model
     //***************************************************************|***********************************************************//
 
-    void solve();                                                    // run the nonlinear solver described by this class
+    bool solve();                                                    // run the nonlinear solver described by this class
 
     double residual_norm();                                          // return the norm of the residual (which will be reassembled)
 
@@ -80,17 +80,12 @@ namespace buckettools
 
     void attach_form_coeffs();                                       // attach coefficients to the forms in this solver
 
-    void initialize_diagnostics() const;                             // initialize any diagnostic output in the solver
-
     void create_nullspace();                                         // take any stored nullspace vectors and convert them into a
                                                                      // PETSc null space object
 
     //***************************************************************|***********************************************************//
     // Base data access
     //***************************************************************|***********************************************************//
-
-    const std::string name() const                                   // return a string containing the solver name
-    { return name_; }
 
     const std::string type() const                                   // return a string describing the solver type
     { return type_; }
@@ -129,11 +124,9 @@ namespace buckettools
     const bool visualization_monitor() const;                        // return true if we're using a visualization monitor
     
     const bool kspvisualization_monitor() const;                     // return true if we're using a visualization monitor
+
+    std::string visualization_basename();                            // return a basename for any visualization monitors
     
-    const ConvergenceFile_ptr convergence_file() const;              // return a pointer to the convergence file
-
-    const KSPConvergenceFile_ptr ksp_convergence_file() const;       // return a pointer to the ksp convergence file
-
     const bool monitor_norms() const                                 // return true if norms should be monitored in nonlinear iterations
     { return monitornorms_; }
 
@@ -143,8 +136,14 @@ namespace buckettools
     const int solve_location() const                                 // return an integer describing where this solver is applied
     { return solve_location_; }
 
-    const bool solved() const                                        // return a boolean indicating if this system has been solved
-    { return *solved_; }                                             // for or not
+    std::string current_systemssolver() const                        // return a flag indicating which systems solver we're
+    { return current_systemssolver_; }                               // currently using (or assuming we're using)
+
+    void set_current_systemssolver(const std::string systemssolvername)
+    { current_systemssolver_ = systemssolvername; }
+
+    void reset_current_systemssolver()
+    { current_systemssolver_ = ""; }
 
     //***************************************************************|***********************************************************//
     // Form data access
@@ -187,6 +186,50 @@ namespace buckettools
 
     Mat fetch_solversubmatrix(const std::string &name);              // fetch the named solver submatrix
 
+    //***************************************************************************************************************************//
+    // Parent nonlinear systems solver data access
+    //***************************************************************************************************************************//
+
+    void register_systemssolver(SystemsSolverBucket* solver, const std::string &name);//register a systems solver
+    
+    SystemsSolverBucket* fetch_systemssolver(const std::string &name);// fetch the named systemssolver
+
+    p_SystemsSolverBucket_it systemssolvers_begin();                 // return an iterator to the beginning of the systemssolvers
+
+    p_SystemsSolverBucket_const_it systemssolvers_begin() const;     // return a constant iterator to the beginning of the systemssolvers
+
+    p_SystemsSolverBucket_it systemssolvers_end();                   // return an iterator to the end of the systemssolvers
+
+    p_SystemsSolverBucket_const_it systemssolvers_end() const;       // return a constant iterator to the end of the systemssolvers
+
+    void register_convergencefile(ConvergenceFile_ptr convfile, const std::string &name="");//register a convergence file
+    
+    ConvergenceFile_ptr convergencefile();                           // get the default convergence file
+
+    ConvergenceFile_ptr fetch_convergencefile(const std::string &name);// fetch the named convergence file
+
+    ConvergenceFile_it convergencefiles_begin();                     // return an iterator to the beginning of the convergencefiles
+
+    ConvergenceFile_const_it convergencefiles_begin() const;         // return a constant iterator to the beginning of the convergencefiles
+
+    ConvergenceFile_it convergencefiles_end();                       // return an iterator to the end of the convergencefiles
+
+    ConvergenceFile_const_it convergencefiles_end() const;           // return a constant iterator to the end of the convergencefiles
+
+    void register_kspconvergencefile(KSPConvergenceFile_ptr kspconvfile, const std::string &name="");//register a ksp convergence file
+
+    KSPConvergenceFile_ptr kspconvergencefile();                     // get the default ksp convergence file
+    
+    KSPConvergenceFile_ptr fetch_kspconvergencefile(const std::string &name);// fetch the named ksp convergence file
+
+    KSPConvergenceFile_it kspconvergencefiles_begin();               // return an iterator to the beginning of the ksp convergencefiles
+
+    KSPConvergenceFile_const_it kspconvergencefiles_begin() const;   // return a constant iterator to the beginning of the ksp convergencefiles
+
+    KSPConvergenceFile_it kspconvergencefiles_end();                 // return an iterator to the end of the ksp convergencefiles
+
+    KSPConvergenceFile_const_it kspconvergencefiles_end() const;     // return a constant iterator to the end of the ksp convergencefiles
+
     //***************************************************************|***********************************************************//
     // Output functions
     //***************************************************************|***********************************************************//
@@ -198,6 +241,19 @@ namespace buckettools
                                                                      // solver
 
     void checkpoint();                                               // checkpoint the solverbucket
+
+    const bool include_in_visualization() const                      // return a boolean indicating if this system has fields to 
+    { return (*system_).include_in_visualization(); }                // be included in diagnostic output
+    
+    const bool include_in_statistics() const                         // return a boolean indicating if this system has fields to 
+    { return (*system_).include_in_statistics(); }                   // be included in diagnostic output
+    
+    const bool include_in_steadystate() const                        // return a boolean indicating if this system has fields to 
+    { return (*system_).include_in_steadystate(); }                  // be included in steadystate output
+    
+    const bool include_in_detectors() const                          // return a boolean indicating if this system has fields to 
+    { return (*system_).include_in_detectors(); }                    // be included in steadystate output
+    
 
   //*****************************************************************|***********************************************************//
   // Protected functions
@@ -243,17 +299,11 @@ namespace buckettools
 
     bool ignore_failures_;                                           // ignore solver failures
 
-    std::string name_;                                               // solver name
-
     std::string type_;                                               // solver type (string)
 
     SystemBucket* system_;                                           // parent system
 
     CustomMonitorCtx snesmctx_, kspmctx_;                            // monitor contexts
-
-    ConvergenceFile_ptr convfile_;                                   // diagnostic convergence file
-
-    KSPConvergenceFile_ptr kspconvfile_;                             // diagnostic convergence file
 
     bool_ptr visualizationmonitor_, kspvisualizationmonitor_;        // visualization monitors
 
@@ -261,13 +311,19 @@ namespace buckettools
 
     int solve_location_;                                             // when this solver will be applied
 
-    bool_ptr solved_;                                                // indicate if the system has been solved this timestep
+    std::string current_systemssolver_;                              // an indicator of which systemssolver we're currently using
 
     //***************************************************************|***********************************************************//
     // Pointers data
     //***************************************************************|***********************************************************//
 
-    ordered_map<const std::string, Form_ptr> forms_;                        // a map from the form names to the form pointers
+    ordered_map<const std::string, Form_ptr> forms_;                 // a map from the form names to the form pointers
+
+    ordered_map<const std::string, SystemsSolverBucket*> systemssolvers_;// a map of the systems solvers using this solver
+
+    ordered_map<const std::string, ConvergenceFile_ptr> convergencefiles_;  // a map from systems solvers names to convergence files
+
+    ordered_map<const std::string, KSPConvergenceFile_ptr> kspconvergencefiles_;// a map from systems solvers names to ksp convergence files
 
     std::vector< PETScVector_ptr > nullspacevectors_;                // a vector of null space vectors to be removed from the rhs
                                                                      // after assembly
@@ -284,7 +340,7 @@ namespace buckettools
     // Output functions (continued)
     //***************************************************************|***********************************************************//
 
-    virtual void checkpoint_options_();                              // checkpoint the options system for the systembucket
+    virtual void checkpoint_options_();                              // checkpoint the options system for the solverbucket
 
 
   //*****************************************************************|***********************************************************//
@@ -296,6 +352,8 @@ namespace buckettools
     //***************************************************************|***********************************************************//
     // Solver convergence checking
     //***************************************************************|***********************************************************//
+
+    bool complete_iterating_picard_(const double &aerror0);          // indicate if nonlinear systems iterations are complete or not
 
     void snes_check_convergence_();                                  // check snes convergence
 

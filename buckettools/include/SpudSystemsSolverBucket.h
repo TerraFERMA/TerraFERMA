@@ -19,97 +19,88 @@
 // along with TerraFERMA. If not, see <http://www.gnu.org/licenses/>.
 
 
-#ifndef __STEADYSTATE_FILE_H
-#define __STEADYSTATE_FILE_H
+#ifndef __SPUD_SYSTEMS_SOLVER_BUCKET_H
+#define __SPUD_SYSTEMS_SOLVER_BUCKET_H
 
-#include <cstdio>
-#include <fstream>
-#include <string>
-#include "DiagnosticsFile.h"
 #include "BoostTypes.h"
+#include "SystemsSolverBucket.h"
 
 namespace buckettools
 {
-
+  
   //*****************************************************************|************************************************************//
-  // predeclarations: a circular dependency between the SteadyStateFile class and the Bucket class requires a lot of predeclarations.
-  //*****************************************************************|************************************************************//
-  class Bucket;
-  class FunctionBucket;
-  typedef std::shared_ptr< FunctionBucket > FunctionBucket_ptr;
-  typedef std::shared_ptr< dolfin::Form > Form_ptr;
-
-  //*****************************************************************|************************************************************//
-  // SteadyStateFile class:
+  // SpudSystemsSolverBucket class:
   //
-  // A derived class from the base statfile class intended for the output of diagnostics to file every dump period.
-  // Statistics normally include things like function mins and maxes as well as functional output.
   //*****************************************************************|************************************************************//
-  class SteadyStateFile : public DiagnosticsFile
+  class SpudSystemsSolverBucket : public SystemsSolverBucket
   {
-
   //*****************************************************************|***********************************************************//
   // Publicly available functions
   //*****************************************************************|***********************************************************//
 
   public:                                                            // available to everyone
-    
+
     //***************************************************************|***********************************************************//
     // Constructors and destructors
     //***************************************************************|***********************************************************//
+
+    SpudSystemsSolverBucket();                                       // default constructor
+
+    SpudSystemsSolverBucket(const std::string &optionpath, 
+                            const int &solve_location, 
+                            Bucket* bucket, 
+                            SystemsSolverBucket* systemssolver=NULL);// specific constructor (with parent bucket and solver)
     
-    SteadyStateFile(const std::string &name, 
-                    const MPI_Comm &comm, 
-                    const Bucket *bucket);  // specific constructor
- 
-    ~SteadyStateFile();                                              // default destructor
-    
+    virtual ~SpudSystemsSolverBucket();                                  // default destructor
+
     //***************************************************************|***********************************************************//
-    // Data writing functions
+    // Filling data
     //***************************************************************|***********************************************************//
 
-    void write_data();                                               // write data to file for a simulation
-    
+    void fill();                                                     // fill in the data in the base solver bucket
+
+    void initialize_diagnostics();                                   // initialize any diagnostic output from this systems solver
+
+    //***************************************************************|***********************************************************//
+    // Base data access
+    //***************************************************************|***********************************************************//
+
+    const std::string optionpath() const                             // return a constant string containing the optionpath for the solver bucket
+    { return optionpath_; }
+
+    const std::string str(int indent=0) const;                       // return an indented string describing the contents of this systems solver
+
   //*****************************************************************|***********************************************************//
   // Private functions
   //*****************************************************************|***********************************************************//
 
-  private:                                                           // only available to this class
+  private:                                                           // only accessible by this class
 
     //***************************************************************|***********************************************************//
     // Base data
     //***************************************************************|***********************************************************//
 
-    std::vector< FunctionBucket_ptr > functions_;
-
-    std::vector< FunctionalBucket_ptr > functionals_;
+    std::string optionpath_;                                         // the optionpath for the solver bucket
 
     //***************************************************************|***********************************************************//
-    // Header writing functions
+    // Filling data (continued)
     //***************************************************************|***********************************************************//
 
-    void write_header_();                         // write header for the bucket
+    void fill_base_();                                               // fill the base data of the systems solver bucket
 
-    void header_bucket_();                                           // write the header for the bucket (non-constant and 
-                                                                     // timestepping entries)
+    void fill_solvers_();                                            // fill the child solvers
 
-    void header_func_(const FunctionBucket_ptr f_ptr);               // write the header for a set of functions
-
-    void header_functional_(const FunctionalBucket_ptr f_ptr);       // write the header for a set of functionals of a function
-
+    
     //***************************************************************|***********************************************************//
-    // Data writing functions (continued)
+    // Output functions (continued)
     //***************************************************************|***********************************************************//
 
-    void data_bucket_();                                             // write the data for a steady state simulation
-
-    void data_func_(FunctionBucket_ptr f_ptr);                       // write the data for a set of functions
-
-    void data_functional_(FunctionalBucket_ptr f_ptr);               // write the data for a set of functionals
+    void checkpoint_options_();                                      // checkpoint the options system for the spudsystembucket
 
   };
-  
-  typedef std::shared_ptr< SteadyStateFile > SteadyStateFile_ptr;  // define a boost shared ptr type for the class
+ 
+  typedef std::shared_ptr< SpudSystemsSolverBucket > SpudSystemsSolverBucket_ptr;// define a (boost shared) pointer to a spud systems solver bucket class
 
 }
 #endif
+

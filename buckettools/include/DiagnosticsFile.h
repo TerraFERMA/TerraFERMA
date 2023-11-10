@@ -31,7 +31,7 @@ namespace buckettools
 {
 
   class Bucket;
-  typedef std::shared_ptr< Bucket > Bucket_ptr;
+  class SystemsSolverBucket;
 
   //*****************************************************************|************************************************************//
   // DiagnosticsFile class:
@@ -85,9 +85,15 @@ namespace buckettools
 
     uint ncolumns_;                                                  // total number of columns
 
+    bool initialized_;
+
     //***************************************************************|***********************************************************//
     // Header writing functions
     //***************************************************************|***********************************************************//
+
+    void initialize_();
+
+    virtual void write_header_() = 0;
 
     void header_constants_(const bool &binary=false);                // write the header entries for constant values that do not 
                                                                      // appear later again in the file
@@ -99,6 +105,8 @@ namespace buckettools
     void header_timestep_();                                         // write the header for a dynamic simulation
                                                                      // (the elapsed time, timestep etc.)
     
+    void header_systemssolver_(const SystemsSolverBucket* p_syssol); // write the header for any systems solver iterations
+
     void constant_tag_(const std::string &name,                      // write a header tag for a constant value
                        const std::string &type, 
                        const std::string &value);
@@ -115,6 +123,8 @@ namespace buckettools
     void data_endlineflush_();
 
     void data_timestep_();                                           // write the data for timestepping for a dynamic simulation
+
+    void data_systemssolver_(const SystemsSolverBucket* p_syssol);   // write the data for any systems solver iterations
 
     void data_(const int &value);                                    // write generic data to the file
 

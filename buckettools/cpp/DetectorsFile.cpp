@@ -83,23 +83,11 @@ DetectorsFile::~DetectorsFile()
 }
 
 //*******************************************************************|************************************************************//
-// write header for the model described in the given bucket
-//*******************************************************************|************************************************************//
-void DetectorsFile::write_header()
-{
-  header_open_();
-  header_constants_(dolfin::MPI::size(mpicomm_)>1);
-  header_timestep_();
-  header_bucket_();
-  header_close_();
-
-}
-
-//*******************************************************************|************************************************************//
 // write data for the model described in the attached bucket
 //*******************************************************************|************************************************************//
 void DetectorsFile::write_data()
 {
+  initialize_();
   
   data_timestep_();
   data_bucket_();
@@ -191,6 +179,19 @@ void DetectorsFile::data_timestep_()
   
 }
 
+
+//*******************************************************************|************************************************************//
+// write header for the model described in the given bucket
+//*******************************************************************|************************************************************//
+void DetectorsFile::write_header_()
+{
+  header_open_();
+  header_constants_(dolfin::MPI::size(mpicomm_)>1);
+  header_timestep_();
+  header_bucket_();
+  header_close_();
+
+}
 
 //*******************************************************************|************************************************************//
 // write header for the model described in the given bucket

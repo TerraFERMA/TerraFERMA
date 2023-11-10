@@ -35,39 +35,6 @@
     <dump_periods/>
     <detectors/>
   </io>
-  <solution_order>
-    <solve name="in_timeloop">
-      <solver name="nonlinear_systems">
-        <type name="nonlinear_systems_solver">
-          <relative_error>
-            <real_value rank="0">1.e-6</real_value>
-          </relative_error>
-          <max_iterations>
-            <integer_value rank="0">50</integer_value>
-          </max_iterations>
-          <monitors>
-            <visualization/>
-            <convergence_file/>
-          </monitors>
-          <never_ignore_solver_failures/>
-          <solver name="System1::Solver">
-            <type name="nonlinear_solver">
-              <system name="System1"/>
-              <nonlinear_solver name="Solver"/>
-              <include_in_systems_residual/>
-            </type>
-          </solver>
-          <solver name="System2::Solver">
-            <type name="nonlinear_solver">
-              <system name="System2"/>
-              <nonlinear_solver name="Solver"/>
-              <include_in_systems_residual/>
-            </type>
-          </solver>
-        </type>
-      </solver>
-    </solve>
-  </solution_order>
   <global_parameters/>
   <system name="System1">
     <mesh name="Mesh"/>
@@ -547,4 +514,40 @@ def val(x):
       <include_in_statistics/>
     </functional>
   </system>
+  <solution_order>
+    <solve name="in_timeloop">
+      <solver name="nonlinear_systems">
+        <type name="nonlinear_systems_solver">
+          <relative_error>
+            <real_value rank="0">1.e-6</real_value>
+          </relative_error>
+          <max_iterations>
+            <integer_value rank="0">50</integer_value>
+          </max_iterations>
+          <relaxation_parameter>
+            <real_value rank="0">0.975</real_value>
+          </relaxation_parameter>
+          <monitors>
+            <visualization/>
+            <convergence_file/>
+          </monitors>
+          <never_ignore_solver_failures/>
+          <solver name="System1::Solver">
+            <type name="nonlinear_solver">
+              <system name="System1"/>
+              <nonlinear_solver name="Solver"/>
+              <include_in_systems_residual/>
+            </type>
+          </solver>
+          <solver name="System2::Solver">
+            <type name="nonlinear_solver">
+              <system name="System2"/>
+              <nonlinear_solver name="Solver"/>
+              <include_in_systems_residual/>
+            </type>
+          </solver>
+        </type>
+      </solver>
+    </solve>
+  </solution_order>
 </terraferma_options>

@@ -23,6 +23,7 @@
 #include "Bucket.h"
 #include "SystemBucket.h"
 #include "SolverBucket.h"
+#include "SystemsSolverBucket.h"
 #include <cstdio>
 #include <string>
 #include <fstream>
@@ -36,9 +37,10 @@ using namespace buckettools;
 // specific constructor
 //*******************************************************************|************************************************************//
 SystemsConvergenceFile::SystemsConvergenceFile(const std::string &name, 
-                                       const MPI_Comm &comm, 
-                                       const Bucket *bucket) :
-                                        DiagnosticsFile(name, comm, bucket)
+                                               const MPI_Comm &comm, 
+                                               const Bucket *bucket,
+                                               const SystemsSolverBucket *systemssolver) : // specific constructor
+                                               DiagnosticsFile(name, comm, bucket), systemssolver_(systemssolver)
 {
                                                                      // do nothing... all handled by DiagnosticsFile constructor
 }
@@ -52,23 +54,11 @@ SystemsConvergenceFile::~SystemsConvergenceFile()
 }
 
 //*******************************************************************|************************************************************//
-// write a header for the model described in the given bucket
-//*******************************************************************|************************************************************//
-void SystemsConvergenceFile::write_header()
-{
-  header_open_();
-  header_constants_();                                               // write constant tags
-  header_timestep_();                                                // write tags for the timesteps
-  header_iteration_();                                               // write tags for the iterations
-  header_bucket_();                                                  // write tags for the actual bucket variables - fields etc.
-  header_close_();
-}
-
-//*******************************************************************|************************************************************//
 // write data for the model described in the given bucket
 //*******************************************************************|************************************************************//
 void SystemsConvergenceFile::write_data(const double &norm)
 {
+  initialize_();
   
   data_timestep_();                                                  // write the timestepping information
   data_iteration_();                                                 // write the iteration information
@@ -79,12 +69,25 @@ void SystemsConvergenceFile::write_data(const double &norm)
 }
 
 //*******************************************************************|************************************************************//
+// write a header for the model described in the given bucket
+//*******************************************************************|************************************************************//
+void SystemsConvergenceFile::write_header_()
+{
+  header_open_();
+  header_constants_();                                               // write constant tags
+  header_timestep_();                                                // write tags for the timesteps
+  header_iteration_();                                               // write tags for the iterations
+  header_bucket_();                                                  // write tags for the actual bucket variables - fields etc.
+  header_close_();
+}
+
+//*******************************************************************|************************************************************//
 // write lines of the xml header for values relating to iterations
 //*******************************************************************|************************************************************//
 void SystemsConvergenceFile::header_iteration_()
 {
   
-  tag_("NonlinearSystemsIteration", "value");                        // the nonlinear systems iteration
+  header_systemssolver_(systemssolver_);
   
 }
 
@@ -93,41 +96,43 @@ void SystemsConvergenceFile::header_iteration_()
 //*******************************************************************|************************************************************//
 void SystemsConvergenceFile::header_bucket_()
 {
-  tag_("NonlinearSystems", "res_norm(l2)");
+  tag_((*systemssolver_).name(), "res_norm(l2)");
 
-  for (SystemBucket_it s_it = (*bucket_).systems_begin(); 
-                       s_it != (*bucket_).systems_end(); s_it++)
+  const std::vector<SolverBucket_ptr>& residualsolvers = 
+                                (*systemssolver_).residualsolvers(); // the residual solvers are identified by having as
+                                                                     // many unique system names as possible so this will do for us
+                                                                     // here too
+
+  std::vector<SolverBucket_ptr>::const_iterator sol_it;
+  for (sol_it = residualsolvers.begin(); sol_it != residualsolvers.end(); sol_it++)
   {
-    const std::vector<int> locations = (*(*s_it).second).solve_locations();
-    if(std::find(locations.begin(), locations.end(), SOLVE_TIMELOOP) != locations.end())// only interested in in_timeloop systems
-    {
-      header_system_((*s_it).second);                                // write the header for the system itself
+    const SystemBucket* p_sys = (**sol_it).system();
+    header_system_(p_sys);                                           // write the header for the system itself
 
-      std::pair<SystemBucket_ptr, std::vector<FunctionBucket_ptr> > fields;
-      fields.first = (*s_it).second;
-      for (FunctionBucket_const_it f_it = (*(*s_it).second).fields_begin(); 
-                                   f_it != (*(*s_it).second).fields_end();        // loop over the given functions
-                                   f_it++)
-      {
-        header_func_((*f_it).second);                            // write the header for the fields in the system
-        fields.second.push_back((*f_it).second);
-      }
-      fields_.push_back(fields);
+    std::pair<const SystemBucket*, std::vector<FunctionBucket_ptr> > fields;
+    fields.first = p_sys;
+    for (FunctionBucket_const_it f_it = (*p_sys).fields_begin(); 
+                                 f_it != (*p_sys).fields_end();      // loop over the given functions
+                                 f_it++)
+    {
+      header_func_((*f_it).second);                                  // write the header for the fields in the system
+      fields.second.push_back((*f_it).second);
     }
+    fields_.push_back(fields);
   }
 }
 
 //*******************************************************************|************************************************************//
 // write a header for the model systems in the given bucket
 //*******************************************************************|************************************************************//
-void SystemsConvergenceFile::header_system_(const SystemBucket_ptr sys_ptr)
+void SystemsConvergenceFile::header_system_(const SystemBucket* p_sys)
 {
-  tag_((*sys_ptr).name(), "max");
-  tag_((*sys_ptr).name(), "min");
-  tag_((*sys_ptr).name(), "res_max");
-  tag_((*sys_ptr).name(), "res_min");
-  tag_((*sys_ptr).name(), "res_norm(l2)");
-  tag_((*sys_ptr).name(), "res_norm(inf)");
+  tag_((*p_sys).name(), "max");
+  tag_((*p_sys).name(), "min");
+  tag_((*p_sys).name(), "res_max");
+  tag_((*p_sys).name(), "res_min");
+  tag_((*p_sys).name(), "res_norm(l2)");
+  tag_((*p_sys).name(), "res_norm(inf)");
 }
 
 //*******************************************************************|************************************************************//
@@ -179,7 +184,7 @@ void SystemsConvergenceFile::header_func_(const FunctionBucket_ptr f_ptr)
 //*******************************************************************|************************************************************//
 void SystemsConvergenceFile::data_iteration_()
 {
-  data_((*bucket_).iteration_count());  
+  data_systemssolver_(systemssolver_);  
 }
 
 //*******************************************************************|************************************************************//
@@ -189,7 +194,7 @@ void SystemsConvergenceFile::data_bucket_(const double &norm)
 {
   data_(norm);
 
-  std::vector< std::pair< SystemBucket_ptr, std::vector<FunctionBucket_ptr> > >::iterator f_it;
+  std::vector< std::pair< const SystemBucket*, std::vector<FunctionBucket_ptr> > >::iterator f_it;
   for (f_it = fields_.begin(); 
               f_it != fields_.end(); f_it++)
   {
@@ -206,16 +211,16 @@ void SystemsConvergenceFile::data_bucket_(const double &norm)
 //*******************************************************************|************************************************************//
 // write data for a system
 //*******************************************************************|************************************************************//
-void SystemsConvergenceFile::data_system_(const SystemBucket_ptr sys_ptr)
+void SystemsConvergenceFile::data_system_(const SystemBucket* p_sys)
 {
   std::vector<double> values;
 
-  values.push_back((*(*(*sys_ptr).iteratedfunction()).vector()).max());
-  values.push_back((*(*(*sys_ptr).iteratedfunction()).vector()).min());
-  values.push_back((*(*(*sys_ptr).residualfunction()).vector()).max());
-  values.push_back((*(*(*sys_ptr).residualfunction()).vector()).min());
-  values.push_back((*(*(*sys_ptr).residualfunction()).vector()).norm("l2"));
-  values.push_back((*(*(*sys_ptr).residualfunction()).vector()).norm("linf"));
+  values.push_back((*(*(*p_sys).iteratedfunction()).vector()).max());
+  values.push_back((*(*(*p_sys).iteratedfunction()).vector()).min());
+  values.push_back((*(*(*p_sys).residualfunction()).vector()).max());
+  values.push_back((*(*(*p_sys).residualfunction()).vector()).min());
+  values.push_back((*(*(*p_sys).residualfunction()).vector()).norm("l2"));
+  values.push_back((*(*(*p_sys).residualfunction()).vector()).norm("linf"));
 
   data_(values);
 }

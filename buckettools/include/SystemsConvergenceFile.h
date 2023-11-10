@@ -63,17 +63,12 @@ namespace buckettools
     //***************************************************************|***********************************************************//
     
     SystemsConvergenceFile(const std::string &name, 
-                       const MPI_Comm &comm, 
-                       const Bucket *bucket);                        // specific constructor
+                           const MPI_Comm &comm, 
+                           const Bucket *bucket,
+                           const SystemsSolverBucket *systemssolver); // specific constructor
  
     ~SystemsConvergenceFile();                                       // default destructor
     
-    //***************************************************************|***********************************************************//
-    // Header writing functions
-    //***************************************************************|***********************************************************//
-
-    void write_header();                                             // write header for the bucket
-
     //***************************************************************|***********************************************************//
     // Data writing functions
     //***************************************************************|***********************************************************//
@@ -90,18 +85,22 @@ namespace buckettools
     // Base data
     //***************************************************************|***********************************************************//
 
-    std::vector< std::pair< SystemBucket_ptr, std::vector<FunctionBucket_ptr> > > fields_;
+    const SystemsSolverBucket* systemssolver_;                       // the systems solver
+
+    std::vector< std::pair< const SystemBucket*, std::vector<FunctionBucket_ptr> > > fields_;
 
     //***************************************************************|***********************************************************//
-    // Header writing functions (continued)
+    // Header writing functions
     //***************************************************************|***********************************************************//
+
+    void write_header_();                                            // write header for the bucket
 
     void header_iteration_();                                        // write the header for iterations 
     
     void header_bucket_();                                           // write the header for the bucket (non-constant and 
                                                                      // timestepping entries)
 
-    void header_system_(const SystemBucket_ptr sys_ptr);             // write the header for a system
+    void header_system_(const SystemBucket* p_sys);                  // write the header for a system
 
     void header_func_(const FunctionBucket_ptr f_ptr);               // write the header for a set of functions
 
@@ -113,7 +112,7 @@ namespace buckettools
 
     void data_bucket_(const double &norm);                           // write the data for a steady state simulation
 
-    void data_system_(const SystemBucket_ptr sys_ptr);               // write the data for a system
+    void data_system_(const SystemBucket* p_sys);                    // write the data for a system
 
     void data_field_(const FunctionBucket_ptr f_ptr);                // write the data for a set of fields
 

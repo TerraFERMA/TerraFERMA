@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version='1.0' encoding='utf-8'?>
 <terraferma_options>
   <geometry>
     <dimension>
@@ -7,7 +7,7 @@
     <mesh name="Mesh">
       <source name="UnitSquare">
         <number_cells>
-          <integer_value shape="2" dim1="2" rank="1">1 1</integer_value>
+          <integer_value rank="1" dim1="2" shape="2">1 1</integer_value>
         </number_cells>
         <diagonal>
           <string_value lines="1">left</string_value>
@@ -55,23 +55,22 @@
               <integer_value rank="0">1</integer_value>
             </degree>
           </element>
-          <initial_condition type="initial_condition" name="WholeMesh">
+          <initial_condition name="WholeMesh" type="initial_condition">
             <constant>
               <real_value rank="0">1.</real_value>
             </constant>
           </initial_condition>
           <boundary_condition name="LowerLeft">
             <boundary_ids>
-              <integer_value shape="2" rank="1">1 3</integer_value>
+              <integer_value rank="1" shape="2">1 3</integer_value>
             </boundary_ids>
             <sub_components name="All">
-              <type type="boundary_condition" name="Dirichlet">
+              <type name="Dirichlet" type="boundary_condition">
                 <python rank="0">
-                  <string_value lines="20" type="code" language="python3">from math import exp
+                  <string_value type="code" language="python3" lines="20">from math import exp
 def val(x):
   global exp
-  return exp(x[0] + x[1]/2.)
-</string_value>
+  return exp(x[0] + x[1]/2.)</string_value>
                 </python>
               </type>
             </sub_components>
@@ -97,23 +96,22 @@ def val(x):
               <integer_value rank="0">1</integer_value>
             </degree>
           </element>
-          <initial_condition type="initial_condition" name="WholeMesh">
+          <initial_condition name="WholeMesh" type="initial_condition">
             <constant>
               <real_value rank="0">1.</real_value>
             </constant>
           </initial_condition>
           <boundary_condition name="UpperRight">
             <boundary_ids>
-              <integer_value shape="2" rank="1">2 4</integer_value>
+              <integer_value rank="1" shape="2">2 4</integer_value>
             </boundary_ids>
             <sub_components name="All">
-              <type type="boundary_condition" name="Dirichlet">
+              <type name="Dirichlet" type="boundary_condition">
                 <python rank="0">
-                  <string_value lines="20" type="code" language="python3">from math import exp
+                  <string_value type="code" language="python3" lines="20">from math import exp
 def val(x):
   global exp
-  return exp(x[0] - x[1]/2.)
-</string_value>
+  return exp(x[0] - x[1]/2.)</string_value>
                 </python>
               </type>
             </sub_components>
@@ -139,15 +137,14 @@ def val(x):
               <integer_value rank="0">1</integer_value>
             </degree>
           </element>
-          <value type="value" name="WholeMesh">
+          <value name="WholeMesh" type="value">
             <python rank="0">
-              <string_value lines="20" type="code" language="python3">def val(xx):
+              <string_value type="code" language="python3" lines="20">def val(xx):
   from math import exp
   p1 = 1
   x = xx[0]
   y = xx[1]
-  return -(1+p1)*exp(x*(1+p1) + 0.5*y*(1-p1)) - 0.25*(1-p1)*exp(x*(1+p1) + 0.5*y*(1-p1))
-</string_value>
+  return -(1+p1)*exp(x*(1+p1) + 0.5*y*(1-p1)) - 0.25*(1-p1)*exp(x*(1+p1) + 0.5*y*(1-p1))</string_value>
             </python>
           </value>
         </rank>
@@ -168,15 +165,14 @@ def val(x):
               <integer_value rank="0">1</integer_value>
             </degree>
           </element>
-          <value type="value" name="WholeMesh">
+          <value name="WholeMesh" type="value">
             <python rank="0">
-              <string_value lines="20" type="code" language="python3">def val(xx):
+              <string_value type="code" language="python3" lines="20">def val(xx):
   from math import exp
   p2 = 1
   x = xx[0]
   y = xx[1]
-  return -(1+p2)*exp(x*(1+p2) - 0.5*y*(1-p2)) - 0.25*(1-p2)*exp(x*(1+p2) - 0.5*y*(1-p2))
-</string_value>
+  return -(1+p2)*exp(x*(1+p2) - 0.5*y*(1-p2)) - 0.25*(1-p2)*exp(x*(1+p2) - 0.5*y*(1-p2))</string_value>
             </python>
           </value>
         </rank>
@@ -189,7 +185,7 @@ def val(x):
       </ufl_symbol>
       <type name="Constant">
         <rank name="Scalar" rank="0">
-          <value type="value" name="WholeMesh">
+          <value name="WholeMesh" type="value">
             <constant>
               <real_value rank="0">1</real_value>
             </constant>
@@ -204,7 +200,7 @@ def val(x):
       </ufl_symbol>
       <type name="Constant">
         <rank name="Scalar" rank="0">
-          <value type="value" name="WholeMesh">
+          <value name="WholeMesh" type="value">
             <constant>
               <real_value rank="0">1</real_value>
             </constant>
@@ -227,13 +223,12 @@ def val(x):
               <integer_value rank="0">1</integer_value>
             </degree>
           </element>
-          <value type="value" name="WholeMesh">
+          <value name="WholeMesh" type="value">
             <python rank="0">
-              <string_value lines="20" type="code" language="python3">from math import exp
+              <string_value type="code" language="python3" lines="20">from math import exp
 def val(x):
   global exp
-  return exp(x[0] + x[1]/2.)
-</string_value>
+  return exp(x[0] + x[1]/2.)</string_value>
             </python>
           </value>
         </rank>
@@ -254,13 +249,12 @@ def val(x):
               <integer_value rank="0">1</integer_value>
             </degree>
           </element>
-          <value type="value" name="WholeMesh">
+          <value name="WholeMesh" type="value">
             <python rank="0">
-              <string_value lines="20" type="code" language="python3">from math import exp
+              <string_value type="code" language="python3" lines="20">from math import exp
 def val(x):
   global exp
-  return exp(x[0] - x[1]/2.)
-</string_value>
+  return exp(x[0] - x[1]/2.)</string_value>
             </python>
           </value>
         </rank>
@@ -281,17 +275,17 @@ def val(x):
               <integer_value rank="0">1</integer_value>
             </degree>
           </element>
-          <value type="value" name="WholeMesh">
+          <value name="WholeMesh" type="value">
             <cpp rank="0">
               <members>
-                <string_value lines="20" type="code" language="cpp">GenericFunction_ptr num_ptr, sol_ptr;</string_value>
+                <string_value type="code" language="cpp" lines="20">GenericFunction_ptr num_ptr, sol_ptr;</string_value>
               </members>
               <initialization>
-                <string_value lines="20" type="code" language="cpp">num_ptr = system()-&gt;fetch_field("Field1")-&gt;genericfunction_ptr(time());
+                <string_value type="code" language="cpp" lines="20">num_ptr = system()-&gt;fetch_field("Field1")-&gt;genericfunction_ptr(time());
 sol_ptr = system()-&gt;fetch_coeff("AnalyticField1")-&gt;genericfunction_ptr(time());</string_value>
               </initialization>
               <eval>
-                <string_value lines="20" type="code" language="cpp">dolfin::Array&lt;double&gt; num(1), sol(1);
+                <string_value type="code" language="cpp" lines="20">dolfin::Array&lt;double&gt; num(1), sol(1);
 num_ptr-&gt;eval(num, x, cell);
 sol_ptr-&gt;eval(sol, x, cell);
 values[0] = std::abs(num[0] - sol[0]);</string_value>
@@ -318,17 +312,17 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
               <integer_value rank="0">1</integer_value>
             </degree>
           </element>
-          <value type="value" name="WholeMesh">
+          <value name="WholeMesh" type="value">
             <cpp rank="0">
               <members>
-                <string_value lines="20" type="code" language="cpp">GenericFunction_ptr num_ptr, sol_ptr;</string_value>
+                <string_value type="code" language="cpp" lines="20">GenericFunction_ptr num_ptr, sol_ptr;</string_value>
               </members>
               <initialization>
-                <string_value lines="20" type="code" language="cpp">num_ptr = system()-&gt;fetch_field("Field2")-&gt;genericfunction_ptr(time());
+                <string_value type="code" language="cpp" lines="20">num_ptr = system()-&gt;fetch_field("Field2")-&gt;genericfunction_ptr(time());
 sol_ptr = system()-&gt;fetch_coeff("AnalyticField2")-&gt;genericfunction_ptr(time());</string_value>
               </initialization>
               <eval>
-                <string_value lines="20" type="code" language="cpp">dolfin::Array&lt;double&gt; num(1), sol(1);
+                <string_value type="code" language="cpp" lines="20">dolfin::Array&lt;double&gt; num(1), sol(1);
 num_ptr-&gt;eval(num, x, cell);
 sol_ptr-&gt;eval(sol, x, cell);
 values[0] = std::abs(num[0] - sol[0]);</string_value>
@@ -355,13 +349,12 @@ values[0] = std::abs(num[0] - sol[0]);</string_value>
               <integer_value rank="0">1</integer_value>
             </degree>
           </element>
-          <value type="value" name="WholeMesh">
+          <value name="WholeMesh" type="value">
             <python rank="1">
-              <string_value lines="20" type="code" language="python3">from math import exp
+              <string_value type="code" language="python3" lines="20">from math import exp
 def val(x):
   global exp
-  return [exp(x[0] + x[1]/2.), 0.5*exp(x[0] + x[1]/2.)]
-</string_value>
+  return [exp(x[0] + x[1]/2.), 0.5*exp(x[0] + x[1]/2.)]</string_value>
             </python>
           </value>
         </rank>
@@ -382,13 +375,12 @@ def val(x):
               <integer_value rank="0">1</integer_value>
             </degree>
           </element>
-          <value type="value" name="WholeMesh">
+          <value name="WholeMesh" type="value">
             <python rank="1">
-              <string_value lines="20" type="code" language="python3">from math import exp
+              <string_value type="code" language="python3" lines="20">from math import exp
 def val(x):
   global exp
-  return [exp(x[0] - x[1]/2.), -0.5*exp(x[0] - x[1]/2.)]
-</string_value>
+  return [exp(x[0] - x[1]/2.), -0.5*exp(x[0] - x[1]/2.)]</string_value>
             </python>
           </value>
         </rank>
@@ -398,33 +390,29 @@ def val(x):
     <nonlinear_solver name="Solver">
       <type name="Picard">
         <preamble>
-          <string_value lines="20" type="code" language="python3">F1 = (inner(grad(f1_t), (f2_i**p1)*grad(f1_a)) - f1_t*s1)*dx \
+          <string_value type="code" language="python3" lines="20">F1 = (inner(grad(f1_t), (f2_i**p1)*grad(f1_a)) - f1_t*s1)*dx \
      + f1_t*(f2_i**p1)*g1[0]*ds(1) - f1_t*(f2_i**p1)*g1[0]*ds(2) \
      + f1_t*(f2_i**p1)*g1[1]*ds(3) - f1_t*(f2_i**p1)*g1[1]*ds(4)
 F2 = (inner(grad(f2_t), (f1_i**p2)*grad(f2_a)) - f2_t*s2)*dx \
      + f2_t*(f1_i**p2)*g2[0]*ds(1) - f2_t*(f1_i**p2)*g2[0]*ds(2) \
      + f2_t*(f1_i**p2)*g2[1]*ds(3) - f2_t*(f1_i**p2)*g2[1]*ds(4)
 
-F = F1 + F2
-</string_value>
+F = F1 + F2</string_value>
         </preamble>
         <form name="Bilinear" rank="1">
-          <string_value lines="20" type="code" language="python3">a = lhs(F)
-</string_value>
+          <string_value type="code" language="python3" lines="20">a = lhs(F)</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">a</string_value>
           </ufl_symbol>
         </form>
         <form name="Linear" rank="0">
-          <string_value lines="20" type="code" language="python3">L = rhs(F)
-</string_value>
+          <string_value type="code" language="python3" lines="20">L = rhs(F)</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">L</string_value>
           </ufl_symbol>
         </form>
         <form name="Residual" rank="0">
-          <string_value lines="20" type="code" language="python3">r = action(a, us_i) - L
-</string_value>
+          <string_value type="code" language="python3" lines="20">r = action(a, us_i) - L</string_value>
           <ufl_symbol name="solver">
             <string_value lines="1">r</string_value>
           </ufl_symbol>
@@ -438,6 +426,7 @@ F = F1 + F2
           <integer_value rank="0">50</integer_value>
         </max_iterations>
         <monitors>
+          <visualization/>
           <convergence_file/>
         </monitors>
         <linear_solver>
@@ -452,8 +441,7 @@ F = F1 + F2
       <solve name="in_timeloop"/>
     </nonlinear_solver>
     <functional name="AbsoluteDifferenceField1Integral">
-      <string_value lines="20" type="code" language="python3">int = d1*dx
-</string_value>
+      <string_value type="code" language="python3" lines="20">int = d1*dx</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -462,8 +450,7 @@ F = F1 + F2
       <include_in_statistics/>
     </functional>
     <functional name="AbsoluteDifferenceField1L2NormSquared">
-      <string_value lines="20" type="code" language="python3">int = d1*d1*dx
-</string_value>
+      <string_value type="code" language="python3" lines="20">int = d1*d1*dx</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -472,8 +459,7 @@ F = F1 + F2
       <include_in_statistics/>
     </functional>
     <functional name="AbsoluteDifferenceField2Integral">
-      <string_value lines="20" type="code" language="python3">int = d2*dx
-</string_value>
+      <string_value type="code" language="python3" lines="20">int = d2*dx</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
@@ -482,8 +468,7 @@ F = F1 + F2
       <include_in_statistics/>
     </functional>
     <functional name="AbsoluteDifferenceField2L2NormSquared">
-      <string_value lines="20" type="code" language="python3">int = d2*d2*dx
-</string_value>
+      <string_value type="code" language="python3" lines="20">int = d2*d2*dx</string_value>
       <ufl_symbol name="functional">
         <string_value lines="1">int</string_value>
       </ufl_symbol>
