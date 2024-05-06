@@ -10,10 +10,10 @@ usage() {
     echo "bash $0 [-h] [-t tag<string>] [-b branch<string>] [-r repo<string>] [-p platform<string>,platform<string>] [-d] dir<string>" 1>&2
     echo "  dir: required name of the subdirectory containing the Dockerfile" 1>&2
     echo "  -h: print this help message and exit" 1>&2
-    echo "  -t: specify a tag name (defaults to fenics-2019.1.0-focal)" 1>&2
-    echo "  -b: specify a branch name (defaults to master-2019.1.0)" 1>&2
+    echo "  -t: specify a tag name (defaults to focal-<branch if not main>-<debug>-<platform>)" 1>&2
+    echo "  -b: specify a branch name (defaults to main)" 1>&2
     echo "  -r: specify a repo URL (defaults to https://github.com/TerraFERMA/TerraFERMA.git)" 1>&2
-    echo "  -d: enable debugging (if tag name is default, suffixes name with -debug)" 1>&2
+    echo "  -d: enable debugging (if tag name is default, suffixes tag with -debug)" 1>&2
     echo "  -p: comma separated list of platforms (defaults to current platform)" 1>&2
 }
 
@@ -33,10 +33,11 @@ repo_path=$(dirname $script_path)
 
 # parse the arguments
 TAG=''
-BRANCH='master-2019.1.0'
+BRANCH='main'
 REPO='https://github.com/TerraFERMA/TerraFERMA.git'
 DEBUG=0
 PLATFORMS=''
+BUILDER=''
 
 while getopts ":t:b:r:p:dh" opt; do
     case $opt in
@@ -78,8 +79,9 @@ if [ $# == 0 ]; then
 fi
 DIR=$(realpath $1)
 SDIR=$(basename $DIR)
+ADIR=$(basename $(dirname $DIR) )
 
-PTAG=''
+PTAG='userplatform'
 if [ -z "$PLATFORMS" ]; then
     PROC=`uname -m`
     if [ "$PROC" == "x86_64" ]; then
@@ -87,12 +89,14 @@ if [ -z "$PLATFORMS" ]; then
     elif [ "$PROC" == "arm64" ]; then
         PTAG="arm64"
     fi
+else
+    BUILDER='buildx'
 fi
 
-# if no tag is specified default to fenics-2019.1.0-focal
+# if no tag is specified default to arch dir
 if [ -z "$TAG" ]; then
-    TAG="fenics-2019.1.0-focal"
-    if [ "$BRANCH" != 'master-2019.1.0' ]; then
+    TAG="$ADIR"
+    if [ "$BRANCH" != 'main' ]; then
         TAG="${TAG}-$BRANCH"
     fi
     if [ $DEBUG -eq 1 ]; then
@@ -115,7 +119,7 @@ if [ $DEBUG -eq 1 ]; then
 fi
 
 cd $repo_path
-docker buildx build --file $DIR/Dockerfile \
+docker $BUILDER build --file $DIR/Dockerfile \
                     --build-arg TAG=$TAG \
                     --build-arg BRANCH=$BRANCH \
                     --build-arg DEBUG=$DEBUG \
