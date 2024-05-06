@@ -34,7 +34,7 @@
 
 # build off Ubuntu 20.04LTS (Focal) with a few fixes for docker
 FROM phusion/baseimage:focal-1.2.0
-MAINTAINER terraferma <terraferma@lists.columbia.edu>
+MAINTAINER Cian Wilson <cwilson@carnegiescience.edu>
 
 # Get Ubuntu updates
 USER root

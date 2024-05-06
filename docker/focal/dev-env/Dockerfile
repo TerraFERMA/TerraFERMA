@@ -30,9 +30,9 @@
 #
 
 # build from the base image
-ARG TAG=fenics-2019.1.0-focal
+ARG TAG=focal
 FROM ghcr.io/terraferma/base:${TAG}
-MAINTAINER terraferma <terraferma@lists.columbia.edu>
+MAINTAINER Cian Wilson <cwilson@carnegiescience.edu>
 
 ARG DEBUG=0
 

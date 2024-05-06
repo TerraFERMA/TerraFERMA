@@ -26,11 +26,11 @@
 #
 
 # build using the TerraFERMA development environment
-ARG TAG=fenics-2019.1.0-focal
+ARG TAG=focal
 FROM ghcr.io/terraferma/dev-env:${TAG}
-MAINTAINER terraferma <terraferma@lists.columbia.edu>
+MAINTAINER Cian Wilson <cwilson@carnegiescience.edu>
 
-ARG BRANCH=master-2019.1.0
+ARG BRANCH=main
 ARG REPO=https://github.com/TerraFERMA/TerraFERMA.git
 ARG DEBUG=0
 
