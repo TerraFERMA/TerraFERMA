@@ -399,7 +399,7 @@ F = (T_t*((T_i - T_n) + dt*inner(v_theta, grad(T_theta))) + dt/Ra*inner(grad(T_t
 v_theta = theta_v*v_i + (1.-theta_v)*v_n
 
 Fv = (inner(sym(grad(v_t)), 2.*eta*sym(grad(v_i))) - div(v_t)*p_i - T_i*v_t[1])*dx
-Fp = p_t*div(v_i)*dx
+Fp = -p_t*div(v_i)*dx
 
 F = Fv + Fp
 </string_value>
