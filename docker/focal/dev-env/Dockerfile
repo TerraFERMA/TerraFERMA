@@ -128,6 +128,8 @@ RUN git clone -b v3.17.1 -q https://gitlab.com/petsc/petsc.git && \
                         --prefix=$INSTALL_PREFIX && \
     make all && \
     make install && \
+    cd src/binding/petsc4py && \
+    PETSC_DIR=$INSTALL_PREFIX pip3 install --no-dependencies --prefix=$INSTALL_PREFIX . && \
     rm -rf /tmp/*
 ENV PETSC_DIR $INSTALL_PREFIX
 
