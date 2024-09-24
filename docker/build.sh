@@ -10,7 +10,7 @@ usage() {
     echo "bash $0 [-h] [-t tag<string>] [-b branch<string>] [-r repo<string>] [-p platform<string>,platform<string>] [-d] dir<string>" 1>&2
     echo "  dir: required name of the subdirectory containing the Dockerfile" 1>&2
     echo "  -h: print this help message and exit" 1>&2
-    echo "  -t: specify a tag name (defaults to focal-<branch if not main>-<debug>-<platform>)" 1>&2
+    echo "  -t: specify a tag name (defaults to <os>-<branch if not main>-<debug>-<platform>)" 1>&2
     echo "  -b: specify a branch name (defaults to main)" 1>&2
     echo "  -r: specify a repo URL (defaults to https://github.com/TerraFERMA/TerraFERMA.git)" 1>&2
     echo "  -d: enable debugging (if tag name is default, suffixes tag with -debug)" 1>&2

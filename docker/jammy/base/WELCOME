@@ -1,0 +1,7 @@
+# TerraFERMA base docker image
+
+Welcome to the TerraFERMA base environment.
+
+This is a simple docker image running an Ubuntu 22.04 OS with a user setup with all the necessary permissions to install and build
+TerraFERMA and its dependencies.  It is not intended for direct use.
+
