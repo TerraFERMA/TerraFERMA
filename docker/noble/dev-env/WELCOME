@@ -1,0 +1,7 @@
+# TerraFERMA dev-env docker image
+
+Welcome to the TerraFERMA development environment.
+
+This docker image does not contain an installation of TerraFERMA but does provide a full installation of all its dependencies,
+PETSc, FEniCS and SPuD, within and Ubuntu 24.04 OS. 
+
