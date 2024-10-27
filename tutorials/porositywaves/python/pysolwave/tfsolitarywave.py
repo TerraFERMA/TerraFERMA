@@ -77,7 +77,7 @@ class TFSolitaryWave:
             x1 = libspud.get_option("/geometry/mesh::Mesh/source::Rectangle/upper_right")
             number_cells = libspud.get_option("/geometry/mesh::Mesh/source::Rectangle/number_cells")
             diagonal = libspud.get_option("/geometry/mesh[0]/source[0]/diagonal")
-            mesh = df.RectangleMesh(x0[0],x0[1],x1[0],x1[1],number_cells[0],number_cells[1],diagonal)
+            mesh = df.RectangleMesh(df.Point(x0[0],x0[1]),df.Point(x1[0],x1[1]),number_cells[0],number_cells[1],diagonal)
         elif meshtype == 'UnitCube':
             number_cells = libspud.get_option("/geometry/mesh[0]/source[0]/number_cells")
             mesh = df.UnitCubeMesh(number_cells[0],number_cells[1],number_cells[2])
@@ -85,7 +85,7 @@ class TFSolitaryWave:
             x0 = libspud.get_option("/geometry/mesh::Mesh/source::Box/lower_back_left")
             x1 = libspud.get_option("/geometry/mesh::Mesh/source::Box/upper_front_right")
             number_cells = libspud.get_option("/geometry/mesh::Mesh/source::Box/number_cells")
-            mesh = df.BoxMesh(x0[0],x0[1],x0[2],x1[0],x1[1],x1[2],number_cells[0],number_cells[1],number_cells[2])
+            mesh = df.BoxMesh(df.Point(x0[0],x0[1],x0[2]),df.Point(x1[0],x1[1],x1[2]),number_cells[0],number_cells[1],number_cells[2])
         elif meshtype == 'UnitInterval':
             number_cells = libspud.get_option("/geometry/mesh::Mesh/source::UnitInterval/number_cells")
             mesh = df.UnitIntervalMesh(number_cells)
