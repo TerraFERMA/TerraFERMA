@@ -270,12 +270,13 @@ versions.
     coords = self.getlocations(tindex=tindex, time=time)
     topo = self.gettopology(tindex=tindex, time=time)
     d = coords.shape[-1]
+    if cell=="interval": d = 1
     mesh = df.Mesh()
     editor = df.MeshEditor()
     editor.open(mesh, cell, d, d)
     editor.init_vertices(coords.shape[0])
     editor.init_cells(topo.shape[0])
-    for i,c in enumerate(coords): editor.add_vertex(i, c)
+    for i,c in enumerate(coords): editor.add_vertex(i, c[:d])
     for i,c in enumerate(topo): editor.add_cell(i, c)
     editor.close()
 

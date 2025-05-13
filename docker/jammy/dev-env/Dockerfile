@@ -128,8 +128,6 @@ RUN git clone -b v3.17.1 -q https://gitlab.com/petsc/petsc.git && \
                         --prefix=$INSTALL_PREFIX && \
     make all && \
     make install && \
-    cd src/binding/petsc4py && \
-    PETSC_DIR=$INSTALL_PREFIX pip3 install --no-dependencies --prefix=$INSTALL_PREFIX . && \
     rm -rf /tmp/*
 ENV PETSC_DIR $INSTALL_PREFIX
 
@@ -137,22 +135,22 @@ ENV PETSC_DIR $INSTALL_PREFIX
 # ufl
 RUN git clone -b tferma-master-2019.1.0 -q https://bitbucket.org/tferma/ufl.git && \
     cd ufl && \
-    python3 setup.py install --prefix=$INSTALL_PREFIX && \
+    pip3 install --no-dependencies --prefix=$INSTALL_PREFIX . && \
     rm -rf /tmp/*
 # fiat
 RUN git clone -b tferma-master-2019.1.0 -q https://bitbucket.org/tferma/fiat.git && \
     cd fiat && \
-    python3 setup.py install --prefix=$INSTALL_PREFIX && \
+    pip3 install --no-dependencies --prefix=$INSTALL_PREFIX . && \
     rm -rf /tmp/*
 # dijitso
 RUN git clone -b tferma-master-2019.1.0 -q https://bitbucket.org/tferma/dijitso.git && \
     cd dijitso && \
-    python3 setup.py install --prefix=$INSTALL_PREFIX && \
+    pip3 install --no-dependencies --prefix=$INSTALL_PREFIX . && \
     rm -rf /tmp/*
 # ffc
 RUN git clone -b tferma-master-2019.1.0 -q https://bitbucket.org/tferma/ffc.git && \
     cd ffc && \
-    python3 setup.py install --prefix=$INSTALL_PREFIX && \
+    pip3 install --no-dependencies --prefix=$INSTALL_PREFIX . && \
     rm -rf /tmp/*
 # dolfin
 RUN git clone -b tferma-master-2019.1.0 -q https://bitbucket.org/tferma/dolfin.git && \
@@ -172,7 +170,7 @@ RUN git clone -b tferma-master-2019.1.0 -q https://bitbucket.org/tferma/dolfin.g
     make && \
     make install && \
     cd ../python && \
-    python3 setup.py install --prefix=$INSTALL_PREFIX && \
+    pip3 install --no-dependencies --prefix=$INSTALL_PREFIX . && \
     rm -rf /tmp/*
 
 # download and install spud from source

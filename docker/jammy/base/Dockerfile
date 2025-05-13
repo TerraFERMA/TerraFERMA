@@ -32,8 +32,8 @@
 #   https://github.com/orgs/TerraFERMA/packages/container/package/base
 #
 
-# build off Ubuntu 20.04LTS (Focal) with a few fixes for docker
-FROM phusion/baseimage:focal-1.2.0
+# build off Ubuntu 22.04LTS (jammy) with a few fixes for docker
+FROM phusion/baseimage:jammy-1.0.4
 MAINTAINER Cian Wilson <cwilson@carnegiescience.edu>
 
 # Get Ubuntu updates
@@ -72,9 +72,9 @@ ENV INSTALL_PREFIX  /usr/local/terraferma
 ENV INCLUDE         $INSTALL_PREFIX/include:$INCLUDE
 ENV LD_LIBRARY_PATH $INSTALL_PREFIX/lib:$LD_LIBRARY_PATH
 ENV LIBRARY_PATH    $INSTALL_PREFIX/lib:$LIBRARY_PATH
-ENV PATH            $INSTALL_PREFIX/bin:$PATH
+ENV PATH            $INSTALL_PREFIX/bin:$INSTALL_PREFIX/local/bin:$PATH
 ENV PKG_CONFIG_PATH $INSTALL_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH
-ENV PYTHONPATH      $INSTALL_PREFIX/lib/python3.8/site-packages:$PYTHONPATH
+ENV PYTHONPATH      $INSTALL_PREFIX/lib/python3.10/site-packages:$INSTALL_PREFIX/local/lib/python3.10/dist-packages:$PYTHONPATH
 ENV MANPATH         $INSTALL_PREFIX/share/man:$MANPATH
  
 RUN mkdir $INSTALL_PREFIX && \
@@ -86,7 +86,7 @@ USER tfuser
 ENV TF_HOME /home/tfuser
 RUN touch $TF_HOME/.sudo_as_admin_successful && \
     mkdir $TF_HOME/shared && \
-    mkdir -p $INSTALL_PREFIX/lib/python3.8/site-packages
+    mkdir -p $INSTALL_PREFIX/lib/python3.10/site-packages
 VOLUME /home/tfuser/shared
 
 # Print a default welcome message on startup

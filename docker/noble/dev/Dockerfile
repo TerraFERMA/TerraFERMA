@@ -26,9 +26,9 @@
 #
 
 # build using the TerraFERMA development environment
-ARG TAG=focal
+ARG TAG=noble
 FROM ghcr.io/terraferma/dev-env:${TAG}
-MAINTAINER Cian Wilson <cwilson@carnegiescience.edu>
+LABEL org.opencontainers.image.authors="Cian Wilson <cwilson@carnegiescience.edu>"
 
 ARG BRANCH=main
 ARG REPO=https://github.com/TerraFERMA/TerraFERMA.git
@@ -49,14 +49,14 @@ RUN git clone -b $BRANCH -q $REPO && \
     make install && \
     rm -rf /tmp/*
 
-ENV TF_CMAKE_PATH       $INSTALL_PREFIX/share/terraferma/cpp
-ENV CMAKE_MODULE_PATH   $INSTALL_PREFIX/share/buckettools/cmake/modules:$CMAKE_MODULE_PATH
-ENV DIAMOND_CONFIG_PATH $INSTALL_PREFIX/share/buckettools/diamond:$DIAMOND_CONFIG_PATH
+ENV TF_CMAKE_PATH=$INSTALL_PREFIX/share/terraferma/cpp
+ENV CMAKE_MODULE_PATH=$INSTALL_PREFIX/share/buckettools/cmake/modules
+ENV DIAMOND_CONFIG_PATH=$INSTALL_PREFIX/share/buckettools/diamond
 
 # link the installed tests and tutorials directories to the home directory
 RUN ln -s $INSTALL_PREFIX/share/terraferma/tests $TF_HOME/tests && \
     ln -s $INSTALL_PREFIX/share/terraferma/tutorials $TF_HOME/tutorials
-COPY docker/focal/dev/WELCOME $TF_HOME/WELCOME
+COPY docker/noble/dev/WELCOME $TF_HOME/WELCOME
 
 WORKDIR $TF_HOME
 USER root

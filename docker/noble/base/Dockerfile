@@ -32,9 +32,9 @@
 #   https://github.com/orgs/TerraFERMA/packages/container/package/base
 #
 
-# build off Ubuntu 20.04LTS (Focal) with a few fixes for docker
-FROM phusion/baseimage:focal-1.2.0
-MAINTAINER Cian Wilson <cwilson@carnegiescience.edu>
+# build off Ubuntu 24.04LTS (noble) with a few fixes for docker
+FROM phusion/baseimage:noble-1.0.0
+LABEL org.opencontainers.image.authors="Cian Wilson <cwilson@carnegiescience.edu>"
 
 # Get Ubuntu updates
 USER root
@@ -51,7 +51,7 @@ ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 ENV LANGUAGE=C.UTF-8
 
-COPY docker/focal/base/set-home-permissions.sh /etc/my_init.d/set-home-permissions.sh
+COPY docker/noble/base/set-home-permissions.sh /etc/my_init.d/set-home-permissions.sh
 
 # Set up user so that we do not run as root
 # See https://github.com/phusion/baseimage-docker/issues/186
@@ -68,14 +68,14 @@ RUN useradd -m -s /bin/bash -G sudo,docker_env,adm tfuser && \
     chmod +x /etc/my_init.d/set-home-permissions.sh && \
     ldconfig
 
-ENV INSTALL_PREFIX  /usr/local/terraferma
-ENV INCLUDE         $INSTALL_PREFIX/include:$INCLUDE
-ENV LD_LIBRARY_PATH $INSTALL_PREFIX/lib:$LD_LIBRARY_PATH
-ENV LIBRARY_PATH    $INSTALL_PREFIX/lib:$LIBRARY_PATH
-ENV PATH            $INSTALL_PREFIX/bin:$PATH
-ENV PKG_CONFIG_PATH $INSTALL_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH
-ENV PYTHONPATH      $INSTALL_PREFIX/lib/python3.8/site-packages:$PYTHONPATH
-ENV MANPATH         $INSTALL_PREFIX/share/man:$MANPATH
+ENV INSTALL_PREFIX=/usr/local/terraferma
+ENV INCLUDE=$INSTALL_PREFIX/include
+ENV LD_LIBRARY_PATH=$INSTALL_PREFIX/lib
+ENV LIBRARY_PATH=$INSTALL_PREFIX/lib
+ENV PATH=$INSTALL_PREFIX/bin:$INSTALL_PREFIX/local/bin:$PATH
+ENV PKG_CONFIG_PATH=$INSTALL_PREFIX/lib/pkgconfig
+ENV PYTHONPATH=$INSTALL_PREFIX/lib/python3.12/site-packages:$INSTALL_PREFIX/local/lib/python3.12/dist-packages
+ENV MANPATH=$INSTALL_PREFIX/share/man
  
 RUN mkdir $INSTALL_PREFIX && \
     chgrp adm -R $INSTALL_PREFIX && \
@@ -83,17 +83,17 @@ RUN mkdir $INSTALL_PREFIX && \
     chmod a+w /tmp
 
 USER tfuser
-ENV TF_HOME /home/tfuser
+ENV TF_HOME=/home/tfuser
 RUN touch $TF_HOME/.sudo_as_admin_successful && \
     mkdir $TF_HOME/shared && \
-    mkdir -p $INSTALL_PREFIX/lib/python3.8/site-packages
+    mkdir -p $INSTALL_PREFIX/lib/python3.12/site-packages && \
+    mkdir -p $INSTALL_PREFIX/local/lib/python3.12/dist-packages
 VOLUME /home/tfuser/shared
 
 # Print a default welcome message on startup
-COPY docker/focal/base/WELCOME $TF_HOME/WELCOME
+COPY docker/noble/base/WELCOME $TF_HOME/WELCOME
 
 WORKDIR $TF_HOME
 USER root
 ENTRYPOINT ["/sbin/my_init","--quiet","--","/sbin/setuser","tfuser","/bin/bash","-l","-c"]
 CMD ["/bin/bash","-i"]
-
