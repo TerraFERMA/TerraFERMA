@@ -120,7 +120,7 @@ def update_nonlinear_systems_location():
     solves = root.findall("solution_order/solve")
     solves = [solve for solve in solves if "in_timeloop" in solve.attrib]
     if len(solves) > 0:
-      print 'ERROR: Updating file that already has an in_timeloop solution_order.'
+      print('ERROR: Updating file that already has an in_timeloop solution_order.')
       sys.exit(1)
     order = etree.SubElement(root, "solution_order")
     solve = etree.SubElement(order, "solve", attrib={"name":"in_timeloop"})
