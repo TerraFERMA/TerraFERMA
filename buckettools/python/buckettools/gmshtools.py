@@ -532,12 +532,13 @@ class InterpolatedCubicSpline:
     self.update()
 
   def croppoint(self, pind, coord):
+    i = -1
     for i in range(len(pind)-1):
       p = self.points.pop(pind[i])
       if p in self.controlpoints:
         self.controlpoints.pop(self.controlpoints.index(p))
-    self.points[pind[-1]].x = coord[0]
-    self.points[pind[-1]].y = coord[1]
+    self.points[pind[-1] - (i+1)].x = coord[0]
+    self.points[pind[-1] - (i+1)].y = coord[1]
     self.update()
 
   def crop(self, left=None, bottom=None, right=None, top=None):

@@ -30,16 +30,16 @@
 #
 
 # build from the base image
-ARG TAG=focal
+ARG TAG=noble
 FROM ghcr.io/terraferma/base:${TAG}
-MAINTAINER Cian Wilson <cwilson@carnegiescience.edu>
+LABEL org.opencontainers.image.authors="Cian Wilson <cwilson@carnegiescience.edu>"
 
 ARG DEBUG=0
 
 USER root
 WORKDIR /tmp
 
-# install non-python dependencies - splitting these up reduces the size of individual image layers
+# install dependencies
 RUN apt-get update && \
     apt-get -y --with-new-pkgs \
         -o Dpkg::Options::="--force-confold" -o Dpkg::Options::="--force-confdef" upgrade && \
@@ -68,7 +68,7 @@ RUN apt-get update && \
                        tcl \
                        ack \
                        vim \
-                       vtk7 \
+                       vtk9 \
                        evince \
                        latexmk \
                        texlive-latex-recommended \
@@ -88,6 +88,8 @@ RUN apt-get update && \
                        python3-future \
                        python3-gi \
                        python3-lxml \
+                       python3-gmsh \
+                       python3-pygmsh \
                        cython3 \
                        python3-cairocffi \
                        python3-cairo \
@@ -96,9 +98,8 @@ RUN apt-get update && \
                        python3-meshio \
                        python3-pybind11 \
                        python3-pkgconfig \
-                       python3-vtk7 && \
+                       python3-vtk9 && \
     apt-get clean && \
-    pip3 install ttictoc && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # set environment variables for OPENBLAS to make single threaded
@@ -108,7 +109,7 @@ ENV OPENBLAS_VERBOSE=0
 USER tfuser
 
 # download and install petsc from source
-RUN git clone -b v3.17.1 -q https://gitlab.com/petsc/petsc.git && \
+RUN git clone -b v3.21.5 -q https://gitlab.com/petsc/petsc.git && \
     cd petsc && \
     python3 ./configure --COPTFLAGS="-O3" \
                         --CXXOPTFLAGS="-O3" \
@@ -131,28 +132,28 @@ RUN git clone -b v3.17.1 -q https://gitlab.com/petsc/petsc.git && \
     cd src/binding/petsc4py && \
     PETSC_DIR=$INSTALL_PREFIX pip3 install --no-dependencies --prefix=$INSTALL_PREFIX . && \
     rm -rf /tmp/*
-ENV PETSC_DIR $INSTALL_PREFIX
+ENV PETSC_DIR=$INSTALL_PREFIX
 
 # download and install all the fenics components from source
 # ufl
 RUN git clone -b tferma-master-2019.1.0 -q https://bitbucket.org/tferma/ufl.git && \
     cd ufl && \
-    python3 setup.py install --prefix=$INSTALL_PREFIX && \
+    pip3 install --no-dependencies --prefix=$INSTALL_PREFIX . && \
     rm -rf /tmp/*
 # fiat
 RUN git clone -b tferma-master-2019.1.0 -q https://bitbucket.org/tferma/fiat.git && \
     cd fiat && \
-    python3 setup.py install --prefix=$INSTALL_PREFIX && \
+    pip3 install --no-dependencies --prefix=$INSTALL_PREFIX . && \
     rm -rf /tmp/*
 # dijitso
 RUN git clone -b tferma-master-2019.1.0 -q https://bitbucket.org/tferma/dijitso.git && \
     cd dijitso && \
-    python3 setup.py install --prefix=$INSTALL_PREFIX && \
+    pip3 install --no-dependencies --prefix=$INSTALL_PREFIX . && \
     rm -rf /tmp/*
 # ffc
 RUN git clone -b tferma-master-2019.1.0 -q https://bitbucket.org/tferma/ffc.git && \
     cd ffc && \
-    python3 setup.py install --prefix=$INSTALL_PREFIX && \
+    pip3 install --no-dependencies --prefix=$INSTALL_PREFIX . && \
     rm -rf /tmp/*
 # dolfin
 RUN git clone -b tferma-master-2019.1.0 -q https://bitbucket.org/tferma/dolfin.git && \
@@ -172,7 +173,7 @@ RUN git clone -b tferma-master-2019.1.0 -q https://bitbucket.org/tferma/dolfin.g
     make && \
     make install && \
     cd ../python && \
-    python3 setup.py install --prefix=$INSTALL_PREFIX && \
+    pip3 install --no-dependencies --prefix=$INSTALL_PREFIX . && \
     rm -rf /tmp/*
 
 # download and install spud from source
@@ -181,15 +182,18 @@ RUN git clone -q https://github.com/FluidityProject/spud.git && \
     ./configure --prefix=$INSTALL_PREFIX && \
     make && \
     make install && \
+    cd python && \
+    pip3 install --no-dependencies --prefix=$INSTALL_PREFIX . && \
+    cd ../diamond && \
+    pip3 install --no-dependencies --prefix=$INSTALL_PREFIX . && \
     rm -rf /tmp/*
-ENV SPUD_DIR $INSTALL_PREFIX
+ENV SPUD_DIR=$INSTALL_PREFIX
 
 # supress some spurious gtk errors
-ENV NO_AT_BRIDGE 1
+ENV NO_AT_BRIDGE=1
 
 # welcome at startup
-COPY docker/focal/dev-env/WELCOME $TF_HOME/WELCOME
+COPY docker/noble/dev-env/WELCOME $TF_HOME/WELCOME
 
 WORKDIR $TF_HOME
 USER root
-
